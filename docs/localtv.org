@@ -9,12 +9,14 @@ ASAP (2 or 3 weeks)
 
 4-6 weeks down the road have Morgan's look pretty well implemented
 
-<2009-02-21 Sat>
- - have it set up on the server for multiple sites
- - video viewing
+** <2009-02-21 Sat>
+*** have it set up on the server for multiple sites
+*** video viewing
 
-<2009-02-25 Wed>
+
+** <2009-02-25 Wed>
  - user video submission
+
 
 * Tasks
 
@@ -23,19 +25,37 @@ ASAP (2 or 3 weeks)
 *** TODO Set up main site project
 *** TODO Set up subsites projects
 
-** TODO Models
-*** TODO Basic model setup
-   DEADLINE: <2009-02-13 Fri>
+** TODO Set up git repository on master server, push to it
+   DEADLINE: <2009-02-17 Tue>
 
-*** TODO Send database schema to paul
+** TODO Models
+
+[[file:../localtv/models.py]]
+
+*** DONE Basic model setup
+   DEADLINE: <2009-02-16 Fri>
+
+*** DONE Send database schema to paul
+
+*** DONE Implement Paul's suggestions
+    DEADLINE: <2009-02-16 Mon>
+
+ - [X] auto_now kwarg for DateTimeFields
+ - [X] status for feeds and sites, so you can turn them off without deleting
+ - [X] add etag and last_modified tags to feed model
+ - [X] add website_url to Video model
+
+*** TODO Add those suckas to the admin
+    DEADLINE: <2009-02-16 Mon>
 
 *** TODO Schema Evolution
 **** TODO Install django-evolution
 **** TODO Get sequential evolutions to work
 
-** TODO Figure out OpenID stuff, get that implemented
-   DEADLINE: <2009-02-13 Fri>
+*** TODO Get basic admin page up and running
+    DEADLINE: <2009-02-16 Mon>
 
+** TODO Figure out OpenID stuff, get that implemented
 ** TODO Get multiple sites working
    DEADLINE: <2009-02-16 Mon>
 *** TODO main site with static html
@@ -64,7 +84,7 @@ Search the subsite
  - [ ] Custom sidebar code
  - [ ] Popular videos
 
-**** TODO Custom css
+*** TODO Custom css
 
 Dean told Morgan wanted to be able to
  - put html in the sidebar for customization
@@ -78,7 +98,7 @@ Dean told Morgan wanted to be able to
 Don't expect many people switching much more than dark to light
 (Morgan will make it so good they won't want to do otherwise)
 
-***** TODO New model for database
+**** DONE New model for database
 
  - name
  - textbox with css
