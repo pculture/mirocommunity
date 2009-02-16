@@ -1,0 +1,540 @@
+Miro Local TV
+
+* Rough timeline
+
+Dean says its hard to guage, but
+
+Would like to start importing videos and playing with them in the site
+ASAP (2 or 3 weeks)
+
+4-6 weeks down the road have Morgan's look pretty well implemented
+
+<2009-02-21 Sat>
+ - have it set up on the server for multiple sites
+ - video viewing
+
+<2009-02-25 Wed>
+ - user video submission
+
+* Tasks
+
+** TODO Set up site environment
+   DEADLINE: <2009-02-16 Mon>
+*** TODO Set up main site project
+*** TODO Set up subsites projects
+
+** TODO Models
+*** TODO Basic model setup
+   DEADLINE: <2009-02-13 Fri>
+
+*** TODO Send database schema to paul
+
+*** TODO Schema Evolution
+**** TODO Install django-evolution
+**** TODO Get sequential evolutions to work
+
+** TODO Figure out OpenID stuff, get that implemented
+   DEADLINE: <2009-02-13 Fri>
+
+** TODO Get multiple sites working
+   DEADLINE: <2009-02-16 Mon>
+*** TODO main site with static html
+*** TODO subsites with different urls
+
+** TODO Common templates
+
+*** TODO Header
+
+**** TODO Custom Logo
+**** TODO Search Box
+
+Search the subsite
+
+**** TODO Nav Links
+ - [ ]  Front Page
+ - [ ]  Browse (drop down with: categories, tags, authors)
+ - [ ]  New Videos
+ - [ ]  Most Popular
+ - [ ]  Submit a Video
+ - [ ]  About
+ 
+*** TODO Sidebar
+(appears on all pages except front page)
+
+ - [ ] Custom sidebar code
+ - [ ] Popular videos
+
+**** TODO Custom css
+
+Dean told Morgan wanted to be able to
+ - put html in the sidebar for customization
+ - logo cuzstomization
+ - title customization
+ - two color schemes?
+ - background easy to replace? (css background)
+
+(How to handle custom background image?)
+
+Don't expect many people switching much more than dark to light
+(Morgan will make it so good they won't want to do otherwise)
+
+***** TODO New model for database
+
+ - name
+ - textbox with css
+
+This css file should be loaded last
+
+** Views
+*** TODO Front page
+
+ - [ ] Editor Picks
+ - [ ] Most Popular in Last 24
+ - [ ] New (in order of submission)
+
+*** TODO Video viewing
+
+**** TODO Embedded Video
+
+Borrow code from miroguide
+
+**** TODO Author Name
+**** TODO Video Title
+**** TODO Date posted
+**** TODO Originally Posted Link (permalink)
+**** TODO Category List
+**** TODO Tag List
+**** TODO Suggest Tag Field
+
+   [                        ]   + Suggest This Tag
+
+**** TODO Flag this video
+(link pops open)-
+
+Please describe the problem with this video:  [             ]  Submit
+
+**** TODO Comments
+
+They're suggesting IntenseDebate because it's easy, looks nice, works
+well... I'm hoping I can implement it otherwise
+
+Maybe consider one of the many django commenting systems that already exist
+
+**** TODO OpenID login
+***** Login with OpenID link
+OpenID [                       ] Login
+Get an OpenID
+
+(This is already provided by django-openid, right?)
+***** How to get OpenID (pops up under login field)
+**** TODO Moderator-only features
+***** TODO Remove this video link
+***** TODO Remove links next to each tag and category
+***** TODO [                        ]   + Add Tag
+***** TODO [ Choose Category v ]   + Add Category
+***** TODO How the video got here 
+( what search / what feed / what submitter )
+***** TODO and a way to delete that method
+
+*** TODO Video submission
+(moderator submissions are automatically approved)
+(all URLS and embed codes are checked for duplication first)
+
+**** TODO Form
+Video URL    [                       ]   
+
+Tags (one per line)   [                      ]
+
+ [Submit]
+Read our Community Guidelines
+
+**** TODO Response if already submitted
+
+This video has already been submitted.
+
+{submission controls from above for submitting something else}
+
+**** TODO Emedding code for videos we can't figure out
+
+For this site, we need the embedding code (html)
+
+Embed code [                ]
+
+Video Description [               ]
+
+ [Submit]
+
+**** TODO Video preview
+
+{video preview - show the embedded video }
+
+Submit >>       Cancel
+
+**** TODO Thank you page
+
+Thanks for submitting a video, our moderators will review it soon.
+
+*** TODO Admin pages
+
+Implement this last, use django admin first
+
+**** TODO Main admin page
+ - [ ] Submission Queue (5 waiting)
+ - [ ] Searches Queue (55 waiting)
+ - [ ] Flagged Videos (6 waiting)
+ - [ ] Feed Setups
+ - [ ] Search Setups
+ - [ ] Category and Tags Setup
+ - [ ] Site Customization
+ - [ ] User blacklist
+**** TODO Feed Setups
+
+http://www.youtube.com/duderoro/rss/rss.xml    [ remove ]
+Author:  Dudero      Default Tags: Food
+
+Feed URL  [                  ] 
+Author Name  [                ]
+Default Tags [                ]
+
+ [+ Add Feed]
+
+**** TODO Moderator search setups
+(searches have to match all terms)
+
+cambridge -UK   [ remove ]
+
+1369 coffee   [ remove ]
+
+"central square" -chicago    [ remove ]
+
+
+Terms you want (one per line)       Terms to exclude (one per line)
+[                                        ]        [                                            ]
+
+[+ Add Search]
+
+**** TODO Moderator search results / Submissions queue pages
+A Day at the Coffee Shop
+YouTube - Search:  1369 coffee [delete this search]
+[ Approve - Reject ]
+
+A Day at the Coffee Shop
+YouTube - Search:  "central square" -chicago
+[ Approve - Reject ]
+
+Walking Around
+YouTube - Search:  "central square" -chicago
+[ Approve - Reject ]
+
+A Day at the Coffee Shop
+YouTube - Search:  1369 coffee
+[ Approve - Reject ]
+
+**** TODO Moderator blacklist page
+
+Use this page to block a user from entering tags.  For comments, use
+the IntenseDebate controls.
+
+notthemessiah.net    [ remove from black list ]
+
+mike.aol.com    [ remove from black list ]
+
+[                                ]    + Add this OpenID to blacklist 
+
+**** TODO Tags and Category page
+Category List
+
+sports         [ remove ]
+politics         [ remove ]
+government     [ remove ]
+
+[                  ]  + Add Category
+
+
+Tags List  (sorted by most used)
+
+Tornados       [  sports v ]
+City Hall       [ government v ]
+1369             [ Choose Category v ]
+
+**** TODO Flagged videos page
+(sorted by video with the most flags)
+
+Walking Around
+Flagged 4 times
+Flagged Reasons: 
+  "this is perverted"
+  "This video has really bad language, I think you guys should remove it
+   from the site.  Thanks, mike"
+[ Ignore - Remove Video ]
+
+Sex Day
+Flagged 6 times
+Flagged Reasons: 
+  "this is perverted"
+  "This video has really bad language, I think you guys should remove
+   it from the site.  Thanks, mike"
+[ Ignore - Remove Video ]
+
+**** TODO Site Customization page
+***** Custom Logo
+
+logo54.gif
+
+Upload a Different Logo [  Browse... ]
+
+***** SITE NAME
+[  Cambridge Local TV ]   Save Changes
+
+***** HTML FOR ABOUT PAGE  (include contact info)
+[                                ]
+Save Changes
+
+***** CUSTOM CSS
+[                                ]
+Save Changes
+
+***** HTML FOR SIDEBAR
+[                                ]
+Save Changes
+
+***** HTML FOR FOOTER
+[                                ]
+Save Changes
+
+**** TODO Moderator Login
+Moderator Username [                ]
+Login
+Forgot Password
+
+**** TODO Moderator Accounts
+(there will be one super-moderator that has access to this page, via htaccess?)
+
+mike@wcca.org    [ remove this moderator ]   [ edit password ]
+luso@wcca.org    [ remove this moderator ]   [ edit password ]
+
+enter email address for moderator  [                         ]
+initial password   [                     ]
+ [+ Add this moderator]
+
+edit password pops open this:
+    Current Password   [  radicalDOOD98  ]   Save Changes
+
+From Paul: Django gives us an admin interface by default, which would
+  give site customization, user accounts and permissions, and multiple
+  URL/single installation support for free.  We could do our own
+  interface, too, but we don't have to.
+
+*** TODO Share video top-fold
+Share this Video: <page url> [ Copy URL to Clipboard ]
+
+Via Email: (Plaxo Pane - copied from Miro Guide)
+
+Also Share to: [ Facebook ] [ StumbleUpon ] [ Delicious ] [ Digg ] [ MySpace ]
+
+*** TODO Video list pages
+
+Page Title
+rss feed link / miro link
+
+THUMBNAIL
+Title
+Description
+Author Name
+Primary Category
+Posted 5 Hours Ago  (when the video entered our system)
+
+**** TODO TAGS 
+**** TODO CATEGORIES
+**** TODO MOST POPULAR
+**** TODO SEARCH RESULTS
+**** TODO AUTHOR
+
+** TODO Feed polling
+
+
+* Links and stuff
+
+[[http://docs.google.com/Doc?id=d5c9578_39d4w2v5hf&hl=en][Google Doc]]
+
+* General technical outline for localtv
+** Technology used
+
+*** Basic django for as much as possible
+
+orm, feed generation, whatever.  Not sure about the admin interface
+though, since that's pretty much just database editing.  Will probably
+use django's admin interface for the earliest development, and flesh
+out an inline interface for administration as we go.
+
+*** Django Evolution for schema evolution
+
+see: http://code.google.com/p/django-evolution/
+
+*** GeoDjango for geosensitive information
+
+*** Django user model
+
+We'll use basic django groups and permissions to assign roles
+
+*** Hourglass for timed events?
+
+This is a really nice cronjob-like system for django that allows you
+to easily insert cron-like events and even project them into the
+future.. was developed at imagescape
+
+Either that or we could just use a cronjob.
+
+*** Postgres for the database
+
+We should think ahead and use postgres for the database of localtv.
+This is because Postgres has special support for fast GeoIP lookup
+with [[http://postgis.refractions.net/][PostGIS]]
+
+*** Jquery for javascript fanciness
+
+Anyone surprised by this?  No one?  Ok, thought not.
+
+*** WYSIWYG Editor and XSS protection
+
+I'm not 100% sure about this, but I've thought about making it
+possible to use either TinyMCE or Xinha to enter rich text.  Certainly
+this will be desirable in the admin interface so site owners can
+customize particular messages about themselves, whatever.  Not sure
+otherwise.
+
+If I do end up doing that I'll use lxml to clean it up, since it's
+fast and provides really good html cleaning to prevent cross site
+scripting attacks.
+
+** Models
+
+*** SiteLocation
+
+ - *site*: Each SiteLocation should be mapped to a specific Site
+   instance using Django's [[http://docs.djangoproject.com/en/dev/ref/contrib/sites/][Sites Framework]].
+ - *name*: Has a full name
+ - *logo*: Should have a logo file
+ - *slug*: optional, for mounting on 
+
+*** Videos
+
+ - *name*: (250 character contstrained?) string titling the video
+ - *description*: description of the video
+ - *tags*: manytomany relationship to Tags objects
+ - *video url*: link to the associated video url
+ - *user submitter*: link to the user who submitted this file
+ - *feed submitter*: a Feed object, if this video came from a feed
+ - *when submitted*: datetime of submission
+ - *status*: whether this video has been approved or not yet, whatever
+
+*** Feeds
+ 
+ - *feed name*: name of this feed
+ - *feed url*: url of the feed
+ - *feed description*: description of the feed
+ - *feed webpage*: in case there's some sort of link to the source of the video
+ - *when submitted*: when this feed was added
+
+*** Tags
+
+ - *name*
+
+Tags become transformed into locations later, but I've been instructed
+not to worry about it too much.  However, what I'm thinking is that
+there will be a mapping like:
+
+TagLocation:
+ - *sitelocation* and *tag*: binds SiteLocation and a Tag
+   ('unique together' in the database)
+ - *shpfile*: name or data for the [[http://en.wikipedia.org/wiki/Shapefile][Shapefile]]
+
+this way tags can have context
+
+*** Profile
+
+Just extends a User object from django's auth system
+
+ - *user*: the user being extended
+ - *description*: self-written biography of the user
+ - *thumbnail*: small image representing the user
+ - *when registered*: When the user registered with the site
+
+*** Video Comments
+
+ - *user*: the user this comment is associated with
+ - *video*: the particular video this comment is associated with
+ - *when posted*: a date and time of posting
+ - *body*: body of the post
+
+
+* Installation process
+** install virtualenv
+
+See http://pypi.python.org/pypi/virtualenv
+
+You can probably do 
+: sudo easy_install -UaZ virtualenv
+to get the base virtualenv executable installed on your system (which
+is really just used for setting up virtualenv environments).
+
+*** Basic installation
+
+Assuming you already have the virtualenv executable installed, you can
+install a virtualenv environment like so:
+: virtualenv /path/to/virtualenv
+
+*** Activating virtualenv
+
+`cd` to this virtualenv environment and type the command
+: source bin/activate
+
+You can then deactivate with the command
+: deactivate
+
+*** Directory structure
+
+**** Installed with virtualenv
+ - *bin/*: binaries and executables
+ - *include/*: links to python binaries & etc
+ - *lib/*: python modules, both stdlib, those installed with
+   setuptools, and those not in development
+
+**** Recommended additional
+
+You don't have to do this, but I think this makes for a pretty clean
+virtualenv environment to add these following directories:
+
+ - *src/*: python modules in development
+ - *djangoproject/*: subdirectories with django settings and root
+   urls for different sites should live in here
+ - *htdocs/*: A directory for most of your static media
+ - *htdocs/static/*: Usually site-specific static media.  (Good to
+   make a git repository for this location or whatever)
+ - *htdocs/static/images/*: images for the look and feel of this
+   particular site
+ - *htdocs/static/js/*: javascript for the look and feel of this
+   particular site
+ - *htdocs/static/css/*: css for the look and feel of this particular
+   site
+ - *htdocs/static/templates/*: templates, such as base.html, to define
+   the base look of your site, as well as a place to override
+   app-specific templates on a site level
+ - *htdocs/admin/*: symlink the directory to django's static admin
+   resources here.  Not totally necessary but it makes things a bit
+   easier.
+ - *htdocs/site_media/*: the site_media directory for django.  Django
+   apps install stuff here, so it will most likely be dynamically
+   populated
+ - *var/*: kinda like system /var
+ - *var/pid/*: put your pidfiles for django & etc here
+ - *var/log/*: django logfiles & etc go here
+
+*** Installing Django and LocalTv dependencies
+
+Presently LocalTv works with Django 1.0.2.  While in the virtualenv
+environment you can type the following:
+: easy_install -UaZ Django
+
+*** Installing LocalTv
+
