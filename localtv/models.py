@@ -25,7 +25,7 @@ class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
     name = models.CharField(max_length=250, unique=True)
     # logo... we can probably be lazy and just link this as part of the id..
-    slug = models.SlugField(required=False)
+    slug = models.SlugField()
     admins = models.ManyToManyField(User)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
@@ -44,7 +44,7 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site = models.ForeignKey(Site, unique=True)
     name = models.CharField(max_length=250)
-    webpage = models.URLField(required=False)
+    webpage = models.URLField(null=True)
     description = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
@@ -54,7 +54,7 @@ class Feed(models.Model):
 
     class Meta:
         unique_together = (
-            ('feed_url', 'site')
+            ('feed_url', 'site'),
             ('name', 'site'))
 
 
@@ -73,7 +73,7 @@ class Video(models.Model):
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=VIDEO_STATUSES)
     feed = models.ForeignKey(Feed)
-    website_url = models.URLField(required=False)
+    website_url = models.URLField(null=True)
 
 
 #class Profile(models.Model):
