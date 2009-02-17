@@ -20,12 +20,14 @@ ASAP (2 or 3 weeks)
 
 * Tasks
 
-** TODO Set up site environment
+** DONE Set up local site environment
    DEADLINE: <2009-02-16 Mon>
-*** TODO Set up main site project
-*** TODO Set up subsites projects
+*** DONE Set up main site project
+*** DONE Set up subsites projects
+** TODO Set up test server site environment
+   DEADLINE: <2009-02-17 Tue>
 
-** TODO Set up git repository on master server, push to it
+** DONE Set up git repository on master server, push to it
    DEADLINE: <2009-02-17 Tue>
 
 ** TODO Models
@@ -45,23 +47,23 @@ ASAP (2 or 3 weeks)
  - [X] add etag and last_modified tags to feed model
  - [X] add website_url to Video model
 
-*** TODO Add those suckas to the admin
+*** DONE Add those suckas to the admin
     DEADLINE: <2009-02-16 Mon>
 
 *** TODO Schema Evolution
 **** TODO Install django-evolution
 **** TODO Get sequential evolutions to work
 
-*** TODO Get basic admin page up and running
+*** DONE Get basic admin page up and running
     DEADLINE: <2009-02-16 Mon>
 
 ** TODO Figure out OpenID stuff, get that implemented
 ** TODO Get multiple sites working
-   DEADLINE: <2009-02-16 Mon>
+   DEADLINE: <2009-02-17 Tue>
 *** TODO main site with static html
 *** TODO subsites with different urls
-
 ** TODO Common templates
+   DEADLINE: <2009-02-18 Wed>
 
 *** TODO Header
 
@@ -488,7 +490,9 @@ Just extends a User object from django's auth system
  - *body*: body of the post
 
 
-* Installation process
+* TODO Installation process
+  DEADLINE: <2009-02-17 Tue>
+
 ** install virtualenv
 
 See http://pypi.python.org/pypi/virtualenv
@@ -555,6 +559,19 @@ virtualenv environment to add these following directories:
 Presently LocalTv works with Django 1.0.2.  While in the virtualenv
 environment you can type the following:
 : easy_install -UaZ Django
+
+This should do everything you need for django, including putting it in
+the virtualenv python path.
+
+Installing dependencies will be a little bit tricker
+
+*** Setting up the django projects
+
+**** "Mainsite" django project
+***** settings.py
+***** urls.py
+
+**** Configuring 
 
 *** Installing LocalTv
 
