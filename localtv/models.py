@@ -30,14 +30,23 @@ class SiteLocation(models.Model):
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     
+    def __unicode__(self):
+        return self.name
+
 
 class SiteCss(models.Model):
     name = models.CharField(max_length=250)
     css = models.TextField()
 
+    def __unicode__(self):
+        return self.name
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=25)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Feed(models.Model):
@@ -57,9 +66,15 @@ class Feed(models.Model):
             ('feed_url', 'site'),
             ('name', 'site'))
 
+    def __unicode__(self):
+        return self.name
+
 
 class Category(models.Model):
     name = models.CharField(max_length=80)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Video(models.Model):
@@ -74,6 +89,9 @@ class Video(models.Model):
     status = models.IntegerField(choices=VIDEO_STATUSES)
     feed = models.ForeignKey(Feed)
     website_url = models.URLField(null=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 #class Profile(models.Model):
