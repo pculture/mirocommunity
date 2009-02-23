@@ -1,4 +1,4 @@
-* DONE Installation process
+* Installation process
   DEADLINE: <2009-02-17 Tue>
 
 ** install virtualenv
