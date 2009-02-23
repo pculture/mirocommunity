@@ -81,7 +81,7 @@ class Video(models.Model):
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
     description = models.TextField()
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, null=True)
     categories = models.ManyToManyField(Category)
     file_url = models.URLField()
     # submitter <- should be link to an openid object
