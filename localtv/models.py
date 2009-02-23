@@ -23,10 +23,8 @@ SITE_STATUSES = (
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
-    name = models.CharField(max_length=250, unique=True)
     # logo... we can probably be lazy and just link this as part of the id..
-    slug = models.SlugField()
-    admins = models.ManyToManyField(User)
+    admins = models.ManyToManyField(User, null=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     
