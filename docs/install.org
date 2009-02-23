@@ -226,11 +226,14 @@ Fire up the python shell:
 
 Import the Site model
 : >>> from django.contrib.sites.models import Site 
+: >>> from localtv.models import SiteLocation
 
-Add the site (obviously replacing the domain name and name with those
-appropriate to your site):
+Add the site and the sitelocation (obviously replacing the domain name
+and name with those appropriate to your site):
 : >>> chicago_site = Site(domain='chicago.example.org', name='Chicago LocalTv')
 : >>> chicago_site.save()
+: >>> chicago_sitelocation = SiteLocation(site=chicago_site)
+: >>> chicago_sitelocation.save()
 
 Be sure to take note of the id... we'll need it
 : >>> print chicago_site.id
