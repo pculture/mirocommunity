@@ -27,6 +27,7 @@ class SiteLocation(models.Model):
     admins = models.ManyToManyField(User, null=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
+    sidebar_html = models.TextField(null=True)
     
     def __unicode__(self):
         return self.name
