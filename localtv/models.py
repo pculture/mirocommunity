@@ -31,7 +31,7 @@ class SiteLocation(models.Model):
     tagline = models.CharField(max_length=250, null=True)
     
     def __unicode__(self):
-        return self.name
+        return self.site.name
 
 
 class SiteCss(models.Model):
