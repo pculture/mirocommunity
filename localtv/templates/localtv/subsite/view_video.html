@@ -1,0 +1,283 @@
+{% extends "localtv/base.html" %}
+
+{% block content %}
+  <div id="main">
+    <h2 class="vid_title">{{ current_video.name }}</h2>
+    <span class="date">6 months ago</span>
+    <div id="video_wrapper">
+      <img src="i/vid.gif" />
+      <a href="#" id="flag_button" class="med_button">
+        <span>Flag Video<img src="i/arrow_down.png" /></span>
+      </a>
+
+      <a href="#" id="share_button" class="med_button">
+        <span>Share Video<img src="i/arrow_down.png" /></span>
+      </a>
+
+      <a href="#" id="seperate" class="med_button">
+        <span>open player in separate window</span>
+      </a>
+      
+    </div>        
+    <p class="description">
+      {{ current_video.description }}
+    </p>
+    
+    
+    <div id="tags"><h3>Categories - </h3>
+      
+      <ul>
+        {% for category in current_video.categories.objects.all %}
+          <li>{{ category.name }}</li> 
+        {% endfor %}
+      </ul>
+      
+      <h3>Tags - </h3>
+      
+      <ul>
+        {% for tag in current_video.tags.objects.all %}
+          <li>{{ tag.name }}</li> 
+        {% endfor %}
+      </ul>
+      
+      <form id="add_tag">
+        <input type="text" class="text_field" />
+        <input type="image" id="suggest_tag" src="i/suggest.png" value="submit" />
+      </form>       
+      
+      <a href="#">Login to add a tag</a>
+    </div>
+    
+    <!-- Intensedebate would normally go here -->
+  </div>
+  
+  
+  <div id="sidebar">
+    
+    <div id="about">
+      {% autoescape off %}
+        {{ sitelocation.sidebar_html }}
+      {% endautoescape %}
+    </div>
+    
+    <div id="sidebar_header">   
+      <h2>Most Popular</h2>
+      
+      <div class="floatright">
+        <a href="#" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+    
+    {% for video in popular_videos %}
+      {% include "localtv/subsite/sidebar_video.html" %}
+    {% endfor %}
+
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+    
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+    
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+    
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+    
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+
+    <div class="video">
+      <a href="#" class="thumbnail">
+        <div>
+      	<img src="i/vid_overlay.png" />
+        </div>
+      </a>
+      <div class="title_desc">
+        <h3><a href="#">Miss Worcester Diner Controversey</a></h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Cras lobortis elementum neque. Etiam pede. Lorem
+          ipsum dolor sit
+        </p>
+      </div>
+      <p>
+        <a href="#">
+          Published by <span>morganknutson</span> 3hrs ago
+        </a>
+
+        <a href="#">244 Comments</a>
+      </p>
+    </div>
+  </div>
+{% endblock content %}

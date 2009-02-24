@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style media="all" type="text/css">
+
+      @import "css/reset.css";
+      @import "css/lights-on.css";
+      @import "css/video_page.css";
+
+    </style>
+    {% block head %}{% endblock head %}
+  </head>
+
+  <body id="video_page">
+    <div id="wrapper">
+      <div id="header">
+        <img id="logo" src="" alt="Worcester Local Video Logo" />
+        <h1>
+          {{ sitelocation.site.name }}
+          <span class="tagline">{{ sitelocation.tagline }}</span>
+        </h1>
+
+        <form id="search">
+          <input type="text" id="search_field" />
+          <input type="image" id="searchbutton" src="i/search.png" value="submit" />
+        </form>
+        
+        <ul id="nav">
+          <li><a href="#"><span>Home</span></a></li>
+          <li><a href="#"><span>Browse</span></a></li>
+          <li><a href="#"><span>New Videos</span></a></li>
+          <li><a href="#"><span>Popular</span></a></li>
+          <li><a href="#"><span>Submit A Video</span></a></li>
+        </ul>
+        
+        <ul id="login">
+          <li><a href="#" class="med_button"><span>Login</span></a></li>
+          <li><a href="#" class="med_button"><span>Register</span></a></li>
+        </ul>
+      </div>
+
+      <div id="content">
+        {% block content %}
+        {% endblock content %}
+      </div>
+      {% if sitelocation.footerline %}
+        <p id="footer">{{ sitelocation.footerline }}</p>
+      {% endif %}
+    </div>
+  </body>
+</html>
