@@ -13,12 +13,25 @@ VIDEO_STATUSES = FEED_STATUSES = (
     (VIDEO_STATUS_ACTIVE, 'Active'),
     (VIDEO_STATUS_REJECTED, 'Rejected'))
 
-SITE_STATUS_INACTIVE = 0
+SITE_STATUS_DISABLED = 0
 SITE_STATUS_ACTIVE = 1
 
 SITE_STATUSES = (
-    (SITE_STATUS_INACTIVE, 'Inactive'),
+    (SITE_STATUS_DISABLED, 'Disabled'),
     (SITE_STATUS_ACTIVE, 'Active'))
+
+OPENID_STATUS_DISABLED = 0
+OPENID_STATUS_ACTIVE = 1
+
+OPENID_STATUSES = (
+    (OPENID_STATUS_DISABLED, 'Disabled'),
+    (OPENID_STATUS_ACTIVE, 'Active'))
+
+
+class OpenIdUser(models.Model):
+    url = models.URLField(unique=True)
+    status = models.IntegerField(
+        choices=OPENID_STATUSES, default=OPENID_STATUS_ACTIVE)
 
 
 class SiteLocation(models.Model):
