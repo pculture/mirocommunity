@@ -35,6 +35,9 @@ class OpenIdUser(models.Model):
     status = models.IntegerField(
         choices=OPENID_STATUSES, default=OPENID_STATUS_ACTIVE)
 
+    def __unicode__(self):
+        return "%s <%s>" % (self.nickname, self.email)
+
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
@@ -112,6 +115,7 @@ class Video(models.Model):
 #class Profile(models.Model):
 # make openid profiles here later
 
+admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(SiteCss)
 admin.site.register(Tag)
