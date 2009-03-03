@@ -112,9 +112,6 @@ class Video(models.Model):
         return self.name
 
 
-#class Profile(models.Model):
-# make openid profiles here later
-
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(SiteCss)
