@@ -30,6 +30,8 @@ OPENID_STATUSES = (
 
 class OpenIdUser(models.Model):
     url = models.URLField(unique=True)
+    email = models.EmailField()
+    nickname = models.CharField(max_length=50, blank=True)
     status = models.IntegerField(
         choices=OPENID_STATUSES, default=OPENID_STATUS_ACTIVE)
 
