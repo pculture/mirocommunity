@@ -50,11 +50,9 @@ def login_or_register(request):
     session_openid = session_openids[-1]
     if request.method == 'GET':
         registration_form = forms.OpenIdRegistrationForm()
-
-        registration_form = forms.OpenIdRegistrationForm()
-        registration_form.initial['email'] = session_openid.attrs.get(
+        registration_form.initial['email'] = session_openid.sreg.get(
             'email', '')
-        registration_form.initial['nickname'] = session_openid.attrs.get(
+        registration_form.initial['nickname'] = session_openid.sreg.get(
             'nickname', '')
         return render_to_response(
             'localtv/openid/register_form.html',
