@@ -8,7 +8,7 @@ from django.template import RequestContext
 from django_openidconsumer import views as openidconsumer_views
 
 from localtv import models
-from localtv import forms
+from localtv.openid import forms
 
  
 def redirect_to_login_or_register(request, identity_url, openid_response):
