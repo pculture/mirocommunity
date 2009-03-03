@@ -184,6 +184,16 @@ Add the path to your site-level templates, like so:
 :     "/path/to/virtualenv/htdocs/static/templates/",
 : )
 
+If you want to use the OpenId template versions that are bundled with
+LocalTv, also add an entry for the override_templates directory, like
+so:
+
+: TEMPLATE_DIRS = (
+:     "/path/to/virtualenv/htdocs/static/templates/",
+:     "/path/to/virtualenv/src/LocalTv/localtv/override_templates/",
+: )
+
+
 Append "django.contrib.admin", "django_evolution", and "localtv" to
 your INSTALLED_APPS:
 : INSTALLED_APPS = (
@@ -198,6 +208,7 @@ your INSTALLED_APPS:
 
 (Note that in the future we will need to add django_openidconsumer
 here)
+
 
 **** urls.py
 
