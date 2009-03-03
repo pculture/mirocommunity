@@ -179,9 +179,6 @@ including:
 Change ROOT_URLCONF to be:
 : ROOT_URLCONF = 'mainsite_project.urls'
 
-Add django_openidconsumer.middleware.OpenIDMiddleware to your list of
-MIDDLEWARE_CLASSES, somewhere after the Session middleware.
-
 Add the path to your site-level templates, like so:
 : TEMPLATE_DIRS = (
 :     "/path/to/virtualenv/htdocs/static/templates/",
