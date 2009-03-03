@@ -1,6 +1,7 @@
 from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation
 from localtv import models
@@ -10,7 +11,9 @@ from localtv import models
 def subsite_index(request, sitelocation=None):
     return render_to_response(
         'localtv/subsite/index.html',
-        {'sitelocation': sitelocation})
+        {'sitelocation': sitelocation,
+         'request': request},
+        context_instance=RequestContext(request))
 
 
 @get_sitelocation
@@ -20,4 +23,5 @@ def view_video(request, video_id, sitelocation=None):
     return render_to_response(
         'localtv/subsite/view_video.html',
         {'sitelocation': sitelocation,
-         'current_video': video})
+         'current_video': video},
+        context_instance=RequestContext(request))

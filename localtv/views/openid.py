@@ -34,6 +34,8 @@ def login_or_register(request):
 
         if localtv_openid.status == models.OPENID_STATUS_ACTIVE:
             request.session['openid_localtv'] = localtv_openid
+            request.session.save()
+
             if request.GET.get('next'):
                 return HttpResponseRedirect(request.GET['next'])
             else:
@@ -69,6 +71,7 @@ def login_or_register(request):
             localtv_openid.save()
 
             request.session['openid_localtv'] = localtv_openid
+            request.session.save()
 
             if request.GET.get('next'):
                 return HttpResponseRedirect(request.GET['next'])

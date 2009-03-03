@@ -31,12 +31,24 @@
         </ul>
         
         <ul id="login">
-          <li>
-            <a href="{% url localtv_openid_start %}" class="med_button">
-              <span>Login</span>
-            </a>
-          </li>
-          <li><a href="#" class="med_button"><span>Register</span></a></li>
+          {% if request.session.openid_localtv.url %}
+            <li>
+              <a href="{% url localtv_openid_start %}" class="med_button">
+                <span>Logout</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ request.session.openid_localtv.url }}">
+                {{ request.session.openid_localtv.nickname }}
+              </a>
+            </li>
+          {% else %}
+            <li>
+              <a href="{% url openid_localtv_start %}" class="med_button">
+                <span>Login / Register</span>
+              </a>
+            </li>
+          {% endif %}
         </ul>
       </div>
 
