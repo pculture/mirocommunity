@@ -20,6 +20,12 @@ def redirect_to_login_or_register(request, identity_url, openid_response):
     return HttpResponseRedirect(reverse_url)
 
 
+def signout(request):
+    request.session['openid_localtv'] = None
+    request.session.save()
+    return openidconsumer_views.signout(request)
+
+
 def login_or_register(request):
     session_openids = request.session.get('openids')
     if not session_openids:

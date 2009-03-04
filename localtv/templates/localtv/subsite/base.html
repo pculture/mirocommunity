@@ -33,7 +33,8 @@
         <ul id="login">
           {% if request.session.openid_localtv.url %}
             <li>
-              <a href="{% url localtv_openid_start %}" class="med_button">
+              <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}"
+                 class="med_button">
                 <span>Logout</span>
               </a>
             </li>
@@ -44,7 +45,7 @@
             </li>
           {% else %}
             <li>
-              <a href="{% url openid_localtv_start %}" class="med_button">
+              <a href="{% url localtv_openid_start %}" class="med_button">
                 <span>Login / Register</span>
               </a>
             </li>

@@ -10,6 +10,7 @@ urlpatterns = patterns(
      {'on_success': redirect_to_login_or_register}, 'localtv_openid_complete'),
     (r'^openid/login_or_register/$', 'localtv.openid.views.login_or_register',
      {}, 'localtv_openid_login_or_register'),
-    (r'^openid/signout/$', 'django_openidconsumer.views.signout'),
+    (r'^openid/signout/$', 'localtv.openid.views.signout',
+     {}, 'localtv_openid_signout'),
 )
 
