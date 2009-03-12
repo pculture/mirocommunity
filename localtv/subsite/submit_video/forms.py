@@ -8,7 +8,11 @@ def clean_tags(self):
     tags = []
     for tag_text in self.cleaned_data['tags'].strip().split(','):
         # make sure there's only one space in each tag
-        tags.append(' '.join(tag_text.strip().split()))
+        cleaned_tag = ' '.join(tag_text.strip().split())
+        if len(cleaned_tag) > 25:
+            raise forms.ValidationError(
+                'Tags cannot be greater than 25 characters in length')
+        tags.append(cleaned_tag)
 
     return tags
 
