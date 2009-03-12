@@ -17,9 +17,9 @@ def submit_video(request, sitelocation=None):
     if request.method == "GET":
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
-            'localtv/subsite/submit_video.html',
+            'localtv/subsite/submit/submit_video.html',
             {'sitelocation': sitelocation,
-             'submit_video_form': submit_form},
+             'submit_form': submit_form},
             context_instance=RequestContext(request))
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
@@ -38,20 +38,20 @@ def submit_video(request, sitelocation=None):
                 scraped_form = forms.ScrapedSubmitVideoForm()
                 scraped_form.initial['embed'] = scraped_data.get('embed')
                 scraped_form.initial['website_url'] = submit_form.cleaned_data['url']
-                scraped_form.initial['url'] = scraped_data.get('file_url')
+                scraped_form.initial['file_url'] = scraped_data.get('file_url')
                 scraped_form.initial['name'] = scraped_data.get('title')
                 scraped_form.initial['description'] = scraped_data.get('description')
 
                 return render_to_response(
-                    'localtv/subsite/scraped_submit_video.html',
+                    'localtv/subsite/submit/scraped_submit_video.html',
                     {'sitelocation': sitelocation,
-                     'submit_form': submit_form},
+                     'scraped_form': scraped_form},
                     context_instance=RequestContext(request))
 
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):
                 return render_to_response(
-                    'localtv/subsite/scraped_submit_video.html',
+                    'localtv/subsite/submit/embed_submit_video.html',
                     {'sitelocation': sitelocation,
                      'submit_form': submit_form},
                     context_instance=RequestContext(request))
@@ -60,7 +60,7 @@ def submit_video(request, sitelocation=None):
             
         else:
             return render_to_response(
-                'localtv/subsite/submit_video.html',
+                'localtv/subsite/submit/submit_video.html',
                 {'sitelocation': sitelocation,
                  'submit_form': submit_form},
                 context_instance=RequestContext(request))
