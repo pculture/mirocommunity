@@ -34,13 +34,19 @@ def submit_video(request, sitelocation=None):
             except vidscraper.errors.Error:
                 scraped_data = None
 
-            if scraped_data and (scraped_data.get('embed') or scraped_data.get('file_url')):
+            if scraped_data and (
+                    scraped_data.get('embed') or scraped_data.get('file_url')):
                 scraped_form = forms.ScrapedSubmitVideoForm()
                 scraped_form.initial['embed'] = scraped_data.get('embed')
-                scraped_form.initial['website_url'] = submit_form.cleaned_data['url']
+                scraped_form.initial['website_url'] = \
+                    submit_form.cleaned_data['url']
                 scraped_form.initial['file_url'] = scraped_data.get('file_url')
                 scraped_form.initial['name'] = scraped_data.get('title')
-                scraped_form.initial['description'] = scraped_data.get('description')
+                scraped_form.initial['description'] = scraped_data.get(
+                    'description')
+                if submit_form.cleaned_data.get('tags'):
+                    scraped_form.initial['tags'] = u', '.join(
+                        submit_form.cleaned_data['tags'])
 
                 return render_to_response(
                     'localtv/subsite/submit/scraped_submit_video.html',
