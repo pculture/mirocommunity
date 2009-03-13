@@ -1,6 +1,10 @@
+from os import path
+import urlparse
+
 from django import forms
 
 from localtv import models
+from localtv import util
 
 
 # common cleaning methods
@@ -26,10 +30,17 @@ class SubmitVideoForm(forms.Form):
 class ScrapedSubmitVideoForm(forms.Form):
     website_url = forms.URLField()
     tags = forms.CharField()
-    file_url = forms.URLField(widget=forms.HiddenInput)
-    embed = forms.CharField(widget=forms.HiddenInput)
+    file_url = forms.URLField(widget=forms.HiddenInput, required=False)
+    embed = forms.CharField(widget=forms.HiddenInput, required=False)
     name = forms.CharField(max_length=250)
     description = forms.CharField(widget=forms.widgets.Textarea)
     #categories = forms.ModelMultipleChoiceField(models.Category.objects.all())
 
     clean_tags = clean_tags
+
+    def clean_file_url(self):
+        if not (self.cleaned_data.get('file_url')
+                or self.cleaned_data.get('embed')):
+            raise forms.ValidationError(
+                'At least one of a file url or embedding code must be provided')
+
