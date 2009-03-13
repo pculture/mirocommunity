@@ -104,8 +104,9 @@ class Video(models.Model):
     file_url = models.URLField()
     # submitter <- should be link to an openid object
     when_submitted = models.DateTimeField(auto_now_add=True)
-    status = models.IntegerField(choices=VIDEO_STATUSES)
-    feed = models.ForeignKey(Feed)
+    status = models.IntegerField(
+        choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
+    feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(null=True)
 
     def __unicode__(self):

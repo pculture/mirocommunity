@@ -1,1 +1,3 @@
-SEQUENCE = ['add_openid_name_and_email']
+SEQUENCE = [
+    'add_openid_name_and_email',
+    'unrequire_feed']
