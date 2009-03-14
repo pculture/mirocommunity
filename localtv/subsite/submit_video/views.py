@@ -35,7 +35,8 @@ def submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/subsite/submit/submit_video.html',
             {'sitelocation': sitelocation,
-             'submit_form': submit_form},
+             'submit_form': submit_form,
+             'was_duplicate': bool(request.GET.get('was_duplicate', False))},
             context_instance=RequestContext(request))
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
@@ -43,6 +44,14 @@ def submit_video(request, sitelocation=None):
             url_filename = path.split(
                 urlparse.urlsplit(
                     submit_form.cleaned_data['url'])[2])[-1]
+
+            # if the video already exists, redirect back here with a warning.
+            if models.Video.objects.filter(
+                    website_url=submit_form.cleaned_data['url'],
+                    site=sitelocation.site).count():
+                return HttpResponseRedirect(
+                    reverse('localtv_submit_video') + '?was_duplicate=true')
+
             # try and
             try:
                 scraped_data = vidscraper.auto_scrape(

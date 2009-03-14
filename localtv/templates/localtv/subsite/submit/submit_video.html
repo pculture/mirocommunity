@@ -1,4 +1,13 @@
 <form action="{% url localtv_submit_video %}" method="post">
+
+  {% if was_duplicate %}
+    <h1>That video has already been submitted!</h1>
+    <div>
+      It appears that we already have a copy of that video.. sorry!
+      You can submit another video if you like.
+    </div>
+  {% endif %}
+
   <table>
     {{ submit_form.as_table }}
     <tr>
