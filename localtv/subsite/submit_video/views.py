@@ -6,25 +6,11 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-import vidscraper
 
 from localtv import models
 from localtv.decorators import get_sitelocation, require_active_openid
 from localtv.subsite.submit_video import forms
 from localtv import util
-
-def get_or_create_tags(tag_list):
-    tags = []
-    for tag_text in tag_list:
-        try:
-            tag = models.Tag.objects.get(name=tag_text)
-        except models.Tag.DoesNotExist:
-            tag = models.Tag(name=tag_text)
-            tag.save()
-
-        tags.append(tag)
-
-    return tags
 
 
 @require_active_openid
@@ -52,12 +38,8 @@ def submit_video(request, sitelocation=None):
                 return HttpResponseRedirect(
                     reverse('localtv_submit_video') + '?was_duplicate=true')
 
-            # try and
-            try:
-                scraped_data = vidscraper.auto_scrape(
-                    submit_form.cleaned_data['url'])
-            except vidscraper.errors.Error:
-                scraped_data = None
+            scraped_data = util.get_scraped_data(
+                submit_form.cleaned_data['url'])
 
             if scraped_data and (
                     scraped_data.get('embed') or scraped_data.get('file_url')):
@@ -118,7 +100,7 @@ def scraped_submit_video(request, sitelocation=None):
             when_submitted=datetime.datetime.now())
 
         video.save()
-        tags = get_or_create_tags(scraped_form.cleaned_data.get('tags', []))
+        tags = util.get_or_create_tags(scraped_form.cleaned_data.get('tags', []))
         for tag in tags:
             video.tags.add(tag)
 
