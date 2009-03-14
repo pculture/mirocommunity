@@ -1,7 +1,9 @@
+import datetime
 from os import path
 import urlparse
 
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 import vidscraper
@@ -10,6 +12,20 @@ from localtv import models
 from localtv.decorators import get_sitelocation, require_active_openid
 from localtv.subsite.submit_video import forms
 from localtv import util
+
+def get_or_create_tags(tag_list):
+    tags = []
+    for tag_text in tag_list:
+        try:
+            tag = models.Tag.objects.get(name=tag_text)
+        except models.Tag.DoesNotExist:
+            tag = models.Tag(name=tag_text)
+            tag.save()
+
+        tags.append(tag)
+
+    return tags
+
 
 @require_active_openid
 @get_sitelocation
@@ -76,9 +92,37 @@ def submit_video(request, sitelocation=None):
 @require_active_openid
 @get_sitelocation
 def scraped_submit_video(request, sitelocation=None):
-    # scrape the video again for good measure :P
-    pass
+    if request.method == "GET":
+        return HttpResponseRedirect(reverse('localtv_submit_video'))
 
+    scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
+    if scraped_form.is_valid():
+        # TODO: reject and warn if a video already exists
+
+        video = models.Video(
+            name=scraped_form.cleaned_data['name'],
+            site=sitelocation.site,
+            description=scraped_form.cleaned_data['description'],
+            file_url=scraped_form.cleaned_data.get('file_url', ''),
+            #embed=scraped_form.cleaned_data.get('embed'),
+            website_url=scraped_form.cleaned_data['website_url'],
+            when_submitted=datetime.datetime.now())
+
+        video.save()
+        tags = get_or_create_tags(scraped_form.cleaned_data.get('tags', []))
+        for tag in tags:
+            video.tags.add(tag)
+
+        #redirect to a thank you page
+        return HttpResponseRedirect(reverse('localtv_submit_thanks'))
+
+    else:
+        return render_to_response(
+            'localtv/subsite/submit/scraped_submit_video.html',
+            {'sitelocation': sitelocation,
+             'scraped_form': scraped_form},
+            context_instance=RequestContext(request))
+    
 
 @require_active_openid
 @get_sitelocation
@@ -91,15 +135,9 @@ def embedrequest_submit_video(request, sitelocation=None):
 def directlink_submit_video(request, sitelocation=None):
     pass
 
-@require_active_openid
-@get_sitelocation
-def preview_before_submit(request, sitelocation=None):
-    submit_video_form = forms.SubmitVideoForm(request.GET)
-    if not submit_video_form.is_valid():
-        return HttpResponse('invalid data to form a preview')
 
+@get_sitelocation
+def submit_thanks(request, sitelocation=None):
     return render_to_response(
-        'localtv/subsite/view_video.html',
-        {'sitelocation': sitelocation,
-         'current_video': submit_video_form.cleaned_data},
+        'localtv/subsite/submit/thanks.html', {},
         context_instance=RequestContext(request))

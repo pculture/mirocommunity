@@ -2,6 +2,7 @@ from os import path
 import urlparse
 
 from django import forms
+from lxml.html.clean import clean_html
 
 from localtv import models
 from localtv import util
@@ -20,6 +21,9 @@ def clean_tags(self):
 
     return tags
 
+def clean_description(self):
+    return clean_html(self.cleaned_data['description'])
+
 
 class SubmitVideoForm(forms.Form):
     url = forms.URLField()
@@ -37,6 +41,7 @@ class ScrapedSubmitVideoForm(forms.Form):
     #categories = forms.ModelMultipleChoiceField(models.Category.objects.all())
 
     clean_tags = clean_tags
+    clean_description = clean_description
 
     def clean_file_url(self):
         if not (self.cleaned_data.get('file_url')
@@ -44,3 +49,4 @@ class ScrapedSubmitVideoForm(forms.Form):
             raise forms.ValidationError(
                 'At least one of a file url or embedding code must be provided')
 
+        return self.cleaned_data.get('file_url')

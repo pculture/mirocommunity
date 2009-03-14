@@ -101,7 +101,7 @@ class Video(models.Model):
     description = models.TextField()
     tags = models.ManyToManyField(Tag, null=True)
     categories = models.ManyToManyField(Category)
-    file_url = models.URLField()
+    file_url = models.URLField(blank=True)
     # submitter <- should be link to an openid object
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(
