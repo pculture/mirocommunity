@@ -1,8 +1,10 @@
 import datetime
 from os import path
+import urllib
 import urlparse
 
 from django.core.urlresolvers import reverse
+from django.forms.fields import url_re
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -43,23 +45,13 @@ def submit_video(request, sitelocation=None):
 
             if scraped_data and (
                     scraped_data.get('embed') or scraped_data.get('file_url')):
-                scraped_form = forms.ScrapedSubmitVideoForm()
-                scraped_form.initial['embed'] = scraped_data.get('embed')
-                scraped_form.initial['website_url'] = \
-                    submit_form.cleaned_data['url']
-                scraped_form.initial['file_url'] = scraped_data.get('file_url')
-                scraped_form.initial['name'] = scraped_data.get('title')
-                scraped_form.initial['description'] = scraped_data.get(
-                    'description')
+                get_dict = {'url': submit_form.cleaned_data['url']}
                 if submit_form.cleaned_data.get('tags'):
-                    scraped_form.initial['tags'] = u', '.join(
-                        submit_form.cleaned_data['tags'])
-
-                return render_to_response(
-                    'localtv/subsite/submit/scraped_submit_video.html',
-                    {'sitelocation': sitelocation,
-                     'scraped_form': scraped_form},
-                    context_instance=RequestContext(request))
+                    get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
+                get_params = urllib.urlencode(get_dict)
+                     
+                return HttpResponseRedirect(
+                    reverse('localtv_submit_scraped_video') + '?' + get_params)
 
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):
@@ -79,12 +71,29 @@ def submit_video(request, sitelocation=None):
                 context_instance=RequestContext(request))
 
 
-
 @require_active_openid
 @get_sitelocation
 def scraped_submit_video(request, sitelocation=None):
     if request.method == "GET":
-        return HttpResponseRedirect(reverse('localtv_submit_video'))
+
+        if not (request.GET.get('url') or url_re.match(request.GET['url'])):
+            return HttpResponseRedirect(reverse('localtv_submit_video'))
+
+        scraped_data = util.get_scraped_data(request.GET['url'])
+
+        scraped_form = forms.ScrapedSubmitVideoForm()
+        scraped_form.initial['embed'] = scraped_data.get('embed')
+        scraped_form.initial['website_url'] = request.GET['url']
+        scraped_form.initial['file_url'] = scraped_data.get('file_url')
+        scraped_form.initial['name'] = scraped_data.get('title')
+        scraped_form.initial['description'] = scraped_data.get('description')
+        scraped_form.initial['tags'] = request.GET.get('tags')
+
+        return render_to_response(
+            'localtv/subsite/submit/scraped_submit_video.html',
+            {'sitelocation': sitelocation,
+             'scraped_form': scraped_form},
+            context_instance=RequestContext(request))
 
     scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
     if scraped_form.is_valid():
