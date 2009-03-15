@@ -43,25 +43,25 @@ def submit_video(request, sitelocation=None):
             scraped_data = util.get_scraped_data(
                 submit_form.cleaned_data['url'])
 
+            get_dict = {'url': submit_form.cleaned_data['url']}
+            if submit_form.cleaned_data.get('tags'):
+                get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
+            get_params = urllib.urlencode(get_dict)
+
             if scraped_data and (
                     scraped_data.get('embed') or scraped_data.get('file_url')):
-                get_dict = {'url': submit_form.cleaned_data['url']}
-                if submit_form.cleaned_data.get('tags'):
-                    get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
-                get_params = urllib.urlencode(get_dict)
-                     
                 return HttpResponseRedirect(
                     reverse('localtv_submit_scraped_video') + '?' + get_params)
 
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):
-                return render_to_response(
-                    'localtv/subsite/submit/embed_submit_video.html',
-                    {'sitelocation': sitelocation,
-                     'submit_form': submit_form},
-                    context_instance=RequestContext(request))
+                return HttpResponseRedirect(
+                    reverse('localtv_submit_embedrequest_video')
+                    + '?' + get_params)
             else:
-                pass
+                return HttpResponseRedirect(
+                    reverse('localtv_submit_directlink_video')
+                    + '?' + get_params)
             
         else:
             return render_to_response(
