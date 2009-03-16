@@ -110,10 +110,24 @@ This also needs several dependencies which are easily installed.
 
 : svn co http://django-evolution.googlecode.com/svn/trunk/ django-evolution
 
-*** TODO LocalTv
+**** lxml
 
-: git clone /var/git/localtv LocalTv
-(We need to know the public git repository to describe adding these)
+If you're running a recent version of debian or ubuntu, the following
+should be sufficient:
+
+: sudo apt-get install python-lxml
+
+Otherwise, consult the [[http://codespeak.net/lxml/installation.html][lxml install docs]].
+
+
+*** LocalTv
+
+: git clone https://git.participatoryculture.org/localtv LocalTv
+
+*** VidScraper
+
+: git clone https://git.participatoryculture.org/vidscraper VidScraper
+
 
 *** Modifying easy_install.pth
 
@@ -142,6 +156,7 @@ As you can see, paths can be relative.  Modify your file to look like so:
 : ../../../src/django-evolution
 : ../../../src/DjangoOpenid
 : ../../../src/LocalTv
+: ../../../src/VidScraper
 : ../../../djangoproject
 : import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
 
