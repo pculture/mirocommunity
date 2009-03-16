@@ -234,7 +234,7 @@ here)
 : 
 : urlpatterns = patterns('',
 :     (r'^djadmin/(.*)', admin.site.root),
-:     (r'', include('localtv.mainsite_urls')),
+:     (r'', include('localtv.mainsite.urls')),
 : )
 
 **** Sync the database
@@ -288,7 +288,7 @@ Fill in SITE_ID with the id you got while creating the site object
 : from django.conf.urls.defaults import patterns, include
 : 
 : urlpatterns = patterns('',
-:     (r'', include('localtv.subsite_urls')),
+:     (r'', include('localtv.subsite.urls')),
 : )
 
 ** Apache / nginx / web server config
