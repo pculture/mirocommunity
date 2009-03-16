@@ -56,11 +56,11 @@ def submit_video(request, sitelocation=None):
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):
                 return HttpResponseRedirect(
-                    reverse('localtv_submit_embedrequest_video')
+                    reverse('localtv_submit_directlink_video')
                     + '?' + get_params)
             else:
                 return HttpResponseRedirect(
-                    reverse('localtv_submit_directlink_video')
+                    reverse('localtv_submit_embedrequest_video')
                     + '?' + get_params)
             
         else:
