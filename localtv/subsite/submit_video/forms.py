@@ -33,7 +33,7 @@ class SubmitVideoForm(forms.Form):
 
 class ScrapedSubmitVideoForm(forms.Form):
     website_url = forms.URLField()
-    tags = forms.CharField()
+    tags = forms.CharField(required=False)
     file_url = forms.URLField(widget=forms.HiddenInput, required=False)
     embed = forms.CharField(widget=forms.HiddenInput, required=False)
     name = forms.CharField(max_length=250)
