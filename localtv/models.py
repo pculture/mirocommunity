@@ -113,11 +113,15 @@ class Video(models.Model):
         return self.name
 
 
+class VideoAdmin(admin.ModelAdmin):
+    list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
+    list_filter = ['status', 'when_submitted']
+    search_fields = ['name', 'description']
+
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(SiteCss)
 admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category)
-admin.site.register(Video)
-
+admin.site.register(Video, VideoAdmin)
