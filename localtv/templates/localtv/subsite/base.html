@@ -17,7 +17,7 @@
     {% block head %}{% endblock head %}
   </head>
 
-  <body id="video_page">
+  <body id="video_page" onload="add_submit_callback();">
     <div id="wrapper">
       <div id="header">
         <img id="logo" src="" alt="Worcester Local Video Logo" />
@@ -37,7 +37,7 @@
           <li><a href="#"><span>New Videos</span></a></li>
           <li><a href="#"><span>Popular</span></a></li>
           <li>
-            <a href="{% url localtv_submit_video %}">
+            <a id="submit_button" href="{% url localtv_submit_video %}">
               <span>Submit A Video</span>
             </a>
           </li>
@@ -64,6 +64,15 @@
             </li>
           {% endif %}
         </ul>
+      </div>
+
+      <div id="hover_wrap">
+        <div id="submit_box" >
+          <p id="close_submit_box">
+            <span>close</span>
+          </p>
+          boop a doop a doop
+        </div>
       </div>
 
       <div id="content">

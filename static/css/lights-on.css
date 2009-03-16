@@ -394,3 +394,26 @@ a {
 .med_button:active span {
     background: url(../images/med_left.png) left -69px no-repeat;
 }
+
+#hover_wrap {
+    z-index: 10000;
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+}
+
+#submit_box {
+    border: 2px solid;
+    padding: 3px;
+}
+
+#close_submit_box {
+    text-align: right;
+    border-bottom: 2px dashed;
+    font-weight: bold;
+}
+
+#close_submit_box span {
+    cursor: pointer;
+}
