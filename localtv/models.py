@@ -112,6 +112,11 @@ class Video(models.Model):
     def __unicode__(self):
         return self.name
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_view_video', (),
+                {'video_id': self.id})
+
 
 class VideoAdmin(admin.ModelAdmin):
     list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
