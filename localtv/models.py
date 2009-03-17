@@ -108,6 +108,7 @@ class Video(models.Model):
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(null=True)
+    embed_code = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.name
