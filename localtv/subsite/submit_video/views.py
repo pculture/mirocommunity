@@ -109,7 +109,8 @@ def scraped_submit_video(request, sitelocation=None):
             when_submitted=datetime.datetime.now())
 
         video.save()
-        tags = util.get_or_create_tags(scraped_form.cleaned_data.get('tags', []))
+        tags = util.get_or_create_tags(
+            scraped_form.cleaned_data.get('tags', []))
         for tag in tags:
             video.tags.add(tag)
 
