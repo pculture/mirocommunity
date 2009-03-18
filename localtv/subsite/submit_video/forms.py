@@ -34,19 +34,17 @@ class SubmitVideoForm(forms.Form):
 class ScrapedSubmitVideoForm(forms.Form):
     website_url = forms.URLField()
     tags = forms.CharField(required=False)
-    file_url = forms.URLField(widget=forms.HiddenInput, required=False)
-    embed = forms.CharField(widget=forms.HiddenInput, required=False)
     name = forms.CharField(max_length=250)
     description = forms.CharField(widget=forms.widgets.Textarea)
-    #categories = forms.ModelMultipleChoiceField(models.Category.objects.all())
 
     clean_tags = clean_tags
     clean_description = clean_description
 
-    def clean_file_url(self):
-        if not (self.cleaned_data.get('file_url')
-                or self.cleaned_data.get('embed')):
+    def clean(self):
+        scraped_data = util.get_scraped_data(self.cleaned_data['website_url'])
+        if scraped_data and \
+                not (scraped_data.get('embed') or scraped_data.get('file_url')):
             raise forms.ValidationError(
-                'At least one of a file url or embedding code must be provided')
+                "Can't get either a file url or embed code for this url")
 
-        return self.cleaned_data.get('file_url')
+        return self.cleaned_data

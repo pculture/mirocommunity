@@ -82,9 +82,7 @@ def scraped_submit_video(request, sitelocation=None):
         scraped_data = util.get_scraped_data(request.GET['url'])
 
         scraped_form = forms.ScrapedSubmitVideoForm()
-        scraped_form.initial['embed'] = scraped_data.get('embed')
         scraped_form.initial['website_url'] = request.GET['url']
-        scraped_form.initial['file_url'] = scraped_data.get('file_url')
         scraped_form.initial['name'] = scraped_data.get('title')
         scraped_form.initial['description'] = scraped_data.get('description')
         scraped_form.initial['tags'] = request.GET.get('tags')
@@ -97,14 +95,14 @@ def scraped_submit_video(request, sitelocation=None):
 
     scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
     if scraped_form.is_valid():
-        # TODO: reject and warn if a video already exists
+        scraped_data = util.get_scraped_data(request.POST['website_url'])
 
         video = models.Video(
             name=scraped_form.cleaned_data['name'],
             site=sitelocation.site,
             description=scraped_form.cleaned_data['description'],
-            file_url=scraped_form.cleaned_data.get('file_url', ''),
-            #embed=scraped_form.cleaned_data.get('embed'),
+            file_url=scraped_data.get('file_url', ''),
+            embed_code=scraped_data.get('embed', ''),
             website_url=scraped_form.cleaned_data['website_url'],
             when_submitted=datetime.datetime.now())
 
