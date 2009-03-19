@@ -29,7 +29,7 @@ OPENID_STATUSES = (
 
 
 class OpenIdUser(models.Model):
-    url = models.URLField(unique=True)
+    url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
     nickname = models.CharField(max_length=50, blank=True)
     status = models.IntegerField(
@@ -68,10 +68,10 @@ class Tag(models.Model):
 
 
 class Feed(models.Model):
-    feed_url = models.URLField()
+    feed_url = models.URLField(verify_exists=False)
     site = models.ForeignKey(Site, unique=True)
     name = models.CharField(max_length=250)
-    webpage = models.URLField(null=True)
+    webpage = models.URLField(verify_exists=False, null=True)
     description = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
@@ -101,13 +101,13 @@ class Video(models.Model):
     description = models.TextField()
     tags = models.ManyToManyField(Tag, null=True)
     categories = models.ManyToManyField(Category)
-    file_url = models.URLField(blank=True)
+    file_url = models.URLField(verify_exists=False, blank=True)
     # submitter <- should be link to an openid object
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = models.URLField(null=True)
+    website_url = models.URLField(verify_exists=False, null=True)
     embed_code = models.TextField(blank=True)
 
     def __unicode__(self):
