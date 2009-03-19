@@ -57,7 +57,10 @@ EMBED_MAPPING = {
 
 @register.simple_tag
 def embed_video(video):
-    mime_type = mimetypes.guess_type(video.file_url)
-    func = EMBED_MAPPING.get(
-        mimetypes.guess_type(video.file_url), default_embed)
-    return func(video.file_url)
+    if video.embed_code:
+        return video.embed_code
+    else:
+        mime_type = mimetypes.guess_type(video.file_url)
+        func = EMBED_MAPPING.get(
+            mimetypes.guess_type(video.file_url), default_embed)
+        return func(video.file_url)
