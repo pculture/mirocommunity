@@ -7,7 +7,7 @@ import vidscraper
 from localtv import util, miro_util
 from localtv.models import Video, Feed, FEED_STATUS_ACTIVE
 
-def update_feeds():
+def update_feeds(verbose=False):
     for feed in Feed.objects.filter(status=FEED_STATUS_ACTIVE):
         parsed_feed = feedparser.parse(feed.feed_url, etag=feed.etag)
         for entry in parsed_feed['entries']:
@@ -15,6 +15,8 @@ def update_feeds():
                                      guid=entry['guid']).count()
                 or Video.objects.filter(feed=feed,
                                         website_url=entry['link']).count()):
+                if verbose:
+                    print "Skipping %s" % entry['title']
                 continue
 
             file_url = None
@@ -29,10 +31,15 @@ def update_feeds():
                     entry['link'], fields=['file_url', 'embed'])
                 file_url = file_url or scraped_data.get('file_url')
                 embed_code = scraped_data.get('embed')
-            except vidscraper.errors.Error:
-                pass
+            except vidscraper.errors.Error, e:
+                if verbose:
+                    print "Vidscraper error: %s" % e
 
             if not (file_url or embed_code):
+                if verbose:
+                    print (
+                        "Skipping %s because it lacks file_url "
+                        "or embed_code") % entry['title']
                 continue
 
             video = Video(
@@ -47,17 +54,12 @@ def update_feeds():
                 website_url=entry['link'])
             video.save()
 
-            tags = util.get_or_create_tags(
-                [tag['term'] for tag in entry['tags']])
+            if entry.get('tags'):
+                tags = util.get_or_create_tags(
+                    [tag['term'] for tag in entry['tags']])
 
-            for tag in tags:
-                video.tags.add(tag)
-
-        # for each item:
-        #   if not (video.filter(feed=feed, guid=item.guid).count()
-        #           or video.filter(feed=feed, website_url=item.link).count()):
-        #       make video object
-        #       save video object
+                for tag in tags:
+                    video.tags.add(tag)
 
         feed.etag = parsed_feed.etag or ''
         feed.last_updated = datetime.datetime.now()
