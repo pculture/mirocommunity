@@ -3,4 +3,5 @@ SEQUENCE = [
     'unrequire_feed',
     'add_embed_code',
     'add_guid',
+    'non_unique_feeds',
 ]

@@ -69,14 +69,14 @@ class Tag(models.Model):
 
 class Feed(models.Model):
     feed_url = models.URLField(verify_exists=False)
-    site = models.ForeignKey(Site, unique=True)
+    site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, null=True)
     description = models.TextField()
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
-    etag = models.CharField(max_length=250)
+    etag = models.CharField(max_length=250, blank=True)
     # should name and site be unique together too?
 
     class Meta:
