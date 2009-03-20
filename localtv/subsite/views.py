@@ -1,10 +1,8 @@
-from django.contrib.sites.models import Site
-from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
-from localtv.decorators import get_sitelocation
 from localtv import models
+from localtv.decorators import get_sitelocation
 
 
 @get_sitelocation
