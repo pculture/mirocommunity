@@ -73,7 +73,7 @@ class Feed(models.Model):
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, null=True)
     description = models.TextField()
-    last_updated = models.DateTimeField(auto_now=True)
+    last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250)
@@ -109,6 +109,7 @@ class Video(models.Model):
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(verify_exists=False, null=True)
     embed_code = models.TextField(blank=True)
+    guid=models.CharField(max_length=250)
 
     def __unicode__(self):
         return self.name
