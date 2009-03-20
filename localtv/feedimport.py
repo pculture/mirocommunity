@@ -10,8 +10,6 @@ from localtv.models import Video, Feed, FEED_STATUS_ACTIVE
 def update_feeds():
     for feed in Feed.objects.filter(status=FEED_STATUS_ACTIVE):
         parsed_feed = feedparser.parse(feed.feed_url, etag=feed.etag)
-        import pdb
-        pdb.set_trace()
         for entry in parsed_feed['entries']:
             if (Video.objects.filter(feed=feed,
                                      guid=entry['guid']).count()
