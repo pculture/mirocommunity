@@ -111,6 +111,9 @@ class Video(models.Model):
     embed_code = models.TextField(blank=True)
     guid=models.CharField(max_length=250)
 
+    class Meta:
+        ordering = ['-when_submitted']
+
     def __unicode__(self):
         return self.name
 

@@ -1,0 +1,36 @@
+<div>
+  <h2 class="video_name">
+    {{ video.name }}
+  </h2>
+  <table>
+    <tr>
+      <td class="video_thumbnail">Image goes here!</td>
+      <td class="video_details">
+        <div class="video_when_submitted">
+          {{ video.when_submitted|date:"r" }}
+        </div>
+        <div class="video_description">
+          {% autoescape off %}
+            {{ video.description }}
+          {% endautoescape %}
+        </div>
+        {% if video.tags.objects.count %}
+          <div class="video_tags">
+            {% for tag in video.tags.objects.all %}
+              <span class="video_tag">
+                {{ tag.name }}</span>{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if video.categories.objects.count %}
+          <div class="video_categories">
+            {% for category in video.categories.objects.all %}
+              <span class="video_category">
+                {{ category.name }}</span>{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+</div>

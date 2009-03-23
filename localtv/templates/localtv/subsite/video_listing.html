@@ -1,0 +1,16 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% block content %}
+  {% for video in video_list %}
+    {% include "localtv/subsite/video_listing_individual.html" %}
+  {% endfor %}
+
+  <p>
+    {% if has_previous %}
+      <a href="?page={{ previous }}">Previous</a>{% if has_next %} | {% endif %}
+    {% endif %}
+    {% if has_next %}
+      <a href="?page={{ next }}">Next</a>
+    {% endif %}
+  </p>
+{% endblock content %}
