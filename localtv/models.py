@@ -99,8 +99,8 @@ class Video(models.Model):
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
     description = models.TextField()
-    tags = models.ManyToManyField(Tag, null=True)
-    categories = models.ManyToManyField(Category)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
+    categories = models.ManyToManyField(Category, blank=True)
     file_url = models.URLField(verify_exists=False, blank=True)
     # submitter <- should be link to an openid object
     when_submitted = models.DateTimeField(auto_now_add=True)
@@ -110,7 +110,7 @@ class Video(models.Model):
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(verify_exists=False, null=True)
     embed_code = models.TextField(blank=True)
-    guid=models.CharField(max_length=250)
+    guid=models.CharField(max_length=250, blank=True)
 
     class Meta:
         ordering = ['-when_submitted']
