@@ -1,7 +1,9 @@
 <div>
-  <h2 class="video_name">
-    {{ video.name }}
-  </h2>
+  <a href="{% url localtv_view_video video_id=video.id %}">
+    <h2 class="video_name">
+      {{ video.name }}
+    </h2>
+  </a>
   <table>
     <tr>
       <td class="video_thumbnail">Image goes here!</td>
