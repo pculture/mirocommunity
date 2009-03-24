@@ -4,4 +4,5 @@ SEQUENCE = [
     'add_embed_code',
     'add_guid',
     'non_unique_feeds',
+    'featured_videos',
 ]
