@@ -1,5 +1,16 @@
 {% extends "localtv/subsite/base.html" %}
 
 {% block content %}
-Subsite {{ subsite.site.name }}
+<div class="frontpage_main_vidlist">
+  <div class="editor_picks">
+    <h2>Editor Picks</h2>
+    {% for video in featured_videos %}
+      {% if forloop.first %}
+        {% include "localtv/subsite/video_feature_frontpage.html" %}
+      {% else %}
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
 {% endblock content %}
