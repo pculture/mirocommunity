@@ -11,11 +11,9 @@
       </a>
     </h3>
         
-    <p>
-      {% autoescape off %}
-        {{ video.description }}
-      {% endautoescape %}
-    </p>
+    {% autoescape off %}
+      {{ video.description }}
+    {% endautoescape %}
 
   </div>
   <p>
