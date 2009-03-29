@@ -1,38 +1,24 @@
-<div>
-  <a href="{% url localtv_view_video video_id=video.id %}">
-    <h2 class="video_name">
-      {{ video.name }}
-    </h2>
+<div class="video">
+  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
+    <div>
+      <img src="/images/vid_overlay.png" />
+    </div>
   </a>
-  <table width="100%">
-    <tr>
-      <td class="video_thumbnail">Image goes here!</td>
-      <td class="video_details">
-        <div class="video_when_submitted">
-          {{ video.when_submitted|date:"r" }}
-        </div>
-        <div class="video_description">
-          {% autoescape off %}
-            {{ video.description }}
-          {% endautoescape %}
-        </div>
-        {% if video.tags.objects.count %}
-          <div class="video_tags">
-            {% for tag in video.tags.objects.all %}
-              <span class="video_tag">
-                {{ tag.name }}</span>{% if not forloop.last %},{% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
-        {% if video.categories.objects.count %}
-          <div class="video_categories">
-            {% for category in video.categories.objects.all %}
-              <span class="video_category">
-                {{ category.name }}</span>{% if not forloop.last %},{% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
-      </td>
-    </tr>
-  </table>
+  <div class="title_desc">
+    <h3>
+      <a href="{% url localtv_view_video video_id=video.id %}">
+        {{ video.name }}
+      </a>
+    </h3>
+        
+    <p>
+      {% autoescape off %}
+        {{ video.description }}
+      {% endautoescape %}
+    </p>
+
+  </div>
+  <p>
+    <a href="#">Published on {{ video.when_submitted|date:"r" }}</a>
+  </p>
 </div>
