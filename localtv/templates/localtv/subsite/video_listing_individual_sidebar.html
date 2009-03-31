@@ -16,7 +16,7 @@
     </a>
       
     {% autoescape off %}
-      {{ video.description }}
+      {{ video.description|striptags }}
     {% endautoescape %}
   </div>
   <p>

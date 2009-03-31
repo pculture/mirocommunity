@@ -27,7 +27,7 @@
     </div>        
     <p class="description">
       {% autoescape off %}
-        {{ current_video.description }}
+        {{ current_video.description|striptags }}
       {% endautoescape %}
     </p>
     
