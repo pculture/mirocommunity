@@ -1,11 +1,14 @@
 import datetime
 
+from django.forms.fields import slug_re
 import feedparser
 from lxml.html.clean import clean_html
 import vidscraper
+from vidscraper.util import clean_description_html
 
 from localtv import util, miro_util
 from localtv.models import Video, Feed, FEED_STATUS_ACTIVE
+
 
 def update_feeds(verbose=False):
     for feed in Feed.objects.filter(status=FEED_STATUS_ACTIVE):
@@ -45,7 +48,7 @@ def update_feeds(verbose=False):
             video = Video(
                 name=entry['title'],
                 site=feed.site,
-                description=clean_html(entry['summary']),
+                description=clean_description_html(entry['summary']),
                 file_url=file_url or '',
                 embed_code=embed_code or '',
                 when_submitted=datetime.datetime.now(),
@@ -55,11 +58,16 @@ def update_feeds(verbose=False):
             video.save()
 
             if entry.get('tags'):
-                tags = util.get_or_create_tags(
-                    [tag['term'] for tag in entry['tags']])
+                entry_tags = [
+                    tag['term'] for tag in entry['tags']
+                    if len(tag['term']) <= 25
+                    and len(tag['term']) > 0
+                    and slug_re.match(tag['term'])]
+                if entry_tags:
+                    tags = util.get_or_create_tags(entry_tags)
 
-                for tag in tags:
-                    video.tags.add(tag)
+                    for tag in tags:
+                        video.tags.add(tag)
 
         feed.etag = parsed_feed.etag or ''
         feed.last_updated = datetime.datetime.now()
