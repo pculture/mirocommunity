@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <div class="video">
   <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
     <div>
@@ -5,7 +7,13 @@
     </div>
   </a>
   <div class="title_desc">
-    <h3><a href="{% url localtv_view_video video_id=video.id %}">{{ video.name }}</a></h3>
+    <a href="{% url localtv_view_video video_id=video.id %}">
+      {% if video.name %}
+        <h3>{{ video.name }}</h3>
+      {% else %}
+        <h3>{% trans "(no title)" %}</h3>
+      {% endif %}
+    </a>
       
     {% autoescape off %}
       {{ video.description }}

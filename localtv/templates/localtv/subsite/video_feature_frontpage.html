@@ -1,5 +1,9 @@
-{% load embed_video %}
-<h2 class="vid_title">{{ video.name }}</h2>
+{% load embed_video i18n %}
+{% if video.name %}
+  <h2 class="vid_title">{{ video.name }}</h2>
+{% else %}
+  <h2 class="vid_title">{% trans "(no title)" %}</h2>
+{% endif %}
 <span class="date">{{ video.when_submitted|date:"r" }}</span>
 <div id="video_wrapper">
   {% embed_video video %}
