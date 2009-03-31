@@ -1,9 +1,15 @@
 {% extends "localtv/subsite/base.html" %}
 
 {% block content %}
-<div class="frontpage_main_vidlist">
-  <div class="editor_picks">
-    <h2>Editor Picks</h2>
+  <div id="main">
+    <div id="main_header">   
+      <h2>Editor's Picks</h2>
+      <div class="floatright">
+        <a href="#" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+  
     {% for video in featured_videos %}
       {% if forloop.first %}
         {% include "localtv/subsite/video_feature_frontpage.html" %}
@@ -12,5 +18,18 @@
       {% endif %}
     {% endfor %}
   </div>
-</div>
+  <div id="sidebar">
+    <div id="sidebar_header">   
+      <h2>New in Worcester</h2>
+              
+      <div class="floatright">
+        <a href="#" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+    {% for video in new_videos %}
+      {% include "localtv/subsite/video_listing_individual_sidebar.html" %}
+    {% endfor %}
+  </div>
+
 {% endblock content %}

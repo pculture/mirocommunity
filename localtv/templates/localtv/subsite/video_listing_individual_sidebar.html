@@ -1,0 +1,17 @@
+<div class="video">
+  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
+    <div>
+      <img src="/images/vid_overlay.png" />
+    </div>
+  </a>
+  <div class="title_desc">
+    <h3><a href="{% url localtv_view_video video_id=video.id %}">{{ video.name }}</a></h3>
+      
+    {% autoescape off %}
+      {{ video.description }}
+    {% endautoescape %}
+  </div>
+  <p>
+    <a href="#">Published on {{ video.when_submitted|date:"r" }}</a>
+  </p>
+</div>

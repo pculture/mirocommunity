@@ -10,12 +10,17 @@ def subsite_index(request, sitelocation=None):
     featured_videos = models.Video.objects.filter(
         site=sitelocation.site, last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_submitted')
+        '-last_featured', '-when_submitted')[:10]
+    new_videos = models.Video.objects.filter(site=sitelocation.site)
+    new_videos = new_videos.order_by(
+        '-last_featured', '-when_submitted')[:10]
+
     return render_to_response(
         'localtv/subsite/index.html',
         {'sitelocation': sitelocation,
          'request': request,
-         'featured_videos': featured_videos},
+         'featured_videos': featured_videos,
+         'new_videos': new_videos},
         context_instance=RequestContext(request))
 
 

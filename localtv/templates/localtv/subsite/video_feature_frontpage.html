@@ -1,13 +1,7 @@
 {% load embed_video %}
-<div>
-  <div id="video_wrapper">
-    {% embed_video video %}
-  </div>
-  <div style="text-align: center" >
-    <a href="{% url localtv_view_video video_id=video.id %}">
-      <h2 class="video_name">
-        {{ video.name }}
-      </h2>
-    </a>
-  </div>
+<h2 class="vid_title">{{ video.name }}</h2>
+<span class="date">{{ video.when_submitted|date:"r" }}</span>
+<div id="video_wrapper">
+  {% embed_video video %}
 </div>
+<br />
