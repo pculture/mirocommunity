@@ -32,10 +32,27 @@
         </form>
         
         <ul id="nav">
-          <li><a href="#"><span>Home</span></a></li>
-          <li><a href="#"><span>Browse</span></a></li>
-          <li><a href="#"><span>New Videos</span></a></li>
-          <li><a href="#"><span>Popular</span></a></li>
+          <li>
+            <a href="{% url localtv_subsite_index %}">
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url localtv_subsite_list_index %}">
+              <span>Browse</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url localtv_subsite_list_new %}">
+              <span>New Videos</span>
+            </a>
+          </li>
+          <li>
+            {# eventually use {% url localtv_subsite_list_popular %} #}
+            <a href="#">
+              <span>Popular</span>
+            </a>
+          </li>
           <li>
             <a id="submit_button" href="{% url localtv_submit_video %}">
               <span>Submit A Video</span>
