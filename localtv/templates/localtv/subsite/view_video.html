@@ -32,21 +32,26 @@
     </p>
     
     
-    <div id="tags"><h3>Categories - </h3>
+    <div id="tags">
+      {% if current_video.categories.objects.count %}
+        <h3>Categories - </h3>
       
-      <ul>
-        {% for category in current_video.categories.objects.all %}
-          <li>{{ category.name }}</li> 
-        {% endfor %}
-      </ul>
+        <ul>
+          {% for category in current_video.categories.objects.all %}
+            <li>{{ category.name }}</li> 
+          {% endfor %}
+        </ul>
+      {% endif %}
       
-      <h3>Tags - </h3>
+      {% if current_video.tags.objects.count %}
+        <h3>Tags - </h3>
       
-      <ul>
-        {% for tag in current_video.tags.objects.all %}
-          <li>{{ tag.name }}</li> 
-        {% endfor %}
-      </ul>
+        <ul>
+          {% for tag in current_video.tags.objects.all %}
+            <li>{{ tag.name }}</li> 
+          {% endfor %}
+        </ul>
+      {% endif %}
       
       <form id="add_tag">
         <input type="text" class="text_field" />
