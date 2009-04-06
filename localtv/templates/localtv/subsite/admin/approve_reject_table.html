@@ -9,15 +9,14 @@
 {% block content %}
   <table id="admin_table">
     <tr>
-      <td width="500px" >
+      <td width="500px" style="vertical-align: top">
         <div id="admin_leftpane" style="overflow: auto" width="500px">
           {% block leftpane %}
             {% include "localtv/subsite/admin/video_listing.html" %}
           {% endblock leftpane %}
         </div>
       </td>
-      <td></td>
-      <td valign="top" >
+      <td style="vertical-align: top">
         <div id="admin_rightpane" style="overflow: auto" width="100px">
           {% block rightpane %}
             {% include "localtv/subsite/admin/video_preview.html" %}
