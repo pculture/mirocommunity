@@ -412,3 +412,11 @@ a {
 #close_submit_box span {
     cursor: pointer;
 }
+
+.selected {
+    background: green;
+}
+
+.hoverable:hover {
+    background: blue;
+}

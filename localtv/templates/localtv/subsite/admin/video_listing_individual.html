@@ -1,0 +1,26 @@
+{% load i18n %}
+
+<div class="video hoverable {% ifequal video current_video %}selected{% endifequal %}">
+  <span class="video_id">{{ video.id }}</span>
+  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
+    <div>
+      <img src="/images/vid_overlay.png" />
+    </div>
+  </a>
+  <div class="title_desc">
+    <h3>
+      <a href="{% url localtv_view_video video_id=video.id %}">
+        {% if video.name %}
+          {{ video.name }}
+        {% else %}
+          {% trans "(no title)" %}
+        {% endif %}
+      </a>
+    </h3>
+
+    {% autoescape off %}
+      <p>{{ video.description|striptags }}</p>
+    {% endautoescape %}
+
+  </div>
+</div>

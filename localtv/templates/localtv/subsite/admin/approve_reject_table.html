@@ -1,0 +1,29 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% block head %}
+  <script src="/js/admin_tables.js"
+          type="text/javascript">
+  </script>
+{% endblock head %}
+
+{% block content %}
+  <table id="admin_table">
+    <tr>
+      <td width="500px" >
+        <div id="admin_leftpane" style="overflow: auto" width="500px">
+          {% block leftpane %}
+            {% include "localtv/subsite/admin/video_listing.html" %}
+          {% endblock leftpane %}
+        </div>
+      </td>
+      <td></td>
+      <td valign="top" >
+        <div id="admin_rightpane" style="overflow: auto" width="100px">
+          {% block rightpane %}
+            {% include "localtv/subsite/admin/video_preview.html" %}
+          {% endblock rightpane %}
+        </div>
+      </td>
+    </tr>
+  </table>
+{% endblock content %}

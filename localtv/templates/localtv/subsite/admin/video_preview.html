@@ -1,0 +1,40 @@
+{% load embed_video i18n %}
+
+{% if current_video.name %}
+  <h2 class="vid_title">{{ current_video.name }}</h2>
+{% else %}
+  <h2 class="vid_title">{% trans "(no title)" %}</h2>
+{% endif %}
+<span class="date">6 months ago</span>
+
+<div id="video_wrapper">
+  {% embed_video current_video %}
+</div>        
+
+<p class="description">
+  {% autoescape off %}
+    {{ current_video.description|striptags }}
+  {% endautoescape %}
+</p>
+
+<div id="tags">
+  {% if current_video.categories.objects.count %}
+    <h3>Categories - </h3>
+  
+    <ul>
+      {% for category in current_video.categories.objects.all %}
+        <li>{{ category.name }}</li> 
+      {% endfor %}
+    </ul>
+  {% endif %}
+  
+  {% if current_video.tags.objects.count %}
+    <h3>Tags - </h3>
+  
+    <ul>
+      {% for tag in current_video.tags.objects.all %}
+        <li>{{ tag.name }}</li> 
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
