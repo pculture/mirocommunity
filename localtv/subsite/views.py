@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
@@ -31,5 +32,6 @@ def view_video(request, video_id, sitelocation=None):
     return render_to_response(
         'localtv/subsite/view_video.html',
         {'sitelocation': sitelocation,
-         'current_video': video},
+         'current_video': video,
+         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT')},
         context_instance=RequestContext(request))
