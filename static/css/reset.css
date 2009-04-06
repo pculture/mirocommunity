@@ -55,3 +55,11 @@ q:before, q:after {
 blockquote, q {
     quotes: "" "";
 }
+
+.hidden {
+    display: none;
+}
+
+.video_id {
+    display: none;
+}

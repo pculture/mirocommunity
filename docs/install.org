@@ -70,6 +70,8 @@ virtualenv environment to add these following directories:
  - *var/*: kinda like system /var
  - *var/pid/*: put your pidfiles for django & etc here
  - *var/log/*: django logfiles & etc go here
+ - *var/db/*: A nice place to put your sqlite database, if that is
+   what you are using
 
 ** Installing Django, LocalTv and dependencies
 
@@ -94,7 +96,7 @@ You are welcome to use a different directory structure, but you will
 need to figure out how to modify easy_install.pth for your needs on
 your own.
 
-**** TODO DjangoOpenId
+**** DjangoOpenId
 
 Problem is that it has some outdated crap in it.  We might need to
 fork it with git.
@@ -128,6 +130,10 @@ Otherwise, consult the [[http://codespeak.net/lxml/installation.html][lxml insta
 *** VidScraper
 
 : git clone https://git.participatoryculture.org/vidscraper VidScraper
+
+You'll also need to install simplejson
+
+: easy_install -UaZ simplejson
 
 
 *** Modifying easy_install.pth
