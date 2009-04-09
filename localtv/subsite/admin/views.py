@@ -1,4 +1,5 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation
@@ -28,3 +29,17 @@ def approve_reject(request, sitelocation=None):
             extra_context={'current_video': current_video})
     else:
         pass
+
+
+@get_sitelocation
+def preview_video(request, sitelocation=None):
+    current_video = get_object_or_404(
+        models.Video,
+        id=request.GET['video_id'],
+        status=models.VIDEO_STATUS_UNAPPROVED,
+        site=sitelocation.site)
+    return render_to_response(
+        'localtv/subsite/admin/video_preview.html',
+        {'current_video': current_video},
+        context_instance=RequestContext(request))
+
