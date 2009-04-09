@@ -421,33 +421,33 @@ a {
     background: LightCyan;
 }
 
-.approve_delete {
+.approve_reject {
     text-align: right;
     font-weight: bold;
 }
 
-.unselected .approve_delete {
+.unselected .approve_reject {
     display: none;
 }
 
-.selected .approve_delete {
+.selected .approve_reject {
     display: block;
 }
 
-.approve_delete .approve {
+.approve_reject .approve {
     color: green;
     cursor: pointer;
 }
 
-.approve_delete .approve:hover {
+.approve_reject .approve:hover {
     color: #0e980e;
 }
 
-.approve_delete .delete {
+.approve_reject .reject {
     color: #be0000;
     cursor: pointer;
 }
 
-.approve_delete .delete:hover {
+.approve_reject .reject:hover {
     color: #df0606;
 }

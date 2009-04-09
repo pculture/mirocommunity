@@ -1,5 +1,19 @@
 /* TODO: Allow and adjust for padding */
 
+function reject_video(eventdata) {
+    var video_id =
+        $(eventdata.currentTarget).parent()
+        .parent().find('span.video_id').text();
+    console.log('rejecting: ' + video_id);
+}
+
+function approve_video(eventdata) {
+    var video_id =
+        $(eventdata.currentTarget).parent()
+        .parent().find('span.video_id').text();
+    console.log('approving: ' + video_id);
+}
+
 function get_current_video_id() {
     return $('div.selected span.video_id').text();
 }
@@ -28,6 +42,10 @@ function load_video(eventdata) {
 
 function load_click_callbacks() {
     $('div.unselected').bind('click', load_video);
+    $('div.video .approve_reject .approve').bind(
+        'click', approve_video);
+    $('div.video .approve_reject .reject').bind(
+        'click', reject_video);
 }
 
 function resize_admin() {
