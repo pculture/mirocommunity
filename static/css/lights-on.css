@@ -414,9 +414,40 @@ a {
 }
 
 .selected {
-    background: green;
+    background: GreenYellow;
 }
 
 .unselected:hover {
-    background: blue;
+    background: LightCyan;
+}
+
+.approve_delete {
+    text-align: right;
+    font-weight: bold;
+}
+
+.unselected .approve_delete {
+    display: none;
+}
+
+.selected .approve_delete {
+    display: block;
+}
+
+.approve_delete .approve {
+    color: green;
+    cursor: pointer;
+}
+
+.approve_delete .approve:hover {
+    color: #0e980e;
+}
+
+.approve_delete .delete {
+    color: #be0000;
+    cursor: pointer;
+}
+
+.approve_delete .delete:hover {
+    color: #df0606;
 }
