@@ -193,7 +193,6 @@ a {
 /////////////////////////////////////////////*/
 
 #wrapper {
-    width: 940px;
     padding: 0 10px;
     margin: 0 auto;
 }
@@ -450,4 +449,11 @@ a {
 
 .approve_reject .reject:hover {
     color: #df0606;
+}
+
+#admin_table_resizebar {
+    text-align: center;
+    vertical-align: middle;
+    cursor: move;
+    background: #fafafa;
 }

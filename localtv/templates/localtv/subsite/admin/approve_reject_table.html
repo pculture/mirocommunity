@@ -9,16 +9,16 @@
 {% block content %}
   <table id="admin_table">
     <tr>
-      <td width="500px" style="vertical-align: top">
-        <div id="admin_leftpane" style="overflow: auto" width="500px">
+      <td style="vertical-align: top; min-width: 400px;">
+        <div id="admin_leftpane" style="overflow: auto">
           {% block leftpane %}
             {% include "localtv/subsite/admin/video_listing.html" %}
           {% endblock leftpane %}
         </div>
       </td>
-      <td style="vertical-align: middle; cursor: move;">⬄</td>
-      <td style="vertical-align: top">
-        <div id="admin_rightpane" style="overflow: auto" width="100px">
+      <td id="admin_table_resizebar">⬄</td>
+      <td style="vertical-align: top; min-width: 400px;">
+        <div id="admin_rightpane" style="overflow: auto">
           {% block rightpane %}
             {% include "localtv/subsite/admin/video_preview.html" %}
           {% endblock rightpane %}
