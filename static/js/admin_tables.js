@@ -1,27 +1,33 @@
 /* TODO: Allow and adjust for padding */
 
-var DEBUG_DATA = null;
+function get_current_video_id() {
+    return $('div.selected span.video_id').text();
+}
+
 function load_video(eventdata) {
     var viddiv = $(eventdata.currentTarget);
     var video_id = $('span.video_id', viddiv).text();
+    var video_url = '/admin/preview_video/?video_id=' + video_id;
+    console.log(video_url);
+    var admin_rightpane = $('#admin_rightpane');
     jQuery.ajax({
             url: '/admin/preview_video/?video_id=' + video_id,
-            complete: function(response, status) {
-                if (status == "success") {
-                    alert('yesss');
-                    DEBUG_DATA = response;
-                } else {
-                    alert('failboat');
-                    DEBUG_DATA = response;
-                }}});
+            success: function(data) {
+                admin_rightpane.empty().append(data);
+                var selected = $('div.selected');
+                selected.removeClass('selected');
+                selected.addClass('unselected');
+                selected.bind('click', load_video);
+                selected.css('cursor', 'pointer');
+                viddiv.removeClass('unselected');
+                viddiv.addClass('selected');
+                viddiv.unbind('click', load_video);
+                viddiv.css('cursor', 'default');
+                }});
 }
 
 function load_click_callbacks() {
     $('div.unselected').bind('click', load_video);
-    // var viddivs = $('div.video');
-    // for (i=0; i< viddivs.length; i++) {
-    //     viddivs[i];
-    // for (i=0; );
 }
 
 function resize_admin() {

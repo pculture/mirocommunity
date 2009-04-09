@@ -417,6 +417,6 @@ a {
     background: green;
 }
 
-.hoverable:hover {
+.unselected:hover {
     background: blue;
 }
