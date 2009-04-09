@@ -4,7 +4,7 @@ from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation
 from localtv import models
-
+from django.http import HttpResponse
 
 @get_sitelocation
 def test_table(request, sitelocation=None):
@@ -43,3 +43,26 @@ def preview_video(request, sitelocation=None):
         {'current_video': current_video},
         context_instance=RequestContext(request))
 
+
+@get_sitelocation
+def approve_video(request, sitelocation=None):
+    current_video = get_object_or_404(
+        models.Video,
+        id=request.GET['video_id'],
+        status=models.VIDEO_STATUS_UNAPPROVED,
+        site=sitelocation.site)
+    current_video.status = models.VIDEO_STATUS_ACTIVE
+    current_video.save()
+    return HttpResponse('SUCCESS')
+    
+
+@get_sitelocation
+def reject_video(request, sitelocation=None):
+    current_video = get_object_or_404(
+        models.Video,
+        id=request.GET['video_id'],
+        status=models.VIDEO_STATUS_UNAPPROVED,
+        site=sitelocation.site)
+    current_video.status = models.VIDEO_STATUS_REJECTED
+    current_video.save()
+    return HttpResponse('SUCCESS')

@@ -1,17 +1,27 @@
 /* TODO: Allow and adjust for padding */
 
+function remove_video_and_refresh_list(video_div) {
+    video_div.fadeOut(1000, function() {video_div.remove()});
+}
+
 function reject_video(eventdata) {
-    var video_id =
-        $(eventdata.currentTarget).parent()
-        .parent().find('span.video_id').text();
-    console.log('rejecting: ' + video_id);
+    var video_div = $(eventdata.currentTarget).parent().parent();
+    var video_id = video_div.find('span.video_id').text();
+    var action_url = '/admin/actions/reject_video/?video_id=' + video_id;
+    jQuery.ajax({
+            url: action_url,
+            success: function () {
+                remove_video_and_refresh_list(video_div)}});
 }
 
 function approve_video(eventdata) {
-    var video_id =
-        $(eventdata.currentTarget).parent()
-        .parent().find('span.video_id').text();
-    console.log('approving: ' + video_id);
+    var video_div = $(eventdata.currentTarget).parent().parent();
+    var video_id = video_div.find('span.video_id').text();
+    var action_url = '/admin/actions/approve_video/?video_id=' + video_id;
+    jQuery.ajax({
+            url: action_url,
+            success: function () {
+                remove_video_and_refresh_list(video_div)}});
 }
 
 function get_current_video_id() {
@@ -22,10 +32,9 @@ function load_video(eventdata) {
     var viddiv = $(eventdata.currentTarget);
     var video_id = $('span.video_id', viddiv).text();
     var video_url = '/admin/preview_video/?video_id=' + video_id;
-    console.log(video_url);
     var admin_rightpane = $('#admin_rightpane');
     jQuery.ajax({
-            url: '/admin/preview_video/?video_id=' + video_id,
+            url: video_url,
             success: function(data) {
                 admin_rightpane.empty().append(data);
                 var selected = $('div.selected');
