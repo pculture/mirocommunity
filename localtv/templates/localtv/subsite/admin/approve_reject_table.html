@@ -1,5 +1,7 @@
 {% extends "localtv/subsite/base.html" %}
 
+{% load pagetabs %}
+
 {% block head %}
   <script src="/js/admin_tables.js"
           type="text/javascript">
@@ -13,6 +15,7 @@
         <div id="admin_leftpane" style="overflow: auto">
           {% block leftpane %}
             {% include "localtv/subsite/admin/video_listing.html" %}
+            {% pagetabs page_obj %}
           {% endblock leftpane %}
         </div>
       </td>
@@ -26,4 +29,5 @@
       </td>
     </tr>
   </table>
+
 {% endblock content %}
