@@ -14,12 +14,21 @@
       <td style="vertical-align: top; min-width: 400px;">
         <div id="admin_leftpane" style="overflow: auto">
           {% block leftpane %}
-            {% include "localtv/subsite/admin/video_listing.html" %}
-            {% pagetabs page_obj %}
+            <table>
+              <tr id="admin_pagetab_row">
+                <td>
+                  <b>Pages:</b> {% pagetabs page_obj %}
+                </td>
+              </tr>
+              <tr id="admin_videolisting_row">
+                <td>
+                  {% include "localtv/subsite/admin/video_listing.html" %}
+                </td>
+              </tr>
+            </table>
           {% endblock leftpane %}
         </div>
       </td>
-      <td id="admin_table_resizebar">⬄</td>
       <td style="vertical-align: top; min-width: 400px;">
         <div id="admin_rightpane" style="overflow: auto">
           {% block rightpane %}

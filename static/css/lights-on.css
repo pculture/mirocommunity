@@ -412,7 +412,7 @@ a {
     cursor: pointer;
 }
 
-.selected {
+div.selected {
     background: GreenYellow;
 }
 
@@ -456,4 +456,29 @@ a {
     vertical-align: middle;
     cursor: move;
     background: #fafafa;
+}
+
+ul.pagetabs {
+    display: inline;
+}
+
+ul.pagetabs li {
+    border: 1px solid;
+    border-color: black;
+    padding: 3px;
+    margin: 2px;
+    display: inline;
+    list-style-type: none;
+}
+
+ul.pagetabs li a {
+    text-decoration: none;
+}
+
+ul.pagetabs li.selected {
+    background: cyan;
+}
+
+ul.pagetabs li.selected a{
+    background: cyan;
 }
