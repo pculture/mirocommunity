@@ -100,3 +100,14 @@ def feeds_page(request, sitelocation=None):
         template_name='localtv/subsite/admin/feed_page.html',
         allow_empty=True, template_object_name='feed')
 
+
+@get_sitelocation
+def feed_stop_watching(request, sitelocation=None):
+    print "we're definitely not watching this any more!"
+    return HttpResponse('SUCCESS')
+
+
+@get_sitelocation
+def feed_auto_approve(request, sitelocation=None):
+    print "we're definitely auto-approving this!"
+    return HttpResponse('SUCCESS')

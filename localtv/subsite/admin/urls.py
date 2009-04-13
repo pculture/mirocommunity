@@ -12,5 +12,10 @@ urlpatterns = patterns(
     (r'^actions/approve_video/$', 'approve_video',
      {}, 'localtv_admin_approve_video'),
     (r'^feeds/$', 'feeds_page',
-     {}, 'localtv_admin_feed_page'))
+     {}, 'localtv_admin_feed_page'),
+    (r'^feeds/stop_watching/$', 'feed_stop_watching',
+     {}, 'localtv_admin_feed_stop_watching'),
+    (r'^feeds/auto_approve/$', 'feed_auto_approve',
+     {}, 'localtv_admin_feed_auto_approve'),
+    )
 

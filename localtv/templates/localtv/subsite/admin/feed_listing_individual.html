@@ -2,14 +2,16 @@
 <div class="admin_feed">
   <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.feed_url }}</a>
   <span class="admin_feed_actions">
-    <span class="admin_feed_action_remove">
-      ({% trans "Stop Watching" %})
-    </span>
-    <span class="admin_feed_action_remove">
-      ({% trans "Stop Watching" %})
-    </span>
-    <span class="admin_feed_action_remove">
-      ({% trans "Stop Watching" %})
-    </span>
+    <a class="stop_watching"
+       href="{% url localtv_admin_feed_stop_watching %}?feed_id={{ feed.id }}">
+      ({% trans "Stop Watching" %})</a>
+    <a class="auto_approve"
+       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}">
+      ({% trans "Auto-Approve" %})
+    </a>
+    <a class="disable_auto_approve"
+       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}&disable=true">
+      ({% trans "Disable Auto-Approve" %})
+    </a>
   </span>
 </div>
