@@ -10,5 +10,7 @@ urlpatterns = patterns(
     (r'^actions/reject_video/$', 'reject_video',
      {}, 'localtv_admin_reject_video'),
     (r'^actions/approve_video/$', 'approve_video',
-     {}, 'localtv_admin_approve_video'))
+     {}, 'localtv_admin_approve_video'),
+    (r'^feeds/$', 'feeds_page',
+     {}, 'localtv_admin_feed_page'))
 
