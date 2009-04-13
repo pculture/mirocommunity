@@ -1,0 +1,26 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% load pagetabs %}
+
+{% comment %}
+  {% block head %}
+    <script src="/js/admin_feed_page.js"
+            type="text/javascript">
+    </script>
+  {% endblock head %}
+{% endcomment %}
+
+{% block content %}
+  <div style="margin-top: 10px" id="admin_feed_search">
+    <p>Blah blah search will go here</p>
+  </div>
+
+  <div style="margin-top: 10px">
+    <b>Pages:</b> {% pagetabs page_obj %}
+  </div>
+
+  <div style="margin-top: 10px">
+    {% include "localtv/subsite/admin/feed_listing.html" %}
+  </div>
+
+{% endblock content %}
