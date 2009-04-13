@@ -1,10 +1,11 @@
+from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation
 from localtv import models
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 @get_sitelocation
 def test_table(request, sitelocation=None):
@@ -18,15 +19,27 @@ def approve_reject(request, sitelocation=None):
         videos = models.Video.objects.filter(
             status=models.VIDEO_STATUS_UNAPPROVED,
             site=sitelocation.site)
+
+        video_paginator = Paginator(videos, 10)
+
+        try:
+            page = video_paginator.page(int(request.GET.get('page', 1)))
+        except ValueError:
+            return HttpResponseBadRequest('Not a page number')
+        except EmptyPage:
+            return HttpResponseBadRequest(
+                'Page number request exceeded available pages')
+
         current_video = None
-        if videos.count():
-            current_video = videos[0]
-        return object_list(
-            request=request, queryset=videos,
-            paginate_by=15,
-            template_name='localtv/subsite/admin/approve_reject_table.html',
-            allow_empty=True, template_object_name='video',
-            extra_context={'current_video': current_video})
+        if page.object_list:
+            current_video = page.object_list[0]
+
+        return render_to_response(
+            'localtv/subsite/admin/approve_reject_table.html',
+            {'current_video': current_video,
+             'page_obj': page,
+             'video_list': page.object_list},
+            context_instance=RequestContext(request))
     else:
         pass
 
