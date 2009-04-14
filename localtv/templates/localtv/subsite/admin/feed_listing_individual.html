@@ -6,10 +6,16 @@
        href="{% url localtv_admin_feed_stop_watching %}?feed_id={{ feed.id }}">
       ({% trans "Stop Watching" %})</a>
     <a class="auto_approve"
+       {% if feed.auto_approve %}
+         style="display: none"
+       {% endif %}
        href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}">
       ({% trans "Auto-Approve" %})
     </a>
     <a class="disable_auto_approve"
+       {% if not feed.auto_approve %}
+         style="display: none"
+       {% endif %}
        href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}&disable=true">
       ({% trans "Disable Auto-Approve" %})
     </a>
