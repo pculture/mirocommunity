@@ -103,11 +103,25 @@ def feeds_page(request, sitelocation=None):
 
 @get_sitelocation
 def feed_stop_watching(request, sitelocation=None):
-    print "we're definitely not watching this any more!"
+    feed = get_object_or_404(
+        models.Feed,
+        id=request.GET.get('feed_id'),
+        site=sitelocation.site)
+
+    feed.status = models.FEED_STATUS_REJECTED
+    feed.save()
+
     return HttpResponse('SUCCESS')
 
 
 @get_sitelocation
 def feed_auto_approve(request, sitelocation=None):
-    print "we're definitely auto-approving this!"
+    feed = get_object_or_404(
+        models.Feed,
+        id=request.GET.get('feed_id'),
+        site=sitelocation.site)
+
+    feed.auto_approve = not request.GET.get('disable')
+    feed.save()
+
     return HttpResponse('SUCCESS')
