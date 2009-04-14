@@ -5,4 +5,5 @@ SEQUENCE = [
     'add_guid',
     'non_unique_feeds',
     'featured_videos',
+    'add_auto_approve_field',
 ]

@@ -77,6 +77,7 @@ class Feed(models.Model):
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
+    auto_approve = models.BooleanField(default=False)
     # should name and site be unique together too?
 
     class Meta:
