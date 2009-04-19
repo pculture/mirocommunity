@@ -111,7 +111,7 @@ class Video(models.Model):
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(verify_exists=False, null=True)
     embed_code = models.TextField(blank=True)
-    guid=models.CharField(max_length=250, blank=True)
+    guid = models.CharField(max_length=250, blank=True)
 
     class Meta:
         ordering = ['-when_submitted']
