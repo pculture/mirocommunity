@@ -483,6 +483,10 @@ ul.pagetabs li.selected {
     background: cyan;
 }
 
-ul.pagetabs li.selected a{
+ul.pagetabs li.selected a {
     background: cyan;
+}
+
+#admin_rightpane {
+    min-width: 500px;
 }
