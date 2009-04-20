@@ -68,9 +68,9 @@ class MetasearchVideo(object):
         self.name = name
         self.description = description
         self.tags = tags or []
-        self.file_url = file_url
-        self.website_url = website_url
-        self.embed_code = embed_code
+        self.file_url = file_url or ''
+        self.website_url = website_url or ''
+        self.embed_code = embed_code or ''
 
         ## NOTE: This ID is only for ordering/hashtable purposes, not
         ## the id this should have once it becomes a model

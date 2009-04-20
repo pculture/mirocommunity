@@ -4,26 +4,6 @@ function remove_video_and_refresh_list(video_div) {
     video_div.fadeOut(1000, function() {video_div.remove()});
 }
 
-function reject_video(eventdata) {
-    var video_div = $(eventdata.currentTarget).parent().parent();
-    var video_id = video_div.find('span.video_id').text();
-    var action_url = '/admin/actions/reject_video/?video_id=' + video_id;
-    jQuery.ajax({
-            url: action_url,
-            success: function () {
-                remove_video_and_refresh_list(video_div)}});
-}
-
-function approve_video(eventdata) {
-    var video_div = $(eventdata.currentTarget).parent().parent();
-    var video_id = video_div.find('span.video_id').text();
-    var action_url = '/admin/actions/approve_video/?video_id=' + video_id;
-    jQuery.ajax({
-            url: action_url,
-            success: function () {
-                remove_video_and_refresh_list(video_div)}});
-}
-
 function run_and_disappear(eventdata) {
     var this_anchor = $(this);
     var video_div = this_anchor.parent().parent();

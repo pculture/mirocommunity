@@ -50,7 +50,7 @@ def approve(request, sitelocation=None):
 
     search_video = None
     for this_result in session_searches.get(query_string):
-        if this_result['id'] == request.GET['video_id']:
+        if this_result.id == int(request.GET['video_id']):
             search_video = this_result
             break
 
