@@ -8,14 +8,24 @@
        class="video hoverable unselected"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
+  <a class="thumbnail click_to_display"
+     {% if video.metasearch_vid %}
+       href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}"
+     {% else %}
+       href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
+     {% endif %}>
     <div>
       <img src="/images/vid_overlay.png" />
     </div>
   </a>
   <div class="title_desc">
     <h3>
-      <a href="{% url localtv_view_video video_id=video.id %}">
+      <a class="click_to_display"
+         {% if video.metasearch_vid %}
+           href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}"
+         {% else %}
+           href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
+         {% endif %}>
         {% if video.name %}
           {{ video.name }}
         {% else %}

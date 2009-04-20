@@ -7,7 +7,6 @@ function remove_video_and_refresh_list(video_div) {
 function run_and_disappear(eventdata) {
     var this_anchor = $(this);
     var video_div = this_anchor.parent().parent();
-    console.log(this_anchor.attr('href'));
     jQuery.ajax({
         url: this_anchor.attr('href'),
         success: function() {
@@ -15,14 +14,9 @@ function run_and_disappear(eventdata) {
     return false;
 }
 
-function get_current_video_id() {
-    return $('div.selected span.video_id').text();
-}
-
 function load_video(eventdata) {
-    var viddiv = $(eventdata.currentTarget);
-    var video_id = $('span.video_id', viddiv).text();
-    var video_url = '/admin/preview_video/?video_id=' + video_id;
+    var viddiv = $(this).parents('.video');
+    var video_url = $(this).attr('href');
     var admin_rightpane = $('#admin_rightpane');
     jQuery.ajax({
             url: video_url,
@@ -31,17 +25,16 @@ function load_video(eventdata) {
                 var selected = $('div.selected');
                 selected.removeClass('selected');
                 selected.addClass('unselected');
-                selected.bind('click', load_video);
                 selected.css('cursor', 'pointer');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
-                viddiv.unbind('click', load_video);
                 viddiv.css('cursor', 'default');
                 }});
+    return false;
 }
 
 function load_click_callbacks() {
-    $('div.unselected').bind('click', load_video);
+    $('.click_to_display').click(load_video);
     $('div.video .approve_reject .approve').click(
         run_and_disappear);
     $('div.video .approve_reject .reject').click(

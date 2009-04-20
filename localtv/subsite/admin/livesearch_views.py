@@ -57,3 +57,8 @@ def approve(request, sitelocation=None):
     search_video.generate_video_model(sitelocation.site)
     
     return HttpResponse('SUCCESS')
+
+
+@get_sitelocation
+def display(request, sitelocation=None):
+    pass
