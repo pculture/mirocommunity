@@ -21,3 +21,8 @@ urlpatterns += patterns(
     (r'^feeds/auto_approve/$', 'feed_auto_approve',
      {}, 'localtv_admin_feed_auto_approve'))
 
+
+urlpatterns += patterns(
+    'localtv.subsite.admin.livesearch_views',
+    (r'^livesearch/$', 'livesearch_page',
+     {}, 'localtv_admin_livesearch_page'))

@@ -1,5 +1,8 @@
+import datetime
+
 from django.core.cache import cache
 import vidscraper
+from vidscraper import metasearch
 
 from localtv import models
 
@@ -50,3 +53,71 @@ def get_scraped_data(url):
 
     return scraped_data
     
+
+## ----------------
+## Metasearch utils
+## ----------------
+
+class MetasearchVideo(object):
+    metasearch_vid =True
+
+    def __init__(self, name, description,
+                 tags=None, file_url=None,
+                 website_url=None, embed_code='',
+                 id=None):
+        self.name = name
+        self.description = description
+        self.tags = tags or []
+        self.file_url = file_url
+        self.website_url = website_url
+        self.embed_code = embed_code
+
+        ## NOTE: This ID is only for ordering/hashtable purposes, not
+        ## the id this should have once it becomes a model
+        self.id = id
+
+    def generate_video_model(self, site, save=True):
+        if self.tags:
+            tags = get_or_create_tags(self.tags)
+        else:
+            tags = []
+        
+        video = models.Video(
+            name=self.name,
+            site=site,
+            description=self.description,
+            file_url=self.file_url,
+            when_submitted=datetime.datetime.now(),
+            status=models.VIDEO_STATUS_ACTIVE,
+            website_url=self.website_url,
+            embed_code=self.embed_code)
+
+        for tag in tags:
+            video.tags.add(tag)
+
+        if save:
+            video.save()
+
+        return video
+
+    @classmethod
+    def create_from_vidscraper_dict(cls, vidscraper_dict):
+        return cls(
+            name=vidscraper_dict['title'],
+            description=vidscraper_dict.get('description'),
+            tags=vidscraper_dict.get('tags') or [],
+            file_url=vidscraper_dict.get('file_url'),
+            website_url=vidscraper_dict.get('link'),
+            embed_code=vidscraper_dict.get('embed'),
+            id=vidscraper_dict.get('id'))
+
+
+def metasearch_from_querystring(querystring, order_by='relevant'):
+    terms = set(querystring.split())
+    exclude_terms = set([
+        component for component in terms if component.startswith('-')])
+    include_terms = terms.difference(exclude_terms)
+    stripped_exclude_terms = [term.lstrip('-') for term in exclude_terms]
+    return vidscraper.metasearch.auto_search(
+        include_terms, stripped_exclude_terms, order_by)
+

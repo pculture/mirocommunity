@@ -17,7 +17,9 @@
             <table>
               <tr id="admin_pagetab_row">
                 <td>
-                  <b>Pages:</b> {% pagetabs page_obj %}
+                  {% if page_obj %}
+                    <b>Pages:</b> {% pagetabs page_obj %}
+                  {% endif %}
                 </td>
               </tr>
               <tr id="admin_videolisting_row">
@@ -32,7 +34,9 @@
       <td style="vertical-align: top; min-width: 400px;">
         <div id="admin_rightpane" style="overflow: auto">
           {% block rightpane %}
-            {% include "localtv/subsite/admin/video_preview.html" %}
+            {% if current_video %}
+              {% include "localtv/subsite/admin/video_preview.html" %}
+            {% endif %}
           {% endblock rightpane %}
         </div>
       </td>
