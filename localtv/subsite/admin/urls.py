@@ -25,4 +25,6 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     'localtv.subsite.admin.livesearch_views',
     (r'^livesearch/$', 'livesearch_page',
-     {}, 'localtv_admin_livesearch_page'))
+     {}, 'localtv_admin_livesearch_page'),
+    (r'^livesearch/approve/$', 'approve',
+     {}, 'localtv_admin_livesearch_approve'))

@@ -9,6 +9,9 @@
 {% endblock head %}
 
 {% block content %}
+  {% block above_table %}
+  {% endblock above_table %}
+
   <table id="admin_table">
     <tr>
       <td style="vertical-align: top; min-width: 400px;">
@@ -24,7 +27,9 @@
               </tr>
               <tr id="admin_videolisting_row">
                 <td>
-                  {% include "localtv/subsite/admin/video_listing.html" %}
+                  {% block videolisting_rows %}
+                    {% include "localtv/subsite/admin/video_listing.html" %}
+                  {% endblock %}
                 </td>
               </tr>
             </table>

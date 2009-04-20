@@ -436,19 +436,23 @@ div.selected {
 .approve_reject .approve {
     color: green;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .approve_reject .approve:hover {
     color: #0e980e;
+    text-decoration: none;
 }
 
 .approve_reject .reject {
     color: #be0000;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .approve_reject .reject:hover {
     color: #df0606;
+    text-decoration: none;
 }
 
 #admin_table_resizebar {

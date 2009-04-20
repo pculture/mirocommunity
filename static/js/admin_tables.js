@@ -24,6 +24,17 @@ function approve_video(eventdata) {
                 remove_video_and_refresh_list(video_div)}});
 }
 
+function run_and_disappear(eventdata) {
+    var this_anchor = $(this);
+    var video_div = this_anchor.parent().parent();
+    console.log(this_anchor.attr('href'));
+    jQuery.ajax({
+        url: this_anchor.attr('href'),
+        success: function() {
+            remove_video_and_refresh_list(video_div);}});
+    return false;
+}
+
 function get_current_video_id() {
     return $('div.selected span.video_id').text();
 }
@@ -51,10 +62,10 @@ function load_video(eventdata) {
 
 function load_click_callbacks() {
     $('div.unselected').bind('click', load_video);
-    $('div.video .approve_reject .approve').bind(
-        'click', approve_video);
-    $('div.video .approve_reject .reject').bind(
-        'click', reject_video);
+    $('div.video .approve_reject .approve').click(
+        run_and_disappear);
+    $('div.video .approve_reject .reject').click(
+        run_and_disappear);
 }
 
 function resize_admin() {

@@ -5,20 +5,14 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from vidscraper import metasearch
 
 from localtv.decorators import get_sitelocation
-from localtv import models, util
-
-
-class SearchedVideo():
-    pass
+from localtv import util
 
 
 @get_sitelocation
 def livesearch_page(request, sitelocation=None):
     query_string = request.GET.get('query')
-    if not query_string:
-        return HttpResponseBadRequest('We require a query!')
-
-    else:
+    results = []
+    if query_string:
         session_livesearches = request.session.get('localtv_livesearches') or {}
         if session_livesearches.get(query_string):
             results = session_livesearches[query_string]
@@ -40,5 +34,26 @@ def livesearch_page(request, sitelocation=None):
     return render_to_response(
         'localtv/subsite/admin/approve_reject_table.html',
         {'current_video': current_video,
-         'video_list': results},
+         'video_list': results,
+         'query_string': query_string},
         context_instance=RequestContext(request))
+
+
+@get_sitelocation
+def approve(request, sitelocation=None):
+    query_string = request.GET.get('query')
+    session_searches = request.session.get('localtv_livesearches')
+
+    if not session_searches or not session_searches.get(query_string):
+        return HttpResponseBadRequest(
+            'No matching livesearch results in your session')
+
+    search_video = None
+    for this_result in session_searches.get(query_string):
+        if this_result['id'] == request.GET['video_id']:
+            search_video = this_result
+            break
+
+    search_video.generate_video_model(sitelocation.site)
+    
+    return HttpResponse('SUCCESS')

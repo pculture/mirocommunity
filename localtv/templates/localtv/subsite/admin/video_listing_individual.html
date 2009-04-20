@@ -31,7 +31,15 @@
   </div>
   
   <div class="approve_reject">
-    <span class="approve">[ ✓ Approve ]</span> &nbsp;
-    <span class="reject">[ ✗ Reject ]</span>
+    <a class="approve"
+       {% if video.metasearch_vid %}
+         href="{% url localtv_admin_livesearch_approve %}?query_string={{ query_string|urlencode }}&video_id={{ video.id }}"
+       {% else %}
+         href="{% url localtv_admin_approve_video %}?video_id={{ video.id }}"
+       {% endif %}>[ ✓ Approve ]</a> &nbsp;
+    {% if not video.metasearch_vid %}
+      <a class="reject"
+         href="{% url localtv_admin_reject_video %}?video_id={{ video.id }}">[ ✗ Reject ]</a>
+    {% endif %}
   </div>
 </div>
