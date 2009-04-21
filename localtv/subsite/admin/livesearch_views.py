@@ -1,4 +1,4 @@
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -15,14 +15,19 @@ from localtv import util
 def get_search_video(view_func):
     def new_view_func(request, *args, **kwargs):
         query_string = request.GET.get('query')
+        order_by = request.GET.get('order_by')
+        if not order_by in ('relevant', 'latest'):
+            order_by = 'relevant'
+
+        query_subkey = '%s-%s' % (order_by, query_string)
         session_searches = request.session.get('localtv_livesearches')
 
-        if not session_searches or not session_searches.get(query_string):
+        if not session_searches or not session_searches.get(query_subkey):
             return HttpResponseBadRequest(
                 'No matching livesearch results in your session')
 
         search_video = None
-        for this_result in session_searches.get(query_string):
+        for this_result in session_searches.get(query_subkey):
             if this_result.id == int(request.GET['video_id']):
                 search_video = this_result
                 break
@@ -48,19 +53,26 @@ def get_search_video(view_func):
 @get_sitelocation
 def livesearch_page(request, sitelocation=None):
     query_string = request.GET.get('query')
+    order_by = request.GET.get('order_by')
+    if not order_by in ('relevant', 'latest'):
+        order_by = 'relevant'
+
+    query_subkey = '%s-%s' % (order_by, query_string)
+
     results = []
     if query_string:
         session_livesearches = request.session.get('localtv_livesearches') or {}
-        if session_livesearches.get(query_string):
-            results = session_livesearches[query_string]
+        if session_livesearches.get(query_subkey):
+            results = session_livesearches[query_subkey]
 
         else:
-            raw_results = util.metasearch_from_querystring(query_string)
+            raw_results = util.metasearch_from_querystring(
+                query_string, order_by)
             sorted_raw_results = metasearch.unfriendlysort_results(raw_results)
             results = [
                 util.MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
-            session_livesearches[query_string] = results
+            session_livesearches[query_subkey] = results
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
         
@@ -69,10 +81,11 @@ def livesearch_page(request, sitelocation=None):
         current_video = results[0]
 
     return render_to_response(
-        'localtv/subsite/admin/approve_reject_table.html',
+        'localtv/subsite/admin/livesearch_table.html',
         {'current_video': current_video,
          'video_list': results,
-         'query_string': query_string},
+         'query_string': query_string,
+         'order_by': order_by},
         context_instance=RequestContext(request))
 
 

@@ -1,0 +1,28 @@
+{% extends "localtv/subsite/admin/approve_reject_table.html" %}
+
+{% block above_table %}
+  <span>
+    Submissions
+    Watched Feeds
+    Saved Searches
+  </span>
+
+  <form method="GET" action="{% url localtv_admin_livesearch_page %}">
+    <input id="livesearch_query_input"
+           name="query"
+           value="{{ query_string }}"/>
+    <select name="order_by">
+      <option value="relevant"
+              {% ifequal order_by "relevant" %}
+                selected="selected"
+              {% endifequal %}>Relevant</option>
+      <option value="latest"
+              {% ifequal order_by "latest" %}
+                selected="selected"
+              {% endifequal %}>Latest</option>
+    </select>
+    <input type="submit" />
+  </form>
+
+  {{ block.super }}
+{% endblock above_table %}

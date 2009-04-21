@@ -10,7 +10,7 @@
   <span class="video_id">{{ video.id }}</span>
   <a class="thumbnail click_to_display"
      {% if video.metasearch_vid %}
-       href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}"
+       href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
      {% else %}
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
@@ -22,7 +22,7 @@
     <h3>
       <a class="click_to_display"
          {% if video.metasearch_vid %}
-           href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}"
+           href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
          {% else %}
            href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
          {% endif %}>
@@ -43,7 +43,7 @@
   <div class="approve_reject">
     <a class="approve"
        {% if video.metasearch_vid %}
-         href="{% url localtv_admin_livesearch_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}"
+         href="{% url localtv_admin_livesearch_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
        {% else %}
          href="{% url localtv_admin_approve_video %}?video_id={{ video.id }}"
        {% endif %}>[ ✓ Approve ]</a> &nbsp;
