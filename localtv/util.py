@@ -59,7 +59,7 @@ def get_scraped_data(url):
 ## ----------------
 
 class MetasearchVideo(object):
-    metasearch_vid =True
+    metasearch_vid = True
 
     def __init__(self, name, description,
                  tags=None, file_url=None,
