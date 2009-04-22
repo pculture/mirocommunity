@@ -24,5 +24,12 @@
     <input type="submit" />
   </form>
 
+  {% if is_saved_search %}
+    <i>This search is saved</i>
+  {% else %}
+    <a href="{% url localtv_admin_livesearch_save_search %}?query={{ query_string|urlencode }}">
+      Save this search</a>
+  {% endif %}
+
   {{ block.super }}
 {% endblock above_table %}

@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.paginator import Paginator
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -5,7 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from vidscraper import metasearch
 
 from localtv.decorators import get_sitelocation
-from localtv import util
+from localtv import models, util
 
 
 ## ----------
@@ -80,12 +82,18 @@ def livesearch_page(request, sitelocation=None):
     if len(results):
         current_video = results[0]
 
+    is_saved_search = bool(
+        models.SavedSearch.objects.filter(
+            site=sitelocation,
+            query_string=query_string).count())
+
     return render_to_response(
         'localtv/subsite/admin/livesearch_table.html',
         {'current_video': current_video,
          'video_list': results,
          'query_string': query_string,
-         'order_by': order_by},
+         'order_by': order_by,
+         'is_saved_search': is_saved_search},
         context_instance=RequestContext(request))
 
 
@@ -104,3 +112,25 @@ def display(request, search_video, sitelocation=None):
         'localtv/subsite/admin/video_preview.html',
         {'current_video': search_video},
         context_instance=RequestContext(request))
+
+
+@get_sitelocation
+def create_saved_search(request, sitelocation=None):
+    query_string = request.GET.get('query')
+
+    existing_saved_search = models.SavedSearch.objects.filter(
+        site=sitelocation,
+        query_string=query_string)
+
+    if existing_saved_search.count():
+        return HttpResponseBadRequest(
+            'Saved search of that query already exists')
+
+    saved_search = models.SavedSearch(
+        site=sitelocation,
+        query_string=query_string,
+        when_created=datetime.datetime.now())
+
+    saved_search.save()
+
+    return HttpResponse('SUCCESS')

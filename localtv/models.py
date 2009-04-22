@@ -27,7 +27,6 @@ OPENID_STATUSES = (
     (OPENID_STATUS_DISABLED, 'Disabled'),
     (OPENID_STATUS_ACTIVE, 'Active'))
 
-
 class OpenIdUser(models.Model):
     url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
@@ -130,6 +129,13 @@ class VideoAdmin(admin.ModelAdmin):
     list_filter = ['status', 'when_submitted']
     search_fields = ['name', 'description']
 
+
+class SavedSearch(models.Model):
+    site = models.ForeignKey(SiteLocation)
+    query_string = models.TextField()
+    when_created = models.DateTimeField()
+
+
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(SiteCss)
@@ -137,3 +143,4 @@ admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category)
 admin.site.register(Video, VideoAdmin)
+admin.site.register(SavedSearch)

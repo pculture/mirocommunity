@@ -29,4 +29,6 @@ urlpatterns += patterns(
     (r'^livesearch/approve/$', 'approve',
      {}, 'localtv_admin_livesearch_approve'),
     (r'^livesearch/display/$', 'display',
-     {}, 'localtv_admin_livesearch_display'))
+     {}, 'localtv_admin_livesearch_display'),
+    (r'^livesearch/save_search/$', 'create_saved_search',
+     {}, 'localtv_admin_livesearch_save_search'))
