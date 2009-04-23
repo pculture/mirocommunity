@@ -1,5 +1,7 @@
 {% extends "localtv/subsite/admin/approve_reject_table.html" %}
 
+{% load pagetabs %}
+
 {% block above_table %}
   <span>
     Submissions
@@ -33,3 +35,9 @@
 
   {{ block.super }}
 {% endblock above_table %}
+
+{% block pagination %}
+  {% if page_obj %}
+    <b>Pages:</b> {% pagetabs page_obj "localtv/subsite/admin/livesearch_pagetabs.html" %}
+  {% endif %}
+{% endblock pagination %}

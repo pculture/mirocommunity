@@ -22,9 +22,11 @@
             <table>
               <tr id="admin_pagetab_row">
                 <td>
-                  {% if page_obj %}
-                    <b>Pages:</b> {% pagetabs page_obj %}
-                  {% endif %}
+                  {% block pagination %}
+                    {% if page_obj %}
+                      <b>Pages:</b> {% pagetabs page_obj %}
+                    {% endif %}
+                  {% endblock pagination %}
                 </td>
               </tr>
               <tr id="admin_videolisting_row">

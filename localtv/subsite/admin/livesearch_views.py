@@ -1,9 +1,10 @@
 import datetime
 
 from django.core.paginator import Paginator
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.generic.list_detail import object_list
 from vidscraper import metasearch
 
 from localtv.decorators import get_sitelocation
@@ -78,19 +79,30 @@ def livesearch_page(request, sitelocation=None):
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
         
-    current_video = None
-    if len(results):
-        current_video = results[0]
-
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
             site=sitelocation,
             query_string=query_string).count())
 
+    video_paginator = Paginator(results, 10)
+
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        return HttpResponseBadRequest(
+            'Page number request exceeded available pages')
+
+    current_video = None
+    if page.object_list:
+        current_video = page.object_list[0]
+
     return render_to_response(
         'localtv/subsite/admin/livesearch_table.html',
         {'current_video': current_video,
-         'video_list': results,
+         'page_obj': page,
+         'video_list': page.object_list,
          'query_string': query_string,
          'order_by': order_by,
          'is_saved_search': is_saved_search},

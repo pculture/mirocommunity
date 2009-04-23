@@ -1,0 +1,15 @@
+<ul class="pagetabs">
+  {% for pagesection in pagesections %}
+    {% for page in pagesection %}
+      <li {% ifequal page.number selected_page.number %}
+            class="selected"
+          {% endifequal %}>
+        <a href="{% url localtv_admin_livesearch_page %}?page={{ page.number }}&query={{ query_string }}&order_by={{ order_by}}">
+          {{ page.number }}</a>
+      </li>
+    {% endfor %}
+    {% if not forloop.last %}
+      <li class="ellipse">...</li>
+    {% endif %}
+  {% endfor %}
+</ul>
