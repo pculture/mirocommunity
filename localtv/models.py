@@ -27,12 +27,14 @@ OPENID_STATUSES = (
     (OPENID_STATUS_DISABLED, 'Disabled'),
     (OPENID_STATUS_ACTIVE, 'Active'))
 
+
 class OpenIdUser(models.Model):
     url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
     nickname = models.CharField(max_length=50, blank=True)
     status = models.IntegerField(
         choices=OPENID_STATUSES, default=OPENID_STATUS_ACTIVE)
+    superuser = models.BooleanField()
 
     def __unicode__(self):
         return "%s <%s>" % (self.nickname, self.email)
@@ -41,11 +43,11 @@ class OpenIdUser(models.Model):
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
     # logo... we can probably be lazy and just link this as part of the id..
-    admins = models.ManyToManyField(User, null=True)
+    admins = models.ManyToManyField(OpenIdUser, blank=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
-    sidebar_html = models.TextField(null=True)
-    tagline = models.CharField(max_length=250, null=True)
+    sidebar_html = models.TextField(blank=True)
+    tagline = models.CharField(max_length=250, blank=True)
     
     def __unicode__(self):
         return self.site.name
@@ -70,14 +72,13 @@ class Feed(models.Model):
     feed_url = models.URLField(verify_exists=False)
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
-    webpage = models.URLField(verify_exists=False, null=True)
+    webpage = models.URLField(verify_exists=False, blank=True)
     description = models.TextField()
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     auto_approve = models.BooleanField(default=False)
-    # should name and site be unique together too?
 
     class Meta:
         unique_together = (
@@ -99,16 +100,15 @@ class Video(models.Model):
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
     description = models.TextField()
-    tags = models.ManyToManyField(Tag, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     file_url = models.URLField(verify_exists=False, blank=True)
-    # submitter <- should be link to an openid object
     when_submitted = models.DateTimeField(auto_now_add=True)
     last_featured = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = models.URLField(verify_exists=False, null=True)
+    website_url = models.URLField(verify_exists=False, blank=True)
     embed_code = models.TextField(blank=True)
     guid = models.CharField(max_length=250, blank=True)
 
