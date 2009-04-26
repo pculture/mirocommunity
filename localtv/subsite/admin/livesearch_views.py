@@ -1,13 +1,13 @@
 import datetime
 
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 from vidscraper import metasearch
 
-from localtv.decorators import get_sitelocation
+from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models, util
 
 
@@ -53,6 +53,7 @@ def get_search_video(view_func):
 ## Views
 ## ----------
 
+@require_site_admin
 @get_sitelocation
 def livesearch_page(request, sitelocation=None):
     query_string = request.GET.get('query')
@@ -109,6 +110,7 @@ def livesearch_page(request, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+@require_site_admin
 @get_sitelocation
 @get_search_video
 def approve(request, search_video, sitelocation=None):
@@ -117,6 +119,7 @@ def approve(request, search_video, sitelocation=None):
     return HttpResponse('SUCCESS')
 
 
+@require_site_admin
 @get_sitelocation
 @get_search_video
 def display(request, search_video, sitelocation=None):
@@ -126,6 +129,7 @@ def display(request, search_video, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+@require_site_admin
 @get_sitelocation
 def create_saved_search(request, sitelocation=None):
     query_string = request.GET.get('query')
