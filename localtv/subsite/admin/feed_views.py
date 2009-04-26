@@ -10,6 +10,7 @@ from django.http import HttpResponse
 ## Feed administration
 ## -------------------
 
+@require_site_admin
 @get_sitelocation
 def feeds_page(request, sitelocation=None):
     feeds = models.Feed.objects.filter(
@@ -21,6 +22,7 @@ def feeds_page(request, sitelocation=None):
         allow_empty=True, template_object_name='feed')
 
 
+@require_site_admin
 @get_sitelocation
 def feed_stop_watching(request, sitelocation=None):
     feed = get_object_or_404(
@@ -34,6 +36,7 @@ def feed_stop_watching(request, sitelocation=None):
     return HttpResponse('SUCCESS')
 
 
+@require_site_admin
 @get_sitelocation
 def feed_auto_approve(request, sitelocation=None):
     feed = get_object_or_404(

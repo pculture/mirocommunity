@@ -2,7 +2,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
-from localtv.decorators import get_sitelocation
+from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from django.http import HttpResponse, HttpResponseBadRequest
 
@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 ## Video approve/reject
 ## --------------------
 
+@require_site_admin
 @get_sitelocation
 def approve_reject(request, sitelocation=None):
     if request.method == "GET":
@@ -42,6 +43,7 @@ def approve_reject(request, sitelocation=None):
         pass
 
 
+@require_site_admin
 @get_sitelocation
 def preview_video(request, sitelocation=None):
     current_video = get_object_or_404(
@@ -55,6 +57,7 @@ def preview_video(request, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+@require_site_admin
 @get_sitelocation
 def approve_video(request, sitelocation=None):
     current_video = get_object_or_404(
@@ -67,6 +70,7 @@ def approve_video(request, sitelocation=None):
     return HttpResponse('SUCCESS')
     
 
+@require_site_admin
 @get_sitelocation
 def reject_video(request, sitelocation=None):
     current_video = get_object_or_404(
