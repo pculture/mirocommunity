@@ -25,10 +25,8 @@ function load_video(eventdata) {
                 var selected = $('div.selected');
                 selected.removeClass('selected');
                 selected.addClass('unselected');
-                selected.css('cursor', 'pointer');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
-                viddiv.css('cursor', 'default');
                 }});
     return false;
 }
