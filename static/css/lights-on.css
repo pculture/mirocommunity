@@ -425,11 +425,12 @@ div.selected {
     font-weight: bold;
 }
 
-.unselected .approve_reject {
+.unselected .approve_reject, .selected .approve_reject {
     display: none;
 }
 
-.selected .approve_reject {
+
+.unselected:hover .approve_reject, .selected:hover .approve_reject {
     display: block;
 }
 
