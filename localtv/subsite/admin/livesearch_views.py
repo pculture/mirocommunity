@@ -56,7 +56,7 @@ def get_search_video(view_func):
 @require_site_admin
 @get_sitelocation
 def livesearch_page(request, sitelocation=None):
-    query_string = request.GET.get('query')
+    query_string = request.GET.get('query', '')
     order_by = request.GET.get('order_by')
     if not order_by in ('relevant', 'latest'):
         order_by = 'relevant'
