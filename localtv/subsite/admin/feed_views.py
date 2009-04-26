@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
 
-from localtv.decorators import get_sitelocation
+from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from django.http import HttpResponse
 
