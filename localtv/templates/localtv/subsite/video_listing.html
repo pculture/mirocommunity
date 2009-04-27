@@ -1,6 +1,14 @@
 {% extends "localtv/subsite/base.html" %}
 
+{% load pagetabs %}
+
 {% block content %}
+  {% block pagination %}
+    {% if page_obj %}
+      <b>Pages:</b> {% pagetabs page_obj %}
+    {% endif %}
+  {% endblock pagination %}
+
   {% for video in video_list %}
     {% include "localtv/subsite/video_listing_individual.html" %}
   {% endfor %}

@@ -26,8 +26,10 @@
           <span class="tagline">{{ sitelocation.tagline }}</span>
         </h1>
 
-        <form id="search">
-          <input type="text" id="search_field" />
+        <form id="search"
+              action="{% url localtv_subsite_search %}"
+              method="GET">
+          <input name="query" type="text" id="search_field" />
           <input type="image" id="searchbutton" src="/images/search.png" value="submit" />
         </form>
         

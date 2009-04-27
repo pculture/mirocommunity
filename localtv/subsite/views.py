@@ -1,4 +1,7 @@
+import urllib
+
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.db.models import Q
@@ -69,12 +72,15 @@ def video_search(request, sitelocation=None):
 
         return object_list(
             request=request, queryset=videos,
-            paginate_by=15,
+            paginate_by=5,
             template_name='localtv/subsite/video_listing.html',
-            allow_empty=True, template_object_name='video')
+            allow_empty=True, template_object_name='video',
+            extra_context={
+                'pagetabs_url': reverse('localtv_subsite_search'),
+                'pagetabs_args': urllib.urlencode({'query': query_string})})
 
     else:
         return render_to_response(
-            'localtv/subsite/admin/livesearch_table.html', {})
+            'localtv/subsite/video_listing.html', {})
 
         
