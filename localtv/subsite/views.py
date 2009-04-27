@@ -74,6 +74,7 @@ def video_search(request, sitelocation=None):
             allow_empty=True, template_object_name='video')
 
     else:
-        pass
+        return render_to_response(
+            'localtv/subsite/admin/livesearch_table.html', {})
 
         
