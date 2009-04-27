@@ -65,7 +65,7 @@ class MetasearchVideo(object):
                  tags=None, file_url=None,
                  website_url=None, embed_code='',
                  id=None):
-        self.name = name
+        self.name = name.strip()
         self.description = description
         self.tags = tags or []
         self.file_url = file_url or ''
