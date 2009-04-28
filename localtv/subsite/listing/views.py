@@ -13,6 +13,8 @@ def new_videos(request, sitelocation=None):
     videos = models.Video.objects.filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
+    videos = videos.order_by(
+        '-when_approved', '-when_submitted')
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
@@ -25,7 +27,8 @@ def featured_videos(request, sitelocation=None):
     videos = models.Video.objects.filter(
         site=sitelocation.site, last_featured__isnull=False,
         status=models.VIDEO_STATUS_ACTIVE)
-    videos = videos.order_by('-last_featured', '-when_submitted')
+    videos = videos.order_by(
+        '-last_featured', '-when_approved','-when_submitted')
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
