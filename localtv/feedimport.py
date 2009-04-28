@@ -52,6 +52,7 @@ def update_feeds(verbose=False):
                 file_url=file_url or '',
                 embed_code=embed_code or '',
                 when_submitted=datetime.datetime.now(),
+                when_approved=datetime.datetime.now(),
                 status=FEED_STATUS_ACTIVE,
                 feed=feed,
                 website_url=entry['link'])

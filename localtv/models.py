@@ -43,7 +43,7 @@ class OpenIdUser(models.Model):
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
     # logo... we can probably be lazy and just link this as part of the id..
-    admins = models.ManyToManyField(OpenIdUser, blank=True)
+    admins = models.ManyToManyField(OpenIdUser, null=True, blank=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
@@ -97,6 +97,28 @@ class Category(models.Model):
 
 
 class Video(models.Model):
+    """
+    Fields:
+     - name: Name of this video
+     - site: Site this video is attached to
+     - description: Video description
+     - tags: A list of Tag objects associated with this item
+     - categories: Similar to Tags
+     - file_url: The file this object points to (if any) ... if not
+       provided, at minimum we need the embed_code for the item.
+     - when_submitted: When this item was first entered into the
+       database
+     - when_approved: When this item was marked to appear publicly on
+       the site
+     - when_published: When this file was published at its original
+       source (if known)
+     - status: one of localtv.models.VIDEOS_STATUSES
+     - feed: which feed this item came from (if any)
+     - website_url: The page that this item is associated with.
+     - embed_code: code used to embed this item
+     - guid: data used
+    """
+
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
     description = models.TextField()
@@ -104,6 +126,8 @@ class Video(models.Model):
     categories = models.ManyToManyField(Category, blank=True)
     file_url = models.URLField(verify_exists=False, blank=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
+    when_approved = models.DateTimeField(null=True, blank=True)
+    when_published = models.DateTimeField(null=True, blank=True)
     last_featured = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)

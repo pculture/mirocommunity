@@ -88,6 +88,7 @@ class MetasearchVideo(object):
             description=self.description,
             file_url=self.file_url,
             when_submitted=datetime.datetime.now(),
+            when_approved=datetime.datetime.now(),
             status=models.VIDEO_STATUS_ACTIVE,
             website_url=self.website_url,
             embed_code=self.embed_code)

@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -66,6 +68,7 @@ def approve_video(request, sitelocation=None):
         status=models.VIDEO_STATUS_UNAPPROVED,
         site=sitelocation.site)
     current_video.status = models.VIDEO_STATUS_ACTIVE
+    current_video.when_approved = datetime.datetime.now()
     current_video.save()
     return HttpResponse('SUCCESS')
     
@@ -81,5 +84,4 @@ def reject_video(request, sitelocation=None):
     current_video.status = models.VIDEO_STATUS_REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
-
 
