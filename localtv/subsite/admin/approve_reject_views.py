@@ -69,6 +69,10 @@ def approve_video(request, sitelocation=None):
         site=sitelocation.site)
     current_video.status = models.VIDEO_STATUS_ACTIVE
     current_video.when_approved = datetime.datetime.now()
+
+    if request.GET.get('feature'):
+        current_video.last_featured = datetime.datetime.now()
+
     current_video.save()
     return HttpResponse('SUCCESS')
     
