@@ -456,6 +456,17 @@ div.selected {
     text-decoration: none;
 }
 
+.approve_reject .feature {
+    color: #9f06df;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.approve_reject .feature:hover {
+    color: #b118f1;
+    text-decoration: none;
+}
+
 #admin_table_resizebar {
     text-align: center;
     vertical-align: middle;

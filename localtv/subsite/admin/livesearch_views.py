@@ -4,7 +4,6 @@ from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.views.generic.list_detail import object_list
 from vidscraper import metasearch
 
 from localtv.decorators import get_sitelocation, require_site_admin
@@ -114,7 +113,10 @@ def livesearch_page(request, sitelocation=None):
 @get_sitelocation
 @get_search_video
 def approve(request, search_video, sitelocation=None):
-    search_video.generate_video_model(sitelocation.site)
+    video = search_video.generate_video_model(sitelocation.site)
+    if request.GET.get('feature'):
+        video.last_featured = datetime.datetime.now()
+        video.save()
     
     return HttpResponse('SUCCESS')
 

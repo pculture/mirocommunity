@@ -37,6 +37,8 @@ function load_click_callbacks() {
         run_and_disappear);
     $('div.video .approve_reject .reject').click(
         run_and_disappear);
+    $('div.video .approve_reject .feature').click(
+        run_and_disappear);
 }
 
 function resize_admin() {
