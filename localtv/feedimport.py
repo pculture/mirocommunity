@@ -6,10 +6,11 @@ from lxml.html.clean import clean_html
 import vidscraper
 from vidscraper.util import clean_description_html
 
-from localtv import util, miro_util
+from localtv import util, miroguide_util
 from localtv.models import (
     Video, Feed, FEED_STATUS_ACTIVE,
-    VIDEO_STATUS_UNAPPROVED, VIDEO_STATUS_ACTIVE)
+    VIDEO_STATUS_UNAPPROVED, VIDEO_STATUS_ACTIVE,
+    CannotOpenImageUrl)
 
 
 def update_feeds(verbose=False):
@@ -32,7 +33,7 @@ def update_feeds(verbose=False):
             file_url = None
             embed_code = None
 
-            video_enclosure = miro_util.getFirstVideoEnclosure(entry)
+            video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure['href']
 
@@ -62,8 +63,16 @@ def update_feeds(verbose=False):
                 when_approved=datetime.datetime.now(),
                 status=initial_video_status,
                 feed=feed,
-                website_url=entry['link'])
+                website_url=entry['link'],
+                thumbnail_url=miroguide_util.get_thumbnail_url(entry))
+
             video.save()
+
+            try:
+                video.save_thumbnail()
+            except CannotOpenImageUrl:
+                print "Can't get the thumbnail for %s at %s" % (
+                    video.id, video.thumbnail_url)
 
             if entry.get('tags'):
                 entry_tags = [
