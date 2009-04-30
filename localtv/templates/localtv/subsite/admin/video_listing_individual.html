@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n localtv_thumbnail %}
 
 <div {% ifequal video current_video %}
        class="video hoverable selected"
@@ -14,7 +14,11 @@
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
     <div>
-      <img src="/images/vid_overlay.png" />
+      {% if video.has_thumbnail %}
+        <img src="{% get_thumbnail_url video 142 104 %}" />
+      {% else %}
+        <img src="/images/vid_overlay.png" />
+      {% endif %}
     </div>
   </a>
   <div class="title_desc">
