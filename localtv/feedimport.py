@@ -7,11 +7,18 @@ import vidscraper
 from vidscraper.util import clean_description_html
 
 from localtv import util, miro_util
-from localtv.models import Video, Feed, FEED_STATUS_ACTIVE
+from localtv.models import (
+    Video, Feed, FEED_STATUS_ACTIVE,
+    VIDEO_STATUS_UNAPPROVED, VIDEO_STATUS_ACTIVE)
 
 
 def update_feeds(verbose=False):
     for feed in Feed.objects.filter(status=FEED_STATUS_ACTIVE):
+        if feed.auto_approve:
+            initial_video_status = VIDEO_STATUS_ACTIVE
+        else:
+            initial_video_status = VIDEO_STATUS_UNAPPROVED
+
         parsed_feed = feedparser.parse(feed.feed_url, etag=feed.etag)
         for entry in parsed_feed['entries']:
             if (Video.objects.filter(feed=feed,
@@ -53,7 +60,7 @@ def update_feeds(verbose=False):
                 embed_code=embed_code or '',
                 when_submitted=datetime.datetime.now(),
                 when_approved=datetime.datetime.now(),
-                status=FEED_STATUS_ACTIVE,
+                status=initial_video_status,
                 feed=feed,
                 website_url=entry['link'])
             video.save()
@@ -70,6 +77,6 @@ def update_feeds(verbose=False):
                     for tag in tags:
                         video.tags.add(tag)
 
-        feed.etag = parsed_feed.etag or ''
+        feed.etag = parsed_feed.get('etag') or ''
         feed.last_updated = datetime.datetime.now()
         feed.save()
