@@ -3,10 +3,9 @@ import Image
 import StringIO
 
 from django.db import models
-from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib.sites.models import Site
-from django.core.files.base import File, ContentFile
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
 
