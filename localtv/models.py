@@ -56,7 +56,7 @@ class OpenIdUser(models.Model):
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
     # logo... we can probably be lazy and just link this as part of the id..
-    admins = models.ManyToManyField(OpenIdUser, null=True, blank=True)
+    admins = models.ManyToManyField(OpenIdUser, blank=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
