@@ -63,20 +63,21 @@ class MetasearchVideo(object):
 
     def __init__(self, name, description,
                  tags=None, file_url=None,
-                 website_url=None, embed_code='',
+                 website_url=None, thumbnail_url=None, embed_code='',
                  id=None):
         self.name = name.strip()
         self.description = description
         self.tags = tags or []
         self.file_url = file_url or ''
         self.website_url = website_url or ''
+        self.thumbnail_url = thumbnail_url or ''
         self.embed_code = embed_code or ''
 
         ## NOTE: This ID is only for ordering/hashtable purposes, not
         ## the id this should have once it becomes a model
         self.id = id
 
-    def generate_video_model(self, site, save=True):
+    def generate_video_model(self, site):
         if self.tags:
             tags = get_or_create_tags(self.tags)
         else:
@@ -91,13 +92,16 @@ class MetasearchVideo(object):
             when_approved=datetime.datetime.now(),
             status=models.VIDEO_STATUS_ACTIVE,
             website_url=self.website_url,
+            thumbnail_url=self.thumbnail_url,
             embed_code=self.embed_code)
 
         for tag in tags:
             video.tags.add(tag)
 
-        if save:
-            video.save()
+        video.save()
+
+        if video.thumbnail_url:
+            video.save_thumbnail()
 
         return video
 
@@ -109,6 +113,7 @@ class MetasearchVideo(object):
             tags=vidscraper_dict.get('tags') or [],
             file_url=vidscraper_dict.get('file_url'),
             website_url=vidscraper_dict.get('link'),
+            thumbnail_url=vidscraper_dict.get('thumbnail_url'),
             embed_code=vidscraper_dict.get('embed'),
             id=vidscraper_dict.get('id'))
 
