@@ -1,9 +1,13 @@
+import datetime
+
+from django.forms.fields import url_re
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
+import feedparser
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
-from django.http import HttpResponse
 
 
 ## -------------------
@@ -20,6 +24,45 @@ def feeds_page(request, sitelocation=None):
         paginate_by=15,
         template_name='localtv/subsite/admin/feed_page.html',
         allow_empty=True, template_object_name='feed')
+
+
+@require_site_admin
+@get_sitelocation
+def add_feed(request, sitelocation=None):
+    feed_url = request.POST.get('feed_url')
+
+    if not feed_url:
+        return HttpResponseBadRequest(
+            "You must provide a feed URL")
+
+    if not url_re.match(feed_url):
+        return HttpResponseBadRequest(
+            "Not a valid feed URL")
+
+    if models.Feed.objects.filter(
+            feed_url=feed_url,
+            site=sitelocation.site).count():
+        return HttpResponseBadRequest(
+            "That feed already exists on this site")
+
+    parsed_feed = feedparser.parse(feed_url)
+        
+    feed = models.Feed(
+        feed_url=feed_url,
+        site=sitelocation.site,
+        name=parsed_feed.feed.get('title', ''),
+        webpage=parsed_feed.feed.get('link', ''),
+        description=parsed_feed.feed.get('summary', ''),
+        when_submitted=datetime.datetime.now(),
+        last_updated=datetime.datetime.now(),
+        status=models.FEED_STATUS_ACTIVE,
+        auto_approve=False)
+
+    feed.save()
+
+    feed.update_items()
+ 
+    return HttpResponse('SUCCESS')
 
 
 @require_site_admin

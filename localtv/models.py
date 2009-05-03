@@ -106,7 +106,7 @@ class Feed(models.Model):
     def __unicode__(self):
         return self.name
 
-    def update(self, verbose=False):
+    def update_items(self, verbose=False):
         from localtv import miroguide_util, util
 
         if self.auto_approve:
