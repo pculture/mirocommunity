@@ -159,7 +159,7 @@ class Feed(models.Model):
                 status=initial_video_status,
                 feed=self,
                 website_url=entry['link'],
-                thumbnail_url=miroguide_util.get_thumbnail_url(entry))
+                thumbnail_url=miroguide_util.get_thumbnail_url(entry) or '')
 
             video.save()
 
