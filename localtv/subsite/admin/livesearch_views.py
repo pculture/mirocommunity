@@ -78,7 +78,7 @@ def livesearch_page(request, sitelocation=None):
             session_livesearches[query_subkey] = results
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
-        
+            
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
             site=sitelocation,

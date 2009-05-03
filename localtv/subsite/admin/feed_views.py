@@ -1,7 +1,9 @@
 import datetime
 
+from django.core.urlresolvers import reverse
 from django.forms.fields import url_re
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import (
+    HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
 import feedparser
@@ -30,6 +32,7 @@ def feeds_page(request, sitelocation=None):
 @get_sitelocation
 def add_feed(request, sitelocation=None):
     feed_url = request.POST.get('feed_url')
+    page_num = request.POST.get('page')
 
     if not feed_url:
         return HttpResponseBadRequest(
@@ -62,7 +65,10 @@ def add_feed(request, sitelocation=None):
 
     feed.update_items()
  
-    return HttpResponse('SUCCESS')
+    reverse_url = reverse('localtv_admin_feed_page')
+    if page_num:
+        reverse_url += '?page=' + page_num
+    return HttpResponseRedirect(reverse_url)
 
 
 @require_site_admin

@@ -12,9 +12,11 @@
   <div style="margin-top: 10px" id="admin_feed_add">
     <form method="POST" action="{% url localtv_admin_feed_add %}">
       <b>Feed URL:</b>
+      {% if page_obj %}
+        <input type="hidden" name="page" value="{{ page_obj.number }}">
+      {% endif %}
       <input id="livesearch_feed_url"
-             name="feed_url"
-             value="{{ query_string }}"/>
+             name="feed_url"/>
       <input type="submit" />
     </form>
   </div>
