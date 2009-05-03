@@ -1,3 +1,4 @@
+import datetime
 import urllib
 import Image
 import StringIO
@@ -7,6 +8,10 @@ from django.contrib import admin
 from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.forms.fields import slug_re
+import feedparser
+import vidscraper
+from vidscraper.util import clean_description_html
 
 
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
@@ -100,6 +105,87 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def update(self, verbose=False):
+        from localtv import miroguide_util, util
+
+        if self.auto_approve:
+            initial_video_status = VIDEO_STATUS_ACTIVE
+        else:
+            initial_video_status = VIDEO_STATUS_UNAPPROVED
+
+        parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+        for entry in parsed_feed['entries']:
+            if (Video.objects.filter(
+                    feed=self,
+                    guid=entry['guid']).count()
+                or Video.objects.filter(
+                    feed=self,
+                    website_url=entry['link']).count()):
+                if verbose:
+                    print "Skipping %s" % entry['title']
+                continue
+
+            file_url = None
+            embed_code = None
+
+            video_enclosure = miroguide_util.get_first_video_enclosure(entry)
+            if video_enclosure:
+                file_url = video_enclosure['href']
+
+            try:
+                scraped_data = vidscraper.auto_scrape(
+                    entry['link'], fields=['file_url', 'embed'])
+                file_url = file_url or scraped_data.get('file_url')
+                embed_code = scraped_data.get('embed')
+            except vidscraper.errors.Error, e:
+                if verbose:
+                    print "Vidscraper error: %s" % e
+
+            if not (file_url or embed_code):
+                if verbose:
+                    print (
+                        "Skipping %s because it lacks file_url "
+                        "or embed_code") % entry['title']
+                continue
+
+            video = Video(
+                name=entry['title'],
+                site=self.site,
+                description=clean_description_html(entry['summary']),
+                file_url=file_url or '',
+                embed_code=embed_code or '',
+                when_submitted=datetime.datetime.now(),
+                when_approved=datetime.datetime.now(),
+                status=initial_video_status,
+                feed=self,
+                website_url=entry['link'],
+                thumbnail_url=miroguide_util.get_thumbnail_url(entry))
+
+            video.save()
+
+            try:
+                video.save_thumbnail()
+            except CannotOpenImageUrl:
+                print "Can't get the thumbnail for %s at %s" % (
+                    video.id, video.thumbnail_url)
+
+            if entry.get('tags'):
+                entry_tags = [
+                    tag['term'] for tag in entry['tags']
+                    if len(tag['term']) <= 25
+                    and len(tag['term']) > 0
+                    and slug_re.match(tag['term'])]
+                if entry_tags:
+                    tags = util.get_or_create_tags(entry_tags)
+
+                    for tag in tags:
+                        video.tags.add(tag)
+
+        self.etag = parsed_feed.get('etag') or ''
+        self.last_updated = datetime.datetime.now()
+        self.save()
+
 
 
 class Category(models.Model):
