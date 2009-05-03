@@ -11,7 +11,6 @@ from django.core.files.storage import default_storage
 from django.forms.fields import slug_re
 import feedparser
 import vidscraper
-from vidscraper.util import clean_description_html
 
 
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
@@ -152,7 +151,7 @@ class Feed(models.Model):
             video = Video(
                 name=entry['title'],
                 site=self.site,
-                description=clean_description_html(entry['summary']),
+                description=entry.get('summary', ''),
                 file_url=file_url or '',
                 embed_code=embed_code or '',
                 when_submitted=datetime.datetime.now(),
