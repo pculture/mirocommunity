@@ -86,6 +86,8 @@ def scraped_submit_video(request, sitelocation=None):
         scraped_form.initial['name'] = scraped_data.get('title')
         scraped_form.initial['description'] = scraped_data.get('description')
         scraped_form.initial['tags'] = request.GET.get('tags')
+        scraped_form.initial['thumbnail_url'] = scraped_data.get(
+            'thumbnail_url')
 
         return render_to_response(
             'localtv/subsite/submit/scraped_submit_video.html',
@@ -104,9 +106,14 @@ def scraped_submit_video(request, sitelocation=None):
             file_url=scraped_data.get('file_url', ''),
             embed_code=scraped_data.get('embed', ''),
             website_url=scraped_form.cleaned_data['website_url'],
+            thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
             when_submitted=datetime.datetime.now())
 
         video.save()
+
+        if video.thumbnail_url:
+            video.save_thumbnail()
+
         tags = util.get_or_create_tags(
             scraped_form.cleaned_data.get('tags', []))
         for tag in tags:

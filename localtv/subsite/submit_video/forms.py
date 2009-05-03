@@ -34,6 +34,7 @@ class SubmitVideoForm(forms.Form):
 class ScrapedSubmitVideoForm(forms.Form):
     website_url = forms.URLField()
     tags = forms.CharField(required=False)
+    thumbnail_url = forms.CharField(required=False)
     name = forms.CharField(max_length=250)
     description = forms.CharField(widget=forms.widgets.Textarea)
 
