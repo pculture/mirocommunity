@@ -10,6 +10,7 @@ setup(name="Miro Local TV",
       # -*- Entry points: -*-
       [console_scripts]
       localtv_update_feeds = localtv.feedimport:update_feeds
+      localtv_update_saved_searches = localtv.feedimport:update_saved_searches
       """)
       
 
