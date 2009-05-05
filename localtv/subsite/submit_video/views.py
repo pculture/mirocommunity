@@ -9,10 +9,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from localtv import models
+from localtv import models, util
 from localtv.decorators import get_sitelocation, require_active_openid
 from localtv.subsite.submit_video import forms
-from localtv import util
 
 
 @require_active_openid
