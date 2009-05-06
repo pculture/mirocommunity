@@ -35,6 +35,7 @@ def update_saved_searches(verbose=False):
                 status=models.VIDEO_STATUS_UNAPPROVED,
                 when_approved=datetime.datetime.now())
 
+            video.strip_description()
             video.save()
 
             if video.file_url:

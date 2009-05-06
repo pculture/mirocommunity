@@ -9,6 +9,8 @@ from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.forms.fields import slug_re
+from django.utils.html import strip_tags
+
 import feedparser
 import vidscraper
 
@@ -170,6 +172,7 @@ class Feed(models.Model):
                 website_url=entry['link'],
                 thumbnail_url=miroguide_util.get_thumbnail_url(entry) or '')
 
+            video.strip_description()
             video.save()
 
             try:
@@ -310,6 +313,14 @@ class Video(models.Model):
     def get_resized_thumb_storage_path(self, width, height):
         return 'localtv/video_thumbs/%s/%sx%s.png' % (
             self.id, width, height)
+
+    def strip_description(self):
+        """
+        Strip (X)HTML description attributes
+
+        (doesn't run self.save() method though)
+        """
+        self.description = strip_tags(self.description)
 
 
 class VideoAdmin(admin.ModelAdmin):

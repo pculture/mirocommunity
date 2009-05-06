@@ -2,7 +2,7 @@ from os import path
 import urlparse
 
 from django import forms
-from lxml.html.clean import clean_html
+from django.utils.html import strip_tags
 
 from localtv import models
 from localtv import util
@@ -21,8 +21,9 @@ def clean_tags(self):
 
     return tags
 
+
 def clean_description(self):
-    return clean_html(self.cleaned_data['description'])
+    return strip_tags(self.cleaned_data['description'])
 
 
 class SubmitVideoForm(forms.Form):
@@ -30,6 +31,7 @@ class SubmitVideoForm(forms.Form):
     tags = forms.CharField(required=False)
 
     clean_tags = clean_tags
+
 
 class ScrapedSubmitVideoForm(forms.Form):
     website_url = forms.URLField()

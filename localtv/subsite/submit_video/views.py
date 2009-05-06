@@ -107,6 +107,7 @@ def scraped_submit_video(request, sitelocation=None):
             website_url=scraped_form.cleaned_data['website_url'],
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
             when_submitted=datetime.datetime.now())
+        video.strip_description()
 
         video.save()
 

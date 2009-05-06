@@ -95,6 +95,8 @@ class MetasearchVideo(object):
             thumbnail_url=self.thumbnail_url,
             embed_code=self.embed_code)
 
+        video.strip_description()
+
         for tag in tags:
             video.tags.add(tag)
 
