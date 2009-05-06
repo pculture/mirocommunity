@@ -3,6 +3,10 @@
 {% load embed_video i18n %}
 
 {% block content %}
+  {% if edit_video_form %}
+    {% include "localtv/subsite/admin/edit_video_form.html" %}
+  {% endif %}
+
   <div id="main">
     {% if current_video.name %}
       <h2 class="vid_title">{{ current_video.name }}</h2>

@@ -34,3 +34,11 @@ urlpatterns += patterns(
      {}, 'localtv_admin_livesearch_display'),
     (r'^livesearch/save_search/$', 'create_saved_search',
      {}, 'localtv_admin_livesearch_save_search'))
+
+
+urlpatterns += patterns(
+    'localtv.subsite.admin.edit_video_views',
+    (r'^edit_video/$', 'edit_video',
+     {}, 'localtv_admin_edit_video'),
+    (r'^edit_video/$', 'reject_video',
+     {}, 'localtv_admin_reject_video'))

@@ -9,6 +9,7 @@ from django.views.generic.list_detail import object_list
 
 from localtv import models
 from localtv.decorators import get_sitelocation
+from localtv.subsite.admin import forms as admin_forms
 
 
 @get_sitelocation
@@ -38,11 +39,17 @@ def subsite_index(request, sitelocation=None):
 def view_video(request, video_id, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id, site=sitelocation.site)
 
+    edit_video_form = None
+    openid_user = request.session.get('openid_localtv')
+    if openid_user and openid_user.admin_for_sitelocation(sitelocation):
+        edit_video_form = admin_forms.EditVideoForm.create_from_video(video)
+
     return render_to_response(
         'localtv/subsite/view_video.html',
         {'sitelocation': sitelocation,
          'current_video': video,
-         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT')},
+         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT'),
+         'edit_video_form': edit_video_form},
         context_instance=RequestContext(request))
 
 

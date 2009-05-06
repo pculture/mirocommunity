@@ -56,6 +56,15 @@ class OpenIdUser(models.Model):
     def __unicode__(self):
         return "%s <%s>" % (self.nickname, self.email)
 
+    def admin_for_sitelocation(self, sitelocation):
+        if not self.status == OPENID_STATUS_ACTIVE:
+            return False
+
+        if self.superuser or sitelocation.admins.filter(id=self.id).count():
+            return True
+        else:
+            return False
+
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
