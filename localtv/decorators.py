@@ -52,7 +52,6 @@ def require_site_admin(view_func):
                 or models.SiteLocation.objects.filter(
                     admins=openid_localtv,
                     site=Site.objects.get_current()).count()):
-                passes_test = True
 
                 return view_func(request, *args, **kwargs)
             else:
