@@ -1,0 +1,20 @@
+<div id="edit_video_wrapper">
+  <p id="edit_video_controls">
+    <span id="edit_control_arrow">►</span>
+    Edit this Video
+  </p>
+  <form method="POST" action="{% url localtv_admin_edit_video %}">
+    <table>
+      {{ edit_video_form.as_table }}
+      <tr>
+        <td></td>
+        <td><input type="submit" /></td>
+      </tr>
+    </table>
+  </form>
+
+  <p>
+    <a href="{% url localtv_admin_reject_video %}">Reject this video</a>
+  </p>
+
+</div>
