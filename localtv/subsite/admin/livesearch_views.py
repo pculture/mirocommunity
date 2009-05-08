@@ -11,17 +11,54 @@ from localtv import models, util
 
 
 ## ----------
+## Utils
+## ----------
+
+def get_query_components(request):
+    """
+    Takes a request, and returns a tuple of
+    (query_string, order_by, query_subkey)
+    """
+    query_string = request.GET.get('query', '')
+    order_by = request.GET.get('order_by')
+    if not order_by in ('relevant', 'latest'):
+        order_by = 'relevant'
+
+    query_subkey = '%s-%s' % (order_by, query_string)
+    return query_string, order_by, query_subkey
+
+
+def remove_video_from_session(request):
+    """
+    Removes the video with the video id cfom the session, if it finds it.
+
+    This method does not raise an exception if it isn't found though.
+    """
+    query_string, order_by, query_subkey = get_query_components(request)
+
+    session_searches = request.session.get('localtv_livesearches')
+
+    video_index = 0
+    subkey_videos = session_searches[query_subkey]
+    for this_result in subkey_videos:
+        if this_result.id == int(request.GET['video_id']):
+            subkey_videos.pop(video_index)
+            
+            session_searches[query_subkey] = subkey_videos
+            request.session['localtv_livesearches'] = session_searches
+            request.session.save()
+            return
+        video_index += 1
+    
+
+## ----------
 ## Decorators
 ## ----------
 
 def get_search_video(view_func):
     def new_view_func(request, *args, **kwargs):
-        query_string = request.GET.get('query')
-        order_by = request.GET.get('order_by')
-        if not order_by in ('relevant', 'latest'):
-            order_by = 'relevant'
+        query_string, order_by, query_subkey = get_query_components(request)
 
-        query_subkey = '%s-%s' % (order_by, query_string)
         session_searches = request.session.get('localtv_livesearches')
 
         if not session_searches or not session_searches.get(query_subkey):
@@ -55,12 +92,7 @@ def get_search_video(view_func):
 @require_site_admin
 @get_sitelocation
 def livesearch_page(request, sitelocation=None):
-    query_string = request.GET.get('query', '')
-    order_by = request.GET.get('order_by')
-    if not order_by in ('relevant', 'latest'):
-        order_by = 'relevant'
-
-    query_subkey = '%s-%s' % (order_by, query_string)
+    query_string, order_by, query_subkey = get_query_components(request)
 
     results = []
     if query_string:
@@ -75,7 +107,8 @@ def livesearch_page(request, sitelocation=None):
             results = [
                 util.MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
-            results = util.strip_existing_metasearchvideos(results, sitelocation)
+            results = util.strip_existing_metasearchvideos(
+                results, sitelocation)
             session_livesearches[query_subkey] = results
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
@@ -119,6 +152,8 @@ def approve(request, search_video, sitelocation=None):
         video.last_featured = datetime.datetime.now()
         video.save()
     
+    remove_video_from_session(request)
+
     return HttpResponse('SUCCESS')
 
 
