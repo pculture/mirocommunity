@@ -1,0 +1,6 @@
+ <div id="admin_header">
+    <a href="{% url localtv_admin_approve_reject %}" {% if video_list %}class="current"{% endif %}>Submissions</a>
+    <a href="{% url localtv_admin_feed_page %}" {% if feed_list %}class="current"{% endif %}>Watched Feeds</a>
+    <a href="{% url localtv_admin_livesearch_page %}" {% if saved_searches %}class="current"{% endif %}>Saved Searches</a>
+ </div>
+

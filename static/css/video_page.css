@@ -77,6 +77,10 @@ p.description{
     margin: 5px 0 0 70px;
 }
 
+#admin_header .current {
+    font-weight: bold;
+}
+
 #edit_video_controls {
     cursor: pointer;
 }
