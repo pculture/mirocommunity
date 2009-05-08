@@ -81,12 +81,30 @@ p.description{
     font-weight: bold;
 }
 
-#edit_video_controls {
+.editable {
     cursor: pointer;
 }
 
-#edit_control_arrow_on {
-    display: none;
+.editable:after {
+    content: " ✎";
+}
+
+.editable.open {
+    cursor: inherit;
+}
+
+.editable.open:after {
+    content: "";
+}
+
+.editable.open .save {
+    color: green;
+    cursor: pointer;
+}
+
+.editable.open .cancel {
+    color: red;
+    cursor: pointer;
 }
 
 #edit_video_wrapper form {

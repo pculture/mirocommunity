@@ -1,7 +1,13 @@
 {% extends "localtv/subsite/base.html" %}
 
 {% load embed_video i18n %}
-
+{% block head %}
+  {% if edit_video_form %}
+    <script src="/js/edit_form.js"
+            type="text/javascript">
+    </script>
+  {% endif %}
+{% endblock %}
 {% block content %}
   {% if edit_video_form %}
     {% include "localtv/subsite/admin/edit_video_form.html" %}
@@ -9,9 +15,9 @@
 
   <div id="main">
     {% if current_video.name %}
-      <h2 class="vid_title">{{ current_video.name }}</h2>
+      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">{{ current_video.name }}</h2>
     {% else %}
-      <h2 class="vid_title">{% trans "(no title)" %}</h2>
+      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">{% trans "(no title)" %}</h2>
     {% endif %}
     <span class="date">{{ current_video.when_approved|timesince }} ago</span>
     <div id="video_wrapper">
@@ -29,7 +35,7 @@
       </a>
       
     </div>        
-    <p class="description">
+    <p class="description{% if edit_video_form %} editable{% endif %}">
       {% autoescape off %}
         {{ current_video.description|striptags }}
       {% endautoescape %}
