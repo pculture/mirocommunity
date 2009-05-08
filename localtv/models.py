@@ -2,7 +2,6 @@ import datetime
 import urllib
 import Image
 import StringIO
-import operator
 
 from django.db import models
 from django.contrib import admin
@@ -108,6 +107,7 @@ class Feed(models.Model):
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     auto_approve = models.BooleanField(default=False)
+    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
 
     class Meta:
         unique_together = (
@@ -207,6 +207,13 @@ class Category(models.Model):
         return self.name
 
 
+class SavedSearch(models.Model):
+    site = models.ForeignKey(SiteLocation)
+    query_string = models.TextField()
+    when_created = models.DateTimeField()
+    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+
+
 class Video(models.Model):
     """
     Fields:
@@ -228,6 +235,8 @@ class Video(models.Model):
      - website_url: The page that this item is associated with.
      - embed_code: code used to embed this item
      - guid: data used
+     - openid_user: if not None, the user who submitted this video
+     - search: if not None, the SavedSearch from which this video came
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
@@ -249,6 +258,8 @@ class Video(models.Model):
     thumbnail_url = models.URLField(
         verify_exists=False, blank=True, max_length=400)
     thumbnail_extension = models.CharField(max_length=8, blank=True)
+    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+    search = models.ForeignKey(SavedSearch, null=True, blank=True)
 
     class Meta:
         ordering = ['-when_submitted']
@@ -323,6 +334,17 @@ class Video(models.Model):
         """
         self.description = strip_tags(self.description)
 
+    def submitter(self):
+        if self.openid_user is not None:
+            return self.openid_user
+        elif self.feed is not None:
+            return self.feed.openid_user
+        elif self.search is not None:
+            return self.search.openid_user
+        else:
+            # XXX warning?
+            return None
+
     @classmethod
     def popular_since(Class, delta, sitelocation=None):
         """
@@ -350,12 +372,6 @@ class VideoAdmin(admin.ModelAdmin):
     list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
     list_filter = ['status', 'when_submitted']
     search_fields = ['name', 'description']
-
-
-class SavedSearch(models.Model):
-    site = models.ForeignKey(SiteLocation)
-    query_string = models.TextField()
-    when_created = models.DateTimeField()
 
 
 class Watch(models.Model):

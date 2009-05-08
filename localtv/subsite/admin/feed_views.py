@@ -59,6 +59,7 @@ def add_feed(request, sitelocation=None):
         when_submitted=datetime.datetime.now(),
         last_updated=datetime.datetime.now(),
         status=models.FEED_STATUS_ACTIVE,
+        openid_user=request.session.get('openid_localtv'),
         auto_approve=False)
 
     feed.save()

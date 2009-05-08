@@ -183,6 +183,7 @@ def create_saved_search(request, sitelocation=None):
     saved_search = models.SavedSearch(
         site=sitelocation,
         query_string=query_string,
+        openid_user=request.session.get('openid_localtv'),
         when_created=datetime.datetime.now())
 
     saved_search.save()

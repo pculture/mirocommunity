@@ -12,9 +12,8 @@
   </div>
   <p>
     <a href="#">
-      Published by <span>morganknutson</span> {{ video.when_approved|timesince }}  ago
+      Published {% if video.submitter.nickname %}by <span>{{ video.submitter.nickname }}</span> {% endif %}{{ video.when_approved|timesince }}  ago
     </a>
-
     <a href="#">244 Comments</a>
   </p>
 </div>
