@@ -20,7 +20,7 @@
   <body id="video_page" onload="add_submit_callback();">
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
-        <img id="logo" src="" alt="Worcester Local Video Logo" />
+        <img id="logo" alt="Worcester Local Video Logo" />
         <h1>
           {{ sitelocation.site.name }}
           <span class="tagline">{{ sitelocation.tagline }}</span>
@@ -51,7 +51,7 @@
           </li>
           <li>
             {# eventually use {% url localtv_subsite_list_popular %} #}
-            <a href="#">
+            <a href="{% url localtv_subsite_list_popular %}">
               <span>Popular</span>
             </a>
           </li>

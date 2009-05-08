@@ -44,11 +44,13 @@ def view_video(request, video_id, sitelocation=None):
     if openid_user and openid_user.admin_for_sitelocation(sitelocation):
         edit_video_form = admin_forms.EditVideoForm.create_from_video(video)
 
+    models.Watch.add(request, video, openid_user)
+
     return render_to_response(
         'localtv/subsite/view_video.html',
         {'sitelocation': sitelocation,
          'current_video': video,
-         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT'),
+         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
          'edit_video_form': edit_video_form},
         context_instance=RequestContext(request))
 

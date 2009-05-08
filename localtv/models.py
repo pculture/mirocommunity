@@ -2,6 +2,7 @@ import datetime
 import urllib
 import Image
 import StringIO
+import operator
 
 from django.db import models
 from django.contrib import admin
@@ -322,6 +323,28 @@ class Video(models.Model):
         """
         self.description = strip_tags(self.description)
 
+    @classmethod
+    def popular_since(Class, delta, sitelocation=None):
+        """
+        Returns a QuerySet of the most popular videos in the previous C{delta)
+        time.
+
+        @type delta: L{datetime.timedelta)
+        @type sitelocation: L{SiteLocation}
+        """
+        earliest_time = datetime.datetime.now() - delta
+        videos = Class.objects.filter(
+            watch__timestamp__gte=earliest_time)
+        if sitelocation is not None:
+            videos = videos.filter(site=sitelocation.site)
+        videos = videos.extra(
+            select={'watch__count':
+                        """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (earliest_time,))
+        return videos.order_by('-watch__count').distinct()
+
 
 class VideoAdmin(admin.ModelAdmin):
     list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
@@ -335,6 +358,25 @@ class SavedSearch(models.Model):
     when_created = models.DateTimeField()
 
 
+class Watch(models.Model):
+    video = models.ForeignKey(Video)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    openid_user = models.ForeignKey(OpenIdUser, blank=True, null=True)
+    ip_address = models.IPAddressField()
+
+    @classmethod
+    def add(Class, request, video, openid_user=None):
+        """
+        Adds a record of a watched video to the database.  If the request came
+        from localhost, check to see if it was forwarded to (hopefully) get the
+        right IP address.
+        """
+        ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
+        if ip == '127.0.0.1':
+            ip = request.META.get('HTTP_X_FORWARDED_FOR', ip)
+
+        Class(video=video, openid_user=openid_user, ip_address=ip).save()
+
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(SiteCss)
@@ -343,3 +385,4 @@ admin.site.register(Feed)
 admin.site.register(Category)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
+admin.site.register(Watch)
