@@ -1,4 +1,5 @@
 import urllib
+import datetime
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -50,7 +51,10 @@ def view_video(request, video_id, sitelocation=None):
         'localtv/subsite/view_video.html',
         {'sitelocation': sitelocation,
          'current_video': video,
-         'intensedebate_acct': getattr(settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
+         'popular_videos': models.Video.popular_since(datetime.timedelta(
+                    days=1), sitelocation=sitelocation)[:9],
+         'intensedebate_acct': getattr(
+                settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
          'edit_video_form': edit_video_form},
         context_instance=RequestContext(request))
 
