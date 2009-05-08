@@ -1,6 +1,7 @@
 <div id="edit_video_wrapper">
-  <p id="edit_video_controls">
-    <span id="edit_control_arrow">►</span>
+  <p id="edit_video_controls" onclick='$("#edit_video_wrapper form, .arrow").toggle();'>
+    <span id="edit_control_arrow_off" class="arrow">►</span>
+    <span id="edit_control_arrow_on" class="arrow">▾</span>
     Edit this Video
   </p>
   <form method="POST" action="{% url localtv_admin_edit_video %}">
