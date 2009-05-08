@@ -1,0 +1,9 @@
+{% load i18n %}
+<div class="admin_search">
+  <a class="search_link" href="{% url localtv_admin_livesearch_page %}?query={{ search.query_string|urlencode }}">{{ search.query_string }}</a>
+  <span class="admin_feed_actions">
+    <a class="remove"
+       href="{% url localtv_admin_livesearch_remove %}?search_id={{ search.id }}">
+      ({% trans "Remove" %})</a>
+  </span>
+</div>

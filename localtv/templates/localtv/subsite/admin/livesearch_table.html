@@ -32,8 +32,10 @@
     <a href="{% url localtv_admin_livesearch_save_search %}?query={{ query_string|urlencode }}">
       Save this search</a>
   {% endif %}
-
   {{ block.super }}
+  {% for search in saved_searches %}
+    {% include "localtv/subsite/admin/search_listing_individual.html" %}
+  {% endfor %}
 {% endblock above_table %}
 
 {% block pagination %}

@@ -139,7 +139,8 @@ def livesearch_page(request, sitelocation=None):
          'video_list': page.object_list,
          'query_string': query_string,
          'order_by': order_by,
-         'is_saved_search': is_saved_search},
+         'is_saved_search': is_saved_search,
+         'saved_searches': models.SavedSearch.objects.filter(site=sitelocation)},
         context_instance=RequestContext(request))
 
 
@@ -189,3 +190,18 @@ def create_saved_search(request, sitelocation=None):
     saved_search.save()
 
     return HttpResponse('SUCCESS')
+
+@require_site_admin
+@get_sitelocation
+def remove_saved_search(request, sitelocation=None):
+    search_id = request.GET.get('search_id')
+    existing_saved_search = models.SavedSearch.objects.filter(
+        site=sitelocation,
+        pk=search_id)
+
+    if existing_saved_search.count():
+        existing_saved_search.delete()
+        return HttpResponse('SUCCESS')
+    else:
+        return HttpResponseBadRequest(
+            'Saved search of that query does not exist')
