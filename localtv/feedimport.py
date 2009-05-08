@@ -15,11 +15,10 @@ def update_saved_searches(verbose=False):
             util.metasearch_from_querystring(
                 saved_search.query_string))
         
+        raw_results = strip_existing_metasearchvideos(
+            raw_results, saved_search.site)
+
         for result in raw_results:
-            if not result.get('link') or models.Video.objects.filter(
-                  site=saved_search.site.site,
-                  website_url=result['link']).count():
-                continue
             if not (result.get('embed') or result.get('file_url')):
                 continue
             

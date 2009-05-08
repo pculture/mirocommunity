@@ -75,6 +75,7 @@ def livesearch_page(request, sitelocation=None):
             results = [
                 util.MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
+            results = util.strip_existing_metasearchvideos(results, sitelocation)
             session_livesearches[query_subkey] = results
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
