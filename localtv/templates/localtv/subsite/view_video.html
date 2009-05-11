@@ -1,6 +1,7 @@
 {% extends "localtv/subsite/base.html" %}
 
 {% load embed_video i18n %}
+
 {% block head %}
   {% if edit_video_form %}
     <script src="/js/edit_form.js"
@@ -8,6 +9,7 @@
     </script>
   {% endif %}
 {% endblock %}
+
 {% block content %}
   {% if edit_video_form %}
     {% include "localtv/subsite/admin/edit_video_form.html" %}
