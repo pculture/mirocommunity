@@ -103,6 +103,7 @@ def scraped_submit_video(request, sitelocation=None):
             description=scraped_form.cleaned_data['description'],
             file_url=scraped_data.get('file_url', ''),
             embed_code=scraped_data.get('embed', ''),
+            flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
             openid_user=request.session.get('openid_localtv'),

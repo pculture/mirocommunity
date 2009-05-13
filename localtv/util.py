@@ -65,7 +65,7 @@ class MetasearchVideo(object):
     def __init__(self, name, description,
                  tags=None, file_url=None,
                  website_url=None, thumbnail_url=None, embed_code='',
-                 id=None):
+                 flash_enclosure_url=None, id=None):
         self.name = name.strip()
         self.description = description
         self.tags = tags or []
@@ -73,6 +73,7 @@ class MetasearchVideo(object):
         self.website_url = website_url or ''
         self.thumbnail_url = thumbnail_url or ''
         self.embed_code = embed_code or ''
+        self.flash_enclosure_url = flash_enclosure_url or ''
 
         ## NOTE: This ID is only for ordering/hashtable purposes, not
         ## the id this should have once it becomes a model
@@ -94,7 +95,8 @@ class MetasearchVideo(object):
             status=models.VIDEO_STATUS_ACTIVE,
             website_url=self.website_url,
             thumbnail_url=self.thumbnail_url,
-            embed_code=self.embed_code)
+            embed_code=self.embed_code,
+            flash_enclosure_url=self.flash_enclosure_url)
 
         video.strip_description()
 
@@ -118,6 +120,7 @@ class MetasearchVideo(object):
             website_url=vidscraper_dict.get('link'),
             thumbnail_url=vidscraper_dict.get('thumbnail_url'),
             embed_code=vidscraper_dict.get('embed'),
+            flash_enclosure_url=vidscraper_dict.get('flash_enclosure_url'),
             id=vidscraper_dict.get('id'))
 
 

@@ -139,6 +139,7 @@ class Feed(models.Model):
 
             file_url = None
             embed_code = None
+            flash_enclosure_url = None
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
@@ -146,9 +147,11 @@ class Feed(models.Model):
 
             try:
                 scraped_data = vidscraper.auto_scrape(
-                    entry['link'], fields=['file_url', 'embed'])
+                    entry['link'],
+                    fields=['file_url', 'embed', 'flash_enclosure_url'])
                 file_url = file_url or scraped_data.get('file_url')
                 embed_code = scraped_data.get('embed')
+                flash_enclosure_url = scraped_data.get('flash_enclosure_url')
             except vidscraper.errors.Error, e:
                 if verbose:
                     print "Vidscraper error: %s" % e
@@ -166,6 +169,7 @@ class Feed(models.Model):
                 description=entry.get('summary', ''),
                 file_url=file_url or '',
                 embed_code=embed_code or '',
+                flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
                 when_approved=datetime.datetime.now(),
                 status=initial_video_status,
@@ -234,6 +238,10 @@ class Video(models.Model):
      - feed: which feed this item came from (if any)
      - website_url: The page that this item is associated with.
      - embed_code: code used to embed this item
+     - flash_enclosure_url: Crappy enclosure link that doesn't
+       actually point to a url.. the kind crappy flash video sites
+       give out when they don't actually want their enclosures to
+       point to video files.
      - guid: data used
      - openid_user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
@@ -253,6 +261,7 @@ class Video(models.Model):
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = models.URLField(verify_exists=False, blank=True)
     embed_code = models.TextField(blank=True)
+    flash_enclosure_url = models.URLField(verify_exists=False, blank=True)
     guid = models.CharField(max_length=250, blank=True)
     has_thumbnail = models.BooleanField(default=False)
     thumbnail_url = models.URLField(

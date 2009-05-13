@@ -29,6 +29,7 @@ def update_saved_searches(verbose=False):
                 file_url=result.get('file_url', ''),
                 website_url=result.get('link', ''),
                 thumbnail_url=result.get('thumbnail_url', ''),
+                flash_enclosure_url=result.get('flash_enclosure_url', ''),
                 embed_code=result.get('embed'),
                 when_submitted=datetime.datetime.now(),
                 status=models.VIDEO_STATUS_UNAPPROVED,
