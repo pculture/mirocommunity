@@ -11,7 +11,7 @@ def update_feeds(verbose=False):
 
 def update_saved_searches(verbose=False):
     for saved_search in models.SavedSearch.objects.all():
-        raw_results = metasearch.unfriendlysort_results(
+        raw_results = metasearch.intersperse_results(
             util.metasearch_from_querystring(
                 saved_search.query_string))
         

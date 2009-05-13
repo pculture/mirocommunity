@@ -103,7 +103,7 @@ def livesearch_page(request, sitelocation=None):
         else:
             raw_results = util.metasearch_from_querystring(
                 query_string, order_by)
-            sorted_raw_results = metasearch.unfriendlysort_results(raw_results)
+            sorted_raw_results = metasearch.intersperse_results(raw_results)
             results = [
                 util.MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
