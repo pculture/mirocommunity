@@ -17,7 +17,8 @@ def edit_video(request, sitelocation=None):
         edit_video_form = forms.EditVideoForm.create_from_video(video)
         return render_to_response(
             'localtv/subsite/admin/edit_video_form.html',
-            {'edit_video_form': edit_video_form})
+            {'edit_video_form': edit_video_form},
+            context_instance=RequestContext(request))
     else:
         openid_user = request.session.get('openid_localtv')
         edit_video_form = forms.EditVideoForm(request.POST)
@@ -32,12 +33,14 @@ def edit_video(request, sitelocation=None):
             return render_to_response(
                 'localtv/subsite/admin/edit_video_form.html',
                 {'edit_video_form': edit_video_form,
-                 'successful_edit': True})
+                 'successful_edit': True},
+                context_instance=RequestContext(request))
 
         else:
             return render_to_response(
                 'localtv/subsite/admin/edit_video_form.html',
-                {'edit_video_form': edit_video_form})
+                {'edit_video_form': edit_video_form},
+                context_instance=RequestContext(request))
 
 
 @require_site_admin
