@@ -1,5 +1,7 @@
 import datetime
 
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 
 from localtv import models
@@ -7,7 +9,9 @@ from localtv.decorators import get_sitelocation
 
 @get_sitelocation
 def index(request, sitelocation=None):
-    pass
+    return render_to_response(
+        'localtv/subsite/browse.html', {},
+        context_instance=RequestContext(request))
 
 
 @get_sitelocation

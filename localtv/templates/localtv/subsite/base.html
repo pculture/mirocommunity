@@ -18,7 +18,7 @@
     {% block head %}{% endblock head %}
   </head>
 
-  <body id="video_page" onload="add_submit_callback();">
+  <body id="{% block body_id %}video_page{% endblock body_id %}" onload="add_submit_callback();">
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
         <img id="logo" alt="Worcester Local Video Logo" />
