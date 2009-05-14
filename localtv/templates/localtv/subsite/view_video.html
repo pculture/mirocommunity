@@ -2,6 +2,8 @@
 
 {% load embed_video i18n %}
 
+{% block title %}{{ block.super }} - {{ current_video.name }}{% endblock %}
+
 {% block head %}
   {% if edit_video_form %}
     <script src="/js/edit_form.js"
