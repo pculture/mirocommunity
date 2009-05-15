@@ -94,7 +94,7 @@ def video_search(request, sitelocation=None):
 
     else:
         return render_to_response(
-            'localtv/subsite/video_listing.html', {},
+            'localtv/subsite/video_listing_search.html', {},
             context_instance=RequestContext(request))
 
         
