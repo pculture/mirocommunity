@@ -26,11 +26,11 @@ h1 {
     padding: 40px 0 5px 0;
     font-weight: normal;
     float: left;
-letter-spacing: .01em;
+    letter-spacing: .01em;
 }
 
 h1 a {
-   text-decoration: none;
+    text-decoration: none;
 }
 
 h2 {
@@ -42,8 +42,6 @@ a {
 }
 
 
-
-
 /*/////////////////////////////////////////////
 
 ~ Classes
@@ -51,24 +49,22 @@ a {
 /////////////////////////////////////////////*/
 
 .floatright {
-    float: right;	
+    float: right;
 }
 
-
 .nick{
-line-height: 1.9em;
-padding-right: 10px;
+    line-height: 1.9em;
+    padding-right: 10px;
 }
 
 .nick span{
-text-decoration: none;
+    text-decoration: none;
 }
 
-
 .video {
-float: left;
-width: 100%;
-clear: both;
+    float: left;
+    width: 100%;
+    clear: both;
     margin-bottom: 10px;
     _overflow: hidden;
 }
@@ -87,7 +83,6 @@ clear: both;
     height: 70px;
     margin-bottom: 2px;
     overflow: hidden;
-
 }
 
 #sidebar .title_desc {
@@ -102,24 +97,23 @@ clear: both;
     font-weight: bold;
     margin-bottom: 5px;
     line-height: 16px;
-max-height: 3.6em;
-overflow: hidden;
+    max-height: 3.6em;
+    overflow: hidden;
 }
 
-.title_desc a h3, .title_desc h3 a{
-color: #333;
+.title_desc a h3, .title_desc h3 a {
+    color: #333;
     text-decoration: none;
 }
 
-.title_desc a:hover h3{
-
+.title_desc a:hover h3 {
     text-decoration: underline !important;
 }
 
 .title_desc p {
     line-height: 16px;
     max-height: 49px;
-color: #555;
+    color: #555;
     overflow: hidden;
 }
 
@@ -128,8 +122,8 @@ color: #555;
     font-size: 11px;
     line-height: 18px;
     color: #aaa;
-height: 18px;
-overflow: hidden;
+    height: 18px;
+    overflow: hidden;
     text-decoration: none;
 }
 
@@ -154,7 +148,7 @@ overflow: hidden;
 }
 
 div.floatright{
-color: #ddd;
+    color: #ddd;
 }
 
 .vid_title {
@@ -163,11 +157,11 @@ color: #ddd;
 }
 
 .vid_title a{
-text-decoration: none;
+    text-decoration: none;
 }
 
 .vid_title a:hover{
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .date {
@@ -189,7 +183,7 @@ text-decoration: none;
 }
 
 .clear{
-clear: both;
+    clear: both;
 }
 
 
@@ -210,7 +204,7 @@ clear: both;
     float: left;
     list-style: none;
     margin-right: 10px;
-_display: inline;
+    _display: inline;
 }
 
 #nav a {
@@ -222,7 +216,6 @@ _display: inline;
     text-decoration: none;
     background: url(../images/nav_right.png) right top no-repeat;
     _background: url(../images/nav_right.gif) right top no-repeat;
-
 }
 
 #nav a span {
@@ -232,7 +225,6 @@ _display: inline;
     background: url(../images/nav_left.png) no-repeat;
     _background: url(../images/nav_left.gif) no-repeat;
 }
-
 
 #nav a:hover {
     background-position: right -35px;
@@ -257,10 +249,10 @@ _display: inline;
 #video_page .browse a,
 #video_listing_new .new a,
 #video_listing_popular .popular a{
-background: url(../images/nav_right.png) right -69px no-repeat;
-_background: url(../images/nav_right.gif) right -69px no-repeat;
-color: #aaa;
-cursor: default;
+    background: url(../images/nav_right.png) right -69px no-repeat;
+    _background: url(../images/nav_right.gif) right -69px no-repeat;
+    color: #aaa;
+    cursor: default;
 }
 
 
@@ -494,44 +486,38 @@ n
 }
 
 
-
 #hover_wrap {
     z-index: 10000;
     width: 600px;
-position: absolute;
-top: 20%;
-margin-left: 160px;
+    position: absolute;
+    top: 20%;
+    margin-left: 160px;
     display: none;
-border-left: 1px solid #ccc;
-border-right: 1px solid #ccc;
-border-bottom: 1px solid #999;
-border-top: 1px solid #ddd;
-background: #eee;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #999;
+    border-top: 1px solid #ddd;
+    background: #eee;
 }
-
 
 #hover_wrap h1{
-margin: 0;
-font-size: 14px;
-padding: 0 20px 0 0;
-line-height: 1.4em;
+    margin: 0;
+    font-size: 14px;
+    padding: 0 20px 0 0;
+    line-height: 1.4em;
 }
-
 
 #submit_box {
     border: 4px solid #e0e0e0;
-margin: 0px;
+    margin: 0px;
     padding: 20px;
-background: #fff;
+    background: #fff;
 }
-
 
 #submit_box label{
-font-weight: bold;
-padding: 0 17px 0 8px;
+    font-weight: bold;
+    padding: 0 17px 0 8px;
 }
-
-
 
 #submit_box #id_url,
 #submit_box #id_tags{
@@ -580,7 +566,6 @@ div.selected {
 .unselected .approve_reject, .selected .approve_reject {
     display: none;
 }
-
 
 .unselected:hover .approve_reject, .selected:hover .approve_reject {
     display: block;
@@ -631,13 +616,13 @@ ul.pagetabs {
 }
 
 ul.pagetabs li {
-display: block;
-float: left;
-margin-right: 5px;
+    display: block;
+    float: left;
+    margin-right: 5px;
 }
 
 ul.pagetabs li a {
-     line-height: 25px;
+    line-height: 25px;
     padding-right: 6px;
     display: block;
     color: #333;
@@ -647,9 +632,7 @@ ul.pagetabs li a {
     background: url(../images/med_right.png) right top no-repeat;
 }
 
-ul.pagetabs li.selected {
-
-}
+ul.pagetabs li.selected {}
 
 ul.pagetabs li.selected a {
     background: url(../images/med_right.png) right -62px no-repeat;
@@ -659,7 +642,6 @@ ul.pagetabs li.selected a {
 ul.pagetabs li.selected a span {
     background: url(../images/med_left.png) left -62px no-repeat;
 }
-
 
 ul.pagetabs li a span {
     line-height: 25px;
@@ -687,65 +669,51 @@ ul.pagetabs li a:active span {
     background: url(../images/med_left.png) left -62px no-repeat;
 }
 
-
-
 #admin_rightpane {
     min-width: 500px;
 }
 
-
-
 #video_wrapper{
-text-align: center;
-height: 430px;
-margin: 17px 0 4px;
-clear: both;
-width: 534px;
-padding-left: 2px;
+    text-align: center;
+    height: 430px;
+    margin: 17px 0 4px;
+    clear: both;
+    width: 534px;
+    padding-left: 2px;
 }
-
-
 
 #video_wrapper embed, #video_wrapper object{
-width: 100%;
-height: 430px;
+    width: 100%;
+    height: 430px;
 }
-
-
 
 .pag{
-height: 45px;
-padding-top: 15px;
+    height: 45px;
+    padding-top: 15px;
 }
-
 
 .pag b{
-display: none;
+    display: none;
 }
-
 
 .page_nav{
-clear: both;
-padding: 30px 0 70px;
+    clear: both;
+    padding: 30px 0 70px;
 }
 
-
 .next{
-float: right;
+    float: right;
 }
 
 .previous{
-float: left;
+    float: left;
 }
 
-
-
-
 #video_listing_new .video, #video_listing_popular .video{
-width: 300px;
-overflow: hidden;
-clear: none;
-margin-right: 12px;
+    width: 300px;
+    overflow: hidden;
+    clear: none;
+    margin-right: 12px;
 }
 
 #video_listing_new .thumbnail, #video_listing_popular .thumbnail {
@@ -753,6 +721,6 @@ margin-right: 12px;
 }
 
 #video_listing_new .title_desc, #video_listing_popular .title_desc{
-_float: right;
-_width: 140px;
+    _float: right;
+    _width: 140px;
 }
