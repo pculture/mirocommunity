@@ -24,7 +24,7 @@ def new_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing.html',
+        template_name='localtv/subsite/video_listing_new.html',
         allow_empty=True, template_object_name='video')
 
 
@@ -35,7 +35,7 @@ def popular_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing.html',
+        template_name='localtv/subsite/video_listing_popular.html',
         allow_empty=True, template_object_name='video')
 
 @get_sitelocation
@@ -48,5 +48,5 @@ def featured_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing.html',
+        template_name='localtv/subsite/video_listing_featured.html',
         allow_empty=True, template_object_name='video')

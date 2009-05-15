@@ -1,0 +1,25 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% load i18n %}
+
+{% block content %}
+  <h2>{% trans "Browse teh localtvz" %}</h2>
+  <ul>
+    <li>
+      <a href="{% url localtv_subsite_list_new %}">
+        {% trans "New videos" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url localtv_subsite_list_popular %}">
+        {% trans "Popular videos" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url localtv_subsite_list_featured %}">
+        {% trans "Featured videos" %}
+      </a>
+    </li>
+  </ul>
+    
+{% endblock content %}
