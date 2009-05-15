@@ -5,11 +5,11 @@
             class="selected"
           {% endifequal %}>
         <a href="{% url localtv_admin_livesearch_page %}?page={{ page.number }}&query={{ query_string }}&order_by={{ order_by}}">
-          {{ page.number }}</a>
+          <span>{{ page.number }}</span></a>
       </li>
     {% endfor %}
     {% if not forloop.last %}
-      <li class="ellipse">...</li>
+      <li class="ellipse"><span>...</span></li>
     {% endif %}
   {% endfor %}
 </ul>
