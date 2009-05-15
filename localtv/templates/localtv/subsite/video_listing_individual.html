@@ -4,7 +4,7 @@
   <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
     <div>
       {% if video.has_thumbnail %}
-        <img src="{% get_thumbnail_url video 142 104 %}" />
+        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
       {% else %}
         <img src="/images/vid_overlay.png" />
       {% endif %}

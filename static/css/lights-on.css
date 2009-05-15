@@ -24,8 +24,13 @@ body {
 h1 {
     font-size: 28px;
     padding: 40px 0 5px 0;
-    font-weight: bold;
+    font-weight: normal;
     float: left;
+letter-spacing: .01em;
+}
+
+h1 a {
+   text-decoration: none;
 }
 
 h2 {
@@ -35,6 +40,8 @@ h2 {
 a {
     color: #333;	
 }
+
+
 
 
 /*/////////////////////////////////////////////
@@ -47,20 +54,45 @@ a {
     float: right;	
 }
 
+
+.nick{
+line-height: 1.9em;
+padding-right: 10px;
+}
+
+.nick span{
+text-decoration: none;
+}
+
+
 .video {
-    float: left;
+float: left;
+width: 100%;
+clear: both;
     margin-bottom: 10px;
+    _overflow: hidden;
 }
 
 .thumbnail {
     float: left;
     margin-right: 16px;
     background: url(../images/thumbnail.png) left top no-repeat;
+    _height: 0px;
+    _padding-top: 102px;
+    overflow: hidden;
 }
 
 .title_desc {
     padding-top: 7px;
-    height: 55px;
+    height: 70px;
+    margin-bottom: 2px;
+    overflow: hidden;
+
+}
+
+#sidebar .title_desc {
+    padding-top: 7px;
+    height: 53px;
     margin-bottom: 2px;
     overflow: hidden;
 }
@@ -70,15 +102,24 @@ a {
     font-weight: bold;
     margin-bottom: 5px;
     line-height: 16px;
+max-height: 3.6em;
+overflow: hidden;
 }
 
-.title_desc h3 a {
+.title_desc a h3, .title_desc h3 a{
+color: #333;
     text-decoration: none;
 }
 
+.title_desc a:hover h3{
+
+    text-decoration: underline !important;
+}
+
 .title_desc p {
-    line-height: 15px;
-    height: 29px;
+    line-height: 16px;
+    max-height: 49px;
+color: #555;
     overflow: hidden;
 }
 
@@ -86,7 +127,9 @@ a {
     display: block;
     font-size: 11px;
     line-height: 18px;
-    color: #555;
+    color: #aaa;
+height: 18px;
+overflow: hidden;
     text-decoration: none;
 }
 
@@ -101,16 +144,30 @@ a {
 .rss {
     background: url(../images/rss.png) 40px 2px no-repeat;
     padding-right: 20px;
+    font-size: 11px;
 }
 
 .miro-subscribe {
     padding-right: 32px;
-    background: url(../images/miro.png) 68px 0px no-repeat;
+    background: url(../images/miro.png) 65px -3px no-repeat;
+    font-size: 11px;
+}
+
+div.floatright{
+color: #ddd;
 }
 
 .vid_title {
     float: left;
     margin-bottom: 10px;
+}
+
+.vid_title a{
+text-decoration: none;
+}
+
+.vid_title a:hover{
+  text-decoration: underline;
 }
 
 .date {
@@ -131,6 +188,10 @@ a {
     text-decoration: underline;
 }
 
+.clear{
+clear: both;
+}
+
 
 /*/////////////////////////////////////////////
 
@@ -142,12 +203,14 @@ a {
     clear: both;
     padding-top: 10px;
     float: left;
+    width: 680px;
 }
 
 #nav li {
     float: left;
     list-style: none;
     margin-right: 10px;
+_display: inline;
 }
 
 #nav a {
@@ -158,6 +221,8 @@ a {
     font-weight: bold;
     text-decoration: none;
     background: url(../images/nav_right.png) right top no-repeat;
+    _background: url(../images/nav_right.gif) right top no-repeat;
+
 }
 
 #nav a span {
@@ -165,26 +230,48 @@ a {
     display: block;
     padding: 0 7px 0 20px ;
     background: url(../images/nav_left.png) no-repeat;
+    _background: url(../images/nav_left.gif) no-repeat;
 }
 
 
 #nav a:hover {
-    background: url(../images/nav_right.png) right -35px no-repeat;
+    background-position: right -35px;
     color: #888;
 }
 
 #nav a:hover span {
-    background: url(../images/nav_left.png) left -35px no-repeat;
+    background-position: left -35px;
 }
 
 #nav a:active {
-    background: url(../images/nav_right.png) right -69px no-repeat;
+    background-position: right -69px;
     color: #aaa;
 }
 
 #nav a:active span {
-    background: url(../images/nav_left.png) left -69px no-repeat;
+    background-position: left -69px;
 }
+
+
+#home_page .home_page a,
+#video_page .browse a,
+#video_listing_new .new a,
+#video_listing_popular .popular a{
+background: url(../images/nav_right.png) right -69px no-repeat;
+_background: url(../images/nav_right.gif) right -69px no-repeat;
+color: #aaa;
+cursor: default;
+}
+
+
+#home_page .home_page a span,
+#video_page .browse a span,
+#video_listing_new .new a span,
+#video_listing_popular .popular a span {
+    background: url(../images/nav_left.png) left -69px no-repeat;
+    background: url(../images/nav_left.gif) left -69px no-repeat;
+}
+
 
 /*/////////////////////////////////////////////
 
@@ -209,7 +296,6 @@ a {
 }
 
 #logo {
-    border: 1px solid;
     width: 60px;
     display: block;
     float: left;
@@ -222,6 +308,7 @@ a {
     display: block;
     margin-top: 5px;
     font-size: 12px;
+    padding: 4px 2px;
 }
 
 
@@ -233,6 +320,7 @@ a {
 
 #main {
     width: 540px;
+    _overflow: hidden;
     float: left;
 }
 
@@ -249,6 +337,7 @@ a {
     clear: both;
     height: 40px;
     background: url(../images/main_header.png) left top no-repeat;
+    _background: url(../images/main_header.gif) left top no-repeat;
     margin: 20px 0;
 }
 
@@ -267,6 +356,7 @@ a {
 #sidebar {
     width: 380px;
     float: right;
+    _overflow: hidden;
 }
 
 #sidebar_header h2 {
@@ -283,6 +373,7 @@ a {
     height: 36px;
     clear: both;
     background: url(../images/sidebar_header.png) left top no-repeat;
+    _background: url(../images/sidebar_header.gif) left top no-repeat;
     margin: 20px 0;
 }
 
@@ -316,29 +407,37 @@ a {
 
 #search {
     float: right;
-    margin-top: 40px;
+    margin-top: 12px;
     padding: 0;
+    _padding: 34px 0 0 0;
 }
 
 #search #search_field {
-    margin: 2px 10px 0 0;
+    margin: 2px 2px 0 0;
     float: left;
+    background: url(../images/search_field.gif) top left no-repeat;
+    padding: 6px 9px;
+    height: 18px;
+    border: 0;
+    _width: 140px;
+    font-size: 11px;
 }
 
 #search #searchbutton {
     float: left;
+    margin-top: 2px;
 }
 
 /*/////////////////////////////////////////////
 
 ~ Login
-
+n
 /////////////////////////////////////////////*/
 
 #login {
     float: right;
-    width: 200px;
     padding-top: 10px;
+    margin-top: 35px;
 }
 
 #login li {
@@ -356,61 +455,113 @@ a {
 
 .med_button {
     line-height: 25px;
-    padding-right: 15px;
+    padding-right: 6px;
     display: block;
     color: #333;
     font-size: 11px;
     float: right;
     text-decoration: none;
     background: url(../images/med_right.png) right top no-repeat;
+    _background: url(../images/med_right.gif) right top no-repeat;
+
 }
 
 .med_button span {
     line-height: 25px;
     display: block;
-    padding: 0 6px 0 20px ;
+    padding: 0 11px 0 20px ;
     background: url(../images/med_left.png) no-repeat;
+    _background: url(../images/med_left.gif) no-repeat;
+
 }
 
 .med_button:hover {
-    background: url(../images/med_right.png) right -31px no-repeat;
+    background-position: right -31px;
     color: #888;
 }
 
 .med_button:hover span {
-    background: url(../images/med_left.png) left -31px no-repeat;
+    background-position: left -31px;
 }
 
 .med_button:active {
-    background: url(../images/med_right.png) right -69px no-repeat;
+    background-position: right -63px;
     color: #aaa;
 }
 
 .med_button:active span {
-    background: url(../images/med_left.png) left -69px no-repeat;
+    background-position: left -63px;
 }
+
+
 
 #hover_wrap {
     z-index: 10000;
-    width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 600px;
+position: absolute;
+top: 20%;
+margin-left: 160px;
     display: none;
+border-left: 1px solid #ccc;
+border-right: 1px solid #ccc;
+border-bottom: 1px solid #999;
+border-top: 1px solid #ddd;
+background: #eee;
 }
 
+
+#hover_wrap h1{
+margin: 0;
+font-size: 14px;
+padding: 0 20px 0 0;
+line-height: 1.4em;
+}
+
+
 #submit_box {
-    border: 2px solid;
-    padding: 3px;
+    border: 4px solid #e0e0e0;
+margin: 0px;
+    padding: 20px;
+background: #fff;
+}
+
+
+#submit_box label{
+font-weight: bold;
+padding: 0 17px 0 8px;
+}
+
+
+
+#submit_box #id_url,
+#submit_box #id_tags{
+    margin: 2px 2px 0 0;
+    padding: 6px 9px;
+    height: 18px;
+    border: 0;width: 250px;
+    font-size: 11px;
+    background: url(../images/large_field.gif) top left no-repeat;
 }
 
 #close_submit_box {
-    text-align: right;
-    border-bottom: 2px dashed;
-    font-weight: bold;
+    line-height: 25px;
+    padding-right: 6px;
+    display: block;
+    color: #333;
+    font-size: 11px;
+    cursor: pointer;
+    float: right;
+    text-decoration: none;
+    background: url(../images/med_right.png) right top no-repeat;
+    _background: url(../images/med_right.gif) right top no-repeat;
 }
 
 #close_submit_box span {
-    cursor: pointer;
+    line-height: 25px;
+    display: block;
+    padding: 0 11px 0 20px ;
+    background: url(../images/med_left.png) no-repeat;
+    _background: url(../images/med_left.gif) no-repeat;
 }
 
 div.selected {
@@ -480,26 +631,128 @@ ul.pagetabs {
 }
 
 ul.pagetabs li {
-    border: 1px solid;
-    border-color: black;
-    padding: 3px;
-    margin: 2px;
-    display: inline;
-    list-style-type: none;
+display: block;
+float: left;
+margin-right: 5px;
 }
 
 ul.pagetabs li a {
+     line-height: 25px;
+    padding-right: 6px;
+    display: block;
+    color: #333;
+    font-size: 11px;
+    float: left;
     text-decoration: none;
+    background: url(../images/med_right.png) right top no-repeat;
 }
 
 ul.pagetabs li.selected {
-    background: cyan;
+
 }
 
 ul.pagetabs li.selected a {
-    background: cyan;
+    background: url(../images/med_right.png) right -62px no-repeat;
+    color: #aaa;
 }
+
+ul.pagetabs li.selected a span {
+    background: url(../images/med_left.png) left -62px no-repeat;
+}
+
+
+ul.pagetabs li a span {
+    line-height: 25px;
+    display: block;
+    text-align: right;
+    padding: 0 6px 0 12px ;
+    background: url(../images/med_left.png) no-repeat;
+}
+
+ul.pagetabs li a:hover {
+    background: url(../images/med_right.png) right -31px no-repeat;
+    color: #888;
+}
+
+ul.pagetabs li a:hover span {
+    background: url(../images/med_left.png) left -31px no-repeat;
+}
+
+ul.pagetabs li a:active {
+    background: url(../images/med_right.png) right -62px no-repeat;
+    color: #aaa;
+}
+
+ul.pagetabs li a:active span {
+    background: url(../images/med_left.png) left -62px no-repeat;
+}
+
+
 
 #admin_rightpane {
     min-width: 500px;
+}
+
+
+
+#video_wrapper{
+text-align: center;
+height: 430px;
+margin: 17px 0 4px;
+clear: both;
+width: 534px;
+padding-left: 2px;
+}
+
+
+
+#video_wrapper embed, #video_wrapper object{
+width: 100%;
+height: 430px;
+}
+
+
+
+.pag{
+height: 45px;
+padding-top: 15px;
+}
+
+
+.pag b{
+display: none;
+}
+
+
+.page_nav{
+clear: both;
+padding: 30px 0 70px;
+}
+
+
+.next{
+float: right;
+}
+
+.previous{
+float: left;
+}
+
+
+
+
+#video_listing_new .video, #video_listing_popular .video{
+width: 300px;
+overflow: hidden;
+clear: none;
+margin-right: 12px;
+}
+
+#video_listing_new .thumbnail, #video_listing_popular .thumbnail {
+    _width: 140px;
+}
+
+#video_listing_new .title_desc, #video_listing_popular .title_desc{
+_float: right;
+_width: 140px;
 }

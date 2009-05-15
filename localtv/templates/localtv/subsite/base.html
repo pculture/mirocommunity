@@ -21,48 +21,12 @@
   <body id="{% block body_id %}video_page{% endblock body_id %}" onload="add_submit_callback();">
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
-        <img id="logo" alt="Worcester Local Video Logo" />
+        <img id="logo" alt="Worcester Local Video Logo" src="/images/logo.gif" />
         <h1>
-          {{ sitelocation.site.name }}
+          <a href="{% url localtv_subsite_index %}">{{ sitelocation.site.name }}</a>
           <span class="tagline">{{ sitelocation.tagline }}</span>
         </h1>
 
-        <form id="search"
-              action="{% url localtv_subsite_search %}"
-              method="GET">
-          <input name="query" type="text" id="search_field" />
-          <input type="image" id="searchbutton" src="/images/search.png" value="submit" />
-        </form>
-        
-        <ul id="nav">
-          <li>
-            <a href="{% url localtv_subsite_index %}">
-              <span>Home</span>
-            </a>
-          </li>
-          <li>
-            <a href="{% url localtv_subsite_list_index %}">
-              <span>Browse</span>
-            </a>
-          </li>
-          <li>
-            <a href="{% url localtv_subsite_list_new %}">
-              <span>New Videos</span>
-            </a>
-          </li>
-          <li>
-            {# eventually use {% url localtv_subsite_list_popular %} #}
-            <a href="{% url localtv_subsite_list_popular %}">
-              <span>Popular</span>
-            </a>
-          </li>
-          <li>
-            <a id="submit_button" href="{% url localtv_submit_video %}">
-              <span>Submit A Video</span>
-            </a>
-          </li>
-        </ul>
-        
         <ul id="login">
           {% if openid_localtv.url %}
             <li>
@@ -71,8 +35,8 @@
                 <span>Logout</span>
               </a>
             </li>
-            <li>
-              <a href="{{ openid_localtv.url }}">
+            <li><span>Welcome,</span>
+              <a class="nick" href="{{ openid_localtv.url }}">
                 {{ openid_localtv.nickname }}
               </a>
             </li>
@@ -84,6 +48,48 @@
             </li>
           {% endif %}
         </ul>
+        
+        <ul id="nav">
+          <li class="home_page">
+            <a href="{% url localtv_subsite_index %}">
+              <span>Home</span>
+            </a>
+          </li>
+          <li class="browse">
+            <a href="{% url localtv_subsite_list_index %}">
+              <span>Browse</span>
+            </a>
+          </li>
+          <li class="new">
+            <a href="{% url localtv_subsite_list_new %}">
+              <span>New Videos</span>
+            </a>
+          </li>
+          <li class="popular">
+            {# eventually use {% url localtv_subsite_list_popular %} #}
+            <a href="{% url localtv_subsite_list_popular %}">
+              <span>Popular</span>
+            </a>
+          </li>
+          <li class="submit">
+            <a id="submit_button" href="{% url localtv_submit_video %}">
+              <span>Submit A Video</span>
+            </a>
+          </li>
+          <li class="about">
+            <a id="submit_button" href="{% url localtv_submit_video %}">
+              <span>About Us</span>
+            </a>
+          </li>
+        </ul>
+        
+         <form id="search"
+              action="{% url localtv_subsite_search %}"
+              method="GET">
+          <input name="query" type="text" id="search_field" />
+          <input type="image" id="searchbutton" src="/images/search.gif" value="submit" />
+        </form>
+
       </div>
 
       <div id="hover_wrap">

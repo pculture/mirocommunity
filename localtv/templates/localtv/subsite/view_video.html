@@ -2,6 +2,9 @@
 
 {% load embed_video i18n %}
 
+{% block body_id %}view_video{% endblock %}
+
+
 {% block title %}{{ block.super }} - {{ current_video.name }}{% endblock %}
 
 {% block head %}
@@ -19,86 +22,101 @@
 
   <div id="main">
     {% if current_video.name %}
-      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">{{ current_video.name }}</h2>
+      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
+        <a href="{{ video.get_absolute_url }}">{{ current_video.name }}</a>
+      </h2>
     {% else %}
-      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">{% trans "(no title)" %}</h2>
+      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
+        {% trans "(no title)" %}
+      </h2>
     {% endif %}
     <span class="date">{{ current_video.when_approved|timesince }} ago</span>
     <div id="video_wrapper">
       {% embed_video current_video %}
+    </div>
+
+    <div class="action">
       <a href="#" id="flag_button" class="med_button">
-        <span>Flag Video<img src="../images/arrow_down.png" /></span>
+        <span>Flag Video<img src="/images/arrow_down.png" /></span>
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="../images/arrow_down.png" /></span>
+        <span>Share Video<img src="/images/arrow_down.png" /></span>
       </a>
 
       <a href="#" id="seperate" class="med_button">
         <span>open player in separate window</span>
       </a>
-      
-    </div>        
+    </div>
+
     <p class="description{% if edit_video_form %} editable{% endif %}">
       {% autoescape off %}
         {{ current_video.description|striptags }}
       {% endautoescape %}
     </p>
-    
-    
+
     <div id="tags">
       {% if current_video.categories.objects.count %}
         <h3>Categories - </h3>
-      
+
         <ul>
           {% for category in current_video.categories.objects.all %}
             <li>{{ category.name }}</li> 
           {% endfor %}
         </ul>
       {% endif %}
-      
+
       {% if current_video.tags.objects.count %}
         <h3>Tags - </h3>
-      
+
         <ul>
           {% for tag in current_video.tags.objects.all %}
             <li>{{ tag.name }}</li> 
           {% endfor %}
         </ul>
       {% endif %}
-      
+
       <form id="add_tag">
         <input type="text" class="text_field" />
-        <input type="image" id="suggest_tag" src="../images/suggest.png" value="submit" />
-      </form>       
-      
-      <a href="#">Login to add a tag</a>
+        <input type="image" id="suggest_tag" src="/images/suggest.png" value="submit" />
+      </form>
+
+      <a href="#" class="log_push">Login to add a tag</a>
+      <br class="clear" />
     </div>
-    
+
     <!-- Intensedebate would normally go here -->
     {% if intensedebate_acct %}
       {% include "localtv/subsite/intensedebate.html" %}
     {% endif %}
   </div>
-  
-  
+
   <div id="sidebar">
-    
+
     <div id="about">
       {% autoescape off %}
         {{ sitelocation.sidebar_html }}
       {% endautoescape %}
+
+      <br />
+      <h2>Visit WCCA's Website</h2>
+      <a href="http://www.wccatv.com/">http://www.wccatv.com/</a>
+      <br />
+      <h2>Watch WCCA's Sorrow</h2>
+      <img src="/images/big_t.gif" />
+
+      <br />
     </div>
-    
-    <div id="sidebar_header">   
+
+    <div id="sidebar_header">
       <h2>Most Popular</h2>
-      
+
       <div class="floatright">
         <a href="#" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
-    
+
     {% for video in popular_videos %}
       {% include "localtv/subsite/sidebar_video.html" %}
     {% endfor %}

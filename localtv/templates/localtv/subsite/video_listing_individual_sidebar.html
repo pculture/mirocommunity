@@ -4,9 +4,9 @@
   <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
     <div>
       {% if video.has_thumbnail %}
-        <img src="{% get_thumbnail_url video 142 104 %}" />
+        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
       {% else %}
-        <img src="/images/vid_overlay.png" />
+        <img style="background: url(/images/default_vid.gif) no-repeat;" src="/images/vid_overlay.png" />
       {% endif %}
     </div>
   </a>
@@ -24,6 +24,6 @@
     {% endautoescape %}
   </div>
   <p>
-    <a href="#">Published on {{ video.when_submitted|date:"r" }}</a>
+    <a href="#">Published {{ video.when_submitted|date:"r" }}</a>
   </p>
 </div>

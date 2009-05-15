@@ -4,21 +4,23 @@
 
 {% block content %}
   {% block pagination %}
-    {% if page_obj %}
-      <b>Pages:</b> {% pagetabs page_obj %}
-    {% endif %}
+    <div class="pag">
+      {% if page_obj %}
+        <b>Pages</b> {% pagetabs page_obj %}
+      {% endif %}
+    </div>
   {% endblock pagination %}
 
   {% for video in video_list %}
     {% include "localtv/subsite/video_listing_individual.html" %}
   {% endfor %}
 
-  <p>
+  <p class="page_nav">
     {% if has_previous %}
-      <a href="?page={{ previous }}">Previous</a>{% if has_next %} | {% endif %}
+      <a class="previous med_button" href="?page={{ previous }}"><span>Previous</span></a>{% if has_next %}{% endif %}
     {% endif %}
     {% if has_next %}
-      <a href="?page={{ next }}">Next</a>
+      <a class="next med_button" href="?page={{ next }}"><span>Next</span></a>
     {% endif %}
   </p>
 {% endblock content %}
