@@ -39,6 +39,12 @@
 
   </div>
   <div id="sidebar">
+    <div id="about">
+      {% autoescape off %}
+        {{ sitelocation.sidebar_html }}
+      {% endautoescape %}
+    </div>
+
     <div id="sidebar_header">   
       <h2>New Videos</h2>
               
