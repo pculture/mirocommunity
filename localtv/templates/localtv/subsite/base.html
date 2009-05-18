@@ -21,11 +21,13 @@
   <body id="{% block body_id %}video_page{% endblock body_id %}" onload="add_submit_callback();">
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
-        <img id="logo" alt="Worcester Local Video Logo" src="/images/logo.gif" />
-        <h1>
-          <a href="{% url localtv_subsite_index %}">{{ sitelocation.site.name }}</a>
-          <span class="tagline">{{ sitelocation.tagline }}</span>
-        </h1>
+        <a href="{% url localtv_subsite_index %}">
+          <img id="logo" alt="Worcester Local Video Logo" src="/images/logo.gif" />
+          <h1>
+            {{ sitelocation.site.name }}
+            <span class="tagline">{{ sitelocation.tagline }}</span>
+          </h1>
+        </a>
 
         <ul id="login">
           {% if openid_localtv.url %}
