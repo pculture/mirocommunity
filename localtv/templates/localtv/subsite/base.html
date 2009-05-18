@@ -108,9 +108,12 @@
         {% block content %}
         {% endblock content %}
       </div>
-      {% if sitelocation.footerline %}
-        <p id="footer">{{ sitelocation.footerline }}</p>
-      {% endif %}
+
+      <div id="footer">
+        {% block footer %}
+          <p>{{ sitelocation.site.name }} is powered by Miro Local TV</p>
+        {% endblock footer %}
+      </div>
     </div>
   </body>
 </html>
