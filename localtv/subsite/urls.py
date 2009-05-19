@@ -13,5 +13,6 @@ urlpatterns += patterns(
     (r'^openid/', include('localtv.openid.urls')),
     (r'^admin/', include('localtv.subsite.admin.urls')),
     (r'^submit_video/', include('localtv.subsite.submit_video.urls')),
-    (r'^listing/', include('localtv.subsite.listing.urls')))
+    (r'^listing/', include('localtv.subsite.listing.urls')),
+    (r'^feeds/', include('localtv.subsite.feeds.urls')))
 

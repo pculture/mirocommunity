@@ -1,5 +1,9 @@
+import cgi
 import datetime
+import httplib
 import urllib
+import urllib2
+import urlparse
 import Image
 import StringIO
 
@@ -253,6 +257,8 @@ class Video(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     file_url = models.URLField(verify_exists=False, blank=True)
+    file_url_length = models.IntegerField(null=True, blank=True)
+    file_url_mimetype = models.CharField(max_length=60, blank=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
     when_approved = models.DateTimeField(null=True, blank=True)
     when_published = models.DateTimeField(null=True, blank=True)
@@ -281,6 +287,16 @@ class Video(models.Model):
     def get_absolute_url(self):
         return ('localtv_view_video', (),
                 {'video_id': self.id})
+
+    def try_to_get_file_url_data(self):
+        if not self.file_url:
+            return
+
+        request = urllib2.Request(self.file_url)
+        request.get_method = lambda: 'HEAD'
+        http_file = urllib2.urlopen(request)
+        self.file_url_length = http_file.headers['content-length']
+        self.file_url_mimetype = http_file.headers['content-type']
 
     def save_thumbnail(self):
         if not self.thumbnail_url:

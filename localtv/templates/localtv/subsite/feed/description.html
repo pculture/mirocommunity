@@ -1,0 +1,13 @@
+{% load i18n %}
+<p>
+  {{ obj.description|striptags }}
+</p>
+
+{% if obj.website_url %}
+  <p>
+    <b>{% trans "Original link" %}:</b>
+    <a href="{{ obj.website_url }}">{{ obj.website_url }}</a>
+  </p>
+{% endif %}
+  
+
