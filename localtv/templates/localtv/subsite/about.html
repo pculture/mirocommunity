@@ -7,11 +7,9 @@
 {% block content %}
   <div id="main">
     <h2>About {{ sitelocation.site.name }}</h2>
-    <p>
-      {% autoescape off %}
-        {{ sitelocation.about_html }}
-      {% endautoescape %}
-    </p>
+    {% autoescape off %}
+      {{ sitelocation.about_html }}
+    {% endautoescape %}
 
     <h2>{% trans "About Miro Local TV" %}</h2>
     <p>
