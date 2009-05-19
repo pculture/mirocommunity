@@ -36,6 +36,12 @@ def subsite_index(request, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+def about(request):
+    return render_to_response(
+        'localtv/subsite/about.html',
+        {}, context_instance=RequestContext(request))
+
+
 @get_sitelocation
 def view_video(request, video_id, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id, site=sitelocation.site)

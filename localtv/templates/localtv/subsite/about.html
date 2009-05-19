@@ -1,0 +1,26 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% load i18n %}
+
+{% block body_id %}about_page{% endblock %}
+
+{% block content %}
+  <div id="main">
+    <h2>About {{ sitelocation.site.name }}</h2>
+    <p>
+      {% autoescape off %}
+        {{ sitelocation.about_html }}
+      {% endautoescape %}
+    </p>
+
+    <h2>{% trans "About Miro Local TV" %}</h2>
+    <p>
+      {% blocktrans %}
+        Miro Local TV is be a site that helps communities gather their
+        videos into one place. It's a project of the Participatory
+        Culture Foundation
+      {% endblocktrans %}
+    </p>
+  </div>
+
+{% endblock %}

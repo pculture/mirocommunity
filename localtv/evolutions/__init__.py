@@ -3,4 +3,5 @@ SEQUENCE = [
     'add_thumbnail',
     'add_openid_user_fields',
     'add_flash_enclosure_url',
+    'add_about_html',
 ]

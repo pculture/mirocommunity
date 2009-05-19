@@ -248,6 +248,7 @@ div.floatright{
 #home_page .home_page a,
 #video_listing_featured .featured a,
 #video_listing_new .new a,
+#about_page .about a,
 #video_listing_popular .popular a{
     background: url(../images/nav_right.png) right -69px no-repeat;
     _background: url(../images/nav_right.gif) right -69px no-repeat;
@@ -259,6 +260,7 @@ div.floatright{
 #home_page .home_page a span,
 #video_listing_featured .featured a span,
 #video_listing_new .new a span,
+#about_page .about a,
 #video_listing_popular .popular a span {
     background: url(../images/nav_left.png) left -69px no-repeat;
     background: url(../images/nav_left.gif) left -69px no-repeat;

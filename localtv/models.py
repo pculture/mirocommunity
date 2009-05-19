@@ -75,6 +75,7 @@ class SiteLocation(models.Model):
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
+    about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
     
     def __unicode__(self):
