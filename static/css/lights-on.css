@@ -142,9 +142,10 @@ a {
 }
 
 .miro-subscribe {
-    padding-right: 32px;
-    background: url(../images/miro.png) 65px -3px no-repeat;
+    background: transparent url(../images/miro.png) no-repeat scroll 65px 0;
     font-size: 11px;
+    padding-right: 32px;
+    padding-top: 2px;
 }
 
 div.floatright{
