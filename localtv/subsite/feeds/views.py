@@ -27,10 +27,6 @@ class BaseVideosFeed(Feed):
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
 
-    def title(self):
-        return "%s: %s" % (
-            self.sitelocation.site.name, _('New Videos'))
-
     def item_pubdate(self, video):
         return video.when_approved
 
@@ -60,6 +56,10 @@ class NewVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_subsite_list_new')
 
+    def title(self):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('New Videos'))
+
     def items(self):
         base_videos = BaseVideosFeed.items(self)
         videos = base_videos.order_by(
@@ -75,6 +75,10 @@ def new(request):
 class FeaturedVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_subsite_list_featured')
+
+    def title(self):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Featured Videos'))
 
     def items(self):
         base_videos = BaseVideosFeed.items(self)
@@ -96,6 +100,10 @@ class PopularVideosFeed(BaseVideosFeed):
         videos = models.Video.popular_since(
             datetime.timedelta(days=1), self.sitelocation)
         return videos[:LOCALTV_FEED_LENGTH]
+
+    def title(self):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Popular Videos'))
 
 
 def popular(request):
