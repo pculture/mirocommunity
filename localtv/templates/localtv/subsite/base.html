@@ -109,11 +109,13 @@
         {% endblock content %}
       </div>
 
-      <div id="footer">
-        {% block footer %}
-          <p>{{ sitelocation.site.name }} is powered by Miro Local TV</p>
-        {% endblock footer %}
-      </div>
+      {% block footer_wrapper %}
+        <div id="footer">
+          {% block footer %}
+            <p>{{ sitelocation.site.name }} is powered by Miro Local TV</p>
+          {% endblock footer %}
+        </div>
+      {% endblock footer_wrapper %}
     </div>
   </body>
 </html>
