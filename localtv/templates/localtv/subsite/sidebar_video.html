@@ -1,19 +1,29 @@
+{% load i18n localtv_thumbnail %}
+
 <div class="video">
-  <a href="{{ video.get_absolute_url }}" class="thumbnail">
+  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
     <div>
-  	<img src="/images/vid_overlay.png" />
+      {% if video.has_thumbnail %}
+        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
+      {% else %}
+        <img style="background: url(/images/default_vid.gif) no-repeat;" src="/images/vid_overlay.png" />
+      {% endif %}
     </div>
   </a>
   <div class="title_desc">
-    <h3><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h3>
-    <p>
-      {{ video.description|striptags }}
-    </p>
+    <a href="{% url localtv_view_video video_id=video.id %}">
+      {% if video.name %}
+        <h3>{{ video.name }}</h3>
+      {% else %}
+        <h3>{% trans "(no title)" %}</h3>
+      {% endif %}
+    </a>
+      
+    {% autoescape off %}
+      <p>{{ video.description|striptags }}</p>
+    {% endautoescape %}
   </div>
   <p>
-    <a href="#">
-      Published {% if video.submitter.nickname %}by <span>{{ video.submitter.nickname }}</span> {% endif %}{{ video.when_approved|timesince }}  ago
-    </a>
-    <a href="#">244 Comments</a>
+    <a href="#">Published {{ video.when_submitted|date:"r" }}</a>
   </p>
 </div>
