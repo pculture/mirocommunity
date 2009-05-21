@@ -22,11 +22,6 @@ class BaseVideosFeed(Feed):
         self.sitelocation = models.SiteLocation.objects.get(
             site=models.Site.objects.get_current())
 
-    def items(self):
-        return models.Video.objects.filter(
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE)
-
     def item_pubdate(self, video):
         return video.when_approved
 
@@ -61,8 +56,10 @@ class NewVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('New Videos'))
 
     def items(self):
-        base_videos = BaseVideosFeed.items(self)
-        videos = base_videos.order_by(
+        videos = models.Video.objects.filter(
+            site=self.sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE)
+        videos = videos.order_by(
             '-when_approved', '-when_submitted')
         return videos[:LOCALTV_FEED_LENGTH]
 
@@ -81,8 +78,11 @@ class FeaturedVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('Featured Videos'))
 
     def items(self):
-        base_videos = BaseVideosFeed.items(self)
-        videos = base_videos.order_by(
+        videos = models.Video.objects.filter(
+            site=self.sitelocation.site,
+            last_featured__isnull=False,
+            status=models.VIDEO_STATUS_ACTIVE)
+        videos = videos.order_by(
             '-last_featured', '-when_approved','-when_submitted')
         return videos[:LOCALTV_FEED_LENGTH]
 
