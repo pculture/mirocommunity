@@ -45,7 +45,9 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
     def clean(self):
         scraped_data = util.get_scraped_data(self.cleaned_data['url'])
         if scraped_data and \
-                not (scraped_data.get('embed') or scraped_data.get('file_url')):
+                not (scraped_data.get('embed')
+                     or (scraped_data.get('file_url')
+                         and not scraped_data.get('file_url_is_flaky'))):
             raise forms.ValidationError(
                 "Can't get either a file url or embed code for this url")
 

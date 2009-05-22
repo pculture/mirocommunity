@@ -154,7 +154,9 @@ class Feed(models.Model):
                 scraped_data = vidscraper.auto_scrape(
                     entry['link'],
                     fields=['file_url', 'embed', 'flash_enclosure_url'])
-                file_url = file_url or scraped_data.get('file_url')
+                if not file_url:
+                    if not scraped_data.get('file_url_is_flaky'):
+                        file_url = scraped_data.get('file_url')
                 embed_code = scraped_data.get('embed')
                 flash_enclosure_url = scraped_data.get('flash_enclosure_url')
             except vidscraper.errors.Error, e:
