@@ -1,12 +1,14 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
-{% load pagetabs %}
+{% load pagetabs i18n %}
 
 {% block head %}
   <script src="/js/admin_tables.js"
           type="text/javascript">
   </script>
 {% endblock head %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Approve / Reject" %}{% endblock %}
 
 {% block content %}
   <div id="above_admin_table">
