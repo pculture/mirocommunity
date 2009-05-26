@@ -58,7 +58,7 @@ a {
 .thumbnail {
     float: left;
     margin-right: 16px;
-    background: url(../images/default_vid.png) left top no-repeat;
+    background: url(../images/default_vid.gif) left top no-repeat;
 }
 
 .title_desc {
