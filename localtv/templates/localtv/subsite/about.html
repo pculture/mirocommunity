@@ -6,11 +6,18 @@
 
 {% block content %}
   <div id="main">
-    <h2>About {{ sitelocation.site.name }}</h2>
-    {% autoescape off %}
+    <h2 class="page_title">About {{ sitelocation.site.name }}</h2>
+     <p>
+      {% blocktrans %}
+        Miro Local TV is be a site that helps communities gather their
+        videos into one place. It's a project of the Participatory
+        Culture Foundation
+      {% endblocktrans %}
+    </p>
+   {% autoescape off %}
       {{ sitelocation.about_html }}
     {% endautoescape %}
-
+<br />
     <h2>{% trans "About Miro Local TV" %}</h2>
     <p>
       {% blocktrans %}

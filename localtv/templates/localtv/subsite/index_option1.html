@@ -1,0 +1,61 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% block body_id %}home_page{% endblock %}
+
+
+{% block content %}
+  <div id="main">
+    <div id="main_header">   
+      <h2>Editor's Picks</h2>
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_featured %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+  
+    {% for video in featured_videos %}
+      {% if forloop.first %}
+        {% include "localtv/subsite/video_feature_frontpage.html" %}
+      {% else %}
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      {% endif %}
+    {% endfor %}
+  <br class="clear" />
+  <div id="main_header">
+      <h2>Popular in the Last 24 Hours</h2>
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+
+    {% for video in popular_videos %}
+      {% if forloop.first %}
+        {% include "localtv/subsite/video_feature_frontpage.html" %}
+      {% else %}
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      {% endif %}
+    {% endfor %}
+
+  </div>
+  <div id="sidebar">
+    <div id="about">
+      {% autoescape off %}
+        {{ sitelocation.sidebar_html }}
+      {% endautoescape %}
+    </div>
+
+    <div id="sidebar_header">   
+      <h2>New Videos</h2>
+              
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_new %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+    {% for video in new_videos %}
+      {% include "localtv/subsite/sidebar_video.html" %}
+    {% endfor %}
+  </div>
+
+{% endblock content %}

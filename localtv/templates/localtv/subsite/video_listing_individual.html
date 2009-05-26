@@ -6,7 +6,7 @@
       {% if video.has_thumbnail %}
         <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
       {% else %}
-        <img src="/images/vid_overlay.png" />
+        <img style="background: url(/images/default_vid.png) no-repeat;" src="/images/vid_overlay.png" />
       {% endif %}
     </div>
   </a>

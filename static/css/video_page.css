@@ -32,6 +32,7 @@ p.description{
     padding: 15px 0;
     border-top: 1px solid #f0f0f0;
     font-size: 11px;
+    display: none;
 }
 
 #tags form{
@@ -58,6 +59,8 @@ display: none;
 
 #about h2{
 margin-bottom: 10px;
+padding-top: 0;
+float: none;
 font-size: 14px;
 font-weight: bold;
 }
@@ -104,7 +107,7 @@ font-size: 11px;
 
 #seperate{
     float: left;	
-    margin: 5px 0 0 70px;
+    margin: 0px 0 0 0px;
 }
 
 #admin_header .current {
@@ -142,7 +145,7 @@ font-size: 11px;
 }
 
 .action{
-padding-top: 30px;
+padding-top: 20px;
 }
 
 #view_video #main{
@@ -283,11 +286,11 @@ padding-left: 2px;
 
 
 #view_video #idc-container .idc-c-t{
-padding: 0px 0 0 13px;
+padding: 0px 0 0 0px;
 }
 
 #view_video #idc-container .idc-c{
-padding: 1px 0 0 8px;
+padding: 1px 0 0 0px !important;
 
 }
 
@@ -296,6 +299,12 @@ padding: 1px 0 0 8px;
 font-size: 11px !important;
 line-height: 23px !important;
 margin: 10px 0 15px;
+
+clear: both;
+}
+
+#IDCommentsNewThreadCover h3{
+padding-left: 0 !important;
 }
 
 
@@ -335,6 +344,7 @@ padding: 20px 0 4px;
 #view_video #idc-container .idc-c-t-inner{
 font-size: 12px;
 color: #555;
+margin: 0;
 }
 
 #view_video #IDCommentNewThreadText{
