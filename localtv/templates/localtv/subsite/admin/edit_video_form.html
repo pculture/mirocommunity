@@ -1,16 +1,7 @@
 <div id="edit_video_wrapper">
-  <form method="POST" action="{% url localtv_admin_edit_video %}">
-    <table>
-      {{ edit_video_form.as_table }}
-      <tr>
-        <td></td>
-        <td><input type="submit" /></td>
-      </tr>
-    </table>
-  </form>
-
   <p>
-    <a href="{% url localtv_admin_reject_video %}">Reject this video</a>
+    <a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}">
+      Reject this video
+    </a>
   </p>
-
 </div>

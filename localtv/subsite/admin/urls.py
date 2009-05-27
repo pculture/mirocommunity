@@ -7,9 +7,9 @@ urlpatterns = patterns(
     (r'^preview_video/$', 'preview_video',
      {}, 'localtv_admin_preview_video'),
     (r'^actions/reject_video/$', 'reject_video',
-     {}, 'localtv_admin_reject_video'),
+     {}, 'localtv_admin_reject_video_action'),
     (r'^actions/approve_video/$', 'approve_video',
-     {}, 'localtv_admin_approve_video'))
+     {}, 'localtv_admin_approve_video_action'))
 
 
 urlpatterns += patterns(
@@ -42,5 +42,5 @@ urlpatterns += patterns(
     'localtv.subsite.admin.edit_video_views',
     (r'^edit_video/$', 'edit_video',
      {}, 'localtv_admin_edit_video'),
-    (r'^edit_video/$', 'reject_video',
+    (r'^reject_video/$', 'reject_video',
      {}, 'localtv_admin_reject_video'))
