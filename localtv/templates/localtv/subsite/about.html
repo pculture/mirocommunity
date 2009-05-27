@@ -2,6 +2,8 @@
 
 {% load i18n %}
 
+{% block title %}{{ block.super }} - {% trans "About" %}{% endblock %}
+
 {% block body_id %}about_page{% endblock %}
 
 {% block content %}

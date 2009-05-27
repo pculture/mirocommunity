@@ -81,7 +81,7 @@ a {
 .thumbnail {
     float: left;
     margin-right: 16px;
-    background: url(../images/thumbnail.png) left top no-repeat;
+    background: url(../images/default_vid.gif) left top no-repeat;
     _height: 0px;
     _padding-top: 102px;
     overflow: hidden;

@@ -19,9 +19,16 @@ def update_saved_searches(verbose=False):
             raw_results, saved_search.site)
 
         for result in raw_results:
-            if not (result.get('embed') or result.get('file_url')):
+            if not (result.get('embed')
+                    or (result.get('file_url')
+                        and not result.get('file_url_is_flaky'))):
                 continue
             
+            if result.get('file_url_is_flaky'):
+                file_url = None
+            else:
+                file_url = result.get('file_url', '')
+
             video = models.Video(
                 site=saved_search.site.site,
                 name=result['title'],

@@ -48,7 +48,9 @@ def submit_video(request, sitelocation=None):
             get_params = urllib.urlencode(get_dict)
 
             if scraped_data and (
-                    scraped_data.get('embed') or scraped_data.get('file_url')):
+                    scraped_data.get('embed')
+                    or (scraped_data.get('file_url')
+                        and not scraped_data.get('file_url_is_flaky'))):
                 return HttpResponseRedirect(
                     reverse('localtv_submit_scraped_video') + '?' + get_params)
 
@@ -97,11 +99,16 @@ def scraped_submit_video(request, sitelocation=None):
     if scraped_form.is_valid():
         scraped_data = util.get_scraped_data(request.POST['url'])
 
+        if scraped_data.get('file_url_is_flaky'):
+            file_url = None
+        else:
+            file_url = scraped_data.get('file_url', '')
+
         video = models.Video(
             name=scraped_form.cleaned_data['name'],
             site=sitelocation.site,
             description=scraped_form.cleaned_data['description'],
-            file_url=scraped_data.get('file_url', ''),
+            file_url=file_url,
             embed_code=scraped_data.get('embed', ''),
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
