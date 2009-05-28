@@ -30,7 +30,7 @@
         {% trans "(no title)" %}
       </h2>
     {% endif %}
-    <span class="date">{{ current_video.when_approved|timesince }} ago</span>
+    <span class="date">{{ current_video.when|timesince }} ago</span>
     <div id="video_wrapper">
       {% embed_video current_video %}
     </div>

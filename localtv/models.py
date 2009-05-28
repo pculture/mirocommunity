@@ -375,6 +375,12 @@ class Video(models.Model):
             # XXX warning?
             return None
 
+    def when(self):
+        if self.when_published is not None:
+            return self.when_published
+        else:
+            return self.when_submitted
+
     @classmethod
     def popular_since(Class, delta, sitelocation=None):
         """

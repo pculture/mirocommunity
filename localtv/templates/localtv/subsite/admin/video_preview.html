@@ -5,7 +5,7 @@
 {% else %}
   <h2 class="vid_title">{% trans "(no title)" %}</h2>
 {% endif %}
-<span class="date">6 months ago</span>
+<span class="date">{% blocktrans with current_video.when|timesince as timesince %}{{ timesince }} ago{% endblocktrans %}</span>
 
 <div id="video_wrapper">
   {% embed_video current_video %}
