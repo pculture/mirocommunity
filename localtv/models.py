@@ -159,6 +159,7 @@ class Feed(models.Model):
                         file_url = scraped_data.get('file_url')
                 embed_code = scraped_data.get('embed')
                 flash_enclosure_url = scraped_data.get('flash_enclosure_url')
+                publish_date = scraped_data.get('publish_date')
             except vidscraper.errors.Error, e:
                 if verbose:
                     print "Vidscraper error: %s" % e
@@ -179,6 +180,7 @@ class Feed(models.Model):
                 flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
                 when_approved=datetime.datetime.now(),
+                when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
                 website_url=entry['link'],
