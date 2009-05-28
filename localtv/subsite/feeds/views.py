@@ -107,5 +107,5 @@ class PopularVideosFeed(BaseVideosFeed):
 
 
 def popular(request):
-    feed = FeaturedVideosFeed(None, request).get_feed(None)
+    feed = PopularVideosFeed(None, request).get_feed(None)
     return HttpResponse(feed.writeString('utf8'))
