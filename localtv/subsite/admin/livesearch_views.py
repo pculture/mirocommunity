@@ -22,7 +22,7 @@ def get_query_components(request):
     query_string = request.GET.get('query', '')
     order_by = request.GET.get('order_by')
     if not order_by in ('relevant', 'latest'):
-        order_by = 'relevant'
+        order_by = 'latest'
 
     query_subkey = '%s-%s' % (order_by, query_string)
     return query_string, order_by, query_subkey
