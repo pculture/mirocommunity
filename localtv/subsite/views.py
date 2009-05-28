@@ -23,7 +23,8 @@ def subsite_index(request, sitelocation=None):
         '-last_featured', '-when_approved', '-when_submitted')[:10]
 
     popular_videos = models.Video.popular_since(
-        datetime.timedelta(days=1), sitelocation=sitelocation)[:10]
+        datetime.timedelta(days=1), sitelocation=sitelocation,
+        status=models.VIDEO_STATUS_ACTIVE)[:10]
 
     new_videos = models.Video.objects.filter(
         site=sitelocation.site,

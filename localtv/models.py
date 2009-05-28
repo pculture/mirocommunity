@@ -382,7 +382,7 @@ class Video(models.Model):
             return self.when_submitted
 
     @classmethod
-    def popular_since(Class, delta, sitelocation=None):
+    def popular_since(Class, delta, sitelocation=None, **kwargs):
         """
         Returns a QuerySet of the most popular videos in the previous C{delta)
         time.
@@ -395,6 +395,8 @@ class Video(models.Model):
             watch__timestamp__gte=earliest_time)
         if sitelocation is not None:
             videos = videos.filter(site=sitelocation.site)
+        if kwargs:
+            videos = videos.filter(**kwargs)
         videos = videos.extra(
             select={'watch__count':
                         """SELECT COUNT(*) FROM localtv_watch
