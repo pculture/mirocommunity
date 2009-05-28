@@ -126,6 +126,9 @@ class MetasearchVideo(object):
             publish_date=vidscraper_dict.get('publish_date'),
             id=vidscraper_dict.get('id'))
 
+    def when(self):
+        return self.publish_date
+
 
 def metasearch_from_querystring(querystring, order_by='relevant'):
     terms = set(querystring.split())
