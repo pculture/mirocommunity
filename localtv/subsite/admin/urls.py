@@ -43,4 +43,6 @@ urlpatterns += patterns(
     (r'^edit_video/$', 'edit_video',
      {}, 'localtv_admin_edit_video'),
     (r'^reject_video/$', 'reject_video',
-     {}, 'localtv_admin_reject_video'))
+     {}, 'localtv_admin_reject_video'),
+    (r'^feature_video/$', 'feature_video',
+     {}, 'localtv_admin_feature_video'))
