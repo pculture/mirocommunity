@@ -71,6 +71,11 @@ class OpenIdUser(models.Model):
         else:
             return False
 
+    def admin_for_current_site(self):
+        site = Site.objects.get_current()
+        sitelocation = SiteLocation.objects.get(site=site)
+        print sitelocation
+        return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)

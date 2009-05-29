@@ -42,6 +42,13 @@
                 {{ openid_localtv.nickname }}
               </a>
             </li>
+            {% if openid_localtv.admin_for_current_site %}
+            <li>
+              <a class="nick" href="{% url localtv_admin_approve_reject %}">
+                Administration
+              </a>
+            </li>
+            {% endif %}
           {% else %}
             <li>
               <a href="{% url localtv_openid_start %}" class="med_button">
