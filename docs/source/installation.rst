@@ -187,6 +187,14 @@ You'll also need to install simplejson::
     easy_install -UaZ simplejson
 
 
+VidScraper
+----------
+
+::
+
+    git clone https://git.participatoryculture.org/djpagetabs djpagetabs
+
+
 Modifying easy_install.pth
 --------------------------
 
@@ -216,6 +224,7 @@ As you can see, paths can be relative.  Modify your file to look like so::
     ../../../src/DjangoOpenid
     ../../../src/LocalTv
     ../../../src/VidScraper
+    ../../../src/djpagetabs
     ../../../djangoproject
     import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
 
@@ -287,14 +296,10 @@ your INSTALLED_APPS::
         'django.contrib.sites',
         'django.contrib.admin',
         'django_evolution',
+        'django_openidconsumer',
+        'djpagetabs',
         'localtv',
     )
-
-
-.. Note::
-
-   In the future, we will need to add django_openidconsumer
-   here.
 
 
 urls.py
