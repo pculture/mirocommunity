@@ -153,6 +153,8 @@ def approve(request, search_video, sitelocation=None):
         site=sitelocation, query_string=request.GET.get('query'))
     if existing_saved_search.count():
         video.search = existing_saved_search[0]
+    else:
+        video.openid_user = request.session['openid_localtv']
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
     video.save()
