@@ -52,8 +52,13 @@
             </li>
             {% if openid_localtv.admin_for_current_site %}
             <li>
-              <a class="nick" href="{% url localtv_admin_approve_reject %}">
-                Administration
+              <a class="nick show_admin" href="{% url localtv_admin_approve_reject %}">
+                Show Administration
+              </a>
+            
+           
+              <a class="nick show_main" href="{% url localtv_subsite_index %}">
+                Show Front Page
               </a>
             </li>
             {% endif %}
@@ -94,7 +99,7 @@
             </a>
           </li>
           <li class="about">
-            <a id="submit_button" href="{% url localtv_about %}">
+            <a href="{% url localtv_about %}">
               <span>About Us</span>
             </a>
           </li>

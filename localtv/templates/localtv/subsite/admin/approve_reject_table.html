@@ -27,7 +27,7 @@
                 <td>
                   {% block pagination %}
                     {% if page_obj %}
-                      <b>Pages:</b> {% pagetabs page_obj %}
+                      {% pagetabs page_obj %}
                     {% endif %}
                   {% endblock pagination %}
                 </td>
