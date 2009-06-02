@@ -60,9 +60,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in build/qthelp, like this:"
-	@echo "# qcollectiongenerator build/qthelp/Miro Local TV.qhcp"
+	@echo "# qcollectiongenerator build/qthelp/Miro Community.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile build/qthelp/Miro Local TV.qhc"
+	@echo "# assistant -collectionFile build/qthelp/Miro Community.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex

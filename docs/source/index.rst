@@ -1,9 +1,9 @@
-.. Miro Local TV documentation master file, created by
+.. Miro Community documentation master file, created by
    sphinx-quickstart on Thu Apr 30 16:53:48 2009.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Miro Local TV's documentation!
+Welcome to Miro Community's documentation!
 =========================================
 
 Contents:
