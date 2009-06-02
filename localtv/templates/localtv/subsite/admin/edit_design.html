@@ -5,6 +5,9 @@
 {% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
 
 {% block content %}
+  <div id="above_admin_table">
+    {% include "localtv/subsite/admin/header.html" %}
+  </div>
   <form method="POST" action="">
     {{ title_form.as_p }}
     <input type="submit" name="type_title" value="save">
