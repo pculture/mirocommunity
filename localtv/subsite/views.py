@@ -20,7 +20,7 @@ def subsite_index(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_approved', '-when_submitted')[:5]
+        '-last_featured', '-when_approved', '-when_submitted')[:8]
 
     popular_videos = models.Video.popular_since(
         datetime.timedelta(days=1), sitelocation=sitelocation,

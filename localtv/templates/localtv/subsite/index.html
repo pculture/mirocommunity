@@ -8,46 +8,11 @@
   <div id="slider">
     <div id="slider2">
       <ul>
-
-        <!-- localtv demo slider block... edit here -->
+        {% for video in featured_videos|slice:":3" %}
         <li>
-          <div class="image"
-               style="background: url(http://farm1.static.flickr.com/41/98895797_fd2bf897af.jpg?v=0) no-repeat;">
-    </div>
-
-    <div class="copy">
-      <h2>Cambridge Grocery Stores</h2>
-      <span>3 hours ago</span>
-      <p>
-              A look at the best food shopping in Cambridge.
-2A            </p>
-    </div>
-    <a href="#" class="watch med_button"><span>Watch</span></a>
+          {% include "localtv/subsite/video_feature_frontpage.html" %}
         </li>
-        <!-- localtv demo slider block... end edits here -->
-
-        <li>
-    <div class="image">
-    </div>
-
-    <div class="copy">
-      <h2>Harvard Renovations</h2>
-      <span>1 day, 1 hours ago</span>
-      <p>Plans to renovate several major Harvard buildings are moving ahead.</p>
-    </div>
-    <a href="#" class="watch med_button"><span>Watch</span></a>
-        </li>
-        <li>
-          <div class="image"
-        style="background: url(http://farm1.static.flickr.com/82/266326206_ae02265241.jpg?v=0) no-repeat;">
-      </div>
-        <div class="copy">
-      <h2>Brass Liberation Orchestra</h2>
-      <span>9 hours ago</span>
-      <p>Marching bands took to the streets on Sunday.</p>
-    </div>
-    <a href="#" class="watch med_button"><span>Watch</span></a>
-        </li>
+        {% endfor %}
       </ul>
     </div>
   </div>
@@ -61,7 +26,7 @@
       </div>
     </div>
 
-    {% for video in featured_videos %}
+    {% for video in featured_videos|slice:"3:" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
   </div>

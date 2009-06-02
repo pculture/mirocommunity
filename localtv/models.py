@@ -44,6 +44,7 @@ OPENID_STATUSES = (
 
 
 VIDEO_THUMB_SIZES = [
+    (500, 281), # featured on frontpage
     (142, 104)]
 
 
