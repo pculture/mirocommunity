@@ -224,6 +224,8 @@ class SavedSearch(models.Model):
     when_created = models.DateTimeField()
     openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
 
+    def __unicode__(self):
+        return self.query_string
 
 class Video(models.Model):
     """
