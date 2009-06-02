@@ -35,13 +35,13 @@
 {% endblock above_table %}
 
 {% block pagination %}
-  {% if page_obj %}
+  {% if page_obj and page_obj.has_other_pages %}
    {% pagetabs page_obj "localtv/subsite/admin/livesearch_pagetabs.html" %}
   {% endif %}
 {% endblock pagination %}
 
 {% block pagination2 %}
-  {% if page_obj %}
+  {% if page_obj and page_obj.has_other_pages  %}
    {% pagetabs page_obj "localtv/subsite/admin/livesearch_pagetabs.html" %}
   {% endif %}
 {% endblock pagination2 %}
