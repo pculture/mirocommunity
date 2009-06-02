@@ -41,13 +41,12 @@ def edit_design(request, sitelocation=None):
                 context['sidebar_form'] = form
                 return render_edit_design(request, context)
         elif 'type_misc' in request.POST:
-            form = forms.EditMiscDesignForm(request.POST)
+            form = forms.EditMiscDesignForm(request.POST, request.FILES)
             if form.is_valid():
                 form.save_to_sitelocation(sitelocation)
                 return redirect()
             else:
                 context['misc_form'] = form
                 return render_edit_design(request, context)
-
         else:
             raise Http404
