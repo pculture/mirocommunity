@@ -23,8 +23,7 @@ def subsite_index(request, sitelocation=None):
         '-last_featured', '-when_approved', '-when_submitted')[:5]
 
     popular_videos = models.Video.popular_since(
-        datetime.timedelta(days=1), sitelocation=sitelocation)
-    popular_videos = popular_videos.filter(
+        datetime.timedelta(days=1), sitelocation=sitelocation,
         status=models.VIDEO_STATUS_ACTIVE)[:5]
 
     new_videos = models.Video.objects.filter(
@@ -110,4 +109,4 @@ def video_search(request, sitelocation=None):
             'localtv/subsite/video_listing_search.html', {},
             context_instance=RequestContext(request))
 
-        
+

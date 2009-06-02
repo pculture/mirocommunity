@@ -39,6 +39,7 @@ def update_saved_searches(verbose=False):
                 flash_enclosure_url=result.get('flash_enclosure_url', ''),
                 embed_code=result.get('embed'),
                 when_submitted=datetime.datetime.now(),
+                when_published=result.get('publish_date'),
                 status=models.VIDEO_STATUS_UNAPPROVED,
                 when_approved=datetime.datetime.now())
 

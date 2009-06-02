@@ -8,7 +8,7 @@
   
   {% block pagination %}
     <div class="pag">
-      {% if page_obj %}
+      {% if page_obj.has_other_pages %}
         <b>Pages</b> {% pagetabs page_obj %}
       {% endif %}
     </div>

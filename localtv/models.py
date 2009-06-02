@@ -71,6 +71,11 @@ class OpenIdUser(models.Model):
         else:
             return False
 
+    def admin_for_current_site(self):
+        site = Site.objects.get_current()
+        sitelocation = SiteLocation.objects.get(site=site)
+        print sitelocation
+        return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
@@ -159,6 +164,7 @@ class Feed(models.Model):
                         file_url = scraped_data.get('file_url')
                 embed_code = scraped_data.get('embed')
                 flash_enclosure_url = scraped_data.get('flash_enclosure_url')
+                publish_date = scraped_data.get('publish_date')
             except vidscraper.errors.Error, e:
                 if verbose:
                     print "Vidscraper error: %s" % e
@@ -179,6 +185,7 @@ class Feed(models.Model):
                 flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
                 when_approved=datetime.datetime.now(),
+                when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
                 website_url=entry['link'],
@@ -373,8 +380,14 @@ class Video(models.Model):
             # XXX warning?
             return None
 
+    def when(self):
+        if self.when_published is not None:
+            return self.when_published
+        else:
+            return self.when_submitted
+
     @classmethod
-    def popular_since(Class, delta, sitelocation=None):
+    def popular_since(Class, delta, sitelocation=None, **kwargs):
         """
         Returns a QuerySet of the most popular videos in the previous C{delta)
         time.
@@ -387,6 +400,8 @@ class Video(models.Model):
             watch__timestamp__gte=earliest_time)
         if sitelocation is not None:
             videos = videos.filter(site=sitelocation.site)
+        if kwargs:
+            videos = videos.filter(**kwargs)
         videos = videos.extra(
             select={'watch__count':
                         """SELECT COUNT(*) FROM localtv_watch

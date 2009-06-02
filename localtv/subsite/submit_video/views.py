@@ -114,7 +114,8 @@ def scraped_submit_video(request, sitelocation=None):
             website_url=scraped_form.cleaned_data['url'],
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
             openid_user=request.session.get('openid_localtv'),
-            when_submitted=datetime.datetime.now())
+            when_submitted=datetime.datetime.now(),
+            when_published=scraped_data.get('publish_date'))
         video.strip_description()
 
         video.save()

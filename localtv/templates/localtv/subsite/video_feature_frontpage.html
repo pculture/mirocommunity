@@ -4,7 +4,7 @@
 {% else %}
   <h2 class="vid_title">{% trans "(no title)" %}</h2>
 {% endif %}
-<span class="date">{{ video.when_submitted|date:"r" }}</span>
+<span class="date">{{ video.when|timesince }} ago</span>
 <div id="video_wrapper">
   {% embed_video video %}
 </div>

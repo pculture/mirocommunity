@@ -1,3 +1,5 @@
+import datetime
+
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 
@@ -50,6 +52,17 @@ def reject_video(request, sitelocation=None):
     video = get_object_or_404(
         models.Video, pk=video_id, site=sitelocation.site)
     video.status = models.VIDEO_STATUS_REJECTED
+    video.save()
+
+    return HttpResponse('SUCCESS')
+
+@require_site_admin
+@get_sitelocation
+def feature_video(request, sitelocation=None):
+    video_id = request.GET.get('video_id')
+    video = get_object_or_404(
+        models.Video, pk=video_id, site=sitelocation.site)
+    video.last_featured = datetime.datetime.now()
     video.save()
 
     return HttpResponse('SUCCESS')
