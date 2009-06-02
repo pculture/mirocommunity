@@ -38,7 +38,7 @@
       <div id="header">
         <a href="{% url localtv_subsite_index %}">
           <img id="logo" alt="Worcester Local Video Logo" src="/images/logo.gif" />
-          <h1>
+          <h1 style="text-decoration: none;">
             {{ sitelocation.site.name }}
             <span class="tagline">{{ sitelocation.tagline }}</span>
           </h1>
@@ -127,7 +127,7 @@
       {% block footer_wrapper %}
         <div id="footer">
           {% block footer %}
-            <p>{{ sitelocation.site.name }} is powered by Miro Local TV</p>
+            <p>{{ sitelocation.site.name }} is powered by Miro Community</p>
           {% endblock footer %}
         </div>
       {% endblock footer_wrapper %}
