@@ -1,0 +1,20 @@
+{% extends "localtv/subsite/admin/base.html" %}
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
+
+{% block content %}
+  <form method="POST" action="">
+    {{ title_form.as_p }}
+    <input type="submit" name="type_title" value="save">
+  </form>
+  <form method="POST" action="">
+    {{ sidebar_form.as_p }}
+    <input type="submit" name="type_sidebar" value="save">
+  </form>
+  <form method="POST" action="">
+    {{ misc_form.as_p }}
+    <input type="submit" name="type_misc" value="save">
+  </form>
+{% endblock content %}

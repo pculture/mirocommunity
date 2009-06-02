@@ -46,3 +46,8 @@ urlpatterns += patterns(
      {}, 'localtv_admin_reject_video'),
     (r'^feature_video/$', 'feature_video',
      {}, 'localtv_admin_feature_video'))
+
+urlpatterns += patterns(
+    'localtv.subsite.admin.design_views',
+    (r'^design/$', 'edit_design',
+     {}, 'localtv_admin_edit_design'))
