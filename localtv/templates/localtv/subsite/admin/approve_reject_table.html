@@ -23,7 +23,7 @@
         <div id="admin_leftpane" style="overflow: auto">
           {% block leftpane %}
             <table>
-              <tr id="admin_pagetab_row">
+              <tr class="admin_pagetab_row">
                 <td>
                   {% block pagination %}
                     {% if page_obj %}
@@ -37,6 +37,15 @@
                   {% block videolisting_rows %}
                     {% include "localtv/subsite/admin/video_listing.html" %}
                   {% endblock %}
+                </td>
+              </tr>
+              <tr class="admin_pagetab_row">
+                <td>
+                  {% block pagination2 %}
+                    {% if page_obj %}
+                      {% pagetabs page_obj %}
+                    {% endif %}
+                  {% endblock pagination2 %}
                 </td>
               </tr>
             </table>

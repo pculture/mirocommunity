@@ -858,7 +858,7 @@ width: 550px;
 }
 
 
-#admin_pagetab_row{
+.admin_pagetab_row{
 height: 50px;
 clear: both;
 }
