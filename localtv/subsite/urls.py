@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, include
+from django.conf import settings
 
 urlpatterns = patterns(
     'localtv.subsite.views',
@@ -16,3 +17,8 @@ urlpatterns += patterns(
     (r'^listing/', include('localtv.subsite.listing.urls')),
     (r'^feeds/', include('localtv.subsite.feeds.urls')))
 
+if settings.DEBUG:
+    # show the thumbnails/logo etc, without relying on Apache
+    urlpatterns += patterns('',
+                            (r'^localtv/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'localtv'}),
+                            )
