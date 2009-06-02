@@ -46,11 +46,12 @@ function resize_admin() {
     var above_admin_table = document.getElementById('above_admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
     var admin_rightpane = document.getElementById('admin_rightpane');
-    admin_leftpane.style.height = (window.innerHeight
-                                   - header.clientHeight
-                                   - above_admin_table.clientHeight
-                                   - 15) + "px";
-    admin_rightpane.style.height = admin_leftpane.style.height;
+    base_height = (window.innerHeight -
+                   header.clientHeight -
+                   above_admin_table.clientHeight -
+                   20);
+    admin_leftpane.style.height = base_height + 'px';
+    admin_rightpane.style.height = (base_height - 80) + 'px';
 }
 
 if ('attachEvent' in window) {
