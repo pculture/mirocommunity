@@ -74,30 +74,23 @@ class OpenIdUser(models.Model):
     def admin_for_current_site(self):
         site = Site.objects.get_current()
         sitelocation = SiteLocation.objects.get(site=site)
-        print sitelocation
         return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
-    # logo... we can probably be lazy and just link this as part of the id..
+    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
+    background = models.ImageField(upload_to='localtv/site_backgrounds',
+                                   blank=True)
     admins = models.ManyToManyField(OpenIdUser, blank=True)
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
-    
+    css = models.TextField(blank=True)
+
     def __unicode__(self):
         return self.site.name
-
-
-class SiteCss(models.Model):
-    name = models.CharField(max_length=250)
-    css = models.TextField()
-
-    def __unicode__(self):
-        return self.name
-
 
 class Tag(models.Model):
     name = models.CharField(max_length=25)
@@ -438,7 +431,6 @@ class Watch(models.Model):
 
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
-admin.site.register(SiteCss)
 admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category)

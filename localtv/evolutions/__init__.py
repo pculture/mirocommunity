@@ -5,4 +5,5 @@ SEQUENCE = [
     'add_flash_enclosure_url',
     'add_about_html',
     'add_file_url_metadata',
+    'design_evolutions'
 ]
