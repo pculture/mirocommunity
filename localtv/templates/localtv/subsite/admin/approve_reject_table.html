@@ -41,8 +41,8 @@
               </tr>
               <tr class="admin_pagetab_row">
                 <td>
-                  {% block pagination2 and page_obj.has_other_pages  %}
-                    {% if page_obj %}
+                  {% block pagination2 %}
+                    {% if page_obj and page_obj.has_other_pages %}
                       {% pagetabs page_obj %}
                     {% endif %}
                   {% endblock pagination2 %}
