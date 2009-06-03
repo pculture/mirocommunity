@@ -1,0 +1,11 @@
+{% extends "admin/index.html" %}
+{% block sidebar %}
+{{ block.super }}
+<div class="float-left">
+  <h3>Create a new site</h3.
+  <form method="POST" action="create-site">
+    <input type="text" name="site_name" id="id_site_name"><span>.mirocommunity.org</span>
+    <input type="submit" value="create">
+    </form>
+</div>
+{% endblock %}
