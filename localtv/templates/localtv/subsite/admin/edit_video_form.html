@@ -1,4 +1,8 @@
 <div id="edit_video_wrapper">
+  <form method="POST" action="{% url localtv_admin_edit_video %}" enctype="multipart/form-data">
+    {{ edit_video_form }}
+    <input type="hidden" name="redirect" value="{{ current_video.get_absolute_url }}">
+  </form>
   <p>
     <a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}">
       Reject this video
@@ -9,4 +13,8 @@
       Feature this video
     </a>
   </p>
+  <p>
+    <span class="editable thumbnail">Upload a new thumbnail</span>
+  </p>
+  <br clear="all"/>
 </div>

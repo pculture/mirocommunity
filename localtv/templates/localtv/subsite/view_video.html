@@ -23,7 +23,7 @@
   <div id="main">
     {% if current_video.name %}
       <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
-        <a href="{{ video.get_absolute_url }}">{{ current_video.name }}</a>
+        {{ current_video.name }}
       </h2>
     {% else %}
       <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
@@ -53,6 +53,9 @@
       {% autoescape off %}
         {{ current_video.description|striptags }}
       {% endautoescape %}
+      {% if edit_video_form and not current_video.description|striptags %}
+      edit description
+      {% endif %}
     </p>
 
     <div id="tags">

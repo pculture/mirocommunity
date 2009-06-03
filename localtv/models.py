@@ -307,9 +307,11 @@ class Video(models.Model):
             return
 
         content_thumb = ContentFile(urllib.urlopen(self.thumbnail_url).read())
+        self.save_thumbnail_from_file(content_thumb)
 
+    def save_thumbnail_from_file(self, content_thumb):
         try:
-            pil_image = Image.open(content_thumb.file)
+            pil_image = Image.open(content_thumb)
         except IOError:
             raise CannotOpenImageUrl(
                 'An image at the url %s could not be loaded' % (

@@ -8,6 +8,7 @@ class EditVideoForm(forms.Form):
     description = forms.CharField(widget=forms.Textarea)
     website_url = forms.URLField()
     video_id = forms.CharField(widget=forms.HiddenInput)
+    thumbnail = forms.ImageField(required=False)
 
     @classmethod
     def create_from_video(cls, video):
