@@ -1,8 +1,10 @@
+from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse
 from django.contrib.sites.models import Site
 
 from localtv.models import SiteLocation
 
+@user_passes_test(lambda u: u.is_staff)
 def create_site(request):
     if request.method != 'POST':
         raise Http404
