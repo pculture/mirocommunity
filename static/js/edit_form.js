@@ -1,7 +1,7 @@
 function inline_edit_open() {
     obj = $(this);
     if (obj.hasClass('open')) {
-        return false;
+        return true;
     }
     obj.addClass('open');
     this.oldContent = obj.text();
@@ -12,6 +12,9 @@ function inline_edit_open() {
     } else if (obj.hasClass('description')) {
         textarea = $('<textarea cols="40" rows="10"/>').val($("#id_description").val());
         obj.append(textarea);
+    } else if (obj.hasClass('thumbnail')) {
+        input = $('<input type="file" name="thumbnail"/>');
+        obj.append(input);
     }
     obj.append('<span class="save">✔</span> <span class="cancel">✖</span>');
     obj.children('.save').click(inline_save);
@@ -21,28 +24,30 @@ function inline_edit_open() {
 
 function inline_save() {
     obj = $(this).parent();
-    console.log(obj);
     if (obj.hasClass('vid_title')) {
         value = obj.children('input').val();
         $("#id_name").val(value);
-        inline_post(obj)
+        inline_post(obj);
     } else if (obj.hasClass('description')) {
         value = obj.children('textarea').val();
         $('#id_description').val(value);
         inline_post(obj);
+    } else if (obj.hasClass('thumbnail')) {
+        input = obj.children('input');
+        old_input = $("#id_thumbnail");
+        input.clone().insertAfter(old_input);
+        old_input.remove();
+        inline_post(obj);
     }
 }
+
 function inline_cancel() {
     obj = $(this).parent();
-    return inline_reset(obj)
+    return inline_reset(obj);
 }
 
 function inline_post(obj) {
-    form = $("#edit_video_wrapper form");
-    $.post(form.attr('action'), form.serialize(), function () {
-        obj[0].oldContent = value;
-        return inline_reset(obj);
-    });
+    $("#edit_video_wrapper form").submit();
 }
 
 function inline_reset(obj) {
