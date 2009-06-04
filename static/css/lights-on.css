@@ -406,6 +406,11 @@ line-height: 1.3em;
 
 /////////////////////////////////////////////*/
 
+#content {
+    float: left;
+    clear: both;
+}
+
 #main {
     width: 540px;
     _overflow: hidden;
