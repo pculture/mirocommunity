@@ -286,8 +286,8 @@ line-height: 1.3em;
 #video_listing_new .new a,
 #about_page .about a,
 #video_listing_popular .popular a{
-    background: url(../images/nav_right.png) right -68px no-repeat;
-    _background: url(../images/nav_right.gif) right -68px no-repeat;
+    background: url(../images/nav_right.png) right -69px no-repeat;
+    _background: url(../images/nav_right.gif) right -69px no-repeat;
     color: #aaa;
     cursor: default;
 }
@@ -406,7 +406,7 @@ line-height: 1.3em;
 
 /////////////////////////////////////////////*/
 
-#content {
+#home_page.scrolling #content {
     float: left;
     clear: both;
 }
