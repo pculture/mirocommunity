@@ -89,6 +89,7 @@ class SiteLocation(models.Model):
     about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
     css = models.TextField(blank=True)
+    frontpage_style = models.CharField(max_length=32, default="list")
 
     def __unicode__(self):
         return self.site.name
