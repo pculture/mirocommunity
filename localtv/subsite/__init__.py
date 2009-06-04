@@ -9,6 +9,14 @@ def context_processor(request):
 
     openid_localtv = request.session.get('openid_localtv')
 
+    display_submit_button = sitelocation.display_submit_button
+    if display_submit_button:
+        if openid_localtv is None and sitelocation.submission_requires_login:
+            display_submit_button = False
+    else:
+        if openid_localtv and openid_localtv.admin_for_sitelocation(sitelocation):
+            display_submit_button = True
+
     return  {
         'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
@@ -25,4 +33,6 @@ def context_processor(request):
         'OPENID_STATUS_ACTIVE': models.OPENID_STATUS_ACTIVE,
 
         'sitelocation': sitelocation,
-        'openid_localtv': openid_localtv}
+        'openid_localtv': openid_localtv,
+
+        'display_submit_button': display_submit_button }

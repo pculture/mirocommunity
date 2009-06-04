@@ -72,6 +72,12 @@ class EditMiscDesignForm(forms.Form):
             ("scrolling", "Scrolling big features (note: with this mode, you will need to provide hi-quality images for each featured video)."),
             ("list", "List style")))
     #        ("categorized", "Categorized layout")))
+    display_submit_button = forms.BooleanField(
+        label="Display the 'submit a video' nav item",
+        required=False)
+    submission_requires_login = forms.BooleanField(
+        label="Require users to login to submit a video",
+        required=False)
     css = forms.CharField(label="Custom CSS",
                           help_text="Here you can append your own CSS to customize your site.",
                           widget=forms.Textarea, required=False)
@@ -81,6 +87,8 @@ class EditMiscDesignForm(forms.Form):
         self = cls()
         self.initial['css'] = sitelocation.css
         self.initial['layout'] = sitelocation.frontpage_style
+        self.initial['display_submit_button'] = sitelocation.display_submit_button
+        self.initial['submission_requires_login'] = sitelocation.submission_requires_login
         return self
 
     def save_to_sitelocation(self, sitelocation):
@@ -94,4 +102,6 @@ class EditMiscDesignForm(forms.Form):
             sitelocation.background.save(background.name, background, save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
         sitelocation.frontpage_style = self.cleaned_data['layout']
+        sitelocation.display_submit_button = self.cleaned_data['display_submit_button']
+        sitelocation.submission_requires_login = self.cleaned_data['submission_requires_login']
         sitelocation.save()
