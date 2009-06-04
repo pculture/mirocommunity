@@ -44,6 +44,7 @@ OPENID_STATUSES = (
 
 
 VIDEO_THUMB_SIZES = [
+    (500, 281), # featured on frontpage
     (142, 104)]
 
 
@@ -78,7 +79,7 @@ class OpenIdUser(models.Model):
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
-    logo = models.ImageField(upload_to='localtv/site_logos', blank=True, null=True)
+    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
                                    blank=True)
     admins = models.ManyToManyField(OpenIdUser, blank=True)
@@ -88,6 +89,7 @@ class SiteLocation(models.Model):
     about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
     css = models.TextField(blank=True)
+    frontpage_style = models.CharField(max_length=32, default="list")
 
     def __unicode__(self):
         return self.site.name

@@ -1,0 +1,20 @@
+{% load localtv_thumbnail i18n %}
+{% if video.has_thumbnail %}
+<div class="image"
+     style="background: url({% get_thumbnail_url video 500 281 %}) no-repeat;">
+</div>
+{% else %}
+<div class="image"
+     style="background: url(/images/default_vid.png) no-repeat;">
+</div>
+{% endif %}
+<div class="copy">
+{% if video.name %}
+  <h2>{{ video.name }}</h2>
+{% else %}
+  <h2>{% trans "(no title)" %}</h2>
+{% endif %}
+  <span>{{ video.when|timesince }} ago</span>
+  <p>{{ video.description }}</p>
+</div>
+<a href="{{ video.get_absolute_url }}" class="watch med_button"><span>Watch</span></a>

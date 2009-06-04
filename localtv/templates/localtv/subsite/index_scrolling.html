@@ -1,0 +1,65 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% block body_id %}home_page{% endblock %}
+
+
+{% block content %}
+
+  <div id="slider">
+    <div id="slider2">
+      <ul>
+        {% for video in featured_videos|slice:":3" %}
+        <li>
+          {% include "localtv/subsite/video_feature_scrolling.html" %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="featured_small_list">
+    <div id="main_header" class="small">
+      <h2>Featured</h2>
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_featured %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+
+    {% for video in featured_videos|slice:"3:8" %}
+      {% include "localtv/subsite/video_listing_individual.html" %}
+    {% endfor %}
+  </div>
+
+  <div class="new_small_list">
+    <div id="main_header" class="small">
+      <h2>New</h2>
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_new %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+
+    {% for video in new_videos|slice:":5" %}
+      {% include "localtv/subsite/video_listing_individual.html" %}
+    {% endfor %}
+  </div>
+
+  <div class="popular_small_list">
+    <div id="main_header" class="small">
+      <h2>Popular</h2>
+      <div class="floatright">
+        <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
+        <a href="#" class="miro-subscribe">Subscribe</a>
+      </div>
+    </div>
+
+    {% for video in popular_videos|slice:":5" %}
+      {% include "localtv/subsite/video_listing_individual.html" %}
+    {% endfor %}
+
+  </div>
+{% endblock content %}
+
+
+

@@ -1,5 +1,4 @@
 from django import forms
-from django.core.files.storage import default_storage
 
 class EditVideoForm(forms.Form):
     """
@@ -69,9 +68,9 @@ class EditMiscDesignForm(forms.Form):
     #theme = forms.ChoiceField(label="Color Theme", choices=(
     #        ("day", "Day"),
     #        ("night", "Night")))
-    #layout = forms.ChoiceField(label="Front Page Layout", choices=(
-    #        ("scrolling", "Scrolling big features (note: with this mode, you will need to provide hi-quality images for each featured video)."),
-    #        ("list", "List style"),
+    layout = forms.ChoiceField(label="Front Page Layout", choices=(
+            ("scrolling", "Scrolling big features (note: with this mode, you will need to provide hi-quality images for each featured video)."),
+            ("list", "List style")))
     #        ("categorized", "Categorized layout")))
     css = forms.CharField(label="Custom CSS",
                           help_text="Here you can append your own CSS to customize your site.",
@@ -81,6 +80,7 @@ class EditMiscDesignForm(forms.Form):
     def create_from_sitelocation(cls, sitelocation):
         self = cls()
         self.initial['css'] = sitelocation.css
+        self.initial['layout'] = sitelocation.frontpage_style
         return self
 
     def save_to_sitelocation(self, sitelocation):
@@ -93,4 +93,5 @@ class EditMiscDesignForm(forms.Form):
         if background is not None:
             sitelocation.background.save(background.name, background, save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
+        sitelocation.frontpage_style = self.cleaned_data['layout']
         sitelocation.save()

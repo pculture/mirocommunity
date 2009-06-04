@@ -33,7 +33,7 @@ def subsite_index(request, sitelocation=None):
         '-when_approved', '-when_submitted')[:10]
 
     return render_to_response(
-        'localtv/subsite/index.html',
+        'localtv/subsite/index_%s.html' % (sitelocation.frontpage_style,),
         {'sitelocation': sitelocation,
          'request': request,
          'featured_videos': featured_videos,
@@ -109,4 +109,4 @@ def video_search(request, sitelocation=None):
             'localtv/subsite/video_listing_search.html', {},
             context_instance=RequestContext(request))
 
-        
+

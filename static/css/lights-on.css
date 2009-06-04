@@ -21,9 +21,15 @@ body {
     font-size: 12px;
 }
 
+
+#home_page {
+    background: url(../images/bg.png) left 166px repeat-x;
+}
+
+
 h1 {
     font-size: 28px;
-    padding: 40px 0 5px 0;
+    padding: 30px 0 20px 0;
     font-weight: normal;
     float: left;
     letter-spacing: .01em;
@@ -35,6 +41,7 @@ h1 a {
 
 h2 {
     font-size: 18px;
+
 }
 
 a {
@@ -47,6 +54,8 @@ a {
 ~ Classes
 
 /////////////////////////////////////////////*/
+
+
 
 .floatright {
     float: right;
@@ -137,7 +146,7 @@ a {
 
 .rss {
     background: url(../images/rss.png) 40px 2px no-repeat;
-    padding-right: 20px;
+    padding-right: 26px;
     font-size: 11px;
 }
 
@@ -146,6 +155,7 @@ a {
     font-size: 11px;
     padding-right: 32px;
     padding-top: 2px;
+margin-right: 3px;
 }
 
 div.floatright{
@@ -154,7 +164,10 @@ div.floatright{
 
 .vid_title {
     float: left;
+width: 350px;
+line-height: 1.3em;
     margin-bottom: 10px;
+padding-top: 0;
 }
 
 .vid_title a{
@@ -167,8 +180,30 @@ div.floatright{
 
 .date {
     float: right;
+width: 150px;
+line-height: 1.3em;
+text-align: right;
+color: #666;
     padding-top: 5px;
+
 }
+
+
+.page_title {
+    font-size: 18px;
+padding-top: 20px;
+float: left;
+}
+
+#about_page .page_title {
+float: none;
+}
+
+#about_page p {
+padding: 10px 0;
+line-height: 1.3em;
+}
+
 
 .more {
     display: block;
@@ -222,7 +257,7 @@ div.floatright{
 #nav a span {
     line-height: 29px;
     display: block;
-    padding: 0 7px 0 20px ;
+    padding: 0 7px 0 20px;
     background: url(../images/nav_left.png) no-repeat;
     _background: url(../images/nav_left.gif) no-repeat;
 }
@@ -237,12 +272,13 @@ div.floatright{
 }
 
 #nav a:active {
-    background-position: right -69px;
+    background-position: right -68px;
     color: #aaa;
 }
 
 #nav a:active span {
-    background-position: left -69px;
+    background-position: left -68px;
+    padding-top: 1px;
 }
 
 #home_page .home_page a,
@@ -250,8 +286,8 @@ div.floatright{
 #video_listing_new .new a,
 #about_page .about a,
 #video_listing_popular .popular a{
-    background: url(../images/nav_right.png) right -69px no-repeat;
-    _background: url(../images/nav_right.gif) right -69px no-repeat;
+    background: url(../images/nav_right.png) right -68px no-repeat;
+    _background: url(../images/nav_right.gif) right -68px no-repeat;
     color: #aaa;
     cursor: default;
 }
@@ -353,6 +389,7 @@ div.floatright{
     float: left;
     height: 60px;
     margin: 35px 15px 10px 0;
+display: none;
 }
 
 .tagline {
@@ -390,8 +427,18 @@ div.floatright{
     height: 40px;
     background: url(../images/main_header.png) left top no-repeat;
     _background: url(../images/main_header.gif) left top no-repeat;
-    margin: 20px 0;
+    margin: 34px 0 20px;
 }
+
+#main_header.small {
+    font-size: 12px;
+    line-height: 36px;
+    clear: both;
+    height: 40px;
+    background: url(../images/small_header.png) left top no-repeat;
+    margin: 4px 0 20px;
+}
+
 
 #main_header a {
     padding-left: 10px;
@@ -445,10 +492,17 @@ div.floatright{
 
 #footer {
     clear: both;
-    font-size: 16px;
-    text-align: center;
-    padding: 75px 0;
+    text-align: right;
+    padding: 65px 0;
 }
+
+#footer p{
+font-size: 12px;
+color: #666;
+ padding-top: 15px;
+ border-top: 1px solid #ddd;
+}
+
 
 
 /*/////////////////////////////////////////////
@@ -689,13 +743,14 @@ margin-right: 10px;
 }
 
 ul.pagetabs {
+float: right;
     display: inline;
 }
 
 ul.pagetabs li {
     display: block;
     float: left;
-    margin-right: 5px;
+    margin-left: 5px;
 }
 
 ul.pagetabs li a {
@@ -712,12 +767,13 @@ ul.pagetabs li a {
 ul.pagetabs li.selected {}
 
 ul.pagetabs li.selected a {
-    background: url(../images/med_right.png) right -62px no-repeat;
+    background: url(../images/med_right.png) right -61px no-repeat;
     color: #aaa;
 }
 
 ul.pagetabs li.selected a span {
-    background: url(../images/med_left.png) left -62px no-repeat;
+    background: url(../images/med_left.png) left -61px no-repeat;
+    padding-top: 1px;
 }
 
 ul.pagetabs li a span {
@@ -738,12 +794,14 @@ ul.pagetabs li a:hover span {
 }
 
 ul.pagetabs li a:active {
-    background: url(../images/med_right.png) right -62px no-repeat;
+    background: url(../images/med_right.png) right -61px no-repeat;
     color: #aaa;
 }
 
 ul.pagetabs li a:active span {
-    background: url(../images/med_left.png) left -62px no-repeat;
+    background: url(../images/med_left.png) left -61px no-repeat;
+        padding-top: 1px;
+
 }
 
 #admin_rightpane {
@@ -802,6 +860,166 @@ ul.pagetabs li a:active span {
     _width: 140px;
 }
 
+
+#flag_button, #share_button{
+display: none;
+}
+
+/*/////////////////////////////////////////////
+
+~ Slider
+
+/////////////////////////////////////////////*/
+
+
+#slider{
+overflow: hidden;
+height: 340px;
+padding-top: 25px;
+margin-bottom: 30px;
+}
+
+#slider2{
+margin:0 auto;
+padding:0;
+list-style:none;
+}
+
+
+#slider2 ul{
+margin:0;
+padding:0;
+}
+
+
+		
+#slider2 li{ 
+/* 
+	define width and height of list item (slide)
+	entire slider area will adjust according to the parameters provided here
+*/ 
+width: 860px;
+list-style: none;
+height: 340px;
+
+}		
+
+
+#slider2 li h2{ 
+margin:0 20px;
+padding-top:20px;
+}	
+
+
+#slider2 li p{ 
+margin:20px;
+}						
+
+		
+p#controls, p#controls2{
+margin:0;
+} 
+
+	
+#prevBtn2, #nextBtn2{ 
+display:block;
+margin:0;
+overflow:hidden;
+text-indent:-8000px;		
+width:33px;
+height:77px;
+}	
+
+		
+#prevBtn2{ 
+float: left;
+}	
+
+
+#nextBtn, #nextBtn2{ 
+float: right;
+}														
+
+#prevBtn a, #nextBtn a, #prevBtn2 a, #nextBtn2 a{  
+display:block;
+width:33px;
+height:32px;
+background:url(../images/prev_next.png) no-repeat 0 0;	
+}	
+
+#prevBtn2 a:hover{  
+background-position: 0 -34px;
+}	
+
+#prevBtn2 a:active{  
+background-position: 0 -67px;
+}	
+
+
+#nextBtn2 a{ 
+background:url(../images/prev_next.png) no-repeat -37px 0;	
+}												
+
+
+#nextBtn2 a:hover{
+background-position: -37px -34px;
+}
+
+#nextBtn2 a:active{  
+background-position: -37px -67px;
+}	
+
+#controls{
+position: relative;
+top: -190px;
+}
+
+.image{
+width: 400px;
+float: left;
+height: 300px;
+padding: 0;
+background:url(../images/default_big.png) center;	
+margin: 20px 30px 0 15px;
+}
+
+.copy{
+width: 400px;
+float: left;
+margin-top: 20px;
+height: 240px;
+padding-left: 10px;
+overflow: hidden;
+}
+
+#slider .copy h2{
+margin: 20px 0 10px;
+}
+
+
+#slider .copy p{
+line-height: 1.4em;
+padding: 0 30px 0 0;
+font-size: 14px;
+margin: 25px 0;
+}
+
+.watch{
+float: left;
+margin-left: 10px;
+}
+
+
+
+.featured_small_list, .new_small_list{
+width: 300px;
+margin-right: 20px;
+float: left;
+}
+
+.popular_small_list{
+width: 300px;
+float: left;
 
 /*/////////////////////////////////////////////
 
@@ -921,6 +1139,5 @@ line-height: 1.4em;
 #about_page #main h2{
 padding: 50px 0 7px 0px;
 }
-
 
 
