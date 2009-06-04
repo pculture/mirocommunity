@@ -281,7 +281,6 @@ line-height: 1.3em;
     padding-top: 1px;
 }
 
-
 #home_page .home_page a,
 #video_listing_featured .featured a,
 #video_listing_new .new a,
@@ -299,11 +298,67 @@ line-height: 1.3em;
 #video_listing_new .new a span,
 #about_page .about a span,
 #video_listing_popular .popular a span {
-    background: url(../images/nav_left.png) left -68px no-repeat;
-    background: url(../images/nav_left.gif) left -68px no-repeat;
-        padding-top: 1px;
-
+    background-position: left -69px;
+    _background: url(../images/nav_left.gif) left -69px no-repeat;
 }
+/*/////////////////////////////////////////////
+
+~ Admins need to Navigate too 
+
+/////////////////////////////////////////////*/
+
+#admin_nav {
+    clear: both;
+    padding-top: 10px;
+    float: left;
+    width: 680px;
+}
+
+#admin_nav li {
+    float: left;
+    list-style: none;
+    margin-right: 10px;
+    _display: inline;
+}
+
+#admin_nav a {
+    line-height: 40px;
+    padding-right: 14px;
+    display: block;
+    color: #555;
+    font-weight: bold;
+    text-decoration: none;
+    background: url(../images/nav_right.png) right top no-repeat;
+    _background: url(../images/nav_right.gif) right top no-repeat;
+}
+
+#admin_nav a span {
+    line-height: 29px;
+    display: block;
+    padding: 0 7px 0 20px ;
+    background: url(../images/nav_left.png) no-repeat;
+    _background: url(../images/nav_left.gif) no-repeat;
+}
+
+#admin_nav a:hover {
+    background-position: right -35px;
+    color: #888;
+}
+
+#admin_nav a:hover span {
+    background-position: left -35px;
+}
+
+#admin_nav a:active {
+    background-position: right -69px;
+    color: #aaa;
+}
+
+#admin_nav a:active span {
+    background-position: left -69px;
+}
+
+
 
 
 /*/////////////////////////////////////////////
@@ -610,16 +665,33 @@ n
 }
 
 div.selected {
-    background: GreenYellow;
+    background: #f8e0e0;
+    padding: 10px;
+    margin: 0;
+border: 1px solid #888;
 }
 
+.unselected {
+margin: 0;
+padding: 10px;
+border: 1px solid #fff;
+}
 .unselected:hover {
-    background: LightCyan;
+    background: #f8f8f8;
+border-top: 1px solid #eee;
+border-right: 1px solid #ddd;
+border-bottom: 1px solid #ddd;
+border-left: 1px solid #ccc;
+
 }
 
 .approve_reject {
     text-align: right;
     font-weight: bold;
+}
+
+.approve_reject a{
+margin-right: 10px;
 }
 
 .unselected .approve_reject, .selected .approve_reject {
@@ -948,10 +1020,124 @@ float: left;
 .popular_small_list{
 width: 300px;
 float: left;
+
+/*/////////////////////////////////////////////
+
+~ Admin
+
+/////////////////////////////////////////////*/
+
+.show_main{
+display: none;
+}
+
+#admin .show_main{
+display: block;
+}
+
+#admin .show_admin{
+display: none;
+}
+
+#admin #nav{
+display: none;
+}
+
+
+#admin #search{
+display: none;
 }
 
 
 
+#admin_header{
+border-top: 1px solid #999;
+border-bottom: 1px solid #999;
+font-size: 15px;
+padding: 10px 0;
+margin-bottom: 20px
+}
 
+
+#admin_header a{
+font-size: 15px;
+padding-right: 15px;
+}
+
+
+#admin_leftpane{
+padding: 20px 30px 0 0;
+}
+
+
+#admin_rightpane{
+padding: 50px;
+width: 550px;
+}
+
+
+.admin_pagetab_row{
+height: 50px;
+clear: both;
+}
+
+#admin .pag{
+clear: both !important;
+height: 100px;
+float: right;
+border: 1px solid;
+padding: 40px;
+}
+
+#livesearch_feed_url{
+float: left;
+}
+
+
+.admin_feed{
+border-bottom: 1px solid #ddd;
+font-size: 13px;
+padding: 10px 0;
+clear: both;
+}
+
+
+#above_admin_table{
+}
+
+
+#admin_feed_add .med_button{
+border: none;
+padding: 0 3px 0 0px;
+background-position: right 1px;
+float: left;
+}
+
+#admin_feed_add .med_button span{
+padding: 0 8px 0 15px;
+}
+
+#admin_feed_add strong{
+float: left;
+line-height: 2em;
+font-weight: bold;
+padding-right: 10px;
+}
+
+
+#home_page #about{
+margin: 20px 0 0 0;
+}
+
+
+
+#about_page #main p{
+padding: 0px 7px 0 0px;
+line-height: 1.4em;
+}
+
+#about_page #main h2{
+padding: 50px 0 7px 0px;
+}
 
 

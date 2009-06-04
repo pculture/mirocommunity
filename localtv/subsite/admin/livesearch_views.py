@@ -149,10 +149,16 @@ def livesearch_page(request, sitelocation=None):
 @get_search_video
 def approve(request, search_video, sitelocation=None):
     video = search_video.generate_video_model(sitelocation.site)
+    existing_saved_search = models.SavedSearch.objects.filter(
+        site=sitelocation, query_string=request.GET.get('query'))
+    if existing_saved_search.count():
+        video.search = existing_saved_search[0]
+    else:
+        video.openid_user = request.session['openid_localtv']
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
-        video.save()
-    
+    video.save()
+
     remove_video_from_session(request)
 
     return HttpResponse('SUCCESS')

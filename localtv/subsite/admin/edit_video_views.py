@@ -1,7 +1,8 @@
 import datetime
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 
 from localtv import models
 from localtv.decorators import get_sitelocation, require_site_admin
@@ -23,15 +24,24 @@ def edit_video(request, sitelocation=None):
             context_instance=RequestContext(request))
     else:
         openid_user = request.session.get('openid_localtv')
-        edit_video_form = forms.EditVideoForm(request.POST)
+        edit_video_form = forms.EditVideoForm(request.POST, request.FILES)
         if edit_video_form.is_valid():
             video.name = edit_video_form.cleaned_data['name']
             video.description = edit_video_form.cleaned_data['description']
             video.website_url = edit_video_form.cleaned_data['website_url']
+            thumbnail = edit_video_form.cleaned_data.get('thumbnail')
+            print thumbnail
+            if thumbnail:
+                video.thumbnail_url = '' # since we're no longer using that URL
+                                         # for a thumbnail
+                video.save_thumbnail_from_file(thumbnail)
             video.save()
 
             edit_video_form = forms.EditVideoForm.create_from_video(video)
 
+            if 'redirect' in request.POST:
+                return HttpResponseRedirect(request.POST['redirect'])
+            
             return render_to_response(
                 'localtv/subsite/admin/edit_video_form.html',
                 {'edit_video_form': edit_video_form,

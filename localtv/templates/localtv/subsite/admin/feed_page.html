@@ -15,18 +15,18 @@
 
   <div style="margin-top: 10px" id="admin_feed_add">
     <form method="POST" action="{% url localtv_admin_feed_add %}">
-      <b>Feed URL:</b>
+      <strong>Add a Feed </strong>
       {% if page_obj %}
         <input type="hidden" name="page" value="{{ page_obj.number }}">
       {% endif %}
       <input id="livesearch_feed_url"
              name="feed_url"/>
-      <input type="submit" />
+      <button type="submit" class="med_button"><span>Add Feed</span></button>
     </form>
   </div>
 
-  <div style="margin-top: 10px">
-    <b>Pages:</b> {% pagetabs page_obj %}
+  <div style="pag">
+    {% pagetabs page_obj %}
   </div>
 
   <div style="margin-top: 10px">

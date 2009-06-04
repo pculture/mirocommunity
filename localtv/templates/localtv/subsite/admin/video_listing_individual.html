@@ -15,9 +15,9 @@
      {% endif %}>
     <div>
       {% if video.thumbnail_url %}
-        <img src="{{ video.thumbnail_url }}" width="142" height="104"/>
+        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
       {% else %}
-        <img src="/images/default_vid.gif" />
+        <img src="/images/vid_overlay.png" />
       {% endif %}
     </div>
   </a>
@@ -44,21 +44,21 @@
   </div>
   
   <div class="approve_reject">
-      <a class="feature"
+      <a class="feature med_button"
          {% if video.metasearch_vid %}
            href="{% url localtv_admin_livesearch_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}&feature=true"
          {% else %}
            href="{% url localtv_admin_approve_video_action %}?video_id={{ video.id }}&feature=true"
-         {% endif %}>[ ☺ Feature ]</a>
-    <a class="approve"
+         {% endif %}><span>Feature</span></a>
+    <a class="approve med_button"
        {% if video.metasearch_vid %}
          href="{% url localtv_admin_livesearch_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
        {% else %}
          href="{% url localtv_admin_approve_video_action %}?video_id={{ video.id }}"
-       {% endif %}>[ ✓ Approve ]</a> &nbsp;
+       {% endif %}><span>Approve</span></a> 
     {% if not video.metasearch_vid %}
-      <a class="reject"
-         href="{% url localtv_admin_reject_video_action %}?video_id={{ video.id }}">[ ✗ Reject ]</a>
+      <a class="reject med_button"
+         href="{% url localtv_admin_reject_video_action %}?video_id={{ video.id }}"><span>Reject</span></a>
     {% endif %}
   </div>
 </div>

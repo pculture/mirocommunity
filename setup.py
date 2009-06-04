@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 version = '0.0.1'
 
-setup(name="Miro Local TV",
+setup(name="Miro Community",
       version=version,
       author='Participatory Culture Foundation',
       license='AGPLv3',

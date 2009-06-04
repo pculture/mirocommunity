@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Miro Local TV documentation build configuration file, created by
+# Miro Community documentation build configuration file, created by
 # sphinx-quickstart on Thu Apr 30 16:53:48 2009.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -37,7 +37,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Miro Local TV'
+project = u'Miro Community'
 copyright = u'2009, Participatory Culture Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -172,7 +172,7 @@ htmlhelp_basename = 'MiroLocalTVdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'MiroLocalTV.tex', u'Miro Local TV Documentation',
+  ('index', 'MiroLocalTV.tex', u'Miro Community Documentation',
    u'Participatory Culture Foundation', 'manual'),
 ]
 
