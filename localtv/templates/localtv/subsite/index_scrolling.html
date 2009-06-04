@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    {% for video in new_videos|slice":5" %}
+    {% for video in new_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
   </div>
@@ -54,75 +54,11 @@
       </div>
     </div>
 
-    {% for video in popular_videos|slice":5" %}
+    {% for video in popular_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
 
   </div>
-
-
-
-  <!--
-  <div id="main">
-    <div id="main_header">
-      <h2>Editor's Picks</h2>
-      <div class="floatright">
-        {% url localtv_subsite_feeds_featured as featured_rss%}
-        <a href="{{ featured_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-
-
-    {% for video in featured_videos %}
-      {% if forloop.first %}
-        {% include "localtv/subsite/video_feature_frontpage.html" %}
-      {% else %}
-        {% include "localtv/subsite/video_listing_individual.html" %}
-      {% endif %}
-    {% endfor %}
-  <br class="clear" />
-  <div id="main_header">
-      <h2>Popular in the Last 24 Hours</h2>
-      <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
-        <a href="#" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-
-    {% for video in popular_videos %}
-      {% if forloop.first %}
-        {% include "localtv/subsite/video_feature_frontpage.html" %}
-      {% else %}
-        {% include "localtv/subsite/video_listing_individual.html" %}
-      {% endif %}
-    {% endfor %}
-
-  </div>
-  <div id="sidebar">
-    <div id="about">
-      {% autoescape off %}
-        {{ sitelocation.sidebar_html }}
-      {% endautoescape %}
-    </div>
-
-    <div id="sidebar_header">
-      <h2>New Videos</h2>
-
-      <div class="floatright">
-        {% url localtv_subsite_feeds_new as new_rss%}
-        <a href="{{ new_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-    {% for video in new_videos %}
-      {% include "localtv/subsite/sidebar_video.html" %}
-    {% endfor %}
-  </div>
-
-  -->
-
-
 {% endblock content %}
 
 
