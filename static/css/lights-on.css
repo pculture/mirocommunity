@@ -22,7 +22,7 @@ body {
 }
 
 
-#home_page {
+#home_page.scrolling {
     background: url(../images/bg.png) left 166px repeat-x;
 }
 
@@ -389,7 +389,6 @@ line-height: 1.3em;
     float: left;
     height: 60px;
     margin: 35px 15px 10px 0;
-display: none;
 }
 
 .tagline {
