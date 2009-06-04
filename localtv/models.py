@@ -79,7 +79,7 @@ class OpenIdUser(models.Model):
 
 class SiteLocation(models.Model):
     site = models.ForeignKey(Site, unique=True)
-    logo = models.ImageField(upload_to='localtv/site_logos', blank=True, null=True)
+    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
                                    blank=True)
     admins = models.ManyToManyField(OpenIdUser, blank=True)
