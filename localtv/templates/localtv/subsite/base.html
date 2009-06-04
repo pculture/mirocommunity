@@ -41,7 +41,7 @@
     {% block head %}{% endblock head %}
   </head>
 
-  <body id="{% block body_id %}video_page{% endblock body_id %}" onload="add_submit_callback();">
+  <body id="{% block body_id %}video_page{% endblock body_id %}" class="{% block body_class %}{% endblock %}" onload="add_submit_callback();">
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
         <a href="{% url localtv_subsite_index %}">
