@@ -20,20 +20,20 @@ def subsite_index(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_approved', '-when_submitted')[:8]
+        '-last_featured', '-when_approved', '-when_submitted')[:10]
 
     popular_videos = models.Video.popular_since(
         datetime.timedelta(days=1), sitelocation=sitelocation,
-        status=models.VIDEO_STATUS_ACTIVE)[:5]
+        status=models.VIDEO_STATUS_ACTIVE)[:10]
 
     new_videos = models.Video.objects.filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     new_videos = new_videos.order_by(
-        '-when_approved', '-when_submitted')[:5]
+        '-when_approved', '-when_submitted')[:10]
 
     return render_to_response(
-        'localtv/subsite/index.html',
+        'localtv/subsite/index_%s.html' % (settings.FRONTPAGE_STYLE,),
         {'sitelocation': sitelocation,
          'request': request,
          'featured_videos': featured_videos,
