@@ -6,5 +6,6 @@ SEQUENCE = [
     'add_about_html',
     'add_file_url_metadata',
     'design_evolutions',
-    'add_frontpage_style'
+    'add_frontpage_style',
+    'add_submit_booleans'
 ]

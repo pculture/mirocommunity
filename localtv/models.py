@@ -90,6 +90,8 @@ class SiteLocation(models.Model):
     tagline = models.CharField(max_length=250, blank=True)
     css = models.TextField(blank=True)
     frontpage_style = models.CharField(max_length=32, default="list")
+    display_submit_button = models.BooleanField(default=True)
+    submission_requires_login = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.site.name

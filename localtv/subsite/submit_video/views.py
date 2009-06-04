@@ -3,20 +3,38 @@ from os import path
 import urllib
 import urlparse
 
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.forms.fields import url_re
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from localtv import models, util
-from localtv.decorators import get_sitelocation, require_active_openid
+from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.subsite.submit_video import forms
 
+def _check_submit_permissions(request):
+    sitelocation = models.SiteLocation.objects.get(site=Site.objects.get_current())
+    openid_localtv = request.session.get('openid_localtv')
+    if not sitelocation.submission_requires_login:
+        return True
+    else:
+        if sitelocation.display_submit_button:
+            return (openid_localtv and
+                    openid_localtv.status == models.OPENID_STATUS_ACTIVE)
+        else:
+            return (openid_localtv and
+                    openid_localtv.admin_for_sitelocation(sitelocation))
 
-@require_active_openid
+
+@request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def submit_video(request, sitelocation=None):
+    if not (sitelocation.display_submit_button or
+            request.session['openid_localtv'].admin_for_sitelocation(
+            sitelocation)):
+        raise Http404
     if request.method == "GET":
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
@@ -72,7 +90,7 @@ def submit_video(request, sitelocation=None):
                 context_instance=RequestContext(request))
 
 
-@require_active_openid
+@request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def scraped_submit_video(request, sitelocation=None):
     if request.method == "GET":
@@ -137,9 +155,9 @@ def scraped_submit_video(request, sitelocation=None):
             {'sitelocation': sitelocation,
              'scraped_form': scraped_form},
             context_instance=RequestContext(request))
-    
 
-@require_active_openid
+
+@request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def embedrequest_submit_video(request, sitelocation=None):
     if request.method == "GET":
@@ -191,7 +209,7 @@ def embedrequest_submit_video(request, sitelocation=None):
 
 
 
-@require_active_openid
+@request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def directlink_submit_video(request, sitelocation=None):
     if request.method == "GET":
