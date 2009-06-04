@@ -2,6 +2,8 @@ import datetime
 
 from django.core.cache import cache
 from django.db.models import Q
+from django.http import HttpResponse
+
 import vidscraper
 from vidscraper import metasearch
 
@@ -157,3 +159,36 @@ def strip_existing_metasearchvideos(metasearchvideos, sitelocation):
         filtered_vids.append(vid)
 
     return filtered_vids
+
+
+
+def mixed_replace_generator(content_generator, bound):
+    """
+    We take a generator and a boundary string, and yield back content parts for
+    the multipart/x-mixed-replace content-type.  The generator should yield HTTPResponses.
+
+    The multipart/x-mixed-replace format looks like this:
+
+    --boundary
+    Content-type: text/plain
+
+    here's some text, loaded first
+    --boundary
+    Content-type: text/plain
+
+    <html><body>HTML here!</body></html>
+    --boundary
+    """
+    for response in content_generator:
+        yield ''.join(('--', bound, '\r\n', str(response)))
+        yield '\r\n'
+    yield ''.join(('--', bound, '\r\n'))
+
+
+class HttpMixedReplaceResponse(HttpResponse):
+
+    def __init__(self, generator):
+         bound = str(id(generator)) + str(id(self))
+         HttpResponse.__init__(self, mixed_replace_generator(generator, bound),
+                               content_type=('multipart/x-mixed-replace;'
+                                             'boundary=%s' % bound))
