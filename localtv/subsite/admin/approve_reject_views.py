@@ -19,7 +19,8 @@ def approve_reject(request, sitelocation=None):
     if request.method == "GET":
         videos = models.Video.objects.filter(
             status=models.VIDEO_STATUS_UNAPPROVED,
-            site=sitelocation.site)
+            site=sitelocation.site).order_by(
+            'when_submitted', 'when_published')
 
         video_paginator = Paginator(videos, 10)
 
