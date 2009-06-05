@@ -148,6 +148,7 @@ class Feed(models.Model):
             file_url = None
             embed_code = None
             flash_enclosure_url = None
+            publish_date = None
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
