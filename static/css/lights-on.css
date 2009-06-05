@@ -668,6 +668,10 @@ n
     _background: url(../images/med_left.gif) no-repeat;
 }
 
+.hoverable {
+    cursor: pointer;
+}
+
 div.selected {
     background: #f8e0e0;
     padding: 10px;

@@ -38,9 +38,13 @@
     </h3>
 
     {% autoescape off %}
-      <p>{{ video.description|striptags }}</p>
+      <p>{{ video.description|striptags|truncatewords:50 }}</p>
     {% endautoescape %}
-
+    
+    <p>Submitted: {{ video.when_submitted|timesince }} ago</p>
+    {% if video.when_published %}
+    <p>Published: {{ video.when_published|timesince }} ago</p>
+    {% endif %}
   </div>
   
   <div class="approve_reject">
