@@ -15,8 +15,8 @@ function run_and_disappear(eventdata) {
 }
 
 function load_video(eventdata) {
-    var viddiv = $(this).parents('.video');
-    var video_url = $(this).attr('href');
+    var viddiv = $(this);
+    var video_url = $(this).find('.click_to_display').attr('href');
     var admin_rightpane = $('#admin_rightpane');
     jQuery.ajax({
             url: video_url,
@@ -32,13 +32,13 @@ function load_video(eventdata) {
 }
 
 function load_click_callbacks() {
-    $('.click_to_display').click(load_video);
     $('div.video .approve_reject .approve').click(
         run_and_disappear);
     $('div.video .approve_reject .reject').click(
         run_and_disappear);
     $('div.video .approve_reject .feature').click(
         run_and_disappear);
+    $('div.video').click(load_video);
 }
 
 function resize_admin() {
@@ -51,7 +51,7 @@ function resize_admin() {
                    above_admin_table.clientHeight -
                    20);
     admin_leftpane.style.height = base_height + 'px';
-    admin_rightpane.style.height = (base_height - 80) + 'px';
+    admin_rightpane.style.height = base_height + 'px';
 }
 
 if ('attachEvent' in window) {
