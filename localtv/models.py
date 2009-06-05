@@ -135,12 +135,16 @@ class Feed(models.Model):
 
         parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
         for entry in parsed_feed['entries']:
-            if (Video.objects.filter(
-                    feed=self,
-                    guid=entry['guid']).count()
-                or Video.objects.filter(
-                    feed=self,
-                    website_url=entry['link']).count()):
+            skip = False
+            guid = entry.get('guid')
+            if guid is not None and Video.objects.filter(
+                feed=self, guid=guid).count():
+                skip = True
+            link = entry.get('link')
+            if link is not None and Video.objects.filter(
+                    feed=self, website_url=link).count():
+                skip = True
+            if skip:
                 if verbose:
                     print "Skipping %s" % entry['title']
                 continue
@@ -154,19 +158,20 @@ class Feed(models.Model):
             if video_enclosure:
                 file_url = video_enclosure['href']
 
-            try:
-                scraped_data = vidscraper.auto_scrape(
-                    entry['link'],
-                    fields=['file_url', 'embed', 'flash_enclosure_url'])
-                if not file_url:
-                    if not scraped_data.get('file_url_is_flaky'):
-                        file_url = scraped_data.get('file_url')
-                embed_code = scraped_data.get('embed')
-                flash_enclosure_url = scraped_data.get('flash_enclosure_url')
-                publish_date = scraped_data.get('publish_date')
-            except vidscraper.errors.Error, e:
-                if verbose:
-                    print "Vidscraper error: %s" % e
+            if link:
+                try:
+                    scraped_data = vidscraper.auto_scrape(
+                        link,
+                        fields=['file_url', 'embed', 'flash_enclosure_url'])
+                    if not file_url:
+                        if not scraped_data.get('file_url_is_flaky'):
+                            file_url = scraped_data.get('file_url')
+                    embed_code = scraped_data.get('embed')
+                    flash_enclosure_url = scraped_data.get('flash_enclosure_url')
+                    publish_date = scraped_data.get('publish_date')
+                except vidscraper.errors.Error, e:
+                    if verbose:
+                        print "Vidscraper error: %s" % e
 
             if not (file_url or embed_code):
                 if verbose:
@@ -187,7 +192,7 @@ class Feed(models.Model):
                 when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
-                website_url=entry['link'],
+                website_url=entry.get('link', ''),
                 thumbnail_url=miroguide_util.get_thumbnail_url(entry) or '')
 
             video.strip_description()
