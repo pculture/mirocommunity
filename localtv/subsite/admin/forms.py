@@ -74,8 +74,8 @@ class EditMiscDesignForm(forms.Form):
     #        ("night", "Night")))
     layout = forms.ChoiceField(label="Front Page Layout", choices=(
             ("scrolling", "Scrolling big features (note: with this mode, you will need to provide hi-quality images for each featured video)."),
-            ("list", "List style")))
-    #        ("categorized", "Categorized layout")))
+            ("list", "List style"),
+            ("categorized", "Categorized layout")))
     display_submit_button = forms.BooleanField(
         label="Display the 'submit a video' nav item",
         required=False)
