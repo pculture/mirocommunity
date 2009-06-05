@@ -46,19 +46,23 @@ class EditTitleForm(forms.Form):
 
 
 class EditSidebarForm(forms.Form):
-    blurb = forms.CharField(label="Sidebar Blurb (use html)",
+    sidebar = forms.CharField(label="Sidebar Blurb (use html)",
                             widget=forms.Textarea, required=False)
+    footer = forms.CharField(label="Footer Blurb (use html)",
+                             widget=forms.Textarea, required=False)
 
     @classmethod
     def create_from_sitelocation(cls, sitelocation):
         self = cls()
-        self.initial['blurb'] = sitelocation.sidebar_html
+        self.initial['sidebar'] = sitelocation.sidebar_html
+        self.initial['footer'] = sitelocation.footer_html
         return self
 
     def save_to_sitelocation(self, sitelocation):
         if not self.is_valid():
             raise RuntimeError("cannot save invalid form")
-        sitelocation.sidebar_html = self.cleaned_data.get('blurb', '')
+        sitelocation.sidebar_html = self.cleaned_data.get('sidebar', '')
+        sitelocation.footer_html = self.cleaned_data.get('footer', '')
         sitelocation.save()
 
 

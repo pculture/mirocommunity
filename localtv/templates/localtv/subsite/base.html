@@ -135,6 +135,9 @@
         <div id="footer">
           {% block footer %}
             <p>{{ sitelocation.site.name }} is powered by Miro Community</p>
+            {% autoescape off %}
+            {{ sitelocation.footer_html }}
+            {% endautoescape %}
           {% endblock footer %}
         </div>
       {% endblock footer_wrapper %}
