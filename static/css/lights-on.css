@@ -85,6 +85,8 @@ a {
     _height: 0px;
     _padding-top: 102px;
     overflow: hidden;
+    height: 104px;
+    width: 141px;
 }
 
 .title_desc {
@@ -309,7 +311,7 @@ line-height: 1.3em;
 
 #admin_nav {
     clear: both;
-    padding-top: 10px;
+    padding: 0px 0 30px;
     float: left;
     width: 680px;
 }
@@ -568,6 +570,7 @@ n
     padding-right: 6px;
     display: block;
     color: #333;
+    border: 0;
     font-size: 11px;
     float: right;
     text-decoration: none;
@@ -611,11 +614,8 @@ n
     top: 20%;
     margin-left: 160px;
     display: none;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-    border-bottom: 1px solid #999;
-    border-top: 1px solid #ddd;
-    background: #eee;
+    border: 1px solid #222;
+    background: #fff;
 }
 
 #hover_wrap h1{
@@ -626,10 +626,8 @@ n
 }
 
 #submit_box {
-    border: 4px solid #e0e0e0;
     margin: 0px;
     padding: 20px;
-    background: #fff;
 }
 
 #submit_box label{
@@ -671,20 +669,25 @@ n
 div.selected {
     background: #f8e0e0;
     padding: 10px;
-    margin: 0;
-border: 1px solid #888;
+    margin: 2px;
+    border: 1px solid #333;
+    background: url(../images/small_grad.png) repeat-x;
 }
 
 .unselected {
-margin: 0;
-padding: 10px;
-border: 1px solid #fff;
+    margin: 2px;
+padding: 10px;border-top: 1px solid #eee;
+border-right: 1px solid #ddd;
+border-bottom: 1px solid #ddd;
+border-left: 1px solid #ccc;
+    background: #fff url(../images/big_grad.png) left bottom repeat-x;
+
 }
 .unselected:hover {
     background: #f8f8f8;
-border-top: 1px solid #eee;
+border-bottom: 1px solid #eee;
 border-right: 1px solid #ddd;
-border-bottom: 1px solid #ddd;
+border-top: 1px solid #ddd;
 border-left: 1px solid #ccc;
 
 }
@@ -883,6 +886,14 @@ padding-top: 25px;
 margin-bottom: 30px;
 }
 
+#slider_small{
+overflow: hidden;
+height: 340px;
+padding-top: 25px;
+margin-bottom: 30px;
+}
+
+
 #slider2{
 margin:0 auto;
 padding:0;
@@ -907,6 +918,11 @@ list-style: none;
 height: 340px;
 
 }		
+
+#slider_small #slider2 li h2{ 
+margin:0 20px;
+padding-top:20px;
+}	
 
 
 #slider2 li h2{ 
@@ -987,6 +1003,11 @@ background:url(../images/default_big.png) center;
 margin: 20px 30px 0 15px;
 }
 
+#slider_small .image{
+float: none;
+}
+
+
 .copy{
 width: 400px;
 float: left;
@@ -995,6 +1016,22 @@ height: 240px;
 padding-left: 10px;
 overflow: hidden;
 }
+
+
+#slider_small .copy{
+float: none !important;
+clear: both;
+padding: 0 !important;
+margin: 0 !important;
+}
+
+
+#slider_small .copy h2{
+font-size: 12px;
+padding: 0;
+margin: 0;
+}
+
 
 #slider .copy h2{
 margin: 20px 0 10px;
@@ -1024,6 +1061,7 @@ float: left;
 .popular_small_list{
 width: 300px;
 float: left;
+}
 
 /*/////////////////////////////////////////////
 
@@ -1040,10 +1078,6 @@ display: block;
 }
 
 #admin .show_admin{
-display: none;
-}
-
-#admin #nav{
 display: none;
 }
 
@@ -1110,14 +1144,14 @@ clear: both;
 }
 
 
-#admin_feed_add .med_button{
+button.med_button{
 border: none;
 padding: 0 3px 0 0px;
 background-position: right 1px;
 float: left;
 }
 
-#admin_feed_add .med_button span{
+button.med_button span{
 padding: 0 8px 0 15px;
 }
 
@@ -1130,10 +1164,12 @@ padding-right: 10px;
 
 
 #home_page #about{
-margin: 20px 0 0 0;
+margin: 35px 0 0 0;
 }
 
-
+#about_page #main{
+width: 100%;
+}
 
 #about_page #main p{
 padding: 0px 7px 0 0px;
@@ -1143,5 +1179,159 @@ line-height: 1.4em;
 #about_page #main h2{
 padding: 50px 0 7px 0px;
 }
+
+#about_page .logo{
+max-width: 470px;
+float: left;
+border: 1px solid;
+margin: 40px 30px 0 0;
+}
+
+
+body#admin #header ul#nav{
+display: none !important;
+}
+
+#id_about{
+display: block;
+}
+
+#id_title, id_tagline{
+width: 200px;
+}
+
+#edit_video_wrapper{
+border: 1px solid #ddd;
+padding: 20px;
+margin-top: 20px;
+}
+
+#edit_video_wrapper p{
+float: left;
+}
+
+
+#edit_video_wrapper a{
+padding: 6px 20px;
+display: block;
+}
+
+.left{
+float: left;
+}
+
+input.left{
+width: 400px;
+}
+.admin_search{
+padding: 5px 0;
+border-bottom: 1px solid #ccc;
+width: 400px;
+}
+
+span.left{
+padding: 0 5px;
+line-height: 1.7em;
+}
+
+#edit_video_wrapper .editable.thumbnail{
+background: none;
+height: inherit;
+float: left;
+width: 300px;
+padding: 6px 20px;
+text-decoration: underline;
+}
+
+
+
+#edit_video_wrapper .editable.thumbnail input{
+margin-right: 10px;
+}
+
+
+#edit_video_wrapper .editable.thumbnail span{
+margin: 0 0 0 15px;
+}
+
+.save, .cancel{
+text-decoration: none;
+}
+
+.info, .about_me, .look{
+padding: 20px;
+}
+
+
+
+.info label, .about_me label, .look label{
+padding: 20px 10px 0 0;
+
+line-height: 3em;
+}
+
+
+
+.cat_list ul{
+float: left;
+margin: 0 0 20px 0;
+clear: both;
+}
+
+#id_title, #id_tagline, #id_blurb, #id_css{
+display: block;
+}
+
+
+
+.cat_list ul li a{
+padding-left: 50px;
+line-height: 2.8em;
+clear: both;
+font-size: 13px;
+float: left;
+margin: 10px 0 5px 0px;
+display: block;
+background:url(../images/lil.png) no-repeat 0 0;	
+}
+
+
+.cat_list .top_cat_button{
+padding: 0px 20px 0 0;
+font-size: 14px;
+float: left;
+text-decoration: none;
+background:url(../images/top_cat_cap.png) no-repeat right 0;	
+}
+
+
+.cat_list .top_cat_button span{
+padding: 11px 18px 13px;
+display: block;
+background:url(../images/top_cat.png) no-repeat 0 0;	
+}
+
+
+.cat_list .top_cat_button:hover{
+background-position: right -41px;	
+}
+
+
+.cat_list .top_cat_button:hover span{
+background-position: left -41px;	
+}
+
+
+.cat_list .top_cat_button:active{
+background-position: right -82px;	
+}
+
+
+.cat_list .top_cat_button:active span{
+background-position: left -82px;	
+}
+
+
+
 
 

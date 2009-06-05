@@ -19,9 +19,18 @@
     <script src="/js/extern/jquery.form.js"
             type="text/javascript">
     </script>
+    <script src="/js/extern/jquery.corners.js"
+            type="text/javascript">
+    </script>
     <script src="/js/submit_video.js"
             type="text/javascript">
     </script>
+    <script>
+    $(document).ready( function(){
+  		$('.rounded').corners();
+		});
+	</script>
+
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
     {% block head %}{% endblock head %}
   </head>
@@ -39,35 +48,17 @@
 
         <ul id="login">
           {% if openid_localtv.url %}
-            <li>
-              <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}"
-                 class="med_button">
-                <span>Logout</span>
-              </a>
-            </li>
-            <li><span>Welcome,</span>
-              <a class="nick" href="{{ openid_localtv.url }}">
-                {{ openid_localtv.nickname }}
-              </a>
-            </li>
+          
+          
             {% if openid_localtv.admin_for_current_site %}
             <li>
-              <a class="nick show_admin" href="{% url localtv_admin_approve_reject %}">
-                Show Administration
-              </a>
-            
-           
-              <a class="nick show_main" href="{% url localtv_subsite_index %}">
-                Show Front Page
-              </a>
+              <a class="nick show_admin" href="{% url localtv_admin_approve_reject %}">View Admin</a>
+              <a class="nick show_main" href="{% url localtv_subsite_index %}">View Main Site</a>
             </li>
             {% endif %}
           {% else %}
-            <li>
-              <a href="{% url localtv_openid_start %}" class="med_button">
-                <span>Login / Register</span>
-              </a>
-            </li>
+
+
           {% endif %}
         </ul>
         
@@ -116,7 +107,7 @@
 
       </div>
 
-      <div id="hover_wrap">
+      <div id="hover_wrap" class="rounded {5px transparent}">
         <div id="submit_box" >
           <p id="close_submit_box">
             <span>close</span>
@@ -136,6 +127,17 @@
           {% block footer %}
             <p>{{ sitelocation.site.name }} is powered by Miro Community</p>
           {% endblock footer %}
+          <div><br />
+          {% if openid_localtv.url %}
+            <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}">Logout {{ openid_localtv.nickname }}</a>
+            {% if openid_localtv.admin_for_current_site %}
+           
+            {% endif %}
+          {% else %}
+            <a href="{% url localtv_openid_start %}">Admin Login</a>
+          {% endif %}
+        
+          </div>
         </div>
       {% endblock footer_wrapper %}
     </div>

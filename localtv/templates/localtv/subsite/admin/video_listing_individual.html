@@ -1,13 +1,13 @@
 {% load i18n localtv_thumbnail %}
 
 <div {% ifequal video current_video %}
-       class="video hoverable selected"
+       class="video hoverable selected rounded {9px transparent}"
      {% endifequal %}
      {% ifnotequal video current_video %}
-       class="video hoverable unselected"
+       class="video hoverable unselected rounded {9px transparent}"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a class="thumbnail click_to_display"
+  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;"
      {% if video.metasearch_vid %}
        href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
      {% else %}
@@ -15,12 +15,14 @@
      {% endif %}>
     <div>
       {% if video.thumbnail_url %}
-        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
-      {% else %}
         <img src="/images/vid_overlay.png" />
+      {% else %}
+        <img src="/images/default_vid.png" />
       {% endif %}
     </div>
   </a>
+   
+   
   <div class="title_desc">
     <h3>
       <a class="click_to_display"

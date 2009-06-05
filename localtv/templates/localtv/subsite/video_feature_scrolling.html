@@ -1,11 +1,10 @@
 {% load localtv_thumbnail i18n %}
 {% if video.has_thumbnail %}
-<div class="image"
-     style="background: url({% get_thumbnail_url video 500 281 %}) no-repeat;">
-</div>
+     <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;">
+   <img src="/images/vid_overlay.png" /></a>
 {% else %}
-<div class="image"
-     style="background: url(/images/default_vid.png) no-repeat;">
+<div class="image rounded"
+     style="background: url(/images/default_vid.png) no-repeat; border: 1px solid #333;	">
 </div>
 {% endif %}
 <div class="copy">
@@ -14,7 +13,6 @@
 {% else %}
   <h2>{% trans "(no title)" %}</h2>
 {% endif %}
-  <span>{{ video.when|timesince }} ago</span>
-  <p>{{ video.description }}</p>
+ 
 </div>
 <a href="{{ video.get_absolute_url }}" class="watch med_button"><span>Watch</span></a>

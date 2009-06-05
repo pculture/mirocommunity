@@ -1,15 +1,17 @@
 {% load i18n localtv_thumbnail %}
 
 <div class="video">
-  <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail">
-    <div>
+
       {% if video.has_thumbnail %}
-        <img style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;" src="/images/vid_overlay.png" />
+       <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;">
+   <img src="/images/vid_overlay.png" /></a>
+
+      
       {% else %}
-        <img style="background: url(/images/default_vid.png) no-repeat;" src="/images/vid_overlay.png" />
+         <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;">
+ <img src="/images/default_vid.png" /> </a>
+
       {% endif %}
-    </div>
-  </a>
   <div class="title_desc">
     <h3>
       <a href="{% url localtv_view_video video_id=video.id %}">
