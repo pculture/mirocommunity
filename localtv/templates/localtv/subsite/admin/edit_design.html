@@ -8,16 +8,27 @@
   <div id="above_admin_table">
     {% include "localtv/subsite/admin/header.html" %}
   </div>
+  
+  <div class="info">
   <form method="POST" action="">
     {{ title_form.as_p }}
     <input type="submit" name="type_title" value="save">
   </form>
+  </div>
+  
+  
+  <div class="about_me">
   <form method="POST" action="">
     {{ sidebar_form.as_p }}
     <input type="submit" name="type_sidebar" value="save">
   </form>
+  </div>
+
+  <div class="look">
   <form method="POST" action="" enctype="multipart/form-data">
     {{ misc_form.as_p }}
     <input type="submit" name="type_misc" value="save">
   </form>
+    </div>
+
 {% endblock content %}

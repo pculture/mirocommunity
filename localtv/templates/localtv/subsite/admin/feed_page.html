@@ -17,7 +17,7 @@
     <form method="POST" action="{% url localtv_admin_feed_add %}">
       <strong>Add a Feed </strong>
       {% if page_obj %}
-        <input type="hidden" name="page" value="{{ page_obj.number }}">
+        <input type="hidden" name="page" value="{{ page_obj.number }}" />
       {% endif %}
       <input id="livesearch_feed_url"
              name="feed_url"/>
