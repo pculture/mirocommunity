@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
 import feedparser
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import get_sitelocation, require_site_admin, \
+    referrer_redirect
 from localtv import models
 
 
@@ -72,6 +73,7 @@ def add_feed(request, sitelocation=None):
     return HttpResponseRedirect(reverse_url)
 
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def feed_stop_watching(request, sitelocation=None):
@@ -86,6 +88,7 @@ def feed_stop_watching(request, sitelocation=None):
     return HttpResponse('SUCCESS')
 
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def feed_auto_approve(request, sitelocation=None):

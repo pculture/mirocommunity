@@ -6,7 +6,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import get_sitelocation, require_site_admin, \
+    referrer_redirect
 from localtv import models, util
 
 
@@ -155,6 +156,7 @@ def livesearch_response(request, sitelocation):
         context_instance=RequestContext(request))
 
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 @get_search_video
@@ -185,6 +187,7 @@ def display(request, search_video, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def create_saved_search(request, sitelocation=None):
@@ -208,6 +211,7 @@ def create_saved_search(request, sitelocation=None):
 
     return HttpResponse('SUCCESS')
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def remove_saved_search(request, sitelocation=None):

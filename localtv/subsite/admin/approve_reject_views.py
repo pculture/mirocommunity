@@ -4,7 +4,8 @@ from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import get_sitelocation, require_site_admin, \
+    referrer_redirect
 from localtv import models
 from django.http import HttpResponse, HttpResponseBadRequest
 
@@ -60,6 +61,7 @@ def preview_video(request, sitelocation=None):
         context_instance=RequestContext(request))
 
 
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def approve_video(request, sitelocation=None):
@@ -76,8 +78,9 @@ def approve_video(request, sitelocation=None):
 
     current_video.save()
     return HttpResponse('SUCCESS')
-    
 
+
+@referrer_redirect
 @require_site_admin
 @get_sitelocation
 def reject_video(request, sitelocation=None):
@@ -90,3 +93,18 @@ def reject_video(request, sitelocation=None):
     current_video.save()
     return HttpResponse('SUCCESS')
 
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def feature_video(request, sitelocation=None):
+    video_id = request.GET.get('video_id')
+    current_video = get_object_or_404(
+        models.Video, pk=video_id, site=sitelocation.site)
+    if current_video.status != models.VIDEO_STATUS_ACTIVE:
+        current_video.status = models.VIDEO_STATUS_ACTIVE
+        current_video.when_approved = datetime.datetime.now()
+    current_video.last_featured = datetime.datetime.now()
+    current_video.save()
+
+    return HttpResponse('SUCCESS')
