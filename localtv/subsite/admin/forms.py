@@ -3,9 +3,9 @@ from django import forms
 class EditVideoForm(forms.Form):
     """
     """
-    name = forms.CharField(max_length=250)
-    description = forms.CharField(widget=forms.Textarea)
-    website_url = forms.URLField()
+    name = forms.CharField(max_length=250, required=False)
+    description = forms.CharField(widget=forms.Textarea, required=False)
+    website_url = forms.URLField(required=False)
     video_id = forms.CharField(widget=forms.HiddenInput)
     thumbnail = forms.ImageField(required=False)
 
