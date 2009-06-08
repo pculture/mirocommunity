@@ -14,11 +14,7 @@
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
     <div>
-      {% if video.thumbnail_url %}
-        <img src="/images/vid_overlay.png" />
-      {% else %}
-        <img src="/images/default_vid.png" />
-      {% endif %}
+      <img src="/images/vid_overlay.png" />
     </div>
   </a>
    
