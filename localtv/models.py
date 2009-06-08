@@ -337,6 +337,14 @@ class Video(models.Model):
             self.get_original_thumb_storage_path(),
             content_thumb)
 
+        if hasattr(content_thumb, 'temporary_file_path'):
+            # might have gotten moved by Django's storage system, so it might
+            # be invalid now.  to make sure we've got a valid file, we reopen
+            # under the new path
+            content_thumb.close()
+            content_thumb = default_storage.open(self.get_original_thumb_storage_path())
+            pil_image = Image.open(content_thumb)
+
         # save any resized versions
         self.resize_thumbnail(pil_image)
         self.has_thumbnail = True
