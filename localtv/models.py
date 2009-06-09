@@ -244,14 +244,16 @@ class SavedSearch(models.Model):
             util.metasearch_from_querystring(
                 self.query_string))
 
+        raw_results = [util.MetasearchVideo.create_from_vidscraper_dict(
+                result) for result in raw_results]
+
         raw_results = util.strip_existing_metasearchvideos(
-            raw_results, self.site)
+            [result for result in raw_results if result is not None],
+            self.site)
 
         for result in raw_results:
-            msv = util.MetasearchVideo.create_from_vidscraper_dict(result)
-            if msv is not None:
-                msv.generate_video_model(self.site,
-                                         VIDEO_STATUS_UNAPPROVED)
+            result.generate_video_model(self.site.site,
+                                        VIDEO_STATUS_UNAPPROVED)
 
 
 class Video(models.Model):
