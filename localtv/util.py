@@ -82,7 +82,7 @@ class MetasearchVideo(object):
         ## the id this should have once it becomes a model
         self.id = id
 
-    def generate_video_model(self, site):
+    def generate_video_model(self, site, status=models.VIDEO_STATUS_ACTIVE):
         if self.tags:
             tags = get_or_create_tags(self.tags)
         else:
@@ -95,7 +95,7 @@ class MetasearchVideo(object):
             file_url=self.file_url,
             when_submitted=datetime.datetime.now(),
             when_approved=datetime.datetime.now(),
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=status,
             website_url=self.website_url,
             thumbnail_url=self.thumbnail_url,
             embed_code=self.embed_code,
@@ -116,11 +116,20 @@ class MetasearchVideo(object):
 
     @classmethod
     def create_from_vidscraper_dict(cls, vidscraper_dict):
+        if 'embed' not in vidscraper_dict and (
+            'file_url' not in vidscraper_dict or
+            'file_url_flaky' in vidscraper_dict):
+            return None
+
+        if 'file_url_flaky' in vidscraper_dict:
+            file_url = ''
+        else:
+            file_url = vidscraper_dict.get('file_url', '')
         return cls(
             name=vidscraper_dict['title'],
             description=vidscraper_dict.get('description'),
             tags=vidscraper_dict.get('tags') or [],
-            file_url=vidscraper_dict.get('file_url'),
+            file_url=file_url,
             website_url=vidscraper_dict.get('link'),
             thumbnail_url=vidscraper_dict.get('thumbnail_url'),
             embed_code=vidscraper_dict.get('embed'),

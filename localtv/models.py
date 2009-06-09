@@ -238,6 +238,22 @@ class SavedSearch(models.Model):
     def __unicode__(self):
         return self.query_string
 
+    def update_items(self, verbose=False):
+        from localtv import util
+        raw_results = vidscraper.metasearch.intersperse_results(
+            util.metasearch_from_querystring(
+                self.query_string))
+
+        raw_results = util.strip_existing_metasearchvideos(
+            raw_results, self.site)
+
+        for result in raw_results:
+            msv = util.MetasearchVideo.create_from_vidscraper_dict(result)
+            if msv is not None:
+                msv.generate_video_model(self.site,
+                                         VIDEO_STATUS_UNAPPROVED)
+
+
 class Video(models.Model):
     """
     Fields:
