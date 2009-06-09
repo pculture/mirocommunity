@@ -11,7 +11,6 @@ EMBED_DEFAULT_TEMPLATE = "localtv/embed_video/default.html"
 EMBED_QUICKTIME_TEMPLATE = "localtv/embed_video/quicktime.html"
 EMBED_FLASH_TEMPLATE = "localtv/embed_video/flash.html"
 
-
 def quicktime_embed(file_url):
     embed_template = template.loader.get_template(EMBED_QUICKTIME_TEMPLATE)
     return embed_template.render(
@@ -49,9 +48,9 @@ EMBED_MAPPING = {
     'audio/mp4': quicktime_embed,
     'video/x-mp4': quicktime_embed,
     'audio/mp3': quicktime_embed,
-    'application/x-shockwave-flash': flash_embed,
-    'video/x-flv': flash_embed,
-    'video/flv': flash_embed,
+    #'application/x-shockwave-flash': flash_embed,
+    #'video/x-flv': flash_embed,
+    #'video/flv': flash_embed,
 }
 
 
@@ -60,7 +59,9 @@ def embed_video(video):
     if video.embed_code:
         return video.embed_code
     else:
-        mime_type = mimetypes.guess_type(video.file_url)
-        func = EMBED_MAPPING.get(
-            mimetypes.guess_type(video.file_url), default_embed)
+        if video.file_url_mimetype:
+            mime_type = video.file_url_mimetype
+        else:
+            mime_type = mimetypes.guess_type(video.file_url)[0]
+        func = EMBED_MAPPING.get(mime_type, default_embed)
         return func(video.file_url)

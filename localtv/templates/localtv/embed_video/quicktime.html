@@ -1,0 +1,23 @@
+<script type="text/javascript" src="/js/flowplayer-3.0.6.min.js"></script>
+<script type="text/javascript">
+if (0 && flashembed.isSupported([9, 115])) {
+    console.log('flowplayer');
+    document.write('<div id="player"></div>');
+    $f("player", "/swf/flowplayer-3.0.7.swf", {
+        clip: {
+            url: '{{ file_url }}',
+            scaling: 'fit',
+        }
+    });
+} else {
+    console.log('quicktime');
+    document.write("{% filter escapejs %}<object id="video" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" width="%i" height="%i" codebase="http://www.apple.com/qtactivex/qtplugin.cab">
+                   <param name="src" value="{{ file_url }}">
+                   <param name="scale" value="aspect">
+                   <param name="autoplay" value="true">
+                   <param name="controller" value="true">
+                   <embed src="{{ file_url }}" name="movieobject" scale="aspect" width="{{ width }}" height="{{ height }}" autoplay="false" controller="true" pluginspage="http://www.apple.com/quicktime/download/">
+                   </embed>
+                   </object>{% endfilter %}");      // quicktime
+}
+</script>
