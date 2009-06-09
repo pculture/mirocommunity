@@ -21,7 +21,8 @@ from localtv import models
 @get_sitelocation
 def feeds_page(request, sitelocation=None):
     feeds = models.Feed.objects.filter(
-        site=sitelocation.site)
+        site=sitelocation.site,
+        status=models.FEED_STATUS_ACTIVE)
     return object_list(
         request=request, queryset=feeds,
         paginate_by=15,
