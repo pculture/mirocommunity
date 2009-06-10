@@ -8,7 +8,7 @@
   </script>
 {% endblock head %}
 
-{% block title %}{{ block.super }} - {% trans "Admin - Approve / Reject" %}{% endblock %}
+{% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Approve / Reject" %}{% endblock %}{% endblock %}
 
 {% block content %}
   <div id="above_admin_table">
