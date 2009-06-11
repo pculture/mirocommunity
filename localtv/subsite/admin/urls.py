@@ -49,3 +49,8 @@ urlpatterns += patterns(
     'localtv.subsite.admin.design_views',
     (r'^design/$', 'edit_design',
      {}, 'localtv_admin_edit_design'))
+
+urlpatterns += patterns(
+    'localtv.subsite.admin.category_views',
+    (r'^categories/$', 'categories',
+     {}, 'localtv_admin_categories'))

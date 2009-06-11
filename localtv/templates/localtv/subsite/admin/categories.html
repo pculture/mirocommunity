@@ -1,0 +1,51 @@
+{% extends "localtv/subsite/admin/base.html" %}
+
+{% load i18n %}
+{% block head %}
+  {{ block.super }}
+  <script type="text/javascript" src="/js/urlify.js"></script>
+{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
+
+{% block content %}
+  <div id="above_admin_table">
+    {% include "localtv/subsite/admin/header.html" %}
+  </div>
+
+  <div id="add_category" style="float: left;">
+    <form action="" method="POST">
+      {{ add_form.as_p }}
+      <input type="submit" value="Add">
+    </form>
+  </div>
+
+  <div id="categories">
+    <table>
+      <thead>
+        <tr>
+          <td>Name</td>
+          <td>Description</td>
+          <td>Slug</td>
+          <td>Videos</td>
+        </tr>
+      </thead>
+      {% for category in categories %}
+      <tr>
+      {% include "localtv/subsite/admin/category_row.html" %}
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+<script type="text/javascript">
+
+    document.getElementById("id_slug").onchange = function() { this._changed = true; };
+
+    document.getElementById("id_name").onkeyup = function() {
+        var e = document.getElementById("id_slug");
+        if (!e._changed) { e.value = URLify(document.getElementById("id_name").value, 50); }
+    }
+
+</script>
+
+{% endblock content %}

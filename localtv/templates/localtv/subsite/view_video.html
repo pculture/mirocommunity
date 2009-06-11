@@ -59,21 +59,21 @@
     </p>
 
     <div id="tags">
-      {% if current_video.categories.objects.count %}
-        <h3>Categories - </h3>
+      {% if current_video.categories.count or edit_video_form %}
+        <h3{% if edit_video_form %} class="categories editable"{% endif %}>Categories - </h3>
 
         <ul>
-          {% for category in current_video.categories.objects.all %}
-            <li>{{ category.name }}</li> 
+          {% for category in current_video.categories.all %}
+            <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li> 
           {% endfor %}
         </ul>
       {% endif %}
 
-      {% if current_video.tags.objects.count %}
+      {% if current_video.tags.count %}
         <h3>Tags - </h3>
 
         <ul>
-          {% for tag in current_video.tags.objects.all %}
+          {% for tag in current_video.tags.all %}
             <li>{{ tag.name }}</li> 
           {% endfor %}
         </ul>
@@ -88,9 +88,10 @@
       <form id="add_tag">
         <input type="text" class="text_field" />
         <input type="image" id="suggest_tag" src="/images/suggest.png" value="submit" />
+
+        <a href="#" class="log_push">Login to add a tag</a>
       </form>
 
-      <a href="#" class="log_push">Login to add a tag</a>
       <br class="clear" />
     </div>
 

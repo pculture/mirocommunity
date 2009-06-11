@@ -8,5 +8,6 @@ SEQUENCE = [
     'design_evolutions',
     'add_frontpage_style',
     'add_submit_booleans',
-    'add_footer'
+    'add_footer',
+    'reset_category'
 ]

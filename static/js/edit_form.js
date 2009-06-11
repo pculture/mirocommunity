@@ -15,6 +15,9 @@ function inline_edit_open() {
     } else if (obj.hasClass('thumbnail')) {
         input = $('<input type="file" name="thumbnail"/>');
         obj.append(input);
+    } else if (obj.hasClass('categories')) {
+        input = $("#id_categories").clone().attr('id', '');
+        obj.append(input);
     }
     obj.append('<span class="save">✔</span> <span class="cancel">✖</span>');
     obj.children('.save').click(inline_save);
@@ -37,6 +40,10 @@ function inline_save() {
         old_input = $("#id_thumbnail");
         input.clone().insertAfter(old_input);
         old_input.remove();
+        inline_post(obj);
+    } else if (obj.hasClass('categories')) {
+        value = obj.children('select').val();
+        $("#id_categories").val(value);
         inline_post(obj);
     }
 }

@@ -1,4 +1,7 @@
 from django import forms
+from django.contrib.sites.models import Site
+
+from localtv import models
 
 class EditVideoForm(forms.Form):
     """
@@ -8,6 +11,8 @@ class EditVideoForm(forms.Form):
     website_url = forms.URLField(required=False)
     video_id = forms.CharField(widget=forms.HiddenInput)
     thumbnail = forms.ImageField(required=False)
+    categories = forms.ModelMultipleChoiceField(queryset=models.Category.objects,
+                                                required=False)
 
     @classmethod
     def create_from_video(cls, video):
@@ -16,6 +21,9 @@ class EditVideoForm(forms.Form):
         self.initial['description'] = video.description
         self.initial['website_url'] = video.website_url
         self.initial['video_id'] = video.id
+        self.fields['categories'].queryset = models.Category.objects.filter(
+            site=video.site)
+        self.initial['categories'] = video.categories.all()
 
         return self
 
@@ -109,3 +117,15 @@ class EditMiscDesignForm(forms.Form):
         sitelocation.display_submit_button = self.cleaned_data['display_submit_button']
         sitelocation.submission_requires_login = self.cleaned_data['submission_requires_login']
         sitelocation.save()
+
+class AddCategoryForm(forms.ModelForm):
+    class Meta:
+        model = models.Category
+        exclude = ['site']
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+
+        site = Site.objects.get_current()
+        self.fields['parent'].queryset = models.Category.objects.filter(
+            site=site)

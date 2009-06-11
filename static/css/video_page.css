@@ -32,6 +32,9 @@ p.description{
     padding: 15px 0;
     border-top: 1px solid #f0f0f0;
     font-size: 11px;
+}
+
+#add_tag {
     display: none;
 }
 

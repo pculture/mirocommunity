@@ -13,6 +13,7 @@ from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.forms.fields import slug_re
+from django.template import mark_safe
 from django.utils.html import strip_tags
 
 import feedparser
@@ -223,11 +224,69 @@ class Feed(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=80)
+    site = models.ForeignKey(Site)
+    name = models.CharField(max_length=80, verbose_name='Category Name',
+                            help_text=("The name is used to identify the "
+                                       "category almost everywhere; for "
+                                       "example under the post or in the "
+                                       "category widget."))
+    slug = models.SlugField(verbose_name='Category Slug',
+                            help_text=('The "slug" is the URL-friendly version '
+                                       "of the name.  It is usually lower-case "
+                                       "and contains only letters, numbers and "
+                                       "hyphens."))
+    logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
+                             verbose_name='Thumbnail/Logo',
+                             help_text=("For example: a leaf for 'environment' "
+                                        "or the logo of a university "
+                                        "department."))
+    description = models.TextField(blank=True,
+                                   verbose_name='Description (HTML)',
+                                   help_text=("The description is not prominent "
+                                              "by default, but some themes may "
+                                              "show it."))
+    parent = models.ForeignKey('self', blank=True, null=True,
+                               related_name='child_set',
+                               verbose_name='Category Parent',
+                               help_text=("Categories, unlike tags, can have a "
+                                          "hierarchy."))
+
+    class Meta:
+        ordering = ['name']
+        unique_together = (
+            ('slug', 'site'),
+            ('name', 'site'))
 
     def __unicode__(self):
         return self.name
 
+    def depth(self):
+        """
+        Returns the number of parents this category has.  Used for indentation.
+        """
+        depth = 0
+        parent = self.parent
+        while parent is not None:
+            depth += 1
+            parent = parent.parent
+        return depth
+
+    def dashes(self):
+        return mark_safe('&mdash;' * self.depth())
+
+    @classmethod
+    def in_order(klass, sitelocation):
+        objects = []
+        def accumulate(categories):
+            for category in categories:
+                objects.append(category)
+                if category.child_set.count():
+                    accumulate(category.child_set.all())
+        accumulate(klass.objects.filter(site=sitelocation, parent=None))
+        return objects
+
+class CategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
 
 class SavedSearch(models.Model):
     site = models.ForeignKey(SiteLocation)
@@ -474,7 +533,7 @@ admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(Tag)
 admin.site.register(Feed)
-admin.site.register(Category)
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)
