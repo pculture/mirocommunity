@@ -10,5 +10,6 @@ SEQUENCE = [
     'add_submit_booleans',
     'add_footer',
     'reset_category',
+    'video_author',
     'category_site'
 ]
