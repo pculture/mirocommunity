@@ -14,28 +14,31 @@ def categories(request, sitelocation=None):
     for category in categories:
         category.form = forms.CategoryForm(prefix="edit_%s" % category.id,
                                            instance=category)
-    add_form = forms.CategoryForm()
+    add_category_form = forms.CategoryForm()
     if request.method == 'GET':
-        add_form = forms.CategoryForm()
+        add_category_form = forms.CategoryForm()
         return render_to_response('localtv/subsite/admin/categories.html',
                                   {'categories': categories,
-                                   'add_form': add_form},
+                                   'add_category_form': add_category_form},
                                   context_instance=RequestContext(request))
     else:
         if request.POST['submit'] == 'Add':
             category = Category(site=sitelocation.site)
-            add_form = forms.CategoryForm(request.POST, instance=category)
-            if add_form.is_valid():
+            add_category_form = forms.CategoryForm(request.POST,
+                                                   instance=category)
+            if add_category_form.is_valid():
                 try:
-                    add_form.save()
+                    add_category_form.save()
                 except IntegrityError:
-                    add_form._errors = 'There was an error adding this category.  Does it already exist?'
+                    add_category_form._errors = \
+                        'There was an error adding this category.  Does it '\
+                        'already exist?'
                 else:
                     return HttpResponseRedirect(request.path)
 
             return render_to_response('localtv/subsite/admin/categories.html',
                                       {'categories': categories,
-                                       'add_form': add_form},
+                                       'add_category_form': add_category_form},
                                       context_instance=RequestContext(request))
         elif request.POST['submit'] == 'Save':
             invalid = False
@@ -48,15 +51,18 @@ def categories(request, sitelocation=None):
                     try:
                         category.form.save()
                     except IntegrityError:
-                        category.form._errors = 'There was an error editing %s. Does it already exist?' % category.name
+                        category.form._errors = \
+                            'There was an error editing %s. Does it already '\
+                            'exist?' % category.name
                         invalid = True
                 else:
                     invalid = True
             if invalid:
-                return render_to_response('localtv/subsite/admin/categories.html',
-                                          {'categories': categories,
-                                           'add_form': add_form},
-                                          context_instance=RequestContext(request))
+                return render_to_response(
+                    'localtv/subsite/admin/categories.html',
+                    {'categories': categories,
+                     'add_category_form': add_category_form},
+                    context_instance=RequestContext(request))
             else:
                 return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Apply':
