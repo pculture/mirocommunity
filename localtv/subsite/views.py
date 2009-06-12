@@ -32,13 +32,17 @@ def subsite_index(request, sitelocation=None):
     new_videos = new_videos.order_by(
         '-when_approved', '-when_submitted')[:10]
 
+    categories = models.Category.objects.filter(site=sitelocation.site,
+                                                parent=None)
+
     return render_to_response(
         'localtv/subsite/index_%s.html' % (sitelocation.frontpage_style,),
         {'sitelocation': sitelocation,
          'request': request,
          'featured_videos': featured_videos,
          'popular_videos': popular_videos,
-         'new_videos': new_videos},
+         'new_videos': new_videos,
+         'categories': categories},
         context_instance=RequestContext(request))
 
 

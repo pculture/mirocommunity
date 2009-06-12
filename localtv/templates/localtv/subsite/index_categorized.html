@@ -45,35 +45,16 @@
     </div>
 
   <ul class="cat_list">
-  
-  	<a href="#" class="top_cat_button"><span>Courseware</span></a>
-  		
+    {% for category in categories %}
+  	<a href="{{ category.get_absolute_url }}" class="top_cat_button"><span>{{ category.name }}</span></a>
+        {% if category.child_set.count %}
   		<ul>
-  			<li><a href="#">Biology</a></li>
-  			<li><a href="#">Chemistry</a></li>
-  			<li><a href="#">Humanities</a></li>
-  			<li><a href="#">Manatees</a></li>
-  			<li><a href="#">International Relations</a></li>
+                  {% for subcategory in category.child_set.all %}
+  			<li><a href="{{ subcategory.get_absolute_url }}">{{ subcategory.name }}</a></li>
+                  {% endfor %}
   		</ul>
-  		
-  	<a href="#" class="top_cat_button"><span>Courseware</span></a>
-  		
-  		<ul>
-  			<li><a href="#">Biology</a></li>
-  			<li><a href="#">Chemistry</a></li>
-  			<li><a href="#">Humanities</a></li>
-  			<li><a href="#">Manatees</a></li>
-  			<li><a href="#">International Relations</a></li>
-  		</ul>
-  	<a href="#" class="top_cat_button"><span>Courseware</span></a>
-  		
-  		<ul>
-  			<li><a href="#">Biology</a></li>
-  			<li><a href="#">Chemistry</a></li>
-  			<li><a href="#">Humanities</a></li>
-  			<li><a href="#">Manatees</a></li>
-  			<li><a href="#">International Relations</a></li>
-  		</ul>	
+        {% endif %}
+    {% endfor %}
   </ul>
   
   
