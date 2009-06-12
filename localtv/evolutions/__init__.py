@@ -9,5 +9,6 @@ SEQUENCE = [
     'add_frontpage_style',
     'add_submit_booleans',
     'add_footer',
-    'reset_category'
+    'reset_category',
+    'category_site'
 ]
