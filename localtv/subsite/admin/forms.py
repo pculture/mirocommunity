@@ -118,7 +118,7 @@ class EditMiscDesignForm(forms.Form):
         sitelocation.submission_requires_login = self.cleaned_data['submission_requires_login']
         sitelocation.save()
 
-class AddCategoryForm(forms.ModelForm):
+class CategoryForm(forms.ModelForm):
     class Meta:
         model = models.Category
         exclude = ['site']

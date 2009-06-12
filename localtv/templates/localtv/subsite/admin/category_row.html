@@ -1,6 +1,20 @@
-<td>{{ category.dashes }}{{ category.name }}</td>
+<td><input type="checkbox" name="bulk_{{ category.id }}"></td>
+<td>
+   {{ category.dashes }}{{ category.name }}
+</td>
 <td>{{ category.description }}</td>
 <td>{{ category.slug }}</td>
 {% with category.video_set.count as count %}
 <td>{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}
+</tr>
+<tr class="category_edit" {% if category.form.errors %}style="display: table-row;"{% endif %}>
+  <td>{{ category.form.parent }}</td>
+  <td>{{ category.form.name }}</td>
+  <td>{{ category.form.description }}</td>
+  <td>{{ category.form.slug }}</td>
+  <td><input type="submit" value="Save" name="submit"></td>
+  {% if category.form.errors %}
+  <td>{{ category.form.errors }}</td>
+  {% endif %}
+</tr>

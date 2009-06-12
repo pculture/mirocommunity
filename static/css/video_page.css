@@ -147,6 +147,10 @@ font-size: 11px;
     display: none;
 }
 
+.category_edit {
+    display: none;
+}
+
 .action{
 padding-top: 20px;
 }
