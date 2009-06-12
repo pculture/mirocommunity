@@ -1,0 +1,41 @@
+{% extends "localtv/subsite/admin/base.html" %}
+
+{% load i18n %}
+{% block head %}
+  {{ block.super }}
+  <script type="text/javascript">
+      function edit_author(event) {
+          console.log(event.target);
+          if (event.target.nodeName === 'INPUT') {
+              return false;
+          }
+          $(event.target).parent().hide().next().show();
+      }
+  </script>
+{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
+
+{% block content %}
+  <div id="above_admin_table">
+    {% include "localtv/subsite/admin/header.html" %}
+  </div>
+
+  <div id="add_author" style="float: left;">
+    <form action="" method="POST">
+      {{ add_author_form.as_p }}
+      <input type="submit" value="Add" name="submit">
+    </form>
+  </div>
+
+  <div id="authors">
+    <form method="POST" enctype="multipart/form-data" action="">
+    <table>
+      {% for author in authors %}
+      <tr onclick="edit_author(event);" {% if author.form.errors %}style="display: none;"{% endif %}>
+      {% include "localtv/subsite/admin/author_row.html" %}
+      </tr>
+      {% endfor %}
+    </table>
+    </form>
+  </div>
+{% endblock content %}

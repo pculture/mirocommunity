@@ -147,7 +147,7 @@ font-size: 11px;
     display: none;
 }
 
-.category_edit {
+.category_edit, .author_edit {
     display: none;
 }
 

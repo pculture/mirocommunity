@@ -288,6 +288,20 @@ class Category(models.Model):
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
+class Author(models.Model):
+    site = models.ForeignKey(Site)
+    name = models.CharField(max_length=80, verbose_name='Author Name')
+    logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
+                             verbose_name='Author Image')
+
+    class Meta:
+        ordering = ['name']
+        unique_together = (
+            ('name', 'site'))
+
+    def __unicode__(self):
+        return self.name
+
 class SavedSearch(models.Model):
     site = models.ForeignKey(SiteLocation)
     query_string = models.TextField()
@@ -323,6 +337,7 @@ class Video(models.Model):
      - description: Video description
      - tags: A list of Tag objects associated with this item
      - categories: Similar to Tags
+     - authors: the person/people responsible for this video
      - file_url: The file this object points to (if any) ... if not
        provided, at minimum we need the embed_code for the item.
      - when_submitted: When this item was first entered into the
@@ -348,6 +363,7 @@ class Video(models.Model):
     description = models.TextField()
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
+    authors = models.ManyToManyField(Author, blank=True)
     file_url = models.URLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
@@ -534,6 +550,7 @@ admin.site.register(SiteLocation)
 admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Author)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)

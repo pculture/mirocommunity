@@ -1,0 +1,13 @@
+<td>{{ author.name }}</td>
+<td>change image</td>
+<td><a href="{% url localtv_admin_authors_delete %}?id={{ author.id }}">remove</a></td>
+{% with author.video_set.count as count %}
+<td>{% if not count %}{{ count }}{% else %}<a href="{{ author.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
+{% endwith %}
+<tr class="author_edit" {% if author.form.errors %}style="display: table-row;"{% endif %}>
+<td>{{ author.form.name }}</td>
+<td>{{ author.form.logo }}</td>
+<td><input type="submit" value="Save" name="submit"></td>
+{% if category.form.errors %}
+<td>{{ category.form.errors }}</td>
+{% endif %}

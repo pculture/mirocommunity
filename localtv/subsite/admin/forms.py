@@ -129,3 +129,8 @@ class CategoryForm(forms.ModelForm):
         site = Site.objects.get_current()
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=site)
+
+class AuthorForm(forms.ModelForm):
+    class Meta:
+        model = models.Author
+        exclude = ['site']
