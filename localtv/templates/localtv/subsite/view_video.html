@@ -111,13 +111,13 @@
   </div>
 
   <div id="sidebar">
-
+    {% if sitelocation.sidebar_html %}
     <div id="about">
       {% autoescape off %}
         {{ sitelocation.sidebar_html }}
       {% endautoescape %}
     </div>
-
+    {% endif %}
     <div id="sidebar_header">
       <h2>Most Popular</h2>
 
