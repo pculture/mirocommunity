@@ -28,6 +28,7 @@ def edit_video(request, sitelocation=None):
             video.description = edit_video_form.cleaned_data.get('description')
             video.website_url = edit_video_form.cleaned_data.get('website_url')
             video.categories = edit_video_form.cleaned_data.get('categories')
+            video.authors = edit_video_form.cleaned_data.get('authors')
             thumbnail = edit_video_form.cleaned_data.get('thumbnail')
             if thumbnail:
                 video.thumbnail_url = '' # since we're no longer using that URL

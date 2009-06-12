@@ -78,6 +78,15 @@
           {% endfor %}
         </ul>
       {% endif %}
+      {% if current_video.authors.count or edit_video_form %}
+      <h3{% if edit_video_form %} class="authors editable"{% endif %}>Authors - </h3>
+        <ul>
+          {% for author in current_video.authors.all %}
+            <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li> 
+          {% endfor %}
+        </ul>
+
+      {% endif %}
       {% if openid_localtv.admin_for_current_site %}
   <h3>{{ current_video|pprint }}</h3>
   {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}

@@ -18,6 +18,9 @@ function inline_edit_open() {
     } else if (obj.hasClass('categories')) {
         input = $("#id_categories").clone().attr('id', '');
         obj.append(input);
+    } else if (obj.hasClass('authors')) {
+        input = $("#id_authors").clone().attr('id', '');
+        obj.append(input);
     }
     obj.append('<span class="save">✔</span> <span class="cancel">✖</span>');
     obj.children('.save').click(inline_save);
@@ -44,6 +47,10 @@ function inline_save() {
     } else if (obj.hasClass('categories')) {
         value = obj.children('select').val();
         $("#id_categories").val(value);
+        inline_post(obj);
+    } else if (obj.hasClass('authors')) {
+        value = obj.children('select').val();
+        $("#id_authors").val(value);
         inline_post(obj);
     }
 }
