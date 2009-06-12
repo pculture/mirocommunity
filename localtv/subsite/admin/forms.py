@@ -25,11 +25,11 @@ class EditVideoForm(forms.Form):
         self.initial['video_id'] = video.id
         self.fields['categories'].queryset = models.Category.objects.filter(
             site=video.site)
-        self.initial['categories'] = [category.pk for category invideo.categories.all()]
+        self.initial['categories'] = [category.pk for category in video.categories.all()]
         self.fields['authors'].queryset = models.Author.objects.filter(
             site=video.site)
         self.initial['authors'] = [author.pk for author in video.authors.all()]
-      
+
         return self
 
 class EditTitleForm(forms.Form):
