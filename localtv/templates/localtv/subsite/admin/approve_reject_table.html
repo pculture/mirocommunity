@@ -32,6 +32,10 @@
                   {% endblock pagination %}
                 </td>
               </tr>
+              <tr class="admin_actions_all">
+                <td><a href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}">Approve All</a></td>
+                <td><a href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}">Reject All</a></td>
+              </tr>
               <tr id="admin_videolisting_row">
                 <td>
                   {% block videolisting_rows %}

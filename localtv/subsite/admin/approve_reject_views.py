@@ -14,17 +14,19 @@ from django.http import HttpResponse, HttpResponseBadRequest
 ## Video approve/reject
 ## --------------------
 
+def get_video_paginator(sitelocation):
+    videos = models.Video.objects.filter(
+        status=models.VIDEO_STATUS_UNAPPROVED,
+        site=sitelocation.site).order_by(
+        'when_submitted', 'when_published')
+
+    return Paginator(videos, 10)
+
 @require_site_admin
 @get_sitelocation
 def approve_reject(request, sitelocation=None):
     if request.method == "GET":
-        videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED,
-            site=sitelocation.site).order_by(
-            'when_submitted', 'when_published')
-
-        video_paginator = Paginator(videos, 10)
-
+        video_paginator = get_video_paginator(sitelocation)
         try:
             page = video_paginator.page(int(request.GET.get('page', 1)))
         except ValueError:
@@ -106,5 +108,44 @@ def feature_video(request, sitelocation=None):
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
     current_video.save()
+
+    return HttpResponse('SUCCESS')
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def reject_all(request, sitelocation=None):
+    video_paginator = get_video_paginator(sitelocation)
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        return HttpResponseBadRequest(
+            'Page number request exceeded available pages')
+
+    for video in page.object_list:
+        video.status = models.VIDEO_STATUS_REJECTED
+        video.save()
+
+    return HttpResponse('SUCCESS')
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def approve_all(request, sitelocation=None):
+    video_paginator = get_video_paginator(sitelocation)
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        return HttpResponseBadRequest(
+            'Page number request exceeded available pages')
+
+    for video in page.object_list:
+        video.status = models.VIDEO_STATUS_ACTIVE
+        video.when_approved = datetime.datetime.now()
+        video.save()
 
     return HttpResponse('SUCCESS')
