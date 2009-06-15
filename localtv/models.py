@@ -307,7 +307,7 @@ class Author(models.Model):
         return self.name
 
 class SavedSearch(models.Model):
-    site = models.ForeignKey(SiteLocation)
+    site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
     openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
