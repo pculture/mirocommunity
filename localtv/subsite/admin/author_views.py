@@ -46,6 +46,7 @@ def authors(request, sitelocation=None):
             for author in authors:
                 author.form = forms.AuthorForm(
                     request.POST,
+                    request.FILES,
                     prefix="edit_%s" % author.id,
                     instance=author)
                 if author.form.is_valid():

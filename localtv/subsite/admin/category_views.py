@@ -45,6 +45,7 @@ def categories(request, sitelocation=None):
             for category in categories:
                 category.form = forms.CategoryForm(
                     request.POST,
+                    request.FILES,
                     prefix="edit_%s" % category.id,
                     instance=category)
                 if category.form.is_valid():
