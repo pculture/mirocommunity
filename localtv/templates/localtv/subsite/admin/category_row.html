@@ -9,9 +9,15 @@
 {% endwith %}
 </tr>
 <tr class="category_edit" {% if category.form.errors %}style="display: table-row;"{% endif %}>
-  <td>{{ category.form.parent }}</td>
-  <td>{{ category.form.name }}</td>
-  <td>{{ category.form.description }}</td>
+  <td><input type="checkbox" name="bulk_{{ category.id }}"></td>
+  <td>
+    {{ category.form.parent }}
+    {{ category.form.name }}
+  </td>
+  <td>
+      {{ category.form.description }}
+      {{ category.form.logo }}
+  </td>
   <td>{{ category.form.slug }}</td>
   <td><input type="submit" value="Save" name="submit"></td>
   {% if category.form.errors %}

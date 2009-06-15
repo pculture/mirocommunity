@@ -14,35 +14,30 @@
       }
   </script>
 {% endblock %}
-{% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Admin - Categories" %}{% endblock %}
 
 {% block content %}
   <div id="above_admin_table">
     {% include "localtv/subsite/admin/header.html" %}
   </div>
 
-  <div id="add_category" style="float: left;">
+  <div id="label_sidebar">
+    <h1>Add a Category</h1>
     <form action="" method="POST">
       {{ add_category_form.as_p }}
       <input type="submit" value="Add" name="submit">
     </form>
   </div>
 
-  <div id="categories">
-    <form action="" method="POST">
-    <table>
+  <div id="labels">
+    <form action="" method="POST" enctype="multipart/form-data">
+      <select name="action">
+        <option value="">Bulk Actions</option>
+        <option value="delete">Delete</option>
+      </select>
+      <input type="submit" value="Apply" name="submit"/>
+      <table>
       <thead>
-        <tr>
-          <td>
-            <select name="action">
-              <option value="">Bulk Actions</option>
-              <option value="delete">Delete</option>
-            </select>
-          </td>
-          <td>
-            <input type="submit" value="Apply" name="submit"/>
-          </td>
-        </tr>
         <tr>
           <td><input type="checkbox"/></td>
           <td>Name</td>
@@ -52,7 +47,7 @@
         </tr>
       </thead>
       {% for category in categories %}
-      <tr onclick="edit_category(event);" {% if category.form.errors %}style="display: none;"{% endif %}>
+      <tr class="{% cycle "grey" "white" %}" onclick="edit_category(event);" {% if category.form.errors %}style="display: none;"{% endif %}>
       {% include "localtv/subsite/admin/category_row.html" %}
       </tr>
       {% endfor %}

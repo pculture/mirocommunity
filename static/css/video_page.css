@@ -383,3 +383,70 @@ width: 484px !important;
 #category > div {
     margin-top: 20px;
 }
+
+#label_sidebar {
+    float: left;
+    background: #eee;
+    width: 20%;
+    margin-right: 20px;
+    text-align: left;
+}
+
+#label_sidebar h1 {
+    padding: 5px;
+    text-align: left;
+    font-size: 140%;
+    font-weight: bold;
+    width: 100%;
+}
+
+#label_sidebar form {
+    text-align: left;
+    padding: 5px;
+}
+
+#label_sidebar p {
+    margin-bottom: 20px;
+}
+
+#label_sidebar form label {
+    float: left;
+    font-size: 130%;
+    clear: both;
+    width: 100%;
+}
+
+#label_sidebar form input, #label_sidebar form textarea, #label_sidebar form select {
+    float: left;
+    margin: 5px 200px 5px 0;
+    clear: both;
+}
+
+#labels table thead {
+    background: #ddd;
+}
+
+#labels table thead td {
+    font-weight: bold;
+    padding: 5px;
+}
+
+#labels table td + td {
+    width: 100px;
+}
+
+#labels table tbody td {
+    padding: 5px 5px 20px;
+}
+
+#labels table {
+    border: 1px solid #ddd;
+}
+
+#labels table td {
+    border-bottom: 1px solid #ddd;
+}
+
+#labels table tr.grey, #labels table tr.grey + tr {
+    background: #eee;
+}
