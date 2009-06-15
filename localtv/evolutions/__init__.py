@@ -11,5 +11,6 @@ SEQUENCE = [
     'add_footer',
     'reset_category',
     'video_author',
-    'category_site'
+    'category_site',
+    'fix_sites'
 ]
