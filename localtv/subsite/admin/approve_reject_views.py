@@ -70,7 +70,6 @@ def approve_video(request, sitelocation=None):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        status=models.VIDEO_STATUS_UNAPPROVED,
         site=sitelocation.site)
     current_video.status = models.VIDEO_STATUS_ACTIVE
     current_video.when_approved = datetime.datetime.now()
@@ -89,7 +88,6 @@ def reject_video(request, sitelocation=None):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        status=models.VIDEO_STATUS_UNAPPROVED,
         site=sitelocation.site)
     current_video.status = models.VIDEO_STATUS_REJECTED
     current_video.save()
