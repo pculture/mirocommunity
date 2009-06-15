@@ -358,3 +358,28 @@ margin: 0;
 width: 484px !important;
 }
 
+#category_sidebar {
+    float: left;
+    background: #eee;
+    width: 20%;
+    margin-right: 20px;
+    text-align: center;
+}
+
+#category_sidebar h1 {
+    float: none;
+}
+
+#category {
+    width: 70%;
+    float: left;
+}
+
+#category a.count {
+    font-size: 90%;
+    color: #bbb;
+}
+
+#category > div {
+    margin-top: 20px;
+}

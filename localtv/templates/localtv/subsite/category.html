@@ -1,0 +1,52 @@
+{% extends "localtv/subsite/base.html" %}
+{% block content %}
+{% if category.name %}
+<div id="category_sidebar">
+  {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+  <h1>{{ category.name }}</h1>
+  <div>{{ category.description }}</div>
+</div>
+{% endif %}
+<div id="category">
+  <div id="with-children">
+    {% for child in category.child_set.all %}
+    {% if child.child_set.count %}
+    <h2><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></h2>
+    {% for subchild in child.child_set.all %}
+    <div>
+      {% if subchild.logo %}<img src="{{ subchild.logo.url }}">{% endif %}
+        <h3>{{ subchild.name }}</h3>
+        <div><a href="{{ subchild.get_absolute_url }}" class="count">{{ subchild.video_set.count }} Videos &gt;&gt;</a></div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div id="no-children">
+    {% for child in category.child_set.all %}
+    {% if not child.child_set.count %}
+    <h2>{{ child.name }} <a href="{{ child.get_absolute_url }}" class="count">{{ child.video_set.count }} Videos &gt;&gt;</a></h2>
+    <ul>
+      {% for video in child.video_set.all|slice:":4" %}
+      <li>
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% if category.video_set.count %}
+  <div id="individual">
+    <h2>Individual {{ category.name }} Videos</h2>
+    <ul>
+      {% for video in category.video_set.all %}
+      <li>
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

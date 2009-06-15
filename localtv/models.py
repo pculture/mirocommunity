@@ -274,6 +274,10 @@ class Category(models.Model):
     def dashes(self):
         return mark_safe('&mdash;' * self.depth())
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_category', [self.slug])
+
     @classmethod
     def in_order(klass, sitelocation):
         objects = []

@@ -114,3 +114,15 @@ def video_search(request, sitelocation=None):
             context_instance=RequestContext(request))
 
 
+@get_sitelocation
+def category(request, slug=None, sitelocation=None):
+    if slug is None:
+        category = {
+            'child_set': models.Category.objects.filter(parent=None),
+            }
+    else:
+        category = get_object_or_404(models.Category, slug=slug)
+    return render_to_response(
+        'localtv/subsite/category.html',
+        {'category': category},
+        context_instance=RequestContext(request))
