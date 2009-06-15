@@ -8,6 +8,8 @@ urlpatterns = patterns(
     (r'^search/$', 'video_search', {}, 'localtv_subsite_search'),
     (r'^category/$', 'category', {}, 'localtv_subsite_category_index'),
     (r'^category/([-\w]+)$', 'category', {}, 'localtv_subsite_category'),
+    (r'^author/$', 'author', {}, 'localtv_subsite_author_index'),
+    (r'^author/(\d+)$', 'author', {}, 'localtv_subsite_author'),
     (r'^video/(?P<video_id>[0-9]+)/$', 'view_video',
      {}, 'localtv_view_video'))
 

@@ -306,6 +306,11 @@ class Author(models.Model):
     def __unicode__(self):
         return self.name
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_author', [str(self.id)])
+
+
 class SavedSearch(models.Model):
     site = models.ForeignKey(Site)
     query_string = models.TextField()

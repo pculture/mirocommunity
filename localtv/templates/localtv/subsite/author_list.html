@@ -1,0 +1,13 @@
+{% extends "localtv/subsite/base.html" %}
+
+{% block title %}{{ block.super }} - Authors{% endblock %}
+
+{% block content %}
+<div id="author_list">
+  <ul>
+  {% for author in authors %}
+    <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li>
+  {% endfor %}
+  </ul>
+</div>
+{% endblock %}

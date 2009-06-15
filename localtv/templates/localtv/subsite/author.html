@@ -1,0 +1,7 @@
+{% extends "localtv/subsite/video_listing.html" %}
+
+{% block page_title %}{{ author.name }}{% endblock %}
+
+{% block title %}{{ block.super }} - {{ author.name }}{%endblock %}
+
+{% block body_id %}video_listing_author{% endblock body_id %}

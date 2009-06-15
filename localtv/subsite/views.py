@@ -126,3 +126,19 @@ def category(request, slug=None, sitelocation=None):
         'localtv/subsite/category.html',
         {'category': category},
         context_instance=RequestContext(request))
+
+@get_sitelocation
+def author(request, id=None, sitelocation=None):
+    if id is None:
+        return render_to_response(
+            'localtv/subsite/author_list.html',
+            {'authors': models.Author.objects.all()},
+            context_instance=RequestContext(request))
+    else:
+        author = get_object_or_404(models.Author,
+                                   pk=id)
+        return render_to_response(
+            'localtv/subsite/author.html',
+            {'author': author,
+             'video_list': author.video_set.all()},
+            context_instance=RequestContext(request))
