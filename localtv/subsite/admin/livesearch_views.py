@@ -127,7 +127,7 @@ def livesearch_response(request, sitelocation):
             
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
-            site=sitelocation,
+            site=sitelocation.site,
             query_string=query_string).count())
 
     video_paginator = Paginator(results, 10)
@@ -152,7 +152,7 @@ def livesearch_response(request, sitelocation):
          'query_string': query_string,
          'order_by': order_by,
          'is_saved_search': is_saved_search,
-         'saved_searches': models.SavedSearch.objects.filter(site=sitelocation)},
+         'saved_searches': models.SavedSearch.objects.filter(site=sitelocation.site)},
         context_instance=RequestContext(request))
 
 
@@ -163,7 +163,7 @@ def livesearch_response(request, sitelocation):
 def approve(request, search_video, sitelocation=None):
     video = search_video.generate_video_model(sitelocation.site)
     existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation, query_string=request.GET.get('query'))
+        site=sitelocation.site, query_string=request.GET.get('query'))
     if existing_saved_search.count():
         video.search = existing_saved_search[0]
     else:
@@ -194,7 +194,7 @@ def create_saved_search(request, sitelocation=None):
     query_string = request.GET.get('query')
 
     existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation,
+        site=sitelocation.site,
         query_string=query_string)
 
     if existing_saved_search.count():
@@ -202,7 +202,7 @@ def create_saved_search(request, sitelocation=None):
             'Saved search of that query already exists')
 
     saved_search = models.SavedSearch(
-        site=sitelocation,
+        site=sitelocation.site,
         query_string=query_string,
         openid_user=request.session.get('openid_localtv'),
         when_created=datetime.datetime.now())
@@ -217,7 +217,7 @@ def create_saved_search(request, sitelocation=None):
 def remove_saved_search(request, sitelocation=None):
     search_id = request.GET.get('search_id')
     existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation,
+        site=sitelocation.site,
         pk=search_id)
 
     if existing_saved_search.count():
