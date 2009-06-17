@@ -12,5 +12,6 @@ SEQUENCE = [
     'reset_category',
     'video_author',
     'category_site',
-    'fix_sites'
+    'fix_sites',
+    'add_auto_fields',
 ]

@@ -1335,7 +1335,8 @@ background-position: right -82px;
 background-position: left -82px;	
 }
 
-
-
+.editable .input_field, .editable .post_url {
+    display: none;
+}
 
 

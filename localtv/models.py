@@ -117,6 +117,8 @@ class Feed(models.Model):
     etag = models.CharField(max_length=250, blank=True)
     auto_approve = models.BooleanField(default=False)
     openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+    auto_categories = models.ManyToManyField("Category", blank=True)
+    auto_authors = models.ManyToManyField("Author", blank=True)
 
     class Meta:
         unique_together = (

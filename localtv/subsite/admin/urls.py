@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, include
 
 urlpatterns = patterns(
     'localtv.subsite.admin.approve_reject_views',
@@ -66,3 +66,7 @@ urlpatterns += patterns(
     (r'^authors/delete$', 'delete',
      {}, 'localtv_admin_authors_delete'))
 
+urlpatterns += patterns(
+    '',
+    (r'^edit_attributes/',
+     include('localtv.subsite.admin.edit_attributes.urls')))
