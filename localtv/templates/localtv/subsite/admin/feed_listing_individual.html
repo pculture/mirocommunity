@@ -1,6 +1,5 @@
 {% load i18n %}
 <div class="admin_feed">
-  {% comment %}
   <div class="editable">
     <span class="display_data">{{ feed.name }}</span>
     <span class="post_url">{% url localtv_admin_feed_edit_title %}</span>
@@ -9,7 +8,6 @@
       {{ feed.name }}
     </span>
   </div>
-  {% endcomment %}
 
   <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.name }}</a>
   <span class="admin_feed_actions">
