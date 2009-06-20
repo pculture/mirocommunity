@@ -11,13 +11,17 @@ function insert_and_activate_action_buttons(obj) {
     obj.children('.cancel').click(inline_cancel);
 }
 
+DEBUG_DATA = null;
+
 function inline_save() {
     var post_data = {};
     var obj = $(this);
     var input_wrapper = obj.parent();
     var inputs = input_wrapper.children(':input');
     var editable_wrapper = input_wrapper.parent('.editable');
-    var display_wrapper = editable_wrapper.parent('.display_data');
+    var display_wrapper = editable_wrapper.children('.display_data');
+    DEBUG_DATA = display_wrapper;
+
     inputs.each(function() {
             post_data[this.name] = this.value;});
     var post_url = editable_wrapper.children('.post_url').text();
