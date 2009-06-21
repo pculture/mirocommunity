@@ -2,7 +2,7 @@
 <div class="admin_feed">
   <div class="editable">
     <span class="display_data">{{ feed.name }}</span>
-    <span class="post_url">{% url localtv_admin_feed_edit_title %}</span>
+    <span class="post_url">{% url localtv_admin_feed_edit_title id=feed.id %}</span>
     <span class="input_field">
       <input type="text" name="name" />
       {{ feed.name }}

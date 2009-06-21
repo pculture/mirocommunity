@@ -35,7 +35,7 @@ function inline_save() {
                 input_wrapper.css('display', 'none');
                 display_wrapper.css('display', 'inline');
             } else {
-
+                
             }}, 'json');
         
 }
