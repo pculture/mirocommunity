@@ -17,7 +17,7 @@ function inline_save() {
     var post_data = {};
     var obj = $(this);
     var input_wrapper = obj.parent();
-    var inputs = input_wrapper.children(':input');
+    var inputs = input_wrapper.find(':input');
     var editable_wrapper = input_wrapper.parent('.editable');
     var display_wrapper = editable_wrapper.children('.display_data');
     DEBUG_DATA = display_wrapper;

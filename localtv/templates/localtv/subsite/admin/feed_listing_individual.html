@@ -1,5 +1,7 @@
-{% load i18n %}
+{% load i18n editable_widget %}
 <div class="admin_feed">
+  {% editable_widget feed "name" %}
+
   <div class="editable">
     <span class="display_data">{{ feed.name }}</span>
     <span class="post_url">{% url localtv_admin_feed_edit_title id=feed.id %}</span>

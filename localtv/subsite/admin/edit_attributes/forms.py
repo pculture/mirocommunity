@@ -1,4 +1,9 @@
 from django import forms
 
-class FeedNameForm(forms.Form):
-    name = forms.CharField(max_length=250)
+from localtv import models
+
+
+class FeedNameForm(forms.ModelForm):
+    class Meta:
+        model = models.Feed
+        fields = ('name')
