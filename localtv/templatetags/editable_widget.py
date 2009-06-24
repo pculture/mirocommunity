@@ -15,7 +15,13 @@ WIDGET_DIRECTORY = {
             'default_display_template':
                 'localtv/subsite/display_templates/feed_auto_categories.html',
             'form': forms.FeedAutoCategoriesForm,
-            'reversible_post_url': 'localtv_admin_feed_edit_auto_categories'}}}
+            'reversible_post_url': 'localtv_admin_feed_edit_auto_categories'},
+        'auto_authors': {
+            'default_display_template':
+                'localtv/subsite/display_templates/feed_auto_authors.html',
+            'form': forms.FeedAutoAuthorsForm,
+            'reversible_post_url': 'localtv_admin_feed_edit_auto_authors'}
+        }}
 
 register = template.Library()
 

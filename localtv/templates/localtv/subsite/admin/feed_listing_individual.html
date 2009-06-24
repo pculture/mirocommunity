@@ -31,12 +31,7 @@
       </td>
       
       <td>
-        <h3 class="authors editable">{% trans "Authors" %}</h3>
-        <ul>
-          {% for author in feed.auto_authors.all %}
-            <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li> 
-          {% endfor %}
-        </ul>
+        {% editable_widget feed "auto_authors" %}
       </td>
     </tr>
   </table>
