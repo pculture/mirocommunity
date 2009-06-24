@@ -11,8 +11,6 @@ function insert_and_activate_action_buttons(obj) {
     obj.children('.cancel').click(inline_cancel);
 }
 
-DEBUG_DATA = null;
-
 function inline_save() {
     var post_data = {};
     var obj = $(this);
@@ -20,7 +18,6 @@ function inline_save() {
     var inputs = input_wrapper.find(':input');
     var editable_wrapper = input_wrapper.parent('.editable');
     var display_wrapper = editable_wrapper.children('.display_data');
-    DEBUG_DATA = display_wrapper;
 
     inputs.each(function() {
             post_data[this.name] = this.value;});
@@ -34,10 +31,10 @@ function inline_save() {
                 insert_and_activate_action_buttons(input_wrapper);
                 input_wrapper.css('display', 'none');
                 display_wrapper.css('display', 'inline');
-            } else {
-                
+            } else if (data['post_status'] == 'FAIL') {
+                input_wrapper.html(data['input_html']);
+                insert_and_activate_action_buttons(input_wrapper);
             }}, 'json');
-        
 }
 
 function inline_cancel() {
