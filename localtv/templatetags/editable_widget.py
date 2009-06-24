@@ -11,7 +11,11 @@ WIDGET_DIRECTORY = {
                 'localtv/subsite/display_templates/feed_name.html',
             'form': forms.FeedNameForm,
             'reversible_post_url': 'localtv_admin_feed_edit_title'},
-        }}
+        'auto_categories': {
+            'default_display_template':
+                'localtv/subsite/display_templates/feed_auto_categories.html',
+            'form': forms.FeedAutoCategoriesForm,
+            'reversible_post_url': 'localtv_admin_feed_edit_auto_categories'}}}
 
 register = template.Library()
 

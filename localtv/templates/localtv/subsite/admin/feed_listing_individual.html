@@ -2,15 +2,6 @@
 <div class="admin_feed">
   {% editable_widget feed "name" %}
 
-  <div class="editable">
-    <span class="display_data">{{ feed.name }}</span>
-    <span class="post_url">{% url localtv_admin_feed_edit_title id=feed.id %}</span>
-    <span class="input_field">
-      <input type="text" name="name" />
-      {{ feed.name }}
-    </span>
-  </div>
-
   <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.name }}</a>
   <span class="admin_feed_actions">
     <a class="stop_watching"
@@ -36,12 +27,7 @@
   <table class="auto_properties_edit">
     <tr>
       <td>
-        <h3 class="categories editable">{% trans "Categories" %}</h3>
-        <ul>
-          {% for category in feed.auto_categories.all %}
-            <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li> 
-          {% endfor %}
-        </ul>
+        {% editable_widget feed "auto_categories" %}
       </td>
       
       <td>

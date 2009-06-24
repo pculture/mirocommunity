@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<h3 class="categories editable">{% trans "Categories" %}</h3>
+
+<ul>
+  {% for category in instance.auto_categories.all %}
+    <li>
+       <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+    </li> 
+  {% endfor %}
+</ul>
