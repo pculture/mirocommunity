@@ -86,7 +86,7 @@ def edit_auto_authors(request, id, sitelocation=None):
         feed.auto_authors.clear()
         for category in edit_auto_authors_form.cleaned_data.get(
                 'auto_authors'):
-            feed.auto_authors.add(category)
+            feed.auto_authors.add(author)
 
         feed.auto_authors = edit_auto_authors_form.cleaned_data.get(
             'auto_authors')
