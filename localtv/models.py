@@ -170,7 +170,8 @@ class Feed(models.Model):
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
                     embed_code = scraped_data.get('embed')
-                    flash_enclosure_url = scraped_data.get('flash_enclosure_url')
+                    flash_enclosure_url = scraped_data.get(
+                        'flash_enclosure_url')
                     publish_date = scraped_data.get('publish_date')
                 except vidscraper.errors.Error, e:
                     if verbose:
@@ -219,6 +220,12 @@ class Feed(models.Model):
                     for tag in tags:
                         video.tags.add(tag)
 
+            for category in self.auto_categories.all():
+                video.categories.add(category)
+
+            for author in self.auto_authors.all():
+                video.authors.add(author)
+
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
         self.save()
@@ -227,31 +234,35 @@ class Feed(models.Model):
 
 class Category(models.Model):
     site = models.ForeignKey(Site)
-    name = models.CharField(max_length=80, verbose_name='Category Name',
-                            help_text=("The name is used to identify the "
-                                       "category almost everywhere; for "
-                                       "example under the post or in the "
-                                       "category widget."))
-    slug = models.SlugField(verbose_name='Category Slug',
-                            help_text=('The "slug" is the URL-friendly version '
-                                       "of the name.  It is usually lower-case "
-                                       "and contains only letters, numbers and "
-                                       "hyphens."))
-    logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
-                             verbose_name='Thumbnail/Logo',
-                             help_text=("For example: a leaf for 'environment' "
-                                        "or the logo of a university "
-                                        "department."))
-    description = models.TextField(blank=True,
-                                   verbose_name='Description (HTML)',
-                                   help_text=("The description is not prominent "
-                                              "by default, but some themes may "
-                                              "show it."))
-    parent = models.ForeignKey('self', blank=True, null=True,
-                               related_name='child_set',
-                               verbose_name='Category Parent',
-                               help_text=("Categories, unlike tags, can have a "
-                                          "hierarchy."))
+    name = models.CharField(
+        max_length=80, verbose_name='Category Name',
+        help_text=("The name is used to identify the "
+                   "category almost everywhere; for "
+                   "example under the post or in the "
+                   "category widget."))
+    slug = models.SlugField(
+        verbose_name='Category Slug',
+        help_text=('The "slug" is the URL-friendly version '
+                   "of the name.  It is usually lower-case "
+                   "and contains only letters, numbers and "
+                   "hyphens."))
+    logo = models.ImageField(
+        upload_to="localtv/category_logos", blank=True,
+        verbose_name='Thumbnail/Logo',
+        help_text=("For example: a leaf for 'environment' "
+                   "or the logo of a university "
+                   "department."))
+    description = models.TextField(
+        blank=True, verbose_name='Description (HTML)',
+        help_text=("The description is not prominent "
+                   "by default, but some themes may "
+                   "show it."))
+    parent = models.ForeignKey(
+        'self', blank=True, null=True,
+        related_name='child_set',
+        verbose_name='Category Parent',
+        help_text=("Categories, unlike tags, can have a "
+                   "hierarchy."))
 
     class Meta:
         ordering = ['name']
@@ -446,7 +457,8 @@ class Video(models.Model):
             # be invalid now.  to make sure we've got a valid file, we reopen
             # under the new path
             content_thumb.close()
-            content_thumb = default_storage.open(self.get_original_thumb_storage_path())
+            content_thumb = default_storage.open(
+                self.get_original_thumb_storage_path())
             pil_image = Image.open(content_thumb)
 
         # save any resized versions
