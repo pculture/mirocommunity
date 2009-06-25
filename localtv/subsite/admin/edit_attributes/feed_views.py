@@ -84,7 +84,7 @@ def edit_auto_authors(request, id, sitelocation=None):
 
     if edit_auto_authors_form.is_valid():
         feed.auto_authors.clear()
-        for category in edit_auto_authors_form.cleaned_data.get(
+        for author in edit_auto_authors_form.cleaned_data.get(
                 'auto_authors'):
             feed.auto_authors.add(author)
 
