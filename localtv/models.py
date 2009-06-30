@@ -564,6 +564,13 @@ class Video(models.Model):
                 {'video_id': self.id})
 
     def try_to_get_file_url_data(self):
+        """
+        Do a HEAD request on self.file_url to find information about
+        self.file_url_length and self.file_url_mimetype
+
+        Note that while this method fills in those attributes, it does *NOT* run
+        self.save() ... so be sure to do so after calling this method!
+        """
         if not self.file_url:
             return
 
@@ -574,6 +581,10 @@ class Video(models.Model):
         self.file_url_mimetype = http_file.headers['content-type']
 
     def save_thumbnail(self):
+        """
+        Automatically run the entire file saving process... provided we have a
+        thumbnail_url, that is.
+        """
         if not self.thumbnail_url:
             return
 
@@ -581,6 +592,10 @@ class Video(models.Model):
         self.save_thumbnail_from_file(content_thumb)
 
     def save_thumbnail_from_file(self, content_thumb):
+        """
+        Takes an image file-like object and stores it as the thumbnail for this
+        video item.
+        """
         try:
             pil_image = Image.open(content_thumb)
         except IOError:
@@ -612,6 +627,9 @@ class Video(models.Model):
         self.save()
 
     def resize_thumbnail(self, thumb=None):
+        """
+        Creates resized versions of the video's thumbnail image
+        """
         if not thumb:
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
@@ -631,10 +649,18 @@ class Video(models.Model):
                 cf_image)
 
     def get_original_thumb_storage_path(self):
+        """
+        Return the path for the original thumbnail, relative to the default file
+        storage system.
+        """
         return 'localtv/video_thumbs/%s/orig.%s' % (
             self.id, self.thumbnail_extension)
 
     def get_resized_thumb_storage_path(self, width, height):
+        """
+        Return the path for the a thumbnail of a resized width and height,
+        relative to the default file storage system.
+        """
         return 'localtv/video_thumbs/%s/%sx%s.png' % (
             self.id, width, height)
 
@@ -647,6 +673,10 @@ class Video(models.Model):
         self.description = strip_tags(self.description)
 
     def submitter(self):
+        """
+        Return the user that submitted this video.  If necessary, use the
+        submitter from the originating feed or savedsearch.
+        """
         if self.openid_user is not None:
             return self.openid_user
         elif self.feed is not None:
@@ -658,6 +688,11 @@ class Video(models.Model):
             return None
 
     def when(self):
+        """
+        Simple method for gettingeither the when_published date, if available,
+        or when_submitted if not
+        """
+
         if self.when_published is not None:
             return self.when_published
         else:
