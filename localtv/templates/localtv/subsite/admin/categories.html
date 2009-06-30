@@ -31,23 +31,25 @@
 
   <div id="labels">
     <form action="" method="POST" enctype="multipart/form-data">
-      <select name="action">
-        <option value="">Bulk Actions</option>
-        <option value="delete">Delete</option>
-      </select>
-      <input type="submit" value="Apply" name="submit"/>
-      <table>
+      <div class="actions">
+      	<select name="action">
+        	<option value="">Bulk Actions</option>
+        	<option value="delete">Delete</option>
+      	</select>
+      	<input type="submit" value="Apply" name="submit"/>
+      </div>
+      <table cellpadding="0" cellspacing="0">
       <thead>
         <tr>
-          <td><input type="checkbox"/></td>
-          <td>Name</td>
-          <td>Description</td>
-          <td>Slug</td>
-          <td>Videos</td>
+          <th valign="middle" class="checkbox"><input type="checkbox"/></td>
+          <th valign="middle">Name</th>
+          <th valign="middle">Description</th>
+          <th>Slug</th>
+          <th>Videos</th>
         </tr>
       </thead>
       {% for category in categories %}
-      <tr class="{% cycle "grey" "white" %}" onclick="edit_category(event);" {% if category.form.errors %}style="display: none;"{% endif %}>
+      <tr valign="middle" class="{% cycle "grey" "white" %}" onclick="edit_category(event);" {% if category.form.errors %}style="display: none;"{% endif %}>
       {% include "localtv/subsite/admin/category_row.html" %}
       </tr>
       {% endfor %}

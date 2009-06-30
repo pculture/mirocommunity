@@ -27,7 +27,7 @@ body {
 }
 
 
-h1 {
+h1 { 
     font-size: 28px;
     padding: 30px 0 20px 0;
     font-weight: normal;
@@ -55,7 +55,9 @@ a {
 
 /////////////////////////////////////////////*/
 
-
+.floatleft {
+    float: left;
+}
 
 .floatright {
     float: right;
@@ -73,6 +75,7 @@ a {
 .video {
     float: left;
     width: 100%;
+    padding: 0 0 5px 3px;
     clear: both;
     margin-bottom: 10px;
     _overflow: hidden;
@@ -313,7 +316,7 @@ line-height: 1.3em;
     clear: both;
     padding: 0px 0 30px;
     float: left;
-    width: 680px;
+    width: 100%;
 }
 
 #admin_nav li {
@@ -758,6 +761,12 @@ float: right;
     display: inline;
 }
 
+
+#admin ul.pagetabs {
+float: left;
+    display: inline;
+}
+
 ul.pagetabs li {
     display: block;
     float: left;
@@ -1171,6 +1180,11 @@ padding-right: 10px;
 margin: 35px 0 0 0;
 }
 
+#about{
+line-height: 1.4em;
+color: #666;
+}
+
 #about_page #main{
 width: 100%;
 }
@@ -1206,6 +1220,7 @@ width: 200px;
 
 #edit_video_wrapper{
 border: 1px solid #ddd;
+background: #fff7fc;
 padding: 20px;
 margin-top: 20px;
 }
@@ -1304,6 +1319,7 @@ background:url(../images/lil.png) no-repeat 0 0;
 padding: 0px 20px 0 0;
 font-size: 14px;
 float: left;
+clear: both;
 text-decoration: none;
 background:url(../images/top_cat_cap.png) no-repeat right 0;	
 }
@@ -1335,8 +1351,182 @@ background-position: right -82px;
 background-position: left -82px;	
 }
 
+
 .editable .input_field, .editable .post_url {
     display: none;
+}
+
+.admin_actions_all{
+border: 1px solid;
+}
+
+#category_sidebar{
+margin-top: 27px;
+background: #f9f9f9 !important;
+border: 1px solid #eee !important;
+padding: 20px;
+}
+
+
+
+
+#category_sidebar h1{
+margin: 0px 0 10px 0;
+font-weight: bold;
+padding: 0;
+font-size: 13px;
+text-align: left;
+}
+
+#category h2{
+padding-bottom: 15px;
+}
+
+#add_cat, #add_author{
+display: block;
+text-decoration: none;
+float: right;
+font-weight: bold;
+padding: 0 0 10px 0px;
+margin-bottom: 10px;
+}
+
+#add_cat select, #add_author select{
+width: 200px;
+height: 160px;
+margin-right: 10px;
+border: 1px solid #ccc;
+float: left;
+}
+
+
+#add_cat option, #add_author option{
+padding: 3px 7px;
+}
+
+#add_cat .save, #add_author .save{
+float: left;
+padding: 5px;
+background: none;
+border: 1px solid #ccc;
+margin: 0 3px 3px 3px;
+}
+
+#add_cat .cancel, #add_author .cancel{
+float: left;
+padding: 5px;
+background: none;
+border: 1px solid #ccc;
+margin: 0 3px 3px 3px;
+}
+
+#add_cat:hover .cancel, #add_author:hover .cancel, #add_cat:hover .save, #add_author:hover .save{
+background: none;
+}
+
+#add_cat .cancel:hover, #add_author .cancel:hover, #add_cat .save:hover, #add_author .save:hover{
+background: #efefef;
+}
+
+
+#add_cat span, #add_author span{
+padding-left: 14px;
+    background: url(../images/add.png) left 2px no-repeat;
+}
+
+#add_cat:hover span, #add_author:hover span{
+    background: url(../images/add.png) left -17px no-repeat;
+}
+
+#tags .floatleft{
+clear: left;
+}
+
+#tags #add_cat, #tags #add_author{
+clear: right;
+}
+
+
+
+#category_sidebar ul{
+clear: both;
+padding-left: 20px;
+text-align: left;
+}
+
+
+
+#category_sidebar ul a{
+display: block;
+padding: 3px 0;
+}
+
+
+.actions{
+padding: 0 0 15px;
+}
+
+
+.actions select{
+margin-right: 8px;
+}
+
+#labels{
+
+}
+
+#labels table th{
+font-weight: bold;
+}
+
+
+#labels table td, #labels table th{
+padding: 0 0 3px 10px !important;
+line-height: 2em;
+}
+
+#labels table td.checkbox, #labels table th.checkbox{
+padding: 0px 0 0px 4px !important;
+line-height: 2.6em;
+}
+
+
+#labels table td.checkbox input{
+margin-top: 7px;
+}
+
+
+#big_list{
+float: left;
+padding-top: 24px;
+}
+
+
+#big_list li{
+float: left;
+}
+
+#big_list li a{
+display: block;
+padding: 100px 20px 10px;
+width: 147px;
+text-align: center;
+margin-right: 30px;
+margin-bottom: 20px;
+background:url(../images/cat_image.png) center top no-repeat;	
+}
+
+
+#category h2{
+clear: both;
+float: left;
+width: 100%;
+margin-top: 20px;
+}
+
+#category h2 a.count{
+padding: 0 0 0 10px;
+font-size: 12px;
 }
 
 

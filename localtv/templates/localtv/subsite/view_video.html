@@ -60,16 +60,30 @@
 
     <div id="tags">
       {% if current_video.categories.count or edit_video_form %}
-        <h3{% if edit_video_form %} class="categories editable"{% endif %}>Categories - </h3>
+                		 {% if edit_video_form %} <a href="#add_cat" id="add_cat" class="categories editable"><span>Change Category</span></a>{% endif %}
+
+        
+	<div class="floatleft">        
+        <h3>Category - </h3>
 
         <ul>
           {% for category in current_video.categories.all %}
             <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li> 
           {% endfor %}
         </ul>
+        
+	</div>
+        
       {% endif %}
 
       {% if current_video.tags.count %}
+        
+        
+                 {% if edit_video_form %}<a href="#add_author" id="add_author" class="authors editable"><span>Add a Tag</span></a>{% endif %}
+
+        
+       <div class="floatleft">        
+
         <h3>Tags - </h3>
 
         <ul>
@@ -77,18 +91,34 @@
             <li>{{ tag.name }}</li> 
           {% endfor %}
         </ul>
+        
+        
+        </div>
+        
+        
       {% endif %}
       {% if current_video.authors.count or edit_video_form %}
-      <h3{% if edit_video_form %} class="authors editable"{% endif %}>Authors - </h3>
+     
+         {% if edit_video_form %}<a href="#add_author" id="add_author" class="authors editable"><span>Add an Author</span></a>{% endif %}
+
+     
+     	<div class="floatleft">        
+
+     <h3>Authors - </h3>
+      
+     
         <ul>
           {% for author in current_video.authors.all %}
             <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li> 
           {% endfor %}
         </ul>
+		</div>
+
+
 
       {% endif %}
       {% if openid_localtv.admin_for_current_site %}
-  <h3>{{ current_video|pprint }}</h3>
+  <!--<h3>{{ current_video|pprint }}</h3> -->
   {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}
   {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
   {% if current_video.feed %}<h3>From feed {{ current_video.feed }}</h3>{% endif %}

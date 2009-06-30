@@ -130,7 +130,7 @@
             {{ sitelocation.footer_html }}
             {% endautoescape %}
           {% endblock footer %}
-          <div><br />
+          <div>
           {% if openid_localtv.url %}
             <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}">Logout {{ openid_localtv.nickname }}</a>
             {% if openid_localtv.admin_for_current_site %}

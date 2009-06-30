@@ -386,10 +386,11 @@ width: 484px !important;
 
 #label_sidebar {
     float: left;
-    background: #eee;
-    width: 20%;
+    background: #f9f9f9;
+    width: 343px;
     margin-right: 20px;
     text-align: left;
+padding: 20px;
 }
 
 #label_sidebar h1 {
@@ -398,6 +399,7 @@ width: 484px !important;
     font-size: 140%;
     font-weight: bold;
     width: 100%;
+color: #333;
 }
 
 #label_sidebar form {
@@ -407,6 +409,10 @@ width: 484px !important;
 
 #label_sidebar p {
     margin-bottom: 20px;
+clear: both;
+color: #777;
+font-size: 11px;
+line-height: 1.3em
 }
 
 #label_sidebar form label {
@@ -414,6 +420,7 @@ width: 484px !important;
     font-size: 130%;
     clear: both;
     width: 100%;
+    margin: 25px 0 3px 0;
 }
 
 #label_sidebar form input, #label_sidebar form textarea, #label_sidebar form select {
@@ -450,3 +457,13 @@ width: 484px !important;
 #labels table tr.grey, #labels table tr.grey + tr {
     background: #eee;
 }
+
+#id_slug, #id_name{
+width: 300px;
+}
+
+#labels table{
+
+}
+
+

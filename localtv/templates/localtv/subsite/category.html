@@ -4,11 +4,42 @@
 <div id="category_sidebar">
   {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
   <h1>{{ category.name }}</h1>
+  
+<div style="text-align: center; padding: 35px;">cat image here</div>
+  
   <div>{{ category.description }}</div>
+  
+
+  
 </div>
 {% endif %}
 <div id="category">
-  <div id="with-children">
+ 
+ 	    
+  <ul id="big_list">
+	<li><a href="#">Sub-category here</a></li>
+	<li><a href="#">Sub-category here</a></li>
+	<li><a href="#">Sub-category here</a></li>
+	<li><a href="#">Sub-category here</a></li>
+	<li><a href="#">Sub-category here</a></li>
+	<li><a href="#">Sub-category here</a></li>
+  </ul>
+  
+ 
+   {% if category.video_set.count %}
+  <div id="individual">
+    <h2>Individual {{ category.name }} Videos</h2>
+    <ul>
+      {% for video in category.video_set.all %}
+      <li>
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+ 
+ <div id="with-children">
     {% for child in category.child_set.all %}
     {% if child.child_set.count %}
     <h2><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></h2>
@@ -24,6 +55,7 @@
   </div>
   <div id="no-children">
     {% for child in category.child_set.all %}
+    
     {% if not child.child_set.count %}
     <h2>{{ child.name }} <a href="{{ child.get_absolute_url }}" class="count">{{ child.video_set.count }} Videos &gt;&gt;</a></h2>
     <ul>
@@ -34,19 +66,9 @@
       {% endfor %}
     </ul>
     {% endif %}
+    
     {% endfor %}
   </div>
-  {% if category.video_set.count %}
-  <div id="individual">
-    <h2>Individual {{ category.name }} Videos</h2>
-    <ul>
-      {% for video in category.video_set.all %}
-      <li>
-        {% include "localtv/subsite/video_listing_individual.html" %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
+
 </div>
 {% endblock %}
