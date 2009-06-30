@@ -54,6 +54,22 @@ class CannotOpenImageUrl(Error): pass
 
 
 class OpenIdUser(models.Model):
+    """
+    Custom openid user authentication model.  Presently does not match
+    up to Django's contrib.auth.models.User model, probably should be
+    adjusted to do so eventually.
+
+    Login and registration functionality provided in localtv.openid
+    and its submodules.
+
+    Fields:
+      - url: URL that this user is identified by
+      - email: Email address for this user
+      - nickname: Nickname for this user that may textually display on
+        the site (not really used yet)
+      - status: one of OPENID_STATUSES.. basically, either active or
+        disabled.
+    """
     url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
     nickname = models.CharField(max_length=50, blank=True)
@@ -65,6 +81,10 @@ class OpenIdUser(models.Model):
         return "%s <%s>" % (self.nickname, self.email)
 
     def admin_for_sitelocation(self, sitelocation):
+        """
+        Returns a boolean for whether or not this user is an admin for
+        this sitelocation or not.
+        """
         if not self.status == OPENID_STATUS_ACTIVE:
             return False
 
@@ -74,6 +94,10 @@ class OpenIdUser(models.Model):
             return False
 
     def admin_for_current_site(self):
+        """
+        Returns a boolean for whether we're the admin of whatever
+        present site this django process is running under
+        """
         site = Site.objects.get_current()
         sitelocation = SiteLocation.objects.get(site=site)
         return self.admin_for_sitelocation(sitelocation)
