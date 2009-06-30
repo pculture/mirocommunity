@@ -324,7 +324,6 @@ class Feed(models.Model):
         self.save()
 
 
-
 class Category(models.Model):
     """
     A category for videos to be contained in.
