@@ -730,6 +730,15 @@ class VideoAdmin(admin.ModelAdmin):
 
 
 class Watch(models.Model):
+    """
+    Record of a video being watched.
+
+    fields:
+     - video: Video that was watched
+     - timestamp: when watched
+     - openid_user: user that watched it, if any
+     - ip_address: IP address of the user
+    """
     video = models.ForeignKey(Video)
     timestamp = models.DateTimeField(auto_now_add=True)
     openid_user = models.ForeignKey(OpenIdUser, blank=True, null=True)
