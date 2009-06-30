@@ -69,6 +69,9 @@ class OpenIdUser(models.Model):
         the site (not really used yet)
       - status: one of OPENID_STATUSES.. basically, either active or
         disabled.
+      - superuser: if this boolan field is True, then this user has admin
+        privileges to all subsites, regardless of whether or not the user is in
+        the admins field of the the site's SiteLocation model
     """
     url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
@@ -103,6 +106,33 @@ class OpenIdUser(models.Model):
         return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
+    """
+    An extension to the django.contrib.sites site model, providing
+    localtv-specific data.
+
+    Fields:
+     - site: A link to the django.contrib.sites.models.Site object
+     - logo: custom logo image for this site
+     - background: custom background image for this site (unused?)
+     - admins: a collection of OpenIdUsers who have access to administrate this
+       sitelocation
+     - status: one of SITE_STATUSES; either disabled or active
+     - sidebar_html: custom html to appear on the right sidebar of many
+       user-facing pages.  Can be whatever's most appropriate for the owners of
+       said site.
+     - footer_html: HTML that appears at the bottom of most user-facing pages.
+       Can be whatever's most appropriate for the owners of said site.
+     - about_html: HTML to display on the subsite's about page
+     - tagline: displays below the subsite's title on most user-facing pages
+     - css: The intention here is to allow subsites to paste in their own CSS
+       here from the admin.  Not used presently, though eventually it should be.
+     - frontpage_style: The style of the frontpage.  Either one of list or (???)
+     - display_submit_button: whether or not we should allow users to see that
+       they can submit videos or not (doesn't affect whether or not they
+       actually can though)
+     - submission_requires_login: whether or not users need to log in to submit
+       videos.
+    """
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
@@ -121,6 +151,7 @@ class SiteLocation(models.Model):
 
     def __unicode__(self):
         return self.site.name
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=25)
