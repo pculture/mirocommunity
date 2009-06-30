@@ -20,6 +20,8 @@ import feedparser
 import vidscraper
 
 
+# the difference between unapproved and rejected is that unapproved simply
+# hasn't been looked at by an administrator yet.
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
 VIDEO_STATUS_ACTIVE = FEED_STATUS_ACTIVE = 1
 VIDEO_STATUS_REJECTED = FEED_STATUS_REJECTED = 2
@@ -54,6 +56,25 @@ class CannotOpenImageUrl(Error): pass
 
 
 class OpenIdUser(models.Model):
+    """
+    Custom openid user authentication model.  Presently does not match
+    up to Django's contrib.auth.models.User model, probably should be
+    adjusted to do so eventually.
+
+    Login and registration functionality provided in localtv.openid
+    and its submodules.
+
+    Fields:
+      - url: URL that this user is identified by
+      - email: Email address for this user
+      - nickname: Nickname for this user that may textually display on
+        the site (not really used yet)
+      - status: one of OPENID_STATUSES.. basically, either active or
+        disabled.
+      - superuser: if this boolan field is True, then this user has admin
+        privileges to all subsites, regardless of whether or not the user is in
+        the admins field of the the site's SiteLocation model
+    """
     url = models.URLField(verify_exists=False, unique=True)
     email = models.EmailField()
     nickname = models.CharField(max_length=50, blank=True)
@@ -65,6 +86,10 @@ class OpenIdUser(models.Model):
         return "%s <%s>" % (self.nickname, self.email)
 
     def admin_for_sitelocation(self, sitelocation):
+        """
+        Returns a boolean for whether or not this user is an admin for
+        this sitelocation or not.
+        """
         if not self.status == OPENID_STATUS_ACTIVE:
             return False
 
@@ -74,11 +99,42 @@ class OpenIdUser(models.Model):
             return False
 
     def admin_for_current_site(self):
+        """
+        Returns a boolean for whether we're the admin of whatever
+        present site this django process is running under
+        """
         site = Site.objects.get_current()
         sitelocation = SiteLocation.objects.get(site=site)
         return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
+    """
+    An extension to the django.contrib.sites site model, providing
+    localtv-specific data.
+
+    Fields:
+     - site: A link to the django.contrib.sites.models.Site object
+     - logo: custom logo image for this site
+     - background: custom background image for this site (unused?)
+     - admins: a collection of OpenIdUsers who have access to administrate this
+       sitelocation
+     - status: one of SITE_STATUSES; either disabled or active
+     - sidebar_html: custom html to appear on the right sidebar of many
+       user-facing pages.  Can be whatever's most appropriate for the owners of
+       said site.
+     - footer_html: HTML that appears at the bottom of most user-facing pages.
+       Can be whatever's most appropriate for the owners of said site.
+     - about_html: HTML to display on the subsite's about page
+     - tagline: displays below the subsite's title on most user-facing pages
+     - css: The intention here is to allow subsites to paste in their own CSS
+       here from the admin.  Not used presently, though eventually it should be.
+     - frontpage_style: The style of the frontpage.  Either one of list or (???)
+     - display_submit_button: whether or not we should allow users to see that
+       they can submit videos or not (doesn't affect whether or not they
+       actually can though)
+     - submission_requires_login: whether or not users need to log in to submit
+       videos.
+    """
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
@@ -98,7 +154,17 @@ class SiteLocation(models.Model):
     def __unicode__(self):
         return self.site.name
 
+
 class Tag(models.Model):
+    """
+    Tags for videos.
+
+    Presently apply to all sitelocations.  Maybe eventually only certain tags
+    should apply to certain sitelocations?
+
+    Fields:
+      - name: name of this tag
+    """
     name = models.CharField(max_length=25)
 
     def __unicode__(self):
@@ -106,6 +172,30 @@ class Tag(models.Model):
 
 
 class Feed(models.Model):
+    """
+    Feed to pull videos in from.
+
+    If the same feed is used on two different subsites, they will require two
+    separate entries here.
+
+    Fields:
+      - feed_url: The location of this field
+      - site: which site this feed belongs to
+      - name: human readable name for this feed
+      - webpage: webpage that this feed's content is associated with
+      - description: human readable description of this item
+      - last_updated: last time we ran self.update_items()
+      - when_submitted: when this feed was first registered on this site
+      - status: one of FEED_STATUSES, either unapproved, active, or rejected
+      - etag: used to see whether or not the feed has changed since our last
+        update.
+      - auto_approve: whether or not to set all videos in this feed to approved
+        during the import process
+      - openid_user: a user that submitted this feed, if any
+      - auto_categories: categories that are automatically applied to videos on
+        import
+      - auto_authors: authors that are automatically applied to videos on import
+    """
     feed_url = models.URLField(verify_exists=False)
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
@@ -129,6 +219,9 @@ class Feed(models.Model):
         return self.name
 
     def update_items(self, verbose=False):
+        """
+        Fetch and import new videos from this feed.
+        """
         from localtv import miroguide_util, util
 
         if self.auto_approve:
