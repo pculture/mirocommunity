@@ -412,10 +412,24 @@ class Category(models.Model):
         accumulate(klass.objects.filter(site=sitelocation, parent=None))
         return objects
 
+
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
+
 class Author(models.Model):
+    """
+    The author of a video.
+
+    One of the ambitions of LocalTV is to create some communication between our
+    project and the authors of media, so we try and collect this information so
+    we can link back to them.
+
+    Fields:
+     - site: the site this author is bound to
+     - name: name of the author
+     - logo: a thumbnail to represent the author by
+    """
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=80, verbose_name='Author Name')
     logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
