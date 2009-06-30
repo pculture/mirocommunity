@@ -40,8 +40,9 @@ function inline_save() {
         inline_post(obj);
     } else if (obj.hasClass('thumbnail')) {
         input = obj.children('input');
+        input.replaceWith($('<span>Uploading...</span>'));
         old_input = $("#id_thumbnail");
-        input.clone().insertAfter(old_input);
+        old_input.after(input);
         old_input.remove();
         inline_post(obj);
     } else if (obj.hasClass('categories')) {
