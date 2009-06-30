@@ -326,6 +326,23 @@ class Feed(models.Model):
 
 
 class Category(models.Model):
+    """
+    A category for videos to be contained in.
+
+    Categoies and tags aren't too different functionally, but categories are
+    more strict as they can't be defined by visitors.  Categories can also be
+    hierarchical.
+
+    Fields:
+     - site: A link to the django.contrib.sites.models.Site object this object
+       is bound to
+     - name: Name of this category
+     - slug: a slugified verison of the name, used to create more friendly URLs
+     - logo: An image to associate with this category
+     - description: human readable description of this item
+     - parent: Reference to another Category.  Allows you to have heirarchical
+       categories.
+    """
     site = models.ForeignKey(Site)
     name = models.CharField(
         max_length=80, verbose_name='Category Name',
@@ -395,10 +412,24 @@ class Category(models.Model):
         accumulate(klass.objects.filter(site=sitelocation, parent=None))
         return objects
 
+
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
+
 class Author(models.Model):
+    """
+    The author of a video.
+
+    One of the ambitions of LocalTV is to create some communication between our
+    project and the authors of media, so we try and collect this information so
+    we can link back to them.
+
+    Fields:
+     - site: the site this author is bound to
+     - name: name of the author
+     - logo: a thumbnail to represent the author by
+    """
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=80, verbose_name='Author Name')
     logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
@@ -418,6 +449,19 @@ class Author(models.Model):
 
 
 class SavedSearch(models.Model):
+    """
+    A set of keywords to regularly pull in new videos from.
+
+    There's an administrative interface for doing "live searches"
+
+    Fields:
+     - site: site this savedsearch applies to
+     - query_string: a whitespace-separated list of words to search for.  Words
+       starting with a dash will be processed as negative query terms
+     - when_created: date and time that this search was saved.
+     - openid_user: the person who saved this search (thus, likely an
+       adminsistrator of this subsite)
+    """
     site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
@@ -455,21 +499,29 @@ class Video(models.Model):
      - authors: the person/people responsible for this video
      - file_url: The file this object points to (if any) ... if not
        provided, at minimum we need the embed_code for the item.
+     - file_url_length: size of the file, in bytes
+     - file_url_mimetype: mimetype of the file
      - when_submitted: When this item was first entered into the
        database
      - when_approved: When this item was marked to appear publicly on
        the site
      - when_published: When this file was published at its original
        source (if known)
+     - last_featured: last time this item was featured.
      - status: one of localtv.models.VIDEOS_STATUSES
      - feed: which feed this item came from (if any)
      - website_url: The page that this item is associated with.
-     - embed_code: code used to embed this item
+     - embed_code: code used to embed this item.
      - flash_enclosure_url: Crappy enclosure link that doesn't
        actually point to a url.. the kind crappy flash video sites
        give out when they don't actually want their enclosures to
        point to video files.
-     - guid: data used
+     - guid: data used to identify this video
+     - has_thumbnail: whether or not this video has a thumbnail
+     - thumbnail_url: url to the thumbnail, if such a thing exists
+     - thumbnail_extension: extension of the *internal* thumbnail, saved on the
+       server (usually paired with the id, so we can determine "1123.jpg" or
+       "1186.png"
      - openid_user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
     """
