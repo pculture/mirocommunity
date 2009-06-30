@@ -326,6 +326,23 @@ class Feed(models.Model):
 
 
 class Category(models.Model):
+    """
+    A category for videos to be contained in.
+
+    Categoies and tags aren't too different functionally, but categories are
+    more strict as they can't be defined by visitors.  Categories can also be
+    hierarchical.
+
+    Fields:
+     - site: A link to the django.contrib.sites.models.Site object this object
+       is bound to
+     - name: Name of this category
+     - slug: a slugified verison of the name, used to create more friendly URLs
+     - logo: An image to associate with this category
+     - description: human readable description of this item
+     - parent: Reference to another Category.  Allows you to have heirarchical
+       categories.
+    """
     site = models.ForeignKey(Site)
     name = models.CharField(
         max_length=80, verbose_name='Category Name',
