@@ -384,6 +384,37 @@ width: 484px !important;
     margin-top: 20px;
 }
 
+#category h2{
+clear: both;
+float: left;
+width: 100%;
+margin-top: 20px;
+}
+
+#category h2 a.count{
+padding: 0 0 0 10px;
+font-size: 12px;
+}
+
+#with-children ul {
+    float: left;
+    padding-top: 24px;
+}
+
+#with-children li{
+float: left;
+}
+
+#with-children li a {
+display: block;
+width: 147px;
+text-align: center;
+}
+
+#with-children li a + a {
+    margin: 10px 30px 20px 0;
+}
+
 #label_sidebar {
     float: left;
     background: #f9f9f9;

@@ -1496,37 +1496,3 @@ margin-top: 7px;
 }
 
 
-#big_list{
-float: left;
-padding-top: 24px;
-}
-
-
-#big_list li{
-float: left;
-}
-
-#big_list li a{
-display: block;
-padding: 100px 20px 10px;
-width: 147px;
-text-align: center;
-margin-right: 30px;
-margin-bottom: 20px;
-background:url(../images/cat_image.png) center top no-repeat;	
-}
-
-
-#category h2{
-clear: both;
-float: left;
-width: 100%;
-margin-top: 20px;
-}
-
-#category h2 a.count{
-padding: 0 0 0 10px;
-font-size: 12px;
-}
-
-

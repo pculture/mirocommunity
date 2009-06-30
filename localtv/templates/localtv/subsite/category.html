@@ -2,57 +2,37 @@
 {% block content %}
 {% if category.name %}
 <div id="category_sidebar">
-  {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
-  <h1>{{ category.name }}</h1>
-  
-<div style="text-align: center; padding: 35px;">cat image here</div>
-  
-  <div>{{ category.description }}</div>
-  
+  {% if category.logo %}<img src="{{ category.logo.url }}">{% else %}<img src="/images/cat_image.png">{% endif %}
 
-  
+  <h1>{{ category.name }}</h1>
+
+  <div>{{ category.description }}</div>
+
 </div>
 {% endif %}
 <div id="category">
- 
- 	    
-  <ul id="big_list">
-	<li><a href="#">Sub-category here</a></li>
-	<li><a href="#">Sub-category here</a></li>
-	<li><a href="#">Sub-category here</a></li>
-	<li><a href="#">Sub-category here</a></li>
-	<li><a href="#">Sub-category here</a></li>
-	<li><a href="#">Sub-category here</a></li>
-  </ul>
-  
- 
-   {% if category.video_set.count %}
-  <div id="individual">
-    <h2>Individual {{ category.name }} Videos</h2>
+
+  <div id="with-children">
     <ul>
-      {% for video in category.video_set.all %}
+      {% for child in category.child_set.all %}
+      {% if child.child_set.count %}
       <li>
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        <a href="{{ child.get_absolute_url }}">
+          {% if child.logo %}
+          <img src="{{ child.logo.url }}">
+          {% else %}
+          <img src="/images/cat_image.png">
+          {% endif %}
+        </a>
+        <a href="{{ child.get_absolute_url }}">
+          {{ child.name }}
+        </a>
       </li>
+      {% endif %}
       {% endfor %}
-    </ul>
+    <ul>
   </div>
-  {% endif %}
- 
- <div id="with-children">
-    {% for child in category.child_set.all %}
-    {% if child.child_set.count %}
-    <h2><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></h2>
-    {% for subchild in child.child_set.all %}
-    <div>
-      {% if subchild.logo %}<img src="{{ subchild.logo.url }}">{% endif %}
-        <h3>{{ subchild.name }}</h3>
-        <div><a href="{{ subchild.get_absolute_url }}" class="count">{{ subchild.video_set.count }} Videos &gt;&gt;</a></div>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endfor %}
-  </div>
+
   <div id="no-children">
     {% for child in category.child_set.all %}
     
@@ -69,6 +49,20 @@
     
     {% endfor %}
   </div>
+ 
+   {% if category.video_set.count %}
+  <div id="individual">
+    <h2>Individual {{ category.name }} Videos</h2>
+    <ul>
+      {% for video in category.video_set.all %}
+      <li>
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+ 
 
 </div>
 {% endblock %}
