@@ -20,6 +20,8 @@ import feedparser
 import vidscraper
 
 
+# the difference between unapproved and rejected is that unapproved simply
+# hasn't been looked at by an administrator yet.
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
 VIDEO_STATUS_ACTIVE = FEED_STATUS_ACTIVE = 1
 VIDEO_STATUS_REJECTED = FEED_STATUS_REJECTED = 2
@@ -154,6 +156,15 @@ class SiteLocation(models.Model):
 
 
 class Tag(models.Model):
+    """
+    Tags for videos.
+
+    Presently apply to all sitelocations.  Maybe eventually only certain tags
+    should apply to certain sitelocations?
+
+    Fields:
+      - name: name of this tag
+    """
     name = models.CharField(max_length=25)
 
     def __unicode__(self):
@@ -161,6 +172,30 @@ class Tag(models.Model):
 
 
 class Feed(models.Model):
+    """
+    Feed to pull videos in from.
+
+    If the same feed is used on two different subsites, they will require two
+    separate entries here.
+
+    Fields:
+      - feed_url: The location of this field
+      - site: which site this feed belongs to
+      - name: human readable name for this feed
+      - webpage: webpage that this feed's content is associated with
+      - description: human readable description of this item
+      - last_updated: last time we ran self.update_items()
+      - when_submitted: when this feed was first registered on this site
+      - status: one of FEED_STATUSES, either unapproved, active, or rejected
+      - etag: used to see whether or not the feed has changed since our last
+        update.
+      - auto_approve: whether or not to set all videos in this feed to approved
+        during the import process
+      - openid_user: a user that submitted this feed, if any
+      - auto_categories: categories that are automatically applied to videos on
+        import
+      - auto_authors: authors that are automatically applied to videos on import
+    """
     feed_url = models.URLField(verify_exists=False)
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
@@ -184,6 +219,9 @@ class Feed(models.Model):
         return self.name
 
     def update_items(self, verbose=False):
+        """
+        Fetch and import new videos from this feed.
+        """
         from localtv import miroguide_util, util
 
         if self.auto_approve:
