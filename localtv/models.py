@@ -449,6 +449,19 @@ class Author(models.Model):
 
 
 class SavedSearch(models.Model):
+    """
+    A set of keywords to regularly pull in new videos from.
+
+    There's an administrative interface for doing "live searches"
+
+    Fields:
+     - site: site this savedsearch applies to
+     - query_string: a whitespace-separated list of words to search for.  Words
+       starting with a dash will be processed as negative query terms
+     - when_created: date and time that this search was saved.
+     - openid_user: the person who saved this search (thus, likely an
+       adminsistrator of this subsite)
+    """
     site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
@@ -486,21 +499,29 @@ class Video(models.Model):
      - authors: the person/people responsible for this video
      - file_url: The file this object points to (if any) ... if not
        provided, at minimum we need the embed_code for the item.
+     - file_url_length: size of the file, in bytes
+     - file_url_mimetype: mimetype of the file
      - when_submitted: When this item was first entered into the
        database
      - when_approved: When this item was marked to appear publicly on
        the site
      - when_published: When this file was published at its original
        source (if known)
+     - last_featured: last time this item was featured.
      - status: one of localtv.models.VIDEOS_STATUSES
      - feed: which feed this item came from (if any)
      - website_url: The page that this item is associated with.
-     - embed_code: code used to embed this item
+     - embed_code: code used to embed this item.
      - flash_enclosure_url: Crappy enclosure link that doesn't
        actually point to a url.. the kind crappy flash video sites
        give out when they don't actually want their enclosures to
        point to video files.
-     - guid: data used
+     - guid: data used to identify this video
+     - has_thumbnail: whether or not this video has a thumbnail
+     - thumbnail_url: url to the thumbnail, if such a thing exists
+     - thumbnail_extension: extension of the *internal* thumbnail, saved on the
+       server (usually paired with the id, so we can determine "1123.jpg" or
+       "1186.png"
      - openid_user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
     """
