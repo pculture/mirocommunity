@@ -2,7 +2,7 @@
 {% block content %}
 {% if category.name %}
 <div id="category_sidebar">
-  {% if category.logo %}<img src="{{ category.logo.url }}">{% else %}<img src="/images/cat_image.png">{% endif %}
+  {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
 
   <h1>{{ category.name }}</h1>
 
@@ -20,8 +20,6 @@
         <a href="{{ child.get_absolute_url }}">
           {% if child.logo %}
           <img src="{{ child.logo.url }}">
-          {% else %}
-          <img src="/images/cat_image.png">
           {% endif %}
         </a>
         <a href="{{ child.get_absolute_url }}">
