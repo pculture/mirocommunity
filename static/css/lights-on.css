@@ -23,7 +23,7 @@ body {
 
 
 #home_page.scrolling {
-    background: url(../images/bg.png) left 166px repeat-x;
+    background: url(../images/bg.png) left 176px repeat-x;
 }
 
 
@@ -393,7 +393,7 @@ line-height: 1.3em;
     display: block;
     float: left;
     height: 60px;
-    margin: 35px 15px 10px 0;
+    margin: 25px 15px 20px 0;
 }
 
 .tagline {
@@ -509,9 +509,18 @@ line-height: 1.3em;
 font-size: 12px;
 color: #666;
  padding-top: 15px;
+ clear: both;
  border-top: 1px solid #ddd;
 }
 
+
+#footer p span{
+float: left;
+}
+
+#footer p a{
+float: right;
+}
 
 
 /*/////////////////////////////////////////////
@@ -903,12 +912,12 @@ margin-bottom: 30px;
 overflow: hidden;
 height: 340px;
 padding-top: 25px;
-margin-bottom: 30px;
+margin-bottom: 38px;
 }
 
 
 #slider2{
-margin:0 auto;
+margin:15px auto 20px;
 padding:0;
 list-style:none;
 }
@@ -932,10 +941,6 @@ height: 340px;
 
 }		
 
-#slider_small #slider2 li h2{ 
-margin:0 20px;
-padding-top:20px;
-}	
 
 
 #slider2 li h2{ 
@@ -1016,9 +1021,7 @@ background:url(../images/default_big.png) center;
 margin: 20px 30px 0 15px;
 }
 
-#slider_small .image{
-float: none;
-}
+
 
 
 .copy{
@@ -1031,36 +1034,28 @@ overflow: hidden;
 }
 
 
-#slider_small .copy{
-float: none !important;
-clear: both;
-padding: 0 !important;
-margin: 0 !important;
+
+.copy h2{
+line-height: 1.3em;}
+
+.copy span{
+padding: 7px 0 0 20px;
+display: block;
+color: #888;
 }
 
 
-#slider_small .copy h2{
-font-size: 12px;
-padding: 0;
-margin: 0;
-}
-
-
-#slider .copy h2{
-margin: 20px 0 10px;
-}
-
-
-#slider .copy p{
+.copy p{
 line-height: 1.4em;
 padding: 0 30px 0 0;
 font-size: 14px;
 margin: 25px 0;
+color: #666
 }
 
 .watch{
 float: left;
-margin-left: 10px;
+margin-left: 30px;
 }
 
 
@@ -1495,4 +1490,11 @@ line-height: 2.6em;
 margin-top: 7px;
 }
 
+
+.local_footer{
+border-top: 1px solid #eee;
+float: left;
+width: 100%;
+padding: 30px 0;
+}
 

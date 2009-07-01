@@ -124,13 +124,21 @@
 
       {% block footer_wrapper %}
         <div id="footer">
+          <div class="local_footer">
           {% block footer %}
-            <p>{{ sitelocation.site.name }} is powered by Miro Community</p>
+            
             {% autoescape off %}
             {{ sitelocation.footer_html }}
             {% endautoescape %}
+            
+            
           {% endblock footer %}
+          </div>
+          
           <div>
+          
+			<p class="powered"><span>{{ sitelocation.site.name }} is powered by Miro Community</span>
+
           {% if openid_localtv.url %}
             <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}">Logout {{ openid_localtv.nickname }}</a>
             {% if openid_localtv.admin_for_current_site %}
@@ -139,7 +147,7 @@
           {% else %}
             <a href="{% url localtv_openid_start %}">Admin Login</a>
           {% endif %}
-        
+        </p>
           </div>
         </div>
       {% endblock footer_wrapper %}
