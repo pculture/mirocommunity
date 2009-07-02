@@ -5,7 +5,11 @@ if (flashembed.isSupported([9, 115])) {
     $f("video_id_{{ file_url|slugify }}", "/swf/flowplayer-3.0.7.swf", {
         clip: {
             url: '{{ file_url }}',
+            {% if autoplay %}
+            autoPlay: true,
+            {% else %}
             autoPlay: false,
+            {% endif %}
             scaling: 'fit',
         }
     });
@@ -13,9 +17,13 @@ if (flashembed.isSupported([9, 115])) {
     document.write("{% filter escapejs %}<object id="video" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" width="{{ width }}" height="{{ height }}" codebase="http://www.apple.com/qtactivex/qtplugin.cab">
                    <param name="src" value="{{ file_url }}">
                    <param name="scale" value="aspect">
+                   {% if autoplay %}
                    <param name="autoplay" value="true">
+                   {% else %}
+                   <param name="autoplay" value="false">
+                   {% endif %}
                    <param name="controller" value="true">
-                   <embed src="{{ file_url }}" name="movieobject" scale="aspect" width="{{ width }}" height="{{ height }}" autoplay="false" controller="true" pluginspage="http://www.apple.com/quicktime/download/">
+                   <embed src="{{ file_url }}" name="movieobject" scale="aspect" width="{{ width }}" height="{{ height }}" {% if autoplay %}autoplay="true"{% else %}autoplay="false"{% endif %} controller="true" pluginspage="http://www.apple.com/quicktime/download/">
                    </embed>
                    </object>{% endfilter %}");      // quicktime
 }

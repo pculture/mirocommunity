@@ -32,7 +32,7 @@
     {% endif %}
     <span class="date">{{ current_video.when|timesince }} ago</span>
     <div id="video_wrapper">
-      {% embed_video current_video %}
+      {% embed_video current_video "autoplay" %}
     </div>
 
     <div class="action">

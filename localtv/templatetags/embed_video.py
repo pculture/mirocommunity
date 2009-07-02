@@ -11,15 +11,16 @@ EMBED_DEFAULT_TEMPLATE = "localtv/embed_video/default.html"
 EMBED_QUICKTIME_TEMPLATE = "localtv/embed_video/quicktime.html"
 EMBED_FLASH_TEMPLATE = "localtv/embed_video/flash.html"
 
-def quicktime_embed(file_url):
+def quicktime_embed(file_url, autoplay):
     embed_template = template.loader.get_template(EMBED_QUICKTIME_TEMPLATE)
     return embed_template.render(
         template.Context(
             {'file_url': file_url,
+             'autoplay': autoplay,
              'width': DEFAULT_WIDTH,
              'height': DEFAULT_HEIGHT + 15}))
 
-def flash_embed(file_url):
+def flash_embed(file_url, autoplay):
     embed_template = template.loader.get_template(EMBED_FLASH_TEMPLATE)
     return embed_template.render(
         template.Context(
@@ -27,11 +28,12 @@ def flash_embed(file_url):
              'width': DEFAULT_WIDTH,
              'height': DEFAULT_HEIGHT + 36}))
 
-def default_embed(file_url):
+def default_embed(file_url, autoplay):
     embed_template = template.loader.get_template(EMBED_DEFAULT_TEMPLATE)
     return embed_template.render(
         template.Context(
             {'file_url': file_url,
+             'autoplay': autoplay,
              'width': DEFAULT_WIDTH,
              'height': DEFAULT_HEIGHT}))
 
@@ -55,7 +57,7 @@ EMBED_MAPPING = {
 
 
 @register.simple_tag
-def embed_video(video):
+def embed_video(video, autoplay=False):
     if video.embed_code:
         return video.embed_code
     else:
@@ -64,4 +66,4 @@ def embed_video(video):
         else:
             mime_type = mimetypes.guess_type(video.file_url)[0]
         func = EMBED_MAPPING.get(mime_type, default_embed)
-        return func(video.file_url)
+        return func(video.file_url, bool(autoplay))
