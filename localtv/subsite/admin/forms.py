@@ -62,7 +62,12 @@ class EditSidebarForm(forms.Form):
     sidebar = forms.CharField(label="Sidebar Blurb (use html)",
                             widget=forms.Textarea, required=False)
     footer = forms.CharField(label="Footer Blurb (use html)",
-                             widget=forms.Textarea, required=False)
+                             widget=forms.Textarea, required=False,
+                             help_text="In addition to any footer text you "
+                             "would like to add, we suggest using this space "
+                             "to paste in a Google Analytics tracking code, "
+                             "which will provide excellent statistics on "
+                             "usage of your site.")
 
     @classmethod
     def create_from_sitelocation(cls, sitelocation):
