@@ -1,0 +1,9 @@
+{% extends "localtv/subsite/video_listing.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% blocktrans with tag as tag %}Videos Tagged With "{{ tag }}"{% endblocktrans %}{% endblock %}
+
+{% block title %}{{ block.super }} - {% blocktrans with tag as tag %}Videos Tagged With "{{ tag }}"{% endblocktrans %}{% endblock %}
+
+{% block body_id %}video_listing_new{% endblock body_id %}

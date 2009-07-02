@@ -88,7 +88,7 @@
 
         <ul>
           {% for tag in current_video.tags.all %}
-            <li>{{ tag.name }}</li> 
+            <li><a href="{% url localtv_subsite_list_tag tag.name %}">{{ tag.name }}</a></li> 
           {% endfor %}
         </ul>
         

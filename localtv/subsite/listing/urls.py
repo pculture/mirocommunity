@@ -5,4 +5,5 @@ urlpatterns = patterns(
     (r'^$', 'index', {}, 'localtv_subsite_list_index'),
     (r'^new/$', 'new_videos', {}, 'localtv_subsite_list_new'),
     (r'^popular/$', 'popular_videos', {}, 'localtv_subsite_list_popular'),
-    (r'^featured/$', 'featured_videos', {}, 'localtv_subsite_list_featured'))
+    (r'^featured/$', 'featured_videos', {}, 'localtv_subsite_list_featured'),
+    (r'^tag/(.*)$', 'tag_videos', {}, 'localtv_subsite_list_tag'))
