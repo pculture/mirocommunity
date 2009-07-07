@@ -1,5 +1,6 @@
 import urllib
 
+from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -20,9 +21,21 @@ def redirect_to_login_or_register(request, identity_url, openid_response):
     return HttpResponseRedirect(reverse_url)
 
 
+def login_and_redirect(request, user):
+    if user.is_active:
+        auth.login(request, user)
+
+        if request.GET.get('next'):
+            return HttpResponseRedirect(request.GET['next'])
+        else:
+            return HttpResponseRedirect('/')
+    else:
+        return render_to_response(
+            'localtv/openid/rejected.html', {},
+            context_instance=RequestContext(request))
+
 def signout(request):
-    request.session['openid_localtv'] = None
-    request.session.save()
+    auth.logout(request)
     return openidconsumer_views.signout(request)
 
 
@@ -37,21 +50,12 @@ def login_or_register(request):
     try:
         localtv_openid = models.OpenIdUser.objects.get(
             url=session_openids[-1].openid)
-
-        if localtv_openid.status == models.OPENID_STATUS_ACTIVE:
-            request.session['openid_localtv'] = localtv_openid
-            request.session.save()
-
-            if request.GET.get('next'):
-                return HttpResponseRedirect(request.GET['next'])
-            else:
-                return HttpResponseRedirect('/')
-        else:
-            return render_to_response(
-                'localtv/openid/rejected.html', {},
-                context_instance=RequestContext(request))
     except models.OpenIdUser.DoesNotExist:
         pass
+    else:
+        user = auth.authenticate(openid_user=localtv_openid)
+        return login_and_redirect(request, user)
+
 
     session_openid = session_openids[-1]
     if request.method == 'GET':
@@ -67,20 +71,17 @@ def login_or_register(request):
     else:
         registration_form = forms.OpenIdRegistrationForm(request.POST)
         if registration_form.is_valid():
+            user = auth.models.User.objects.create_user(
+                registration_form.cleaned_data['nickname'],
+                registration_form.cleaned_data['email'])
+
             localtv_openid = models.OpenIdUser(
                 url=session_openid.openid,
-                email=registration_form.cleaned_data['email'],
-                nickname=registration_form.cleaned_data['nickname'],
-                status=models.OPENID_STATUS_ACTIVE)
+                user = user)
             localtv_openid.save()
 
-            request.session['openid_localtv'] = localtv_openid
-            request.session.save()
+            return login_and_redirect(request, user)
 
-            if request.GET.get('next'):
-                return HttpResponseRedirect(request.GET['next'])
-            else:
-                return HttpResponseRedirect('/')
         else:
             return render_to_response(
                 'localtv/openid/register_form.html',

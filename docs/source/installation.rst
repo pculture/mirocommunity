@@ -149,12 +149,14 @@ This also needs several dependencies which are easily installed::
     easy_install -UaZ http://openidenabled.com/files/python-openid/packages/python-openid-1.2.0.tar.gz
 
 
-DjangoEvolution
+South
 ---------------
 
 ::
 
-    svn co http://django-evolution.googlecode.com/svn/trunk/ django-evolution
+    hg clone http://bitbucket.org/andrewgodwin/south/
+    hg update -C stableish
+
 
 lxml
 ----
@@ -286,8 +288,8 @@ so::
     )
 
 
-Append "django.contrib.admin", "django_evolution", and "localtv" to
-your INSTALLED_APPS::
+Append "django.contrib.admin", "south", "django_openidconsumer", "djpagetabs",
+and "localtv" to your INSTALLED_APPS::
 
     INSTALLED_APPS = (
         'django.contrib.auth',
@@ -295,11 +297,21 @@ your INSTALLED_APPS::
         'django.contrib.sessions',
         'django.contrib.sites',
         'django.contrib.admin',
-        'django_evolution',
+        'south',
         'django_openidconsumer',
         'djpagetabs',
         'localtv',
     )
+
+Set up the OpenID authentication::
+
+    LOGIN_URL = '/openid/'
+    LOGOUT_URL = '/openid/signout/'
+
+    AUTHENTICATION_BACKENDS = (
+        'localtv.openid.OpenIdBackend',
+        'django.contrib.auth.backends.ModelBackend',
+        )
 
 
 urls.py

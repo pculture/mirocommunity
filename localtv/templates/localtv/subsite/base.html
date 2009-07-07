@@ -47,10 +47,8 @@
         </a>
 
         <ul id="login">
-          {% if openid_localtv.url %}
-          
-          
-            {% if openid_localtv.admin_for_current_site %}
+
+            {% if user_is_admin %}
             <li>
               <a class="nick show_admin" href="{% url localtv_admin_approve_reject %}">View Admin</a>
               <a class="nick show_main" href="{% url localtv_subsite_index %}">View Main Site</a>
@@ -59,10 +57,7 @@
               Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Nicholas Reville: <a href="mailto:npr@pculture.org">npr@pculture.org</a>
             </li>
             {% endif %}
-          {% else %}
 
-
-          {% endif %}
         </ul>
         
         <ul id="nav">
@@ -142,13 +137,10 @@
           
 			<p class="powered"><span>{{ sitelocation.site.name }} is powered by Miro Community</span>
 
-          {% if openid_localtv.url %}
-            <a href="{% url localtv_openid_signout %}?next={{ request.META.PATH_INFO }}">Logout {{ openid_localtv.nickname }}</a>
-            {% if openid_localtv.admin_for_current_site %}
-           
-            {% endif %}
+          {% if request.user.is_authenticated %}
+            <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
           {% else %}
-            <a href="{% url localtv_openid_start %}">Admin Login</a>
+            <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">Login</a>
           {% endif %}
         </p>
           </div>

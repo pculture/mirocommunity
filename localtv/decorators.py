@@ -44,16 +44,10 @@ def request_passes_test(test_func):
     return decorate
 
 
-def _check_active_openid(request):
-    openid_localtv = request.session.get('openid_localtv')
-    return openid_localtv and \
-        openid_localtv.status == models.OPENID_STATUS_ACTIVE
-
-require_active_openid = request_passes_test(_check_active_openid)
-
 def _check_site_admin(request):
-    openid_localtv = request.session.get('openid_localtv')
-    return openid_localtv and openid_localtv.admin_for_current_site()
+    site = Site.objects.get_current()
+    sitelocation = models.SiteLocation.objects.get(site=site)
+    return sitelocation.user_is_admin(request.user)
 
 require_site_admin = request_passes_test(_check_site_admin)
 

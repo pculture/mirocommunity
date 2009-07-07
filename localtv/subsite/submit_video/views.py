@@ -16,24 +16,21 @@ from localtv.subsite.submit_video import forms
 
 def _check_submit_permissions(request):
     sitelocation = models.SiteLocation.objects.get(site=Site.objects.get_current())
-    openid_localtv = request.session.get('openid_localtv')
+    user = request.user
     if not sitelocation.submission_requires_login:
         return True
     else:
         if sitelocation.display_submit_button:
-            return (openid_localtv and
-                    openid_localtv.status == models.OPENID_STATUS_ACTIVE)
+            return user.is_authenticated() and user.is_active
         else:
-            return (openid_localtv and
-                    openid_localtv.admin_for_sitelocation(sitelocation))
+            return sitelocation.user_is_admin(user)
 
 
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def submit_video(request, sitelocation=None):
     if not (sitelocation.display_submit_button or
-            request.session['openid_localtv'].admin_for_sitelocation(
-            sitelocation)):
+            sitelocation.user_is_admin(request.user)):
         raise Http404
     if request.method == "GET":
         submit_form = forms.SubmitVideoForm()
@@ -131,7 +128,7 @@ def scraped_submit_video(request, sitelocation=None):
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
-            openid_user=request.session.get('openid_localtv'),
+            user=request.user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'))
         video.strip_description()
@@ -183,7 +180,7 @@ def embedrequest_submit_video(request, sitelocation=None):
             embed_code=embed_form.cleaned_data['embed'],
             website_url=embed_form.cleaned_data.get('website_url', ''),
             thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
-            openid_user=request.session.get('openid_localtv'),
+            user=request.user,
             when_submitted=datetime.datetime.now())
 
         video.save()
@@ -235,7 +232,7 @@ def directlink_submit_video(request, sitelocation=None):
             file_url=direct_form.cleaned_data['url'],
             thumbnail_url=direct_form.cleaned_data.get('thumbnail_url', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),
-            openid_user=request.session.get('openid_localtv'),
+            user=request.user,
             when_submitted=datetime.datetime.now())
 
         video.save()

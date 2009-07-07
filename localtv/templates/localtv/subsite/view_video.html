@@ -117,7 +117,7 @@
 
 
       {% endif %}
-      {% if openid_localtv.admin_for_current_site %}
+      {% if user_is_admin %}
   <!--<h3>{{ current_video|pprint }}</h3> -->
   {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}
   {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}

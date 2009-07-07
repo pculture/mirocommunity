@@ -167,7 +167,7 @@ def approve(request, search_video, sitelocation=None):
     if existing_saved_search.count():
         video.search = existing_saved_search[0]
     else:
-        video.openid_user = request.session['openid_localtv']
+        video.user = request.user
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
     video.save()
@@ -204,7 +204,7 @@ def create_saved_search(request, sitelocation=None):
     saved_search = models.SavedSearch(
         site=sitelocation.site,
         query_string=query_string,
-        openid_user=request.session.get('openid_localtv'),
+        user=request.user,
         when_created=datetime.datetime.now())
 
     saved_search.save()

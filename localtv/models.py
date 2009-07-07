@@ -38,14 +38,6 @@ SITE_STATUSES = (
     (SITE_STATUS_DISABLED, 'Disabled'),
     (SITE_STATUS_ACTIVE, 'Active'))
 
-OPENID_STATUS_DISABLED = 0
-OPENID_STATUS_ACTIVE = 1
-
-OPENID_STATUSES = (
-    (OPENID_STATUS_DISABLED, 'Disabled'),
-    (OPENID_STATUS_ACTIVE, 'Active'))
-
-
 VIDEO_THUMB_SIZES = [
     (500, 281), # featured on frontpage
     (142, 104)]
@@ -66,46 +58,14 @@ class OpenIdUser(models.Model):
 
     Fields:
       - url: URL that this user is identified by
-      - email: Email address for this user
-      - nickname: Nickname for this user that may textually display on
-        the site (not really used yet)
-      - status: one of OPENID_STATUSES.. basically, either active or
-        disabled.
-      - superuser: if this boolan field is True, then this user has admin
-        privileges to all subsites, regardless of whether or not the user is in
-        the admins field of the the site's SiteLocation model
+      - user: the Django User object that this is a valid login for
     """
+    user = models.OneToOneField('auth.User')
     url = models.URLField(verify_exists=False, unique=True)
-    email = models.EmailField()
-    nickname = models.CharField(max_length=50, blank=True)
-    status = models.IntegerField(
-        choices=OPENID_STATUSES, default=OPENID_STATUS_ACTIVE)
-    superuser = models.BooleanField()
 
     def __unicode__(self):
-        return "%s <%s>" % (self.nickname, self.email)
+        return "%s <%s>" % (self.user.username, self.user.email)
 
-    def admin_for_sitelocation(self, sitelocation):
-        """
-        Returns a boolean for whether or not this user is an admin for
-        this sitelocation or not.
-        """
-        if not self.status == OPENID_STATUS_ACTIVE:
-            return False
-
-        if self.superuser or sitelocation.admins.filter(id=self.id).count():
-            return True
-        else:
-            return False
-
-    def admin_for_current_site(self):
-        """
-        Returns a boolean for whether we're the admin of whatever
-        present site this django process is running under
-        """
-        site = Site.objects.get_current()
-        sitelocation = SiteLocation.objects.get(site=site)
-        return self.admin_for_sitelocation(sitelocation)
 
 class SiteLocation(models.Model):
     """
@@ -116,7 +76,7 @@ class SiteLocation(models.Model):
      - site: A link to the django.contrib.sites.models.Site object
      - logo: custom logo image for this site
      - background: custom background image for this site (unused?)
-     - admins: a collection of OpenIdUsers who have access to administrate this
+     - admins: a collection of Users who have access to administrate this
        sitelocation
      - status: one of SITE_STATUSES; either disabled or active
      - sidebar_html: custom html to appear on the right sidebar of many
@@ -139,7 +99,8 @@ class SiteLocation(models.Model):
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
                                    blank=True)
-    admins = models.ManyToManyField(OpenIdUser, blank=True)
+    admins_user = models.ManyToManyField('auth.User', blank=True,
+                                         related_name='admin_for')
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
@@ -155,6 +116,22 @@ class SiteLocation(models.Model):
         return self.site.name
 
 
+    def user_is_admin(self, user):
+        """
+        Return True if the given User is an admin for this SiteLocation.
+        """
+        if not user.is_authenticated() or not user.is_active:
+            return False
+
+        if user.is_superuser:
+            return True
+
+        for sitelocation in user.admin_for.all():
+            if self == sitelocation:
+                return True
+
+        return False
+    
 class Tag(models.Model):
     """
     Tags for videos.
@@ -191,7 +168,7 @@ class Feed(models.Model):
         update.
       - auto_approve: whether or not to set all videos in this feed to approved
         during the import process
-      - openid_user: a user that submitted this feed, if any
+      - user: a user that submitted this feed, if any
       - auto_categories: categories that are automatically applied to videos on
         import
       - auto_authors: authors that are automatically applied to videos on import
@@ -206,7 +183,7 @@ class Feed(models.Model):
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     auto_approve = models.BooleanField(default=False)
-    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+    user = models.ForeignKey('auth.User', null=True, blank=True)
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("Author", blank=True)
 
@@ -458,13 +435,13 @@ class SavedSearch(models.Model):
      - query_string: a whitespace-separated list of words to search for.  Words
        starting with a dash will be processed as negative query terms
      - when_created: date and time that this search was saved.
-     - openid_user: the person who saved this search (thus, likely an
+     - user: the person who saved this search (thus, likely an
        adminsistrator of this subsite)
     """
     site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
-    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+    user = models.ForeignKey('auth.User', null=True, blank=True)
 
     def __unicode__(self):
         return self.query_string
@@ -521,7 +498,7 @@ class Video(models.Model):
      - thumbnail_extension: extension of the *internal* thumbnail, saved on the
        server (usually paired with the id, so we can determine "1123.jpg" or
        "1186.png"
-     - openid_user: if not None, the user who submitted this video
+     - user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
     """
     name = models.CharField(max_length=250)
@@ -548,7 +525,7 @@ class Video(models.Model):
     thumbnail_url = models.URLField(
         verify_exists=False, blank=True, max_length=400)
     thumbnail_extension = models.CharField(max_length=8, blank=True)
-    openid_user = models.ForeignKey(OpenIdUser, null=True, blank=True)
+    user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
 
     class Meta:
@@ -676,12 +653,12 @@ class Video(models.Model):
         Return the user that submitted this video.  If necessary, use the
         submitter from the originating feed or savedsearch.
         """
-        if self.openid_user is not None:
-            return self.openid_user
+        if self.user is not None:
+            return self.user
         elif self.feed is not None:
-            return self.feed.openid_user
+            return self.feed.user
         elif self.search is not None:
-            return self.search.openid_user
+            return self.search.user
         else:
             # XXX warning?
             return None
@@ -735,16 +712,16 @@ class Watch(models.Model):
     fields:
      - video: Video that was watched
      - timestamp: when watched
-     - openid_user: user that watched it, if any
+     - user: user that watched it, if any
      - ip_address: IP address of the user
     """
     video = models.ForeignKey(Video)
     timestamp = models.DateTimeField(auto_now_add=True)
-    openid_user = models.ForeignKey(OpenIdUser, blank=True, null=True)
+    user = models.ForeignKey('auth.User', blank=True, null=True)
     ip_address = models.IPAddressField()
 
     @classmethod
-    def add(Class, request, video, openid_user=None):
+    def add(Class, request, video):
         """
         Adds a record of a watched video to the database.  If the request came
         from localhost, check to see if it was forwarded to (hopefully) get the
@@ -754,7 +731,12 @@ class Watch(models.Model):
         if ip == '127.0.0.1':
             ip = request.META.get('HTTP_X_FORWARDED_FOR', ip)
 
-        Class(video=video, openid_user=openid_user, ip_address=ip).save()
+        if request.user.is_authenticated():
+            user = request.user
+        else:
+            user = None
+
+        Class(video=video, user=user, ip_address=ip).save()
 
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)

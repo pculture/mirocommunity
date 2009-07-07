@@ -37,9 +37,7 @@ def subsite_index(request, sitelocation=None):
 
     return render_to_response(
         'localtv/subsite/index_%s.html' % (sitelocation.frontpage_style,),
-        {'sitelocation': sitelocation,
-         'request': request,
-         'featured_videos': featured_videos,
+        {'featured_videos': featured_videos,
          'popular_videos': popular_videos,
          'new_videos': new_videos,
          'categories': categories},
@@ -57,16 +55,14 @@ def view_video(request, video_id, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id, site=sitelocation.site)
 
     edit_video_form = None
-    openid_user = request.session.get('openid_localtv')
-    if openid_user and openid_user.admin_for_sitelocation(sitelocation):
+    if sitelocation.user_is_admin(request.user):
         edit_video_form = admin_forms.EditVideoForm.create_from_video(video)
 
-    models.Watch.add(request, video, openid_user)
+    models.Watch.add(request, video)
 
     return render_to_response(
         'localtv/subsite/view_video.html',
-        {'sitelocation': sitelocation,
-         'current_video': video,
+        {'current_video': video,
          'popular_videos': models.Video.popular_since(datetime.timedelta(
                     days=1), sitelocation=sitelocation)[:9],
          'intensedebate_acct': getattr(
