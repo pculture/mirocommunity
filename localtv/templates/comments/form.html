@@ -1,0 +1,4 @@
+{% load comments %}
+<form action="{% comment_form_target %}" method="POST">
+  {% include "comments/form_base.html" %}
+</form>

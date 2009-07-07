@@ -1,0 +1,36 @@
+{% load i18n %}
+{% if request.user.is_authenticated %}
+      <p class="posting-as">Posting as {{ request.user.username }}</p>
+{% endif %}
+  {% for field in form %}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% else %}
+      {% if request.user.is_authenticated %}
+        {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}
+      <p
+        {% if field.errors %} class="error"{% endif %}
+        {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
+        {% if field.errors %}{{ field.errors }}{% endif %}
+        {{ field.label_tag }} {{ field }}
+      </p>
+        {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
+      {% else %}
+      <p
+        {% if field.errors %} class="error"{% endif %}
+        {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
+        {% if field.errors %}{{ field.errors }}{% endif %}
+        {{ field.label_tag }} {{ field }}
+      </p>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% if request.user.is_authenticated %}
+  <input type="hidden" name="name" value="{{ request.user.username }}">
+  <input type="hidden" name="email" value="{{ request.user.email }}">
+  <input type="hidden" name="url" value="{{ request.user.openiduser.url }}">
+  {% endif %}
+  <p class="submit">
+    <input type="submit" name="submit" class="submit-post" value="{% trans "Post" %}" />
+    <input type="submit" name="preview" class="submit-preview" value="{% trans "Preview" %}" />
+  </p>

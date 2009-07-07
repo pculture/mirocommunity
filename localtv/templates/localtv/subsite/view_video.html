@@ -1,6 +1,6 @@
 {% extends "localtv/subsite/base.html" %}
 
-{% load embed_video i18n %}
+{% load embed_video i18n comments %}
 
 {% block body_id %}view_video{% endblock %}
 
@@ -134,10 +134,29 @@
       <br class="clear" />
     </div>
 
-    <!-- Intensedebate would normally go here -->
-    {% if intensedebate_acct %}
-      {% include "localtv/subsite/intensedebate.html" %}
-    {% endif %}
+    <ul id="comments">
+      {% get_comment_list for current_video as comments %}
+      {% for comment in comments %}
+      <li>
+        <p>{{ comment }}</p>
+        {% if user_is_admin %}
+        <div class="comment-moderation">
+          <form action="{% url comments-delete comment.id %}" method="post">
+            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+            <button type="submit">delete</button>
+          </form>
+          <form action="{% url comments-spam comment.id %}" method="post">
+            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+            <button type="submit">spam</button>
+          </form>
+        </div>
+        {% endif %}
+      </li>
+      </p>
+      {% endfor %}
+      <h2>Post a comment</h2>
+      {% render_comment_form for current_video %}
+    </div>
   </div>
 
   <div id="sidebar">

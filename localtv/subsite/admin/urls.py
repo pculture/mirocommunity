@@ -70,3 +70,7 @@ urlpatterns += patterns(
     '',
     (r'^edit_attributes/',
      include('localtv.subsite.admin.edit_attributes.urls')))
+
+urlpatterns += patterns(
+    'localtv.subsite.admin.comment_views',
+    (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'))
