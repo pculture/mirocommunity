@@ -16,7 +16,7 @@ class Migration:
                 user = orm['auth.User']()
                 user.username = openid_user.nickname
                 user.email = openid_user.email
-                user.is_superuser = openid_user
+                user.is_superuser = openid_user.superuser
                 user.is_active = bool(openid_user.status)
                 user.save()
             openid_user.user = user
