@@ -17,7 +17,7 @@ class Migration:
                 user.username = openid_user.nickname
                 user.email = openid_user.email
                 user.is_superuser = openid_user
-                user.is_active = (openid_user.status == OPENID_STATUS_ACTIVE)
+                user.is_active = bool(openid_user.status)
                 user.save()
             openid_user.user = user
             openid_user.save()
