@@ -611,7 +611,18 @@ class Video(models.Model):
                 default_storage.open(self.get_original_thumb_storage_path()))
 
         for width, height in VIDEO_THUMB_SIZES:
-            resized_image = thumb.resize((width, height), Image.ANTIALIAS)
+            resized_image = thumb.copy()
+            resized_image.thumbnail((width, height), Image.ANTIALIAS)
+            if resized_image.size != (width, height):
+                x = y = 0
+                if resized_image.size[1] < height:
+                    y = int((height - resized_image.size[1]) / 2)
+                else:
+                    x = int((width - resized_image.size[0]) / 2)
+                new_image = Image.new('RGBA',
+                    (width, height), (0, 0, 0, 0))
+                new_image.paste(resized_image, (x, y))
+                resized_image = new_image
             sio_img = StringIO.StringIO()
             resized_image.save(sio_img, 'png')
             sio_img.seek(0)
