@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User, SiteLocation
+from django.contrib.auth.models import User
+from localtv.models import SiteLocation
 
 class OpenIdBackend:
 
