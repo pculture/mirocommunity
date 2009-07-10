@@ -139,14 +139,14 @@ DjangoOpenId
 Problem is that it has some outdated crap in it.  We might need to
 fork it with git::
 
-    svn co http://django-openid.googlecode.com/svn/trunk DjangoOpenid
+    svn co http://django-openid.googlecode.com/svn/branches/openid-2.0+auth DjangoOpenid
 
 This also needs several dependencies which are easily installed::
 
     easy_install -UaZ elementtree
     easy_install -UaZ python-urljr
     easy_install -UaZ python-yadis
-    easy_install -UaZ http://openidenabled.com/files/python-openid/packages/python-openid-1.2.0.tar.gz
+    easy_install -UaZ python-openid
 
 
 South
@@ -189,8 +189,8 @@ You'll also need to install simplejson::
     easy_install -UaZ simplejson
 
 
-VidScraper
-----------
+Page Tabs
+---------
 
 ::
 
