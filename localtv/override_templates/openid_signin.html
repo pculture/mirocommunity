@@ -18,6 +18,11 @@ input.openid {
 <p><input class="openid" type="text" name="openid_url"> <input type="submit" value="Sign in"></p>
 </form>
 
+      or
+      
+<form action="{{ action }}" method="post">
+  <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
+<p><input type="submit" value="Sign In with your Google account"></p>
 <h2>Don't have an openid?</h2>
 <a href="http://openid.net/get/">Get one!</a>
 
