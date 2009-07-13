@@ -80,6 +80,7 @@ def login_or_register(request):
                 user = user)
             localtv_openid.save()
 
+            user = auth.authenticate(openid_user=localtv_openid)
             return login_and_redirect(request, user)
 
         else:
