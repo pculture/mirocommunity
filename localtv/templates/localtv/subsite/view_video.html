@@ -41,7 +41,7 @@
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="/images/arrow_down.png" /></span>
+        <span>Share Video<img src="/images/arrow_down.png" /></span> 
       </a>
 
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
@@ -161,7 +161,7 @@
 
   <div id="sidebar">
     {% if sitelocation.sidebar_html %}
-    <div id="about">
+    <div id="about" class="rounded">
       {% autoescape off %}
         {{ sitelocation.sidebar_html }}
       {% endautoescape %}

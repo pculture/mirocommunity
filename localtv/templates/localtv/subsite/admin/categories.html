@@ -1,6 +1,7 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
 {% load i18n %}
+
 {% block head %}
   {{ block.super }}
   <script type="text/javascript" src="/js/urlify.js"></script>
@@ -15,12 +16,14 @@
 {% endblock %}
 {% block title %}{{ block.super }} - {% trans "Admin - Categories" %}{% endblock %}
 
+{% block body_class %}category_admin{% endblock body_class %}
+
 {% block content %}
   <div id="above_admin_table">
     {% include "localtv/subsite/admin/header.html" %}
   </div>
 
-  <div id="label_sidebar">
+  <div id="label_sidebar" class="rounded">
     <h1>Add a Category</h1>
     <form action="" method="POST">
       {{ add_category_form.as_p }}
@@ -37,7 +40,7 @@
       	</select>
       	<input type="submit" value="Apply" name="submit"/>
       </div>
-      <table cellpadding="0" cellspacing="0">
+      <table class="rounded" cellpadding="0" cellspacing="0">
       <thead>
         <tr>
           <th valign="middle" class="checkbox"><input type="checkbox"/></td>

@@ -1,20 +1,12 @@
-<div id="edit_video_wrapper">
-  <form method="POST" action="{% url localtv_admin_edit_video %}" enctype="multipart/form-data">
+<div id="edit_video_wrapper" class="rounded">
+  <!--<form method="POST" action="{% url localtv_admin_edit_video %}" enctype="multipart/form-data">
     {{ edit_video_form }}
     <input type="hidden" name="redirect" value="{{ current_video.get_absolute_url }}">
   </form>
-  <p>
-    <a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}">
-      Reject this video
-    </a>
-  </p>
-  <p>
-    <a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}">
-      Feature this video
-    </a>
-  </p>
-  <p>
-    <span class="editable thumbnail">Upload a new thumbnail</span>
-  </p>
+  -->
+  
+  <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button"><span>Reject this video</span></a></p>
+  <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Feature this video</span></a></p>
+  <p class="med_button"><span class="editable">Upload a new thumbnail</span></p>
   <br clear="all"/>
 </div>

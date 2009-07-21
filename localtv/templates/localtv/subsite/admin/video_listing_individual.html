@@ -36,18 +36,18 @@
     </h3>
 
     {% autoescape off %}
-      <p>{{ video.description|striptags|truncatewords:50 }}</p>
+      <p class="desc">{{ video.description|striptags|truncatewords:50 }}</p>
     {% endautoescape %}
-
+ 
     {% if video.when_submitted %}
-    <p>Submitted: {{ video.when_submitted|timesince }} ago</p>
+    <p class="submitted"><strong>Submitted</strong> {{ video.when_submitted|timesince }} ago</p>
     {% endif %}
-    {% if video.when %}
-    <p>Published: {{ video.when|timesince }} ago</p>
+    {% if video.when %} 
+    <p class="published"><strong>Published</strong> {{ video.when|timesince }} ago</p>
     {% endif %}
   </div>
   
-  <div class="approve_reject">
+  <div class="approve_reject rounded">
       <a class="feature med_button"
          {% if video.metasearch_vid %}
            href="{% url localtv_admin_livesearch_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}&feature=true"

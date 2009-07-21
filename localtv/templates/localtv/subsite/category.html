@@ -35,7 +35,7 @@
     {% for child in category.child_set.all %}
     
     {% if not child.child_set.count %}
-    <h2>{{ child.name }} <a href="{{ child.get_absolute_url }}" class="count">{{ child.video_set.count }} Videos &gt;&gt;</a></h2>
+    <h2><a href="{{ child.get_absolute_url }}" class="count">{{ child.name }} <span>{{ child.video_set.count }} Videos &gt;&gt;</span></a></h2>
     <ul>
       {% for video in child.video_set.all|slice:":4" %}
       <li>

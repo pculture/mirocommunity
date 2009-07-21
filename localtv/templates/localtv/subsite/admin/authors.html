@@ -14,12 +14,15 @@
 {% endblock %}
 {% block title %}{{ block.super }} - {% trans "Admin - Authors" %}{% endblock %}
 
+{% block body_class %}authors_admin{% endblock body_class %}
+
+
 {% block content %}
   <div id="above_admin_table">
     {% include "localtv/subsite/admin/header.html" %}
   </div>
 
-  <div id="label_sidebar">
+  <div id="label_sidebar" class="rounded">
     <h1>Add an Author</h1>
     <form action="" method="POST">
       {{ add_author_form.as_p }}
@@ -29,7 +32,7 @@
 
   <div id="labels">
     <form method="POST" enctype="multipart/form-data" action="">
-    <table>
+    <table class="rounded">
       <thead>
         <tr>
           <td>Name</td>

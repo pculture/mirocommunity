@@ -1,5 +1,9 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
+
+{% block body_class %}incomingvids{% endblock body_class %}
+
+
 {% load pagetabs i18n %}
 
 {% block head %}
@@ -19,45 +23,41 @@
 
   <table id="admin_table">
     <tr>
-      <td style="vertical-align: top; min-width: 400px;">
-        <div id="admin_leftpane" style="overflow: auto">
-          {% block leftpane %}
-            <table>
-              <tr class="admin_pagetab_row">
-                <td>
+      <td style="vertical-align: top;" width="65%">
+     
+               {% block leftpane %}
+
+     <div class="top_bar">
+              <div class="admin_pagetab_row">
                   {% block pagination %}
                     {% if page_obj and page_obj.has_other_pages  %}
                       {% pagetabs page_obj %}
                     {% endif %}
                   {% endblock pagination %}
-                </td>
-              </tr>
-              <tr class="admin_actions_all">
-                <td><a href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}">Approve All</a></td>
-                <td><a href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}">Reject All</a></td>
-              </tr>
-              <tr id="admin_videolisting_row">
-                <td>
+              </div>
+              
+              <div class="admin_actions_all">
+                <a class="approve med_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All</span></a>
+                <a class="reject med_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject All</span></a>
+              </div>
+            </div>
+
+        <div id="admin_leftpane" style="overflow: auto; width: 100%;">
+
+			
+              <div id="admin_videolisting_row">
                   {% block videolisting_rows %}
                     {% include "localtv/subsite/admin/video_listing.html" %}
                   {% endblock %}
-                </td>
-              </tr>
-              <tr class="admin_pagetab_row">
-                <td>
-                  {% block pagination2 %}
-                    {% if page_obj and page_obj.has_other_pages %}
-                      {% pagetabs page_obj %}
-                    {% endif %}
-                  {% endblock pagination2 %}
-                </td>
-              </tr>
-            </table>
+              </div>
+            
+          
+              
           {% endblock leftpane %}
         </div>
       </td>
-      <td style="vertical-align: top; min-width: 400px;">
-        <div id="admin_rightpane" style="overflow: auto">
+      <td style="vertical-align: top;" width="590">
+        <div id="admin_rightpane">
           {% block rightpane %}
             {% if current_video %}
               {% include "localtv/subsite/admin/video_preview.html" %}

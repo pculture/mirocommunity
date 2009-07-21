@@ -37,11 +37,12 @@
 
   <div class="featured_small_list">
     <div id="main_header" class="small">
-      <h2>Browse</h2>
-      <div class="floatright">
+      <h2>Categories</h2>
+      <!-- <div class="floatright">
         <a href="{% url localtv_subsite_feeds_featured %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
       </div>
+      -->
     </div>
 
   <ul class="cat_list">
@@ -55,6 +56,8 @@
   		</ul>
         {% endif %}
     {% endfor %}
+             	<a href="#" class="med_button clear"><span>More</span></a>
+
   </ul>
   
   
@@ -72,6 +75,8 @@
     {% for video in new_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
+             	<a href="#" class="med_button clear"><span>More</span></a>
+
   </div>
 
   <div class="popular_small_list">
@@ -86,6 +91,7 @@
     {% for video in popular_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
+         	<a href="#" class="med_button clear"><span>More</span></a>
 
   </div>
 {% endblock content %}
