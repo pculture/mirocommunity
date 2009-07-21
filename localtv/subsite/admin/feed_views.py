@@ -46,25 +46,30 @@ def add_feed(request, sitelocation=None):
 
     if models.Feed.objects.filter(
             feed_url=feed_url,
-            site=sitelocation.site).count():
+            site=sitelocation.site,
+            status=models.FEED_STATUS_ACTIVE).count():
         return HttpResponseBadRequest(
             "That feed already exists on this site")
 
     parsed_feed = feedparser.parse(feed_url)
-        
-    feed = models.Feed(
+
+    feed, created = models.Feed.objects.get_or_create(
         feed_url=feed_url,
         site=sitelocation.site,
-        name=parsed_feed.feed.get('title', ''),
-        webpage=parsed_feed.feed.get('link', ''),
-        description=parsed_feed.feed.get('summary', ''),
-        when_submitted=datetime.datetime.now(),
-        last_updated=datetime.datetime.now(),
-        status=models.FEED_STATUS_ACTIVE,
-        user=request.user,
-        auto_approve=False)
+        defaults = {
+            'name': parsed_feed.feed.get('title', ''),
+            'webpage': parsed_feed.feed.get('link', ''),
+            'description': parsed_feed.feed.get('summary', ''),
+            'when_submitted': datetime.datetime.now(),
+            'last_updated': datetime.datetime.now(),
+            'status': models.FEED_STATUS_ACTIVE,
+            'user': request.user,
+            'auto_approve': False})
 
-    feed.save()
+    if not created:
+        feed.status = models.FEED_STATUS_ACTIVE
+        feed.user = request.user
+        feed.save()
 
     feed.update_items()
  

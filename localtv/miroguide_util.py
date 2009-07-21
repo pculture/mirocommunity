@@ -85,7 +85,7 @@ def get_thumbnail_url(entry):
 
     if entry.get('link', '').find(u'youtube.com') != -1:
         match = re.search(r'<img alt="" src="([^"]+)" />',
-                          entry['summary'])
+                          entry.content[0]['value'])
         if match:
             return match.group(1)
 
