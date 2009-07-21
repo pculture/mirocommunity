@@ -1,5 +1,8 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
+{% block body_class %}editdesign{% endblock body_class %}
+
+
 {% load i18n %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
@@ -9,7 +12,13 @@
     {% include "localtv/subsite/admin/header.html" %}
   </div>
   
-  <div class="info">
+  
+  <table>
+  <tr>
+  <td width="20%">
+  <div class="info rounded">
+    <h2>Site Information</h2>
+
   <form method="POST" action="">
     {{ title_form.as_p }}
     <input type="submit" name="type_title" value="save">
@@ -17,18 +26,26 @@
   </div>
   
   
-  <div class="about_me">
+  <div class="about_me rounded">
+      <h2>Organization Information</h2>
+
   <form method="POST" action="">
     {{ sidebar_form.as_p }}
     <input type="submit" name="type_sidebar" value="save">
   </form>
   </div>
-
-  <div class="look">
+	</td>
+		
+	<td>
+  <div class="look rounded">
+      <h2>Design Settings</h2>
+      
   <form method="POST" action="" enctype="multipart/form-data">
     {{ misc_form.as_p }}
     <input type="submit" name="type_misc" value="save">
   </form>
     </div>
-
+</td>
+</tr>
+</table>
 {% endblock content %}

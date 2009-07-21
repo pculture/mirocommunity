@@ -377,23 +377,29 @@ width: 484px !important;
 
 #category a.count {
     font-size: 90%;
-    color: #bbb;
+    color: #666;
 }
 
+
+#category a.count:hover {
+text-decoration: underline;
+}
+
+
 #category > div {
-    margin-top: 20px;
+
 }
 
 #category h2{
 clear: both;
 float: left;
 width: 100%;
-margin-top: 20px;
 }
 
-#category h2 a.count{
+#category h2 a.count span{
 padding: 0 0 0 10px;
 font-size: 12px;
+    color: #999;
 }
 
 #with-children ul {

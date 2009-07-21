@@ -1,30 +1,8 @@
 {% load i18n editable_widget %}
-<div class="admin_feed">
-  {% editable_widget feed "name" %}
+<ul class="admin_feed">
+<li class="rounded">
 
-  <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.name }}</a>
-  <span class="admin_feed_actions">
-    <a class="stop_watching"
-       href="{% url localtv_admin_feed_stop_watching %}?feed_id={{ feed.id }}">
-      ({% trans "Stop Watching" %})</a>
-    <a class="auto_approve"
-       {% if feed.auto_approve %}
-         style="display: none"
-       {% endif %}
-       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}">
-      ({% trans "Auto-Approve" %})
-    </a>
-    <a class="disable_auto_approve"
-       {% if not feed.auto_approve %}
-         style="display: none"
-       {% endif %}
-       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}&disable=true">
-      ({% trans "Disable Auto-Approve" %})
-    </a>
-  </span>
-  <br />
-  <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.feed_url }}</a>
-  <table class="auto_properties_edit">
+<table class="auto_properties_edit">
     <tr>
       <td>
         {% editable_widget feed "auto_categories" %}
@@ -35,4 +13,34 @@
       </td>
     </tr>
   </table>
-</div>
+  
+  
+  <span class="admin_feed_actions">
+    <a class="stop_watching med_button"
+       href="{% url localtv_admin_feed_stop_watching %}?feed_id={{ feed.id }}"><span>
+      ({% trans "Stop Watching" %})</span></a>
+    <a class="auto_approve med_button"
+       {% if feed.auto_approve %}
+         style="display: none"
+       {% endif %}
+       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}">
+      <span>({% trans "Auto-Approve" %})</span>
+    </a>
+    <a class="disable_auto_approve"
+       {% if not feed.auto_approve %}
+         style="display: none"
+       {% endif %}
+       href="{% url localtv_admin_feed_auto_approve %}?feed_id={{ feed.id }}&disable=true">
+      <span>({% trans "Disable Auto-Approve" %})</span>
+    </a>
+  </span>
+  
+  
+  {% editable_widget feed "name" %}
+
+  
+  
+  <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.feed_url }}</a>
+  
+  </li>
+</ul>

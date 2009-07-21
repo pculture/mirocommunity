@@ -7,7 +7,7 @@ You are one step closer to being free.
 
 Love, 
 PCF
-
+  
 */
 
 /*/////////////////////////////////////////////
@@ -46,6 +46,8 @@ h2 {
 
 a {
     color: #333;	
+    text-decoration: none;
+	outline: none;
 }
 
 
@@ -94,7 +96,14 @@ a {
 
 .title_desc {
     padding-top: 7px;
-    height: 70px;
+    height: 73px;
+    margin-bottom: 2px;
+    overflow: hidden;
+}
+
+#admin .title_desc {
+    padding-top: 7px;
+    height: 94px;
     margin-bottom: 2px;
     overflow: hidden;
 }
@@ -109,7 +118,7 @@ a {
 .title_desc h3 {
     font-size: 13px;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 7px;
     line-height: 16px;
     max-height: 3.6em;
     overflow: hidden;
@@ -128,6 +137,7 @@ a {
     line-height: 16px;
     max-height: 49px;
     color: #555;
+    font-size: 11px;
     overflow: hidden;
 }
 
@@ -196,12 +206,13 @@ color: #666;
 
 .page_title {
     font-size: 18px;
-padding-top: 20px;
+padding-top: 35px;
 float: left;
 }
 
-#about_page .page_title {
+#about_page h2 {
 float: none;
+margin-bottom: 10px;
 }
 
 #about_page p {
@@ -290,10 +301,16 @@ line-height: 1.3em;
 #video_listing_featured .featured a,
 #video_listing_new .new a,
 #about_page .about a,
-#video_listing_popular .popular a{
-    background: url(../images/nav_right.png) right -69px no-repeat;
-    _background: url(../images/nav_right.gif) right -69px no-repeat;
-    color: #aaa;
+#video_listing_popular .popular a,
+body.incomingvids a.sub,
+body.editdesign a.design,
+body.category_admin a.categories,
+body.authors_admin a.authors,
+body.searches a.saved,
+body.incomingfeeds a.watched{
+    background: url(../images/nav_right.png) right -69px no-repeat !important;
+    _background: url(../images/nav_right.gif) right -69px no-repeat !important;
+    color: #aaa !important;
     cursor: default;
 }
 
@@ -302,9 +319,15 @@ line-height: 1.3em;
 #video_listing_featured .featured a span,
 #video_listing_new .new a span,
 #about_page .about a span,
-#video_listing_popular .popular a span {
-    background-position: left -69px;
-    _background: url(../images/nav_left.gif) left -69px no-repeat;
+#video_listing_popular .popular a span,
+body.incomingvids a.sub span,
+body.editdesign a.design span,
+body.category_admin a.categories span,
+body.authors_admin a.authors span,
+body.searches a.saved span,
+body.incomingfeeds a.watched span{
+    background-position: left -69px !important;
+    _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 }
 /*/////////////////////////////////////////////
 
@@ -421,6 +444,12 @@ line-height: 1.3em;
     _overflow: hidden;
     float: left;
 }
+
+
+#main #logo{
+margin-bottom: 100px;}
+
+
 
 #main_header h2 {
     font-size: 12px;
@@ -594,7 +623,7 @@ n
 .med_button span {
     line-height: 25px;
     display: block;
-    padding: 0 11px 0 20px ;
+    padding: 0 8px 0 14px ;
     background: url(../images/med_left.png) no-repeat;
     _background: url(../images/med_left.gif) no-repeat;
 
@@ -648,7 +677,8 @@ n
 }
 
 #submit_box #id_url,
-#submit_box #id_tags{
+#submit_box #id_tags,
+.login input.openid{
     margin: 2px 2px 0 0;
     padding: 6px 9px;
     height: 18px;
@@ -683,11 +713,11 @@ n
 }
 
 div.selected {
-    background: #f8e0e0;
     padding: 10px;
     margin: 2px;
-    border: 1px solid #333;
-    background: url(../images/small_grad.png) repeat-x;
+    border: 1px solid #aaa;
+    border-bottom: 1px solid #ccc;
+    background: #ccc url(../images/small_grad.png) repeat-x;
 }
 
 .unselected {
@@ -710,11 +740,23 @@ border-left: 1px solid #ccc;
 
 .approve_reject {
     text-align: right;
-    font-weight: bold;
+    font-weight: bold; 
+float: right;
+position: relative;
+margin-top: -73px;
+background: #fff;
+margin-right: 20px;
+border: 1px solid #e9e9e9;
+border-bottom: 1px solid #f9f9f9;
+border-top: 1px solid #ccc;
+cursor: default;
+
+padding: 10px 0 10px 10px;
 }
 
 .approve_reject a{
 margin-right: 10px;
+cursor: pointer;
 }
 
 .unselected .approve_reject, .selected .approve_reject {
@@ -725,35 +767,43 @@ margin-right: 10px;
     display: block;
 }
 
-.approve_reject .approve {
+
+.admin_actions_all a.reject{
+margin-right: 10px;
+}
+
+a.approve {
     color: green;
     cursor: pointer;
     text-decoration: none;
+    font-weight: bold;
 }
 
-.approve_reject .approve:hover {
+a.approve:hover {
     color: #0e980e;
     text-decoration: none;
 }
 
-.approve_reject .reject {
+a.reject {
     color: #be0000;
     cursor: pointer;
     text-decoration: none;
+        font-weight: bold;
+
 }
 
-.approve_reject .reject:hover {
+a.reject:hover {
     color: #df0606;
     text-decoration: none;
 }
 
-.approve_reject .feature {
+a.feature {
     color: #9f06df;
     cursor: pointer;
     text-decoration: none;
 }
 
-.approve_reject .feature:hover {
+a.feature:hover {
     color: #b118f1;
     text-decoration: none;
 }
@@ -834,7 +884,7 @@ ul.pagetabs li a:active span {
 }
 
 #admin_rightpane {
-    min-width: 500px;
+
 }
 
 #video_wrapper{
@@ -851,9 +901,13 @@ ul.pagetabs li a:active span {
     height: 430px;
 }
 
+
+
 .pag{
     height: 45px;
-    padding-top: 15px;
+    padding-top: 30px;
+    border-bottom: 1px solid #eee;
+margin-bottom: 30px;
 }
 
 .pag b{
@@ -874,7 +928,7 @@ ul.pagetabs li a:active span {
 }
 
 #video_listing_new .video, #video_listing_popular .video{
-    width: 300px;
+    width: 289px;
     overflow: hidden;
     clear: none;
     margin-right: 12px;
@@ -922,6 +976,12 @@ padding:0;
 list-style:none;
 }
 
+
+#slider a,
+#slider_small a,
+#slider2 a{
+text-decoration: none;
+}
 
 #slider2 ul{
 margin:0;
@@ -1013,12 +1073,19 @@ top: -190px;
 }
 
 .image{
-width: 400px;
+width: 250px;
 float: left;
-height: 300px;
-padding: 0;
+height: 0px;
+padding: 300px 0 0 150px;
 background:url(../images/default_big.png) center;	
 margin: 20px 30px 0 15px;
+overflow: hidden;
+}
+
+
+.image:hover{
+height: 150px;
+padding: 120px 0 0 150px;
 }
 
 
@@ -1027,7 +1094,7 @@ margin: 20px 30px 0 15px;
 .copy{
 width: 400px;
 float: left;
-margin-top: 20px;
+margin: 20px 0;
 height: 240px;
 padding-left: 10px;
 overflow: hidden;
@@ -1046,9 +1113,9 @@ color: #888;
 
 
 .copy p{
-line-height: 1.4em;
+line-height: 1.5em;
 padding: 0 30px 0 0;
-font-size: 14px;
+font-size: 13px;
 margin: 25px 0;
 color: #666
 }
@@ -1089,6 +1156,9 @@ display: block;
 display: none;
 }
 
+#admin{
+}
+
 
 #admin #search{
 display: none;
@@ -1112,13 +1182,21 @@ padding-right: 15px;
 
 
 #admin_leftpane{
-padding: 20px 30px 0 0;
+padding: 0px 0px 0 0;
+}
+
+#admin_leftpane .video{
+margin-bottom: 10px;
+}
+
+#admin td{
 }
 
 
 #admin_rightpane{
-padding: 50px;
-width: 550px;
+padding: 0 0 0 30px;
+
+
 }
 
 
@@ -1137,7 +1215,13 @@ padding: 40px;
 
 #livesearch_feed_url{
 float: left;
+background:transparent url(../images/large_field.gif) no-repeat scroll left top;
+border: none;
+width: 250px;
+padding: 6px 7px 7px;
+margin-right: 10px;
 }
+
 
 
 .admin_feed{
@@ -1145,6 +1229,21 @@ border-bottom: 1px solid #ddd;
 font-size: 13px;
 padding: 10px 0;
 clear: both;
+}
+
+.admin_feed li{
+border: 1px solid #ccc;
+padding: 10px;
+background: #eee;
+}
+
+
+.admin_feed a{
+text-decoration: underline;
+}
+
+.admin_feed a.med_button{
+text-decoration: none;
 }
 
 
@@ -1195,9 +1294,8 @@ padding: 50px 0 7px 0px;
 
 #about_page .logo{
 max-width: 470px;
-float: left;
-border: 1px solid;
-margin: 40px 30px 0 0;
+float: right;
+margin: 100px 50px;
 }
 
 
@@ -1214,20 +1312,22 @@ width: 200px;
 }
 
 #edit_video_wrapper{
-border: 1px solid #ddd;
-background: #fff7fc;
-padding: 20px;
+border: 1px solid #e9e9e9;
+border-bottom: 1px solid #f9f9f9;
+border-top: 1px solid #ccc;
+background: #f9f9f9;
+padding: 10px 0 10px 10px;
 margin-top: 20px;
 }
 
 #edit_video_wrapper p{
 float: left;
+padding-right: 10px;
 }
 
 
 #edit_video_wrapper a{
-padding: 6px 20px;
-display: block;
+
 }
 
 .left{
@@ -1255,6 +1355,18 @@ float: left;
 width: 300px;
 padding: 6px 20px;
 text-decoration: underline;
+}
+
+#admin #video_wrapper object, #admin #video_wrapper embed{
+border: 1px solid;
+width: 400px;
+height: 350px;
+}
+
+
+#admin #video_wrapper, #admin #video_wrapper{
+width: 400px;
+height: 350px;
 }
 
 
@@ -1304,7 +1416,7 @@ line-height: 2.8em;
 clear: both;
 font-size: 13px;
 float: left;
-margin: 10px 0 5px 0px;
+margin: 0px 0 5px 0px;
 display: block;
 background:url(../images/lil.png) no-repeat 0 0;	
 }
@@ -1315,6 +1427,7 @@ padding: 0px 20px 0 0;
 font-size: 14px;
 float: left;
 clear: both;
+margin-bottom: 20px;
 text-decoration: none;
 background:url(../images/top_cat_cap.png) no-repeat right 0;	
 }
@@ -1347,12 +1460,20 @@ background-position: left -82px;
 }
 
 
+.editable{
+
+}
+
 .editable .input_field, .editable .post_url {
     display: none;
 }
 
 .admin_actions_all{
-border: 1px solid;
+float: right;
+}
+
+.admin_pagetab_row{
+float: left;
 }
 
 #category_sidebar{
@@ -1371,6 +1492,10 @@ font-weight: bold;
 padding: 0;
 font-size: 13px;
 text-align: left;
+}
+
+#category{
+padding-top: 0 !important;
 }
 
 #category h2{
@@ -1497,4 +1622,177 @@ float: left;
 width: 100%;
 padding: 30px 0;
 }
+
+
+.info{
+margin-bottom: 20px;
+}
+
+.about_me{
+}
+
+.about_me label{
+display: block;
+padding: 0;
+}
+
+#id_footer{
+display: block;
+margin-bottom: 10px;
+}
+
+.look{
+margin-left: 20px;
+}
+
+.info, .about_me, .look{
+background: #f9f9f9;
+padding: 25px;
+border: 1px solid #ddd;
+}
+
+.info textarea, .about_me textarea, .look textarea{
+margin-bottom: 10px;
+}
+
+
+
+.info h2, .about_me h2, .look h2{
+font-weight: bold;
+font-size: 140%;
+}
+
+.info label, .about_me label, .look label{
+font-weight: bold;
+font-size: 14px;
+font-weight: normal;
+color: #777;
+}
+
+
+.info p, .about_me p, .look p{
+padding: 10px 0 5px;
+line-height: 1.3em;
+font-size: 11px;
+}
+
+.help{
+display: none;
+}
+
+#admin .help{
+margin: 0 0 0px 0px;
+padding: 10px 30px;
+color: #666;
+text-align: center;
+font-size: 13px;
+border: 1px solid #ccc; 
+background: #ddd;
+display: block;
+border-right: none;
+border-left: none;
+}
+
+.top_bar{
+background: #fff;
+}
+
+
+#admin_videolisting_row{
+padding-right: 45px;
+}
+
+
+.submitted, .published{
+float: left;
+padding: 5px 10px 0 0 ;
+}
+
+
+.submitted strong, .published strong{
+font-weight: bold;
+}
+
+.posting-as{
+margin-top: 10px;
+background: #eee;
+padding: 5px;
+}
+
+#comments label{
+display: block;
+margin: 10px 0;
+}
+
+#comments textarea{
+margin-bottom: 15px;
+}
+
+
+#label_sidebar{
+border: 1px solid #ddd;
+}
+
+ul#comments{
+clear: both !important;
+}
+
+ul#comments li{
+border: 1px solid #eee;
+padding: 20px;
+clear: both;
+width: 600px !important;
+}
+
+#admin ul.pagetabs{
+clear: both;
+}
+
+#admin_feed_add{
+border: 1px solid #eee;
+background: #f9f9f9;
+height: 24px;
+padding: 15px;
+margin: 0 5px 15px 0;
+}
+
+button{
+cursor: pointer;
+}
+
+
+.login{
+padding: 20px;
+}
+
+.login h1{
+margin: 0;
+padding: 0;
+font-size: 16px;
+clear: both;
+line-height: 1.3em;
+}
+
+
+.login form p{
+clear: both;
+padding: 20px;
+}
+
+#about_page #main p{
+padding-bottom: 10px;
+}
+
+
+.auto_properties_edit{
+float: right;
+}
+
+
+.auto_properties_edit h3{
+font-size: 12px;
+padding: 7px;
+}
+
+
 

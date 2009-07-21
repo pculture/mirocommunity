@@ -9,22 +9,59 @@ input.openid {
   background-position: 0 50%;
   padding-left: 16px;
 }
+.login{
+padding: 20px;
+}
+
+.login h1{
+margin: 0;
+padding: 0;
+font-size: 16px;
+clear: both;
+line-height: 1.3em;
+}
+
+
+.login form p{
+clear: both;
+padding: 20px;
+}
+
+#about_page #main p{
+padding-bottom: 10px;
+}
+
+
+body{
+font-family: Arial, Helvetica, sans-serif;
+}
+
+
 </style>
 </head>
 <body>
-<h1>Sign in with your OpenID</h1>
+
+<div class="login">
+<h1>Sign in with your OpenID</h1> 
 
 <form action="{{ action }}" method="post">
 <p><input class="openid" type="text" name="openid_url"> <input type="submit" value="Sign in"></p>
 </form>
+<p>Don't have an openid?
+<a href="http://openid.net/get/">Get one!</a>
+</p>
+<br />
+<br />
+<hr />
+<br />
+<br />
+<h1 class="floatleft" style="padding-right: 14px;">Sign in with your Google Account</h1>
 
-      or
-      
 <form action="{{ action }}" method="post">
   <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
-<p><input type="submit" value="Sign In with your Google account"></p>
-<h2>Don't have an openid?</h2>
-<a href="http://openid.net/get/">Get one!</a>
+<input type="submit" value="Click Here">
+</form>
 
+</div>
 </body>
 </html>
