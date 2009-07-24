@@ -56,8 +56,6 @@
   		</ul>
         {% endif %}
     {% endfor %}
-             	<a href="#" class="med_button clear"><span>More</span></a>
-
   </ul>
   
   
@@ -67,8 +65,9 @@
     <div id="main_header" class="small">
       <h2>New</h2>
       <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_new %}" class="rss">RSS</a> |
-        <a href="#" class="miro-subscribe">Subscribe</a>
+        {% url localtv_subsite_feeds_new as feeds_new %}
+        <a href="{{ feeds_new }}" class="rss">RSS</a> |
+        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ feeds_new|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
 
@@ -83,8 +82,9 @@
     <div id="main_header" class="small">
       <h2>Popular</h2>
       <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
-        <a href="#" class="miro-subscribe">Subscribe</a>
+        {% url localtv_subsite_feeds_popular as feeds_popular %}
+        <a href="{{ feeds_popular }}" class="rss">RSS</a> |
+        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ feeds_popular|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
 
