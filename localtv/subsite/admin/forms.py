@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
 from localtv import models
@@ -144,3 +145,30 @@ class AuthorForm(forms.ModelForm):
     class Meta:
         model = models.Author
         exclude = ['site']
+
+
+class AddUserForm(forms.Form):
+    user = forms.CharField(
+        help_text=("You can enter a user name, an OpenID, or an e-mail "
+                   "address in this field"))
+
+    def clean_user(self):
+        value = self.cleaned_data['user']
+
+        if value.startswith('http://') or value.startswith('https://'):
+            # possibly an OpenID
+            openid_users = models.OpenIdUser.objects.filter(url=value)
+            if openid_users:
+                return [oid.user for oid in openid_users]
+
+        if '@' in value:
+            # possibly an e-mail address
+            users = User.objects.filter(email=value)
+            if users:
+                return users
+
+        users = User.objects.filter(username=value)
+        if users:
+            return users
+        else:
+            raise forms.ValidationError('Could not find a matching user')
