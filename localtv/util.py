@@ -70,7 +70,20 @@ class MetasearchVideo(object):
                  flash_enclosure_url=None, publish_date=None, id=None):
         self.name = name.strip()
         self.description = description
-        self.tags = tags or []
+        if tags:
+            self.tags = {
+                'objects': {
+                    'count': len(tags),
+                    'all': [{'name': tag} for tag in tags]
+                    }
+                }
+        else:
+            self.tags = {
+                'objects':  {
+                    'count': 0,
+                    'all': []
+                    }
+                }
         self.file_url = file_url or ''
         self.website_url = website_url or ''
         self.thumbnail_url = thumbnail_url or ''
@@ -84,7 +97,8 @@ class MetasearchVideo(object):
 
     def generate_video_model(self, site, status=models.VIDEO_STATUS_ACTIVE):
         if self.tags:
-            tags = get_or_create_tags(self.tags)
+            tags = get_or_create_tags([tag['name'] for tag in
+                                       self.tags['objects']['all']])
         else:
             tags = []
         
@@ -104,10 +118,10 @@ class MetasearchVideo(object):
 
         video.strip_description()
 
+        video.save()
+
         for tag in tags:
             video.tags.add(tag)
-
-        video.save()
 
         if video.thumbnail_url:
             video.save_thumbnail()
