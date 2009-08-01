@@ -4,8 +4,11 @@
     <input type="hidden" name="redirect" value="{{ current_video.get_absolute_url }}">
   </form>
   -->
-  
+  {% ifnotequal current_video.status VIDEO_STATUS_REJECTED %}
   <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button"><span>Reject this video</span></a></p>
+  {%else %}
+  <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button"><span>Approve this video</span></a></p>
+  {% endifnotequal %}
   <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Feature this video</span></a></p>
   <p class="med_button"><span class="editable">Upload a new thumbnail</span></p>
   <br clear="all"/>

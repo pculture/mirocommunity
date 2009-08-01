@@ -23,4 +23,8 @@ def context_processor(request):
 
         'display_submit_button': display_submit_button,
 
-        'settings': settings}
+        'settings': settings,
+
+        'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
+        'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
+        'VIDEO_STATUS_REJECTED': models.VIDEO_STATUS_REJECTED}
