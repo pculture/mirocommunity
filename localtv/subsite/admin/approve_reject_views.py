@@ -109,6 +109,20 @@ def feature_video(request, sitelocation=None):
 
     return HttpResponse('SUCCESS')
 
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def unfeature_video(request, sitelocation=None):
+    video_id = request.GET.get('video_id')
+    current_video = get_object_or_404(
+        models.Video, pk=video_id, site=sitelocation.site)
+    current_video.last_featured = None
+    current_video.save()
+
+    return HttpResponse('SUCCESS')
+
+
 @referrer_redirect
 @require_site_admin
 @get_sitelocation

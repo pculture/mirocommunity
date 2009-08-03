@@ -8,7 +8,11 @@
   {%else %}
   <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button"><span>Approve this video</span></a></p>
   {% endifnotequal %}
+  {% if current_video.last_featured %}
+  <p><a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Unfeature this video</span></a></p>
+  {% else %}
   <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Feature this video</span></a></p>
+  {% endif %}
   <p class="med_button"><span class="editable">Upload a new thumbnail</span></p>
   <br clear="all"/>
 </div>
