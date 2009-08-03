@@ -16,6 +16,6 @@
   <h2>{% trans "(no title)" %}</h2>
 {% endif %}
   <span>{{ video.when|timesince }} ago</span>
-  <p>{{ video.description }}</p>
+  <p>{% autoescape off %}{{ video.description|striptags }}{% endautoescape %}</p>
 </div>
 <a href="{{ video.get_absolute_url }}" class="watch med_button"><span>Watch</span></a>
