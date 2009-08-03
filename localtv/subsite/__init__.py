@@ -10,7 +10,8 @@ def context_processor(request):
 
     display_submit_button = sitelocation.display_submit_button
     if display_submit_button:
-        if request.user.is_authenticated() and sitelocation.submission_requires_login:
+        if request.user.is_anonymous() and \
+                sitelocation.submission_requires_login:
             display_submit_button = False
     else:
         if sitelocation.user_is_admin(request.user):
