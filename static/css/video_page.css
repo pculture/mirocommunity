@@ -4,6 +4,10 @@ p.description{
     padding: 35px 0;
 }
 
+#cancel_button {
+    display: block !important;
+}
+
 #main ul, #main ul li{
     display: inline;
 }
