@@ -63,8 +63,10 @@ def view_video(request, video_id, sitelocation=None):
     return render_to_response(
         'localtv/subsite/view_video.html',
         {'current_video': video,
-         'popular_videos': models.Video.popular_since(datetime.timedelta(
-                    days=1), sitelocation=sitelocation)[:9],
+         'popular_videos': models.Video.popular_since(
+                datetime.timedelta(days=1),
+                sitelocation=sitelocation,
+                status=models.VIDEO_STATUS_ACTIVE)[:9],
          'intensedebate_acct': getattr(
                 settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
          'edit_video_form': edit_video_form},
