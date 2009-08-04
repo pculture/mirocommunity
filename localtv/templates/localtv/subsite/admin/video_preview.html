@@ -1,4 +1,4 @@
-{% load embed_video i18n %}
+{% load video i18n %}
 
 {% if current_video.name %}
   <h2 class="vid_title">{{ current_video.name }}</h2>
@@ -8,7 +8,11 @@
 <span class="date">{% blocktrans with current_video.when|timesince as timesince %}{{ timesince }} ago{% endblocktrans %}</span>
 
 <div id="video_wrapper">
-  {% embed_video current_video %}
+  {% if current_video.embed_code %}
+  {{ current_video.embed_code }}
+  {% else %}
+  {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=false %}
+  {% endif %}
 </div>        
 
 <p class="description">

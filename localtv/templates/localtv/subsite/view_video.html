@@ -1,6 +1,6 @@
 {% extends "localtv/subsite/base.html" %}
 
-{% load embed_video i18n comments %}
+{% load video i18n comments %}
 
 {% block body_id %}view_video{% endblock %}
 
@@ -32,7 +32,11 @@
     {% endif %}
     <span class="date">{{ current_video.when|timesince }} ago</span>
     <div id="video_wrapper">
-      {% embed_video current_video "autoplay" %}
+        {% if current_video.embed_code %}
+        {{ current_video.embed_code }}
+        {% else %}
+        {% video current_video.file_url mime_type=current_video.file_url_mimetype %}
+        {% endif %}
     </div>
 
     <div class="action">

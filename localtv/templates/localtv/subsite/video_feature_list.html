@@ -1,4 +1,4 @@
-{% load embed_video i18n %}
+{% load video i18n %}
 {% if video.name %}
   <h2 class="vid_title"><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h2>
 {% else %}
@@ -6,6 +6,10 @@
 {% endif %}
 <span class="date">{{ video.when|timesince }} ago</span>
 <div id="video_wrapper">
-  {% embed_video video %}
+  {% if video.embed_code %}
+  {{ video.embed_code }}
+  {% else %}
+  {% video video.file_url mime_type=video.file_url_mimetype autoplay=false %}
+  {% endif %}
 </div>
 <br />
