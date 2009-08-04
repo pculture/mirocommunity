@@ -1,10 +1,11 @@
 function inline_edit_open() {
     obj = $(this);
+    console.log(this);
     if (obj.hasClass('open')) {
-        return true;
+        return false;
     }
     obj.addClass('open');
-    this.oldContent = obj.text();
+    this.oldContent = obj.html();
     obj.text('');
     if (obj.hasClass('vid_title')) {
         input = $('<input type="text" />').val($("#id_name").val());
@@ -14,6 +15,9 @@ function inline_edit_open() {
         obj.append(textarea);
     } else if (obj.hasClass('thumbnail')) {
         input = $('<input type="file" name="thumbnail"/>');
+        obj.append(input);
+    } else if (obj.hasClass('tags')) {
+        input = $('<input type="text" />').val($("#id_tags").val());
         obj.append(input);
     } else if (obj.hasClass('categories')) {
         input = $("#id_categories").clone().attr('id', '');
@@ -45,6 +49,10 @@ function inline_save() {
         old_input.after(input);
         old_input.remove();
         inline_post(obj);
+    } else if (obj.hasClass('tags')) {
+        value = obj.children('input').val();
+        $("#id_tags").val(value);
+        inline_post(obj);
     } else if (obj.hasClass('categories')) {
         value = obj.children('select').val();
         $("#id_categories").val(value);
@@ -66,7 +74,7 @@ function inline_post(obj) {
 }
 
 function inline_reset(obj) {
-    obj.text(obj[0].oldContent);
+    obj.html(obj[0].oldContent);
     obj.removeClass('open');
     return false;
 }

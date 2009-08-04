@@ -38,15 +38,6 @@ p.description{
     font-size: 11px;
 }
 
-#add_tag {
-    display: none;
-}
-
-#tags form{
-    clear: both;
-    padding: 15px 0;
-}
-
 #about h4{
     font-size: 13px;
     font-weight: bold;
@@ -87,29 +78,12 @@ font-weight: bold;
     margin-top: 5px;
 }
 
-#add_tag{
-    padding-bottom: 0;
-float: left;
-}
-
 .log_push{
     padding-bottom: 0;
 float: left;
 display: block;
 padding: 0px;
 margin: 21px;
-}
-
-
-#add_tag .text_field{
-    float: left;margin: 2px 10px 0 0 ;
-       margin: 2px 2px 0 0;
-    float: left;
-    background: url(../images/search_field.png) top left no-repeat;
-padding: 6px 9px;
-height: 18px;
-border: 0;
-font-size: 11px;
 }
 
 #seperate{

@@ -76,10 +76,10 @@
         
       {% endif %}
 
-      {% if current_video.tags.count %}
+      {% if current_video.tags.count or edit_video_form %}
         
         
-                 {% if edit_video_form %}<a href="#add_author" id="add_author" class="authors editable"><span>Add a Tag</span></a>{% endif %}
+                 {% if edit_video_form %}<a href="#add_tag" id="add_tag" class="tags editable"><span>Edit Tags</span></a>{% endif %}
 
         
        <div class="floatleft">        
@@ -124,13 +124,14 @@
   {% if current_video.feed %}<h3>From feed {{ current_video.feed }}</h3>{% endif %}
   <h3>Website URL {{ current_video.website_url|urlize }}</h3>
   {% endif %}
+  {% comment %}
       <form id="add_tag">
         <input type="text" class="text_field" />
         <input type="image" id="suggest_tag" src="/images/suggest.png" value="submit" />
 
         <a href="#" class="log_push">Login to add a tag</a>
       </form>
-
+{% endcomment %}
       <br class="clear" />
     </div>
 

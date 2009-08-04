@@ -12,6 +12,7 @@ class EditVideoForm(forms.Form):
     website_url = forms.URLField(required=False)
     video_id = forms.CharField(widget=forms.HiddenInput)
     thumbnail = forms.ImageField(required=False)
+    tags = forms.CharField(required=False)
     categories = forms.ModelMultipleChoiceField(queryset=models.Category.objects,
                                                 required=False)
     authors = forms.ModelMultipleChoiceField(queryset=models.Author.objects,
@@ -24,6 +25,8 @@ class EditVideoForm(forms.Form):
         self.initial['description'] = video.description
         self.initial['website_url'] = video.website_url
         self.initial['video_id'] = video.id
+        self.initial['tags'] = ', '.join(video.tags.values_list('name',
+                                                                flat=True))
         self.fields['categories'].queryset = models.Category.objects.filter(
             site=video.site)
         self.initial['categories'] = [category.pk for category in video.categories.all()]

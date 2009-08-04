@@ -1502,7 +1502,7 @@ padding-top: 0 !important;
 padding-bottom: 15px;
 }
 
-#add_cat, #add_author{
+#add_cat, #add_author, #add_tag {
 display: block;
 text-decoration: none;
 float: right;
@@ -1511,20 +1511,22 @@ padding: 0 0 10px 0px;
 margin-bottom: 10px;
 }
 
-#add_cat select, #add_author select{
+#add_cat select, #add_author select, #add_tag input{
 width: 200px;
-height: 160px;
 margin-right: 10px;
 border: 1px solid #ccc;
 float: left;
 }
 
+#add_cat select, #add_author select {
+    height: 160px;
+}
 
 #add_cat option, #add_author option{
 padding: 3px 7px;
 }
 
-#add_cat .save, #add_author .save{
+#add_cat .save, #add_author .save, #add_tag .save{
 float: left;
 padding: 5px;
 background: none;
@@ -1532,7 +1534,7 @@ border: 1px solid #ccc;
 margin: 0 3px 3px 3px;
 }
 
-#add_cat .cancel, #add_author .cancel{
+#add_cat .cancel, #add_author .cancel, #add_tag .cancel {
 float: left;
 padding: 5px;
 background: none;
@@ -1540,21 +1542,21 @@ border: 1px solid #ccc;
 margin: 0 3px 3px 3px;
 }
 
-#add_cat:hover .cancel, #add_author:hover .cancel, #add_cat:hover .save, #add_author:hover .save{
+#add_cat:hover .cancel, #add_author:hover .cancel, #add_cat:hover .save, #add_author:hover .save, #add_tag:hover .cancel, #add_tag:hover .save {
 background: none;
 }
 
-#add_cat .cancel:hover, #add_author .cancel:hover, #add_cat .save:hover, #add_author .save:hover{
+#add_cat .cancel:hover, #add_author .cancel:hover, #add_cat .save:hover, #add_author .save:hover, #add_tag .cancel:hover, #add_tag .save:hover {
 background: #efefef;
 }
 
 
-#add_cat span, #add_author span{
+#add_cat span, #add_author span, #add_tag span {
 padding-left: 14px;
     background: url(../images/add.png) left 2px no-repeat;
 }
 
-#add_cat:hover span, #add_author:hover span{
+#add_cat:hover span, #add_author:hover span, #add_tag:hover span {
     background: url(../images/add.png) left -17px no-repeat;
 }
 
@@ -1562,7 +1564,7 @@ padding-left: 14px;
 clear: left;
 }
 
-#tags #add_cat, #tags #add_author{
+#add_cat, #add_author, #add_tag {
 clear: right;
 }
 
