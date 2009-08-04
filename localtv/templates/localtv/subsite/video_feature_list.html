@@ -7,7 +7,7 @@
 <span class="date">{{ video.when|timesince }} ago</span>
 <div id="video_wrapper">
   {% if video.embed_code %}
-  {{ video.embed_code }}
+  {{ video.embed_code|safe }}
   {% else %}
   {% video video.file_url mime_type=video.file_url_mimetype autoplay=false %}
   {% endif %}
