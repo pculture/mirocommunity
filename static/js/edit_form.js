@@ -1,6 +1,5 @@
 function inline_edit_open() {
     obj = $(this);
-    console.log(this);
     if (obj.hasClass('open')) {
         return false;
     }
