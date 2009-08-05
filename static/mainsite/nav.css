@@ -1,0 +1,387 @@
+/*//////////////////////////////////////////////
+
+Nav
+
+//////////////////////////////////////////////*/
+
+
+ul#nav{
+margin-left: 0px;
+margin-bottom: 0;
+margin-right: 0;
+margin-top: 13px;
+float: left;
+width: 100%;
+padding: 0px 0 0 0px;
+background: url(/images/nav_back.gif);
+height: 33px;
+border-right:1px solid #ccc;
+_overflow: hidden !important;
+
+}
+
+ul#nav li{
+float: left;
+list-style: none;
+padding-left: 1px;
+margin: 1px 0;
+background: url(/images/nav_li.gif) no-repeat;
+}
+
+ul#nav li a{
+display: block;
+height: 23px;
+padding: 8px 0 0;
+text-transform: uppercase;
+text-decoration: none;
+font-weight: bold;
+font-size: 14px;
+text-align: center;
+line-height: 16px;
+color: #444;
+background: url(/images/nav_a.gif) no-repeat; 
+}
+
+ul#nav li a:hover{
+background: url(/images/nav_a_hov.gif);
+}
+
+
+
+span.bump{
+background: #fff url(/images/nav_cap_square.gif) top right no-repeat;
+height: 33px;
+width: 7px;
+margin: 0;
+position: relative;
+display: block;
+top: -25px;
+left: 235px;
+.left: 50px;
+z-index: 10000;
+}
+
+a:hover span.bump{
+background-position: -1px -33px;
+_background-position: -20px -33px;
+}
+
+
+
+
+
+.intro_link{
+width: 140px;
+}
+
+
+.features_link{
+width: 200px;
+}
+
+.faq_link{
+width: 65px;
+}
+
+.colleges_link{
+width: 240px;
+_width: 188px;
+}
+
+#nav li.blog_link{
+width: 107px;
+height: 32px;
+
+}
+
+#nav li.blog_link a{
+padding-left: 13px;
+_height: 35px;
+}
+
+/*//////////////////////////////////////////////
+
+Subnav
+
+//////////////////////////////////////////////*/
+
+
+ul#subnav{
+margin: 0;
+width: 700px;
+height: 35px;
+float:left;
+}
+
+ul#subnav li{
+float: left;
+list-style: none;
+padding: 0px;
+background: url(/images/subnav_back.gif);
+margin: 0;
+}
+
+ul#subnav li a{
+display: block;
+padding: 9px 14px 9px;
+text-decoration: none;
+color: #555;
+font-size: 13px;
+border-bottom: 1px solid #dedede;
+}
+
+ul#subnav li a:hover{
+border-bottom: 1px solid #eee;
+}
+
+ul#subnav li.left{
+padding-left: 5px;
+background: url(/images/subnav_left.gif) top left;
+}
+
+ul#subnav li.right{
+padding-right: 5px;
+background: url(/images/subnav_right.gif) top right;
+}
+
+
+/*
+
+
+#publish ul#subnav{
+padding-left: 19px;
+}
+
+
+
+*/
+
+#open-source ul#subnav{
+padding-left: 190px;
+width: 550px;
+}
+
+
+#download-miro ul#subnav{
+padding-left: 0px;
+width: 450px;
+}
+
+
+
+/*//////////////////////////////////////////////
+
+~ Active States
+
+//////////////////////////////////////////////*/
+
+/* ------------------------
+- Download 
+-------------------------*/
+
+#download-miro .download_link a{
+background: url(/images/nav_a_hov.gif);
+cursor: default;
+height: 24px;
+
+}
+
+
+.download-download .download-miro a{
+font-weight: bold;
+cursor: default;
+
+}
+
+.download-features .features a{
+font-weight: bold;
+cursor: default;
+}
+
+.download-screenshots .screenshots a{
+font-weight: bold;
+cursor: default;
+}
+
+/* ------------------------
+- Using Miro 
+-------------------------*/
+
+#using-miro .using-miro_link a{
+background: url(/images/nav_a_hov.gif);
+cursor: default;
+height: 24px;
+
+}
+
+#using-miro #subnav{
+width: 435px;
+padding-left: 134px;
+
+}
+
+
+
+
+
+.using-miro-overview .overview a{
+font-weight: bold;
+cursor: default;
+}
+
+.using-miro-help .help a{
+font-weight: bold;
+cursor: default;
+}
+
+.using-miro-faq .faq a{
+font-weight: bold;
+cursor: default;
+}
+
+/* ------------------------
+- Publish 
+-------------------------*/
+
+#publish .publish_link a{
+background: url(/images/nav_a_hov.gif);
+cursor: default;
+height: 24px;
+
+}
+
+#publish #subnav{
+width: 700px;
+padding-left: 0px;
+}
+
+.publish-overview .overview a{
+font-weight: bold;
+cursor: default;
+}
+
+.publish-troubleshooting .troubleshooting a{
+font-weight: bold;
+cursor: default;
+}
+
+.publish-makeinternettv .makeinternettv a{
+font-weight: bold;
+cursor: default;
+}
+
+.publish-miroguide .miroguide a{
+font-weight: bold;
+cursor: default;
+}
+
+body.social-media li.social-media a{
+font-weight: bold;
+cursor: default;
+}
+
+
+/* ------------------------
+- Open Source 
+-------------------------*/
+
+#open-source .open-source_link a{
+background: url(/images/nav_a_hov.gif);
+cursor: default;
+height: 24px;
+}
+
+
+.open-source-share .share a{
+font-weight: bold;
+cursor: default;
+}
+
+
+
+.open-source-volunteer .miro-volunteer a{
+font-weight: bold;
+cursor: default;
+
+}
+
+.open-source-development .development a{
+font-weight: bold;
+cursor: default;
+}
+
+.open-source-chat .chat a{
+font-weight: bold;
+cursor: default;
+}
+
+.open-source-team-miro .team-miro a{
+font-weight: bold;
+cursor: default;
+}
+
+.open-source-subscribe .subscribe a{
+font-weight: bold;
+cursor: default;
+}
+
+.co-branded .co-branded a{
+font-weight: bold;
+cursor: default;
+}
+
+/* ------------------------
+- Blog
+-------------------------*/
+
+#blog #intro{
+height: 70px;
+padding-bottom: 0px;
+}
+
+
+#blog .blog_link a{
+background: url(/images/nav_a_hov.gif);
+cursor: default;
+}
+
+
+#blog .blog_link span.bump{
+background-position: -1px -33px;
+_background-position: -20px -33px;
+}
+
+
+.navigation{
+
+margin-top: 50px;
+
+}
+
+
+.alignleft{
+float: left;
+}
+
+.alignright{
+float: right;
+}
+
+
+#blog h2{
+padding-top: 20px;
+clear: both;
+margin: 0;
+}
+
+.post small{
+display: block;
+margin: 5px 0 10px;
+}
+
+.post p{
+line-height: 1.5em !important;
+}
+
+
+
