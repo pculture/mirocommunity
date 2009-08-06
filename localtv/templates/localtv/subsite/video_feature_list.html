@@ -9,7 +9,7 @@
   {% if video.embed_code %}
   {{ video.embed_code|safe }}
   {% else %}
-  {% video video.file_url mime_type=video.file_url_mimetype autoplay=False %}
+  {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
   {% endif %}
 </div>
 <br />
