@@ -11,7 +11,7 @@
   {% if current_video.embed_code %}
   {{ current_video.embed_code|safe }}
   {% else %}
-  {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=false %}
+  {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=False %}
   {% endif %}
 </div>        
 
