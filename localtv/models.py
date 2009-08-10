@@ -87,8 +87,12 @@ class SiteLocation(models.Model):
      - about_html: HTML to display on the subsite's about page
      - tagline: displays below the subsite's title on most user-facing pages
      - css: The intention here is to allow subsites to paste in their own CSS
-       here from the admin.  Not used presently, though eventually it should be.
-     - frontpage_style: The style of the frontpage.  Either one of list or (???)
+       here from the admin.  Not used presently, though eventually it should
+       be.
+     - frontpage_style: The style of the frontpage.  Either one of:
+        * list
+        * scrolling
+        * categorized
      - display_submit_button: whether or not we should allow users to see that
        they can submit videos or not (doesn't affect whether or not they
        actually can though)
@@ -171,7 +175,8 @@ class Feed(models.Model):
       - user: a user that submitted this feed, if any
       - auto_categories: categories that are automatically applied to videos on
         import
-      - auto_authors: authors that are automatically applied to videos on import
+      - auto_authors: authors that are automatically applied to videos on
+        import
     """
     feed_url = models.URLField(verify_exists=False)
     site = models.ForeignKey(Site)
@@ -544,8 +549,8 @@ class Video(models.Model):
         Do a HEAD request on self.file_url to find information about
         self.file_url_length and self.file_url_mimetype
 
-        Note that while this method fills in those attributes, it does *NOT* run
-        self.save() ... so be sure to do so after calling this method!
+        Note that while this method fills in those attributes, it does *NOT*
+        run self.save() ... so be sure to do so after calling this method!
         """
         if not self.file_url:
             return
@@ -637,8 +642,8 @@ class Video(models.Model):
 
     def get_original_thumb_storage_path(self):
         """
-        Return the path for the original thumbnail, relative to the default file
-        storage system.
+        Return the path for the original thumbnail, relative to the default
+        file storage system.
         """
         return 'localtv/video_thumbs/%s/orig.%s' % (
             self.id, self.thumbnail_extension)
