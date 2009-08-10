@@ -240,7 +240,8 @@ class Feed(models.Model):
                 try:
                     scraped_data = vidscraper.auto_scrape(
                         link,
-                        fields=['file_url', 'embed', 'flash_enclosure_url'])
+                        fields=['file_url', 'embed', 'flash_enclosure_url',
+                                'publish_date'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
