@@ -23,6 +23,8 @@
       <td><strong>{{ field.label }}</strong</td>
       {% endif %}
       {% endfor %}
+      <td></td>
+      <td><strong>Source</strong></td>
       <td>
         <input type="submit" value="Save">
       </td>
@@ -42,6 +44,15 @@
         {{ field }}
       </td>
       {% endfor %}
+      <td>
+        {% if form.instance.feed %}
+        Feed: {{ form.instance.feed }}
+        {% else %}
+        {% if form.instance.search %}
+        Search: {{ form.instance.search }}
+        {% endif %}
+        {% endif %}
+      </td>
       <td><a href="{{ form.instance.get_absolute_url }}">link</a></td>
     </tr>
     {% endfor %}
