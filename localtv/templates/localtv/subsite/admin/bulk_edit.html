@@ -32,6 +32,7 @@
       {% for field in form %}
       <td>{{ field }}</td>
       {% endfor %}
+      <td><a href="{{ form.instance.get_absolute_url }}">link</a></td>
     </tr>
     {% endfor %}
   </table>
