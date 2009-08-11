@@ -30,11 +30,27 @@
     {% endif %}
     <tr>
       {% for field in form %}
-      <td>{{ field }}</td>
+      <td>
+        {% ifequal field.name "description" %}
+        <div>click to edit</div>
+        {% else %}
+        {% ifequal field.name "embed_code" %}
+        <div>click to edit</div>
+        {% else %}
+        {% endifequal %}
+        {% endifequal %}
+        {{ field }}
+      </td>
       {% endfor %}
       <td><a href="{{ form.instance.get_absolute_url }}">link</a></td>
     </tr>
     {% endfor %}
   </table>
 </form>
+<script type="text/javascript">
+$("td div").click(
+    function() {
+        $(this).hide().next().show();
+    });
+</script>
 {% endblock content %}

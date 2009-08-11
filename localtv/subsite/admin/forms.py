@@ -59,7 +59,9 @@ class EditVideoForm(forms.ModelForm):
 VideoFormSet = modelformset_factory(models.Video,
                                     form=EditVideoForm,
                                     fields=('name', 'authors', 'categories',
-                                            'tags', 'file_url', 'thumbnail'),
+                                            'tags', 'file_url', 'thumbnail',
+                                            'description', 'embed_code',
+                                            'when_submitted'),
                                     extra=0)
 
     
