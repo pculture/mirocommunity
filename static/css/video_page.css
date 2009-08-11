@@ -352,6 +352,11 @@ width: 484px !important;
     float: none;
 }
 
+#category_sidebar img {
+    max-width: 100%;
+    padding-bottom: 10px;
+}
+
 #category {
     width: 70%;
     float: left;
