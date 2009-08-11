@@ -1,3 +1,4 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
@@ -12,11 +13,15 @@ def bulk_edit(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         site=sitelocation.site).order_by('name')
 
-    if request.method == 'POST':
-        return
+    formset = forms.VideoFormSet(queryset=videos)
 
-    else:
-        formset = forms.VideoFormSet(queryset=videos)
-        return render_to_response('localtv/subsite/admin/bulk_edit.html',
-                                  {'formset': formset},
-                                  context_instance=RequestContext(request))
+    if request.method == 'POST':
+        formset = forms.VideoFormSet(request.POST, request.FILES,
+                                     queryset=videos)
+        if formset.is_valid():
+            formset.save()
+            return HttpResponseRedirect(request.path)
+
+    return render_to_response('localtv/subsite/admin/bulk_edit.html',
+                              {'formset': formset},
+                              context_instance=RequestContext(request))

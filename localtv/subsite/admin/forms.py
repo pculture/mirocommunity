@@ -7,6 +7,9 @@ from localtv import models
 
 class TagWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
+        if isinstance(value, basestring):
+            return forms.TextInput.render(self, name, value, attrs)
+        
         return forms.TextInput.render(
             self, name,
             ', '.join(models.Tag.objects.filter(pk__in=value).values_list(
@@ -30,7 +33,7 @@ class EditVideoForm(forms.ModelForm):
     """
     """
     tags = TagField()
-    thumbnail = forms.ImageField()
+    thumbnail = forms.ImageField(required=False)
     class Meta:
         model = models.Video
         fields = ('name', 'description', 'website_url', 'thumbnail', 'tags',
