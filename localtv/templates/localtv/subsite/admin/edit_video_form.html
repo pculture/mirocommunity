@@ -1,6 +1,7 @@
 <div id="edit_video_wrapper" class="rounded">
   <form method="POST" action="{% url localtv_admin_edit_video %}" enctype="multipart/form-data">
     {{ edit_video_form }}
+    <input type="hidden" name="video_id" value="{{ current_video.pk }}">
     <input type="hidden" name="redirect" value="{{ current_video.get_absolute_url }}">
   </form>
   {% ifnotequal current_video.status VIDEO_STATUS_REJECTED %}
@@ -13,6 +14,6 @@
   {% else %}
   <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Feature this video</span></a></p>
   {% endif %}
-  <p class="med_button"><span class="editable">Upload a new thumbnail</span></p>
+  <p class="med_button"><span class="thumbnail editable">Upload a new thumbnail</span></p>
   <br clear="all"/>
 </div>

@@ -1,7 +1,8 @@
 function inline_edit_open() {
     obj = $(this);
     if (obj.hasClass('open')) {
-        return false;
+        is_file = obj.children('input[type=file]');
+        return is_file; // file inputs need return true
     }
     obj.addClass('open');
     this.oldContent = obj.html();

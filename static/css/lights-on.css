@@ -83,7 +83,7 @@ a {
     _overflow: hidden;
 }
 
-.thumbnail {
+a.thumbnail {
     float: left;
     margin-right: 16px;
     background: url(../images/default_vid.gif) left top no-repeat;
@@ -620,7 +620,7 @@ n
 
 }
 
-.med_button span {
+.med_button > span {
     line-height: 25px;
     display: block;
     padding: 0 8px 0 14px ;
@@ -643,7 +643,7 @@ n
     color: #aaa;
 }
 
-.med_button:active span {
+.med_button:active > span {
     background-position: left -63px;
 }
 
@@ -1348,14 +1348,14 @@ padding: 0 5px;
 line-height: 1.7em;
 }
 
-#edit_video_wrapper .editable.thumbnail{
-background: none;
-height: inherit;
-float: left;
-width: 300px;
-padding: 6px 20px;
-text-decoration: underline;
-}
+/* #edit_video_wrapper .editable.thumbnail{ */
+/* background: none; */
+/* height: inherit; */
+/* float: left; */
+/* width: 300px; */
+/* padding: 6px 20px; */
+/* text-decoration: underline; */
+/* } */
 
 #admin #video_wrapper object, #admin #video_wrapper embed{
 border: 1px solid;

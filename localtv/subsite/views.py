@@ -56,7 +56,7 @@ def view_video(request, video_id, sitelocation=None):
 
     edit_video_form = None
     if sitelocation.user_is_admin(request.user):
-        edit_video_form = admin_forms.EditVideoForm.create_from_video(video)
+        edit_video_form = admin_forms.EditVideoForm(instance=video)
 
     models.Watch.add(request, video)
 
