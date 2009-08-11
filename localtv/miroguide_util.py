@@ -55,15 +55,15 @@ def get_thumbnail_url(entry):
     """Get the URL for a thumbnail from a feedparser entry."""
     # Try the video enclosure
     def _get(d):
-        if 'thumbnail' in d:
+        if 'thumbnail' in d and d.thumbnail:
             if hasattr(d['thumbnail'], 'get') and  d['thumbnail'].get(
                 'url') is not None:
                 return to_utf8(d['thumbnail']['url'])
             else:
                 return to_utf8(d['thumbnail'])
-        if 'media_thumbnail' in d:
+        if 'media_thumbnail' in d and d.media_thumbnail:
             return to_utf8(d['media_thumbnail'])
-        if 'blip_thumbnail_src' in d:
+        if 'blip_thumbnail_src' in d and d.blip_thumbnail_src:
             return 'http://a.images.blip.tv/' + to_utf8(
                 d['blip_thumbnail_src'])
         raise KeyError
