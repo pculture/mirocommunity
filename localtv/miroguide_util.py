@@ -61,8 +61,11 @@ def get_thumbnail_url(entry):
                 return to_utf8(d['thumbnail']['url'])
             else:
                 return to_utf8(d['thumbnail'])
-        if 'media:thumbnail' in d:
-            return to_utf8(d['media:thumbnail'])
+        if 'media_thumbnail' in d:
+            return to_utf8(d['media_thumbnail'])
+        if 'blip_thumbnail_src' in d:
+            return 'http://a.images.blip.tv/' + to_utf8(
+                d['blip_thumbnail_src'])
         raise KeyError
     video_enclosure = get_first_video_enclosure(entry)
     if video_enclosure is not None:
