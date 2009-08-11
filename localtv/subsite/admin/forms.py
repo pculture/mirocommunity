@@ -56,24 +56,10 @@ class EditVideoForm(forms.ModelForm):
                 self.instance.save_thumbnail_from_file(thumbnail)
         return self.cleaned_data
 
-class BaseVideoFormSet(BaseModelFormSet):
-
-    def __init__(self, *args, **kwargs):
-        BaseModelFormSet.__init__(self, *args, **kwargs)
-        for form in self.forms:
-            form.fields['categories'].queryset = models.Category.objects.filter(
-                site=form.instance.site)
-            form.fields['authors'].queryset = models.Author.objects.filter(
-                site=form.instance.site)
-
-
 VideoFormSet = modelformset_factory(models.Video,
                                     form=EditVideoForm,
-                                    #formset=BaseVideoFormSet,
-                                    fields=('name', 'when_published',
-                                            'authors', 'categories', 'tags',
-                                            'file_url', 'embed_code',
-                                            'description', 'thumbnail'),
+                                    fields=('name', 'authors', 'categories',
+                                            'tags', 'file_url', 'thumbnail'),
                                     extra=0)
 
     
