@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.models import modelformset_factory
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
@@ -176,3 +177,11 @@ class AddUserForm(forms.Form):
             return users
         else:
             raise forms.ValidationError('Could not find a matching user')
+
+
+VideoFormSet = modelformset_factory(models.Video,
+                                    fields=('name', 'when_published',
+                                            'authors', 'categories', 'tags',
+                                            'file_url', 'embed_code',
+                                            'description'),
+                                    extra=0)

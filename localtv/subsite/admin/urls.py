@@ -69,6 +69,11 @@ urlpatterns += patterns(
      {}, 'localtv_admin_authors_delete'))
 
 urlpatterns += patterns(
+    'localtv.subsite.admin.bulk_edit_views',
+    (r'^bulk_edit/$', 'bulk_edit', {},
+     'localtv_admin_bulk_edit'))
+
+urlpatterns += patterns(
     '',
     (r'^edit_attributes/',
      include('localtv.subsite.admin.edit_attributes.urls')))

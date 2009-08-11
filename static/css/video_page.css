@@ -1,3 +1,7 @@
+strong {
+    font-weight: bold;
+}
+
 p.description{
     clear: both;
     line-height: 18px;

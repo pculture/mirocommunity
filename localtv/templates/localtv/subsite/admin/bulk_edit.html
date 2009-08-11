@@ -1,0 +1,39 @@
+{% extends "localtv/subsite/admin/base.html" %}
+
+{% block body_class %}bulkedit{% endblock body_class %}
+
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
+
+{% block content %}
+  <div id="above_admin_table">
+    {% include "localtv/subsite/admin/header.html" %}
+  </div>
+  
+<form method="POST" action="">
+  {{ formset.management_form }}
+  <table>
+    {% for form in formset.forms %}
+    {% if forloop.first or forloop.counter|divisibleby:"10" %}
+    <tr>
+      {% for field in formset.forms.0 %}
+      {% if not field.is_hidden %}
+      <td><strong>{{ field.label }}</strong</td>
+      {% endif %}
+      {% endfor %}
+      <td>
+        <input type="submit" value="Save">
+      </td>
+    </tr>
+    {% endif %}
+    <tr>
+      {% for field in form %}
+      <td>{{ field }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+</form>
+{% endblock content %}
