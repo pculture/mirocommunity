@@ -45,7 +45,7 @@
     {% for form in formset.forms %}
     {% if forloop.first or forloop.counter|divisibleby:"10" %}
     <tr>
-      <td></td>
+      <td><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></td>
       {% for field in formset.forms.0 %}
       {% if not field.is_hidden %}
       {% ifnotequal field.name "bulk" %}
@@ -63,6 +63,7 @@
     <tr>
       <td>
         {{ form.bulk }}
+        {{ form.errors }}
       </td>
       {% for field in form %}
       {% ifnotequal field.name "bulk" %}
@@ -98,7 +99,7 @@ $("td div").click(
     function() {
         $(this).hide().next().show();
     });
-$("input[name$='bulk']").click(
+$("input[name$='bulk']").change(
     function() {
         selected_count = $("input[name$='bulk']:checked").length;
         if (selected_count) {
