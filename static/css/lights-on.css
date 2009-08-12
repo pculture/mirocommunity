@@ -412,10 +412,10 @@ body.incomingfeeds a.watched span{
 }
 
 #logo {
-    width: 60px;
+    width: inherit;
     display: block;
     float: left;
-    height: 60px;
+    max-height: 90px;
     margin: 25px 15px 20px 0;
 }
 
@@ -1223,6 +1223,11 @@ margin-right: 10px;
 }
 
 
+.admin_feed_actions, .auto_properties_edit{
+padding-top: 10px;
+float: right;
+}
+
 
 .admin_feed{
 border-bottom: 1px solid #ddd;
@@ -1231,10 +1236,34 @@ padding: 10px 0;
 clear: both;
 }
 
+
+
 .admin_feed li{
 border: 1px solid #ccc;
-padding: 10px;
+padding: 20px;
 background: #eee;
+float: left;
+width: 100%;
+}
+
+.admin_feed li .feed_link{
+margin: 5px;
+display: block;
+float: left;
+font-size: 11px;
+clear: left;
+}
+
+div.user{
+font-size: 11px;
+clear: left;
+float: left;
+}
+
+div.source{
+font-size: 11px;
+float: left;
+clear: left;
 }
 
 
@@ -1742,8 +1771,10 @@ clear: both !important;
 ul#comments li{
 border: 1px solid #eee;
 padding: 20px;
-clear: both;
-width: 600px !important;
+display: block !important;
+clear: both !important;
+width: 470px !important;
+margin-bottom: 20px;
 }
 
 #admin ul.pagetabs{
@@ -1795,6 +1826,36 @@ float: right;
 font-size: 12px;
 padding: 7px;
 }
+
+.only_show{
+clear: both;
+padding: 16px 0 3px 8px;
+}
+
+
+.only_show h3, .only_show ul, .only_show li{
+float: left;
+font-size: 11px !important;
+color: #666;
+}
+
+.only_show a{
+padding: 0 0 0 12px;
+font-weight: bold;
+color: #666;
+text-decoration: underline;
+}
+
+.auto_approve, .disable_auto_approve{
+margin-right: 10px;
+margin-left: 47px;
+}
+
+.disable_auto_approve{
+margin-right: 10px;
+margin-left: 7px;
+}
+
 
 
 
