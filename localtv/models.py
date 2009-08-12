@@ -44,8 +44,11 @@ VIDEO_THUMB_SIZES = [
     (142, 104)]
 
 VIDEO_USER_REGEXES = (
-    r'http://(www.)?youtube.com/rss/user/.+/videos.rss',
-    r'http://gdata.youtube.com/feeds/base/videos/-/.+')
+    r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss',
+    r'http://gdata\.youtube\.com/feeds/base/videos/-/.+',
+    r'http://.+\.blip\.tv/\?skin=rss',
+    r'http://.+\.blip\.tv/rss',
+    r'http://www\.vimeo\.com/user:\d+/clips/rss')
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
