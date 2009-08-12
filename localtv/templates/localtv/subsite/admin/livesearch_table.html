@@ -7,6 +7,10 @@
 
 {% block above_table %}
   {{ block.super }}
+  <form method="POST" action="{% url localtv_admin_feed_add %}">
+    <input name="feed_url" />
+    <input type="submit" value="Add a Feed">
+  </form>
   <form method="GET" action="{% url localtv_admin_livesearch_page %}">
     <input id="livesearch_query_input" class="left"
            name="query"

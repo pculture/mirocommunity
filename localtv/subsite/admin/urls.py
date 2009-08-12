@@ -23,7 +23,7 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     'localtv.subsite.admin.feed_views',
     (r'^feeds/$', 'feeds_page',
-     {}, 'localtv_admin_feed_page'),
+     {}, 'localtv_admin_source_page'),
     (r'^feeds/add_feed/$', 'add_feed',
      {}, 'localtv_admin_feed_add'),
     (r'^feeds/stop_watching/$', 'feed_stop_watching',
