@@ -1,6 +1,7 @@
 import cgi
 import datetime
 import httplib
+import re
 import urllib
 import urllib2
 import urlparse
@@ -42,6 +43,9 @@ VIDEO_THUMB_SIZES = [
     (500, 281), # featured on frontpage
     (142, 104)]
 
+VIDEO_USER_REGEXES = (
+    r'http://(www.)?youtube.com/rss/user/.+/videos.rss',
+    r'http://gdata.youtube.com/feeds/base/videos/-/.+')
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -199,6 +203,12 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def is_user(self):
+        for regexp in VIDEO_USER_REGEXES:
+            if re.search(regexp, self.feed_url, re.I):
+                return True
+        return False
 
     def update_items(self, verbose=False):
         """

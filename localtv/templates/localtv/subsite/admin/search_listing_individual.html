@@ -1,9 +1,16 @@
 {% load i18n %}
-<div class="admin_search">
-  <a class="search_link" href="{% url localtv_admin_livesearch_page %}?query={{ search.query_string|urlencode }}">{{ search.query_string }}</a>
-  <span class="admin_feed_actions">
-    <a class="remove"
-       href="{% url localtv_admin_livesearch_remove %}?search_id={{ search.id }}">
-      ({% trans "Remove" %})</a>
-  </span>
-</div>
+<ul class="admin_feed">
+  <li class="rounded">
+    
+    <span class="admin_feed_actions">
+      <a class="stop_watching med_button"
+         href="{% url localtv_admin_livesearch_remove %}?search_id={{ feed.id }}"><span>
+      {% trans "Remove Source" %}</span></a>
+    </span>
+
+    <div class="display_data">{{ feed.query_string }}</div>
+    <div class="user">SEARCH</div>
+    {% url localtv_admin_livesearch_page as livesearch_url %}
+    <a class="feed_link" href="{{ livesearch_url }}?query={{ feed.query_string|urlencode }}">{{ sitelocation.site.domain }}{{ livesearch_url }}?query={{ feed.query_string|urlencode }}</a>
+  </li>
+</ul>

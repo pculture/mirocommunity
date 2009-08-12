@@ -41,9 +41,8 @@
   
   {% editable_widget feed "name" %}
 
-  <div class="user">USER</div>
-  <a class="feed_link" href="{{ feed.feed_url }}">SOURCE</a>
-  <div class="source">{{ feed.feed_url }}</div>
+  <div class="user">{% if not feed.is_user %}FEED{% else %}USER{% endif %}</div>
+  <a class="feed_link" href="{{ feed.feed_url }}">{{ feed.feed_url }}</a>
   
   </li>
 </ul>

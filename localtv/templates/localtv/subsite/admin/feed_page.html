@@ -19,13 +19,10 @@
   {% include "localtv/subsite/admin/header.html" %}
 
   <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
-    <form method="POST" action="{% url localtv_admin_feed_add %}">
+    <form method="GET" action="">
       <strong>Search Your Searches</strong>
-      {% if page_obj %}
-        <input type="hidden" name="page" value="{{ page_obj.number }}" />
-      {% endif %}
       <input id="livesearch_feed_url"
-             name="feed_url"/>
+             name="q" value="{{ search_string }}"/>
       <button type="submit" class="med_button"><span>Search</span></button>
     </form>
   </div>
@@ -37,9 +34,9 @@
   <div class="only_show">
 	<h3>Only Show:</h3>
 	<ul>
-		<li><a href="#">Video Site Users</a></li>	
-		<li><a href="#">Video Site Searches</a></li>
-		<li><a href="#">RSS Feeds</a></li>
+		<li><a href="?filter=user">Video Site Users</a></li>	
+		<li><a href="?filter=search">Video Site Searches</a></li>
+		<li><a href="?filter=feed">RSS Feeds</a></li>
 	</ul>
 	</div>
 	

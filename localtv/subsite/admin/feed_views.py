@@ -1,6 +1,7 @@
 import datetime
 
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.forms.fields import url_re
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
@@ -17,17 +18,67 @@ from localtv import models
 ## Feed administration
 ## -------------------
 
+class MockQueryset(object):
+
+    def __init__(self, objects):
+        self.objects = objects
+
+    def _clone(self):
+        return self
+
+    def __len__(self):
+        return len(self.objects)
+
+    def __iter__(self):
+        return iter(self.objects)
+
+    def __getitem__(self, k):
+        return self.objects[k]
+
 @require_site_admin
 @get_sitelocation
 def feeds_page(request, sitelocation=None):
+    search_string = request.GET.get('q', '')
+
     feeds = models.Feed.objects.filter(
         site=sitelocation.site,
         status=models.FEED_STATUS_ACTIVE)
+    searches = models.SavedSearch.objects.filter(
+        site=sitelocation.site)
+
+    if search_string:
+        feeds = feeds.filter(Q(feed_url__icontains=search_string) |
+                             Q(name__icontains=search_string) |
+                             Q(webpage__icontains=search_string) |
+                             Q(description__icontains=search_string))
+        searches = searches.filter(query_string__icontains=search_string)
+
+    source_filter = request.GET.get('filter')
+    if source_filter == 'feed':
+        queryset = feeds
+    elif source_filter == 'search':
+        queryset = searches
+    elif source_filter == 'user':
+        # XXX make this actual filter the URLs
+        q = Q(feed_url__iregex=models.VIDEO_USER_REGEXES[0])
+        for regexp in models.VIDEO_USER_REGEXES[1:]:
+            q = q | Q(feed_url__iregex=regexp)
+        queryset = feeds.filter(q)
+    else:
+        feeds_list = [(feed.name.lower(), feed)
+                      for feed in feeds]
+        searches_list = [(search.query_string.lower(), search)
+                         for search in searches]
+        queryset = MockQueryset(
+            [l[1] for l in sorted(feeds_list + searches_list)])
+
     return object_list(
-        request=request, queryset=feeds,
+        request=request, queryset=queryset,
         paginate_by=15,
         template_name='localtv/subsite/admin/feed_page.html',
-        allow_empty=True, template_object_name='feed')
+        allow_empty=True, template_object_name='feed',
+        extra_context = {'search_string': search_string,
+                         'source_filter': source_filter})
 
 
 @require_site_admin
