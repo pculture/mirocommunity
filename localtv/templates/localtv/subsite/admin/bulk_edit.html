@@ -116,11 +116,9 @@ $("#massedit input[type=checkbox]").click(
     function() {
         if (this.checked) {
             checked = $("input[name$='bulk']:checked:eq(0)");
-            console.log(checked);
             selector = "[name$='" + this.name + "']:eq(0)";
             input = checked.parent().parent().find(
                 "input"+selector + ', textarea'+selector + ', select'+selector);
-            console.log(input);
             $(this).next().after(input.clone());
         } else {
             $(this).next().next().remove();
