@@ -56,8 +56,15 @@ class EditVideoForm(forms.ModelForm):
                 self.instance.save_thumbnail_from_file(thumbnail)
         return self.cleaned_data
 
+
+class BaseVideoFormSet(BaseModelFormSet):
+    def add_fields(self, form, index):
+        BaseModelFormSet.add_fields(self, form, index)
+        form.fields['bulk'] = forms.BooleanField()
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=EditVideoForm,
+                                    formset=BaseVideoFormSet,
                                     fields=('name', 'authors', 'categories',
                                             'tags', 'file_url', 'thumbnail',
                                             'description', 'embed_code',

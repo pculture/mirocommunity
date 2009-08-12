@@ -498,3 +498,11 @@ body.bulkedit td textarea {
 body.bulkedit td div{
     cursor: pointer;
 }
+
+#massedit {
+    display: none;
+}
+
+#massedit button {
+    display: none;
+}

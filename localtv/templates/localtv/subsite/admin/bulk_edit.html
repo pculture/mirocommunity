@@ -11,16 +11,46 @@
   <div id="above_admin_table">
     {% include "localtv/subsite/admin/header.html" %}
   </div>
-  
+
+<div id="massedit">
+  <h2>Batch Edit Mode</h2>
+  <div>
+    <span id="selected_count"></span> selected.  Fields you choose to edit will replace current field contents for these videos. Fields you do not edit will not be affected.
+  </div>
+  <div>
+    <input type="checkbox" name="name" />
+    <span>Title</span>
+  </div>
+  <div>
+    <input type="checkbox" name="categories" />
+    <span>Categories</span>
+  </div>
+  <div>
+    <input type="checkbox" name="authors" />
+    <span>Authors</span>
+  </div>
+  <div>
+    <input type="checkbox" name="tags" />
+    <span>Tags</span>
+  </div>
+  <div>
+    <input type="checkbox" name="description" />
+    <span>Description</span>
+  </div>
+  <button>Save multiple edits</button>
+</div>
 <form method="POST" action="">
   {{ formset.management_form }}
   <table>
     {% for form in formset.forms %}
     {% if forloop.first or forloop.counter|divisibleby:"10" %}
     <tr>
+      <td></td>
       {% for field in formset.forms.0 %}
       {% if not field.is_hidden %}
+      {% ifnotequal field.name "bulk" %}
       <td><strong>{{ field.label }}</strong</td>
+      {% endifnotequal %}
       {% endif %}
       {% endfor %}
       <td></td>
@@ -31,7 +61,11 @@
     </tr>
     {% endif %}
     <tr>
+      <td>
+        {{ form.bulk }}
+      </td>
       {% for field in form %}
+      {% ifnotequal field.name "bulk" %}
       <td>
         {% ifequal field.name "description" %}
         <div>click to edit</div>
@@ -43,6 +77,7 @@
         {% endifequal %}
         {{ field }}
       </td>
+      {% endifnotequal %}
       {% endfor %}
       <td>
         {% if form.instance.feed %}
@@ -62,6 +97,53 @@
 $("td div").click(
     function() {
         $(this).hide().next().show();
+    });
+$("input[name$='bulk']").click(
+    function() {
+        selected_count = $("input[name$='bulk']:checked").length;
+        if (selected_count) {
+            if (selected_count > 1) {
+                $("#selected_count").text(selected_count + ' videos');
+            } else {
+                $("#selected_count").text(selected_count + ' video');
+            }
+            $("#massedit").show();
+        } else {
+            $("#massedit").hide();
+        }
+    });
+$("#massedit input[type=checkbox]").click(
+    function() {
+        if (this.checked) {
+            checked = $("input[name$='bulk']:checked:eq(0)");
+            console.log(checked);
+            selector = "[name$='" + this.name + "']:eq(0)";
+            input = checked.parent().parent().find(
+                "input"+selector + ', textarea'+selector + ', select'+selector);
+            console.log(input);
+            $(this).next().after(input.clone());
+        } else {
+            $(this).next().next().remove();
+        }
+        if ($("#massedit input[type=checkbox]:checked").length) {
+            $("#massedit button").show();
+        } else {
+            $("#massedit button").hide();
+        }
+    });
+$("#massedit button").click(
+    function() {
+        $("input[name$='bulk']:checked").each(function() {
+            row = $(this).parent().parent();
+            $("#massedit input[type=checkbox]:checked").each(function() {
+                mass_input = $(this).next().next();
+                selector = "[name$='" + this.name + "']:eq(0)";
+                input = row.find(
+                    "input"+selector + ', textarea'+selector + ', select'+selector);
+                input.val(mass_input.val());
+            });
+        });
+        $('form').submit();
     });
 </script>
 {% endblock content %}
