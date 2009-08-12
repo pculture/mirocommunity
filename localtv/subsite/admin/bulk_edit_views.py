@@ -1,3 +1,4 @@
+from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
@@ -19,6 +20,11 @@ def bulk_edit(request, sitelocation=None):
         formset = forms.VideoFormSet(request.POST, request.FILES,
                                      queryset=videos)
         if formset.is_valid():
+            for form in list(formset.deleted_forms):
+                form.cleaned_data[DELETION_FIELD_NAME] = False
+                form.instance.status = models.VIDEO_STATUS_REJECTED
+                form.instance.save()
+            formset._deleted_forms = []
             formset.save()
             return HttpResponseRedirect(request.path)
 

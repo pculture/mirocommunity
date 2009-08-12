@@ -60,7 +60,7 @@ class EditVideoForm(forms.ModelForm):
 class BaseVideoFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         BaseModelFormSet.add_fields(self, form, index)
-        form.fields['bulk'] = forms.BooleanField()
+        form.fields['bulk'] = forms.BooleanField(required=False)
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=EditVideoForm,
@@ -69,6 +69,7 @@ VideoFormSet = modelformset_factory(models.Video,
                                             'tags', 'file_url', 'thumbnail',
                                             'description', 'embed_code',
                                             'when_submitted'),
+                                    can_delete=True,
                                     extra=0)
 
     

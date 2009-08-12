@@ -509,7 +509,7 @@ class Video(models.Model):
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField(Author, blank=True)
