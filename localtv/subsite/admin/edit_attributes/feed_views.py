@@ -47,13 +47,15 @@ def edit_auto_categories(request, id, sitelocation=None):
         'localtv/subsite/display_templates/feed_auto_categories.html')
 
     if edit_auto_categories_form.is_valid():
-        feed.auto_categories.clear()
-        for category in edit_auto_categories_form.cleaned_data.get(
-                'auto_categories'):
-            feed.auto_categories.add(category)
-
-        feed.auto_categories = edit_auto_categories_form.cleaned_data.get(
+        old_categories = list(feed.auto_categories.all())
+        new_categories = edit_auto_categories_form.cleaned_data.get(
             'auto_categories')
+        for video in feed.video_set.all():
+            if list(video.categories.all()) == old_categories:
+                video.categories = new_categories
+                video.save()
+
+        feed.auto_categories = new_categories
         feed.save()
 
         return HttpResponse(
@@ -83,13 +85,15 @@ def edit_auto_authors(request, id, sitelocation=None):
         'localtv/subsite/display_templates/feed_auto_authors.html')
 
     if edit_auto_authors_form.is_valid():
-        feed.auto_authors.clear()
-        for author in edit_auto_authors_form.cleaned_data.get(
-                'auto_authors'):
-            feed.auto_authors.add(author)
-
-        feed.auto_authors = edit_auto_authors_form.cleaned_data.get(
+        old_authors = list(feed.authors.all())
+        new_authors = edit_auto_authors_form.cleaned_data.get(
             'auto_authors')
+        for video in feed.video_set.all():
+            if list(video.authors.all()) == old_authors:
+                video.authors = new_authors
+                video.save()
+
+        feed.auto_authors = new_authors
         feed.save()
 
         return HttpResponse(
