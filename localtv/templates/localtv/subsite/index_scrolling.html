@@ -48,7 +48,7 @@
     {% for video in featured_videos|slice:"3:8" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
-                       	<a href="#" class="med_button clear"><span>More</span></a>
+                       	<a href="{% url localtv_subsite_list_featured %}" class="med_button clear"><span>More</span></a>
 
   </div>
 
@@ -66,7 +66,7 @@
     {% for video in new_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
-                       	<a href="#" class="med_button clear"><span>More</span></a>
+                       	<a href="{% url localtv_subsite_list_new %}" class="med_button clear"><span>More</span></a>
 
   </div>
 
@@ -83,7 +83,7 @@
     {% for video in popular_videos|slice:":5" %}
       {% include "localtv/subsite/video_listing_individual.html" %}
     {% endfor %}
-                   	<a href="#" class="med_button clear"><span>More</span></a>
+                   	<a href="{% url localtv_subsite_list_popular %}" class="med_button clear"><span>More</span></a>
 
   </div>
 {% endblock content %}
