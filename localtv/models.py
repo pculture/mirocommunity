@@ -201,8 +201,7 @@ class Feed(models.Model):
 
     class Meta:
         unique_together = (
-            ('feed_url', 'site'),
-            ('name', 'site'))
+            ('feed_url', 'site'))
 
     def __unicode__(self):
         return self.name
