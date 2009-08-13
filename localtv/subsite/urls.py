@@ -16,6 +16,9 @@ urlpatterns = patterns(
 
 urlpatterns += patterns(
     '',
+    (r'^accounts/logout/$', 'django.contrib.auth.views.logout', {
+            'next_page': '/'}),
+    (r'^accounts/', include('django.contrib.auth.urls')),
     (r'^openid/', include('localtv.openid.urls')),
     (r'^admin/', include('localtv.subsite.admin.urls')),
     (r'^submit_video/', include('localtv.subsite.submit_video.urls')),

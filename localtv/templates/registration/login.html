@@ -2,7 +2,7 @@
   "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>Sign in with your OpenID</title>
+<title>Sign in</title>
 <style type="text/css">
 input.openid {
   background: url({{ logo }}) no-repeat; 
@@ -40,14 +40,27 @@ font-family: Arial, Helvetica, sans-serif;
     display: none;
 }
 
+label, label + input {
+    clear: left;
+}
 </style>
 </head>
 <body>
 
 <div class="login">
+<h1>Sign in with a Username/Password</h1>
+  <form action="{{ settings.LOGIN_URL }}" method="POST">
+    {{ form.as_p }}
+    <input type="hidden" name="next" value="{{ next }}">
+  <input type="submit" value="Log In">
+</form>
+<br />
+<br />
+<hr />
+<br />
+<br />
 <h1>Sign in with your OpenID</h1> 
-
-<form action="{{ action }}" method="post">
+<form action="{% url localtv_openid_start %}" method="post">
 <p><input class="openid" type="text" name="openid_url"> <input type="submit" value="Sign in"></p>
 </form>
 <p>Don't have an openid?
@@ -60,7 +73,7 @@ font-family: Arial, Helvetica, sans-serif;
 <br />
 <h1 class="floatleft" style="padding-right: 14px;">Sign in with your Google Account</h1>
 
-<form action="{{ action }}" method="post">
+<form action="{% url localtv_openid_start %}" method="post">
   <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
 <input type="submit" value="Click Here">
 </form>
