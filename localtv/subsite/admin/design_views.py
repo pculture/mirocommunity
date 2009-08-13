@@ -48,5 +48,9 @@ def edit_design(request, sitelocation=None):
             else:
                 context['misc_form'] = form
                 return render_edit_design(request, context)
+        elif 'delete_background' in request.POST:
+            if sitelocation.background:
+                sitelocation.background.delete()
+            return redirect()
         else:
             raise Http404
