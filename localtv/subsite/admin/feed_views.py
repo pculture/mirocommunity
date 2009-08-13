@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -35,6 +36,11 @@ class MockQueryset(object):
     def __getitem__(self, k):
         return self.objects[k]
 
+VIDEO_SERVICE_TITLES = (
+    re.compile(r'Uploads by (.+)'),
+    re.compile(r"Vimeo / (.+)'s uploaded videos")
+    )
+
 @require_site_admin
 @get_sitelocation
 def feeds_page(request, sitelocation=None):
@@ -54,16 +60,16 @@ def feeds_page(request, sitelocation=None):
         searches = searches.filter(query_string__icontains=search_string)
 
     source_filter = request.GET.get('filter')
-    if source_filter == 'feed':
-        queryset = feeds
-    elif source_filter == 'search':
+    if source_filter == 'search':
         queryset = searches
-    elif source_filter == 'user':
-        # XXX make this actual filter the URLs
-        q = Q(feed_url__iregex=models.VIDEO_USER_REGEXES[0])
-        for regexp in models.VIDEO_USER_REGEXES[1:]:
+    elif source_filter in ('feed', 'user'):
+        q = Q(feed_url__iregex=models.VIDEO_USER_REGEXES[0][1])
+        for service, regexp in models.VIDEO_USER_REGEXES[1:]:
             q = q | Q(feed_url__iregex=regexp)
-        queryset = feeds.filter(q)
+        if source_filter == 'user':
+            queryset = feeds.filter(q)
+        else:
+            queryset = feeds.exclude(q)
     else:
         feeds_list = [(feed.name.lower(), feed)
                       for feed in feeds]
@@ -103,12 +109,18 @@ def add_feed(request, sitelocation=None):
             "That feed already exists on this site")
 
     parsed_feed = feedparser.parse(feed_url)
+    title = parsed_feed.feed.get('title')
+    for regexp in VIDEO_SERVICE_TITLES:
+        match = regexp.match(title)
+        if match:
+            title = match.group(1)
+            break
 
     feed, created = models.Feed.objects.get_or_create(
         feed_url=feed_url,
         site=sitelocation.site,
         defaults = {
-            'name': parsed_feed.feed.get('title', ''),
+            'name': title,
             'webpage': parsed_feed.feed.get('link', ''),
             'description': parsed_feed.feed.get('summary', ''),
             'when_submitted': datetime.datetime.now(),

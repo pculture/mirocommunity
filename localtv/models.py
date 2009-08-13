@@ -44,11 +44,11 @@ VIDEO_THUMB_SIZES = [
     (142, 104)]
 
 VIDEO_USER_REGEXES = (
-    r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss',
-    r'http://gdata\.youtube\.com/feeds/base/videos/-/.+',
-    r'http://.+\.blip\.tv/\?skin=rss',
-    r'http://.+\.blip\.tv/rss',
-    r'http://www\.vimeo\.com/user:\d+/clips/rss')
+    ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
+    ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
+    ('blip.tv', r'http://.+\.blip\.tv/rss'),
+    ('Vimeo', r'http://www\.vimeo\.com/user:\d+/clips/rss'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -207,9 +207,9 @@ class Feed(models.Model):
         return self.name
 
     def is_user(self):
-        for regexp in VIDEO_USER_REGEXES:
+        for service, regexp in VIDEO_USER_REGEXES:
             if re.search(regexp, self.feed_url, re.I):
-                return True
+                return service
         return False
 
     def update_items(self, verbose=False):
