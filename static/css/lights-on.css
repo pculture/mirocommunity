@@ -1555,7 +1555,7 @@ float: left;
 padding: 3px 7px;
 }
 
-#add_cat .save, #add_author .save, #add_tag .save{
+#add_cat .save, #add_author .save, #add_tag .save, p.description .save{
 float: left;
 padding: 5px;
 background: none;
@@ -1563,7 +1563,7 @@ border: 1px solid #ccc;
 margin: 0 3px 3px 3px;
 }
 
-#add_cat .cancel, #add_author .cancel, #add_tag .cancel {
+#add_cat .cancel, #add_author .cancel, #add_tag .cancel, p.description .cancel {
 float: left;
 padding: 5px;
 background: none;
@@ -1571,24 +1571,27 @@ border: 1px solid #ccc;
 margin: 0 3px 3px 3px;
 }
 
-#add_cat:hover .cancel, #add_author:hover .cancel, #add_cat:hover .save, #add_author:hover .save, #add_tag:hover .cancel, #add_tag:hover .save {
+#add_cat:hover .cancel, #add_author:hover .cancel, #add_cat:hover .save, #add_author:hover .save, #add_tag:hover .cancel, #add_tag:hover .save, p.description:hover .cancel, p.description:hover .save {
 background: none;
 }
 
-#add_cat .cancel:hover, #add_author .cancel:hover, #add_cat .save:hover, #add_author .save:hover, #add_tag .cancel:hover, #add_tag .save:hover {
+#add_cat .cancel:hover, #add_author .cancel:hover, #add_cat .save:hover, #add_author .save:hover, #add_tag .cancel:hover, #add_tag .save:hover, p.description .cancel:hover, p.description .save:hover {
 background: #efefef;
 }
 
 
-#add_cat span, #add_author span, #add_tag span {
+#add_cat span, #add_author span, #add_tag span, p.description span {
 padding-left: 14px;
     background: url(../images/add.png) left 2px no-repeat;
 }
 
-#add_cat:hover span, #add_author:hover span, #add_tag:hover span {
+#add_cat:hover span, #add_author:hover span, #add_tag:hover span, p.description span {
     background: url(../images/add.png) left -17px no-repeat;
 }
 
+p.description span {
+    float: right;
+}
 #tags .floatleft{
 clear: left;
 }

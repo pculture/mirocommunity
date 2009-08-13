@@ -16,9 +16,7 @@
 </div>        
 
 <p class="description">
-  {% autoescape off %}
-    {{ current_video.description|striptags }}
-  {% endautoescape %}
+  {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html"|safe }}
 </p>
 
 <div id="tags">
