@@ -123,8 +123,8 @@ def add_feed(request, sitelocation=None):
         feed.save()
 
     feed.update_items()
- 
-    reverse_url = reverse('localtv_admin_feed_page')
+
+    reverse_url = reverse('localtv_admin_source_page')
     if page_num:
         reverse_url += '?page=' + page_num
     return HttpResponseRedirect(reverse_url)
