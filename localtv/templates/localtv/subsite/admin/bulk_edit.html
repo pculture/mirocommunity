@@ -100,9 +100,13 @@
       </td valign="top" class="noncheck">
       <td valign="top" class="noncheck">
         <div class="value">
+          {% if form.instance.tags.count %}
           {% for tag in form.instance.tags.all %}
           {{ tag.name }}{% if not forloop.last %}, {% endif %}
           {% endfor %}
+          {% else %}
+          click to edit
+          {% endif %}
         </div>
         <div class="field">
           {{ form.tags }}
@@ -110,9 +114,13 @@
       </td>
       <td valign="top" class="noncheck">
         <div class="value">
+          {% if form.instance.categories.count %}
           {% for category in form.instance.categories.all %}
           {{ category.name }}{% if not forloop.last %}, {% endif %}
           {% endfor %}
+          {% else %}
+          click to edit
+          {% endif %}
         </div>
         <div class="field">
           {{ form.categories }}
@@ -120,9 +128,13 @@
       </td>
       <td valign="top" class="noncheck">
         <div class="value">
+          {% if form.instance.authors.count %}
           {% for author in form.instance.authors.all %}
           {{ author.name }}{% if not forloop.last %}, {% endif %}
           {% endfor %}
+          {% else %}
+          click to edit
+          {% endif %}
         </div>
         <div class="field">
           {{ form.authors }}

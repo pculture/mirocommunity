@@ -2004,18 +2004,6 @@ vertical-align: top;
 padding: 5px;
 }
 
-
-#admin.bulkedit form table th{
-
-}
-
-#admin.bulkedit form table td select{
-
-display: none;
-}
-
-
-
 #admin.bulkedit form table td select option{
 float: left !important;
 width: 100px;
