@@ -12,31 +12,32 @@
     {% include "localtv/subsite/admin/header.html" %}
   </div>
 
-<div id="massedit">
-  <h2>Batch Edit Mode</h2>
+<div id="massedit" class="rounded">
+  <h2>Batch Edit Mode (<span id="selected_count"></span> selected)</h2>
   <div>
-    <span id="selected_count"></span> selected.  Fields you choose to edit will replace current field contents for these videos. Fields you do not edit will not be affected.
-  </div>
-  <div>
+  Edit these fields and apply changes to <strong>all checked videos.</strong> If unchecked, no changes will be made.</div>
+  <ul class="bulk_operations">
+  <li>
     <input type="checkbox" name="name" />
     <span>Title</span>
-  </div>
-  <div>
+  </li>
+  <li>
     <input type="checkbox" name="categories" />
     <span>Categories</span>
-  </div>
-  <div>
+  </li>
+  <li>
     <input type="checkbox" name="authors" />
     <span>Authors</span>
-  </div>
-  <div>
+  </li>
+  <li>
     <input type="checkbox" name="tags" />
     <span>Tags</span>
-  </div>
-  <div>
+  </li>
+  <li>
     <input type="checkbox" name="description" />
     <span>Description</span>
-  </div>
+  </li>
+  </ul>
   <button>Save multiple edits</button>
 </div>
 <form method="POST" action="">
@@ -45,42 +46,47 @@
     {% for form in formset.forms %}
     {% if forloop.first or forloop.counter|divisibleby:"10" %}
     <tr>
-      <td><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></td>
+      <th width="20"><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></th>
       {% for field in formset.forms.0 %}
       {% if not field.is_hidden %}
       {% ifnotequal field.name "bulk" %}
-      <td><strong>{{ field.label }}</strong</td>
+      <th width="20%"><strong>{{ field.label }}</strong</th>
       {% endifnotequal %}
       {% endif %}
       {% endfor %}
-      <td></td>
-      <td><strong>Source</strong></td>
-      <td>
+      <th>&nbsp;</th>
+
+      <th><strong>Source</strong></th>
+      <th>
         <input type="submit" value="Save">
-      </td>
+      </th>
     </tr>
     {% endif %}
-    <tr>
-      <td>
+    <tr valign="top">
+      <td class="check" valign="top">
         {{ form.bulk }}
         {{ form.errors }}
       </td>
       {% for field in form %}
       {% ifnotequal field.name "bulk" %}
-      <td>
+      <td valign="top" class="noncheck">
         {% ifequal field.name "description" %}
         <div>click to edit</div>
+        {% else %}
+        {% ifequal field.name "categories" %}
+        <div><input type="text" value="Example, Example, Example...more" /></div>
         {% else %}
         {% ifequal field.name "embed_code" %}
         <div>click to edit</div>
         {% else %}
         {% endifequal %}
+	        {% endifequal %}
         {% endifequal %}
         {{ field }}
       </td>
       {% endifnotequal %}
       {% endfor %}
-      <td>
+      <td valign="top" class="noncheck">
         {% if form.instance.feed %}
         Feed: {{ form.instance.feed }}
         {% else %}
@@ -89,7 +95,7 @@
         {% endif %}
         {% endif %}
       </td>
-      <td><a href="{{ form.instance.get_absolute_url }}">link</a></td>
+      <td valign="top"><a href="{{ form.instance.get_absolute_url }}" class="med_button"><span>View</span></a></td>
     </tr>
     {% endfor %}
   </table>

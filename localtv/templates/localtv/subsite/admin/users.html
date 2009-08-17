@@ -20,7 +20,7 @@
   </div>
 
   <div id="labels">
-    <table>
+    <table class="rounded">
       <thead>
         <td>Username</td>
         <td>Email</td>
@@ -28,13 +28,13 @@
         <td></td>
       </thead>
       {% for user in admins %}
-      <tr>
+      <tr class="{% cycle "grey" "white" %}">
         <form action="" method="POST">
           <input type="hidden" name="id" value="{{ user.pk }}">
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
-          <td>{{ user.openiduser.url }}</td>
-          <td><input type="submit" name="submit" value="Delete"></td>
+          <td width="50px">{{ user.openiduser.url }}</td>
+          <td><button class="med_button" type="submit" name="submit"><span class="reject">Delete</span></button></td>
         </form>
       </tr>
       {% endfor %}

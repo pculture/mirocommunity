@@ -1,5 +1,57 @@
 <html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="StyleSheet" type="text/css" href="/css/lights-on.css">
+
+
+<style>
+
+body{
+background: #eee;
+padding: 0;
+margin: 0;
+}
+
+div{
+background: #fff;
+padding: 30px;
+border-top: 1px solid #ddd;
+border-bottom: 1px solid #ddd;
+}
+
+p{
+font-size: 190%;
+padding: 0px 0;
+color: #999;
+margin: 8% 0;
+}
+
+div p{
+color: #666;
+margin: 6% 0;
+}
+
+</style>
+    <script>
+    $(document).ready( function(){
+  		$('.rounded').corners();
+		});
+	</script>
+</head>
+
   <body>
-    Generating search results for "{{ query_string }}" <img src="/images/ajax-loader.gif"/>
+  <center>
+      <p>Just a Moment<br /><br /><img src="/images/ajax-loader.gif"/></p>
+
+  <div>
+    <p style="font-size: 18px;">Searching far and wide for videos matching
+    <br/> <br/><strong style="font-size: 24px;">"{{ query_string }}"</strong>
+    </p>
+    
+
+    
+    </div>
+    
+    </center>
   </body>
 </html>

@@ -1,7 +1,7 @@
  <ul id="admin_nav">
     <li><a class="sub" href="{% url localtv_admin_approve_reject %}" {% if video_list %}class="current"{% endif %}><span>To Be Reviewed</span></a></li>
     <li><a class="watched" href="{% url localtv_admin_source_page %}" {% if feed_list %}class="current"{% endif %}><span>Manage Sources</span></a></li>
-    <li><a class="saved" href="{% url localtv_admin_livesearch_page %}" {% if add_source %}class="current"{% endif %}><span>Add Source</span></a></li>
+    <li><a class="saved" href="{% url localtv_admin_livesearch_page %}" {% if add_source %}class="current"{% endif %}><span>Add Sources</span></a></li>
     <li><a class="design" href="{% url localtv_admin_edit_design %}" {% if title_form %}class="current"{% endif %}><span>Customize Design</span></a></li>
     <li><a class="categories" href="{% url localtv_admin_categories %}" {% if add_category_form %}class="current"{% endif %}><span>Categories</span></a></li>
     <li><a class="authors" href="{% url localtv_admin_authors %}" {% if add_author_form %}class="current"{% endif %}><span>Authors</span></a></li>

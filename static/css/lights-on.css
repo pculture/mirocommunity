@@ -11,7 +11,7 @@ PCF
 */
 
 /*/////////////////////////////////////////////
-
+ 
 ~ Markup 
 
 /////////////////////////////////////////////*/
@@ -50,12 +50,21 @@ a {
 	outline: none;
 }
 
+body, div, a, label, h1, h2, h3, h4, h5, span, strong, li {text-shadow: #fff 1px 1px 0px ;}
+p{text-shadow: #eee 1px 1px 0px ;}
+select option{text-shadow: 0; !important}
+	
+
 
 /*/////////////////////////////////////////////
 
 ~ Classes
 
 /////////////////////////////////////////////*/
+
+.clearboth{
+clear: both !important;
+}
 
 .floatleft {
     float: left;
@@ -678,7 +687,8 @@ n
 
 #submit_box #id_url,
 #submit_box #id_tags,
-.login input.openid{
+.login input.openid,
+.large_field{ 
     margin: 2px 2px 0 0;
     padding: 6px 9px;
     height: 18px;
@@ -792,6 +802,11 @@ a.reject {
 
 }
 
+.reject {
+    color: #be0000;
+    cursor: pointer;
+        font-weight: bold;
+}
 a.reject:hover {
     color: #df0606;
     text-decoration: none;
@@ -1144,6 +1159,8 @@ float: left;
 
 /////////////////////////////////////////////*/
 
+
+
 .show_main{
 display: none;
 }
@@ -1183,6 +1200,8 @@ padding-right: 15px;
 
 #admin_leftpane{
 padding: 0px 0px 0 0;
+clear: both;
+height: 600px !important;
 }
 
 #admin_leftpane .video{
@@ -1228,6 +1247,10 @@ padding-top: 10px;
 float: right;
 }
 
+.admin_feed_actions{
+margin-right: 20px;
+}
+
 
 .admin_feed{
 border-bottom: 1px solid #ddd;
@@ -1237,14 +1260,25 @@ clear: both;
 }
 
 
+.admin_feed ul{
+width: 100%;
+}
 
 .admin_feed li{
 border: 1px solid #ccc;
-padding: 20px;
+padding: 20px 0;
 background: #eee;
 float: left;
 width: 100%;
 }
+
+
+.admin_feed li .user, .admin_feed li .feed_link{
+padding: 0px 0 0 20px !important;
+}
+
+
+
 
 .admin_feed li .feed_link{
 margin: 5px 5px 5px 0;
@@ -1276,9 +1310,36 @@ text-decoration: underline;
 text-decoration: none;
 }
 
+#admin_table{
+clear: both !important;
+}
+
 
 #above_admin_table{
+margin-bottom: 25px;
+float: left;
+width: 100%;
+clear: both;
 }
+
+.fields{
+padding: 2px 0 0 5px;
+}
+
+
+.fields select{
+margin: 3px 0 0 5px;
+}
+
+.fields span{
+margin: 2px 0 0 0px;
+}
+
+.fields strong{
+margin: 0px 4px 0 0px;
+}
+
+
 
 
 button.med_button{
@@ -1286,13 +1347,16 @@ border: none;
 padding: 0 3px 0 0px;
 background-position: right 1px;
 float: left;
+    font-family: Arial, Helvetica, sans-serif;
+
 }
 
 button.med_button span{
 padding: 0 8px 0 15px;
 }
 
-#admin_feed_add strong{
+#admin_feed_add strong,
+.form_wrap strong{
 float: left;
 line-height: 2em;
 font-weight: bold;
@@ -1389,6 +1453,7 @@ line-height: 1.7em;
 
 #admin #video_wrapper object, #admin #video_wrapper embed{
 border: 1px solid;
+float: right;
 width: 400px;
 height: 350px;
 }
@@ -1464,7 +1529,7 @@ background:url(../images/top_cat_cap.png) no-repeat right 0;
 
 
 .cat_list .top_cat_button span{
-padding: 11px 18px 13px;
+padding: 12px 18px 13px;
 display: block;
 background:url(../images/top_cat.png) no-repeat 0 0;	
 }
@@ -1500,6 +1565,7 @@ background-position: left -82px;
 
 .admin_actions_all{
 float: right;
+padding: 0 20px 0 0px;
 }
 
 .admin_pagetab_row{
@@ -1619,6 +1685,7 @@ padding: 3px 0;
 
 .actions{
 padding: 0 0 15px;
+float: right;
 }
 
 
@@ -1630,19 +1697,58 @@ margin-right: 8px;
 
 }
 
+
+#labels table{
+float: right;
+width: 57%;
+
+}
+
+
+#labels table thead {
+    background: #ddd;
+}
+
+#labels table thead td {
+    font-weight: bold;
+    padding: 5px;
+}
+
+#labels table td + td {
+}
+
+#labels table tbody td {
+}
+
+#labels table {
+    border: 1px solid #bbb;
+}
+
+#labels table td {
+    border-bottom: 1px solid #ddd;
+}
+
+#labels table tr.grey, #labels table tr.grey + tr {
+    background: #eee;
+}
+
+
 #labels table th{
+
 font-weight: bold;
 }
 
 
 #labels table td, #labels table th{
-padding: 0 0 3px 10px !important;
+padding: 5px 15px 3px 13px !important;
 line-height: 2em;
+border-right: 1px solid #eee;
 }
 
 #labels table td.checkbox, #labels table th.checkbox{
-padding: 0px 0 0px 4px !important;
+padding: 0px 0 0px 9px !important;
 line-height: 2.6em;
+border-right: none;
 }
 
 
@@ -1785,7 +1891,8 @@ margin-bottom: 20px;
 clear: both;
 }
 
-#admin_feed_add{
+#admin_feed_add,
+.form_wrap{
 border: 1px solid #eee;
 background: #f9f9f9;
 height: 24px;
@@ -1860,6 +1967,184 @@ margin-right: 10px;
 margin-left: 7px;
 }
 
+#selected_count{
+font-weight: bold;
+}
+
+
+#massedit{
+float: left;
+border: 1px solid #ddd;
+padding: 20px;
+background: #f9f9f9;
+width: 100%;
+}
+
+
+#massedit button{
+margin: 20px 0 0;
+
+}
 
 
 
+#massedit div{
+float: left;
+padding: 15px 0 5px;
+clear: both;
+}
+
+#admin.bulkedit form table{
+clear: both;
+margin-top: 20px;
+}
+
+#admin.bulkedit form table td, #admin.bulkedit form table th{
+vertical-align: top;
+padding: 5px;
+}
+
+
+#admin.bulkedit form table th{
+
+}
+
+#admin.bulkedit form table td select{
+
+display: none;
+}
+
+
+
+#admin.bulkedit form table td select option{
+float: left !important;
+width: 100px;
+}
+
+
+.bulk_operations{
+clear: both;
+}
+
+.bulk_operations li{
+padding: 6px 10px 0 0;
+}
+
+.bulk_operations li span{
+padding: 0px 10px 0 0;
+}
+
+
+.bulk_operations textarea, .bulk_operations select{
+display: block;
+margin: 10px 0 10px 17px;
+width: 500px;
+height: 200px;
+padding: 8px;
+border-top: 1px solid #aaa;
+border-left: 1px solid #ccc;
+border-bottom: 1px solid #eee;
+border-right: 1px solid #eee;
+
+}
+
+.bulk_operations select{
+width: 300px;
+padding: 0px;
+}
+
+
+.bulk_operations select option{
+padding: 5px;
+}
+
+#admin.bulkedit form table td.noncheck{
+min-width: 100px;
+}
+
+td.noncheck textarea{
+position: absolute;
+padding: 10px;
+border: 4px solid #aaa;
+}
+
+#saved_searches{
+clear: both;
+
+margin-right: 0 !important;
+}
+ 
+#add_feed{
+float: left;
+width: 45%;
+padding-right: 0 !important;
+padding-left: 12px !important;
+}
+
+.rounded.form_wrap.cleartheleft{
+float: right !important;
+margin-right: 0 !important;
+width: 50% !important;
+}
+
+
+#add_feed .large_field{
+width: 244px;
+}
+
+
+.left.large_field{
+width: 135px;
+background: url(../images/search_field.png) top left no-repeat;
+margin-right: 10px;
+margin-top: 0px;
+}
+
+.add_a_feed{
+margin-right: 20px;
+}
+
+.allsites{
+float: right !important ;
+}
+
+#saved_searches button{
+font-weight: bold;
+float: left !important;
+margin-left: 10px;
+}
+
+.display_data{
+padding-left: 20px;
+font-weight: bold;
+}
+
+.lefthand .large_field{
+margin-right: 0px !important;
+}
+
+.lefthand {
+float: left;
+width: 100%;
+padding: 0;
+}
+
+/*---------- Safari -----------*/
+
+
+@media screen and (-webkit-min-device-pixel-ratio:0){
+
+	#nav a span, #admin_nav a span{
+		padding-top: 1px;
+	}
+
+	button.med_button{
+	padding-right: 6px;
+background-position: right 0px;
+	}
+	
+	input.large_field{
+	padding-top: 1px !important;
+	}
+	
+}

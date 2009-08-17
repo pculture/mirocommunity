@@ -7,12 +7,32 @@
 
 {% block above_table %}
   {{ block.super }}
+  
+  <div class="lefthand">
+  
+  <div id="add_feed" class="rounded form_wrap">
   <form method="POST" action="{% url localtv_admin_feed_add %}">
-    <input name="feed_url" />
-    <input type="submit" value="Add a Feed">
+    <input name="feed_url" class="large_field" />
+    <button class="add_a_feed med_button" type="submit"><span>Add a Source</span></button>
   </form>
+  </div>
+  
+   <div id="add_feed" class="rounded form_wrap cleartheleft">
+  <form method="POST" action="{% url localtv_admin_feed_add %}">
+    <input name="feed_url" class="large_field" value="e.g. http://openvideoalliance.blip.tv" onFocus="clearText(this)" />
+    <button class="add_a_feed med_button" type="submit"><span>Add a Video Service User</span></button>
+  </form>
+  </div>
+  </div>
+  
+  
+  <div id="saved_searches" class="search_sites form_wrap rounded">
   <form method="GET" action="{% url localtv_admin_livesearch_page %}">
-    <input id="livesearch_query_input" class="left"
+    
+    <button class="med_button"><span>Search All Sites</span></button>
+  <div class="fields">
+
+    <input id="livesearch_query_input" class="left large_field"
            name="query"
            value="{{ query_string }}"/>
            <span class="left">and sort by</span>
@@ -26,17 +46,20 @@
                 selected="selected"
               {% endifequal %}>Latest</option>
     </select>
-<button class="med_button"><span>Search All Sites</span></button>
+    </div>
+    
+    
   </form>
-<br class="clear" />
   {% if is_saved_search %}
-    <i>This search is saved</i>
+    <i class="floatleft">This search is saved</i>
   {% else %}
-    <a href="{% url localtv_admin_livesearch_save_search %}?query={{ query_string|urlencode }}">
-      Save this search</a><br /><br />
+    <a href="{% url localtv_admin_livesearch_save_search %}?query={{ query_string|urlencode }}" class="med_button allsites">
+      <span>Save as Source</span></a>
   {% endif %}
-  <br />
-  <h4>Saved Searches</h4>
+	</div>
+
+
+  <h4 class="clear">Saved Searches</h4>
   
   {% for search in saved_searches %}
     {% include "localtv/subsite/admin/search_listing_individual.html" %}

@@ -439,6 +439,7 @@ font-size: 11px;
 line-height: 1.3em
 }
 
+
 #label_sidebar form label {
     float: left;
     font-size: 130%;
@@ -453,42 +454,10 @@ line-height: 1.3em
     clear: both;
 }
 
-#labels table thead {
-    background: #ddd;
-}
-
-#labels table thead td {
-    font-weight: bold;
-    padding: 5px;
-}
-
-#labels table td + td {
-    width: 100px;
-}
-
-#labels table tbody td {
-    padding: 5px 5px 20px;
-}
-
-#labels table {
-    border: 1px solid #ddd;
-}
-
-#labels table td {
-    border-bottom: 1px solid #ddd;
-}
-
-#labels table tr.grey, #labels table tr.grey + tr {
-    background: #eee;
-}
-
 #id_slug, #id_name{
 width: 300px;
 }
 
-#labels table{
-
-}
 
 
 body.bulkedit td textarea {
