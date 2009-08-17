@@ -5,9 +5,8 @@
 {% block name %}{% trans "Admin - Search Video Sites" %}{% endblock %}
 {% block body_class %}searches{% endblock body_class %}
 
-{% block above_table %}
-  {{ block.super }}
-  
+{% block content %}
+
   <div class="lefthand">
   
   <div id="add_feed" class="rounded form_wrap">
@@ -64,7 +63,9 @@
   {% for search in saved_searches %}
     {% include "localtv/subsite/admin/search_listing_individual.html" %}
   {% endfor %}
-{% endblock above_table %}
+  {{ block.super }}
+  
+{% endblock %}
 
 {% block pagination %}
   {% if page_obj and page_obj.has_other_pages %}

@@ -76,7 +76,7 @@
             {% endif %}
 
         </ul>
-
+        {% block nav %}
         <ul id="nav">
           <li class="home_page">
             <a href="{% url localtv_subsite_index %}">
@@ -121,6 +121,7 @@
         </form>
 
       </div>
+      {% endblock %}
 
       <div id="hover_wrap" class="rounded {5px transparent}">
         <div id="submit_box" >

@@ -15,12 +15,6 @@
 {% block title %}{{ block.super }} - {% block name %}{% trans "Admin - To Be Reviewed" %}{% endblock %}{% endblock %}
 
 {% block content %}
-  <div id="above_admin_table">
-    {% block above_table %}
-    {% include "localtv/subsite/admin/header.html" %}
-    {% endblock above_table %}
-  </div>
-
   <table id="admin_table">
     <tr>
       <td style="vertical-align: top;" width="65%">

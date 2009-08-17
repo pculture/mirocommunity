@@ -6,5 +6,6 @@
     <li><a class="categories" href="{% url localtv_admin_categories %}" {% if add_category_form %}class="current"{% endif %}><span>Categories</span></a></li>
     <li><a class="authors" href="{% url localtv_admin_authors %}" {% if add_author_form %}class="current"{% endif %}><span>Authors</span></a></li>
     <li><a class="users" href="{% url localtv_admin_users %}" {% if add_user_form %}class="current"{% endif %}><span>Users</span></a></li>
+    <li><a id="submit_button" href="{% url localtv_submit_video %}"><span>Submit a Video</span></a></li>
  </ul>
 <br style="clear:both;" />
