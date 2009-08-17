@@ -133,6 +133,9 @@ def scraped_submit_video(request, sitelocation=None):
             when_published=scraped_data.get('publish_date'))
         video.strip_description()
 
+        if sitelocation.user_is_admin(request.user):
+            video.status = models.VIDEO_STATUS_ACTIVE
+
         video.save()
 
         if video.thumbnail_url:
@@ -182,6 +185,9 @@ def embedrequest_submit_video(request, sitelocation=None):
             thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
             user=request.user,
             when_submitted=datetime.datetime.now())
+
+        if sitelocation.user_is_admin(request.user):
+            video.status = models.VIDEO_STATUS_ACTIVE
 
         video.save()
 
@@ -234,6 +240,9 @@ def directlink_submit_video(request, sitelocation=None):
             website_url=direct_form.cleaned_data.get('website_url', ''),
             user=request.user,
             when_submitted=datetime.datetime.now())
+
+        if sitelocation.user_is_admin(request.user):
+            video.status = models.VIDEO_STATUS_ACTIVE
 
         video.save()
 
