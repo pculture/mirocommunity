@@ -2051,7 +2051,6 @@ min-width: 100px;
 }
 
 td.noncheck textarea{
-position: absolute;
 padding: 10px;
 border: 4px solid #aaa;
 }
