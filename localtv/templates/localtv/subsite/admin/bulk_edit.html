@@ -98,7 +98,7 @@
           {{ form.embed_code }}
         </div>
       </td valign="top" class="noncheck">
-      <td>
+      <td valign="top" class="noncheck">
         <div class="value">
           {% for tag in form.instance.tags.all %}
           {{ tag.name }}{% if not forloop.last %}, {% endif %}
