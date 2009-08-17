@@ -48,7 +48,7 @@ VIDEO_USER_REGEXES = (
     ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
     ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
     ('blip.tv', r'http://.+\.blip\.tv/rss'),
-    ('Vimeo', r'http://www\.vimeo\.com/user:\d+/clips/rss'))
+    ('Vimeo', r'http://www\.vimeo\.com/user:[0-9]+/clips/rss'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
