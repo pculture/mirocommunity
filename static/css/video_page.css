@@ -490,13 +490,12 @@ width: 300px;
 
 }
 
-
-body.bulkedit td textarea {
-    display: none;
+body.bulkedit td div.value {
+    cursor: pointer;
 }
 
-body.bulkedit td div{
-    cursor: pointer;
+body.bulkedit td div.field {
+    display: none;
 }
 
 #massedit {
