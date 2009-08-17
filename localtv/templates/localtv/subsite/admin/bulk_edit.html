@@ -46,7 +46,7 @@
     {% for form in formset.forms %}
     {% if forloop.first or forloop.counter|divisibleby:"10" %}
     <tr>
-      <th width="20"><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></th>
+      <th width="20"><strong>Select All/None</strong><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></th>
       {% for field in formset.forms.0 %}
       {% if not field.is_hidden %}
       {% ifnotequal field.name "bulk" %}
@@ -54,7 +54,6 @@
       {% endifnotequal %}
       {% endif %}
       {% endfor %}
-      <th>&nbsp;</th>
 
       <th><strong>Source</strong></th>
       <th>
@@ -67,25 +66,77 @@
         {{ form.bulk }}
         {{ form.errors }}
       </td>
-      {% for field in form %}
-      {% ifnotequal field.name "bulk" %}
       <td valign="top" class="noncheck">
-        {% ifequal field.name "description" %}
-        <div>click to edit</div>
-        {% else %}
-        {% ifequal field.name "categories" %}
-        <div><input type="text" value="Example, Example, Example...more" /></div>
-        {% else %}
-        {% ifequal field.name "embed_code" %}
-        <div>click to edit</div>
-        {% else %}
-        {% endifequal %}
-	        {% endifequal %}
-        {% endifequal %}
-        {{ field }}
+        <div class="value">
+          {{ form.instance.name }}
+        </div>
+        <div class="field">
+          {{ form.name }}
+        </div>
       </td>
-      {% endifnotequal %}
-      {% endfor %}
+      <td valign="top" class="noncheck">
+        <div class="value">
+          click to edit
+        </div>
+        <div class="field">
+          {{ form.description }}
+        </div>
+      </td>
+      <td valign="top" class="noncheck">
+        <div class="value">
+          {{ form.instance.file_url }}
+        </div>
+        <div class="field">
+          {{ form.file_url }}
+        </div>
+      </td>
+      <td valign="top" class="noncheck">
+        <div class="value">
+          click to edit
+        </div>
+        <div class="field">
+          {{ form.embed_code }}
+        </div>
+      </td valign="top" class="noncheck">
+      <td>
+        <div class="value">
+          {% for tag in form.instance.tags.all %}
+          {{ tag.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+        <div class="field">
+          {{ form.tags }}
+        </div>
+      </td>
+      <td valign="top" class="noncheck">
+        <div class="value">
+          {% for category in form.instance.categories.all %}
+          {{ category.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+        <div class="field">
+          {{ form.categories }}
+        </div>
+      </td>
+      <td valign="top" class="noncheck">
+        <div class="value">
+          {% for author in form.instance.authors.all %}
+          {{ author.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+        <div class="field">
+          {{ form.authors }}
+        </div>
+      </td>
+      <td valign="top" class="noncheck">
+        <div class="value">
+          click to edit
+        </div>
+        <div class="field">
+          {{ form.thumbnail }}
+        </div>
+      </td>
+      <td class="check">{{ form.DELETE }}</td>
       <td valign="top" class="noncheck">
         {% if form.instance.feed %}
         Feed: {{ form.instance.feed }}
