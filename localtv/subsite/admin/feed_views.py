@@ -110,6 +110,8 @@ def add_feed(request, sitelocation=None):
 
     parsed_feed = feedparser.parse(feed_url)
     title = parsed_feed.feed.get('title')
+    if title is None:
+        return HttpResponseBadRequest('That URL does not look like a feed.')
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
         if match:
