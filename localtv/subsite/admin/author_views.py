@@ -11,7 +11,7 @@ from localtv.subsite.admin import forms
 @require_site_admin
 @get_sitelocation
 def authors(request, sitelocation=None):
-    authors = Author.objects.all()
+    authors = Author.objects.filter(site=sitelocation.site)
     for author in authors:
         author.form = forms.AuthorForm(prefix="edit_%s" % author.id,
                                            instance=author)

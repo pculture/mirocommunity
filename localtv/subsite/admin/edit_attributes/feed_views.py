@@ -42,7 +42,8 @@ def edit_auto_categories(request, id, sitelocation=None):
         id=id,
         site=sitelocation.site)
 
-    edit_auto_categories_form = forms.FeedAutoCategoriesForm(request.POST)
+    edit_auto_categories_form = forms.FeedAutoCategoriesForm(request.POST,
+                                                             instance=feed)
     display_template = template.loader.get_template(
         'localtv/subsite/display_templates/feed_auto_categories.html')
 
@@ -80,7 +81,8 @@ def edit_auto_authors(request, id, sitelocation=None):
         id=id,
         site=sitelocation.site)
 
-    edit_auto_authors_form = forms.FeedAutoAuthorsForm(request.POST)
+    edit_auto_authors_form = forms.FeedAutoAuthorsForm(request.POST,
+                                                       instance=feed)
     display_template = template.loader.get_template(
         'localtv/subsite/display_templates/feed_auto_authors.html')
 
