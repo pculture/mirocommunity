@@ -48,9 +48,12 @@ def feeds_page(request, sitelocation=None):
 
     feeds = models.Feed.objects.filter(
         site=sitelocation.site,
-        status=models.FEED_STATUS_ACTIVE)
+        status=models.FEED_STATUS_ACTIVE).extra(select={
+            'name__lower': 'LOWER(name)'}).order_by('name__lower')
     searches = models.SavedSearch.objects.filter(
-        site=sitelocation.site)
+        site=sitelocation.site).extra(select={
+            'query_string__lower': 'LOWER(query_string)'}).order_by(
+            'query_string__lower')
 
     if search_string:
         feeds = feeds.filter(Q(feed_url__icontains=search_string) |
