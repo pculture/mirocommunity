@@ -8,10 +8,6 @@
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
 
 {% block content %}
-  <div id="above_admin_table">
-    {% include "localtv/subsite/admin/header.html" %}
-  </div>
-
 <div id="massedit" class="rounded">
   <h2>Batch Edit Mode (<span id="selected_count"></span> selected)</h2>
   <div>
