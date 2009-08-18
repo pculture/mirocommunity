@@ -18,7 +18,7 @@
   
    <div id="add_feed" class="rounded form_wrap cleartheleft">
   <form method="POST" action="{% url localtv_admin_feed_add %}">
-    <input name="feed_url" class="large_field" value="e.g. http://openvideoalliance.blip.tv" onFocus="clearText(this)" />
+    {{ video_service_form }}
     <button class="add_a_feed med_button" type="submit"><span>Add a Video Service User</span></button>
   </form>
   </div>

@@ -13,6 +13,7 @@ import feedparser
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models
+from localtv.subsite.admin import forms
 
 
 ## -------------------
@@ -93,7 +94,15 @@ def feeds_page(request, sitelocation=None):
 @require_site_admin
 @get_sitelocation
 def add_feed(request, sitelocation=None):
-    feed_url = request.POST.get('feed_url')
+    if 'service' in request.POST:
+        video_service_form = forms.VideoServiceForm(request.POST)
+        if video_service_form.is_valid():
+            feed_url = video_service_form.feed_url()
+        else:
+            return HttpResponseBadRequest(
+                'You must provide a video service username')
+    else:
+        feed_url = request.POST.get('feed_url')
     page_num = request.POST.get('page')
 
     if not feed_url:

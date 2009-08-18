@@ -213,3 +213,24 @@ class AddUserForm(forms.Form):
             return users
         else:
             raise forms.ValidationError('Could not find a matching user')
+
+class VideoServiceForm(forms.Form):
+    URLS = (
+        ('blip.tv', 'http://%s.blip.tv/rss'),
+        ('Vimeo', 'http://www.vimeo.com/%s/videos/rss'),
+        ('YouTube', 'http://www.youtube.com/rss/user/%s/videos.rss'),
+         )
+    service = forms.ChoiceField(
+        choices = enumerate([service for service, url in URLS]))
+    username = forms.CharField(
+        initial="e.g. openvideoalliance")
+
+    def __init__(self, *args, **kwargs):
+        forms.Form.__init__(self, *args, **kwargs)
+        self.fields['username'].widget.attrs.update(
+            {'onfocus': 'clearText(this)',
+             'class': 'large_field'})
+
+    def feed_url(self):
+        index = int(self.cleaned_data['service'])
+        return self.URLS[index][1] % self.cleaned_data['username']
