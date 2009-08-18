@@ -131,7 +131,6 @@ def scraped_submit_video(request, sitelocation=None):
             user=request.user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'))
-        video.strip_description()
 
         if sitelocation.user_is_admin(request.user):
             video.status = models.VIDEO_STATUS_ACTIVE

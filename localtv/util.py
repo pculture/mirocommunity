@@ -116,8 +116,6 @@ class MetasearchVideo(object):
             flash_enclosure_url=self.flash_enclosure_url,
             when_published=self.publish_date)
 
-        video.strip_description()
-
         video.save()
 
         for tag in tags:

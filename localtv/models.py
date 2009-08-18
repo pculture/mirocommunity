@@ -15,7 +15,6 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.forms.fields import slug_re
 from django.template import mark_safe
-from django.utils.html import strip_tags
 
 import feedparser
 import vidscraper
@@ -287,7 +286,6 @@ class Feed(models.Model):
                 website_url=entry.get('link', ''),
                 thumbnail_url=miroguide_util.get_thumbnail_url(entry) or '')
 
-            video.strip_description()
             video.save()
 
             try:
@@ -668,14 +666,6 @@ class Video(models.Model):
         """
         return 'localtv/video_thumbs/%s/%sx%s.png' % (
             self.id, width, height)
-
-    def strip_description(self):
-        """
-        Strip (X)HTML description attributes
-
-        (doesn't run self.save() method though)
-        """
-        self.description = strip_tags(self.description)
 
     def submitter(self):
         """
