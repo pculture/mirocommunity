@@ -32,12 +32,12 @@ class TagField(forms.CharField):
 class EditVideoForm(forms.ModelForm):
     """
     """
-    tags = TagField()
+    tags = TagField(required=False)
     thumbnail = forms.ImageField(required=False)
     class Meta:
         model = models.Video
         fields = ('name', 'description', 'website_url', 'thumbnail', 'tags',
-                  'categories', 'authors')
+                  'categories', 'authors', 'thumbnail_url')
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -47,14 +47,19 @@ class EditVideoForm(forms.ModelForm):
             site=self.instance.site)
 
 
-    def clean(self):
+    def save(self, *args, **kwargs):
         if 'thumbnail' in self.cleaned_data:
             thumbnail = self.cleaned_data.pop('thumbnail')
             if thumbnail:
                 self.instance.thumbnail_url = '' # since we're no longer using
                                                  # that URL for a thumbnail
                 self.instance.save_thumbnail_from_file(thumbnail)
-        return self.cleaned_data
+        if 'thumbnail_url' in self.cleaned_data:
+            thumbnail_url = self.cleaned_data.pop('thumbnail_url')
+            if thumbnail_url:
+                self.instance.thumbnail_url = thumbnail_url
+                self.instance.save_thumbnail()
+        return forms.ModelForm.save(self, *args, **kwargs)
 
 
 class BaseVideoFormSet(BaseModelFormSet):

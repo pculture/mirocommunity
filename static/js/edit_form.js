@@ -14,8 +14,12 @@ function inline_edit_open() {
         textarea = $('<textarea cols="40" rows="10"/>').val($("#id_description").val());
         obj.append(textarea);
     } else if (obj.hasClass('thumbnail')) {
-        input = $('<input type="file" name="thumbnail"/>');
+        input = $('<input type="text" />').val($("#id_thumbnail_url").val());
+        input2 = $('<input type="file" name="thumbnail"/>');
+        obj.append('Thumbnail URL');
         obj.append(input);
+        obj.append('or upload: ')
+        obj.append(input2);
     } else if (obj.hasClass('tags')) {
         input = $('<input type="text" />').val($("#id_tags").val());
         obj.append(input);
@@ -44,9 +48,11 @@ function inline_save() {
         inline_post(obj);
     } else if (obj.hasClass('thumbnail')) {
         input = obj.children('input');
+        console.log(input);
         input.replaceWith($('<span>Uploading...</span>'));
+        $("#id_thumbnail_url").val(input.eq(0).val());
         old_input = $("#id_thumbnail");
-        old_input.after(input);
+        old_input.after(input.eq(1));
         old_input.remove();
         inline_post(obj);
     } else if (obj.hasClass('tags')) {
