@@ -305,8 +305,7 @@ and "localtv" to your INSTALLED_APPS::
 
 Set up the OpenID authentication::
 
-    LOGIN_URL = '/openid/'
-    LOGOUT_URL = '/openid/signout/'
+    LOGIN_REDIRECT_URL = '/'
 
     AUTHENTICATION_BACKENDS = (
         'localtv.openid.OpenIdBackend',
