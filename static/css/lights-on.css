@@ -902,6 +902,10 @@ ul.pagetabs li a:active span {
 
 }
 
+#admin.searches .admin_actions_all {
+    display: none;
+}
+
 #video_wrapper{
     text-align: center;
     height: 430px;
