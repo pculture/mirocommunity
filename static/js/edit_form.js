@@ -18,7 +18,7 @@ function inline_edit_open() {
         input2 = $('<input type="file" name="thumbnail"/>');
         obj.append('Thumbnail URL');
         obj.append(input);
-        obj.append('or upload: ')
+        obj.append('or upload: ');
         obj.append(input2);
     } else if (obj.hasClass('tags')) {
         input = $('<input type="text" />').val($("#id_tags").val());
@@ -48,7 +48,6 @@ function inline_save() {
         inline_post(obj);
     } else if (obj.hasClass('thumbnail')) {
         input = obj.children('input');
-        console.log(input);
         input.replaceWith($('<span>Uploading...</span>'));
         $("#id_thumbnail_url").val(input.eq(0).val());
         old_input = $("#id_thumbnail");
