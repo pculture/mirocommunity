@@ -23,7 +23,7 @@ def subsite_index(request, sitelocation=None):
         '-last_featured', '-when_approved', '-when_submitted')[:10]
 
     popular_videos = models.Video.popular_since(
-        datetime.timedelta(days=1), sitelocation=sitelocation,
+        datetime.timedelta(days=7), sitelocation=sitelocation,
         status=models.VIDEO_STATUS_ACTIVE)[:10]
 
     new_videos = models.Video.objects.filter(
@@ -64,7 +64,7 @@ def view_video(request, video_id, sitelocation=None):
         'localtv/subsite/view_video.html',
         {'current_video': video,
          'popular_videos': models.Video.popular_since(
-                datetime.timedelta(days=1),
+                datetime.timedelta(days=7),
                 sitelocation=sitelocation,
                 status=models.VIDEO_STATUS_ACTIVE)[:9],
          'intensedebate_acct': getattr(

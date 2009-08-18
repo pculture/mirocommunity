@@ -98,7 +98,7 @@ class PopularVideosFeed(BaseVideosFeed):
 
     def items(self):
         videos = models.Video.popular_since(
-            datetime.timedelta(days=1), self.sitelocation,
+            datetime.timedelta(days=7), self.sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
         return videos[:LOCALTV_FEED_LENGTH]
 
