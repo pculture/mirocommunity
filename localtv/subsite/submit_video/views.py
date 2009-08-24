@@ -119,6 +119,11 @@ def scraped_submit_video(request, sitelocation=None):
         else:
             file_url = scraped_data.get('file_url', '')
 
+        if request.user.is_authenticated():
+            user = request.user
+        else:
+            user = None
+
         video = models.Video(
             name=scraped_form.cleaned_data['name'],
             site=sitelocation.site,
@@ -128,7 +133,7 @@ def scraped_submit_video(request, sitelocation=None):
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
-            user=request.user,
+            user=user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'))
 
@@ -175,6 +180,12 @@ def embedrequest_submit_video(request, sitelocation=None):
 
     embed_form = forms.EmbedSubmitVideoForm(request.POST)
     if embed_form.is_valid():
+
+        if request.user.is_authenticated():
+            user = request.user
+        else:
+            user = None
+
         video = models.Video(
             name=embed_form.cleaned_data['name'],
             site=sitelocation.site,
@@ -182,7 +193,7 @@ def embedrequest_submit_video(request, sitelocation=None):
             embed_code=embed_form.cleaned_data['embed'],
             website_url=embed_form.cleaned_data.get('website_url', ''),
             thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
-            user=request.user,
+            user=user,
             when_submitted=datetime.datetime.now())
 
         if sitelocation.user_is_admin(request.user):
@@ -230,6 +241,11 @@ def directlink_submit_video(request, sitelocation=None):
 
     direct_form = forms.DirectSubmitVideoForm(request.POST)
     if direct_form.is_valid():
+        if request.user.is_authenticated():
+            user = request.user
+        else:
+            user = None
+
         video = models.Video(
             name=direct_form.cleaned_data['name'],
             site=sitelocation.site,
@@ -237,7 +253,7 @@ def directlink_submit_video(request, sitelocation=None):
             file_url=direct_form.cleaned_data['url'],
             thumbnail_url=direct_form.cleaned_data.get('thumbnail_url', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),
-            user=request.user,
+            user=user,
             when_submitted=datetime.datetime.now())
 
         if sitelocation.user_is_admin(request.user):
