@@ -212,6 +212,11 @@ color: #666;
 
 }
 
+.byline {
+    clear: left;
+    float: left;
+    margin-bottom: 15px;
+}
 
 .page_title {
     font-size: 18px;
