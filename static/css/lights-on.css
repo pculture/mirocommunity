@@ -220,6 +220,11 @@ color: #666;
 padding-top: 5px;
 }
 
+.byline {
+    clear: left;
+    float: left;
+    margin-bottom: 15px;
+}
 
 .page_title {
 font-size: 18px;
