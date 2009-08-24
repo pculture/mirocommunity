@@ -6,13 +6,13 @@ from localtv import models
 class FeedNameForm(forms.ModelForm):
     class Meta:
         model = models.Feed
-        fields = ('name')
+        fields = ('name',)
 
 
 class FeedAutoCategoriesForm(forms.ModelForm):
     class Meta:
         model = models.Feed
-        fields = ('auto_categories')
+        fields = ('auto_categories',)
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -24,7 +24,7 @@ class FeedAutoCategoriesForm(forms.ModelForm):
 class FeedAutoAuthorsForm(forms.ModelForm):
     class Meta:
         model = models.Feed
-        fields = ('auto_authors')
+        fields = ('auto_authors',)
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
