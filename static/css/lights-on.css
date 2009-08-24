@@ -224,6 +224,11 @@ padding-top: 5px;
     clear: left;
     float: left;
     margin-bottom: 15px;
+    color: #666;
+}
+
+.byline a {
+    color: #333;
 }
 
 .page_title {
