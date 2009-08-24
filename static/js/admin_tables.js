@@ -1,7 +1,7 @@
 /* TODO: Allow and adjust for padding */
 
 function remove_video_and_refresh_list(video_div) {
-    video_div.fadeOut(1000, function() {video_div.remove()});
+    video_div.fadeOut(1000, function() {video_div.remove();});
 }
 
 function run_and_disappear(eventdata) {
@@ -43,12 +43,10 @@ function load_click_callbacks() {
 
 function resize_admin() {
     var header = document.getElementById('header');
-    var above_admin_table = document.getElementById('above_admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
     var admin_rightpane = document.getElementById('admin_rightpane');
     base_height = (window.innerHeight -
                    header.clientHeight -
-                   above_admin_table.clientHeight -
                    20);
     admin_leftpane.style.height = base_height + 'px';
     admin_rightpane.style.height = base_height + 'px';
