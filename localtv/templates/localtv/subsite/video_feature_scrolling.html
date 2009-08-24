@@ -1,10 +1,10 @@
 {% load localtv_thumbnail i18n %}
 {% if video.has_thumbnail %}
-<a href="{{ video.get_absolute_url }}" class="image" style="background: url({% get_thumbnail_url video 500 281 %}) no-repeat;">
+<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #fff url({% get_thumbnail_url video 500 281 %}) no-repeat;">
    <img src="/images/play.png" />
 </a> 
 {% else %}
-<a href="{{ video.get_absolute_url }}" class="image" style="background: url(/images/default_vid.gif) no-repeat;">
+<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: url(/images/default_big.jpg) no-repeat;">
   <img src="/images/play.png" />
 </a>
 

@@ -8,6 +8,7 @@
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
 
 {% block content %}
+<div id="labels">
 <div id="massedit" class="rounded">
   <h2>Batch Edit Mode (<span id="selected_count"></span> selected)</h2>
   <div>
@@ -36,179 +37,451 @@
   </ul>
   <button>Save multiple edits</button>
 </div>
-<form method="POST" action="">
-  {{ formset.management_form }}
-  <table>
-    {% for form in formset.forms %}
-    {% if forloop.first or forloop.counter|divisibleby:"10" %}
-    <tr>
-      <th width="20"><strong>Select All/None</strong><input type="checkbox" onclick="$('input[name$=bulk]').click().eq(0).change();"></th>
-      {% for field in formset.forms.0 %}
-      {% if not field.is_hidden %}
-      {% ifnotequal field.name "bulk" %}
-      <th width="20%"><strong>{{ field.label }}</strong</th>
-      {% endifnotequal %}
-      {% endif %}
-      {% endfor %}
 
-      <th><strong>Source</strong></th>
-      <th>
-        <input type="submit" value="Save">
-      </th>
-    </tr>
-    {% endif %}
-    <tr valign="top">
-      <td class="check" valign="top">
-        {{ form.id }}
-        {{ form.bulk }}
-        {{ form.errors }}
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          {{ form.instance.name }}
-        </div>
-        <div class="field">
-          {{ form.name }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          click to edit
-        </div>
-        <div class="field">
-          {{ form.description }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          {{ form.instance.file_url }}
-        </div>
-        <div class="field">
-          {{ form.file_url }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          click to edit
-        </div>
-        <div class="field">
-          {{ form.embed_code }}
-        </div>
-      </td valign="top" class="noncheck">
-      <td valign="top" class="noncheck">
-        <div class="value">
-          {% if form.instance.tags.count %}
-          {% for tag in form.instance.tags.all %}
-          {{ tag.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-          {% else %}
-          click to edit
-          {% endif %}
-        </div>
-        <div class="field">
-          {{ form.tags }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          {% if form.instance.categories.count %}
-          {% for category in form.instance.categories.all %}
-          {{ category.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-          {% else %}
-          click to edit
-          {% endif %}
-        </div>
-        <div class="field">
-          {{ form.categories }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          {% if form.instance.authors.count %}
-          {% for author in form.instance.authors.all %}
-          {{ author.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-          {% else %}
-          click to edit
-          {% endif %}
-        </div>
-        <div class="field">
-          {{ form.authors }}
-        </div>
-      </td>
-      <td valign="top" class="noncheck">
-        <div class="value">
-          click to edit
-        </div>
-        <div class="field">
-          {{ form.thumbnail }}
-        </div>
-      </td>
-      <td class="check">{{ form.DELETE }}</td>
-      <td valign="top" class="noncheck">
-        {% if form.instance.feed %}
-        Feed: {{ form.instance.feed }}
-        {% else %}
-        {% if form.instance.search %}
-        Search: {{ form.instance.search }}
-        {% endif %}
-        {% endif %}
-      </td>
-      <td valign="top"><a href="{{ form.instance.get_absolute_url }}" class="med_button"><span>View</span></a></td>
-    </tr>
-    {% endfor %}
-  </table>
-</form>
-<script type="text/javascript">
-$("td div.value").click(
-    function() {
-        $(this).hide().next().show();
-    });
-$("input[name$='bulk']").change(
-    function() {
-        selected_count = $("input[name$='bulk']:checked").length;
-        if (selected_count) {
-            if (selected_count > 1) {
-                $("#selected_count").text(selected_count + ' videos');
-            } else {
-                $("#selected_count").text(selected_count + ' video');
-            }
-            $("#massedit").show();
-        } else {
-            $("#massedit").hide();
-        }
-    });
-$("#massedit input[type=checkbox]").click(
-    function() {
-        if (this.checked) {
-            checked = $("input[name$='bulk']:checked:eq(0)");
-            selector = "[name$='" + this.name + "']:eq(0)";
-            input = checked.parent().parent().find(
-                "input"+selector + ', textarea'+selector + ', select'+selector);
-            $(this).next().after(input.clone());
-        } else {
-            $(this).next().next().remove();
-        }
-        if ($("#massedit input[type=checkbox]:checked").length) {
-            $("#massedit button").show();
-        } else {
-            $("#massedit button").hide();
-        }
-    });
-$("#massedit button").click(
-    function() {
-        $("input[name$='bulk']:checked").each(function() {
-            row = $(this).parent().parent();
-            $("#massedit input[type=checkbox]:checked").each(function() {
-                mass_input = $(this).next().next();
-                selector = "[name$='" + this.name + "']:eq(0)";
-                input = row.find(
-                    "input"+selector + ', textarea'+selector + ', select'+selector);
-                input.val(mass_input.val());
-            });
-        });
-        $('form').submit();
-    });
-</script>
+<div class="floatleft form_wrap rounded">
+	<select class="behave">
+		<option>Bulk Actions</option>
+	</select>
+	<button class="med_button"><span>Apply</span></button>
+</div>
+
+<div class="floatright form_wrap rounded">
+	<select class="behave">
+		<option>Show All Categories</option>
+	</select>
+	<button class="med_button"><span>Apply</span></button>
+</div>
+
+<table class="rounded">
+	<thead>
+		<tr>
+			<th class="checkbox"><input type="checkbox" /></th>
+			<th><a class="sortup" href="#">Video Title</a></th>
+			<th><a class="sortdown" href="#">Source</a></th>
+			<th><a href="#">Categories</a></th>
+			<th class="last"><a href="#">Date</a></th>			
+		</tr>
+	</thead>
+			
+	<tbody>
+		<tr>
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr class="grey">
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr class="grey">
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr class="editing grey">
+			<td colspan="3">
+				<h3>Quick Edit <a href="#">(cancel)</a></h3>
+				<table>
+					<tr>
+						<td colspan="2">
+							<label>Title</label>					
+							<input type="text" class="large_field" />
+						</td>
+					</tr>	
+					<tr>
+						<td colspan="2">
+							<label>Publisher</label>					
+							<input type="text" class="large_field" />
+						</td>
+					</tr>	
+					<tr>
+						<td colspan="2">
+							<label>Video URL</label>					
+							<input type="text" class="large_field" />
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<label>Date</label>					
+							<div class="behave">
+								<select name="month">
+									<option value="1">January</option>
+									<option value="2">February</option>
+									<option value="3">March</option>
+									<option value="4">April</option>
+									<option value="5">May</option>
+									<option value="6">June</option>
+									<option value="7">July</option>
+									<option value="8">August</option>
+									<option value="9">September</option>
+									<option value="10">October</option>
+									<option value="11">November</option>
+									<option value="12">December</option>
+								</select>
+							
+							
+								<select name="day">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+									<option value="14">14</option>
+									<option value="15">15</option>
+									<option value="16">16</option>
+									<option value="17">17</option>
+									<option value="18">18</option>
+									<option value="19">19</option>
+									<option value="20">20</option>
+									<option value="21">21</option>
+									<option value="22">22</option>
+									<option value="23">23</option>
+									<option value="24">24</option>
+									<option value="25">25</option>
+									<option value="26">26</option>
+										<option value="27">27</option>
+									<option value="28">28</option>
+									<option value="29">29</option>
+									<option value="30">30</option>
+									<option value="31">31</option>
+								</select>
+						
+						
+								<select name="year">
+									<option value="2002">2002</option>
+									<option value="2003">2003</option>
+									<option value="2004">2004</option>
+									<option value="2005">2005</option>
+								</select>
+							</div>						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<label>Publisher</label>					
+							<input type="text" class="large_field" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label class="floatnone">Description</label>
+							<textarea></textarea>
+						</td>
+						<td>
+							<label class="floatnone">Tags</label>
+							<textarea></textarea>
+						</td>
+					</tr>
+					
+				
+				</table>
+				
+					<button class="med_button marginbottom behave"><span>Update Video</span></button>
+					
+					
+			</td>
+			
+			<td width="250">
+				<label class="padding">Categories</label>
+				<ul class="checklist">
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>					
+				</ul>
+			</td>
+			<td width="250">
+				<label class="padding">Authors</label>
+				<ul class="checklist">
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>					
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+		<tr class="last grey">
+			<td><input type="checkbox" /></td>
+			<td>
+				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
+				<div class="actions">
+					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
+				</div>
+			</td>		
+			<td>YouTube User <strong>BitchMagazine</strong></td>
+			<td>Broadcast Machine, General, Linux, Video Bomb</td>
+			<td class="last" width="19%"><span class="pub">Published</span> <span class="pub_date">Aug, 04 2009</span> </td>
+		</tr>
+	</tbody>
+	
+</table>
+
+<table class="rounded">
+	
+	<tbody>
+		<tr class="editing last">
+			<td colspan="3">
+				<h3>Bulk Edit (this will edit all selected videos)</h3>
+				<table>
+					<tr>
+						<td colspan="2">
+							<label>Title</label>					
+							<input type="text" class="large_field" />
+						</td>
+					</tr>	
+			
+					<tr>
+						<td colspan="2">
+							<label>Date</label>
+							<div class="behave">
+								<select name="month">
+									<option value="1">January</option>
+									<option value="2">February</option>
+									<option value="3">March</option>
+									<option value="4">April</option>
+									<option value="5">May</option>
+									<option value="6">June</option>
+									<option value="7">July</option>
+									<option value="8">August</option>
+									<option value="9">September</option>
+									<option value="10">October</option>
+									<option value="11">November</option>
+									<option value="12">December</option>
+								</select>
+							
+							
+								<select name="day">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+									<option value="14">14</option>
+									<option value="15">15</option>
+									<option value="16">16</option>
+									<option value="17">17</option>
+									<option value="18">18</option>
+									<option value="19">19</option>
+									<option value="20">20</option>
+									<option value="21">21</option>
+									<option value="22">22</option>
+									<option value="23">23</option>
+									<option value="24">24</option>
+									<option value="25">25</option>
+									<option value="26">26</option>
+										<option value="27">27</option>
+									<option value="28">28</option>
+									<option value="29">29</option>
+									<option value="30">30</option>
+									<option value="31">31</option>
+								</select>
+						
+						
+								<select name="year">
+									<option value="2002">2002</option>
+									<option value="2003">2003</option>
+									<option value="2004">2004</option>
+									<option value="2005">2005</option>
+								</select>
+							</div>
+						</td>
+					</tr>
+					
+					<tr>
+						<td>
+							<label class="floatnone">Description</label>
+							<textarea></textarea>
+						</td>
+						<td>
+							<label class="floatnone">Tags</label>
+							<textarea></textarea>
+						</td>
+					</tr>
+					
+				</table>
+			</td>
+			
+			<td width="250">
+				<label class="padding">Categories</label>
+				<ul class="checklist">
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>					
+				</ul>
+			</td>
+			<td width="250">
+				<label class="padding">Authors</label>
+				<ul class="checklist">
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>
+					<li><input type="checkbox" /> <span>Category</span></li>					
+				</ul>
+			</td>
+		</tr>
+		
+	</tbody>
+</table>
+
+
+<br />
+<br />
+<br />
+</div>
+
 {% endblock content %}
+

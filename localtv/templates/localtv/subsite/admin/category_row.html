@@ -4,7 +4,7 @@
 </td>
 <td valign="middle">{{ category.description }}</td>
 <td valign="middle">{{ category.slug }}</td>
-{% with category.video_set.count as count %}
+{% with category.video_set.count as count %} 
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}
 </tr>
