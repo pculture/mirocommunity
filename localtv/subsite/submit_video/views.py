@@ -15,7 +15,8 @@ from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.subsite.submit_video import forms
 
 def _check_submit_permissions(request):
-    sitelocation = models.SiteLocation.objects.get(site=Site.objects.get_current())
+    sitelocation = models.SiteLocation.objects.get(
+        site=Site.objects.get_current())
     user = request.user
     if not sitelocation.submission_requires_login:
         return True
@@ -138,6 +139,7 @@ def scraped_submit_video(request, sitelocation=None):
             when_published=scraped_data.get('publish_date'))
 
         if sitelocation.user_is_admin(request.user):
+            video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
 
         video.save()
@@ -197,6 +199,7 @@ def embedrequest_submit_video(request, sitelocation=None):
             when_submitted=datetime.datetime.now())
 
         if sitelocation.user_is_admin(request.user):
+            video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
 
         video.save()
@@ -257,6 +260,7 @@ def directlink_submit_video(request, sitelocation=None):
             when_submitted=datetime.datetime.now())
 
         if sitelocation.user_is_admin(request.user):
+            video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
 
         video.save()
