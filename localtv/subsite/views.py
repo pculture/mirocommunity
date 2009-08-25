@@ -95,12 +95,18 @@ def video_search(request, sitelocation=None):
 
         for term in include_terms:
             videos = videos.filter(
-                Q(description__icontains=term) | Q(name__icontains=term))
+                Q(description__icontains=term) | Q(name__icontains=term) |
+                Q(tags__name__icontains=term) |
+                Q(categories__name__icontains=term))
 
         for term in stripped_exclude_terms:
             videos = videos.exclude(
-                Q(description__icontains=term) | Q(name__icontains=term))
+                Q(description__icontains=term) | Q(name__icontains=term) |
+                Q(tags__name__icontains=term) |
+                Q(categories__name__icontains=term))
 
+        videos = videos.distinct()
+        
         return object_list(
             request=request, queryset=videos,
             paginate_by=5,
