@@ -1,11 +1,11 @@
-{% load video i18n %}
+{% load video i18n filters %}
 
 {% if current_video.name %}
   <h2 class="vid_title">{{ current_video.name }}</h2>
 {% else %}
   <h2 class="vid_title">{% trans "(no title)" %}</h2>
 {% endif %}
-<span class="date">{% blocktrans with current_video.when|timesince as timesince %}{{ timesince }} ago{% endblocktrans %}</span>
+<span class="date">{% blocktrans with current_video.when|simpletimesince as timesince %}{{ timesince }} ago{% endblocktrans %}</span>
 
 <div id="video_wrapper">
   {% if current_video.embed_code %}

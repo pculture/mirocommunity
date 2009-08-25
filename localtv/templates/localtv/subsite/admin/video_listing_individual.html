@@ -1,4 +1,4 @@
-{% load i18n localtv_thumbnail %}
+{% load i18n localtv_thumbnail filters %}
 
 <div {% ifequal video current_video %}
        class="video hoverable selected rounded {9px transparent}"
@@ -40,10 +40,10 @@
     {% endautoescape %}
  
     {% if video.when_submitted %}
-    <p class="submitted"><strong>Submitted</strong> {{ video.when_submitted|timesince }} ago</p>
+    <p class="submitted"><strong>Submitted</strong> {{ video.when_submitted|simpletimesince }} ago</p>
     {% endif %}
     {% if video.when %} 
-    <p class="published"><strong>Posted</strong> {{ video.when|timesince }} ago</p>
+    <p class="published"><strong>Posted</strong> {{ video.when|simpletimesince }} ago</p>
     {% endif %}
   </div>
   

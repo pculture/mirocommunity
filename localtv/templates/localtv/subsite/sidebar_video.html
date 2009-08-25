@@ -1,4 +1,4 @@
-{% load i18n localtv_thumbnail %}
+{% load i18n localtv_thumbnail filters %}
 
 <div class="video">
   
@@ -19,6 +19,6 @@
     {% endautoescape %}
   </div>
   <p>
-    <a href="#">Posted {{ video.when|timesince }} ago</a>
+    <a href="#">Posted {{ video.when|simpletimesince }} ago</a>
   </p>
 </div>

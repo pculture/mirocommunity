@@ -1,10 +1,10 @@
-{% load video i18n %}
+{% load video i18n filters %}
 {% if video.name %}
   <h2 class="vid_title"><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h2>
 {% else %}
   <h2 class="vid_title">{% trans "(no title)" %}</h2>
 {% endif %}
-<span class="date">{{ video.when|timesince }} ago</span>
+<span class="date">{{ video.when|simpletimesince }} ago</span>
 <div id="video_wrapper">
   {% if video.embed_code %}
   {{ video.embed_code|safe }}

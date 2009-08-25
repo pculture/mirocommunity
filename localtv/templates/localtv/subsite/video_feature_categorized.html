@@ -1,4 +1,4 @@
-{% load localtv_thumbnail i18n %}
+{% load localtv_thumbnail i18n filters %}
 {% if video.has_thumbnail %}
 <a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #000 url({% get_thumbnail_url video 500 281 %}) center top no-repeat;">
    <img src="/images/play.png" />
@@ -15,7 +15,7 @@
 {% else %}
   <h2><a href="{{ video.get_absolute_url }}">{% trans "(no title)" %}</a></h2>
 {% endif %}
-  <span><a href="{{ video.get_absolute_url }}">{{ video.when|timesince }} ago</a></span>
+  <span><a href="{{ video.get_absolute_url }}">{{ video.when|simpletimesince }} ago</a></span>
   <p><a href="{{ video.get_absolute_url }}">{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html"|safe }}</a></p>
 </div>
 <a href="{{ video.get_absolute_url }}" class="watch med_button"><span>Watch</span></a>
