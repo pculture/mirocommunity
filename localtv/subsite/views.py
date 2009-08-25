@@ -29,9 +29,10 @@ def subsite_index(request, sitelocation=None):
 
     new_videos = models.Video.objects.filter(
         site=sitelocation.site,
-        status=models.VIDEO_STATUS_ACTIVE)
+        status=models.VIDEO_STATUS_ACTIVE,
+        when_published__isnull=False)
     new_videos = new_videos.order_by(
-        '-when_approved', '-when_published', '-when_submitted')[:10]
+        '-when_published')[:10]
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
