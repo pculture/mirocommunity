@@ -19,9 +19,11 @@ def new_videos(request, sitelocation=None):
     videos = models.Video.objects.filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE,
-        when_published__isnull=False)
+        when_published__isnull=False).extra(
+        select={'best_date': 'COALESCE(localtv_video.when_published,'
+                'localtv_video.when_submitted)'})
     videos = videos.order_by(
-        '-when_published')
+        '-best_date')
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,

@@ -30,9 +30,11 @@ def subsite_index(request, sitelocation=None):
     new_videos = models.Video.objects.filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE,
-        when_published__isnull=False)
+        when_published__isnull=False).extra(
+        select={'best_date': 'COALESCE(localtv_video.when_published,'
+                'localtv_video.when_submitted)'})
     new_videos = new_videos.order_by(
-        '-when_published')[:10]
+        '-best_date')[:10]
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
