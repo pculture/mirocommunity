@@ -20,7 +20,8 @@ def subsite_index(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_approved', '-when_submitted')[:10]
+        '-last_featured', '-when_approved', '-when_published',
+        '-when_submitted')[:10]
 
     popular_videos = models.Video.popular_since(
         datetime.timedelta(days=7), sitelocation=sitelocation,
@@ -30,7 +31,7 @@ def subsite_index(request, sitelocation=None):
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     new_videos = new_videos.order_by(
-        '-when_approved', '-when_submitted')[:10]
+        '-when_approved', '-when_published', '-when_submitted')[:10]
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
