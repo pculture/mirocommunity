@@ -1,6 +1,6 @@
 {% load i18n %}
 <p>
-  {{ obj.description|removetags:"iframe title frame frameset object script embed applet meta link body html"|safe }}
+  {{ obj.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td"|safe }}
 </p>
 
 {% if obj.website_url %}

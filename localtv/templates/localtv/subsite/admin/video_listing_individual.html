@@ -36,7 +36,7 @@
     </h3>
 
     {% autoescape off %}
-      <p class="desc">{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html"|truncatewords_html:50|safe }}</p>
+      <p class="desc">{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td"|truncatewords_html:50|safe }}</p>
     {% endautoescape %}
  
     {% if video.when_submitted %}
