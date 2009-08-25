@@ -104,7 +104,7 @@ def video_search(request, sitelocation=None):
         return object_list(
             request=request, queryset=videos,
             paginate_by=5,
-            template_name='localtv/subsite/video_listing.html',
+            template_name='localtv/subsite/video_listing_search.html',
             allow_empty=True, template_object_name='video',
             extra_context={
                 'pagetabs_url': reverse('localtv_subsite_search'),
