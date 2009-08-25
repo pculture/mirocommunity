@@ -223,7 +223,7 @@ class Feed(models.Model):
             initial_video_status = VIDEO_STATUS_UNAPPROVED
 
         parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
-        for entry in parsed_feed['entries']:
+        for entry in parsed_feed['entries'][::-1]:
             skip = False
             guid = entry.get('guid')
             if guid is not None and Video.objects.filter(
