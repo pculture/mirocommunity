@@ -194,6 +194,9 @@ def display(request, search_video, sitelocation=None):
 def create_saved_search(request, sitelocation=None):
     query_string = request.GET.get('query')
 
+    if not query_string:
+        return HttpResponseBadRequest('must provide a query_string')
+
     existing_saved_search = models.SavedSearch.objects.filter(
         site=sitelocation.site,
         query_string=query_string)
