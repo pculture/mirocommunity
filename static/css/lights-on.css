@@ -23,21 +23,10 @@ font-size: 12px;
 
 
 #home_page.scrolling {
-background: url(../images/bg.png) center 176px repeat-x;
+background: url(../images/bg.png) center 121px repeat-x;
 }
 
 
-h1 {
-font-size: 28px;
-padding: 30px 0 20px 0;
-font-weight: normal;
-float: left;
-letter-spacing: .01em;
-}
-
-h1 a {
-text-decoration: none;
-}
 
 h2 {
 font-size: 18px;
@@ -439,12 +428,31 @@ height: 150px;
 }
 
 #logo {
-width: inherit;
+max-width: 810px;
 display: block;
 float: left;
-max-height: 90px;
-margin: 25px 15px 20px 0;
+height: 80px;
+margin: 20px 15px 10px 0;
 }
+
+#logo img{float: left;}
+
+#logo h1{
+max-width: 810px;
+display: block;
+float: left;
+margin: 0px 15px 10px 20px;
+font-size: 28px;
+font-weight: normal;
+float: left;
+padding: 15px 0 0px;
+letter-spacing: .01em;
+}
+
+#logo h1 a {
+text-decoration: none;
+}
+
 
 .tagline {
 color: #888;
@@ -596,7 +604,7 @@ _padding: 34px 0 0 0;
 #search #search_field {
 margin: 2px 2px 0 0;
 float: left;
-background: url(../images/search_field.gif) top left no-repeat;
+background: url(../images/search_field.png) top left no-repeat;
 padding: 6px 9px;
 height: 18px;
 border: 0;
@@ -990,18 +998,16 @@ display: none;
 
 #slider {
 overflow: hidden;
-height: 340px;
+height: 360px;
 padding-top: 25px;
-margin-bottom: 30px;
+margin-bottom: 15px;
 }
 
 #slider_small {
 overflow: hidden;
 height: 357px;
 padding-top: 25px;
-margin-bottom: 38px;/*
-background: url(../images/shadow.png) right bottom no-repeat;
-*/
+margin-bottom: 38px;
 }
 
 
@@ -1009,6 +1015,7 @@ background: url(../images/shadow.png) right bottom no-repeat;
 margin: 15px auto 20px;
 padding: 0;
 list-style: none;
+background: url(../images/spotlight.png) right 235px no-repeat;
 }
 
 
@@ -1033,27 +1040,31 @@ padding: 0;
 width: 860px;
 list-style: none;
 height: 340px;
-background: url(../images/shadow.png) left 255px no-repeat;
+background: url(../images/shadow.png) 0px 258px no-repeat;
 }
 
 
 #slider2 li h2 {
 margin: 0 20px;
+color: #fff;
+text-shadow: #333 1px 1px 0px ;
 padding-top: 20px;
 }
 
 #slider2 li h2 a{
-text-shadow: #ccc 1px 1px 0px ;
+color: #fff;
+
 }
 
 
 #slider2 li div.copy p {
-margin: 20px;
-text-shadow: #ddd 1px 1px 0px !important;
+margin: 15px 20px;
+color: #eee;
+text-shadow: #333 1px 1px 0px !important;
 }
 
 #slider2 li div.copy p a, #slider2 li div.copy span, #slider2 li div.copy span a{
-text-shadow: #e9e9e9 1px 1px 0px ;
+text-shadow: #333 1px 1px 0px ;
 }
 		
 p#controls, p#controls2 {
@@ -1122,7 +1133,7 @@ padding: 280px 0 0 150px;
 background: url(../images/default_big.jpg) center;
 margin: 20px 30px 0 15px;
 overflow: hidden;
-border: 1px solid #999;
+border: 1px solid #555;
 }
 
 
@@ -1137,7 +1148,7 @@ padding: 103px 9px 0 141px;
 .copy {
 width: 400px;
 float: left;
-margin: 20px 0;
+margin: 12px 0;
 height: 240px;
 padding-left: 10px;
 overflow: hidden;
@@ -1152,16 +1163,17 @@ line-height: 1.3em;
 .copy span {
 padding: 7px 0 0 20px;
 display: block;
-color: #888;
+color: #aaa;
 }
 
 
 .copy p {
-line-height: 1.5em;
+line-height: 1.6em;
 padding: 0 30px 0 0;
 font-size: 13px;
 margin: 25px 0;
-color: #666
+color: #666;
+text-shadow: none !important;
 }
 
 .watch {
@@ -1529,7 +1541,11 @@ clear: both;
 display: block;
 }
 
+#id_css{
+height: 595px;
+width: 500px;
 
+}
 
 .cat_list ul li a {
 padding-left: 50px;
@@ -1961,6 +1977,7 @@ margin-bottom: 10px;
 
 .look {
 margin-left: 20px;
+margin-bottom: 30px;
 }
 
 .info, .about_me, .look {
