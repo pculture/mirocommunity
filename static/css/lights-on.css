@@ -2192,13 +2192,6 @@ padding: 15px 0 5px;
 clear: both;
 }
 
-#admin.bulkedit form table {
-clear: both !important;
-margin-top: 20px;
-float: none !important;
-width: 70% !important;
-}
-
 #admin.bulkedit form table td, #admin.bulkedit form table th {
 vertical-align: top;
 padding: 5px;
