@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="StyleSheet" type="text/css" href="/css/reset.css">
-    <link rel="StyleSheet" type="text/css" href="/css/lights-on.css">
-    <link rel="StyleSheet" type="text/css" href="/css/video_page.css">
-    <link rel="StyleSheet" type="text/css" href="/css/tb.css">
+    <link rel="StyleSheet" type="text/css" href="/css/reset.css" />
+    <link rel="StyleSheet" type="text/css" href="/css/lights-on.css" />
+    <link rel="StyleSheet" type="text/css" href="/css/video_page.css" />
+    <link rel="StyleSheet" type="text/css" href="/css/tb.css" />
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
     {{ sitelocation.css }}
@@ -29,7 +29,7 @@
     <script src="/js/submit_video.js"
             type="text/javascript">
     </script>
-    <script>
+    <script type="text/javascript">
 
 	/*
 	Clear default form value script- by JavaScriptKit.com
@@ -42,7 +42,7 @@
 	thefield.value = ""
 	} 
 	</script>
-    <script>
+    <script type="text/javascript">
     $(document).ready( function(){
   		$('.rounded').corners();
 		});
@@ -57,14 +57,13 @@
 
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
-        <a href="{% url localtv_subsite_index %}">
-          <img id="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
-          <h1 style="text-decoration: none;">
+        <h1 style="text-decoration: none;">
+          <a href="{% url localtv_subsite_index %}">
+            <img id="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
             {{ sitelocation.site.name }}
             <span class="tagline">{{ sitelocation.tagline }}</span>
-          </h1>
-        </a>
-
+          </a>
+        </h1>
         <ul id="login">
 
             {% if user_is_admin %}
@@ -142,7 +141,7 @@
 
         
       </div>
-
+    </div>
       {% block footer_wrapper %}
         <div id="footer">
           <div class="local_footer">
