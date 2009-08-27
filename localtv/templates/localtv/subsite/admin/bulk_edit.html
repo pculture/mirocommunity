@@ -6,482 +6,192 @@
 {% load i18n %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
-
+{% block head %}{{ block.super }}
+  <script type="text/javascript" src="/js/bulk_edit.js"></script>
+{% endblock %}
 {% block content %}
 <div id="labels">
-<div id="massedit" class="rounded">
-  <h2>Batch Edit Mode (<span id="selected_count"></span> selected)</h2>
-  <div>
-  Edit these fields and apply changes to <strong>all checked videos.</strong> If unchecked, no changes will be made.</div>
-  <ul class="bulk_operations">
-  <li>
-    <input type="checkbox" name="name" />
-    <span>Title</span>
-  </li>
-  <li>
-    <input type="checkbox" name="categories" />
-    <span>Categories</span>
-  </li>
-  <li>
-    <input type="checkbox" name="authors" />
-    <span>Authors</span>
-  </li>
-  <li>
-    <input type="checkbox" name="tags" />
-    <span>Tags</span>
-  </li>
-  <li>
-    <input type="checkbox" name="description" />
-    <span>Description</span>
-  </li>
-  </ul>
-  <button>Save multiple edits</button>
+
+  <table id="massedit" class="rounded">
+
+    <tbody>
+      <tr class="editing last">
+        <td colspan="3">
+          <h3>Bulk Edit (this will edit all selected videos)</h3>
+          {% with formset.forms|last as form %}
+          <table>
+            <tr>
+              <td colspan="2">
+                <label>Title</label>
+                {{ form.name }}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <label>Video URL</label>
+                {{ form.file_url }}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <label>Date</label>
+                {{ form.when_published }}
+            </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="floatnone">Description</label>
+                {{ form.description }}
+              </td>
+              <td>
+                <label class="floatnone">Tags</label>
+                {{ form.tags }}
+              </td>
+            </tr>
+
+
+          </table>
+
+          <button class="med_button marginbottom behave"><span>Update Video</span></button>
+
+
+        </td>
+        <td width="250" class="checklist">
+          <label class="padding">Categories</label>
+          {{ form.categories }}
+        </td>
+        <td width="250" class="checklist">
+          <label class="padding">Authors</label>
+          {{ form.authors }}
+        </td>
+      {% endwith %}
+      </tr>
+    </tbody>
+  </table>
+
+
+  <br />
+  <br />
+  <br />
+
+  <div class="floatleft form_wrap rounded">
+    <select class="behave">
+      <option>Bulk Actions</option>
+    </select>
+    <button class="med_button"><span>Apply</span></button>
+  </div>
+
+  <form action="" method="GET">
+  <div class="floatleft form_wrap rounded">
+    <select class="behave" name="category">
+      <option value="">Show All Categories</option>
+      {% for category in categories %}
+      <option {% ifequal category.pk|stringformat:"i" request.GET.category %}selected=selected {% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <button class="med_button"><span>Filter</span></button>
+  </div>
+  </form>
+  <form method="POST" action="">
+  <table class="rounded">
+    <thead>
+      <tr>
+        <th class="checkbox"><input type="checkbox" onclick="$('td:first-child input[type=checkbox]').click();"/></th>
+        <th><a class="sortup" href="#">Video Title</a></th>
+        <th><a class="sortdown" href="#">Source</a></th>
+        <th><a href="#">Categories</a></th>
+        <th class="last"><a href="#">Date Posted</a></th>
+      </tr>
+      {{ formset.management_form }}
+    </thead>
+    <tbody>
+      {% for form in formset.forms|slice:":-1" %}
+      <tr class="{% cycle "" "grey" %}">
+        <td><input type="checkbox" onclick="showBulk(); return true;"/></td>
+        <td>
+          <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
+          <div class="actions">
+            <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}">View</a>
+          </div>
+        </td>
+        <td>
+          {% if form.instance.feed %}
+          {% if form.instance.feed.is_user %}
+          {{ form.instance.feed.is_user }} User
+          {% endif %}
+          <strong>{{ form.instance.feed.name }}</strong>
+          {% else %}
+          {% if form.instance.search %}
+          Saved Search: <strong>{{ form.instance.search.query_string }}</strong>
+          {% endif %}
+          {% endif %}
+        </td>
+        <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+        <td class="last" width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
+      </tr>
+      <tr class="editing {% cycle "" "grey" %}" style="display: none;">
+        <td colspan="3">
+          <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          {{ form.id }}
+          <table>
+            <tr>
+              <td colspan="2">
+                <label>Title</label>
+                {{ form.name }}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <label>Video URL</label>
+                {{ form.file_url }}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <label>Thumb URL</label>
+                {{  form.thumbnail_url }}
+                <div style="float: right; width: 286px;">
+                  or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
+                  <span style="display: none;">{{ form.thumbnail }}</span>
+                </div>
+            <tr>
+              <td colspan="2">
+                <label>Date</label>
+                {{ form.when_published }}
+            </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="floatnone">Description</label>
+                {{ form.description }}
+              </td>
+              <td>
+                <label class="floatnone">Tags</label>
+                {{ form.tags }}
+              </td>
+            </tr>
+
+
+          </table>
+
+          <button class="med_button marginbottom behave"><span>Update Video</span></button>
+
+
+        </td>
+
+        <td width="250" class="checklist">
+          <label class="padding">Categories</label>
+          {{ form.categories }}
+        </td>
+        <td width="250" class="checklist">
+          <label class="padding">Authors</label>
+          {{ form.authors }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </form>
 </div>
-
-<div class="floatleft form_wrap rounded">
-	<select class="behave">
-		<option>Bulk Actions</option>
-	</select>
-	<button class="med_button"><span>Apply</span></button>
-</div>
-
-<div class="floatright form_wrap rounded">
-	<select class="behave">
-		<option>Show All Categories</option>
-	</select>
-	<button class="med_button"><span>Apply</span></button>
-</div>
-
-<table class="rounded">
-	<thead>
-		<tr>
-			<th class="checkbox"><input type="checkbox" /></th>
-			<th><a class="sortup" href="#">Video Title</a></th>
-			<th><a class="sortdown" href="#">Source</a></th>
-			<th><a href="#">Categories</a></th>
-			<th class="last"><a href="#">Date</a></th>			
-		</tr>
-	</thead>
-			
-	<tbody>
-		<tr>
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr class="grey">
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr>
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr class="grey">
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr>
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr class="editing grey">
-			<td colspan="3">
-				<h3>Quick Edit <a href="#">(cancel)</a></h3>
-				<table>
-					<tr>
-						<td colspan="2">
-							<label>Title</label>					
-							<input type="text" class="large_field" />
-						</td>
-					</tr>	
-					<tr>
-						<td colspan="2">
-							<label>Publisher</label>					
-							<input type="text" class="large_field" />
-						</td>
-					</tr>	
-					<tr>
-						<td colspan="2">
-							<label>Video URL</label>					
-							<input type="text" class="large_field" />
-						</td>
-					</tr>
-					<tr>
-						<td colspan="2">
-							<label>Date</label>					
-							<div class="behave">
-								<select name="month">
-									<option value="1">January</option>
-									<option value="2">February</option>
-									<option value="3">March</option>
-									<option value="4">April</option>
-									<option value="5">May</option>
-									<option value="6">June</option>
-									<option value="7">July</option>
-									<option value="8">August</option>
-									<option value="9">September</option>
-									<option value="10">October</option>
-									<option value="11">November</option>
-									<option value="12">December</option>
-								</select>
-							
-							
-								<select name="day">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-									<option value="14">14</option>
-									<option value="15">15</option>
-									<option value="16">16</option>
-									<option value="17">17</option>
-									<option value="18">18</option>
-									<option value="19">19</option>
-									<option value="20">20</option>
-									<option value="21">21</option>
-									<option value="22">22</option>
-									<option value="23">23</option>
-									<option value="24">24</option>
-									<option value="25">25</option>
-									<option value="26">26</option>
-										<option value="27">27</option>
-									<option value="28">28</option>
-									<option value="29">29</option>
-									<option value="30">30</option>
-									<option value="31">31</option>
-								</select>
-						
-						
-								<select name="year">
-									<option value="2002">2002</option>
-									<option value="2003">2003</option>
-									<option value="2004">2004</option>
-									<option value="2005">2005</option>
-								</select>
-							</div>						</td>
-					</tr>
-					<tr>
-						<td colspan="2">
-							<label>Publisher</label>					
-							<input type="text" class="large_field" />
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<label class="floatnone">Description</label>
-							<textarea></textarea>
-						</td>
-						<td>
-							<label class="floatnone">Tags</label>
-							<textarea></textarea>
-						</td>
-					</tr>
-					
-				
-				</table>
-				
-					<button class="med_button marginbottom behave"><span>Update Video</span></button>
-					
-					
-			</td>
-			
-			<td width="250">
-				<label class="padding">Categories</label>
-				<ul class="checklist">
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>					
-				</ul>
-			</td>
-			<td width="250">
-				<label class="padding">Authors</label>
-				<ul class="checklist">
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>					
-				</ul>
-			</td>
-		</tr>
-		<tr>
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-		<tr class="last grey">
-			<td><input type="checkbox" /></td>
-			<td>
-				<a href="#">Accessible Communications: Federal 508 Compliance and the Needs of Persons with Disabilities. Part 1</a>
-				<div class="actions">
-					<a href="#">Edit</a> | <a href="#">Delete</a> | <a href="#">View</a>
-				</div>
-			</td>		
-			<td>YouTube User <strong>BitchMagazine</strong></td>
-			<td>Broadcast Machine, General, Linux, Video Bomb</td>
-			<td class="last" width="19%"><span class="pub">Posted</span> <span class="pub_date">Aug, 04 2009</span> </td>
-		</tr>
-	</tbody>
-	
-</table>
-
-<table class="rounded">
-	
-	<tbody>
-		<tr class="editing last">
-			<td colspan="3">
-				<h3>Bulk Edit (this will edit all selected videos)</h3>
-				<table>
-					<tr>
-						<td colspan="2">
-							<label>Title</label>					
-							<input type="text" class="large_field" />
-						</td>
-					</tr>	
-			
-					<tr>
-						<td colspan="2">
-							<label>Date</label>
-							<div class="behave">
-								<select name="month">
-									<option value="1">January</option>
-									<option value="2">February</option>
-									<option value="3">March</option>
-									<option value="4">April</option>
-									<option value="5">May</option>
-									<option value="6">June</option>
-									<option value="7">July</option>
-									<option value="8">August</option>
-									<option value="9">September</option>
-									<option value="10">October</option>
-									<option value="11">November</option>
-									<option value="12">December</option>
-								</select>
-							
-							
-								<select name="day">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-									<option value="14">14</option>
-									<option value="15">15</option>
-									<option value="16">16</option>
-									<option value="17">17</option>
-									<option value="18">18</option>
-									<option value="19">19</option>
-									<option value="20">20</option>
-									<option value="21">21</option>
-									<option value="22">22</option>
-									<option value="23">23</option>
-									<option value="24">24</option>
-									<option value="25">25</option>
-									<option value="26">26</option>
-										<option value="27">27</option>
-									<option value="28">28</option>
-									<option value="29">29</option>
-									<option value="30">30</option>
-									<option value="31">31</option>
-								</select>
-						
-						
-								<select name="year">
-									<option value="2002">2002</option>
-									<option value="2003">2003</option>
-									<option value="2004">2004</option>
-									<option value="2005">2005</option>
-								</select>
-							</div>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							<label class="floatnone">Description</label>
-							<textarea></textarea>
-						</td>
-						<td>
-							<label class="floatnone">Tags</label>
-							<textarea></textarea>
-						</td>
-					</tr>
-					
-				</table>
-			</td>
-			
-			<td width="250">
-				<label class="padding">Categories</label>
-				<ul class="checklist">
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>					
-				</ul>
-			</td>
-			<td width="250">
-				<label class="padding">Authors</label>
-				<ul class="checklist">
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>
-					<li><input type="checkbox" /> <span>Category</span></li>					
-				</ul>
-			</td>
-		</tr>
-		
-	</tbody>
-</table>
-
-
-<br />
-<br />
-<br />
-</div>
-
 {% endblock content %}
 

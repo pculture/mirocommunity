@@ -14,6 +14,15 @@ def bulk_edit(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         site=sitelocation.site).order_by('name')
 
+    category = request.GET.get('category', '')
+    try:
+        category = int(category)
+    except ValueError:
+        category = ''
+
+    if category != '':
+        videos = videos.filter(categories__pk=category).distinct()
+
     formset = forms.VideoFormSet(queryset=videos)
 
     if request.method == 'POST':
@@ -29,5 +38,7 @@ def bulk_edit(request, sitelocation=None):
             return HttpResponseRedirect(request.path)
 
     return render_to_response('localtv/subsite/admin/bulk_edit.html',
-                              {'formset': formset},
+                              {'formset': formset,
+                               'categories': models.Category.objects.filter(
+                site=sitelocation.site)},
                               context_instance=RequestContext(request))

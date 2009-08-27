@@ -2,19 +2,29 @@ from django import forms
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
 
 from localtv import models
 
-class TagWidget(forms.TextInput):
+class TagWidgetMixin:
     def render(self, name, value, attrs=None):
         if isinstance(value, basestring):
-            return forms.TextInput.render(self, name, value, attrs)
-        
-        return forms.TextInput.render(
+            return self.__class__.__bases__[-1].render(self, name, value,
+                                                       attrs)
+        if value is None:
+            value = []
+        return self.__class__.__bases__[-1].render(
             self, name,
             ', '.join(models.Tag.objects.filter(pk__in=value).values_list(
                     'name', flat=True)),
             attrs)
+
+class TagWidget(TagWidgetMixin, forms.TextInput):
+    pass
+
+class TagAreaWidget(TagWidgetMixin, forms.Textarea):
+    pass
 
 class TagField(forms.CharField):
     widget = TagWidget
@@ -41,10 +51,11 @@ class EditVideoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        site = Site.objects.get_current()
         self.fields['categories'].queryset = models.Category.objects.filter(
-            site=self.instance.site)
+            site=site)
         self.fields['authors'].queryset = models.Author.objects.filter(
-            site=self.instance.site)
+            site=site)
 
 
     def save(self, *args, **kwargs):
@@ -63,23 +74,41 @@ class EditVideoForm(forms.ModelForm):
                 self.instance.save_thumbnail()
         return forms.ModelForm.save(self, *args, **kwargs)
 
+class BulkChecklistField(forms.ModelMultipleChoiceField):
+    widget = forms.CheckboxSelectMultiple
 
-class BaseVideoFormSet(BaseModelFormSet):
-    def add_fields(self, form, index):
-        BaseModelFormSet.add_fields(self, form, index)
-        form.fields['bulk'] = forms.BooleanField(required=False)
+    def label_from_instance(self, instance):
+        return mark_safe(u'<span>%s</span>' % (
+                conditional_escape(instance.name)))
+
+
+class BulkEditVideoForm(EditVideoForm):
+    bulk = forms.BooleanField(required=False)
+    name = forms.CharField(widget=forms.TextInput(
+            attrs={'class': 'large_field'}))
+    file_url = forms.CharField(widget=forms.TextInput(
+            attrs={'class': 'large_field'}))
+    thumbnail_url = forms.CharField(widget=forms.TextInput(
+            attrs={'class': 'large_field'}))
+    tags = TagField(required=False,
+                    widget=TagAreaWidget)
+    categories = BulkChecklistField(models.Category, required=False)
+    authors = BulkChecklistField(models.Author, required=False)
+    when_published = forms.DateTimeField(required=False,
+                                         widget=forms.TextInput(
+            attrs={'class': 'large_field'}))
+
+    class Meta:
+        model = models.Video
+        fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
+                  'categories', 'authors', 'when_published')
 
 VideoFormSet = modelformset_factory(models.Video,
-                                    form=EditVideoForm,
-                                    formset=BaseVideoFormSet,
-                                    fields=('name', 'authors', 'categories',
-                                            'tags', 'file_url', 'thumbnail',
-                                            'description', 'embed_code',
-                                            'when_submitted'),
+                                    form=BulkEditVideoForm,
                                     can_delete=True,
-                                    extra=0)
+                                    extra=1)
 
-    
+
 class EditTitleForm(forms.Form):
     """
     """
