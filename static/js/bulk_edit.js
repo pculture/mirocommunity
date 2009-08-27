@@ -21,16 +21,13 @@ function toggleDelete(obj) {
     return false;
 }
 
-function showBulk() {
-    if ($("td:first-child input[type=checkbox]:checked").length) {
-        first = $("td:first-child input[type=checkbox]:checked:eq(0)");
-        editable = first.parent().parent();
-        massedit_children = $("#massedit").children('input, textarea');
-        editable.children('input, textarea').each(function (index) {
-            massedit_children.eq(index).val(this.val());
-        });
-        $("#massedit").show();
+function bulkAction() {
+    action = $("#bulk_action_selector").val();
+    if (action == 'edit') {
+        // show the bulk edit window
+       $("#massedit").show();
     } else {
-        $("#massedit").hide();
+        $("#bulk_action").val(action);
+        $("#labels form:eq(1)").submit();
     }
 }

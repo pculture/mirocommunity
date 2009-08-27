@@ -12,6 +12,30 @@
 {% block content %}
 <div id="labels">
 
+  <div class="floatleft form_wrap rounded">
+    <select id="bulk_action_selector" class="behave">
+      <option value="edit">Edit</option>
+      <option value="delete">Delete</option>
+      <option value="unapprove">Unapprove</option>
+      <option value="feature">Feature</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+  </div>
+
+  <form action="" method="GET">
+
+    <div class="floatleft form_wrap rounded">
+    <select class="behave" name="category">
+      <option value="">Show All Categories</option>
+      {% for category in categories %}
+      <option {% ifequal category.pk|stringformat:"i" request.GET.category %}selected=selected {% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <button class="med_button"><span>Filter</span></button>
+  </div>
+  </form>
+  <form method="POST" action="">
+
   <table id="massedit" class="rounded">
 
     <tbody>
@@ -24,12 +48,6 @@
               <td colspan="2">
                 <label>Title</label>
                 {{ form.name }}
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <label>Video URL</label>
-                {{ form.file_url }}
               </td>
             </tr>
             <tr>
@@ -74,26 +92,8 @@
   <br />
   <br />
 
-  <div class="floatleft form_wrap rounded">
-    <select class="behave">
-      <option>Bulk Actions</option>
-    </select>
-    <button class="med_button"><span>Apply</span></button>
-  </div>
 
-  <form action="" method="GET">
-  <div class="floatleft form_wrap rounded">
-    <select class="behave" name="category">
-      <option value="">Show All Categories</option>
-      {% for category in categories %}
-      <option {% ifequal category.pk|stringformat:"i" request.GET.category %}selected=selected {% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
-      {% endfor %}
-    </select>
-    <button class="med_button"><span>Filter</span></button>
-  </div>
-  </form>
-  <form method="POST" action="">
-  <table class="rounded">
+    <table class="rounded">
     <thead>
       <tr>
         <th class="checkbox"><input type="checkbox" onclick="$('td:first-child input[type=checkbox]').click();"/></th>
@@ -103,11 +103,12 @@
         <th class="last"><a href="#">Date Posted</a></th>
       </tr>
       {{ formset.management_form }}
+      <input type="hidden" id="bulk_action" name="bulk_action" value="">
     </thead>
     <tbody>
       {% for form in formset.forms|slice:":-1" %}
       <tr class="{% cycle "" "grey" %}">
-        <td><input type="checkbox" onclick="showBulk(); return true;"/></td>
+        <td>{{ form.bulk }}</td>
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
           <div class="actions">
