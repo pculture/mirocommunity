@@ -19,11 +19,11 @@
   {% endfor %}
 
   <p class="page_nav">
-    {% if has_previous %}
-      <a class="previous med_button" href="?page={{ previous }}"><span>Previous</span></a>{% if has_next %}{% endif %}
+    {% if page_obj.has_previous %}
+      <a class="previous med_button" href="{{ pagetabs_url }}?{% if pagetabs_args %}{{ pagetabs_args }}&{% endif %}page={{ previous }}"><span>Previous</span></a>{% if has_next %}{% endif %}
     {% endif %}
-    {% if has_next %}
-      <a class="next med_button" href="?page={{ next }}"><span>Next</span></a>
+    {% if page_obj.has_next %}
+      <a class="next med_button" href="{{ pagetabs_url }}?{% if pagetabs_args %}{{ pagetabs_args }}&{% endif %}page={{ next }}"><span>Next</span></a>
     {% endif %}
   </p>
 {% endblock content %}
