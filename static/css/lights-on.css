@@ -1047,24 +1047,24 @@ background: url(../images/shadow.png) 0px 258px no-repeat;
 #slider2 li h2 {
 margin: 0 20px;
 color: #fff;
-text-shadow: #333 1px 1px 0px ;
 padding-top: 20px;
 }
 
 #slider2 li h2 a{
 color: #fff;
-
+text-shadow: #333 1px 1px 0px !important;
 }
 
 
 #slider2 li div.copy p {
 margin: 15px 20px;
-color: #eee;
+color: #eee !important;
 text-shadow: #333 1px 1px 0px !important;
 }
 
 #slider2 li div.copy p a, #slider2 li div.copy span, #slider2 li div.copy span a{
-text-shadow: #333 1px 1px 0px ;
+text-shadow: #333 1px 1px 0px;
+color: #eee;
 }
 		
 p#controls, p#controls2 {
@@ -1168,7 +1168,7 @@ color: #aaa;
 
 
 .copy p {
-line-height: 1.6em;
+line-height: 1.5em;
 padding: 0 30px 0 0;
 font-size: 13px;
 margin: 25px 0;
