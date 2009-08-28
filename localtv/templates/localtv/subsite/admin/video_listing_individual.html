@@ -43,7 +43,7 @@
     <p class="submitted"><strong>Submitted</strong> {{ video.when_submitted|simpletimesince }} ago</p>
     {% endif %}
     {% if video.when %} 
-    <p class="published"><strong>Posted</strong> {{ video.when|simpletimesince }} ago</p>
+    <p class="published"><strong>{% if video.when_published %}Posted{% else %}Submitted{% endif %}</strong> {{ video.when|simpletimesince }} ago</p>
     {% endif %}
   </div>
   
