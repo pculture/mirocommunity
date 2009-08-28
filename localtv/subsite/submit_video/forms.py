@@ -51,6 +51,9 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
             raise forms.ValidationError(
                 "Can't get either a file url or embed code for this url")
 
+        if 'file_url' in scraped_data and scraped_data['file_url'] is None:
+            scraped_data['file_url'] = ''# None is an invalid value
+
         return self.cleaned_data
 
 
