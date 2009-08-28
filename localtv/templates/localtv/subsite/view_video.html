@@ -175,6 +175,9 @@
     </div>
     {% endif %}
     <div id="sidebar_header">
+      {% if category %}
+      <h2>{{ category.name }}</h2>
+      {% else %}
       <h2>Most Popular</h2>
 
       <div class="floatright">
@@ -182,11 +185,11 @@
         <a href="{{ popular_rss }}" class="rss">RSS</a> |
         <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ popular_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
+      {% endif %}
     </div>
 
     {% for video in popular_videos %}
       {% include "localtv/subsite/sidebar_video.html" %}
     {% endfor %}
-
   </div>
 {% endblock content %}

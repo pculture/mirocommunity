@@ -2,7 +2,7 @@ import urllib
 import datetime
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.db.models import Q
@@ -11,7 +11,6 @@ from django.views.generic.list_detail import object_list
 from localtv import models
 from localtv.decorators import get_sitelocation
 from localtv.subsite.admin import forms as admin_forms
-
 
 @get_sitelocation
 def subsite_index(request, sitelocation=None):
@@ -56,24 +55,59 @@ def about(request):
 
 @get_sitelocation
 def view_video(request, video_id, sitelocation=None):
-    video = get_object_or_404(models.Video, pk=video_id, site=sitelocation.site)
+    video = get_object_or_404(models.Video, pk=video_id,
+                              site=sitelocation.site)
 
     edit_video_form = None
     if sitelocation.user_is_admin(request.user):
         edit_video_form = admin_forms.EditVideoForm(instance=video)
 
+    context = {'current_video': video,
+               'intensedebate_acct': getattr(
+            settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
+               'edit_video_form': edit_video_form}
+
+    if video.categories.count():
+        category_obj = None
+        referrer = request.META.get('HTTP_REFERER')
+        host = request.META.get('HTTP_HOST')
+        if referrer and host:
+            if referrer.startswith('http://') or \
+                    referrer.startswith('https://'):
+                referrer = referrer[referrer.index('://')+3:]
+            if referrer.startswith(host):
+                referrer = referrer[len(host):]
+                try:
+                    view, args, kwargs = resolve(referrer)
+                except Resolver404:
+                    pass
+                else:
+                    if view == category:
+                        try:
+                            category_obj = models.Category.objects.get(
+                                slug=args[0],
+                                site=sitelocation.site)
+                        except models.Category.DoesNotExist:
+                            pass
+        if category_obj is None:
+            category_obj = video.categories.all()[0]
+
+        context['category'] = category_obj
+        context['popular_videos'] = models.Video.popular_since(
+            datetime.timedelta(days=7),
+            sitelocation=sitelocation,
+            status=models.VIDEO_STATUS_ACTIVE,
+            categories__pk=category_obj.pk).distinct()[:9]
+    else:
+        context['popular_videos'] = models.Video.popular_since(
+            datetime.timedelta(days=7),
+            sitelocation=sitelocation,
+            status=models.VIDEO_STATUS_ACTIVE)[:9]
     models.Watch.add(request, video)
 
     return render_to_response(
         'localtv/subsite/view_video.html',
-        {'current_video': video,
-         'popular_videos': models.Video.popular_since(
-                datetime.timedelta(days=7),
-                sitelocation=sitelocation,
-                status=models.VIDEO_STATUS_ACTIVE)[:9],
-         'intensedebate_acct': getattr(
-                settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
-         'edit_video_form': edit_video_form},
+        context,
         context_instance=RequestContext(request))
 
 
@@ -106,7 +140,7 @@ def video_search(request, sitelocation=None):
                 Q(categories__name__icontains=term))
 
         videos = videos.distinct()
-        
+
         return object_list(
             request=request, queryset=videos,
             paginate_by=5,
