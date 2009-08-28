@@ -103,15 +103,15 @@ margin: 21px;
     cursor: pointer;
 }
 
-.editable:after {
-    content: " ";
+div.editable:hover:after {
+    content: "✎";
 }
 
 .editable.open {
     cursor: inherit;
 }
 
-.editable.open:after {
+div.editable.open:hover:after {
     content: "";
 }
 

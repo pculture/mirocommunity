@@ -184,7 +184,7 @@ div.floatright {
 color: #ddd;
 }
 
-.vid_title {
+.vid_title h2 {
 float: left;
 width: 350px;
 line-height: 1.3em;
@@ -1787,10 +1787,13 @@ font-weight: bold;
 padding: 5px;
 }
 
-#labels table td + td {
+#labels table td + td:hover:after {
+    content: "✎";
 }
 
-
+#labels table tr.category_edit td + td:hover:after {
+    content: "";
+}
 
 #labels table table{
 border: 0;

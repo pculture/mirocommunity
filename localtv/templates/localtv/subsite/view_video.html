@@ -22,9 +22,9 @@
 
   <div id="main">
     {% if current_video.name %}
-      <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
-        {{ current_video.name }}
-      </h2>
+      <div class="vid_title{% if edit_video_form %} editable{% endif %}">
+        <h2>{{ current_video.name }}</h2>
+      </div>
     {% else %}
       <h2 class="vid_title{% if edit_video_form %} editable{% endif %}">
         {% trans "(no title)" %}
