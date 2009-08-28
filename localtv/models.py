@@ -628,6 +628,18 @@ class Video(models.Model):
 
         for width, height in VIDEO_THUMB_SIZES:
             resized_image = thumb.copy()
+            if resized_image.size[0] < width and \
+                    resized_image.size[1] < height:
+                # thumbnail is too small! let's blow it up
+                width_scale = float(resized_image.size[0]) / width
+                height_scale = float(resized_image.size[1]) / height
+                if width_scale > height_scale:
+                    new_height = int(resized_image.size[1] / width_scale)
+                    new_width = width
+                else:
+                    new_width = int(resized_image.size[0] / height_scale)
+                    new_height = height
+                resized_image = resized_image.resize((new_width, new_height))
             resized_image.thumbnail((width, height), Image.ANTIALIAS)
             if resized_image.size != (width, height):
                 x = y = 0
