@@ -56,13 +56,13 @@
       </a>
     </div>
 
-    <p class="description{% if edit_video_form %} editable{% endif %}">
-      {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td"|safe }}
+    <div class="description">
+      {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td div span"|safe }}
       {{ description }}
       {% if edit_video_form %}
-      <span>Change Description</span>
+      <span class="editable">Change Description</span>
       {% endif %}
-    </p>
+    </div>
 
     <div id="tags">
       {% if current_video.categories.count or edit_video_form %}
