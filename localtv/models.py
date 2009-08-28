@@ -404,6 +404,9 @@ class Category(models.Model):
         accumulate(klass.objects.filter(site=sitelocation, parent=None))
         return objects
 
+    def approved_set(self):
+        return self.video_set.filter(status=VIDEO_STATUS_ACTIVE)
+    approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}

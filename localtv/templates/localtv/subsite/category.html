@@ -35,7 +35,7 @@
     {% for child in category.child_set.all %}
     
     {% if not child.child_set.count %}
-    <h2><a href="{{ child.get_absolute_url }}" class="count">{{ child.name }} <span>{{ child.video_set.count }} Videos &gt;&gt;</span></a></h2>
+    <h2><a href="{{ child.get_absolute_url }}" class="count">{{ child.name }} <span>{{ child.approved_set.count }} Videos &gt;&gt;</span></a></h2>
     <ul>
       {% for video in child.video_set.all|slice:":4" %}
       <li>
@@ -48,11 +48,11 @@
     {% endfor %}
   </div>
  
-   {% if category.video_set.count %}
+   {% if category.approved_set.count %}
   <div id="individual">
     <h2>Individual {{ category.name }} Videos</h2>
     <ul>
-      {% for video in category.video_set.all %}
+      {% for video in category.approved_set.all %}
       <li>
         {% include "localtv/subsite/video_listing_individual.html" %}
       </li>
