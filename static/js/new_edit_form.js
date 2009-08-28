@@ -6,7 +6,7 @@ function inline_edit_open() {
 }
 
 function insert_and_activate_action_buttons(obj) {
-    obj.append('<span class="save">✔</span> <span class="cancel">✖</span>');
+    obj.append('<span class="save">Save Changes</span> <span class="cancel">Cancel</span>');
     obj.children('.save').click(inline_save);
     obj.children('.cancel').click(inline_cancel);
 }

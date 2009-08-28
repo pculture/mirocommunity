@@ -33,7 +33,7 @@ function inline_edit_open() {
         input = $("#id_authors").clone().attr('id', '');
         obj.append(input);
     }
-    obj.append('<span class="save">✔</span> <span class="cancel">✖</span>');
+    obj.append('<span class="save">Save Changes</span> <span class="cancel">Cancel</span>');
     obj.children('.save').click(inline_save);
     obj.children('.cancel').click(inline_cancel);
 
