@@ -323,7 +323,8 @@ body.editdesign a.design,
 body.category_admin a.categories,
 body.authors_admin a.authors,
 body.searches a.saved,
-body.incomingfeeds a.watched {
+body.incomingfeeds a.watched,
+body.bulkedit a.bulk {
 background: url(../images/nav_right.png) right -69px no-repeat !important;
 _background: url(../images/nav_right.gif) right -69px no-repeat !important;
 color: #aaa !important;
@@ -341,7 +342,8 @@ body.editdesign a.design span,
 body.category_admin a.categories span,
 body.authors_admin a.authors span,
 body.searches a.saved span,
-body.incomingfeeds a.watched span {
+body.incomingfeeds a.watched span,
+body.bulkedit a.bulk span{
 background-position: left -69px !important;
 _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 }
