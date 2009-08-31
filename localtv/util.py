@@ -163,7 +163,7 @@ def metasearch_from_querystring(querystring, order_by='relevant'):
         include_terms, stripped_exclude_terms, order_by)
 
 
-def strip_existing_metasearchvideos(metasearchvideos, sitelocation):
+def strip_existing_metasearchvideos(metasearchvideos, site):
     """
     Remove metasearchvideos that already exist on a specific
     sitelocation.
@@ -171,10 +171,10 @@ def strip_existing_metasearchvideos(metasearchvideos, sitelocation):
     filtered_vids = []
     for vid in metasearchvideos:
         if vid.file_url and models.Video.objects.filter(
-                site=sitelocation.site, file_url=vid.file_url):
+                site=site, file_url=vid.file_url):
             continue
         elif vid.website_url and models.Video.objects.filter(
-                site=sitelocation.site, website_url=vid.website_url):
+                site=site, website_url=vid.website_url):
             continue
 
         filtered_vids.append(vid)
