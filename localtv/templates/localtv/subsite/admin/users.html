@@ -8,12 +8,22 @@
 
 {% block content %}
 
-  <div id="label_sidebar" class="rounded">
-    <h1>Add a User</h1>
-    <form action="" method="POST">
-      {{ add_user_form.as_p }}
-      <input type="submit" value="Add" name="submit">
-    </form>
+  <div id="label_sidebar">
+    <div id="add_user" class="rounded">
+      <h1>Add a User</h1>
+      <form action="" method="POST">
+        {{ add_user_form.as_p }}
+        <input type="submit" value="Add" name="submit">
+      </form>
+    </div>
+
+    <div id="create_user" class="rounded">
+      <h1>Create a User</h1>
+      <form action="" method="POST">
+        {{ create_user_form.as_p }}
+        <input type="submit" value="Create" name="submit">
+      </form>
+    </div>
   </div>
 
   <div id="labels">
@@ -31,7 +41,7 @@
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
           <td width="50px">{{ user.openiduser.url }}</td>
-          <td><button class="med_button" type="submit" name="submit"><span class="reject">Delete</span></button></td>
+          <td><button class="med_button" type="submit" name="submit" value="Delete"><span class="reject">Delete</span></button></td>
         </form>
       </tr>
       {% endfor %}
