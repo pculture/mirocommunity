@@ -1,7 +1,7 @@
 import urllib
 
+from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
 from localtv import models
@@ -32,7 +32,7 @@ def request_passes_test(test_func):
         def new_view_func(request, *args, **kwargs):
             if not test_func(request):
                 # redirect here
-                redirect_url = reverse('localtv_openid_start')
+                redirect_url = settings.LOGIN_URL
                 redirect_url += '?' + urllib.urlencode(
                     {'next': request.META['PATH_INFO']})
                 return HttpResponseRedirect(redirect_url)
