@@ -1,6 +1,6 @@
 {% load localtv_thumbnail i18n filters %}
 {% if video.has_thumbnail %}
-<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #000 url({% get_thumbnail_url video 500 281 %}) center no-repeat;">
+<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #000 url({% get_thumbnail_url video 375 295 %}) center no-repeat;">
    <img src="/images/play.png" />
 </a> 
 {% else %}

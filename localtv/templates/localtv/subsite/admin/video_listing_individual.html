@@ -7,7 +7,7 @@
        class="video hoverable unselected rounded {9px transparent}"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 142 104 %}) no-repeat;"
+  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;"
      {% if video.metasearch_vid %}
        href="{% url localtv_admin_livesearch_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
      {% else %}

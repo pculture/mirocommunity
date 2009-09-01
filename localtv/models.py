@@ -39,8 +39,8 @@ SITE_STATUSES = (
     (SITE_STATUS_ACTIVE, 'Active'))
 
 VIDEO_THUMB_SIZES = [
-    (500, 281), # featured on frontpage
-    (142, 104)]
+    (375, 295), # featured on frontpage
+    (140, 110)]
 
 VIDEO_USER_REGEXES = (
     ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
