@@ -80,7 +80,7 @@ text-decoration: none;
 .video {
 float: left;
 width: 100%;
-padding: 0 0 5px 3px;
+padding: 0 0 5px 2px;
 clear: both;
 margin-bottom: 10px;
 _overflow: hidden;
@@ -93,8 +93,8 @@ background: url(../images/default_vid.gif) left top no-repeat;
 _height: 0px;
 _padding-top: 102px;
 overflow: hidden;
-height: 104px;
-width: 141px;
+height: 110px;
+width: 140px;
 }
 
 .marginbottom{
@@ -438,6 +438,7 @@ display: block;
 float: left;
 height: 80px;
 margin: 20px 15px 10px 0;
+
 }
 
 #logo img{float: left;}
@@ -573,6 +574,8 @@ text-decoration: none;
 clear: both;
 text-align: right;
 padding: 65px 0;
+width: 960px;
+margin: 0 auto;
 }
 
 #footer p {
@@ -1003,9 +1006,9 @@ display: none;
 
 #slider {
 overflow: hidden;
-height: 360px;
-padding-top: 25px;
-margin-bottom: 15px;
+height: 363px !important;
+padding-top: 17px;
+margin-bottom: 18px;
 }
 
 #slider_small {
@@ -1020,6 +1023,7 @@ margin-bottom: 38px;
 margin: 15px auto 20px;
 padding: 0;
 list-style: none;
+height: 400px !important;
 background: url(../images/spotlight.png) right 235px no-repeat;
 }
 
@@ -1050,19 +1054,21 @@ background: url(../images/shadow.png) 0px 258px no-repeat;
 
 
 #slider2 li h2 {
-margin: 0 20px;
+margin: 0 20px 0 10px;
 color: #fff;
 padding-top: 20px;
-}
-
-#slider2 li h2 a{
-color: #fff;
 text-shadow: #333 1px 1px 0px !important;
 }
 
 
+#slider2 li h2 a{
+color: #fff;
+text-shadow: none;
+}
+
+
 #slider2 li div.copy p {
-margin: 15px 20px;
+margin: 15px 20px 15px 10px;
 color: #eee !important;
 text-shadow: #333 1px 1px 0px !important;
 }
@@ -1127,14 +1133,14 @@ background-position: -37px -72px;
 
 #controls {
 position: relative;
-top: -220px;
+top: -260px;
 }
 
 a.image {
-width: 210px;
+width: 220px;
 float: left;
-height: 0px;
-padding: 280px 0 0 150px;
+height: 0px; 
+padding: 295px 0 0 155px;
 background: url(../images/default_big.jpg) center;
 margin: 20px 30px 0 15px;
 overflow: hidden;
@@ -1144,7 +1150,7 @@ border: 1px solid #555;
 
 a.image:hover {
 height: 177px;
-padding: 103px 9px 0 141px;
+padding: 103px 14px 15px 141px;
 }
 
 
@@ -1166,7 +1172,7 @@ line-height: 1.3em;
 }
 
 .copy span {
-padding: 7px 0 0 20px;
+padding: 7px 0 0 10px;
 display: block;
 color: #aaa;
 }
@@ -1183,10 +1189,15 @@ text-shadow: none !important;
 
 .watch {
 float: left;
-margin-left: 30px;
+margin-top: 14px;
+margin-left: 18px;
 }
 
-
+.watch span{
+line-height: 2.2em;
+text-shadow: #ddd 1px 1px 0px ;
+padding-top: 0px;
+}
 
 .featured_small_list, .new_small_list {
 width: 300px;
