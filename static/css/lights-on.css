@@ -186,7 +186,7 @@ color: #ddd;
 
 .vid_title_wrapper {
 float: left;
-width: 350px;
+width: 440px;
 margin-bottom: 10px;
 }
 
@@ -205,7 +205,7 @@ text-decoration: underline;
 
 .date {
 float: right;
-width: 150px;
+width: 100px;
 line-height: 1.3em;
 text-align: right;
 color: #666;
