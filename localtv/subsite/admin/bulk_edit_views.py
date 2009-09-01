@@ -56,7 +56,9 @@ def bulk_edit(request, sitelocation=None):
                                 form.instance.status = \
                                     models.VIDEO_STATUS_UNAPPROVED
                             elif value == 'feature':
-                                form.instance.when_featured = datetime.now()
+                                form.instance.last_featured = datetime.now()
+                            elif value == 'unfeature':
+                                form.instance.last_featured = None
                         else:
                             form.cleaned_data[key] = value
             formset.forms = formset.initial_forms # get rid of the extra bulk
