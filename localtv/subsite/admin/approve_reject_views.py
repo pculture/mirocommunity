@@ -1,13 +1,15 @@
 import datetime
 
 from django.core.paginator import Paginator, EmptyPage
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, \
+    HttpResponseRedirect
 
 
 ## --------------------
@@ -161,3 +163,20 @@ def approve_all(request, sitelocation=None):
         video.save()
 
     return HttpResponse('SUCCESS')
+
+@require_site_admin
+@get_sitelocation
+def clear_all(request, sitelocation=None):
+    videos = models.Video.objects.filter(
+        site=sitelocation.site,
+        status=models.VIDEO_STATUS_UNAPPROVED)
+    if request.POST.get('confirm') == 'yes':
+        print 'clearing'
+        for video in videos:
+            video.status = models.VIDEO_STATUS_REJECTED
+            video.save()
+        return HttpResponseRedirect(reverse('localtv_admin_approve_reject'))
+    else:
+        return render_to_response('localtv/subsite/admin/clear_confirm.html',
+                                  {'videos': videos},
+                                  context_instance=RequestContext(request))

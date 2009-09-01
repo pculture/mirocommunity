@@ -1,0 +1,18 @@
+{% extends "localtv/subsite/admin/base.html" %}
+
+
+{% block body_class %}incomingvids{% endblock body_class %}
+
+{% load pagetabs i18n %}
+
+{% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Confirm Clear" %}{% endblock %}{% endblock %}
+
+{% block content %}
+  <div style="width: 500px;">
+    Are you sure you want to reject {{ videos.count }} videos?
+    <form method="POST" action="">
+      <button class="med_button" name="confirm" value="yes"><span>Clear Queue</span></button>
+      <a class="med_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
+    </form>
+  </div>
+{% endblock content %}

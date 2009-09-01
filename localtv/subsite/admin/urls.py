@@ -17,7 +17,10 @@ urlpatterns = patterns(
     (r'^actions/reject_all/$', 'reject_all',
      {}, 'localtv_admin_reject_all'),
     (r'^actions/approve_all/$', 'approve_all',
-     {}, 'localtv_admin_approve_all'))
+     {}, 'localtv_admin_approve_all'),
+    (r'^actions/clear_all/$', 'clear_all',
+     {}, 'localtv_admin_clear_all'),
+    )
 
 
 urlpatterns += patterns(
