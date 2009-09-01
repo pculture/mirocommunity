@@ -1883,13 +1883,13 @@ display: block;
 }
 
 
-.actions{
+table .actions{
 float: left;
 display: none;
 padding: 4px 0 0 0 !important;
 }
 
-.actions a{
+table .actions a{
 display: inline !important;
 color: #000;
 font-weight: bold;
