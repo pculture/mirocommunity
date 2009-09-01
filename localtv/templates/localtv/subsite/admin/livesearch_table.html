@@ -56,14 +56,6 @@
       <span>Save as Source</span></a>
   {% endif %}
 	</div>
-
-
-  <h4 class="clear">Saved Searches</h4>
-  
-  {% for search in saved_searches %}
-    {% include "localtv/subsite/admin/search_listing_individual.html" %}
-  {% endfor %}
-  {{ block.super }}
   
 {% endblock %}
 
