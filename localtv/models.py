@@ -479,7 +479,7 @@ class SavedSearch(models.Model):
             self.site)
 
         for result in raw_results:
-            result.generate_video_model(self.site.site,
+            result.generate_video_model(self.site,
                                         VIDEO_STATUS_UNAPPROVED)
 
 
