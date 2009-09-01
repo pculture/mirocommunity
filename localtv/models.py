@@ -405,7 +405,10 @@ class Category(models.Model):
         return objects
 
     def approved_set(self):
-        return self.video_set.filter(status=VIDEO_STATUS_ACTIVE)
+        return self.video_set.filter(status=VIDEO_STATUS_ACTIVE).extra(
+        select={'best_date': 'COALESCE(localtv_video.when_published,'
+                'localtv_video.when_submitted)'}).order_by(
+            '-best_date')
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
