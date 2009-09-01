@@ -7,6 +7,7 @@
 
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
 {% block head %}{{ block.super }}
+  <script type="text/javascript" src="/js/extern/jquery.tablesorter.min.js"></script>
   <script type="text/javascript" src="/js/bulk_edit.js"></script>
 {% endblock %}
 {% block content %}
@@ -98,10 +99,16 @@
     <thead>
       <tr>
         <th class="checkbox"><input type="checkbox" onclick="$('td:first-child input[type=checkbox]').click();"/></th>
-        <th><a class="sortup" href="#">Video Title</a></th>
-        <th><a class="sortdown" href="#">Source</a></th>
-        <th><a href="#">Categories</a></th>
-        <th class="last"><a href="#">Date Posted</a></th>
+        {% for header in headers %}
+        <th>
+            {% if header.sort %}
+            <a class="{% if forloop.last %}last {% endif %}{{ header.class }}" href="{{ header.link }}">
+              {{ header.label }}
+            </a>
+            {% else %}
+            <span>{{ header.label }}
+            {% endif %}
+        {% endfor %}
       </tr>
       {{ formset.management_form }}
       <input type="hidden" id="bulk_action" name="bulk_action" value="">

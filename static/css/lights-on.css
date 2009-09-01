@@ -1892,10 +1892,13 @@ border-right: 1px solid #eee;
 padding: 0 !important;
 }
 
-#labels table th a {
+#labels table th a, #labels table th span {
 padding: 5px 15px 4px 13px !important;
 display: block;
 margin-right: 13px;
+}
+
+#labels table th a {
 background: url(../images/arrows.gif) right -63px no-repeat;
 }
 

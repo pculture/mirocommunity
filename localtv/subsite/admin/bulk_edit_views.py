@@ -9,12 +9,28 @@ from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.subsite.admin import forms
 
+def _header(sort, label, current):
+    if current.endswith(sort):
+        # this is the current sort
+        css_class = 'sortup'
+        if current[0] != '-':
+            sort = '-%s' % sort
+            css_class = 'sortdown'
+    else:
+        css_class = ''
+    return {
+        'sort': sort,
+        'link': '?sort=%s' % sort,
+        'label': label,
+        'class': css_class
+        }
+
 @get_sitelocation
 @require_site_admin
 def bulk_edit(request, sitelocation=None):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
-        site=sitelocation.site).order_by('name')
+        site=sitelocation.site)
 
     category = request.GET.get('category', '')
     try:
@@ -25,7 +41,15 @@ def bulk_edit(request, sitelocation=None):
     if category != '':
         videos = videos.filter(categories__pk=category).distinct()
 
+
+    sort = request.GET.get('sort', 'name')
+    videos = videos.order_by(sort)
     formset = forms.VideoFormSet(queryset=videos)
+    headers = [
+        _header('name', 'Video Title', sort),
+        _header('feed__feed_url', 'Source', sort),
+        {'label': 'Categories'},
+        _header('when_published', 'Date Posted', sort)]
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,
@@ -70,6 +94,7 @@ def bulk_edit(request, sitelocation=None):
 
     return render_to_response('localtv/subsite/admin/bulk_edit.html',
                               {'formset': formset,
+                               'headers': headers,
                                'categories': models.Category.objects.filter(
                 site=sitelocation.site)},
                               context_instance=RequestContext(request))
