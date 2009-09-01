@@ -184,11 +184,14 @@ div.floatright {
 color: #ddd;
 }
 
-.vid_title h2 {
+.vid_title_wrapper {
 float: left;
 width: 350px;
-line-height: 1.3em;
 margin-bottom: 10px;
+}
+
+.vid_title h2 {
+line-height: 1.3em;
 padding-top: 0;
 }
 

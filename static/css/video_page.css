@@ -102,6 +102,9 @@ margin: 21px;
 .editable {
     cursor: pointer;
 }
+.vid_title.editable, .vid_title.editable h2 {
+    display: inline;
+}
 
 div.editable:hover:after {
     content: "✎";
