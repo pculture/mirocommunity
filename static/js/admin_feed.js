@@ -18,7 +18,8 @@ function toggle_auto_approve_feed(eventdata) {
         url: this_anchor.attr('href'),
         success: function(eventdata) {
                 this_anchor.css('display', 'none');
-                if (this_anchor.attr('class') == 'auto_approve') {
+                if (this_anchor.hasClass('auto_approve'))
+                {
                     this_anchor.parent().find(
                         '.disable_auto_approve').css('display', 'inline');
                 } else {
