@@ -162,7 +162,12 @@
       </p>
       {% endfor %}
       <h2>Post a comment</h2>
-      {% render_comment_form for current_video %}
+      {% get_comment_form for current_video as comment_form %}
+      <form action="{% comment_form_target %}" method="POST">
+        <input type="hidden" name="next" value="{{ current_video.get_absolute_url }}w">
+        {% with comment_form as form %}
+        {% include "comments/form_base.html" %}
+        {% endwith %}
     </div>
   </div>
 
