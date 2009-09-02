@@ -38,8 +38,7 @@ def submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/subsite/submit/submit_video.html',
             {'sitelocation': sitelocation,
-             'submit_form': submit_form,
-             'was_duplicate': bool(request.GET.get('was_duplicate', False))},
+             'submit_form': submit_form},
             context_instance=RequestContext(request))
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
@@ -52,8 +51,21 @@ def submit_video(request, sitelocation=None):
             if models.Video.objects.filter(
                     website_url=submit_form.cleaned_data['url'],
                     site=sitelocation.site).count():
-                return HttpResponseRedirect(
-                    reverse('localtv_submit_video') + '?was_duplicate=true')
+                videos = models.Video.objects.filter(
+                    website_url=submit_form.cleaned_data['url'],
+                    site=sitelocation.site,
+                    status=models.VIDEO_STATUS_ACTIVE)
+                if videos.count():
+                    video = videos[0]
+                else:
+                    video = None
+                return render_to_response(
+                    'localtv/subsite/submit/submit_video.html',
+                    {'sitelocation': sitelocation,
+                     'submit_form': forms.SubmitVideoForm(),
+                     'was_duplicate': True,
+                     'video': video},
+                    context_instance=RequestContext(request))
 
             scraped_data = util.get_scraped_data(
                 submit_form.cleaned_data['url'])

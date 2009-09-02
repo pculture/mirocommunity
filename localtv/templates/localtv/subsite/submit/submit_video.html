@@ -3,7 +3,7 @@
   {% if was_duplicate %}
     <h1>That video has already been submitted!</h1>
     <div>
-      It appears that we already have a copy of that video.. sorry!
+      It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here{% endif %}.. sorry!
       You can submit another video if you like.
     </div>
   {% endif %}
