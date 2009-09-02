@@ -2290,7 +2290,7 @@ padding-left: 12px !important;
 .rounded.form_wrap.cleartheleft {
 float: right !important;
 margin-right: 0 !important;
-width: 50% !important;
+width: 49% !important;
 }
 
 
@@ -2298,6 +2298,14 @@ width: 50% !important;
 width: 244px;
 }
 
+#add_user .large_field {
+    width: 150px;
+    margin-right: 5px !important;
+}
+
+#add_user #id_service {
+    margin-left: 5px !important;
+}
 
 .left.large_field {
 width: 135px;
