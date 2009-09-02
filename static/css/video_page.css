@@ -33,6 +33,7 @@ div.description{
     font-weight: bold;
     padding-left: 3px;
     color: #666;
+    width: 370px;
 }
 
 #tags {
