@@ -255,9 +255,9 @@ class AddUserForm(forms.Form):
 
 class VideoServiceForm(forms.Form):
     URLS = (
+        ('YouTube', 'http://www.youtube.com/rss/user/%s/videos.rss'),
         ('blip.tv', 'http://%s.blip.tv/rss'),
         ('Vimeo', 'http://www.vimeo.com/%s/videos/rss'),
-        ('YouTube', 'http://www.youtube.com/rss/user/%s/videos.rss'),
          )
     service = forms.ChoiceField(
         choices = enumerate([service for service, url in URLS]))
