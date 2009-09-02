@@ -148,6 +148,10 @@ font-size: 11px;
 overflow: hidden;
 }
 
+.video span.author {
+    color: #bb2515;
+}
+
 .video p a {
 display: block;
 font-size: 11px;

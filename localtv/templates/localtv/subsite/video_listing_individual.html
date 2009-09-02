@@ -15,13 +15,19 @@
         {% endif %}
       </a>
     </h3>
-        
-    {% autoescape off %}
-      <p>{{ video.description|striptags }}</p>
-    {% endautoescape %}
-
   </div>
   <p>
     <a href="#">{% if video.when_published %}Posted{% else %}Submitted{% endif %} {{ video.when|simpletimesince }} ago</a>
+  </p>
+  <p>
+    {% if video.feed.is_user %}
+    By <span class="author">{{ video.feed.name }}</span>
+    {% else %}
+    {% if video.user %}
+    By <span class="author">{{ video.user.username }}</span>
+    {% else %}
+    {{ video.description|striptags }}
+    {% endif %}
+    {% endif %}
   </p>
 </div>
