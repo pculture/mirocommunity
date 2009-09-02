@@ -242,6 +242,7 @@ class Feed(models.Model):
             embed_code = None
             flash_enclosure_url = None
             publish_date = None
+            thumbnail_url = miroguide_util.get_thumbnail_url(entry) or ''
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
@@ -252,7 +253,7 @@ class Feed(models.Model):
                     scraped_data = vidscraper.auto_scrape(
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date'])
+                                'publish_date', 'thumbnail_url'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -260,6 +261,8 @@ class Feed(models.Model):
                     flash_enclosure_url = scraped_data.get(
                         'flash_enclosure_url')
                     publish_date = scraped_data.get('publish_date')
+                    thumbnail_url = scraped_data.get('thumbnail_url',
+                                                     thumbnail_url)
                 except vidscraper.errors.Error, e:
                     if verbose:
                         print "Vidscraper error: %s" % e
@@ -284,7 +287,7 @@ class Feed(models.Model):
                 status=initial_video_status,
                 feed=self,
                 website_url=entry.get('link', ''),
-                thumbnail_url=miroguide_util.get_thumbnail_url(entry) or '')
+                thumbnail_url=thumbnail_url)
 
             video.save()
 
