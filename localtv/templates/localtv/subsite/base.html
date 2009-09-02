@@ -61,7 +61,7 @@
           <h1 style="text-decoration: none;">
             <a href="{% url localtv_subsite_index %}">
               <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
-              {{ sitelocation.site.name }}
+              <span class="name">{{ sitelocation.site.name }}</span>
               <span class="tagline">{{ sitelocation.tagline }}</span>
             </a>
           </h1>
