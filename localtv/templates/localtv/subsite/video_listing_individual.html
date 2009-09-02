@@ -22,7 +22,7 @@
     {% endif %}
   </div>
   <p>
-    <a href="#">{% if video.when_published %}Posted{% else %}Submitted{% endif %} {{ video.when|simpletimesince }} ago</a>
+    {% if video.when_published %}Posted{% else %}Submitted{% endif %} {{ video.when|simpletimesince }} ago
   </p>
   <p>
     {% if video.feed.is_user %}
