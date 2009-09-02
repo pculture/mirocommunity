@@ -492,9 +492,13 @@ class SavedSearch(models.Model):
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
-        videos = self.extra(select={'best_date': """IF(localtv_video.feed_id,
-COALESCE(localtv_video.when_published,localtv_video.when_submitted),
-localtv_video.when_submitted)"""})
+        videos = self.extra(select={'best_date': """CASE
+WHEN localtv_video.feed_id IS NULL
+THEN
+localtv_video.when_submitted
+ELSE
+COALESCE(localtv_video.when_published,localtv_video.when_submitted)
+END"""})
         return videos.filter(**kwargs).order_by('-best_date')
 
     def popular_since(self, delta, sitelocation=None, **kwargs):
