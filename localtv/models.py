@@ -522,6 +522,9 @@ class Video(models.Model):
        "1186.png"
      - user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
+     - video_service_user: if not blank, the username of the user on the video
+       service who owns this video.  We can figure out the service from the
+       website_url.
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
@@ -549,6 +552,8 @@ class Video(models.Model):
     thumbnail_extension = models.CharField(max_length=8, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
+    video_service_user = models.CharField(max_length=250)
+    video_service_url = models.URLField(verify_exists=False, blank=True)
 
     class Meta:
         ordering = ['-when_submitted']
