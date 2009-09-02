@@ -11,9 +11,9 @@
 {% endif %}
 <div class="copy">
 {% if video.name %}
-  <h2>{{ video.name }}</h2>
+  <h2><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h2>
 {% else %}
-  <h2>{% trans "(no title)" %}</h2>
+  <h2><a href="{{ video.get_absolute_url }}">{% trans "(no title)" %}</a></h2>
 {% endif %}
   <span>{{ video.when|simpletimesince }} ago</span>
   <div>{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|safe }}</div>
