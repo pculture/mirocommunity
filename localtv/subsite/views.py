@@ -22,18 +22,14 @@ def subsite_index(request, sitelocation=None):
         '-last_featured', '-when_approved', '-when_published',
         '-when_submitted')[:10]
 
-    popular_videos = models.Video.popular_since(
+    popular_videos = models.Video.objects.popular_since(
         datetime.timedelta(days=7), sitelocation=sitelocation,
         status=models.VIDEO_STATUS_ACTIVE)[:10]
 
-    new_videos = models.Video.objects.filter(
+    new_videos = models.Video.objects.new(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE,
-        when_published__isnull=False).extra(
-        select={'best_date': 'COALESCE(localtv_video.when_published,'
-                'localtv_video.when_submitted)'})
-    new_videos = new_videos.order_by(
-        '-best_date')[:10]
+        when_published__isnull=False)[:10]
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
@@ -93,13 +89,13 @@ def view_video(request, video_id, sitelocation=None):
             category_obj = video.categories.all()[0]
 
         context['category'] = category_obj
-        context['popular_videos'] = models.Video.popular_since(
+        context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE,
             categories__pk=category_obj.pk).distinct()[:9]
     else:
-        context['popular_videos'] = models.Video.popular_since(
+        context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)[:9]

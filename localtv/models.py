@@ -489,6 +489,38 @@ class SavedSearch(models.Model):
                                         VIDEO_STATUS_UNAPPROVED)
 
 
+class VideoManager(models.Manager):
+
+    def new(self, **kwargs):
+        videos = self.extra(select={'best_date': """IF(localtv_video.feed_id,
+COALESCE(localtv_video.when_published,localtv_video.when_submitted),
+localtv_video.when_submitted)"""})
+        return videos.filter(**kwargs).order_by('-best_date')
+
+    def popular_since(self, delta, sitelocation=None, **kwargs):
+        """
+        Returns a QuerySet of the most popular videos in the previous C{delta)
+        time.
+
+        @type delta: L{datetime.timedelta)
+        @type sitelocation: L{SiteLocation}
+        """
+        earliest_time = datetime.datetime.now() - delta
+        videos = self.filter(
+            watch__timestamp__gte=earliest_time)
+        if sitelocation is not None:
+            videos = videos.filter(site=sitelocation.site)
+        if kwargs:
+            videos = videos.filter(**kwargs)
+        videos = videos.extra(
+            select={'watch__count':
+                        """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (earliest_time,))
+        return videos.order_by('-watch__count').distinct()
+
+
 class Video(models.Model):
     """
     Fields:
@@ -552,6 +584,8 @@ class Video(models.Model):
     thumbnail_extension = models.CharField(max_length=8, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
+
+    objects = VideoManager()
 
     class Meta:
         ordering = ['-when_submitted']
@@ -712,30 +746,6 @@ class Video(models.Model):
             return self.when_published
         else:
             return self.when_submitted
-
-    @classmethod
-    def popular_since(Class, delta, sitelocation=None, **kwargs):
-        """
-        Returns a QuerySet of the most popular videos in the previous C{delta)
-        time.
-
-        @type delta: L{datetime.timedelta)
-        @type sitelocation: L{SiteLocation}
-        """
-        earliest_time = datetime.datetime.now() - delta
-        videos = Class.objects.filter(
-            watch__timestamp__gte=earliest_time)
-        if sitelocation is not None:
-            videos = videos.filter(site=sitelocation.site)
-        if kwargs:
-            videos = videos.filter(**kwargs)
-        videos = videos.extra(
-            select={'watch__count':
-                        """SELECT COUNT(*) FROM localtv_watch
-WHERE localtv_video.id = localtv_watch.video_id AND
-localtv_watch.timestamp > %s"""},
-            select_params = (earliest_time,))
-        return videos.order_by('-watch__count').distinct()
 
 
 class VideoAdmin(admin.ModelAdmin):

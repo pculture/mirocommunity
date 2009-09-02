@@ -97,7 +97,7 @@ class PopularVideosFeed(BaseVideosFeed):
         return reverse('localtv_subsite_list_popular')
 
     def items(self):
-        videos = models.Video.popular_since(
+        videos = models.Video.objects.popular_since(
             datetime.timedelta(days=7), self.sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
         return videos[:LOCALTV_FEED_LENGTH]
