@@ -12,14 +12,17 @@
   <div id="add_feed" class="rounded form_wrap">
   <form method="POST" action="{% url localtv_admin_feed_add %}">
     <input name="feed_url" class="large_field" />
-    <button class="add_a_feed med_button" type="submit"><span>Add a Source</span></button>
+    <button class="add_a_feed med_button" type="submit"><span>Add RSS Feed</span></button>
   </form>
   </div>
   
    <div id="add_feed" class="rounded form_wrap cleartheleft">
   <form method="POST" action="{% url localtv_admin_feed_add %}">
-    {{ video_service_form }}
-    <button class="add_a_feed med_button" type="submit"><span>Add a Video Service User</span></button>
+    {{ video_service_form.username.label }}
+    {{ video_service_form.username }}
+    from
+    {{ video_service_form.service }}
+    <button class="add_a_feed floatright med_button" type="submit"><span>Add Source</span></button>
   </form>
   </div>
   </div>
@@ -28,7 +31,7 @@
   <div id="saved_searches" class="search_sites form_wrap rounded">
   <form method="GET" action="{% url localtv_admin_livesearch_page %}">
     
-    <button class="med_button"><span>Search All Sites</span></button>
+    <button class="med_button"><span>Search Video Sites</span></button>
   <div class="fields">
 
     <input id="livesearch_query_input" class="left large_field"
