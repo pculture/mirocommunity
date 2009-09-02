@@ -15,9 +15,9 @@
   {% endif %}
 </div>        
 
-<p class="description">
-  {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td"|safe }}
-</p>
+<div class="description">
+  {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|safe }}
+</div>
 
 <div id="tags">
   {% if current_video.categories.objects.count %}

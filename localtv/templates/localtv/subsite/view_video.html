@@ -57,7 +57,7 @@
     </div>
 
     <div class="description">
-      {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td div span"|safe }}
+      {{ current_video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|safe }}
       {{ description }}
       {% if edit_video_form %}
       <span class="editable">Change Description</span>

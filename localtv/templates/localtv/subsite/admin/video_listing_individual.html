@@ -13,9 +13,9 @@
      {% else %}
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
-    <div>
-      <img src="/images/vid_overlay.png" />
-    </div>
+    <span>
+      <img alt="{{ video.name }} thumbnail" src="/images/vid_overlay.png" />
+    </span>
   </a>
    
    
@@ -36,7 +36,7 @@
     </h3>
 
     {% autoescape off %}
-      <p class="desc">{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table tr td"|truncatewords_html:50|safe }}</p>
+      <div class="desc">{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|truncatewords_html:50|safe }}</div>
     {% endautoescape %}
  
     {% if video.when_submitted %}

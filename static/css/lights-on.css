@@ -1067,13 +1067,13 @@ text-shadow: none;
 }
 
 
-#slider2 li div.copy p {
+#slider2 li div.copy div {
 margin: 15px 20px 15px 10px;
 color: #eee !important;
 text-shadow: #333 1px 1px 0px !important;
 }
 
-#slider2 li div.copy p a, #slider2 li div.copy span, #slider2 li div.copy span a{
+#slider2 li div.copy div a, #slider2 li div.copy span, #slider2 li div.copy span a{
 text-shadow: #333 1px 1px 0px;
 color: #eee;
 }
@@ -1178,13 +1178,17 @@ color: #aaa;
 }
 
 
-.copy p {
+.copy div {
 line-height: 1.5em;
 padding: 0 30px 0 0;
 font-size: 13px;
 margin: 25px 0;
 color: #666;
 text-shadow: none !important;
+}
+
+.copy div * {
+    text-shadow: none !important;
 }
 
 .watch {
