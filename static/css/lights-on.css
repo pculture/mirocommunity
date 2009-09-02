@@ -1807,11 +1807,11 @@ font-weight: bold;
 padding: 5px;
 }
 
-#labels table td + td:hover:after {
+#labels table.editable td + td:hover:after {
     content: "✎";
 }
 
-#labels table tr.category_edit td + td:hover:after {
+#labels table.editable tr.category_edit td + td:hover:after {
     content: "";
 }
 
