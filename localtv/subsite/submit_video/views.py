@@ -46,11 +46,20 @@ def submit_video(request, sitelocation=None):
             url_filename = path.split(
                 urlparse.urlsplit(
                     submit_form.cleaned_data['url'])[2])[-1]
-
-            # if the video already exists, redirect back here with a warning.
             if models.Video.objects.filter(
                     website_url=submit_form.cleaned_data['url'],
                     site=sitelocation.site).count():
+                if sitelocation.user_is_admin(request.user):
+                    # even if the video was rejected, an admin submitting it
+                    # should make it approved
+                    for v in models.Video.objects.filter(
+                        website_url=submit_form.cleaned_data['url'],
+                        site=sitelocation.site).exclude(
+                        status=models.VIDEO_STATUS_ACTIVE):
+                        v.status = models.VIDEO_STATUS_ACTIVE
+                        v.when_approved = datetime.datetime.now()
+                        v.save()
+                # pick the first approved video to redirect the user to
                 videos = models.Video.objects.filter(
                     website_url=submit_form.cleaned_data['url'],
                     site=sitelocation.site,
