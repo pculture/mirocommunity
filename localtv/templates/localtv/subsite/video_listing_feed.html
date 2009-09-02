@@ -1,0 +1,9 @@
+{% extends "localtv/subsite/video_listing.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% blocktrans with feed.name as name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
+
+{% block title %}{{ block.super }} - {% blocktrans with feed.name as name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
+
+{% block body_id %}video_listing_new{% endblock body_id %}
