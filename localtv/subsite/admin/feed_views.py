@@ -150,9 +150,12 @@ def add_feed(request, sitelocation=None):
 
     feed.update_items()
 
-    reverse_url = reverse('localtv_admin_source_page')
-    if page_num:
-        reverse_url += '?page=' + page_num
+    if created and feed.auto_approve:
+        reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
+    else:
+        reverse_url = reverse('localtv_admin_source_page')
+        if page_num:
+            reverse_url += '?page=' + page_num
     return HttpResponseRedirect(reverse_url)
 
 
