@@ -169,6 +169,7 @@ def feed_stop_watching(request, sitelocation=None):
         site=sitelocation.site)
 
     feed.status = models.FEED_STATUS_REJECTED
+    feed.video_set.all().delete()
     feed.save()
 
     return HttpResponse('SUCCESS')
