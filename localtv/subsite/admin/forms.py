@@ -47,7 +47,7 @@ class EditVideoForm(forms.ModelForm):
     class Meta:
         model = models.Video
         fields = ('name', 'description', 'website_url', 'thumbnail', 'tags',
-                  'categories', 'authors', 'thumbnail_url')
+                  'categories', 'authors', 'thumbnail_url', 'when_published')
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)

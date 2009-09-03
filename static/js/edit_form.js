@@ -32,6 +32,13 @@ function inline_edit_open() {
     } else if (obj.hasClass('authors')) {
         input = $("#id_authors").clone().attr('id', '');
         obj.append(input);
+    } else if (obj.hasClass('date')) {
+        input = $('<input type="text" />').val($("#id_when_published").val());
+        obj.append(input);
+    } else {
+        obj.removeClass('open');
+        obj.html(this.oldContent);
+        return;
     }
     obj.append('<span class="save">Save Changes</span> <span class="cancel">Cancel</span>');
     obj.children('.save').click(inline_save);
@@ -69,6 +76,10 @@ function inline_save() {
         value = obj.children('select').val();
         $("#id_authors").val(value);
         inline_post(obj);
+    } else if (obj.hasClass('date')) {
+        value = obj.children('input').val();
+        $("#id_when_published").val(value);
+        inline_post();
     }
 }
 

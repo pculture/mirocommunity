@@ -30,7 +30,7 @@
         {% endif %}
       </div>
     </div>
-    <span class="date">Posted {{ current_video.when|simpletimesince }} ago</span>
+    <span class="date{% if edit_video_form %} editable{% endif %}">Posted {{ current_video.when|simpletimesince }} ago</span>
     {% if current_video.feed.is_user %}
     <span class="byline">Posted by <a href="{{ current_video.feed.webpage }}">{{ current_video.feed.name }}</a> on {{ current_video.feed.is_user }}</span>
     {% endif %}
