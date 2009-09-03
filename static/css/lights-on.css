@@ -1072,7 +1072,7 @@ _float: right;
 _width: 140px;
 }
 
-#video_listing_featured .title_desc .desc {
+#video_listing_featured .title_desc .desc, #category .title_desc .desc {
     display: inline !important;
 }
 
