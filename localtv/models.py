@@ -287,7 +287,7 @@ class Feed(models.Model):
                 status=initial_video_status,
                 feed=self,
                 website_url=entry.get('link', ''),
-                thumbnail_url=thumbnail_url)
+                thumbnail_url=thumbnail_url or '')
 
             video.save()
 
