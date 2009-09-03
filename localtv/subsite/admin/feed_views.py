@@ -132,25 +132,20 @@ def add_feed(request, sitelocation=None):
 
     feed, created = models.Feed.objects.get_or_create(
         feed_url=feed_url,
-        site=sitelocation.site,
-        defaults = {
-            'name': title,
-            'webpage': parsed_feed.feed.get('link', ''),
-            'description': parsed_feed.feed.get('summary', ''),
-            'when_submitted': datetime.datetime.now(),
-            'last_updated': datetime.datetime.now(),
-            'status': models.FEED_STATUS_ACTIVE,
-            'user': request.user,
-            'auto_approve': bool(request.POST.get('auto_approve', False))})
+        site=sitelocation.site)
 
-    if not created:
-        feed.status = models.FEED_STATUS_ACTIVE
-        feed.user = request.user
-        feed.save()
+    feed.webpage = parsed_feed.get('link', '')
+    feed.description = parsed_feed.get('summary', '')
+    feed.when_submitted = datetime.datetime.now()
+    feed.last_updated = datetime.datetime.now()
+    feed.status = models.FEED_STATUS_ACTIVE
+    feed.auto_approve = bool(request.POST.get('auto_approve', False))
+    feed.user = request.user
+    feed.save()
 
     feed.update_items()
 
-    if created and feed.auto_approve:
+    if feed.auto_approve:
         reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
     else:
         reverse_url = reverse('localtv_admin_source_page')
