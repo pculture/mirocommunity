@@ -1,21 +1,30 @@
 import datetime
 
 from django.contrib.syndication.feeds import Feed
+from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.utils import feedgenerator
 from django.utils.translation import ugettext as _
 
 from localtv import models
-from localtv.decorators import get_sitelocation
-
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
+class ThumbnailFeedGenerator(feedgenerator.DefaultFeed):
+
+    def add_item_elements(self, handler, item):
+        feedgenerator.DefaultFeed.add_item_elements(self, handler, item)
+        if 'thumbnail' in item:
+            handler.addQuickElement('thumbnail', item['thumbnail'])
+
+
 class BaseVideosFeed(Feed):
     title_template = "localtv/subsite/feed/title.html"
     description_template = "localtv/subsite/feed/description.html"
+    feed_type = ThumbnailFeedGenerator
 
     def __init__(self, *args, **kwargs):
         Feed.__init__(self, *args, **kwargs)
@@ -27,6 +36,16 @@ class BaseVideosFeed(Feed):
 
     def item_link(self, video):
         return reverse('localtv_view_video', kwargs={'video_id': video.id})
+
+    def item_extra_kwargs(self, item):
+        if not item.has_thumbnail:
+            return {}
+        return {
+            'thumbnail': 'http://%s%s' % (
+                self.sitelocation.site.domain,
+                default_storage.url(
+                    item.get_resized_thumb_storage_path(375, 295)))
+            }
 
     def item_enclosure_url(self, video):
         if video.file_url:
