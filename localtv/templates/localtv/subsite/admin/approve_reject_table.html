@@ -18,7 +18,7 @@
 
 {% block content %}
 
-<h2 class="page_title">Videos for Review</h2>
+{% if page_obj.count %}<h2 class="page_title">Videos for Review</h2>
      <div class="pag">
                   {% block pagination %}
                     {% if page_obj and page_obj.has_other_pages  %}
@@ -27,7 +27,7 @@
                   {% endblock pagination %}
               </div>
 
-	<div class="helpful rounded">Videos here require moderator approval before appearing on the site.</div>
+	{% block helpful %}<div class="helpful rounded">Videos here require moderator approval before appearing on the site.</div>{% endblock %}
 
 
   <table id="admin_table">
@@ -71,5 +71,5 @@
       </td>
     </tr>
   </table>
-
+{% endif %}
 {% endblock content %}
