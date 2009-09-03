@@ -103,6 +103,10 @@ margin-bottom: 13px;
 overflow: hidden;
 }
 
+.title_desc .desc {
+    display: none;
+}
+
 #admin .title_desc {
 padding-top: 5px;
 height: 94px;
@@ -112,6 +116,7 @@ overflow: hidden;
 
 
 #admin .title_desc .desc{
+display: inline;
 line-height: 1.5em;
 }
 
@@ -125,7 +130,7 @@ overflow: hidden;
 .title_desc h3 {
 font-size: 13px;
 font-weight: bold;
-margin-bottom: 300px;
+margin-bottom: 5px;
 line-height: 18px;
 color: #333;
 letter-spacing: .01em;
@@ -1067,6 +1072,9 @@ _float: right;
 _width: 140px;
 }
 
+#video_listing_featured .title_desc .desc {
+    display: inline !important;
+}
 
 #flag_button, #share_button {
 display: none;

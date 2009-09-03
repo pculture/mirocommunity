@@ -15,11 +15,11 @@
         {% endif %}
       </a>
     </h3>
-    {% if not video.feed.is_user and not video.user %}
+    <span class="desc" {% if not video.feed.is_user and not video.user %}style="display: inline;"{% endif %}>
     {% autoescape off %}
     {{ video.description|striptags }}
     {% endautoescape %}
-    {% endif %}
+    </span>
   </div>
   <p>
     {% if video.when_published %}Posted{% else %}Submitted{% endif %} {{ video.when|simpletimesince }} ago
