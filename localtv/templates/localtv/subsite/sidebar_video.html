@@ -19,6 +19,6 @@
     {% endautoescape %}
   </div>
   <p>
-    <a href="#">{% if video.when_published %}Posted{% else %}Submitted{% endif %} {{ video.when|simpletimesince }} ago</a>
+    <a href="#">{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago</a>
   </p>
 </div>
