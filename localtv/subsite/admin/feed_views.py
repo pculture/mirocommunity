@@ -138,6 +138,7 @@ def add_feed(request, sitelocation=None):
         'last_updated': datetime.datetime.now(),
         'status': models.FEED_STATUS_ACTIVE,
         'user': request.user,
+        'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
     feed, created = models.Feed.objects.get_or_create(
