@@ -7,7 +7,7 @@ urlpatterns = patterns(
     (r'^about/$', 'about', {}, 'localtv_about'),
     (r'^search/$', 'video_search', {}, 'localtv_subsite_search'),
     (r'^category/$', 'category', {}, 'localtv_subsite_category_index'),
-    (r'^category/([-\w]+)$', 'category', {}, 'localtv_subsite_category'),
+    (r'^category/([-\w]*)$', 'category', {}, 'localtv_subsite_category'),
     (r'^author/$', 'author', {}, 'localtv_subsite_author_index'),
     (r'^author/(\d+)$', 'author', {}, 'localtv_subsite_author'),
     (r'^comments/', include('django.contrib.comments.urls')),

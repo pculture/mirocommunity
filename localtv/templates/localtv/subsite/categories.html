@@ -1,0 +1,26 @@
+{% extends "localtv/subsite/base.html" %}
+{% load pagetabs %}
+{% block content %}
+  <h2 class="page_title">Categories</h2>
+  <div class="pag">
+    {% if page_obj.has_other_pages %}
+    <b>Pages</b>
+    {% pagetabs page_obj %}
+    {% endif %}
+  </div>
+  <dl class="cat_list">
+    {% for category in category_list %}
+    <dt>
+      <a href="{{ category.get_absolute_url }}" class="med_button"><span>{{ category.name }}</span></a>
+      {% with category.video_set.count as count %}
+      <span class="amount">({{ count }} Video{{count|pluralize }})</span>
+      {% endwith %}
+    </dt>
+    <dd>
+      {% for subcat in category.child_set.all|slice:":3" %}
+      <a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </dd>
+    {% endfor %}
+  </dl>
+{% endblock %}

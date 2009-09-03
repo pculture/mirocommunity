@@ -155,17 +155,22 @@ def video_search(request, sitelocation=None):
 @get_sitelocation
 def category(request, slug=None, sitelocation=None):
     if slug is None:
-        category = {
-            'child_set': models.Category.objects.filter(site=sitelocation.site,
-                                                        parent=None),
-            }
+        categories = models.Category.objects.filter(
+            site=sitelocation.site,
+            parent=None)
+
+        return object_list(
+            request=request, queryset=categories,
+            paginate_by=18,
+            template_name='localtv/subsite/categories.html',
+            allow_empty=True, template_object_name='category')
     else:
-        category = get_object_or_404(models.Category, slug=slug,
-                                     site=sitelocation.site)
-    return render_to_response(
-        'localtv/subsite/category.html',
-        {'category': category},
-        context_instance=RequestContext(request))
+        return render_to_response(
+            'localtv/subsite/category.html',
+            {'category': get_object_or_404(models.Category, slug=slug,
+                                           site=sitelocation.site)},
+            context_instance=RequestContext(request))
+
 
 @get_sitelocation
 def author(request, id=None, sitelocation=None):
