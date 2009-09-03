@@ -66,6 +66,14 @@
             </a>
           </h1>
         </div>
+        {% if user_is_admin %}
+        <ul id="login">
+          <li>
+            <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
+          </li>
+        </ul>
+        {% endif %}
+
         {% block nav %}
          <form id="search"
               action="{% url localtv_subsite_search %}"
@@ -73,7 +81,6 @@
           <input name="query" type="text" id="search_field" />
           <input type="image" id="searchbutton" src="/images/search.png" value="submit" />
         </form>
-
         <ul id="nav">
           <li class="home_page">
             <a href="{% url localtv_subsite_index %}">
@@ -110,16 +117,13 @@
           </li>
         </ul>
       {% endblock %}
-        <ul id="login">
-
-            {% if user_is_admin %}
-            <li>
-              <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
-              <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
-            </li>
-            {% endif %}
-
-        </ul>
+      {% if user_is_admin %}
+      <ul id="login">
+        <li>
+          <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
+        </li>
+      </ul>
+      {% endif %}
 
       </div>
 
