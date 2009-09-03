@@ -168,8 +168,9 @@ margin-bottom: 10px;
 _overflow: hidden;
 }
 
-.video span.author {
+.video span.author a {
     color: #bb2515;
+    display: inline;
 }
 
 .video *{
