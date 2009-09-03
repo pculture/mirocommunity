@@ -18,7 +18,7 @@
 
 {% block content %}
 
-{% if page_obj.count %}<h2 class="page_title">Videos for Review</h2>
+{% if page_obj.paginator.count %}<h2 class="page_title">Videos for Review</h2>
      <div class="pag">
                   {% block pagination %}
                     {% if page_obj and page_obj.has_other_pages  %}
