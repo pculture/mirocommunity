@@ -16,6 +16,16 @@
 {% endblock head %}
 
 {% block content %}
+
+<h2 class="page_title">Manage Your Video Sources</h2>
+  <div class="pag">
+    {% pagetabs page_obj %}
+  </div>
+  
+
+<div class="helpful floatleft rounded">Use this page to keep track of and edit sources of incoming video.</div>
+
+
   <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
     <form method="GET" action="">
       <strong>Search Your Sources</strong>
@@ -25,10 +35,7 @@
     </form>
   </div>
 
-  <div style="pag">
-    {% pagetabs page_obj %}
-  </div>
-  
+
   <div class="only_show">
 	<h3>Only Show:</h3>
 	<ul>

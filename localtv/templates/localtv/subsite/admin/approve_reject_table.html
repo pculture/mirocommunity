@@ -14,7 +14,22 @@
 
 {% block title %}{{ block.super }} - {% block name %}{% trans "Admin - To Be Reviewed" %}{% endblock %}{% endblock %}
 
+
+
 {% block content %}
+
+<h2 class="page_title">Videos for Review</h2>
+     <div class="pag">
+                  {% block pagination %}
+                    {% if page_obj and page_obj.has_other_pages  %}
+                      {% pagetabs page_obj %}
+                    {% endif %}
+                  {% endblock pagination %}
+              </div>
+
+	<div class="helpful rounded">Videos here require moderator approval before appearing on the site.</div>
+
+
   <table id="admin_table">
     <tr>
       <td style="vertical-align: top;" width="65%">
@@ -22,13 +37,7 @@
                {% block leftpane %}
 
      <div class="top_bar">
-              <div class="admin_pagetab_row">
-                  {% block pagination %}
-                    {% if page_obj and page_obj.has_other_pages  %}
-                      {% pagetabs page_obj %}
-                    {% endif %}
-                  {% endblock pagination %}
-              </div>
+         
               
               <div class="admin_actions_all">
                 <a class="approve med_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All</span></a>

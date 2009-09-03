@@ -18,6 +18,8 @@
 
 
 {% block content %}
+
+
   <div id="label_sidebar" class="rounded">
     <h1>Add an Author</h1>
     <form action="" method="POST">
@@ -31,10 +33,10 @@
     <table class="rounded editable">
       <thead>
         <tr>
-          <td>Name</td>
-          <td width="30%">Thumbnail</td>
-          <td>Videos</td>
-          <td>&nbsp;</td>
+          <th><span>Name</span></th>
+          <th width="30%"><span>Thumbnail</span></th>
+          <th><span>Videos</span></th>
+          <th><span>&nbsp;</span></th>
         </tr>
       </thead>
       {% for author in authors %}

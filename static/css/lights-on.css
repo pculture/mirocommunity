@@ -77,13 +77,8 @@ padding-right: 10px;
 text-decoration: none;
 }
 
-.video {
-float: left;
-width: 100%;
-padding: 0 0 5px 2px;
-clear: both;
-margin-bottom: 10px;
-_overflow: hidden;
+.marginbottom{
+margin-bottom: 15px;
 }
 
 a.thumbnail {
@@ -93,7 +88,7 @@ background: url(../images/default_vid.gif) left top no-repeat;
 _height: 0px;
 _padding-top: 102px;
 overflow: hidden;
-height: 110px;
+height: 110px; 
 width: 140px;
 }
 
@@ -102,17 +97,22 @@ margin-bottom: 20px !important;
 }
 
 .title_desc {
-padding-top: 7px;
-height: 73px;
-margin-bottom: 2px;
+padding-top: 4px;
+height: 57px;
+margin-bottom: 13px;
 overflow: hidden;
 }
 
 #admin .title_desc {
-padding-top: 7px;
+padding-top: 5px;
 height: 94px;
 margin-bottom: 2px;
 overflow: hidden;
+}
+
+
+#admin .title_desc .desc{
+line-height: 1.5em;
 }
 
 #sidebar .title_desc {
@@ -125,19 +125,25 @@ overflow: hidden;
 .title_desc h3 {
 font-size: 13px;
 font-weight: bold;
-margin-bottom: 7px;
-line-height: 16px;
+margin-bottom: 300px;
+line-height: 18px;
+color: #333;
+letter-spacing: .01em;
 max-height: 3.6em;
-overflow: hidden;
 }
 
 .title_desc a h3, .title_desc h3 a {
-color: #333;
+color: #444;
 text-decoration: none;
 }
 
 .title_desc a:hover h3 {
 text-decoration: underline !important;
+}
+
+#admin .title_desc h3{
+margin: 0 0 4px;
+
 }
 
 .title_desc p {
@@ -148,10 +154,27 @@ font-size: 11px;
 overflow: hidden;
 }
 
-.video span.author {
-    color: #bb2515;
+.video {
+float: left;
+width: 100%;
+padding: 0 0 5px 2px;
+clear: both;
+margin-bottom: 10px;
+_overflow: hidden;
 }
 
+.video span.author {
+    color: #bb2515;
+    font-weight: bold;
+}
+
+.video *{
+text-shadow: none !important;
+}
+
+.video p {
+margin-bottom: 5px;
+}
 .video p a {
 display: block;
 font-size: 11px;
@@ -169,6 +192,22 @@ font-weight: bold;
 .video a:hover {
 text-decoration: underline;
 }
+
+.pub{
+font-size: 11px;
+color: #777;
+}
+
+.by{
+font-size: 11px;
+color: #777;
+}
+
+
+.by a{
+font-weight: bold;
+}
+
 
 .rss {
 background: url(../images/rss.png) 40px 2px no-repeat;
@@ -197,6 +236,10 @@ margin-bottom: 10px;
 .vid_title h2 {
 line-height: 1.3em;
 padding-top: 0;
+}
+
+h2.vid_title {
+float: left;
 }
 
 .vid_title a {
@@ -231,6 +274,16 @@ padding-top: 5px;
 font-size: 18px;
 padding-top: 35px;
 float: left;
+}
+
+#admin h2.page_title {
+padding-top: 15px;
+/*
+font-size: 18px;
+padding-top: 0px;
+float: left;
+margin-bottom: 20px;
+*/
 }
 
 #about_page h2 {
@@ -272,7 +325,7 @@ clear: both;
 clear: both;
 padding-top: 10px;
 float: left;
-width: 680px;
+width: 830px;
 }
 
 #nav li {
@@ -288,6 +341,7 @@ padding-right: 14px;
 display: block;
 color: #555;
 font-weight: bold;
+margin-top: 18px;
 text-decoration: none;
 background: url(../images/nav_right.png) right top no-repeat;
 _background: url(../images/nav_right.gif) right top no-repeat;
@@ -331,12 +385,14 @@ body.category_admin a.categories,
 body.authors_admin a.authors,
 body.searches a.saved,
 body.incomingfeeds a.watched,
-body.bulkedit a.bulk {
+body.bulkedit a.bulk,
+body#categories_page li.categories a{
 background: url(../images/nav_right.png) right -69px no-repeat !important;
 _background: url(../images/nav_right.gif) right -69px no-repeat !important;
 color: #aaa !important;
 cursor: default;
 }
+
 
 
 #home_page .home_page a span,
@@ -350,10 +406,13 @@ body.category_admin a.categories span,
 body.authors_admin a.authors span,
 body.searches a.saved span,
 body.incomingfeeds a.watched span,
-body.bulkedit a.bulk span{
+body.bulkedit a.bulk span,
+body#categories_page li.categories a span{
 background-position: left -69px !important;
 _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 }
+
+
 /*/////////////////////////////////////////////
 
 ~ Admins need to Navigate too 
@@ -378,7 +437,9 @@ _display: inline;
 line-height: 40px;
 padding-right: 14px;
 display: block;
+margin-top: 18px;
 color: #555;
+clear: both;
 font-weight: bold;
 text-decoration: none;
 background: url(../images/nav_right.png) right top no-repeat;
@@ -437,39 +498,50 @@ height: 150px;
 }
 
 #logo {
-max-width: 810px;
+width: 660px;
 display: block;
 float: left;
 height: 80px;
-margin: 20px 15px 10px 0;
+margin: 12px 0px 0px 0;
 
 }
 
-#logo img{float: left;}
+#logo img{
+float: left;
+height: 80px;
+margin: 0 20px 0 0 !important;
+}
 
 #logo h1{
-max-width: 810px;
 display: block;
 float: left;
-margin: 0px 15px 10px 20px;
-font-size: 28px;
+margin: 0px;
+font-size: 22px;
 font-weight: normal;
-float: left;
-padding: 15px 0 0px;
+padding: 0px;
 letter-spacing: .01em;
 }
 
 #logo h1 a {
 text-decoration: none;
+line-height: 1.2em;
 }
 
+#logo h1 a span.name {
+text-decoration: none;
+line-height: 1.2em;
+padding-top: 18px;
+display: block;
+float: left;
+margin-bottom: 0;
+}
 
-.tagline {
+#logo h1 a span.tagline {
 color: #888;
 display: block;
-margin-top: 5px;
+float: left;
 font-size: 12px;
-padding: 4px 2px;
+padding: 0px 2px;
 }
 
 
@@ -608,7 +680,7 @@ float: right;
 
 #search {
 float: right;
-margin-top: 12px;
+margin-top: 37px;
 padding: 0;
 _padding: 34px 0 0 0;
 }
@@ -632,13 +704,12 @@ margin-top: 2px;
 /*/////////////////////////////////////////////
 
 ~ Login
-n
+
 /////////////////////////////////////////////*/
 
 #login {
 float: right;
-padding-top: 10px;
-margin-top: 35px;
+margin-top: 30px;
 }
 
 #login li {
@@ -668,9 +739,9 @@ _background: url(../images/med_right.gif) right top no-repeat;
 }
 
 .med_button > span {
-line-height: 25px;
+line-height: 24px;
 display: block;
-padding: 0 8px 0 14px ;
+padding: 0 8px 1px 14px ;
 background: url(../images/med_left.png) no-repeat;
 _background: url(../images/med_left.gif) no-repeat;
 }
@@ -871,9 +942,10 @@ display: inline;
 }
 
 
-#admin ul.pagetabs {
+#admin ul.pagetabs {/*
 float: left;
 display: inline;
+*/
 }
 
 ul.pagetabs li {
@@ -883,7 +955,7 @@ margin-left: 5px;
 }
 
 ul.pagetabs li a {
-line-height: 25px;
+line-height: 24px;
 padding-right: 6px;
 display: block;
 color: #333;
@@ -907,10 +979,9 @@ padding-top: 1px;
 }
 
 ul.pagetabs li a span {
-line-height: 25px;
 display: block;
 text-align: right;
-padding: 0 6px 0 12px ;
+padding: 0 4px 1px 11px ;
 background: url(../images/med_left.png) no-repeat;
 }
 
@@ -943,10 +1014,11 @@ display: none;
 #video_wrapper {
 text-align: center;
 height: 430px;
-margin: 17px 0 4px;
+margin: 17px 0 35px;
 clear: both;
 width: 534px;
 padding-left: 2px;
+float: left;
 }
 
 #video_wrapper embed, #video_wrapper object {
@@ -1070,16 +1142,37 @@ color: #fff;
 text-shadow: none;
 }
 
+#slider2 li h2 a{
+color: #fff;
+text-shadow: none;
+}
+
 
 #slider2 li div.copy div {
 margin: 15px 20px 15px 10px;
 color: #eee !important;
 text-shadow: #333 1px 1px 0px !important;
 }
+#slider2 li div.copy span{
+text-shadow: #333 1px 1px 0px !important;
+}
+		
+#slider2 li div.copy div a, #slider2 li div.copy span a{
+text-shadow: #000 1px 1px 9px, #000 1px 1px 1px, #000 1px 1px 0px, #000 1px 1px 3px !important;
+color: #fff;
+}
+		
+.copy div a{
+color: #fff !important;
+}
+		
+.copy div a:hover{
+text-shadow: #450802 1px 1px 10px !important;
+text-decoration: underline !important;
+}
 
-#slider2 li div.copy div a, #slider2 li div.copy span, #slider2 li div.copy span a{
-text-shadow: #333 1px 1px 0px;
-color: #eee;
+.copy h2 a{
+color: #fff !important;
 }
 		
 p#controls, p#controls2 {
@@ -1288,11 +1381,15 @@ clear: both;
 }
 
 #admin .pag {
+/*
 clear: both !important;
 height: 100px;
 float: right;
 border: 1px solid;
 padding: 40px;
+*/
+padding-top: 10px;
+margin-bottom: 20px;
 }
 
 #livesearch_feed_url {
@@ -1413,8 +1510,13 @@ float: left;
 font-family: Arial, Helvetica, sans-serif;
 }
 
+button.med_button:hover {
+background-position: right -30px;
+
+}
+
 button.med_button span {
-padding: 0 8px 0 15px;
+padding: 0 8px 1px 15px;
 }
 
 #admin_feed_add strong,
@@ -1429,6 +1531,7 @@ padding-right: 10px;
 #home_page #about {
 margin: 35px 0 0 0;
 }
+
 
 #about {
 line-height: 1.4em;
@@ -1629,8 +1732,8 @@ display: none;
 }
 
 .admin_actions_all {
-float: right;
-padding: 0 20px 0 0px;
+float: left;
+padding: 0 20px 10px 0px;
 }
 
 .admin_pagetab_row {
@@ -1764,9 +1867,10 @@ margin-right: 8px;
 }
 
 #labels table {
-width: 60%;
+width: 56%;
 border: 1px solid #ddd;
 float: right;
+clear: right;
 }
 
 #labels table a {
@@ -1812,7 +1916,7 @@ padding: 5px;
 }
 
 #labels table.editable td + td:hover:after {
-    content: "✎";
+    content: " ✎";
 }
 
 #labels table.editable tr.category_edit td + td:hover:after {
@@ -1847,9 +1951,6 @@ min-height: 80px;
 border-right: none;
 }
 
-#labels table td {
-border-bottom: 1px solid #ddd;
-}
 
 #labels table tr.last td {
 border-bottom: none;
@@ -1863,11 +1964,14 @@ background: #f9f9f9;
 #labels table th.last {
 border-right: none;
 }
-	
+
+
 #labels table td{
-padding: 5px 15px 8px 13px !important;
+padding: 8px 14px 8px 12px !important;
 line-height: 1.4em;
 font-size: 11px;
+border-bottom: 1px solid #ddd;
+border-right: 1px solid #eee;
 }
 
 #labels table tr.editing td{
@@ -2107,6 +2211,7 @@ border: 1px solid #ddd;
 
 ul#comments {
 clear: both !important;
+margin-top: 30px;
 }
 
 ul#comments li {
@@ -2119,7 +2224,7 @@ margin-bottom: 20px;
 }
 
 #admin ul.pagetabs {
-clear: both;
+
 }
 
 #admin_feed_add,
@@ -2129,6 +2234,11 @@ background: #f9f9f9;
 height: 24px;
 padding: 15px;
 margin: 0 5px 15px 0;
+}
+
+#admin_feed_add{
+float: right;
+clear: right !important;
 }
 
 button {
@@ -2373,4 +2483,149 @@ th.checkbox input{
 margin-top: 8px !important;
 }
 
+.pagetabs li a span{
+padding-top: 1px !important;
 }
+
+.pagetabs li.selected a span{
+padding-top: 2px !important;
+}
+
+.copy div{
+line-height: 1.6em !important;
+}
+
+.med_button span{
+padding-top: 1px;
+}
+
+
+}
+
+
+/*/////////////////////////////////////////////
+
+~ Categories Page
+
+/////////////////////////////////////////////*/
+
+.categories_page{
+
+}
+
+.cat_list{
+width: 312px;
+float: left;
+list-style: none;
+
+border-right: 1px solid #eee;
+}
+
+.cat_list.last{
+border-right: none;
+margin-right: 0;
+}
+
+
+.cat_list dt, .cat_list dd{
+float: left;
+clear: both;
+
+list-style: none;
+padding-left: 22px;
+}
+
+.cat_list dd{
+padding: 10px 0 10px 22px;
+padding-bottom: 15px;
+margin-bottom: 15px;
+border-bottom: 1px solid #eee;
+width: 290px;
+}
+
+.cat_list a{
+float: left;
+}
+
+.cat_list dt a{
+font-weight: bold;
+}
+
+.cat_list dt{
+margin-bottom: 5px;
+}
+
+.cat_list dd a{
+margin-left: 1px;
+display: inline;
+float: none;
+text-decoration: underline;
+}
+
+
+.cat_list a.med_button{
+clear: left;
+}
+
+
+
+.amount{
+line-height: 2.1em;
+font-size: 11px;
+padding-left: 10px;
+color: #666;
+}
+
+
+
+tr.category_edit{
+border: 1px solid;
+}
+
+
+tr.category_edit td{
+vertical-align: top !important;
+}
+
+
+tr.category_edit td textarea{
+width: 100%;
+margin-bottom: 20px;
+}
+
+
+tr.category_edit td select{
+width: 100%;
+margin: 10px 0 20px;
+}
+
+
+tr.category_edit td input{
+width: 90%;
+}
+
+tr.category_edit td.checkbox input{
+width: inherit;
+}
+
+
+.helpful{
+background: #fffbd8;
+padding: 15px;
+border: 1px solid #f7f2c9;
+margin-bottom: 15px; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -29,11 +29,12 @@
   <div id="labels">
     <table class="rounded">
       <thead>
-        <td>Username</td>
-        <td>Email</td>
-        <td>OpenID</td>
-        <td></td>
+        <th><span>Username</span></th>
+        <th><span>Email</span></th>
+        <th><span>OpenID</span></th>
+        <th></th>
       </thead>
+      <tbody>
       {% for user in admins %}
       <tr class="{% cycle "grey" "white" %}">
         <form action="" method="POST">
@@ -45,6 +46,7 @@
         </form>
       </tr>
       {% endfor %}
+      </tbody>
     </table>
   </div>
 {% endblock content %}
