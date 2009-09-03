@@ -130,18 +130,25 @@ def add_feed(request, sitelocation=None):
             title = match.group(1)
             break
 
+    defaults = {
+        'name': title,
+        'webpage': parsed_feed.feed.get('link', ''),
+        'description': parsed_feed.feed.get('summary', ''),
+        'when_submitted': datetime.datetime.now(),
+        'last_updated': datetime.datetime.now(),
+        'status': models.FEED_STATUS_ACTIVE,
+        'user': request.user,
+        'auto_approve': bool(request.POST.get('auto_approve', False))}
+
     feed, created = models.Feed.objects.get_or_create(
         feed_url=feed_url,
-        site=sitelocation.site)
+        site=sitelocation.site,
+        defaults = defaults)
 
-    feed.webpage = parsed_feed.get('link', '')
-    feed.description = parsed_feed.get('summary', '')
-    feed.when_submitted = datetime.datetime.now()
-    feed.last_updated = datetime.datetime.now()
-    feed.status = models.FEED_STATUS_ACTIVE
-    feed.auto_approve = bool(request.POST.get('auto_approve', False))
-    feed.user = request.user
-    feed.save()
+    if not created:
+        for key, value in defaults.items():
+            setattr(feed, key, value)
+        feed.save()
 
     feed.update_items()
 
