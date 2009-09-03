@@ -66,18 +66,14 @@
             </a>
           </h1>
         </div>
-        <ul id="login">
-
-            {% if user_is_admin %}
-            <li>
-              <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
-              <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
-            </li>
-         
-            {% endif %}
-
-        </ul>
         {% block nav %}
+         <form id="search"
+              action="{% url localtv_subsite_search %}"
+              method="GET">
+          <input name="query" type="text" id="search_field" />
+          <input type="image" id="searchbutton" src="/images/search.png" value="submit" />
+        </form>
+
         <ul id="nav">
           <li class="home_page">
             <a href="{% url localtv_subsite_index %}">
@@ -113,16 +109,19 @@
             </a>
           </li>
         </ul>
-        
-         <form id="search"
-              action="{% url localtv_subsite_search %}"
-              method="GET">
-          <input name="query" type="text" id="search_field" />
-          <input type="image" id="searchbutton" src="/images/search.png" value="submit" />
-        </form>
+      {% endblock %}
+        <ul id="login">
+
+            {% if user_is_admin %}
+            <li>
+              <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
+              <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
+            </li>
+            {% endif %}
+
+        </ul>
 
       </div>
-      {% endblock %}
 
       <div id="hover_wrap" class="rounded {5px transparent}">
         <div id="submit_box" >
