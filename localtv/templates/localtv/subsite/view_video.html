@@ -128,7 +128,7 @@
   {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}
   {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
   {% if current_video.feed %}<h3>From feed <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></h3>{% endif %}
-  <h3>Website URL {{ current_video.website_url|urlize }}</h3>
+  <h3>Website: {{ current_video.website_url|urlize }}</h3>
   {% endif %}
   {% comment %}
       <form id="add_tag">
