@@ -743,21 +743,21 @@ class Video(models.Model):
     def when(self):
         """
         Simple method for getting the when_published date if the video came
-        from a feed or a search, otherwise the when_submitted_date.
+        from a feed or a search, otherwise the when_approved date.
         """
         if not self.feed and not self.search:
-            return self.when_submitted
+            return self.when_approved
         elif self.when_published is not None:
             return self.when_published
         else:
-            return self.when_submitted
+            return self.when_approved
 
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-        if not self.feed and not self.search:
+        if (not self.feed and not self.search) or self.when_published is None:
             return 'posted'
         else:
             return 'published'
