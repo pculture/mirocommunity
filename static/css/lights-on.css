@@ -1731,12 +1731,40 @@ background-position: left -82px;
 }
 
 
-.editable {
+.editable:hover {
+background: #fffbd8;
+cursor: text;
 }
+
+.editable.open{
+}
+
+.editable.open input{
+
+}
+
+.editable.open:hover{
+background: none;
+}
+
+
 
 .editable .input_field, .editable .post_url {
 display: none;
 }
+
+.vid_title.editable input{
+width: 100% !important;
+padding: 2px;
+margin-left: -6px;
+margin-top: -4px;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 18px !important;
+}
+
+.vid_title.editable .med_button.cancel{
+}
+
 
 .admin_actions_all {
 float: left;

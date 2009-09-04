@@ -40,7 +40,7 @@ function inline_edit_open() {
         obj.html(this.oldContent);
         return;
     }
-    obj.append('<span class="save">Save Changes</span> <span class="cancel">Cancel</span>');
+    obj.append('<span class="save med_button"><span>Save Changes</span></span> <span class="cancel med_button"><span>Cancel</span></span>');
     obj.children('.save').click(inline_save);
     obj.children('.cancel').click(inline_cancel);
 
