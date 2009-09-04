@@ -301,7 +301,7 @@ def directlink_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/subsite/submit/direct_submit_video.html',
             {'sitelocation': sitelocation,
-             'scraped_form': direct_form},
+             'direct_form': direct_form},
             context_instance=RequestContext(request))
 
 
