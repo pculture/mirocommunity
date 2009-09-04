@@ -7,18 +7,12 @@ from localtv.subsite.admin.edit_attributes import forms
 WIDGET_DIRECTORY = {
     models.Feed: {
         'name': {
-            'default_display_template':
-                'localtv/subsite/display_templates/feed_name.html',
             'form': forms.FeedNameForm,
             'reversible_post_url': 'localtv_admin_feed_edit_title'},
         'auto_categories': {
-            'default_display_template':
-                'localtv/subsite/display_templates/feed_auto_categories.html',
             'form': forms.FeedAutoCategoriesForm,
             'reversible_post_url': 'localtv_admin_feed_edit_auto_categories'},
         'auto_authors': {
-            'default_display_template':
-                'localtv/subsite/display_templates/feed_auto_authors.html',
             'form': forms.FeedAutoAuthorsForm,
             'reversible_post_url': 'localtv_admin_feed_edit_auto_authors'}
         }}
@@ -39,7 +33,11 @@ def editable_widget(model_instance, field_name, display_template_name=None):
     # render the display template
     
     display_template = template.loader.get_template(
-        display_template_name or widget_data['default_display_template'])
+        display_template_name or widget_data.get(
+            'default_display_template') or
+        'localtv/subsite/display_templates/%s_%s.html' % (
+            model_instance._meta.object_name.lower(),
+            field_name))
 
     display_content = display_template.render(
         template.Context(
