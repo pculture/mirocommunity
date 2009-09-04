@@ -15,24 +15,14 @@ class Command(BaseCommand):
 
         version = args[0]
 
-        if not settings.MEDIA_ROOT:
-            raise CommandError('could not find MEDIA_ROOT')
+        repo_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '../../..'))
 
-        versioned_static_dir = os.path.join(
-            settings.MEDIA_ROOT,
-            'versioned',
-            version)
-
-        versioned_templates_dir = None
-        for template_dir in settings.TEMPLATE_DIRS:
-            if 'versioned_templates' in template_dir:
-                versioned_templates_dir = os.path.join(template_dir,
-                                                       version)
-                break
-
-        if not versioned_templates_dir:
-            raise CommandError('could not find versioned_templates directory '
-                               'in TEMPLATE_DIRS')
+        versioned_static_dir = os.path.join(repo_root, 'static', 'versioned',
+                                            version)
+        versioned_templates_dir = os.path.join(repo_root, 'localtv',
+                                               'versioned_templates',
+                                               version)
 
         if os.path.exists(versioned_static_dir) or os.path.exists(
             versioned_templates_dir):
@@ -48,7 +38,8 @@ class Command(BaseCommand):
         for template_dir in settings.TEMPLATE_DIRS[::-1]:
             # do it in reverse order, so that the first template that would
             # load overwrites the others
-            if versioned_templates_dir.startswith(template_dir):
+            if versioned_templates_dir.startswith(
+                os.path.realpath(template_dir)):
                 continue
             if not os.path.exists(template_dir):
                 continue
