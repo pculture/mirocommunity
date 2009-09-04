@@ -1,11 +1,11 @@
-{% load localtv_thumbnail i18n filters %}
+{% load localtv_thumbnail i18n filters versioned %}
 {% if video.has_thumbnail %}
 <a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #fff url({% get_thumbnail_url video 375 295 %}) no-repeat;">
-   <img src="/images/play.png" />
+   <img src="{% versioned "/images/play.png" %}" />
 </a> 
 {% else %}
-<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: url(/images/default_big.jpg) no-repeat;">
-  <img src="/images/play.png" />
+<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: url({% versioned "/images/default_big.jpg" %}) no-repeat;">
+  <img src="{% versioned "/images/play.png" %}" />
 </a>
 
 {% endif %}

@@ -1,11 +1,12 @@
+{% load versioned %}
 <html>
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="StyleSheet" type="text/css" href="/css/lights-on.css">
-    <script src="/js/extern/jquery.min.js"
+    <link rel="StyleSheet" type="text/css" href="{% versioned "/css/lights-on.css" %}">
+    <script src="{% versioned "/js/extern/jquery.min.js" %}"
             type="text/javascript">
     </script>
-    <script src="/js/extern/jquery.corners.js"
+    <script src="{% versioned "/js/extern/jquery.corners.js" %}"
             type="text/javascript">
     </script>
 <style>

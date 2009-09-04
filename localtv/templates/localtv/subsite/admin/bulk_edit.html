@@ -3,12 +3,11 @@
 {% block body_class %}bulkedit{% endblock body_class %}
 
 
-{% load i18n %}
+{% load i18n versioned %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
 {% block head %}{{ block.super }}
-  <script type="text/javascript" src="/js/extern/jquery.tablesorter.min.js"></script>
-  <script type="text/javascript" src="/js/bulk_edit.js"></script>
+  <script type="text/javascript" src="{% versioned "/js/bulk_edit.js" %}"></script>
 {% endblock %}
 {% block content %}
 <div id="labels">

@@ -1,10 +1,10 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
-{% load i18n %}
+{% load i18n versioned %}
 
 {% block head %}
   {{ block.super }}
-  <script type="text/javascript" src="/js/urlify.js"></script>
+  <script type="text/javascript" src="{% versioned "/js/urlify.js" %}"></script>
   <script type="text/javascript">
       function edit_category(event) {
           if (event.target.nodeName === 'INPUT') {

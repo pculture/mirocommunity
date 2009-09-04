@@ -1,4 +1,4 @@
-{% load i18n localtv_thumbnail filters %}
+{% load i18n localtv_thumbnail filters versioned %}
 
 <div {% ifequal video current_video %}
        class="video hoverable selected rounded {9px transparent}"
@@ -14,7 +14,7 @@
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
     <span>
-      <img alt="{{ video.name }} thumbnail" src="/images/vid_overlay.png" />
+      <img alt="{{ video.name }} thumbnail" src="{% versioned "/images/vid_overlay.png" %}" />
     </span>
   </a>
    

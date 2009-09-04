@@ -4,10 +4,10 @@
 {% block body_class %}incomingvids{% endblock body_class %}
 
 
-{% load pagetabs i18n %}
+{% load pagetabs i18n versioned %}
 
 {% block head %}
-  <script src="/js/admin_tables.js"
+  <script src="{% versioned "/js/admin_tables.js" %}"
           type="text/javascript">
   </script>
 {% endblock head %}
