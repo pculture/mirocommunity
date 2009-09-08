@@ -241,7 +241,10 @@ class Feed(models.Model):
             file_url = None
             embed_code = None
             flash_enclosure_url = None
-            publish_date = None
+            if 'updated_parsed' in entry:
+                publish_date = datetime.datetime(*entry.updated_parsed[:7])
+            else:
+                publish_date = None
             thumbnail_url = miroguide_util.get_thumbnail_url(entry) or ''
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
