@@ -16,6 +16,6 @@
   <h2><a href="{{ video.get_absolute_url }}">{% trans "(no title)" %}</a></h2>
 {% endif %}
   <span>{{ video.when|simpletimesince }} ago</span>
-  <div>{{ video.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|safe }}</div>
+  <div>{{ video.description|sanitize }}</div>
 </div>
 <a href="{{ video.get_absolute_url }}" class="watch med_button"><span>Watch</span></a>

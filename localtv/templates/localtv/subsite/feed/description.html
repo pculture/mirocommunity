@@ -1,6 +1,6 @@
-{% load i18n %}
+{% load i18n filters %}
 <div>
-  {{ obj.description|removetags:"iframe title frame frameset object script embed applet meta link body html img table thead th tbody tr td div span"|safe }}
+  {{ obj.description|sanitize }}
 </div>
 
 {% if obj.website_url %}
