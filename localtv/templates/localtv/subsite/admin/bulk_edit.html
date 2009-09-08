@@ -97,7 +97,16 @@
     <table class="rounded">
     <thead>
       <tr>
-        <th class="checkbox"><input type="checkbox" onclick="$('td:first-child input[type=checkbox]').click();"/></th>
+        <th class="checkbox"><input type="checkbox" id="toggle_all"/></th>
+        <script type="text/javascript">
+            $("#toggle_all").click(function() {
+                if (this.checked) {
+                    $('td:first-child input[type=checkbox]:not(:checked)').click()
+                } else {
+                    $('td:first-child input[type=checkbox]:checked').click();
+                }
+            });
+        </script>
         {% for header in headers %}
         <th>
             {% if header.sort %}
