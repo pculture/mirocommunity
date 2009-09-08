@@ -1,0 +1,6 @@
+{% if video.video_service %}
+  <span class="byline">
+    Posted by {% if video.feed %}<a href="{{ video.feed.webpage}}">{{ video.feed.name }}</a>{% else %}<a href="{{ video.video_service_url }}">{{ video.video_service_user }}</a>{% endif %} on {{ video.video_service }}
+  </span>
+{% endif %}
+

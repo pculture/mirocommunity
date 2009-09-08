@@ -136,7 +136,10 @@ def scraped_submit_video(request, sitelocation=None):
             thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
             user=user,
             when_submitted=datetime.datetime.now(),
-            when_published=scraped_data.get('publish_date'))
+            when_published=scraped_data.get('publish_date'),
+            video_service_user=scraped_data.get('user'),
+            video_service_url=scraped_data.get('user_url'))
+
 
         if sitelocation.user_is_admin(request.user):
             video.when_approved = video.when_submitted

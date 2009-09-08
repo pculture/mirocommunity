@@ -124,11 +124,9 @@
           </div>
         </td>
         <td>
-          {% if form.instance.feed %}
-          {% if form.instance.feed.is_user %}
-          {{ form.instance.feed.is_user }} User
-          {% endif %}
-          <strong>{{ form.instance.feed.name }}</strong>
+          {% if form.instance.video_service %}
+          {{ form.instance.video_service }} User
+          <strong>{% if form.instance.feed %}{{ form.instance.feed.name }}{% else %}{{ form.instance.video_service_user }}{% endif %}</strong>
           {% else %}
           {% if form.instance.search %}
           Saved Search: <strong>{{ form.instance.search.query_string }}</strong>

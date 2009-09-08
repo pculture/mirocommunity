@@ -1,10 +1,7 @@
-import cgi
 import datetime
-import httplib
 import re
 import urllib
 import urllib2
-import urlparse
 import Image
 import StringIO
 
@@ -45,9 +42,12 @@ VIDEO_THUMB_SIZES = [
 VIDEO_USER_REGEXES = (
     ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
     ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
+    ('YouTube', r'http://(www\.)?youtube\.com/user/.+'),
     ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
     ('blip.tv', r'http://.+\.blip\.tv/rss'),
-    ('Vimeo', r'http://www\.vimeo\.com/user:[0-9]+/clips/rss'))
+    ('blip.tv', r'http://.+\.blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/user:[0-9]+/clips/rss'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/.+'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -204,12 +204,6 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
-
-    def is_user(self):
-        for service, regexp in VIDEO_USER_REGEXES:
-            if re.search(regexp, self.feed_url, re.I):
-                return service
-        return False
 
     def update_items(self, verbose=False):
         """
@@ -714,6 +708,18 @@ class Video(models.Model):
             return self.when_published
         else:
             return self.when_submitted
+
+    def video_service(self):
+        if self.feed:
+            url = self.feed.feed_url
+        elif self.video_service_url:
+            url = self.video_service_url
+        else:
+            return
+
+        for service, regexp in VIDEO_USER_REGEXES:
+            if re.search(regexp, url, re.I):
+                return service
 
     @classmethod
     def popular_since(Class, delta, sitelocation=None, **kwargs):
