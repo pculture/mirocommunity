@@ -1,10 +1,7 @@
-import cgi
 import datetime
-import httplib
 import re
 import urllib
 import urllib2
-import urlparse
 import Image
 import StringIO
 
@@ -45,9 +42,12 @@ VIDEO_THUMB_SIZES = [
 VIDEO_USER_REGEXES = (
     ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
     ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
+    ('YouTube', r'http://(www\.)?youtube\.com/user/.+'),
     ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
     ('blip.tv', r'http://.+\.blip\.tv/rss'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/.+/(clips|videos)/rss'))
+    ('blip.tv', r'http://.+\.blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/user:[0-9]+/clips/rss'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/.+'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -204,12 +204,6 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
-
-    def is_user(self):
-        for service, regexp in VIDEO_USER_REGEXES:
-            if re.search(regexp, self.feed_url, re.I):
-                return service
-        return False
 
     def update_items(self, verbose=False):
         """
@@ -564,6 +558,9 @@ class Video(models.Model):
        "1186.png"
      - user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
+     - video_service_user: if not blank, the username of the user on the video
+       service who owns this video.  We can figure out the service from the
+       website_url.
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
@@ -591,6 +588,8 @@ class Video(models.Model):
     thumbnail_extension = models.CharField(max_length=8, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
+    video_service_user = models.CharField(max_length=250)
+    video_service_url = models.URLField(verify_exists=False, blank=True)
 
     objects = VideoManager()
 
@@ -764,6 +763,18 @@ class Video(models.Model):
             return 'published'
         else:
             return 'posted'
+
+    def video_service(self):
+        if self.feed:
+            url = self.feed.feed_url
+        elif self.video_service_url:
+            url = self.video_service_url
+        else:
+            return
+
+        for service, regexp in VIDEO_USER_REGEXES:
+            if re.search(regexp, url, re.I):
+                return service
 
 
 class VideoAdmin(admin.ModelAdmin):

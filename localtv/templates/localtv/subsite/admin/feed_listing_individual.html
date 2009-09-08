@@ -40,8 +40,7 @@
   
   
   {% editable_widget feed "name" %}
-
-  <div class="user">{% if not feed.is_user %}Feed{% else %}<a href="{{ feed.webpage }}">{{ feed.is_user }}</a> User{% endif %}</div>
+  <div class="user">{% if not feed.video_set.all.0.video_service %}Feed{% else %}<a href="{{ feed.webpage }}">{{ feed.video_set.all.0.video_service }}</a> User{% endif %}</div>
   <div class="feed_link">
     feed: <a class=href="{{ feed.feed_url }}">{{ feed.feed_url }}</a>
   </div>
