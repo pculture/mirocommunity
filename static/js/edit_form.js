@@ -8,7 +8,7 @@ function inline_edit_open() {
         return is_file; // file inputs need return true
     }
     obj.addClass('open');
-    this.oldContent = obj.html();
+    obj[0].oldContent = obj.html();
     obj.text('');
     if (obj.hasClass('vid_title')) {
         input = $('<input type="text" />').val($("#id_name").val());
@@ -95,6 +95,7 @@ function inline_post(obj) {
 function inline_reset(obj) {
     obj.html(obj[0].oldContent);
     obj.removeClass('open');
+    obj.find('.editable').click(inline_edit_open);
     return false;
 }
 
