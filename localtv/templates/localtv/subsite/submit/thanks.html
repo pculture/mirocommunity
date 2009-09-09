@@ -1,1 +1,5 @@
+{% if video %}
+Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.
+{% else %}
 Thanks for submitting a video, our moderators will review it soon.
+{% endif %}
