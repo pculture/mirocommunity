@@ -1,3 +1,4 @@
+{% load filters %}
 <td valign="middle" class="checkbox"><input type="checkbox" name="bulk_{{ category.id }}"></td>
 <td valign="middle">
    {{ category.dashes }}{{ category.name }}
@@ -15,7 +16,7 @@
     {{ category.form.name }}
   </td>
   <td valign="middle">
-      {{ category.form.description }}
+      {{ category.form.description|sanitize }}
       {{ category.form.logo }}
   </td>
   <td valign="middle">{{ category.form.slug }}</td>
