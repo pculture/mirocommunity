@@ -104,7 +104,7 @@ class BulkEditVideoForm(EditVideoForm):
     class Meta:
         model = models.Video
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
-                  'categories', 'authors', 'when_published')
+                  'categories', 'authors', 'when_published', 'file_url')
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
