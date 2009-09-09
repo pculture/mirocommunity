@@ -1,4 +1,5 @@
 {% extends "localtv/subsite/base.html" %}
+{% load filters %}
 {% block content %}
 {% if category.name %}
 <div id="category_sidebar">
@@ -6,7 +7,7 @@
 
   <h1>{{ category.name }}</h1>
 
-  <div>{{ category.description }}</div>
+  <div>{{ category.description|sanitize }}</div>
 
 </div>
 {% endif %}

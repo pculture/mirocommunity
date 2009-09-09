@@ -152,7 +152,7 @@ class Tag(models.Model):
     Fields:
       - name: name of this tag
     """
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=255)
 
     def __unicode__(self):
         return self.name
