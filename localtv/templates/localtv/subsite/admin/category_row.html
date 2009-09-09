@@ -3,7 +3,7 @@
 <td valign="middle">
    {{ category.dashes }}{{ category.name }}
 </td>
-<td valign="middle">{{ category.description }}</td>
+<td valign="middle">{{ category.description|sanitize }}</td>
 <td valign="middle">{{ category.slug }}</td>
 {% with category.video_set.count as count %} 
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
@@ -16,7 +16,7 @@
     {{ category.form.name }}
   </td>
   <td valign="middle">
-      {{ category.form.description|sanitize }}
+      {{ category.form.description }}
       {{ category.form.logo }}
   </td>
   <td valign="middle">{{ category.form.slug }}</td>
