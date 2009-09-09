@@ -310,6 +310,13 @@ def directlink_submit_video(request, sitelocation=None):
 
 @get_sitelocation
 def submit_thanks(request, sitelocation=None):
+    if sitelocation.user_is_admin(request.user):
+        context = {
+            'video': models.Video.objects.filter(site=sitelocation.site,
+                                                user=request.user)[0]
+            }
+    else:
+        context = {}
     return render_to_response(
-        'localtv/subsite/submit/thanks.html', {},
+        'localtv/subsite/submit/thanks.html', context,
         context_instance=RequestContext(request))
