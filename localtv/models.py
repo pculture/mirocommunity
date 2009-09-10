@@ -752,7 +752,7 @@ class Video(models.Model):
         if self.feed:
             url = self.feed.feed_url
         elif self.video_service_url:
-            url = self.video_service_url
+            url = self.website_url
         else:
             return
 
