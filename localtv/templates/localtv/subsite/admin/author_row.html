@@ -1,5 +1,5 @@
-<td>{{ author.name }}</td>
-<td>{% if author.logo %}<img src="{{ author.logo.url }}">{% else %}change image{% endif %}</td>
+<td>{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</td>
+<td>{% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% else %}change image{% endif %}</td>
 {% with author.video_set.count as count %}
 <td width="5%" style="text-align: center !important;">{% if not count %}{{ count }}{% else %}<a href="{{ author.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}

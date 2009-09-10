@@ -25,9 +25,3 @@ class FeedAutoAuthorsForm(forms.ModelForm):
     class Meta:
         model = models.Feed
         fields = ('auto_authors',)
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-        self.fields['auto_authors'].queryset = \
-            self.fields['auto_authors'].queryset.filter(
-            site=self.instance.site)

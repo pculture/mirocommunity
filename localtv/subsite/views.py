@@ -2,6 +2,7 @@ import urllib
 import datetime
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -177,15 +178,15 @@ def author(request, id=None, sitelocation=None):
     if id is None:
         return render_to_response(
             'localtv/subsite/author_list.html',
-            {'authors': models.Author.objects.all()},
+            {'authors': User.objects.all()},
             context_instance=RequestContext(request))
     else:
-        author = get_object_or_404(models.Author,
+        author = get_object_or_404(User,
                                    pk=id)
         return render_to_response(
             'localtv/subsite/author.html',
             {'author': author,
-             'video_list': author.video_set.all()},
+             'video_list': author.authored_set.all()},
             context_instance=RequestContext(request))
 
 

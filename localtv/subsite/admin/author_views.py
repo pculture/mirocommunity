@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -5,13 +6,12 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
-from localtv.models import Author
 from localtv.subsite.admin import forms
 
 @require_site_admin
 @get_sitelocation
 def authors(request, sitelocation=None):
-    authors = Author.objects.filter(site=sitelocation.site)
+    authors = User.objects.all()
     for author in authors:
         author.form = forms.AuthorForm(prefix="edit_%s" % author.id,
                                            instance=author)
@@ -24,9 +24,8 @@ def authors(request, sitelocation=None):
                                   context_instance=RequestContext(request))
     else:
         if request.POST['submit'] == 'Add':
-            author = Author(site=sitelocation.site)
             add_author_form = forms.AuthorForm(request.POST,
-                                                   instance=author)
+                                                   instance=User())
             if add_author_form.is_valid():
                 try:
                     add_author_form.save()
@@ -72,7 +71,6 @@ def authors(request, sitelocation=None):
 @require_site_admin
 @get_sitelocation
 def delete(request, sitelocation=None):
-    author = get_object_or_404(Author.objects.filter(
-            site=sitelocation.site), pk=request.GET.get('id'))
+    author = get_object_or_404(User, pk=request.GET.get('id'))
     author.delete()
     return HttpResponseRedirect(reverse('localtv_admin_authors'))

@@ -551,7 +551,7 @@ class Video(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
-                                     related_name='authors_set')
+                                     related_name='authored_set')
     file_url = models.URLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)

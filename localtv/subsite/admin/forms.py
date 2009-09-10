@@ -54,9 +54,6 @@ class EditVideoForm(forms.ModelForm):
         site = Site.objects.get_current()
         self.fields['categories'].queryset = models.Category.objects.filter(
             site=site)
-        self.fields['authors'].queryset = models.Author.objects.filter(
-            site=site)
-
 
     def save(self, *args, **kwargs):
         if 'thumbnail' in self.cleaned_data:
@@ -96,7 +93,7 @@ class BulkEditVideoForm(EditVideoForm):
     tags = TagField(required=False,
                     widget=TagAreaWidget)
     categories = BulkChecklistField(models.Category, required=False)
-    authors = BulkChecklistField(models.Author, required=False)
+    authors = BulkChecklistField(User, required=False)
     when_published = forms.DateTimeField(required=False,
                                          widget=forms.TextInput(
             attrs={'class': 'large_field'}))
@@ -223,8 +220,7 @@ class CategoryForm(forms.ModelForm):
 
 class AuthorForm(forms.ModelForm):
     class Meta:
-        model = models.Author
-        exclude = ['site']
+        model = User
 
 
 class AddUserForm(forms.Form):
