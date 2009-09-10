@@ -219,9 +219,26 @@ class CategoryForm(forms.ModelForm):
             site=site)
 
 class AuthorForm(forms.ModelForm):
+    logo = forms.ImageField(required=False)
+
     class Meta:
         model = User
+        fields = ['first_name', 'last_name', 'logo']
 
+    def save(self, **kwargs):
+        author = forms.ModelForm.save(self, **kwargs)
+        if self.cleaned_data.get('logo'):
+            logo = self.cleaned_data['logo']
+            print 'going to save', logo
+            try:
+                profile = author.get_profile()
+            except models.Profile.DoesNotExist:
+                profile = models.Profile.objects.create(
+                    user=author)
+
+            profile.logo = logo
+            profile.save()
+        return author
 
 class AddUserForm(forms.Form):
     user = forms.CharField(

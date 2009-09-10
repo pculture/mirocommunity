@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -15,17 +16,15 @@ def authors(request, sitelocation=None):
     for author in authors:
         author.form = forms.AuthorForm(prefix="edit_%s" % author.id,
                                            instance=author)
-    add_author_form = forms.AuthorForm()
+    add_author_form = UserCreationForm()
     if request.method == 'GET':
-        add_author_form = forms.AuthorForm()
         return render_to_response('localtv/subsite/admin/authors.html',
                                   {'authors': authors,
                                    'add_author_form': add_author_form},
                                   context_instance=RequestContext(request))
     else:
         if request.POST['submit'] == 'Add':
-            add_author_form = forms.AuthorForm(request.POST,
-                                                   instance=User())
+            add_author_form = UserCreationForm(request.POST)
             if add_author_form.is_valid():
                 try:
                     add_author_form.save()
