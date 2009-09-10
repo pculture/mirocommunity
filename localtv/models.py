@@ -109,8 +109,8 @@ class SiteLocation(models.Model):
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
                                    blank=True)
-    admins_user = models.ManyToManyField('auth.User', blank=True,
-                                         related_name='admin_for')
+    admins = models.ManyToManyField('auth.User', blank=True,
+                                    related_name='admin_for')
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
@@ -196,7 +196,8 @@ class Feed(models.Model):
     auto_approve = models.BooleanField(default=False)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     auto_categories = models.ManyToManyField("Category", blank=True)
-    auto_authors = models.ManyToManyField("Author", blank=True)
+    auto_authors = models.ManyToManyField("auth.User", blank=True,
+                                          related_name='auto_feed_set')
 
     class Meta:
         unique_together = (
@@ -415,35 +416,17 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
-class Author(models.Model):
+class Profile(models.Model):
     """
-    The author of a video.
-
-    One of the ambitions of LocalTV is to create some communication between our
-    project and the authors of media, so we try and collect this information so
-    we can link back to them.
-
-    Fields:
-     - site: the site this author is bound to
-     - name: name of the author
-     - logo: a thumbnail to represent the author by
+    Some extra data that we store about users.  Gets linked to a User object
+    through the Django authentication system.
     """
-    site = models.ForeignKey(Site)
-    name = models.CharField(max_length=80, verbose_name='Author Name')
-    logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
-                             verbose_name='Author Image')
-
-    class Meta:
-        ordering = ['name']
-        unique_together = (
-            ('name', 'site'))
+    user = models.ForeignKey('auth.User')
+    logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
+                             verbose_name='Image')
 
     def __unicode__(self):
-        return self.name
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('localtv_subsite_author', [str(self.id)])
+        return unicode(self.user)
 
 
 class SavedSearch(models.Model):
@@ -567,7 +550,8 @@ class Video(models.Model):
     description = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
-    authors = models.ManyToManyField(Author, blank=True)
+    authors = models.ManyToManyField('auth.User', blank=True,
+                                     related_name='authors_set')
     file_url = models.URLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
@@ -821,7 +805,7 @@ admin.site.register(SiteLocation)
 admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Author)
+admin.site.register(Profile)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)

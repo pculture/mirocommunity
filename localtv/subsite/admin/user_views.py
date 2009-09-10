@@ -10,7 +10,7 @@ from localtv.subsite.admin import forms
 @require_site_admin
 @get_sitelocation
 def users(request, sitelocation=None):
-    admins = sitelocation.admins_user.all()
+    admins = sitelocation.admins.all()
     add_user_form = forms.AddUserForm()
     create_user_form = UserCreationForm()
     if request.method == 'POST':
@@ -18,13 +18,13 @@ def users(request, sitelocation=None):
             add_user_form = forms.AddUserForm(request.POST)
             if add_user_form.is_valid():
                 users = add_user_form.cleaned_data['user']
-                sitelocation.admins_user.add(*users)
+                sitelocation.admins.add(*users)
                 return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Create':
             create_user_form = UserCreationForm(request.POST)
             if create_user_form.is_valid():
                 user = create_user_form.save()
-                sitelocation.admins_user.add(user)
+                sitelocation.admins.add(user)
                 return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Delete':
             user_id = request.POST.get('id')
@@ -34,7 +34,7 @@ def users(request, sitelocation=None):
                 except User.DoesNotExist:
                     pass
                 else:
-                    sitelocation.admins_user.remove(user)
+                    sitelocation.admins.remove(user)
             return HttpResponseRedirect(request.path)
         else:
             return HttpResponseRedirect(request.path)
