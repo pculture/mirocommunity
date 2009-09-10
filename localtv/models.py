@@ -39,15 +39,11 @@ VIDEO_THUMB_SIZES = [
     (375, 295), # featured on frontpage
     (140, 110)]
 
-VIDEO_USER_REGEXES = (
-    ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
-    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
-    ('YouTube', r'http://(www\.)?youtube\.com/user/.+'),
-    ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
-    ('blip.tv', r'http://.+\.blip\.tv/rss'),
-    ('blip.tv', r'http://.+\.blip\.tv/'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/user:[0-9]+/clips/rss'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/.+'))
+VIDEO_SERVICE_REGEXES = (
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/'),
+    ('YouTube', r'http://(www\.)?youtube\.com/'),
+    ('blip.tv', r'http://(.+\.)?blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -756,7 +752,7 @@ class Video(models.Model):
         else:
             return
 
-        for service, regexp in VIDEO_USER_REGEXES:
+        for service, regexp in VIDEO_SERVICE_REGEXES:
             if re.search(regexp, url, re.I):
                 return service
 
