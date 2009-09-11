@@ -75,8 +75,16 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
 
     def label_from_instance(self, instance):
+        if isinstance(instance, User):
+            if instance.first_name:
+                name = '%s %s' % (instance.first_name,
+                                  instance.last_name)
+            else:
+                name = instance.username
+        else:
+            name = instance.name
         return mark_safe(u'<span>%s</span>' % (
-                conditional_escape(instance.name)))
+                conditional_escape(name)))
 
 
 class BulkEditVideoForm(EditVideoForm):
@@ -92,8 +100,8 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     tags = TagField(required=False,
                     widget=TagAreaWidget)
-    categories = BulkChecklistField(models.Category, required=False)
-    authors = BulkChecklistField(User, required=False)
+    categories = BulkChecklistField(models.Category.objects, required=False)
+    authors = BulkChecklistField(User.objects, required=False)
     when_published = forms.DateTimeField(required=False,
                                          widget=forms.TextInput(
             attrs={'class': 'large_field'}))
