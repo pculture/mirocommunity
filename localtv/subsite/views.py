@@ -127,13 +127,23 @@ def video_search(request, sitelocation=None):
             videos = videos.filter(
                 Q(description__icontains=term) | Q(name__icontains=term) |
                 Q(tags__name__icontains=term) |
-                Q(categories__name__icontains=term))
+                Q(categories__name__icontains=term) |
+                Q(user__username__icontains=term) |
+                Q(user__first_name__icontains=term) |
+                Q(user__last_name__icontains=term) |
+                Q(video_service_user__icontains=term) |
+                Q(feed__name__icontains=term))
 
         for term in stripped_exclude_terms:
             videos = videos.exclude(
                 Q(description__icontains=term) | Q(name__icontains=term) |
                 Q(tags__name__icontains=term) |
-                Q(categories__name__icontains=term))
+                Q(categories__name__icontains=term) |
+                Q(user__username__icontains=term) |
+                Q(user__first_name__icontains=term) |
+                Q(user__last_name__icontains=term) |
+                Q(video_service_user__icontains=term) |
+                Q(feed__name__icontains=term))
 
         videos = videos.distinct()
 
