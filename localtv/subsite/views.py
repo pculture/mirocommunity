@@ -29,8 +29,7 @@ def subsite_index(request, sitelocation=None):
 
     new_videos = models.Video.objects.new(
         site=sitelocation.site,
-        status=models.VIDEO_STATUS_ACTIVE,
-        when_published__isnull=False)[:10]
+        status=models.VIDEO_STATUS_ACTIVE)[:10]
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)

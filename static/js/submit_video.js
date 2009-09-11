@@ -1,5 +1,10 @@
 // maybe not the most elegantly named function.
 function replace_submit_video_and_setup_callbacks(result) {
+    page = $(result);
+    if (page.attr('id') == 'next') {
+        location.href = page.attr('href');
+        return;
+    }
     $('#submit_box_content').html(result);
     $('#submit_box_content form').ajaxForm(replace_submit_video_and_setup_callbacks);
 }
