@@ -29,7 +29,7 @@
     By <span class="author"><a href="{% url localtv_subsite_list_feed video.feed.pk %}">{{ video.feed.name }}</a></span>
     {% else %}
     {% if video.user %}
-    By <span class="author"><a href="{% url localtv_subsite_list_user video.user.username %}">{{ video.user.username }}</a></span>
+    By <span class="author"><a href="{% url localtv_subsite_author video.user.pk %}">{{ video.user.username }}</a></span>
     {% endif %}
     {% endif %}
   </p>

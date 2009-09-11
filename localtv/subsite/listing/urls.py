@@ -7,5 +7,4 @@ urlpatterns = patterns(
     (r'^popular/$', 'popular_videos', {}, 'localtv_subsite_list_popular'),
     (r'^featured/$', 'featured_videos', {}, 'localtv_subsite_list_featured'),
     (r'^tag/(.*)$', 'tag_videos', {}, 'localtv_subsite_list_tag'),
-    (r'^user/(.+)$', 'user_videos', {}, 'localtv_subsite_list_user'),
     (r'^feed/(\d*)$', 'feed_videos', {}, 'localtv_subsite_list_feed'))

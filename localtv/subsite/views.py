@@ -182,10 +182,14 @@ def author(request, id=None, sitelocation=None):
     else:
         author = get_object_or_404(User,
                                    pk=id)
+        videos = models.Video.objects.filter(
+            Q(authors=author) | Q(user=author),
+            site=sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE).distinct()
         return render_to_response(
             'localtv/subsite/author.html',
             {'author': author,
-             'video_list': author.authored_set.all()},
+             'video_list': videos},
             context_instance=RequestContext(request))
 
 
