@@ -405,10 +405,8 @@ class Category(models.Model):
         return objects
 
     def approved_set(self):
-        return self.video_set.filter(status=VIDEO_STATUS_ACTIVE).extra(
-        select={'best_date': 'COALESCE(localtv_video.when_published,'
-                'localtv_video.when_submitted)'}).order_by(
-            '-best_date')
+        return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
+                                 category=self)
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -489,13 +487,9 @@ class SavedSearch(models.Model):
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
-        videos = self.extra(select={'best_date': """CASE
-WHEN localtv_video.feed_id IS NULL
-THEN
-localtv_video.when_submitted
-ELSE
-COALESCE(localtv_video.when_published,localtv_video.when_submitted)
-END"""})
+        videos = self.extra(select={'best_date': """
+COALESCE(localtv_video.when_published,localtv_video.when_approved,
+localtv_video.when_submitted)"""})
         return videos.filter(**kwargs).order_by('-best_date')
 
     def popular_since(self, delta, sitelocation=None, **kwargs):
@@ -747,19 +741,14 @@ class Video(models.Model):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if self.feed or self.search and self.when_published:
-            return self.when_published
-        elif self.when_approved is not None:
-            return self.when_approved
-        else:
-            return self.when_submitted
+        return self.when_published or self.when_approved or self.when_submitted
 
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-        if self.feed or self.search and self.when_published:
+        if self.when_published:
             return 'published'
         else:
             return 'posted'
