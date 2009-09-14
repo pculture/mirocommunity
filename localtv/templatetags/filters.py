@@ -25,6 +25,9 @@ def sanitize(value):
     * http://www.djangosnippets.org/snippets/1655/
     * http://www.djangosnippets.org/snippets/205/
     """
+    if value is None:
+        return u''
+    
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)
     allowed_tags = 'p i strong em b u a h1 h2 h3 h4 h5 h6 pre br img'.split()
