@@ -67,8 +67,8 @@ def feeds_page(request, sitelocation=None):
     if source_filter == 'search':
         queryset = searches
     elif source_filter in ('feed', 'user'):
-        q = Q(feed_url__iregex=models.VIDEO_USER_REGEXES[0][1])
-        for service, regexp in models.VIDEO_USER_REGEXES[1:]:
+        q = Q(feed_url__iregex=models.VIDEO_SERVICE_REGEXES[0][1])
+        for service, regexp in models.VIDEO_SERVICE_REGEXES[1:]:
             q = q | Q(feed_url__iregex=regexp)
         if source_filter == 'user':
             queryset = feeds.filter(q)
