@@ -75,11 +75,9 @@ class NewVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('New Videos'))
 
     def items(self):
-        videos = models.Video.objects.filter(
+        videos = models.Video.objects.new(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        videos = videos.order_by(
-            '-when_approved', '-when_submitted')
         return videos[:LOCALTV_FEED_LENGTH]
 
             

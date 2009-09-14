@@ -9,7 +9,7 @@
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/tb.css" %}" />
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
-    {{ sitelocation.css }}
+    {{ sitelocation.css|safe }}
     {% if sitelocation.background %}body {
        background: url("{{ sitelocation.background.url }}");
     }{% endif %}
