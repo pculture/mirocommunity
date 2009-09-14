@@ -406,7 +406,7 @@ class Category(models.Model):
 
     def approved_set(self):
         return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
-                                 category=self)
+                                 categories=self)
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
