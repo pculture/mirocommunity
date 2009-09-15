@@ -103,6 +103,12 @@ class BulkEditVideoForm(EditVideoForm):
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url')
 
+    def __init__(self, *args, **kwargs):
+        EditVideoForm.__init__(self, *args, **kwargs)
+        self.fields['categories'].queryset = \
+            self.field['categories'].queryset.filter(
+            site=self.instance.site)
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
                                     can_delete=True,
