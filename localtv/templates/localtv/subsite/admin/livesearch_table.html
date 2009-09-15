@@ -42,7 +42,7 @@
   </script>
   
   <div id="saved_searches" class="search_sites form_wrap rounded">
-  <form method="GET" action="{% url localtv_admin_livesearch_page %}">
+  <form method="GET" action="{% url localtv_admin_add_page %}">
     
     <button class="med_button"><span>Search Video Sites</span></button>
   <div class="fields">
@@ -68,7 +68,7 @@
   {% if is_saved_search %}
     <i class="floatleft">This search is saved</i>
   {% else %}
-    <a href="{% url localtv_admin_livesearch_save_search %}?query={{ query_string|urlencode }}" class="med_button allsites">
+    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="med_button allsites">
       <span>Save as Source</span></a>
   {% endif %}
 	</div>

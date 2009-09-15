@@ -1,23 +1,15 @@
-import datetime
-import re
-
-from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.forms.fields import url_re
-from django.http import (
-    HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
-import feedparser
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models
-from localtv.subsite.admin import forms
 
 
 ## -------------------
-## Feed administration
+## Source administration
 ## -------------------
 
 class MockQueryset(object):
@@ -37,14 +29,9 @@ class MockQueryset(object):
     def __getitem__(self, k):
         return self.objects[k]
 
-VIDEO_SERVICE_TITLES = (
-    re.compile(r'Uploads by (.+)'),
-    re.compile(r"Vimeo / (.+)'s uploaded videos")
-    )
-
 @require_site_admin
 @get_sitelocation
-def feeds_page(request, sitelocation=None):
+def manage_sources(request, sitelocation=None):
     search_string = request.GET.get('q', '')
 
     feeds = models.Feed.objects.filter(
@@ -91,75 +78,6 @@ def feeds_page(request, sitelocation=None):
                          'source_filter': source_filter})
 
 
-@require_site_admin
-@get_sitelocation
-def add_feed(request, sitelocation=None):
-    if 'service' in request.POST:
-        video_service_form = forms.VideoServiceForm(request.POST)
-        if video_service_form.is_valid():
-            feed_url = video_service_form.feed_url()
-        else:
-            return HttpResponseBadRequest(
-                'You must provide a video service username')
-    else:
-        feed_url = request.POST.get('feed_url')
-    page_num = request.POST.get('page')
-
-    if not feed_url:
-        return HttpResponseBadRequest(
-            "You must provide a feed URL")
-
-    if not url_re.match(feed_url):
-        return HttpResponseBadRequest(
-            "Not a valid feed URL")
-
-    if models.Feed.objects.filter(
-            feed_url=feed_url,
-            site=sitelocation.site,
-            status=models.FEED_STATUS_ACTIVE).count():
-        return HttpResponseBadRequest(
-            "That feed already exists on this site")
-
-    parsed_feed = feedparser.parse(feed_url)
-    title = parsed_feed.feed.get('title')
-    if title is None:
-        return HttpResponseBadRequest('That URL does not look like a feed.')
-    for regexp in VIDEO_SERVICE_TITLES:
-        match = regexp.match(title)
-        if match:
-            title = match.group(1)
-            break
-
-    defaults = {
-        'name': title,
-        'webpage': parsed_feed.feed.get('link', ''),
-        'description': parsed_feed.feed.get('summary', ''),
-        'when_submitted': datetime.datetime.now(),
-        'last_updated': datetime.datetime.now(),
-        'status': models.FEED_STATUS_ACTIVE,
-        'user': request.user,
-        'etag': '',
-        'auto_approve': bool(request.POST.get('auto_approve', False))}
-
-    feed, created = models.Feed.objects.get_or_create(
-        feed_url=feed_url,
-        site=sitelocation.site,
-        defaults = defaults)
-
-    if not created:
-        for key, value in defaults.items():
-            setattr(feed, key, value)
-        feed.save()
-
-    feed.update_items()
-
-    if feed.auto_approve:
-        reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
-    else:
-        reverse_url = reverse('localtv_admin_source_page')
-        if page_num:
-            reverse_url += '?page=' + page_num
-    return HttpResponseRedirect(reverse_url)
 
 
 @referrer_redirect
@@ -191,3 +109,19 @@ def feed_auto_approve(request, sitelocation=None):
     feed.save()
 
     return HttpResponse('SUCCESS')
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def remove_saved_search(request, sitelocation=None):
+    search_id = request.GET.get('search_id')
+    existing_saved_search = models.SavedSearch.objects.filter(
+        site=sitelocation.site,
+        pk=search_id)
+
+    if existing_saved_search.count():
+        existing_saved_search.delete()
+        return HttpResponse('SUCCESS')
+    else:
+        return HttpResponseBadRequest(
+            'Saved search of that query does not exist')

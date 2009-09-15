@@ -12,7 +12,7 @@
 
     <div class="display_data">{{ feed.query_string }}</div>
     <div class="user">SEARCH</div>
-    {% url localtv_admin_livesearch_page as livesearch_url %}
+    {% url localtv_admin_add_page as livesearch_url %}
     <a class="feed_link" href="{{ livesearch_url }}?query={{ feed.query_string|urlencode }}">{{ sitelocation.site.domain }}{{ livesearch_url }}?query={{ feed.query_string|urlencode }}</a>
   </li>
 </ul>
