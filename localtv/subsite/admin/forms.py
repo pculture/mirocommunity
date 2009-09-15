@@ -106,7 +106,7 @@ class BulkEditVideoForm(EditVideoForm):
     def __init__(self, *args, **kwargs):
         EditVideoForm.__init__(self, *args, **kwargs)
         self.fields['categories'].queryset = \
-            self.field['categories'].queryset.filter(
+            self.fields['categories'].queryset.filter(
             site=self.instance.site)
 
 VideoFormSet = modelformset_factory(models.Video,
