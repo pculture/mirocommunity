@@ -25,3 +25,21 @@ class FeedAutoAuthorsForm(forms.ModelForm):
     class Meta:
         model = models.Feed
         fields = ('auto_authors',)
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+
+class VideoNameForm(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('name',)
+
+class VideoWhenPublishedForm(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('when_published',)
+
+class VideoDescriptionField(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('description',)

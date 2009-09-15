@@ -9,33 +9,6 @@ from localtv.subsite.admin.edit_attributes import forms
 
 @require_site_admin
 @get_sitelocation
-def edit_name(request, id, sitelocation=None):
-    feed = get_object_or_404(
-        models.Feed,
-        id=id,
-        site=sitelocation.site)
-
-    edit_name_form = forms.FeedNameForm(request.POST)
-
-    if edit_name_form.is_valid():
-        feed.name = edit_name_form.cleaned_data.get('name')
-        feed.save()
-
-        return HttpResponse(
-            simplejson.dumps(
-                {'post_status': 'SUCCESS',
-                 'display_html': feed.name,
-                 'input_html': edit_name_form.as_ul()}))
-    else:
-        return HttpResponse(
-            simplejson.dumps(
-                {'post_status': 'FAIL',
-                 'display_html': feed.name,
-                 'input_html': edit_name_form.as_ul()}))
-        
-
-@require_site_admin
-@get_sitelocation
 def edit_auto_categories(request, id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
