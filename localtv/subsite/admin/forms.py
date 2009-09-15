@@ -1,5 +1,5 @@
 from django import forms
-from django.forms.models import BaseModelFormSet, modelformset_factory
+from django.forms.models import modelformset_factory
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.html import conditional_escape
@@ -105,9 +105,10 @@ class BulkEditVideoForm(EditVideoForm):
 
     def __init__(self, *args, **kwargs):
         EditVideoForm.__init__(self, *args, **kwargs)
+        site = Site.objects.get_current()
         self.fields['categories'].queryset = \
             self.fields['categories'].queryset.filter(
-            site=self.instance.site)
+            site=site)
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
@@ -235,7 +236,6 @@ class AuthorForm(forms.ModelForm):
         author = forms.ModelForm.save(self, **kwargs)
         if self.cleaned_data.get('logo'):
             logo = self.cleaned_data['logo']
-            print 'going to save', logo
             try:
                 profile = author.get_profile()
             except models.Profile.DoesNotExist:
