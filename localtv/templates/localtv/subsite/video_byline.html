@@ -1,6 +1,18 @@
-{% if video.video_service %}
-  <span class="byline">
-    Posted by {% if video.feed %}<a href="{{ video.feed.webpage}}">{{ video.feed.name }}</a>{% else %}<a href="{{ video.video_service_url }}">{{ video.video_service_user }}</a>{% endif %} on {{ video.video_service }}
-  </span>
+{% if current_video.authors.count or current_video.current_video_service or current_video.user or edit_video_form %}
+  <span class="byline{% if edit_current_video_form %} editable{% endif %}">
+{% if current_video.authors.count %}
+    By {% for user in current_video.authors.all %}<a href="{% url localtv_subsite_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+{% else %}
+{% if current_video.current_video_service %}
+  Posted by {% if current_video.feed %}<a href="{{ current_video.feed.webpage}}">{{ current_video.feed.name }}</a>{% else %}<a href="{{ current_video.current_video_service_url }}">{{ current_video.current_video_service_user }}</a>{% endif %} on {{ current_video.current_video_service }}
+{% else %}
+{% if current_video.user %}
+    Submitted by <a href="{% url localtv_subsite_author current_video.user.pk %}">{% if current_video.user.first_name %}{{ current_video.user.first_name }} {{ current_video.user.last_name }}{% else %}{{ current_video.user.username }}{% endif %}</a>
 {% endif %}
-
+{% endif %}
+{% endif %}
+  {% if edit_video_form %}
+  <a href="#" class="edit_link">Edit {% if not current_video.authors.count and not current_video.current_video_service and not current_video.user %}Attribution{% endif %}</a
+  {% endif %}
+  </span>
+  {% endif %}

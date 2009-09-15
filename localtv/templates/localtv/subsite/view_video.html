@@ -23,17 +23,23 @@
   <div id="main">
     <div class="vid_title_wrapper">
       <div class="vid_title{% if edit_video_form %} editable{% endif %}">
+        <h2>
         {% if current_video.name %}
-        <h2>{{ current_video.name }}</h2>
+        {{ current_video.name }}
         {% else %}
-        <h2{% trans "(no title)" %}</h2>
+        {% trans "(no title)" %}
         {% endif %}
+        {% if edit_video_form %}
+        <a href="#" class="edit_link">Edit</a>
+        {% endif %}
+        </h2>
       </div>
     </div>
-    <span class="date{% if edit_video_form %} editable{% endif %}">{{ current_video.when_prefix|title }} {{ current_video.when|simpletimesince }} ago</span>
-    {% with current_video as video %}
+    <span class="date{% if edit_video_form %} editable{% endif %}">
+        {{ current_video.when_prefix|title }} {{ current_video.when|simpletimesince }} ago
+        {% if edit_video_form %}<a href="#" class="edit_link">Edit</a>{% endif %}
+    </span>
     {% include "localtv/subsite/video_byline.html" %}
-    {% endwith %}
     <div id="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|safe }}
@@ -48,7 +54,7 @@
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" /></span> 
+        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" /></span>
       </a>
 
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
@@ -60,75 +66,51 @@
       {{ current_video.description|sanitize }}
       {{ description }}
       {% if edit_video_form %}
-      <span class="editable">Change Description</span>
+      <a href="#" class="edit_link">Edit</a>
       {% endif %}
     </div>
 
     <div id="tags">
-      {% if current_video.categories.count or edit_video_form %}
-                		 {% if edit_video_form %} <a href="#add_cat" id="add_cat" class="categories editable"><span>Change Category</span></a>{% endif %}
-
-        
-	<div class="floatleft">        
-        <h3>Category - </h3>
-
-        <ul>
-          {% for category in current_video.categories.all %}
-            <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li> 
-          {% endfor %}
-        </ul>
-        
-	</div>
-        
-      {% endif %}
-
-      {% if current_video.tags.count or edit_video_form %}
-        
-        
-                 {% if edit_video_form %}<a href="#add_tag" id="add_tag" class="tags editable"><span>Edit Tags</span></a>{% endif %}
-
-        
-       <div class="floatleft">        
-
-        <h3>Tags - </h3>
-
-        <ul>
-          {% for tag in current_video.tags.all %}
-            <li><a href="{% url localtv_subsite_list_tag tag.name %}">{{ tag.name }}</a></li> 
-          {% endfor %}
-        </ul>
-        
-        
-        </div>
-        
-        
-      {% endif %}
-      {% if current_video.authors.count or edit_video_form %}
-     
-         {% if edit_video_form %}<a href="#add_author" id="add_author" class="authors editable"><span>Add an Author</span></a>{% endif %}
-
-     
-     	<div class="floatleft">        
-
-     <h3>Authors - </h3>
-      
-     
-        <ul>
-          {% for author in current_video.authors.all %}
-            <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li> 
-          {% endfor %}
-        </ul>
-		</div>
-
-
-
-      {% endif %}
-      {% if user_is_admin %}
-  <!--<h3>{{ current_video|pprint }}</h3> -->
-  {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}
-  {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
-  {% if current_video.feed %}<h3>From feed <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></h3>{% endif %}
-  <h3>Website: {{ current_video.website_url|urlize }}</h3>
+      <ul class="meta_listing">
+        <li class="item">
+          {% if edit_video_form %}
+          <a href="#add_cat" id="add_cat" class="categories editable"><span>Edit</span></a>
+          {% endif %}
+          <div class="floatleft">
+            <h3>Category - </h3>
+            <ul>
+              {% for category in current_video.categories.all %}
+              <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </li>
+        <li class="item">
+          {% if edit_video_form %}
+          <a href="#add_tag" id="add_tag" class="tags editable"><span>Edit</span></a>
+          {% endif %}
+          <div class="floatleft">
+            <h3>Tags - </h3>
+            <ul>
+              {% for tag in current_video.tags.all %}
+              <li><a href="{% url localtv_subsite_list_tag tag.name %}">{{ tag.name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </li>
+        {% if user_is_admin %}
+  <li class="item">
+    {% if edit_video_form %}
+    <a href="#" class="website editable"><span>Edit</span></a>
+    {% endif %}
+    <div class="floatleft">
+      <h3>Website</h3>
+      {{ current_video.website_url|urlize }}
+    </div>
+  </li>
+  {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3> {{ current_video.submitter }}</li>{% endif %}
+  {% if current_video.search %}<li class="item"><h3>From search</h3> {{ current_video.search }}</li>{% endif %}
+  {% if current_video.feed %}<li class="item"><h3>From feed</h3> <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li>{% endif %}
   {% endif %}
   {% comment %}
       <form id="add_tag">
@@ -138,37 +120,49 @@
         <a href="#" class="log_push">Login to add a tag</a>
       </form>
 {% endcomment %}
-      <br class="clear" />
+    </ul>
+    <br class="clear" />
     </div>
 
+    {% get_comment_count for current_video as comment_count %}
+
+
+    <h2 class="comments-title">{{ comment_count }} Comments</h2>
     <ul id="comments">
       {% get_comment_list for current_video as comments %}
       {% for comment in comments %}
       <li>
-        <p>{{ comment }}</p>
-        {% if user_is_admin %}
-        <div class="comment-moderation">
-          <form action="{% url comments-delete comment.id %}" method="post">
-            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-            <button type="submit">delete</button>
-          </form>
-          <form action="{% url comments-spam comment.id %}" method="post">
-            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-            <button type="submit">spam</button>
-          </form>
+        <div class="comment-poster">
+          <h4>{{ comment.user_name }}</h4>
+          {% if user_is_admin %}
+          <div class="comment-moderation">
+            <form action="{% url comments-delete comment.id %}" method="post">
+              <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+              <button type="submit">delete</button>
+            </form>
+            <form action="{% url comments-spam comment.id %}" method="post">
+              <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+              <button type="submit">spam</button>
+            </form>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
+        <div class="comment-body">
+          {{ comment.comment|sanitize }}
+        </div>
       </li>
-      </p>
       {% endfor %}
-      <h2>Post a comment</h2>
-      {% get_comment_form for current_video as comment_form %}
-      <form action="{% comment_form_target %}" method="POST">
-        <input type="hidden" name="next" value="{{ current_video.get_absolute_url }}w">
-        {% with comment_form as form %}
-        {% include "comments/form_base.html" %}
-        {% endwith %}
-    </div>
+    </ul>
+
+
+    <h2 class="clear post-comment-title">Post a comment</h2>
+    {% get_comment_form for current_video as comment_form %}
+    <form action="{% comment_form_target %}" method="POST">
+      <input type="hidden" name="next" value="{{ current_video.get_absolute_url }}">
+      {% with comment_form as form %}
+      {% include "comments/form_base.html" %}
+      {% endwith %}
+    </form>
   </div>
 
   <div id="sidebar">

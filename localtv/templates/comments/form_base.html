@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n versioned %}
 {% if request.user.is_authenticated %}
       <p class="posting-as">Posting as {{ request.user.username }}</p>
 {% endif %}
@@ -12,7 +12,7 @@
         {% if field.errors %} class="error"{% endif %}
         {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
         {% if field.errors %}{{ field.errors }}{% endif %}
-        {{ field.label_tag }} {{ field }}
+        {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
       </p>
         {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
       {% else %}
@@ -20,7 +20,7 @@
         {% if field.errors %} class="error"{% endif %}
         {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
         {% if field.errors %}{{ field.errors }}{% endif %}
-        {{ field.label_tag }} {{ field }}
+        {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
       </p>
       {% endif %}
     {% endif %}
@@ -31,6 +31,6 @@
   <input type="hidden" name="url" value="{{ request.user.openiduser.url }}">
   {% endif %}
   <p class="submit">
-    <input type="submit" name="submit" class="submit-post" value="{% trans "Post" %}" />
-    <input type="submit" name="preview" class="submit-preview" value="{% trans "Preview" %}" />
+    <input name="submit" class="submit-post floatright" value="Post" type="image" src="{% versioned "/images/post.png" %}">
+    <input name="preview" class="submit-preview floatleft" value="Preview" type="image" src="{% versioned "/images/preview.png" %}">
   </p>
