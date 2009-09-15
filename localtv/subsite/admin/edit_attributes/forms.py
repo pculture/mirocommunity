@@ -39,6 +39,11 @@ class VideoWhenPublishedForm(forms.ModelForm):
         model = models.Video
         fields = ('when_published',)
 
+class VideoAuthorsForm(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('authors',)
+
 class VideoDescriptionField(forms.ModelForm):
     class Meta:
         model = models.Video

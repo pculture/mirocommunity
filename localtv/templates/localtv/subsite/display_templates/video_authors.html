@@ -1,0 +1,18 @@
+{% if instance.authors.count or instance.instance_service or instance.user %}
+  <span class="byline">
+{% if instance.authors.count %}
+    By {% for user in instance.authors.all %}<a href="{% url localtv_subsite_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+{% else %}
+{% if instance.video_service %}
+  Posted by {% if instance.feed %}<a href="{{ instance.feed.webpage}}">{{ instance.feed.name }}</a>{% else %}<a href="{{ instance.video_service_url }}">{{ instance.video_service_user }}</a>{% endif %} on {{ instance.video_service }}
+{% else %}
+{% if instance.user %}
+    Submitted by <a href="{% url localtv_subsite_author instance.user.pk %}">{% if instance.user.first_name %}{{ instance.user.first_name }} {{ instance.user.last_name }}{% else %}{{ instance.user.username }}{% endif %}</a>
+{% endif %}
+{% endif %}
+{% endif %}
+  {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
+  <a href="#" class="edit_link">Edit {% if not instance.authors.count and not instance.video_service and not instance.user %}Attribution{% endif %}</a
+  {% endif %}
+  </span>
+  {% endif %}
