@@ -2,11 +2,6 @@ strong {
     font-weight: bold;
 }
 
-div.description{
-    clear: both;
-    line-height: 18px;
-    padding: 35px 0;
-}
 
 #cancel_button {
     display: block !important;
@@ -22,31 +17,148 @@ div.description{
     float: left;
 }
 
+#tags {
+    background: url(../images/deets.png) right bottom no-repeat;
+    padding: 0;
+    clear: both;
+    border-top: 1px solid #f0f0f0;
+    font-size: 11px;
+    line-height: 1.5em;
+}
+
 #tags h3{
     clear: both;
     float: left;
-    margin-bottom: 10px;
     color: #666;
+width: 74px;
+margin-right: 3px;
+font-weight: bold;
+
 }
 
-#tags ul{
+#tags ul.meta_listing{
+width: 540px;
+}
+
+#tags ul.meta_listing li.item{
+border-bottom: 1px solid #eee;
+padding: 10px 0 !important; 
+clear: both;
+float: left;
+width: 540px;
+display: block;
+}
+
+
+#tags ul.meta_listing li.item textarea{
+width: 377px;
+padding: 3px;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 11px;
+margin: -4px;
+border: 1px solid #aaa;
+}
+
+
+#tags li ul{
     font-weight: bold;
     padding-left: 3px;
     color: #666;
     width: 370px;
 }
 
-#tags {
-    background: url(../images/deets.png) right bottom no-repeat;
-    padding: 15px 0;
-    border-top: 1px solid #f0f0f0;
-    font-size: 11px;
+
+#tags .floatleft {
+clear: left;
+margin: 0 !important;
 }
 
-#about h4{
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 10px;
+
+#tags .editable {
+clear: left;
+float: right;
+padding: 0 0 0 18px !important;
+margin: 0 !important;
+background: url(../images/small_icons.png) left 1px no-repeat;
+}
+
+.done {
+background: url(../images/small_icons.png) 2px -91px no-repeat !important;
+font-size: 11px;
+padding-left: 18px;
+}
+
+#tags .done{
+float: right;
+}
+
+
+div.description{
+    clear: both;
+    line-height: 18px;
+    padding: 35px 0 10px;
+    margin-bottom: 25px;
+}
+
+div.description .editable {
+padding: 0 0 0 18px !important;
+float: none;
+margin-top: 10px;
+display: inline;
+background: url(../images/small_icons.png) left 1px no-repeat;
+color: #333;
+line-height: 1.5;
+}
+
+div.description .done {
+float: right;
+margin: 10px 0 15px 0;
+}
+
+p.submit{
+margin-top: 10px;
+}
+
+
+div.description textarea {
+width: 536px;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 12px;
+min-height: 100px;
+line-height: 1.6em;
+margin: 0 0 0 -9px ;
+padding-left:  8px;
+}
+
+
+
+ul#comments form p label{
+display: none;
+}
+
+#id_comment{
+width: 508px;
+background: url(../images/comment-bg.png) right top no-repeat;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 12px;
+line-height: 1.5em;
+border: 1px solid #ccc !important;
+border-top: 1px solid #ddd !important;
+padding: 15px;
+min-height: 220px;
+}
+
+.comment-field label{ 
+display: none;
+}
+
+.comments-title{
+clear: both;
+margin-top: 40px;
+}
+
+h2.post-comment-title{
+margin-bottom: 20px;
 }
 
 #about{
@@ -54,11 +166,15 @@ div.description{
     background: #eee;
     margin-top: 35px;
 }
+#about h4{
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 
 #about h1{
 display: none;
 }
-
 
 #about h2{
 margin-bottom: 10px;
@@ -108,7 +224,7 @@ margin: 21px;
 }
 
 div.editable:hover:after {
-    content: "✎";
+    content: "";
 }
 
 .editable.open {
@@ -413,6 +529,8 @@ text-align: center;
 }
 
 #label_sidebar {
+border: 1px solid #ddd;
+
     float: left;
     background: #f9f9f9;
     width: 343px;
@@ -427,6 +545,7 @@ padding: 20px;
     font-size: 140%;
     font-weight: bold;
     width: 100%;
+    clear: both;
 color: #333;
 }
 
@@ -436,7 +555,7 @@ color: #333;
 }
 
 #label_sidebar p {
-    margin-bottom: 20px;
+    margin: 0px;
 clear: both;
 color: #777;
 font-size: 11px;
@@ -449,7 +568,7 @@ line-height: 1.3em
     font-size: 130%;
     clear: both;
     width: 100%;
-    margin: 25px 0 3px 0;
+    margin: 10px 0 3px 0;
 }
 
 #label_sidebar form input, #label_sidebar form textarea, #label_sidebar form select {
