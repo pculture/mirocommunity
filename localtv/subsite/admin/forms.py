@@ -42,18 +42,10 @@ class TagField(forms.CharField):
 class EditVideoForm(forms.ModelForm):
     """
     """
-    tags = TagField(required=False)
     thumbnail = forms.ImageField(required=False)
     class Meta:
         model = models.Video
-        fields = ('name', 'description', 'website_url', 'thumbnail', 'tags',
-                  'categories', 'authors', 'thumbnail_url', 'when_published')
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-        site = Site.objects.get_current()
-        self.fields['categories'].queryset = models.Category.objects.filter(
-            site=site)
+        fields = ('thumbnail', 'thumbnail_url', )
 
     def save(self, *args, **kwargs):
         if 'thumbnail' in self.cleaned_data:
