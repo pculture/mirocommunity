@@ -28,4 +28,7 @@ urlpatterns = patterns(
      'localtv_admin_video_edit_tags'),
     (r'^video/(?P<id>[0-9]+)/description/$', 'simple.edit_field',
      {'model': models.Video, 'field': 'description'},
-     'localtv_admin_video_edit_description'))
+     'localtv_admin_video_edit_description'),
+    (r'^video/(?P<id>[0-9]+)/description/$', 'simple.edit_field',
+     {'model': models.Video, 'field': 'website_url'},
+     'localtv_admin_video_edit_website_url'))

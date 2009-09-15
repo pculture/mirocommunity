@@ -26,6 +26,8 @@ WIDGET_DIRECTORY = {
             'form': forms.VideoTagsForm},
         'description': {
             'form': forms.VideoDescriptionField},
+        'website_url': {
+            'form': forms.VideoWebsiteUrlField},
         },
     }
 

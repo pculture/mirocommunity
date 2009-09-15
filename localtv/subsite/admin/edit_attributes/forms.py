@@ -66,3 +66,8 @@ class VideoDescriptionField(forms.ModelForm):
     class Meta:
         model = models.Video
         fields = ('description',)
+
+class VideoWebsiteUrlField(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('website_url',)

@@ -101,17 +101,11 @@
         </li>
         {% if user_is_admin %}
   <li class="item">
-    {% if edit_video_form %}
-    <a href="#" class="website editable"><span>Edit</span></a>
-    {% endif %}
-    <div class="floatleft">
-      <h3>Website</h3>
-      {{ current_video.website_url|urlize }}
-    </div>
+    {% editable_widget current_video "website_url" %}
   </li>
-  {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3> {{ current_video.submitter }}</li>{% endif %}
-  {% if current_video.search %}<li class="item"><h3>From search</h3> {{ current_video.search }}</li>{% endif %}
-  {% if current_video.feed %}<li class="item"><h3>From feed</h3> <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li>{% endif %}
+  {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
+  {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>>{% endif %}
+  {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
   {% endif %}
   {% comment %}
       <form id="add_tag">
