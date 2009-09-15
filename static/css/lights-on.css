@@ -33,11 +33,9 @@ font-size: 18px;
 }
 
 a {
-color: #4190e4 !important;
 text-decoration: none;
 text-shadow: #eee 1px 1px 0px ;
 outline: none;
-font-weight: bold;
 }
 
 a:hover {
@@ -66,8 +64,6 @@ text-shadow: 0; !important
 background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
 font-size: 11px;
-color: #4190E4 !important;
-font-weight: bold;
 }
 
 .edit_link:hover{
@@ -516,6 +512,7 @@ display: block;
 padding: 0 3px 0 17px ;
 background: url(../images/nav_left.png) no-repeat;
 _background: url(../images/nav_left.gif) no-repeat;
+color: #555555;
 }
 
 #admin_nav a:hover {
@@ -598,14 +595,17 @@ padding-top: 18px;
 display: block;
 float: left;
 margin-bottom: 0;
+color: #000000;
+font-weight: normal;
 }
 
-#logo h1 a span.tagline {
+#logo h1 span.tagline {
 color: #888;
 display: block;
 float: left;
 font-size: 12px;
 padding: 0px 2px;
+font-weight: normal;
 }
 
 
@@ -1989,10 +1989,13 @@ margin-bottom: 265px;
 
 #labels table a {
 display: block;
+font-weight: bold;
+color: #4190e4 !important;
 }
 
 #labels table table a {
-    display: inline;
+color: #4190e4 !important;
+display: inline;
 }
 
 #labels table .pub {
@@ -2648,7 +2651,7 @@ margin-left: 10px;
 /*.display_data {
 padding-left: 20px;
 font-weight: bold;
-}
+}*/
 
 .lefthand .large_field {
 margin-right: 0px !important;
