@@ -1,6 +1,7 @@
 from django import forms
 
 from localtv import models
+from localtv.subsite.admin.forms import TagField, TagAreaWidget
 
 
 class FeedNameForm(forms.ModelForm):
@@ -54,6 +55,12 @@ class VideoCategoriesForm(forms.ModelForm):
         self.fields['categories'].queryset = \
             self.fields['categories'].queryset.filter(
             site=self.instance.site)
+
+class VideoTagsForm(forms.ModelForm):
+    tags = TagField(required=False, widget=TagAreaWidget)
+    class Meta:
+        model = models.Video
+        fields = ('tags',)
 
 class VideoDescriptionField(forms.ModelForm):
     class Meta:

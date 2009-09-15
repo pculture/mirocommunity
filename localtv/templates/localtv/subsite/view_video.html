@@ -91,17 +91,13 @@
           {% endif %}
         </li>
         <li class="item">
-          {% if edit_video_form %}
-          <a href="#add_tag" id="add_tag" class="tags editable"><span>Edit</span></a>
+          {% if user_is_admin %}
+          {% editable_widget current_video "tags" %}
+          {% else %}
+            {% with current_video as instance %}
+            {% include "localtv/subsite/display_templates/video_tags.html" %}
+            {% endwith %}
           {% endif %}
-          <div class="floatleft">
-            <h3>Tags - </h3>
-            <ul>
-              {% for tag in current_video.tags.all %}
-              <li><a href="{% url localtv_subsite_list_tag tag.name %}">{{ tag.name }}</a></li>
-              {% endfor %}
-            </ul>
-          </div>
         </li>
         {% if user_is_admin %}
   <li class="item">

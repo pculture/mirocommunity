@@ -1,0 +1,11 @@
+{% if not sitelocation %}
+<span id="add_tag" class="edit_link"><span>Edit</span></span>
+{% endif %}
+<div class="floatleft">
+  <h3>Tags - </h3>
+  <ul>
+    {% for tag in instance.tags.all %}
+    <li><a href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
