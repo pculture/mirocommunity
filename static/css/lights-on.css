@@ -66,6 +66,8 @@ text-shadow: 0; !important
 background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
 font-size: 11px;
+color: #4190E4 !important;
+font-weight: bold;
 }
 
 .edit_link:hover{
@@ -1894,6 +1896,10 @@ background: none;
 display: none;
 }
 
+.editable .input_field label {
+    display: none;
+}
+
 .vid_title.editable input{
 width: 100% !important;
 padding: 2px;
@@ -2639,7 +2645,7 @@ float: left !important;
 margin-left: 10px;
 }
 
-.display_data {
+/*.display_data {
 padding-left: 20px;
 font-weight: bold;
 }

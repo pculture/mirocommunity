@@ -6,9 +6,10 @@ function inline_edit_open() {
 }
 
 function insert_and_activate_action_buttons(obj) {
-    obj.append('<span class="save med_button"><span>Save Changes</span></span> <span class="cancel med_button"><span>Cancel</span></span>');
-    obj.children('.save').click(inline_save);
-    obj.children('.cancel').click(inline_cancel);
+    if (!obj.children('.done').length) {
+        obj.append('<span class="done">Done</span>');
+        obj.children('.done').click(inline_save);
+    }
 }
 
 function inline_save() {
@@ -20,13 +21,13 @@ function inline_save() {
     var display_wrapper = editable_wrapper.children('.display_data');
 
     inputs.each(function() {
-            post_data[this.name] = this.value;});
+        post_data[this.name] = $(this).val();});
     var post_url = editable_wrapper.children('.post_url').text();
     jQuery.post(
         post_url, post_data,
         function(data) {
             if (data['post_status'] == 'SUCCESS') {
-                input_wrapper.html(data['input_html']);
+                input_wrapper.children('ul').html(data['input_html']);
                 display_wrapper.html(data['display_html']);
                 insert_and_activate_action_buttons(input_wrapper);
                 input_wrapper.css('display', 'none');

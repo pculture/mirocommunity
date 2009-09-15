@@ -1,2 +1,6 @@
 {% load filters %}
-{{ instance.when_prefix|title }} {{ instance.when|simpletimesince }} ago
+<span class="date">
+  {{ instance.when_prefix|title }} {{ instance.when|simpletimesince }} ago
+  <span class="edit_link">Edit</span>
+</span>
+

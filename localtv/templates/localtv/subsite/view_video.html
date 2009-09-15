@@ -1,6 +1,6 @@
 {% extends "localtv/subsite/base.html" %}
 
-{% load video i18n comments filters versioned %}
+{% load video i18n comments filters versioned editable_widget %}
 
 {% block body_id %}view_video{% endblock %}
 
@@ -9,7 +9,7 @@
 
 {% block head %}
   {% if edit_video_form %}
-    <script src="{% versioned "/js/edit_form.js" %}"
+    <script src="{% versioned "/js/new_edit_form.js" %}"
             type="text/javascript">
     </script>
   {% endif %}
@@ -22,24 +22,34 @@
 
   <div id="main">
     <div class="vid_title_wrapper">
-      <div class="vid_title{% if edit_video_form %} editable{% endif %}">
+      <div class="vid_title">
+        {% if user_is_admin %}
+        {% editable_widget current_video "name" %}
+        {% else %}
         <h2>
         {% if current_video.name %}
         {{ current_video.name }}
         {% else %}
         {% trans "(no title)" %}
         {% endif %}
-        {% if edit_video_form %}
-        <a href="#" class="edit_link">Edit</a>
-        {% endif %}
         </h2>
+        {% endif %}
       </div>
     </div>
-    <span class="date{% if edit_video_form %} editable{% endif %}">
+    {% if user_is_admin %}
+    {% editable_widget current_video "when_published" %}
+    {% else %}
+    <span class="date">
         {{ current_video.when_prefix|title }} {{ current_video.when|simpletimesince }} ago
-        {% if edit_video_form %}<a href="#" class="edit_link">Edit</a>{% endif %}
     </span>
-    {% include "localtv/subsite/video_byline.html" %}
+    {% endif %}
+    {% if user_is_admin %}
+      {% editable_widget current_video "authors" %}
+    {% else %}
+      {% with current_video as instance %}
+      {% include "localtv/subsite/display_templates/video_authors.html" %}
+      {% endwith %}
+    {% endif %}
     <div id="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|safe }}
@@ -62,6 +72,9 @@
       </a>
     </div>
 
+    {% if user_is_admin %}
+    {% editable_widget current_video "description" %}
+    {% else %}
     <div class="description">
       {{ current_video.description|sanitize }}
       {{ description }}
@@ -69,7 +82,7 @@
       <a href="#" class="edit_link">Edit</a>
       {% endif %}
     </div>
-
+    {% endif %}
     <div id="tags">
       <ul class="meta_listing">
         <li class="item">
