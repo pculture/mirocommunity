@@ -44,6 +44,17 @@ class VideoAuthorsForm(forms.ModelForm):
         model = models.Video
         fields = ('authors',)
 
+class VideoCategoriesForm(forms.ModelForm):
+    class Meta:
+        model = models.Video
+        fields = ('categories',)
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields['categories'].queryset = \
+            self.fields['categories'].queryset.filter(
+            site=self.instance.site)
+
 class VideoDescriptionField(forms.ModelForm):
     class Meta:
         model = models.Video

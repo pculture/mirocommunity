@@ -77,26 +77,18 @@
     {% else %}
     <div class="description">
       {{ current_video.description|sanitize }}
-      {{ description }}
-      {% if edit_video_form %}
-      <a href="#" class="edit_link">Edit</a>
-      {% endif %}
     </div>
     {% endif %}
     <div id="tags">
       <ul class="meta_listing">
         <li class="item">
-          {% if edit_video_form %}
-          <a href="#add_cat" id="add_cat" class="categories editable"><span>Edit</span></a>
+          {% if user_is_admin %}
+          {% editable_widget current_video "categories" %}
+          {% else %}
+            {% with current_video as instance %}
+            {% include "localtv/subsite/display_templates/video_categories.html" %}
+            {% endwith %}
           {% endif %}
-          <div class="floatleft">
-            <h3>Category - </h3>
-            <ul>
-              {% for category in current_video.categories.all %}
-              <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
-              {% endfor %}
-            </ul>
-          </div>
         </li>
         <li class="item">
           {% if edit_video_form %}

@@ -20,6 +20,8 @@ WIDGET_DIRECTORY = {
             'form': forms.VideoWhenPublishedForm},
         'authors': {
             'form': forms.VideoAuthorsForm},
+        'categories': {
+            'form': forms.VideoCategoriesForm},
         'description': {
             'form': forms.VideoDescriptionField},
         },

@@ -73,15 +73,6 @@ clear: left;
 margin: 0 !important;
 }
 
-
-#tags .editable {
-clear: left;
-float: right;
-padding: 0 0 0 18px !important;
-margin: 0 !important;
-background: url(../images/small_icons.png) left 1px no-repeat;
-}
-
 .done {
 background: url(../images/small_icons.png) 2px -91px no-repeat !important;
 font-size: 11px;
