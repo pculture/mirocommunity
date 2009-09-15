@@ -128,7 +128,7 @@
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
           <div class="actions">
-            <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}">View</a>
+            <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
           </div>
         </td>
         <td>
