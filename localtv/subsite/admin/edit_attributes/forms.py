@@ -1,7 +1,9 @@
 from django import forms
+from django.contrib.auth.models import User
 
 from localtv import models
-from localtv.subsite.admin.forms import TagField, TagAreaWidget
+from localtv.subsite.admin.forms import (TagField, TagAreaWidget,
+                                         BulkChecklistField)
 
 
 class FeedNameForm(forms.ModelForm):
@@ -41,11 +43,15 @@ class VideoWhenPublishedForm(forms.ModelForm):
         fields = ('when_published',)
 
 class VideoAuthorsForm(forms.ModelForm):
+    authors = BulkChecklistField(User.objects,
+                                 required=False)
     class Meta:
         model = models.Video
         fields = ('authors',)
 
 class VideoCategoriesForm(forms.ModelForm):
+    categories = BulkChecklistField(models.Category.objects,
+                                    required=False)
     class Meta:
         model = models.Video
         fields = ('categories',)

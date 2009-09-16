@@ -1896,8 +1896,18 @@ background: none;
 display: none;
 }
 
-.editable .input_field label {
+.editable .input_field > ul > li > label {
     display: none;
+}
+
+.editable .input_field ul ul {
+    display: block !important;
+    height: 100px;
+    overflow: auto;
+}
+
+.editable .input_field ul ul li {
+    display: block !important;
 }
 
 .vid_title.editable input{
@@ -1911,7 +1921,6 @@ font-size: 18px !important;
 
 .vid_title.editable .med_button.cancel{
 }
-
 
 .admin_actions_all {
 float: left;
