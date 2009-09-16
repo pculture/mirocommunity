@@ -45,7 +45,7 @@ def users(request, sitelocation=None):
                 for form in list(formset.deleted_forms):
                     form.cleaned_data[DELETION_FIELD_NAME] = False
                     form.instance.is_active = False
-                    sitelocation.site.admins.remove(form.instance)
+                    sitelocation.admins.remove(form.instance)
                     form.instance.save()
                 formset.save()
                 return HttpResponseRedirect(request.path)
