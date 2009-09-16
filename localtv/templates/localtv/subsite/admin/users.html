@@ -1,10 +1,14 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
-{% load i18n %}
+{% load i18n versioned %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Users" %}{% endblock %}
 
 {% block body_class %}user_admin{% endblock body_class %}
+
+{% block head %}{{ block.super }}
+  <script type="text/javascript" src="{% versioned "/js/bulk_edit.js" %}"></script>
+{% endblock %}
 
 {% block content %}
 
@@ -27,26 +31,50 @@
   </div>
 
   <div id="labels">
-    <table class="rounded">
-      <thead>
-        <th><span>Username</span></th>
-        <th><span>Email</span></th>
-        <th><span>OpenID</span></th>
-        <th></th>
-      </thead>
-      <tbody>
-      {% for user in admins %}
-      <tr class="{% cycle "grey" "white" %}">
-        <form action="" method="POST">
-          <input type="hidden" name="id" value="{{ user.pk }}">
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td style="max-width: 150px; overflow: hidden;">{{ user.openiduser.url }}</td>
-          <td><button class="med_button" type="submit" name="submit" value="Delete"><span class="reject">Delete</span></button></td>
-        </form>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    <form action="" method="POST">
+      {{ formset.management_form }}
+      <table class="rounded">
+        <thead>
+          <th><span>Username</span></th>
+          <th><span>Name</span></th>
+          <th><span>Email</span></th>
+          <th><span>OpenID</span></th>
+          <th><span>Role</span></th>
+          <th><span>Thumbnail</span></th>
+          <th><span>Description</span></th>
+        </thead>
+        <tbody>
+          {% for form in formset.forms %}
+          <tr class="{% cycle "grey" "white" %}" {% if form.errors %}style="display: none;"{% endif %}>
+            <td>
+                {{ form.instance.username }}
+                <div class="actions">
+                  <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+          </div>
+
+            </td>
+            <td>{{ form.instance.first_name }} {{ form.instance.last_name }}</td>
+            <td>{{ form.instance.email }}</td>
+            <td style="max-width: 150px; overflow: hidden;">{{ form.instance.openiduser.url }}</td>
+            <td>{% if form.role.field.initial %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endif %}</td>
+            <td>{% if form.instance.get_profile.logo %}<img src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
+            <td>{{ form.instance.get_profile.description }}</td>
+          </tr>
+          <tr class="editing {% cycle "grey" "white" %}"{% if not form.errors %} style="display: none;"{% endif %}>
+            <td>{{ form.id }}{{ form.errors }}{{ form.username }}</td>
+            <td>{{ form.first_name }}{{ form.last_name }}</td>
+            <td>{{ form.email }}</td>
+            <td></td>
+            <td>{% if not form.instance.is_superuser %}{{ form.role }}{% endif %}</td>
+            <td>{{ form.logo }}</td>
+            <td>
+                {{ form.description }}
+                <input type="submit" name="submit" value="Save">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
   </div>
 {% endblock content %}

@@ -226,11 +226,26 @@ class CategoryForm(forms.ModelForm):
             site=site)
 
 class AuthorForm(forms.ModelForm):
+    role = forms.ChoiceField(choices=(
+            ('user', 'User'),
+            ('admin', 'Admin')),
+                             required=False)
     logo = forms.ImageField(required=False)
+    description = forms.CharField(
+        widget=forms.Textarea,
+        required=False)
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'logo']
+        fields = ['username', 'first_name', 'last_name', 'email', 'role',
+                  'logo', 'description']
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        site = Site.objects.get_current()
+        self.sitelocation = models.SiteLocation.objects.get(site=site)
+        self.fields['role'].initial = self.sitelocation.user_is_admin(
+            self.instance)
 
     def save(self, **kwargs):
         author = forms.ModelForm.save(self, **kwargs)
@@ -244,7 +259,19 @@ class AuthorForm(forms.ModelForm):
 
             profile.logo = logo
             profile.save()
+        if self.cleaned_data.get('role'):
+            if self.cleaned_data['role'] == 'admin':
+                self.sitelocation.admins.add(author)
+            else:
+                self.sitelocation.admins.remove(author)
+            self.sitelocation.save()
         return author
+
+AuthorFormSet = modelformset_factory(User,
+                                     form=AuthorForm,
+                                     can_delete=True,
+                                     extra=0)
+
 
 class AddUserForm(forms.Form):
     user = forms.CharField(
