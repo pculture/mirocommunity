@@ -13,16 +13,15 @@ function insert_and_activate_action_buttons(obj) {
 }
 
 function inline_save() {
-    var post_data = {};
     var obj = $(this);
     var input_wrapper = obj.parent();
     var inputs = input_wrapper.find(':input');
     var editable_wrapper = input_wrapper.parent('.editable');
     var display_wrapper = editable_wrapper.children('.display_data');
 
-    inputs.each(function() {
-        post_data[this.name] = $(this).val();});
+    var post_data = $("<form/>").append(inputs.clone()).serialize();
     var post_url = editable_wrapper.children('.post_url').text();
+
     jQuery.post(
         post_url, post_data,
         function(data) {
