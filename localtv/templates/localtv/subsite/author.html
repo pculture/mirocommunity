@@ -1,7 +1,26 @@
-{% extends "localtv/subsite/video_listing.html" %}
+{% extends "localtv/subsite/base.html" %}
+{% load filters %}
+{% block content %}
+<div id="category_sidebar">
+  {% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% endif %}
 
-{% block page_title %}{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}{% endblock %}
+  <h1>{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</h1>
 
-{% block title %}{{ block.super }} - {% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}{%endblock %}
+  <div>{{ author.get_profile.description|sanitize }}</div>
 
-{% block body_id %}video_listing_author{% endblock body_id %}
+</div>
+
+<div id="category">
+
+  <div id="individual">
+    <ul>
+      {% for video in video_list %}
+      <li>
+        {% include "localtv/subsite/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+</div>
+{% endblock %}
