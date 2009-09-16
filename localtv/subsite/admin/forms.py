@@ -234,23 +234,58 @@ class AuthorForm(forms.ModelForm):
     description = forms.CharField(
         widget=forms.Textarea,
         required=False)
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        help_text=('If you do not specify a password, the user will not be '
+                   'allowed to log in.'))
+    password2 = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput,
+        label='Confirm Password')
 
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'role',
-                  'logo', 'description']
+                  'logo', 'description', 'password', 'password2']
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         site = Site.objects.get_current()
         self.sitelocation = models.SiteLocation.objects.get(site=site)
-        self.fields['role'].initial = self.sitelocation.user_is_admin(
-            self.instance)
-        self.fields['description'].initial = \
-            self.instance.get_profile().description
+        if self.instance.pk:
+            self.fields['role'].initial = self.sitelocation.user_is_admin(
+                self.instance)
+            self.fields['description'].initial = \
+                self.instance.get_profile().description
+
+    def clean_username(self):
+        value = self.cleaned_data.get('username')
+        if not self.instance.pk and \
+                User.objects.filter(username=value).count():
+            raise forms.ValidationError('That username already exists.')
+        return value
+
+    def clean(self):
+        if 'password' in self.cleaned_data or 'password2' in self.cleaned_data:
+            password = self.cleaned_data.get('password')
+            password2 = self.cleaned_data.get('password2')
+            if password != password2:
+                del self.cleaned_data['password']
+                del self.cleaned_data['password2']
+                raise forms.ValidationError(
+                    'The passwords do not match.')
+        return self.cleaned_data
 
     def save(self, **kwargs):
+        created = not self.instance.pk
         author = forms.ModelForm.save(self, **kwargs)
+        if created:
+            if self.cleaned_data.get('password'):
+                author.set_password(self.cleaned_data['password'])
+            else:
+                author.set_unusable_password()
+            author.save()
         if 'logo' in self.cleaned_data or 'description' in self.cleaned_data:
             try:
                 profile = author.get_profile()
