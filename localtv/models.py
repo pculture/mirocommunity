@@ -132,12 +132,8 @@ class SiteLocation(models.Model):
         if user.is_superuser:
             return True
 
-        for sitelocation in user.admin_for.all():
-            if self == sitelocation:
-                return True
+        return bool(self.admins.filter(pk=user.pk).count())
 
-        return False
-    
 class Tag(models.Model):
     """
     Tags for videos.
