@@ -64,6 +64,7 @@ text-shadow: 0; !important
 background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
 font-size: 11px;
+cursor: pointer;
 }
 
 .edit_link:hover{
