@@ -1,6 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
