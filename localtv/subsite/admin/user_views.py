@@ -11,22 +11,13 @@ from localtv.subsite.admin import forms
 @require_site_admin
 @get_sitelocation
 def users(request, sitelocation=None):
-    users = User.objects.all()
-    formset = forms.AuthorFormSet(queryset=users)
-    add_user_form = forms.AddUserForm()
-    create_user_form = UserCreationForm()
+    formset = forms.AuthorFormSet(queryset=User.objects.all())
+    add_user_form = forms.AuthorForm()
     if request.method == 'POST':
         if request.POST['submit'] == 'Add':
-            add_user_form = forms.AddUserForm(request.POST)
+            add_user_form = forms.AuthorForm(request.POST)
             if add_user_form.is_valid():
-                users = add_user_form.cleaned_data['user']
-                sitelocation.admins.add(*users)
-                return HttpResponseRedirect(request.path)
-        elif request.POST['submit'] == 'Create':
-            create_user_form = UserCreationForm(request.POST)
-            if create_user_form.is_valid():
-                user = create_user_form.save()
-                sitelocation.admins.add(user)
+                user = add_user_form.save()
                 return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Delete':
             user_id = request.POST.get('id')
@@ -49,6 +40,5 @@ def users(request, sitelocation=None):
 
     return render_to_response('localtv/subsite/admin/users.html',
                               {'formset': formset,
-                               'add_user_form': add_user_form,
-                               'create_user_form': create_user_form},
+                               'add_user_form': add_user_form},
                               context_instance=RequestContext(request))
