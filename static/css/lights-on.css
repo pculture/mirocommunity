@@ -148,10 +148,6 @@ margin-bottom: 13px;
 overflow: hidden;
 }
 
-.title_desc .desc {
-    display: none;
-}
-
 #admin .title_desc {
 padding-top: 5px;
 height: 94px;
