@@ -414,6 +414,7 @@ class Profile(models.Model):
     user = models.ForeignKey('auth.User')
     logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
                              verbose_name='Image')
+    description = models.TextField(blank=True, default='')
 
     def __unicode__(self):
         return unicode(self.user)

@@ -246,18 +246,23 @@ class AuthorForm(forms.ModelForm):
         self.sitelocation = models.SiteLocation.objects.get(site=site)
         self.fields['role'].initial = self.sitelocation.user_is_admin(
             self.instance)
+        self.fields['description'].initial = \
+            self.instance.get_profile().description
 
     def save(self, **kwargs):
         author = forms.ModelForm.save(self, **kwargs)
-        if self.cleaned_data.get('logo'):
-            logo = self.cleaned_data['logo']
+        if 'logo' in self.cleaned_data or 'description' in self.cleaned_data:
             try:
                 profile = author.get_profile()
             except models.Profile.DoesNotExist:
                 profile = models.Profile.objects.create(
                     user=author)
-
+        if self.cleaned_data.get('logo'):
+            logo = self.cleaned_data['logo']
             profile.logo = logo
+            profile.save()
+        if 'description' in self.cleaned_data:
+            profile.description = self.cleaned_data['description']
             profile.save()
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':

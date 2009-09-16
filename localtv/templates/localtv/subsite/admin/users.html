@@ -58,7 +58,7 @@
             <td style="max-width: 150px; overflow: hidden;">{{ form.instance.openiduser.url }}</td>
             <td>{% if form.role.field.initial %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endif %}</td>
             <td>{% if form.instance.get_profile.logo %}<img src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
-            <td>{{ form.instance.get_profile.description }}</td>
+            <td>{% if form.instance.get_profile.description %}{{ form.instance.get_profile.description }}{% endif %}</td>
           </tr>
           <tr class="editing {% cycle "grey" "white" %}"{% if not form.errors %} style="display: none;"{% endif %}>
             <td>{{ form.id }}{{ form.errors }}{{ form.username }}</td>
