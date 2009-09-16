@@ -256,8 +256,12 @@ class AuthorForm(forms.ModelForm):
         if self.instance.pk:
             self.fields['role'].initial = self.sitelocation.user_is_admin(
                 self.instance)
-            self.fields['description'].initial = \
-                self.instance.get_profile().description
+            try:
+                profile = self.instance.get_profile()
+            except models.Profile.DoesNotExist:
+                profile = models.Profile.objects.create(
+                    user=self.instance)
+            self.fields['description'].initial = profile.description
 
     def clean_username(self):
         value = self.cleaned_data.get('username')
