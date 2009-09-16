@@ -40,13 +40,8 @@ def users(request, sitelocation=None):
             return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Save':
             formset = forms.AuthorFormSet(request.POST, request.FILES,
-                                          queryset=users)
+                                          queryset=User.objects.all())
             if formset.is_valid():
-                for form in list(formset.deleted_forms):
-                    form.cleaned_data[DELETION_FIELD_NAME] = False
-                    form.instance.is_active = False
-                    sitelocation.admins.remove(form.instance)
-                    form.instance.save()
                 formset.save()
                 return HttpResponseRedirect(request.path)
         else:
