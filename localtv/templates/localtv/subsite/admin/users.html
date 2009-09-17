@@ -12,15 +12,6 @@
 
 {% block content %}
 
-  <div id="label_sidebar">
-    <div id="add_user" class="rounded">
-      <h1>Add a User</h1>
-      <form action="" method="POST" enctype="multipart/form-data">
-        {{ add_user_form.as_p }}
-        <input type="submit" value="Add" name="submit">
-      </form>
-    </div>
-  </div>
   <div id="labels">
     <form action="" method="POST" enctype="multipart/form-data">
       {{ formset.management_form }}
@@ -74,4 +65,14 @@
       </table>
     </form>
   </div>
+  <div id="label_sidebar">
+    <div id="add_user" class="rounded">
+      <h1>Add a User</h1>
+      <form action="" method="POST" enctype="multipart/form-data">
+        {{ add_user_form.as_p }}
+        <input type="submit" value="Add" name="submit">
+      </form>
+    </div>
+  </div>
+
 {% endblock content %}

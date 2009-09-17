@@ -2018,10 +2018,11 @@ color: #555;
 text-decoration: underline; 
 }
 
-body#admin.bulkedit #labels table, body#admin.incomingfeeds #labels table  {
+body#admin.bulkedit #labels table, body#admin.incomingfeeds #labels table, body#admin.user_admin #labels table {
 float: none !important;
 clear: both;
 width: 100%;
+margin-bottom: 20px;
 }
 
 .floatnone{
