@@ -4,6 +4,7 @@ import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, resolve, Resolver404
+from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.db.models import Q
@@ -53,6 +54,10 @@ def about(request):
 def view_video(request, video_id, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id,
                               site=sitelocation.site)
+
+    if video.status != models.VIDEO_STATUS_ACTIVE and \
+            not sitelocation.user_is_admin(request.user):
+        raise Http404
 
     edit_video_form = None
     if sitelocation.user_is_admin(request.user):
