@@ -17,7 +17,7 @@ def simpletimesince(value, arg=None):
     except (ValueError, TypeError):
         return u''
 
-def sanitize(value):
+def sanitize(value, extra_filters=None):
     """
     Sanitize the given HTML.
 
@@ -40,6 +40,8 @@ def sanitize(value):
 
     for tag in soup.findAll(True):
         if tag.name not in allowed_tags:
+            tag.hidden = True
+        elif extra_filters and tag.name in extra_filters:
             tag.hidden = True
         else:
             tag.attrs = [(attr, js_regex.sub('', val))

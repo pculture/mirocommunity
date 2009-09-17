@@ -13,6 +13,7 @@ from django.template import RequestContext
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.subsite.submit_video import forms
+from localtv.templatetags.filters import sanitize
 
 def _check_submit_permissions(request):
     sitelocation = models.SiteLocation.objects.get(
@@ -157,7 +158,8 @@ def scraped_submit_video(request, sitelocation=None):
         video = models.Video(
             name=scraped_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=scraped_form.cleaned_data['description'],
+            description=sanitize(scraped_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             file_url=file_url or '',
             embed_code=scraped_data.get('embed') or '',
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
@@ -223,7 +225,8 @@ def embedrequest_submit_video(request, sitelocation=None):
         video = models.Video(
             name=embed_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=embed_form.cleaned_data['description'],
+            description=sanitize(embed_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             embed_code=embed_form.cleaned_data['embed'],
             website_url=embed_form.cleaned_data.get('website_url', ''),
             thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
@@ -284,7 +287,8 @@ def directlink_submit_video(request, sitelocation=None):
         video = models.Video(
             name=direct_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=direct_form.cleaned_data['description'],
+            description=sanitize(direct_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             file_url=direct_form.cleaned_data['url'],
             thumbnail_url=direct_form.cleaned_data.get('thumbnail_url', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),

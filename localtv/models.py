@@ -16,6 +16,8 @@ from django.template import mark_safe
 import feedparser
 import vidscraper
 
+from localtv.templatetags.filters import sanitize
+
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
@@ -275,7 +277,8 @@ class Feed(models.Model):
             video = Video(
                 name=entry['title'],
                 site=self.site,
-                description=entry.get('summary', ''),
+                description=sanitize(entry.get('summary', ''),
+                                     extra_filters=['img']),
                 file_url=file_url or '',
                 embed_code=embed_code or '',
                 flash_enclosure_url=flash_enclosure_url or '',

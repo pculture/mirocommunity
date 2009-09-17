@@ -8,6 +8,7 @@ import vidscraper
 from vidscraper import metasearch
 
 from localtv import models
+from localtv.templatetags.filters import sanitize
 
 
 VIDEO_EXTENSIONS = [
@@ -69,7 +70,8 @@ class MetasearchVideo(object):
                  website_url=None, thumbnail_url=None, embed_code='',
                  flash_enclosure_url=None, publish_date=None, id=None):
         self.name = name.strip()
-        self.description = description
+        self.description = sanitize(description,
+                                    extra_filters=['img'])
         if tags:
             self.tags = {
                 'objects': {
