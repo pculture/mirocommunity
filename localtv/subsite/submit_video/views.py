@@ -84,12 +84,20 @@ def submit_video(request, sitelocation=None):
                 get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
             get_params = urllib.urlencode(get_dict)
 
-            if scraped_data and (
-                    scraped_data.get('embed')
+            if scraped_data:
+                if 'link' in scraped_data and \
+                        scraped_data['link'] != get_dict['url']:
+                    request.POST = dict(request.POST)
+                    request.POST['url'] = scraped_data['link']
+                    # rerun the view, but with the canonical URL
+                    return submit_video(request)
+
+                if (scraped_data.get('embed')
                     or (scraped_data.get('file_url')
                         and not scraped_data.get('file_url_is_flaky'))):
-                return HttpResponseRedirect(
-                    reverse('localtv_submit_scraped_video') + '?' + get_params)
+                    return HttpResponseRedirect(
+                        reverse('localtv_submit_scraped_video') + '?' +
+                        get_params)
 
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):

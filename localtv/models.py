@@ -220,10 +220,6 @@ class Feed(models.Model):
             if link is not None and Video.objects.filter(
                     feed=self, website_url=link).count():
                 skip = True
-            if skip:
-                if verbose:
-                    print "Skipping %s" % entry['title']
-                continue
 
             file_url = None
             embed_code = None
@@ -243,7 +239,7 @@ class Feed(models.Model):
                     scraped_data = vidscraper.auto_scrape(
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date', 'thumbnail_url'])
+                                'publish_date', 'thumbnail_url', 'link'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -253,9 +249,21 @@ class Feed(models.Model):
                     publish_date = scraped_data.get('publish_date')
                     thumbnail_url = scraped_data.get('thumbnail_url',
                                                      thumbnail_url)
+                    if 'link' in scraped_data:
+                        link = scraped_data['link']
+                        if Video.objects.filter(
+                            feed=self, website_url=link).count():
+                            skip = True
+
                 except vidscraper.errors.Error, e:
                     if verbose:
                         print "Vidscraper error: %s" % e
+
+            if skip:
+                if verbose:
+                    print "Skipping %s" % entry['title']
+                continue
+
 
             if not (file_url or embed_code):
                 if verbose:
