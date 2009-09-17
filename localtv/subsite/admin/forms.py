@@ -95,7 +95,7 @@ class BulkEditVideoForm(EditVideoForm):
     categories = BulkChecklistField(models.Category.objects, required=False)
     authors = BulkChecklistField(User.objects, required=False)
     when_published = forms.DateTimeField(required=False,
-                                         widget=forms.TextInput(
+                                         widget=forms.DateTimeInput(
             attrs={'class': 'large_field'}))
 
     class Meta:
