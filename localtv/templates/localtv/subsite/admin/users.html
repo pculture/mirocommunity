@@ -42,7 +42,7 @@
             <td>{{ form.instance.first_name }} {{ form.instance.last_name }}</td>
             <td>{{ form.instance.email }}</td>
             <td style="max-width: 150px; overflow: hidden;">{{ form.instance.openiduser.url }}</td>
-            <td>{% if form.role.field.initial %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endif %}</td>
+            <td>{% ifequal form.role.field.initial "admin" %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endifequal %}</td>
             <td>{% if form.instance.get_profile.logo %}<img src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
             <td>{% if form.instance.get_profile.description %}{{ form.instance.get_profile.description }}{% endif %}</td>
             <td>{% if form.instance.authored_set__count %}<a href="{% url localtv_subsite_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>

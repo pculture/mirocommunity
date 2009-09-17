@@ -254,8 +254,10 @@ class AuthorForm(forms.ModelForm):
         site = Site.objects.get_current()
         self.sitelocation = models.SiteLocation.objects.get(site=site)
         if self.instance.pk:
-            self.fields['role'].initial = self.sitelocation.user_is_admin(
-                self.instance)
+            if self.sitelocation.user_is_admin(self.instance):
+                self.fields['role'].initial = 'admin'
+            else:
+                self.fields['role'].initial = 'user'
             try:
                 profile = self.instance.get_profile()
             except models.Profile.DoesNotExist:
