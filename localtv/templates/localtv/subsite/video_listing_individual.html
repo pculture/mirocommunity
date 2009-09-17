@@ -7,7 +7,7 @@
 
   <div class="title_desc">
     <h3>
-      <a href="{% url localtv_view_video video_id=video.id %}">
+      <a href="{% url localtv_view_video video_id=video.id %}" title="{{ video.name }}">
         {% if video.name %}
           {{ video.name }}
         {% else %}

@@ -11,7 +11,7 @@
 {% endif %}
 <div class="copy">
 {% if video.name %}
-  <h2><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h2>
+  <h2><a href="{{ video.get_absolute_url }}" title="{{ video.name }}">{{ video.name }}</a></h2>
 {% else %}
   <h2><a href="{{ video.get_absolute_url }}">{% trans "(no title)" %}</a></h2>
 {% endif %}
