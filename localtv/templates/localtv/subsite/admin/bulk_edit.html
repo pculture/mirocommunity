@@ -122,8 +122,13 @@
       <input type="hidden" id="bulk_action" name="bulk_action" value="">
     </thead>
     <tbody>
+      {% if formset.non_form_errors %}
+      <tr>
+        <td colspan="4">{{ formset.non_form_errors }}</td>
+      </tr>
+      {% endif %}
       {% for form in formset.forms|slice:":-1" %}
-      <tr class="{% cycle "" "grey" %}">
+      <tr class="{% cycle "" "grey" %}" {% if form.errors %}style="display: none;"{% endif %}>
         <td>{{ form.bulk }}</td>
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
@@ -144,26 +149,30 @@
         <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
         <td class="last" width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
       </tr>
-      <tr class="editing {% cycle "" "grey" %}" style="display: none;">
+      <tr class="editing {% cycle "" "grey" %}" {% if not form.errors %}style="display: none;"{% endif %}>
         <td colspan="3">
           <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
           {{ form.id }}
+          {{ form.non_field_errors }}
           <table>
             <tr>
               <td colspan="2">
                 <label>Title</label>
+                {{ form.name.errors }}
                 {{ form.name }}
               </td>
             </tr>
             <tr>
               <td colspan="2">
                 <label>Video URL</label>
+                {{ form.file_url.errors }}
                 {{ form.file_url }}
               </td>
             </tr>
             <tr>
               <td colspan="2">
                 <label>Thumb URL</label>
+                {{ form.thumbnail_url.errors }}{{ form.thumbnail.errors }}
                 {{  form.thumbnail_url }}
                 <div style="float: right; width: 286px;">
                   or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
@@ -172,16 +181,19 @@
             <tr>
               <td colspan="2">
                 <label>Date</label>
+                {{ form.when_published.errors }}
                 {{ form.when_published }}
             </td>
             </tr>
             <tr>
               <td>
                 <label class="floatnone">Description</label>
+                {{ form.description.errors }}
                 {{ form.description }}
               </td>
               <td>
                 <label class="floatnone">Tags</label>
+                {{ form.tags.errors }}
                 {{ form.tags }}
               </td>
             </tr>
@@ -196,10 +208,12 @@
 
         <td width="250" class="checklist">
           <label class="padding">Categories</label>
+          {{ form.categories.errors }}
           {{ form.categories }}
         </td>
         <td width="250" class="checklist">
           <label class="padding">Authors</label>
+          {{ form.authors.errors }}
           {{ form.authors }}
         </td>
       </tr>
