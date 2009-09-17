@@ -8,22 +8,7 @@ from django.template.context import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.subsite.admin import forms
-
-def _header(sort, label, current):
-    if current.endswith(sort):
-        # this is the current sort
-        css_class = 'sortup'
-        if current[0] != '-':
-            sort = '-%s' % sort
-            css_class = 'sortdown'
-    else:
-        css_class = ''
-    return {
-        'sort': sort,
-        'link': '?sort=%s' % sort,
-        'label': label,
-        'class': css_class
-        }
+from localtv.util import sort_header
 
 @get_sitelocation
 @require_site_admin
@@ -46,10 +31,10 @@ def bulk_edit(request, sitelocation=None):
     videos = videos.order_by(sort)
     formset = forms.VideoFormSet(queryset=videos)
     headers = [
-        _header('name', 'Video Title', sort),
-        _header('feed__feed_url', 'Source', sort),
+        sort_header('name', 'Video Title', sort),
+        sort_header('feed__feed_url', 'Source', sort),
         {'label': 'Categories'},
-        _header('when_published', 'Date Posted', sort)]
+        sort_header('when_published', 'Date Posted', sort)]
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,

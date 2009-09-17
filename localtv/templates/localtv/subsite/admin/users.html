@@ -26,13 +26,17 @@
       {{ formset.management_form }}
       <table class="rounded">
         <thead>
-          <th><span>Username</span></th>
-          <th><span>Name</span></th>
-          <th><span>Email</span></th>
-          <th><span>OpenID</span></th>
-          <th><span>Role</span></th>
-          <th><span>Thumbnail</span></th>
-          <th><span>Description</span></th>
+          {% for header in headers %}
+          <th>
+          {% if header.sort %}
+          <a class="{% if forloop.last %}last {% endif %}{{ header.class }}" href="{{ header.link }}">
+            {{ header.label }}
+          </a>
+          {% else %}
+          <span>{{ header.label }}</span>
+          {% endif %}
+          </th>
+          {% endfor %}
         </thead>
         <tbody>
           {% for form in formset.forms %}
@@ -50,6 +54,7 @@
             <td>{% if form.role.field.initial %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endif %}</td>
             <td>{% if form.instance.get_profile.logo %}<img src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
             <td>{% if form.instance.get_profile.description %}{{ form.instance.get_profile.description }}{% endif %}</td>
+            <td>{% if form.instance.authored_set__count %}<a href="{% url localtv_subsite_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>
           </tr>
           <tr class="editing {% cycle "grey" "white" %}"{% if not form.errors %} style="display: none;"{% endif %}>
             <td>{{ form.id }}{{ form.errors }}{{ form.username }}</td>
@@ -58,7 +63,7 @@
             <td></td>
             <td>{% if not form.instance.is_superuser %}{{ form.role }}{% endif %}</td>
             <td>{{ form.logo }}</td>
-            <td>
+            <td colspan="2">
                 {{ form.description }}
                 <input type="submit" name="submit" value="Save">
             </td>

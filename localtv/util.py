@@ -184,6 +184,31 @@ def strip_existing_metasearchvideos(metasearchvideos, site):
     return filtered_vids
 
 
+def sort_header(sort, label, current):
+    """
+    Generate some metadata for a sortable header.
+
+    @param sort: the sort which this header represents
+    @param label: the human-readable label
+    @param the current sort
+
+    Returns a dictionary with a link and a CSS class to use for this header,
+    based on the scurrent sort.
+    """
+    if current.endswith(sort):
+        # this is the current sort
+        css_class = 'sortup'
+        if current[0] != '-':
+            sort = '-%s' % sort
+            css_class = 'sortdown'
+    else:
+        css_class = ''
+    return {
+        'sort': sort,
+        'link': '?sort=%s' % sort,
+        'label': label,
+        'class': css_class
+        }
 
 def mixed_replace_generator(content_generator, bound):
     """
