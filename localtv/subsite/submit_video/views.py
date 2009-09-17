@@ -57,25 +57,29 @@ def submit_video(request, sitelocation=None):
                         website_url=submit_form.cleaned_data['url'],
                         site=sitelocation.site).exclude(
                         status=models.VIDEO_STATUS_ACTIVE):
+                        v.user = request.user
                         v.status = models.VIDEO_STATUS_ACTIVE
                         v.when_approved = datetime.datetime.now()
                         v.save()
-                # pick the first approved video to redirect the user to
-                videos = models.Video.objects.filter(
-                    website_url=submit_form.cleaned_data['url'],
-                    site=sitelocation.site,
-                    status=models.VIDEO_STATUS_ACTIVE)
-                if videos.count():
-                    video = videos[0]
+                        return HttpResponseRedirect(
+                            reverse('localtv_submit_thanks'))
                 else:
-                    video = None
-                return render_to_response(
-                    'localtv/subsite/submit/submit_video.html',
-                    {'sitelocation': sitelocation,
-                     'submit_form': forms.SubmitVideoForm(),
-                     'was_duplicate': True,
-                     'video': video},
-                    context_instance=RequestContext(request))
+                    # pick the first approved video to point the user at
+                    videos = models.Video.objects.filter(
+                        website_url=submit_form.cleaned_data['url'],
+                        site=sitelocation.site,
+                        status=models.VIDEO_STATUS_ACTIVE)
+                    if videos.count():
+                        video = videos[0]
+                    else:
+                        video = None
+                    return render_to_response(
+                        'localtv/subsite/submit/submit_video.html',
+                        {'sitelocation': sitelocation,
+                         'submit_form': forms.SubmitVideoForm(),
+                         'was_duplicate': True,
+                         'video': video},
+                        context_instance=RequestContext(request))
 
             scraped_data = util.get_scraped_data(
                 submit_form.cleaned_data['url'])
@@ -325,7 +329,8 @@ def submit_thanks(request, sitelocation=None):
     if sitelocation.user_is_admin(request.user):
         context = {
             'video': models.Video.objects.filter(site=sitelocation.site,
-                                                user=request.user)[0]
+                                                 user=request.user).order_by(
+                '-when_approved')[0]
             }
     else:
         context = {}
