@@ -60,7 +60,7 @@ def edit_auto_authors(request, id, sitelocation=None):
         'localtv/subsite/display_templates/feed_auto_authors.html')
 
     if edit_auto_authors_form.is_valid():
-        old_authors = list(feed.authors.all())
+        old_authors = list(feed.auto_authors.all())
         new_authors = edit_auto_authors_form.cleaned_data.get(
             'auto_authors')
         for video in feed.video_set.all():
