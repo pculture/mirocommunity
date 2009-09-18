@@ -1,5 +1,3 @@
-{% if instance.authors.count or instance.video_service or instance.user %}
-  <span class="byline">
 {% if instance.authors.count %}
     By {% for user in instance.authors.all %}<a href="{% url localtv_subsite_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
 {% else %}
@@ -13,6 +11,4 @@
 {% endif %}
   {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
   <a href="#" class="edit_link">Edit {% if not instance.authors.count and not instance.video_service and not instance.user %}Attribution{% endif %}</a
-  {% endif %}
-  </span>
   {% endif %}

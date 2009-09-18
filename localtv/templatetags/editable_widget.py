@@ -19,9 +19,11 @@ WIDGET_DIRECTORY = {
         'when_published': {
             'form': forms.VideoWhenPublishedForm},
         'authors': {
-            'form': forms.VideoAuthorsForm},
+            'form': forms.VideoAuthorsForm,
+            'render_template': 'localtv/subsite/render_widget_checklist.html'},
         'categories': {
-            'form': forms.VideoCategoriesForm},
+            'form': forms.VideoCategoriesForm,
+            'render_template': 'localtv/subsite/render_widget_checklist.html'},
         'tags': {
             'form': forms.VideoTagsForm},
         'description': {
@@ -67,7 +69,8 @@ def editable_widget(model_instance, field_name, display_template_name=None):
 
     # render the wrapper template, with display template data intact
     render_template = template.loader.get_template(
-        'localtv/subsite/render_widget.html')
+        widget_data.get('render_template',
+                        'localtv/subsite/render_widget.html'))
     
     post_url = reverse(
         widget_data.get('reversible_post_url',

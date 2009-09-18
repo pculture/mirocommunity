@@ -36,13 +36,16 @@
         {% endif %}
       </div>
     </div>
+    <span class="date">
     {% if user_is_admin %}
     {% editable_widget current_video "when_published" %}
     {% else %}
-    <span class="date">
-        {{ current_video.when_prefix|title }} {{ current_video.when|simpletimesince }} ago
-    </span>
+    {% with current_video as instance %}
+    {% include "localtv/subsite/display_templates/video_when_published.html" %}
+    {% endwith %}
     {% endif %}
+    </span>
+    <span class="byline">
     {% if user_is_admin %}
       {% editable_widget current_video "authors" %}
     {% else %}
@@ -50,6 +53,7 @@
       {% include "localtv/subsite/display_templates/video_authors.html" %}
       {% endwith %}
     {% endif %}
+    </span>
     <div id="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|safe }}

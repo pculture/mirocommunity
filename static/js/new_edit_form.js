@@ -10,7 +10,11 @@ function inline_edit_open() {
 
 function insert_and_activate_action_buttons(obj) {
     if (!obj.children('.done').length) {
-        obj.append('<span class="done">Done</span>');
+        if (obj.find('.checklist').length) {
+            obj.prepend('<span class="done">Done</span>');
+        } else {
+            obj.append('<span class="done">Done</span>');
+        }
         obj.children('.done').click(inline_save);
     }
 }
@@ -51,7 +55,8 @@ function inline_cancel() {
 function edit_widgets_setup() {
     $(".editable .display_data .edit_link").click(inline_edit_open);
     var editable_inputs = $(".editable .input_field");
-    insert_and_activate_action_buttons(editable_inputs);
+    editable_inputs.each(
+        function() {insert_and_activate_action_buttons($(this));});
 }
 
 $(document).ready(edit_widgets_setup);
