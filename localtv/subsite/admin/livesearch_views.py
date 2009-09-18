@@ -1,12 +1,7 @@
 import datetime
-import feedparser
-import re
 
 from django.core.paginator import Paginator, EmptyPage
-from django.core.urlresolvers import reverse
-from django.forms.fields import url_re
-from django.http import (HttpResponse, HttpResponseBadRequest,
-                         HttpResponseRedirect)
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
@@ -16,10 +11,6 @@ from localtv.decorators import get_sitelocation, require_site_admin, \
 from localtv import models, util
 from localtv.subsite.admin import forms
 
-VIDEO_SERVICE_TITLES = (
-    re.compile(r'Uploads by (.+)'),
-    re.compile(r"Vimeo / (.+)'s uploaded videos")
-    )
 
 ## ----------
 ## Utils
@@ -118,7 +109,7 @@ def livesearch_response(request, sitelocation):
 
     results = []
     if query_string:
-        session_livesearches = request.session.get('localtv_livesearches') or {}
+        session_livesearches = request.session.get('localtv_livesearches', {})
         if session_livesearches.get(query_subkey):
             results = session_livesearches[query_subkey]
 
@@ -228,72 +219,3 @@ def create_saved_search(request, sitelocation=None):
 
 
 
-@require_site_admin
-@get_sitelocation
-def add_feed(request, sitelocation=None):
-    if 'service' in request.POST:
-        video_service_form = forms.VideoServiceForm(request.POST)
-        if video_service_form.is_valid():
-            feed_url = video_service_form.feed_url()
-        else:
-            return HttpResponseBadRequest(
-                'You must provide a video service username')
-    else:
-        feed_url = request.POST.get('feed_url')
-    page_num = request.POST.get('page')
-
-    if not feed_url:
-        return HttpResponseBadRequest(
-            "You must provide a feed URL")
-
-    if not url_re.match(feed_url):
-        return HttpResponseBadRequest(
-            "Not a valid feed URL")
-
-    if models.Feed.objects.filter(
-            feed_url=feed_url,
-            site=sitelocation.site,
-            status=models.FEED_STATUS_ACTIVE).count():
-        return HttpResponseBadRequest(
-            "That feed already exists on this site")
-
-    parsed_feed = feedparser.parse(feed_url)
-    title = parsed_feed.feed.get('title')
-    if title is None:
-        return HttpResponseBadRequest('That URL does not look like a feed.')
-    for regexp in VIDEO_SERVICE_TITLES:
-        match = regexp.match(title)
-        if match:
-            title = match.group(1)
-            break
-
-    defaults = {
-        'name': title,
-        'webpage': parsed_feed.feed.get('link', ''),
-        'description': parsed_feed.feed.get('summary', ''),
-        'when_submitted': datetime.datetime.now(),
-        'last_updated': datetime.datetime.now(),
-        'status': models.FEED_STATUS_ACTIVE,
-        'user': request.user,
-        'etag': '',
-        'auto_approve': bool(request.POST.get('auto_approve', False))}
-
-    feed, created = models.Feed.objects.get_or_create(
-        feed_url=feed_url,
-        site=sitelocation.site,
-        defaults = defaults)
-
-    if not created:
-        for key, value in defaults.items():
-            setattr(feed, key, value)
-        feed.save()
-
-    feed.update_items()
-
-    if feed.auto_approve:
-        reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
-    else:
-        reverse_url = reverse('localtv_admin_source_page')
-        if page_num:
-            reverse_url += '?page=' + page_num
-    return HttpResponseRedirect(reverse_url)
