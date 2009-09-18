@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models
-from localtv.subite.admin import forms
+from localtv.subsite.admin import forms
 
 
 VIDEO_SERVICE_TITLES = (
