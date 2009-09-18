@@ -17,19 +17,48 @@
 
 {% block content %}
 
-<h2 class="page_title">Manage Your Video Sources</h2>
-  <div class="pag">
+<h2 class="page_title marginbottom">Manage Your Video Sources</h2>
+<div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
+
+<div class="successful clear rounded">This is a <strong>successful</strong> alert</div>
+
+<div class="unsuccessful clear rounded">This is an <strong>unsuccessful</strong> alert</div>
+
+<div id="admin_feed_add" class="rounded">
+  <form method="post" action="{% url localtv_admin_feed_add %}">
+    <strong>Add Sources of Video</strong>
+    <input id="livesearch_feed_url" name="feed_url"/>
+    <button type="submit" class="med_button"><span>Search</span></button>
+  </form>
+  <p>Sources let you automatically import video onto your site from video hosting accounts (ie YouTube users) or RSS. Just paste in a video URL or RSS feed.</p>
+</div>
+
+<div id="admin_search_sources" class="rounded">
+  <form method="get" action="">
+    <strong>Search Video Sites</strong>
+    <input id="livesearch_search_query" name="query" />
+    <span class="select_option">and sort by
+    <select>
+      <option value="latest">Latest</option>
+      <option value="relevant">Relevance</option>
+    </select>
+    </span>
+    <button type="submit" class="med_button floatright"><span>Search</span></button>
+  </form>
+  <p>
+    Search will import results from a bunch of video sites. You can pick out videos you think are interesting and optionally create an automated source.
+  </p>
+</div>
+     
+<div class="pag">
     {% pagetabs page_obj %}
   </div>
-  
-
-<div class="helpful floatleft rounded">Use this page to keep track of and edit sources of incoming video.</div>
 
 
   <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
-    <form method="GET" action="">
+    <form method="get" action="">
       <strong>Search Your Sources</strong>
-      <input id="livesearch_feed_url"
+      <input id="livesearch_source_query"
              name="q" value="{{ search_string }}"/>
       <button type="submit" class="med_button"><span>Search</span></button>
     </form>
@@ -39,12 +68,12 @@
   <div class="only_show">
 	<h3>Only Show:</h3>
 	<ul>
-		<li><a href="?filter=user">Video Site Users</a></li>	
+		<li><a href="?filter=user">Video Site Users</a></li>
 		<li><a href="?filter=search">Video Site Searches</a></li>
 		<li><a href="?filter=feed">RSS Feeds</a></li>
 	</ul>
 	</div>
-	
+
   <div style="margin-top: 10px">
     {% include "localtv/subsite/admin/feed_listing.html" %}
   </div>
