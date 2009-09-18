@@ -1334,11 +1334,11 @@ overflow: hidden;
 
 
 
-.copy h2 {
+.copy > h2 {
 line-height: 1.3em;
 }
 
-.copy span {
+.copy > span {
 padding: 7px 0 0 10px;
 display: block;
 color: #aaa;
