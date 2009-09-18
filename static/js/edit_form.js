@@ -55,7 +55,7 @@ function inline_reset(obj) {
 }
 
 function edit_video_setup() {
-    $(".editable").click(inline_edit_open);
+    $(".editable.thumbnail").click(inline_edit_open);
 
 }
 
