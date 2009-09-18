@@ -1,4 +1,4 @@
-function inline_edit_open() {
+function old_inline_edit_open() {
     obj = $(this);
     if (obj.hasClass('open')) {
         is_file = Boolean(obj.children('input[type=file]').length);
@@ -20,12 +20,12 @@ function inline_edit_open() {
         return;
     }
     obj.append('<span class="save med_button"><span>Save Changes</span></span> <span class="cancel med_button"><span>Cancel</span></span>');
-    obj.children('.save').click(inline_save);
-    obj.children('.cancel').click(inline_cancel);
+    obj.children('.save').click(old_inline_save);
+    obj.children('.cancel').click(old_inline_cancel);
 
 }
 
-function inline_save() {
+function old_inline_save() {
     obj = $(this).parent();
     if (obj.hasClass('thumbnail')) {
         input = obj.children('input');
@@ -34,28 +34,28 @@ function inline_save() {
         old_input = $("#id_thumbnail");
         old_input.after(input.eq(1));
         old_input.remove();
-        inline_post(obj);
+        old_inline_post(obj);
      }
 }
 
-function inline_cancel() {
+function old_inline_cancel() {
     obj = $(this).parent();
-    return inline_reset(obj);
+    return old_inline_reset(obj);
 }
 
-function inline_post(obj) {
+function old_inline_post(obj) {
     $("#edit_video_wrapper form").submit();
 }
 
-function inline_reset(obj) {
+function old_inline_reset(obj) {
     obj.html(obj[0].oldContent);
     obj.removeClass('open');
-    obj.find('.editable').click(inline_edit_open);
+    obj.find('.editable.thumbnail').click(old_inline_edit_open);
     return false;
 }
 
 function edit_video_setup() {
-    $(".editable.thumbnail").click(inline_edit_open);
+    $(".editable.thumbnail").click(old_inline_edit_open);
 
 }
 
