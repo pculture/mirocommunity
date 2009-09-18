@@ -5,8 +5,7 @@ from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
-from localtv.subsite.admin import forms
-
+from localtv.util import sort_header
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -39,6 +38,15 @@ class MockQueryset(object):
 @require_site_admin
 @get_sitelocation
 def manage_sources(request, sitelocation=None):
+    sort = request.GET.get('sort', 'name__lower')
+    headers = [
+        sort_header('name__lower', 'Source', sort),
+        {'label': 'Categories'},
+        {'label': 'User Attribution'},
+        sort_header('type', 'Type', sort),
+        sort_header('auto_approve', 'Auto Approve', sort)
+        ]
+
     search_string = request.GET.get('q', '')
 
     feeds = models.Feed.objects.filter(
@@ -47,8 +55,8 @@ def manage_sources(request, sitelocation=None):
             'name__lower': 'LOWER(name)'}).order_by('name__lower')
     searches = models.SavedSearch.objects.filter(
         site=sitelocation.site).extra(select={
-            'query_string__lower': 'LOWER(query_string)'}).order_by(
-            'query_string__lower')
+            'name__lower': 'LOWER(query_string)'}).order_by(
+            'name__lower')
 
     if search_string:
         feeds = feeds.filter(Q(feed_url__icontains=search_string) |
@@ -81,5 +89,6 @@ def manage_sources(request, sitelocation=None):
         paginate_by=15,
         template_name='localtv/subsite/admin/manage_sources.html',
         allow_empty=True, template_object_name='feed',
-        extra_context = {'search_string': search_string,
+        extra_context = {'headers': headers,
+                         'search_string': search_string,
                          'source_filter': source_filter})
