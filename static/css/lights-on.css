@@ -1628,7 +1628,7 @@ margin-left: 4px;
 }
 
 
-#livesearch_feed_url {
+.livesearch_feed_url {
 float: left;
 background: transparent url(../images/large_field.gif) no-repeat scroll left top;
 border: none;
@@ -1638,7 +1638,7 @@ margin-top: 2px;
 margin-right: 10px;
 }
 
-#admin_search_sources #livesearch_feed_url {
+#admin_search_sources .livesearch_feed_url {
 background: transparent url(../images/search_field.png) no-repeat scroll left top;
 width: 138px;
 }

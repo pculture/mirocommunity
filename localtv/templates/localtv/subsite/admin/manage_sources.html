@@ -27,7 +27,7 @@
 <div id="admin_feed_add" class="rounded">
   <form method="post" action="{% url localtv_admin_feed_add %}">
     <strong>Add Sources of Video</strong>
-    <input id="livesearch_feed_url" name="feed_url"/>
+    <input class="livesearch_feed_url" name="feed_url"/>
     <button type="submit" class="med_button"><span>Search</span></button>
   </form>
   <p>Sources let you automatically import video onto your site from video hosting accounts (ie YouTube users) or RSS. Just paste in a video URL or RSS feed.</p>
@@ -36,7 +36,7 @@
 <div id="admin_search_sources" class="rounded">
   <form method="get" action="">
     <strong>Search Video Sites</strong>
-    <input id="livesearch_search_query" name="query" />
+    <input class="livesearch_feed_url" name="query" />
     <span class="select_option">and sort by
     <select>
       <option value="latest">Latest</option>
@@ -58,7 +58,7 @@
   <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
     <form method="get" action="">
       <strong>Search Your Sources</strong>
-      <input id="livesearch_source_query"
+      <input class="livesearch_feed_url"
              name="q" value="{{ search_string }}"/>
       <button type="submit" class="med_button"><span>Search</span></button>
     </form>
