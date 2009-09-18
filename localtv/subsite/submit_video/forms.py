@@ -5,7 +5,7 @@ from localtv import util
 
 
 class BaseSubmitVideoForm(forms.Form):
-    url = forms.URLField()
+    url = forms.URLField(verify_exists=True)
     tags = forms.CharField(required=False)
 
     # common cleaning methods
@@ -27,12 +27,12 @@ class BaseSubmitVideoForm(forms.Form):
 
 
 class SubmitVideoForm(BaseSubmitVideoForm):
-    url = forms.URLField()
-    tags = forms.CharField(required=False)
-
+    pass
 
 class SecondStepSubmitVideoForm(BaseSubmitVideoForm):
-    thumbnail_url = forms.CharField(required=False)
+    thumbnail_url = forms.URLField(
+        verify_exists=True,
+        required=False)
     name = forms.CharField(max_length=250)
     description = forms.CharField(widget=forms.widgets.Textarea)
 
