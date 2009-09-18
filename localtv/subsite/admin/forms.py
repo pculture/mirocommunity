@@ -234,12 +234,13 @@ class AuthorForm(forms.ModelForm):
     description = forms.CharField(
         widget=forms.Textarea,
         required=False)
-    password = forms.CharField(
+    password_f = forms.CharField(
         widget=forms.PasswordInput,
         required=False,
+        label='Password',
         help_text=('If you do not specify a password, the user will not be '
                    'allowed to log in.'))
-    password2 = forms.CharField(
+    password_f2 = forms.CharField(
         required=False,
         widget=forms.PasswordInput,
         label='Confirm Password')
@@ -247,7 +248,7 @@ class AuthorForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'role',
-                  'logo', 'description', 'password', 'password2']
+                  'logo', 'description', 'password_f', 'password_f2']
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -273,12 +274,13 @@ class AuthorForm(forms.ModelForm):
         return value
 
     def clean(self):
-        if 'password' in self.cleaned_data or 'password2' in self.cleaned_data:
-            password = self.cleaned_data.get('password')
-            password2 = self.cleaned_data.get('password2')
+        if 'password_f' in self.cleaned_data or \
+                'password_f2' in self.cleaned_data:
+            password = self.cleaned_data.get('password_f')
+            password2 = self.cleaned_data.get('password_f2')
             if password != password2:
-                del self.cleaned_data['password']
-                del self.cleaned_data['password2']
+                del self.cleaned_data['password_f']
+                del self.cleaned_data['password_f2']
                 raise forms.ValidationError(
                     'The passwords do not match.')
         return self.cleaned_data
@@ -287,8 +289,8 @@ class AuthorForm(forms.ModelForm):
         created = not self.instance.pk
         author = forms.ModelForm.save(self, **kwargs)
         if created:
-            if self.cleaned_data.get('password'):
-                author.set_password(self.cleaned_data['password'])
+            if self.cleaned_data.get('password_f'):
+                author.set_password(self.cleaned_data['password_f'])
             else:
                 author.set_unusable_password()
             author.save()
