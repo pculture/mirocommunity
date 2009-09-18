@@ -243,7 +243,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/subsite/submit/embed_submit_video.html',
             {'sitelocation': sitelocation,
-             'scraped_form': embed_form},
+             'embed_form': embed_form},
             context_instance=RequestContext(request))
 
 
