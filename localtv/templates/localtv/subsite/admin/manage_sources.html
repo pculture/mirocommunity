@@ -158,7 +158,7 @@
       </tr>
       <tr class="editing" {% if not form.errors%}style="display: none;"{% endif %}>
         <td colspan="2">
-          <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          <h3>Quick Edit <a href="{{ request.get_full_path }}">(cancel)</a></h3>
           {{ form.id }}
           <table>
             <tbody>
@@ -204,7 +204,7 @@
     <table class="rounded">
       <tr class="editing">      
         <td>
-          <h3>Bulk Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          <h3>Bulk Edit <a href="{{ request.get_full_path }}">(cancel)</a></h3>
           <span class="bulkedit_auto" style="float:left; padding: 8px 0 0 15px;">(affects all checked sources)</span>
           <button class="med_button marginbottom behave clear margintop"><span>Bulk Update</span></button>
         </td>

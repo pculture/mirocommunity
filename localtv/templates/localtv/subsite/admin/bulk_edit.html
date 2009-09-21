@@ -42,7 +42,7 @@
     <tbody>
       <tr class="editing last">
         <td colspan="3">
-          <h3>Bulk Edit (this will edit all selected videos)</h3>
+          <h3>Bulk Edit (this will edit all selected videos) <a href="{{ request.get_full_path }}">(cancel)</a></h3>
           {% with formset.forms|last as form %}
           <table>
             <tr>
@@ -151,7 +151,7 @@
       </tr>
       <tr class="editing {% cycle "" "grey" %}" {% if not form.errors %}style="display: none;"{% endif %}>
         <td colspan="3">
-          <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          <h3>Quick Edit <a href="{{ request.get_full_path }}">(cancel)</a></h3>
           {{ form.id }}
           {{ form.non_field_errors }}
           <table>
