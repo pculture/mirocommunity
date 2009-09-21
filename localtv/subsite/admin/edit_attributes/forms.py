@@ -38,6 +38,10 @@ class VideoNameForm(forms.ModelForm):
         fields = ('name',)
 
 class VideoWhenPublishedForm(forms.ModelForm):
+    when_published = forms.DateTimeField(
+        required=False,
+        help_text='Format: yyyy-mm-dd hh:mm:ss')
+
     class Meta:
         model = models.Video
         fields = ('when_published',)
