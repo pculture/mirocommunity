@@ -39,6 +39,8 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.subsite.admin.livesearch_views',
+    (r'^manage/search/$', 'livesearch',
+     {}, 'localtv_admin_search'),
     (r'^manage/search/add$', 'create_saved_search',
      {}, 'localtv_admin_search_add'),
     (r'^manage/search/remove$', 'remove_saved_search',

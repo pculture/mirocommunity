@@ -7,42 +7,12 @@
 
 {% block content %}
 
-<h2 class="marginbottom">Add Video Sources</h2>
+<h2 class="marginbottom">Search Video Sites</h2>
 
-<div class="helpful rounded">Use this page to find and add videos from video sharing sites or RSS feeds.</div>
-
-
-  <div class="lefthand">
-  
-  <div id="add_feed" class="rounded form_wrap">
-  <form method="POST" action="{% url localtv_admin_feed_add %}">
-    <input type="hidden" name="auto_approve" value=""> 
-    <input name="feed_url" class="large_field" />
-    <button class="add_a_feed med_button" type="submit"><span>Add RSS Feed</span></button>
-  </form>
-  </div>
-  
-   <div id="add_user" class="rounded form_wrap cleartheleft">
-  <form method="POST" action="{% url localtv_admin_feed_add %}">
-    <input type="hidden" name="auto_approve" value=""> 
-    {{ video_service_form.username.label }}
-    {{ video_service_form.username }}
-    from
-    {{ video_service_form.service }}
-    <button class="add_a_feed floatright med_button" type="submit"><span>Add Source</span></button>
-  </form>
-  </div>
-  </div>
-
-  <script type="text/javascript">
-      $("#add_feed form, #add_user form").submit(function() {
-          val = confirm('Press OK to approve all existing and future videos from this source.')
-          $(this).children('[name=auto_approve]').val(val ? 'true' : '');
-      });
-  </script>
+<div class="helpful rounded">Use this page to search videos from video sharing sites.</div>
   
   <div id="saved_searches" class="search_sites form_wrap rounded">
-  <form method="GET" action="{% url localtv_admin_add_page %}">
+  <form method="GET" action="{% url localtv_admin_search %}">
     
     <button class="med_button"><span>Search Video Sites</span></button>
   <div class="fields">

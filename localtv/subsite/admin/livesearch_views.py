@@ -93,8 +93,8 @@ def get_search_video(view_func):
 
 @require_site_admin
 @get_sitelocation
-def add_source(request, sitelocation=None):
-    if 'query' not in request.GET:
+def livesearch(request, sitelocation=None):
+    if 'query' not in request.GET or 'debug' in request.GET:
         return livesearch_response(request, sitelocation)
     def gen():
         yield render_to_response('localtv/subsite/admin/livesearch_wait.html',
