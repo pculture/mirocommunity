@@ -1,3 +1,4 @@
+
 {% extends "localtv/subsite/admin/base.html" %}
 
 {% load pagetabs i18n versioned %}
@@ -7,7 +8,7 @@
 {% block body_class %}incomingfeeds{% endblock body_class %}
 
 {% block head %}
-  <script src="{% versioned "/js/admin_feed.js" %}"
+  <script src="{% versioned "/js/bulk_edit.js" %}"
           type="text/javascript">
   </script>
   <script src="{% versioned "/js/new_edit_form.js" %}"
@@ -102,20 +103,22 @@
     </ul>
   </div>
 
+  <form method="post" action="">
   <table class="rounded">
     <thead>
       <tr>
-        <th class="checkbox"><input id="toggle_all" type="checkbox"></th>
-        <script type="text/javascript">
-            $("#toggle_all").click(function() {
-                if (this.checked) {
-                    $('td:first-child input[type=checkbox]:not(:checked)').click()
-                } else {
-                    $('td:first-child input[type=checkbox]:checked').click();
-                }
-            });
-        </script>
-        
+        <th class="checkbox">
+          <input id="toggle_all" type="checkbox"/>
+          <script type="text/javascript">
+              $("#toggle_all").click(function() {
+                  if (this.checked) {
+                      $('td:first-child input[type=checkbox]:not(:checked)').click()
+                  } else {
+                      $('td:first-child input[type=checkbox]:checked').click();
+                  }
+              });
+          </script>
+        </th>
         {% for header in headers %}
         <th>
           {% if header.link %}
@@ -131,143 +134,81 @@
     </thead>
     <tbody>
       {% for form in formset.forms|slice:":-1" %}
-      <tr class="{% cycle "" "grey "}%">
-        <td><input name="form-0-bulk" id="id_form-0-bulk" type="checkbox"></td>
+      <tr class="{% cycle "" "grey "%}" {% if form.errors %}style="display: none;"{% endif %}>
+        <td>{{ form.bulk }}</td>
         <td><span class="overflow">
-          <a href="http://feministvideo.mirocommunity.org/video/10031/">Abortion Advocacy, Film, and the Brazilian Supreme Court</a>
+          <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
           </span>
-          
+
           <div class="actions">
-            <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> <input name="form-0-DELETE" id="id_form-0-DELETE" type="hidden"> <a href="http://feministvideo.mirocommunity.org/video/10031/" class="view_icon">View</a>
+            <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> {{ form.DELETE.as_hidden }} <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
           </div>
         </td>
         <td>
-          
-          YouTube User
-          <strong>intlwomenshealth</strong>
-          
+          {% for category in form.instance.auto_categories.all %}
+          {{ category.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
         </td>
-        <td><span class="overflow">International Women's Health Coalition</span></td>
-        <td>Feed</td>
-        <td class="last enabled" width="100px"><a class="on" href="#">On</a> <a class="off" href="#">Off</a></td>
+        <td><span class="overflow">{% for user in form.instance.auto_authors.all %}
+          {% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if not forloop.last %}, {% endif %}
+          {% endfor %}</span></td>
+        <td>{% if form.instance.query_string %}
+          Search
+          {% else %}
+          {% with form.instance.video_set.all.0.video_service as video_service %}
+          {% if video_service %}
+          {{ video_service }} User
+          {% else %}
+          Feed
+          {% endif %}
+          {% endwith %}
+          {% endif %}</td>
+        <td class="last {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><span class="on" href="#">On</span> <span class="off" href="#">Off</span></td>
       </tr>
-      <tr class="editing" {% if form.errors %}
-
+      <tr class="editing" {% if not form.errors%}style="display: none;"{% endif %}>
         <td colspan="2">
           <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
-          <input name="form-2-id" value="9006" id="id_form-2-id" type="hidden">
+          {{ form.id }}
           <table>
             <tbody>
-            <tr>
-              <td colspan="2">
-<a href="#"> <span class="overflow">
-          blip.tv User
-          <strong>Women, Action &amp; the Media</strong>
-          </span></a>              
-              </td>
-            </tr>
-            
-            <tr>
-              <td colspan="2">
-                <label>URL</label>
-                <input id="id_form-2-name" class="large_field" value="http://www.website.com" name="form-2-name" type="text">
-              </td>
-            </tr>
-            
-
-
+              {% for field in form.extra_fields %}
+              {% if field.errors %}
+              <tr><td colspan="2"> {{ field.errors }}</td> </tr>
+              {% endif %}
+              <tr>
+                <td>
+                  {{ field.label }}
+                </td>
+                <td>
+                  {{ field }}
+                </td>
+              </tr>
+              {% endfor %}
           </tbody></table>
 
-          <button class="med_button marginbottom behave"><span>Update Source</span></button>
+          <button class="med_button marginbottom behave" type="submit"><span>Update Source</span></button>
 
         </td>
 
         <td class="checklist" width="250">
+          {{ form.auto_categories.errors }}
           <label class="padding">Categories</label>
-          <ul>
-<li><label for="id_form-2-categories_0"><input name="form-2-categories" value="45" id="id_form-2-categories_0" type="checkbox"> <span>Bitch Magazine</span></label></li>
-<li><label for="id_form-2-categories_1"><input checked="checked" name="form-2-categories" value="37" id="id_form-2-categories_1" type="checkbox"> <span>Conferences</span></label></li>
-<li><label for="id_form-2-categories_2"><input name="form-2-categories" value="38" id="id_form-2-categories_2" type="checkbox"> <span>Fanvids</span></label></li>
-<li><label for="id_form-2-categories_3"><input name="form-2-categories" value="57" id="id_form-2-categories_3" type="checkbox"> <span>Feministing</span></label></li>
-<li><label for="id_form-2-categories_4"><input name="form-2-categories" value="56" id="id_form-2-categories_4" type="checkbox"> <span>Feminist Majority Foundation</span></label></li>
-<li><label for="id_form-2-categories_5"><input name="form-2-categories" value="51" id="id_form-2-categories_5" type="checkbox"> <span>International Women's Health Coalition</span></label></li>
-<li><label for="id_form-2-categories_6"><input name="form-2-categories" value="58" id="id_form-2-categories_6" type="checkbox"> <span>Lectures</span></label></li>
-<li><label for="id_form-2-categories_7"><input name="form-2-categories" value="52" id="id_form-2-categories_7" type="checkbox"> <span>Media Organizations</span></label></li>
-<li><label for="id_form-2-categories_8"><input name="form-2-categories" value="53" id="id_form-2-categories_8" type="checkbox"> <span>Nonprofit Organizations</span></label></li>
-<li><label for="id_form-2-categories_9"><input name="form-2-categories" value="46" id="id_form-2-categories_9" type="checkbox"> <span>Performances</span></label></li>
-<li><label for="id_form-2-categories_10"><input name="form-2-categories" value="74" id="id_form-2-categories_10" type="checkbox"> <span>Smart Girls at the Party</span></label></li>
-<li><label for="id_form-2-categories_11"><input name="form-2-categories" value="36" id="id_form-2-categories_11" type="checkbox"> <span>Transformative Works</span></label></li>
-<li><label for="id_form-2-categories_12"><input name="form-2-categories" value="47" id="id_form-2-categories_12" type="checkbox"> <span>Vlogs</span></label></li>
-<li><label for="id_form-2-categories_13"><input name="form-2-categories" value="50" id="id_form-2-categories_13" type="checkbox"> <span>Women's Media Center</span></label></li>
-<li><label for="id_form-2-categories_14"><input name="form-2-categories" value="48" id="id_form-2-categories_14" type="checkbox"> <span>Youth</span></label></li>
-</ul>
+          {{ form.auto_categories }}
         </td>
         <td class="checklist" width="250" colspan="2">
+          {{ form.auto_authors.errors }}
           <label class="padding">Authors</label>
-		  <ul>
-<li><label for="id_form-2-authors_0"><input name="form-2-authors" value="9" id="id_form-2-authors_0" type="checkbox"> <span>Brian O'Hagan</span></label></li>
-<li><label for="id_form-2-authors_1"><input name="form-2-authors" value="37" id="id_form-2-authors_1" type="checkbox"> <span>ben</span></label></li>
-<li><label for="id_form-2-authors_2"><input name="form-2-authors" value="21" id="id_form-2-authors_2" type="checkbox"> <span>LBJ</span></label></li>
-<li><label for="id_form-2-authors_3"><input name="form-2-authors" value="26" id="id_form-2-authors_3" type="checkbox"> <span>sky</span></label></li>
-<li><label for="id_form-2-authors_4"><input name="form-2-authors" value="2" id="id_form-2-authors_4" type="checkbox"> <span>Dal90</span></label></li>
-<li><label for="id_form-2-authors_5"><input name="form-2-authors" value="3" id="id_form-2-authors_5" type="checkbox"> <span>pcftest</span></label></li>
-<li><label for="id_form-2-authors_6"><input name="form-2-authors" value="13" id="id_form-2-authors_6" type="checkbox"> <span>Jason</span></label></li>
-<li><label for="id_form-2-authors_7"><input name="form-2-authors" value="14" id="id_form-2-authors_7" type="checkbox"> <span>Jesse Patel</span></label></li>
-<li><label for="id_form-2-authors_8"><input name="form-2-authors" value="16" id="id_form-2-authors_8" type="checkbox"> <span>jdaniels</span></label></li>
-<li><label for="id_form-2-authors_9"><input name="form-2-authors" value="10" id="id_form-2-authors_9" type="checkbox"> <span>Maurice</span></label></li>
-<li><label for="id_form-2-authors_10"><input name="form-2-authors" value="11" id="id_form-2-authors_10" type="checkbox"> <span>Jonah B.</span></label></li>
-<li><label for="id_form-2-authors_11"><input name="form-2-authors" value="42" id="id_form-2-authors_11" type="checkbox"> <span>Allison</span></label></li>
-<li><label for="id_form-2-authors_12"><input name="form-2-authors" value="23" id="id_form-2-authors_12" type="checkbox"> <span>Paul Swartz from Gmail</span></label></li>
-<li><label for="id_form-2-authors_13"><input name="form-2-authors" value="29" id="id_form-2-authors_13" type="checkbox"> <span>testingtest</span></label></li>
-<li><label for="id_form-2-authors_14"><input name="form-2-authors" value="43" id="id_form-2-authors_14" type="checkbox"> <span>Kevin</span></label></li>
-<li><label for="id_form-2-authors_15"><input name="form-2-authors" value="12" id="id_form-2-authors_15" type="checkbox"> <span></span></label></li>
-<li><label for="id_form-2-authors_16"><input name="form-2-authors" value="38" id="id_form-2-authors_16" type="checkbox"> <span>jennifer</span></label></li>
-<li><label for="id_form-2-authors_17"><input name="form-2-authors" value="25" id="id_form-2-authors_17" type="checkbox"> <span>DrabbleReader</span></label></li>
-<li><label for="id_form-2-authors_18"><input name="form-2-authors" value="41" id="id_form-2-authors_18" type="checkbox"> <span>Jennifer</span></label></li>
-<li><label for="id_form-2-authors_19"><input name="form-2-authors" value="1" id="id_form-2-authors_19" type="checkbox"> <span>pswartz</span></label></li>
-<li><label for="id_form-2-authors_20"><input name="form-2-authors" value="15" id="id_form-2-authors_20" type="checkbox"> <span>MichelleZee</span></label></li>
-<li><label for="id_form-2-authors_21"><input name="form-2-authors" value="40" id="id_form-2-authors_21" type="checkbox"> <span>Valentina</span></label></li>
-<li><label for="id_form-2-authors_22"><input name="form-2-authors" value="39" id="id_form-2-authors_22" type="checkbox"> <span>Benjamen</span></label></li>
-<li><label for="id_form-2-authors_23"><input name="form-2-authors" value="27" id="id_form-2-authors_23" type="checkbox"> <span>jonnie</span></label></li>
-<li><label for="id_form-2-authors_24"><input name="form-2-authors" value="44" id="id_form-2-authors_24" type="checkbox"> <span>Jacob</span></label></li>
-<li><label for="id_form-2-authors_25"><input name="form-2-authors" value="24" id="id_form-2-authors_25" type="checkbox"> <span>admin</span></label></li>
-<li><label for="id_form-2-authors_26"><input name="form-2-authors" value="17" id="id_form-2-authors_26" type="checkbox"> <span>Jason Daniels</span></label></li>
-<li><label for="id_form-2-authors_27"><input name="form-2-authors" value="32" id="id_form-2-authors_27" type="checkbox"> <span>Adam</span></label></li>
-<li><label for="id_form-2-authors_28"><input name="form-2-authors" value="31" id="id_form-2-authors_28" type="checkbox"> <span>MichelleZ</span></label></li>
-<li><label for="id_form-2-authors_29"><input name="form-2-authors" value="4" id="id_form-2-authors_29" type="checkbox"> <span>PCF Test</span></label></li>
-<li><label for="id_form-2-authors_30"><input name="form-2-authors" value="20" id="id_form-2-authors_30" type="checkbox"> <span>toastworld</span></label></li>
-<li><label for="id_form-2-authors_31"><input name="form-2-authors" value="6" id="id_form-2-authors_31" type="checkbox"> <span>Paul Swartz</span></label></li>
-<li><label for="id_form-2-authors_32"><input name="form-2-authors" value="8" id="id_form-2-authors_32" type="checkbox"> <span>jonah</span></label></li>
-<li><label for="id_form-2-authors_33"><input name="form-2-authors" value="33" id="id_form-2-authors_33" type="checkbox"> <span>jen g</span></label></li>
-<li><label for="id_form-2-authors_34"><input name="form-2-authors" value="45" id="id_form-2-authors_34" type="checkbox"> <span>laura</span></label></li>
-<li><label for="id_form-2-authors_35"><input name="form-2-authors" value="34" id="id_form-2-authors_35" type="checkbox"> <span>jake</span></label></li>
-<li><label for="id_form-2-authors_36"><input name="form-2-authors" value="46" id="id_form-2-authors_36" type="checkbox"> <span>adhoc</span></label></li>
-<li><label for="id_form-2-authors_37"><input name="form-2-authors" value="28" id="id_form-2-authors_37" type="checkbox"> <span>Nick Nassar</span></label></li>
-<li><label for="id_form-2-authors_38"><input name="form-2-authors" value="35" id="id_form-2-authors_38" type="checkbox"> <span>Alicia</span></label></li>
-<li><label for="id_form-2-authors_39"><input name="form-2-authors" value="22" id="id_form-2-authors_39" type="checkbox"> <span>ajonas</span></label></li>
-<li><label for="id_form-2-authors_40"><input name="form-2-authors" value="7" id="id_form-2-authors_40" type="checkbox"> <span>Nicholas Reville</span></label></li>
-<li><label for="id_form-2-authors_41"><input name="form-2-authors" value="36" id="id_form-2-authors_41" type="checkbox"> <span>Ken</span></label></li>
-<li><label for="id_form-2-authors_42"><input name="form-2-authors" value="47" id="id_form-2-authors_42" type="checkbox"> <span>Andy Wasklewicz</span></label></li>
-<li><label for="id_form-2-authors_43"><input name="form-2-authors" value="48" id="id_form-2-authors_43" type="checkbox"> <span>Berkman </span></label></li>
-<li><label for="id_form-2-authors_44"><input name="form-2-authors" value="49" id="id_form-2-authors_44" type="checkbox"> <span>Carter Youngblood</span></label></li>
-<li><label for="id_form-2-authors_45"><input name="form-2-authors" value="50" id="id_form-2-authors_45" type="checkbox"> <span>Unidad de Videoconferencias</span></label></li>
-<li><label for="id_form-2-authors_46"><input name="form-2-authors" value="51" id="id_form-2-authors_46" type="checkbox"> <span>Tiger </span></label></li>
-<li><label for="id_form-2-authors_47"><input name="form-2-authors" value="52" id="id_form-2-authors_47" type="checkbox"> <span>Anne Jonas</span></label></li>
-<li><label for="id_form-2-authors_48"><input name="form-2-authors" value="53" id="id_form-2-authors_48" type="checkbox"> <span>Medfield.TV </span></label></li>
-<li><label for="id_form-2-authors_49"><input name="form-2-authors" value="54" id="id_form-2-authors_49" type="checkbox"> <span>BAVC Test</span></label></li>
-<li><label for="id_form-2-authors_50"><input name="form-2-authors" value="5" id="id_form-2-authors_50" type="checkbox"> <span>dean</span></label></li>
-</ul>
+          {{ form.auto_authors }}
         </td>
-                <td class="last enabled" width="100px"><a class="on" href="#">On</a> <a class="off" href="#">Off</a></td>
+                <td class="last" width="100px">{{ form.auto_approve }}</td>
 
       </tr>
-
+      {% endfor %}
       
     </tbody>
   </table>
-  </form>
   
-  <div class="bulk_edit_panel">
+  <div class="bulk_edit_panel" style="display: none;">
     {% with formset.forms|last as form %}
     <table class="rounded">
       <tr class="editing">      
@@ -288,5 +229,6 @@
     </table>
     {% endwith %}
   </div>
+  </form>
 
 {% endblock content %}

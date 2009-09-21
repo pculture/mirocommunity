@@ -1,11 +1,15 @@
 import re
 
+from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
-from django.views.generic.list_detail import object_list
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.util import sort_header
+from localtv.subsite.admin import forms
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -21,6 +25,7 @@ class MockQueryset(object):
 
     def __init__(self, objects):
         self.objects = objects
+        self.ordered = True
 
     def _clone(self):
         return self
@@ -81,14 +86,30 @@ def manage_sources(request, sitelocation=None):
                       for feed in feeds]
         searches_list = [(search.query_string.lower(), search)
                          for search in searches]
-        queryset = MockQueryset(
-            [l[1] for l in sorted(feeds_list + searches_list)])
+        queryset = [l[1] for l in sorted(feeds_list + searches_list)]
 
-    return object_list(
-        request=request, queryset=queryset,
-        paginate_by=15,
-        template_name='localtv/subsite/admin/manage_sources.html',
-        allow_empty=True, template_object_name='feed',
-        extra_context = {'headers': headers,
-                         'search_string': search_string,
-                         'source_filter': source_filter})
+    paginator = Paginator(queryset, 15)
+    try:
+        page = paginator.page(int(request.GET.get('page', 1)))
+    except InvalidPage:
+        raise Http404
+
+    if request.method == 'POST':
+        formset = forms.SourceFormset(request.POST,
+                                      queryset=MockQueryset(page.object_list))
+        if formset.is_valid():
+            # XXX bulk edit form
+            formset.save()
+            return HttpResponseRedirect(request.path)
+    else:
+        formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
+    formset.forms[0].as_ul()
+    return render_to_response('localtv/subsite/admin/manage_sources.html',
+                              {
+            'page_obj': page,
+            'paginator': paginator,
+            'headers': headers,
+            'search_string': search_string,
+            'source_filter': source_filter,
+            'formset': formset},
+                              context_instance=RequestContext(request))

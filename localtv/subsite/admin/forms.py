@@ -1,5 +1,6 @@
 from django import forms
-from django.forms.models import modelformset_factory
+from django.forms.formsets import BaseFormSet
+from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.html import conditional_escape
@@ -77,6 +78,114 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
             name = instance.name
         return mark_safe(u'<span>%s</span>' % (
                 conditional_escape(name)))
+
+class SourceWidget(forms.HiddenInput):
+    def render(self, name, value, attrs=None):
+        if value is not None:
+            value = '%s-%i' % (
+                value.__class__.__name__.lower(),
+                value.pk)
+        return forms.HiddenInput.render(self, name, value)
+
+class SourceChoiceField(forms.ModelChoiceField):
+    widget = SourceWidget
+    name = 'id'
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelChoiceField.__init__(self, models.Source.objects, *args,
+                                        **kwargs)
+
+    def clean(self, value):
+        forms.Field.clean(self, value)
+        if value in ['', None]:
+            return None
+        model_name, pk = value.split('-')
+        if model_name == 'feed':
+            model = models.Feed
+        elif model_name == 'savedsearch':
+            model = models.SavedSearch
+        else:
+            raise forms.ValidationError(
+                self.error_messages['invalid_choice'])
+        try:
+            return model.objects.get(pk=pk)
+        except model.DoesNotExist:
+            raise forms.ValidationError(
+                self.error_messages['invalid_choice'])
+
+
+class SourceForm(forms.ModelForm):
+    bulk = forms.BooleanField(required=False)
+    auto_categories = BulkChecklistField(required=False,
+                                    queryset=models.Category.objects)
+    auto_authors = BulkChecklistField(required=False,
+                                 queryset=User.objects)
+
+    class Meta:
+        model = models.Source
+        fields = ('auto_approve', 'auto_categories', 'auto_authors')
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        site = Site.objects.get_current()
+        self.fields['auto_categories'].queryset = \
+            self.fields['auto_categories'].queryset.filter(
+            site=site)
+
+        if self.instance.pk is not None:
+            if isinstance(self.instance, models.Feed):
+                extra_fields = {
+                    'name': forms.CharField(required=True,
+                                            initial=self.instance.name),
+                    'feed_url': forms.URLField(required=True,
+                                               initial=self.instance.feed_url),
+                    'webpage': forms.URLField(
+                        required=False,
+                        initial=self.instance.webpage)
+                    }
+                self._extra_field_names = ['name', 'feed_url', 'webpage']
+            elif isinstance(self.instance, models.SavedSearch):
+                extra_fields = {
+                    'query_string' : forms.CharField(
+                        required=True,
+                        initial=self.instance.query_string)
+                    }
+                self._extra_field_names = ['query_string']
+            self.fields.update(extra_fields)
+            self._meta.fields = self._meta.fields + tuple(extra_fields.keys())
+
+    def _extra_fields(self):
+        fields = [self[name] for name in self._extra_field_names]
+        return fields
+    extra_fields = property(_extra_fields)
+
+
+class BaseSourceFormSet(BaseModelFormSet):
+
+    def _construct_form(self, i, **kwargs):
+        # Since we're doing something weird with the id field, we just use the
+        # instance that's passed in when we create the formset
+        if i < self.initial_form_count() and not kwargs.get('instance'):
+            kwargs['instance'] = self.get_queryset()[i]
+        return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+
+    def add_fields(self, form, index):
+        # We're adding the id field, so we can just call the
+        # BaseFormSet.add_fields
+        if index < self.initial_form_count():
+            initial = self.queryset[index]
+        else:
+            initial = None
+        self._pk_field = form.fields['id'] = SourceChoiceField(required=True,
+                                              initial=initial)
+        BaseFormSet.add_fields(self, form, index)
+
+
+SourceFormset = modelformset_factory(models.Source,
+                                     form=SourceForm,
+                                     formset=BaseSourceFormSet,
+                                     can_delete=True,
+                                     extra=1)
 
 
 class BulkEditVideoForm(EditVideoForm):

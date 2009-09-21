@@ -166,7 +166,7 @@ class Source(models.Model):
                                           related_name='auto_%(class)s_set')
 
     objects = models.Manager()
-    
+
     class Meta:
         abstract = True
 
@@ -211,6 +211,10 @@ class Feed(Source):
 
     def __unicode__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_list_feed', [self.pk])
 
     def update_items(self, verbose=False):
         """
