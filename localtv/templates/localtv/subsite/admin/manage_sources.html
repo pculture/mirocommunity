@@ -208,22 +208,26 @@
     </tbody>
   </table>
   
-  <div class="bulk_edit_panel" style="display: none;">
+  <div id="massedit" class="bulk_edit_panel" style="display: none;">
     {% with formset.forms|last as form %}
     <table class="rounded">
       <tr class="editing">      
-        <td colspan="2">
+        <td>
           <h3>Bulk Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
           <span class="bulkedit_auto" style="float:left; padding: 8px 0 0 15px;">(affects all checked sources)</span>
           <button class="med_button marginbottom behave clear margintop"><span>Bulk Update</span></button>
         </td>
         <td class="checklist" width="250">
-          {{ form.auto_categories.label }}
+          <label class="padding">Categories</label>
           {{ form.auto_categories }}
         </td>
-        <td class="checklist" width="250" colspan="2">
-          {{ form.auto_authors.label }}
-          {{ from.auto_authors }}
+        <td class="checklist" width="250">
+          <label class="padding">Authors</label>
+          {{ form.auto_authors }}
+        </td>
+        <td class="last" width="100px">
+          <label class="padding">Auto-Approve</label>
+          {{ form.auto_approve }}
         </td>
       </tr>
     </table>

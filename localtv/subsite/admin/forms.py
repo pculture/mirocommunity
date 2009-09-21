@@ -81,7 +81,7 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
 
 class SourceWidget(forms.HiddenInput):
     def render(self, name, value, attrs=None):
-        if value is not None:
+        if value is not None and not isinstance(value, basestring):
             value = '%s-%i' % (
                 value.__class__.__name__.lower(),
                 value.pk)
@@ -176,7 +176,7 @@ class BaseSourceFormSet(BaseModelFormSet):
             initial = self.queryset[index]
         else:
             initial = None
-        self._pk_field = form.fields['id'] = SourceChoiceField(required=True,
+        self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
                                               initial=initial)
         BaseFormSet.add_fields(self, form, index)
 

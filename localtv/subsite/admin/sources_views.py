@@ -111,7 +111,27 @@ def manage_sources(request, sitelocation=None):
         formset = forms.SourceFormset(request.POST,
                                       queryset=MockQueryset(page.object_list))
         if formset.is_valid():
-            # XXX bulk edit form
+            bulk_edits = formset.extra_forms[0].cleaned_data
+            for key in list(bulk_edits.keys()): # get the list because we'll be
+                                                # changing the dictionary
+                if not bulk_edits[key]:
+                    del bulk_edits[key]
+            bulk_action = request.POST.get('bulk_action', '')
+            if bulk_action:
+                bulk_edits['action'] = bulk_action
+            if bulk_edits:
+                for form in formset.initial_forms:
+                    if not form.cleaned_data['bulk']:
+                        continue
+                    for key, value in bulk_edits.items():
+                        if key == 'action': # do something to the video
+                            if value == 'remove':
+                                form.fields['DELETE'] = True
+                        else:
+                            form.cleaned_data[key] = value
+            formset.forms = formset.initial_forms # get rid of the extra bulk
+                                                  # edit form
+
             formset.save()
             return HttpResponseRedirect(request.get_full_path())
     else:
