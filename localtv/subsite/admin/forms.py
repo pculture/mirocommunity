@@ -79,6 +79,16 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
         return mark_safe(u'<span>%s</span>' % (
                 conditional_escape(name)))
 
+class BooleanRadioField(forms.BooleanField):
+    widget = forms.RadioSelect
+    choices = (
+        ('1', 'On'),
+        ('0', 'Off'))
+
+    def __init__(self, *args, **kwargs):
+        forms.BooleanField.__init__(self, *args, **kwargs)
+        self.widget.choices = self.choices
+
 class SourceWidget(forms.HiddenInput):
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, basestring):
@@ -120,6 +130,7 @@ class SourceForm(forms.ModelForm):
                                     queryset=models.Category.objects)
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects)
+    auto_approve = BooleanRadioField(required=False)
 
     class Meta:
         model = models.Source

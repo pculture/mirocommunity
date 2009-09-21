@@ -114,7 +114,7 @@ def manage_sources(request, sitelocation=None):
             bulk_edits = formset.extra_forms[0].cleaned_data
             for key in list(bulk_edits.keys()): # get the list because we'll be
                                                 # changing the dictionary
-                if not bulk_edits[key]:
+                if bulk_edits[key] in ['', None]:
                     del bulk_edits[key]
             bulk_action = request.POST.get('bulk_action', '')
             if bulk_action:
@@ -136,7 +136,7 @@ def manage_sources(request, sitelocation=None):
             return HttpResponseRedirect(request.get_full_path())
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
-    formset.forms[0].as_ul()
+
     return render_to_response('localtv/subsite/admin/manage_sources.html',
                               {
             'page_obj': page,
