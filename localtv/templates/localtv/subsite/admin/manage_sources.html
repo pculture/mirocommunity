@@ -60,7 +60,7 @@
     <form method="get" action="">
       <strong>Search Your Sources</strong>
       <input class="livesearch_feed_url"
-             name="q" value="{{ search_string }}"/>
+             name="q" />
       <button type="submit" class="med_button"><span>Search</span></button>
     </form>
   </div>
@@ -89,7 +89,7 @@
       <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
       {% endfor %}
     </select>
-    <input type="text" class="small_field" name="q"/>
+    <input type="text" class="small_field" name="q" value="{{ search_string }}" />
     <button class="med_button floatright"><span>Search</span></button>
   </div>
   </form>
@@ -103,7 +103,7 @@
     </ul>
   </div>
 
-  <form method="post" action="">
+  <form method="post" action="{{ request.get_full_path }}">
   <table class="rounded">
     <thead>
       <tr>

@@ -1,9 +1,10 @@
 import re
 
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
@@ -52,8 +53,6 @@ def manage_sources(request, sitelocation=None):
         sort_header('auto_approve', 'Auto Approve', sort)
         ]
 
-    search_string = request.GET.get('q', '')
-
     feeds = models.Feed.objects.filter(
         site=sitelocation.site,
         status=models.FEED_STATUS_ACTIVE).extra(select={
@@ -63,12 +62,26 @@ def manage_sources(request, sitelocation=None):
             'name__lower': 'LOWER(query_string)'}).order_by(
             'name__lower')
 
+    search_string = request.GET.get('q', '')
+
     if search_string:
         feeds = feeds.filter(Q(feed_url__icontains=search_string) |
                              Q(name__icontains=search_string) |
                              Q(webpage__icontains=search_string) |
                              Q(description__icontains=search_string))
         searches = searches.filter(query_string__icontains=search_string)
+
+    category = request.GET.get('category')
+    if category:
+        category = get_object_or_404(models.Category, pk=category)
+        feeds = feeds.filter(auto_categories=category)
+        searches = searches.filter(auto_categories=category)
+
+    author = request.GET.get('author')
+    if author:
+        author = get_object_or_404(User, pk=author)
+        feeds = feeds.filter(auto_authors=author)
+        searches = searches.filter(auto_authors=author)
 
     source_filter = request.GET.get('filter')
     if source_filter == 'search':
@@ -100,7 +113,7 @@ def manage_sources(request, sitelocation=None):
         if formset.is_valid():
             # XXX bulk edit form
             formset.save()
-            return HttpResponseRedirect(request.path)
+            return HttpResponseRedirect(request.get_full_path())
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
     formset.forms[0].as_ul()
@@ -111,5 +124,8 @@ def manage_sources(request, sitelocation=None):
             'headers': headers,
             'search_string': search_string,
             'source_filter': source_filter,
+            'categories': models.Category.objects.filter(
+                site=sitelocation.site),
+            'users': User.objects.all(),
             'formset': formset},
                               context_instance=RequestContext(request))
