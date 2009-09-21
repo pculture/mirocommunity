@@ -11,13 +11,8 @@ function showEdit(obj, show) {
 
 function toggleDelete(obj) {
     obj = $(obj);
-    if (obj.text() == 'Delete') {
-        obj.next().val('checked');
-        obj.text('Keep');
-    } else {
-        obj.next().val('');
-        obj.text('Delete');
-    }
+    obj.next().val('checked');
+    $("#labels form:eq(1)").submit();
     return false;
 }
 
