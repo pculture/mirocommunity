@@ -480,9 +480,16 @@ class SavedSearch(Source):
             [result for result in raw_results if result is not None],
             self.site)
 
+        if self.auto_approve:
+            initial_status = VIDEO_STATUS_ACTIVE
+        else:
+            initial_status = VIDEO_STATUS_UNAPPROVED
+
         for result in raw_results:
-            result.generate_video_model(self.site,
-                                        VIDEO_STATUS_UNAPPROVED)
+            video = result.generate_video_model(self.site,
+                                                initial_status)
+            video.categories = self.auto_categories.all()
+            video.authors = self.auto_authors.all()
 
 
 class VideoManager(models.Manager):
