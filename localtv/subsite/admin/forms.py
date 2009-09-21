@@ -1,5 +1,6 @@
 from django import forms
-from django.forms.models import modelformset_factory
+from django.forms.formsets import BaseFormSet
+from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.html import conditional_escape
@@ -78,6 +79,125 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
         return mark_safe(u'<span>%s</span>' % (
                 conditional_escape(name)))
 
+class BooleanRadioField(forms.BooleanField):
+    widget = forms.RadioSelect
+    choices = (
+        ('1', 'On'),
+        ('0', 'Off'))
+
+    def __init__(self, *args, **kwargs):
+        forms.BooleanField.__init__(self, *args, **kwargs)
+        self.widget.choices = self.choices
+
+class SourceWidget(forms.HiddenInput):
+    def render(self, name, value, attrs=None):
+        if value is not None and not isinstance(value, basestring):
+            value = '%s-%i' % (
+                value.__class__.__name__.lower(),
+                value.pk)
+        return forms.HiddenInput.render(self, name, value)
+
+class SourceChoiceField(forms.ModelChoiceField):
+    widget = SourceWidget
+    name = 'id'
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelChoiceField.__init__(self, models.Source.objects, *args,
+                                        **kwargs)
+
+    def clean(self, value):
+        forms.Field.clean(self, value)
+        if value in ['', None]:
+            return None
+        model_name, pk = value.split('-')
+        if model_name == 'feed':
+            model = models.Feed
+        elif model_name == 'savedsearch':
+            model = models.SavedSearch
+        else:
+            raise forms.ValidationError(
+                self.error_messages['invalid_choice'])
+        try:
+            return model.objects.get(pk=pk)
+        except model.DoesNotExist:
+            raise forms.ValidationError(
+                self.error_messages['invalid_choice'])
+
+
+class SourceForm(forms.ModelForm):
+    bulk = forms.BooleanField(required=False)
+    auto_categories = BulkChecklistField(required=False,
+                                    queryset=models.Category.objects)
+    auto_authors = BulkChecklistField(required=False,
+                                 queryset=User.objects)
+    auto_approve = BooleanRadioField(required=False)
+
+    class Meta:
+        model = models.Source
+        fields = ('auto_approve', 'auto_categories', 'auto_authors')
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        site = Site.objects.get_current()
+        self.fields['auto_categories'].queryset = \
+            self.fields['auto_categories'].queryset.filter(
+            site=site)
+
+        if self.instance.pk is not None:
+            if isinstance(self.instance, models.Feed):
+                extra_fields = {
+                    'name': forms.CharField(required=True,
+                                            initial=self.instance.name),
+                    'feed_url': forms.URLField(required=True,
+                                               initial=self.instance.feed_url),
+                    'webpage': forms.URLField(
+                        required=False,
+                        initial=self.instance.webpage)
+                    }
+                self._extra_field_names = ['name', 'feed_url', 'webpage']
+            elif isinstance(self.instance, models.SavedSearch):
+                extra_fields = {
+                    'query_string' : forms.CharField(
+                        required=True,
+                        initial=self.instance.query_string)
+                    }
+                self._extra_field_names = ['query_string']
+            self.fields.update(extra_fields)
+            self._meta.fields = self._meta.fields + tuple(extra_fields.keys())
+
+    def _extra_fields(self):
+        fields = [self[name] for name in self._extra_field_names]
+        return fields
+    extra_fields = property(_extra_fields)
+
+
+class BaseSourceFormSet(BaseModelFormSet):
+
+    def _construct_form(self, i, **kwargs):
+        # Since we're doing something weird with the id field, we just use the
+        # instance that's passed in when we create the formset
+        if i < self.initial_form_count() and not kwargs.get('instance'):
+            kwargs['instance'] = self.get_queryset()[i]
+        return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+
+    def add_fields(self, form, index):
+        # We're adding the id field, so we can just call the
+        # BaseFormSet.add_fields
+        if index < self.initial_form_count():
+            initial = self.queryset[index]
+        else:
+            initial = None
+        self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
+                                              initial=initial)
+        BaseFormSet.add_fields(self, form, index)
+
+
+SourceFormset = modelformset_factory(models.Source,
+                                     form=SourceForm,
+                                     formset=BaseSourceFormSet,
+                                     can_delete=True,
+                                     extra=1)
+
 
 class BulkEditVideoForm(EditVideoForm):
     bulk = forms.BooleanField(required=False)
@@ -143,7 +263,7 @@ class EditTitleForm(forms.Form):
 
 
 class EditSidebarForm(forms.Form):
-    sidebar = forms.CharField(label="Sidebar Blurb (use html)",
+    sidebar = forms.CharField(label="Sidebar Blurb (use htm)",
                             widget=forms.Textarea, required=False)
     footer = forms.CharField(label="Footer Blurb (use html)",
                              widget=forms.Textarea, required=False,
@@ -174,28 +294,35 @@ class EditMiscDesignForm(forms.Form):
     #theme = forms.ChoiceField(label="Color Theme", choices=(
     #        ("day", "Day"),
     #        ("night", "Night")))
-    layout = forms.ChoiceField(label="Front Page Layout", choices=(
+    layout = forms.ChoiceField(
+        label="Front Page Layout", choices=(
             ("scrolling", "Scrolling big features"),
             ("list", "List style"),
             ("categorized", "Categorized layout")),
-                               help_text=" (note: with the scrolling and categorized layouts, you will need to provide hi-quality images for each featured video)")
+        help_text=(" (note: with the scrolling and categorized layouts, you "
+                   "will need to provide hi-quality images for each featured "
+                   "video)"))
     display_submit_button = forms.BooleanField(
         label="Display the 'submit a video' nav item",
         required=False)
     submission_requires_login = forms.BooleanField(
         label="Require users to login to submit a video",
         required=False)
-    css = forms.CharField(label="Custom CSS",
-                          help_text="Here you can append your own CSS to customize your site.",
-                          widget=forms.Textarea, required=False)
+    css = forms.CharField(
+        label="Custom CSS",
+        help_text="Here you can append your own CSS to customize your site.",
+        widget=forms.Textarea, required=False)
 
     @classmethod
     def create_from_sitelocation(cls, sitelocation):
         self = cls()
         self.initial['css'] = sitelocation.css
-        self.initial['layout'] = sitelocation.frontpage_style
-        self.initial['display_submit_button'] = sitelocation.display_submit_button
-        self.initial['submission_requires_login'] = sitelocation.submission_requires_login
+        self.initial['layout'] = \
+            sitelocation.frontpage_style
+        self.initial['display_submit_button'] = \
+            sitelocation.display_submit_button
+        self.initial['submission_requires_login'] = \
+            sitelocation.submission_requires_login
         return self
 
     def save_to_sitelocation(self, sitelocation):
@@ -206,11 +333,14 @@ class EditMiscDesignForm(forms.Form):
             sitelocation.logo.save(logo.name, logo, save=False)
         background = self.cleaned_data.get('background')
         if background is not None:
-            sitelocation.background.save(background.name, background, save=False)
+            sitelocation.background.save(background.name, background,
+                                         save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
         sitelocation.frontpage_style = self.cleaned_data['layout']
-        sitelocation.display_submit_button = self.cleaned_data['display_submit_button']
-        sitelocation.submission_requires_login = self.cleaned_data['submission_requires_login']
+        sitelocation.display_submit_button = \
+            self.cleaned_data['display_submit_button']
+        sitelocation.submission_requires_login = \
+            self.cleaned_data['submission_`requires_login']
         sitelocation.save()
 
 class CategoryForm(forms.ModelForm):

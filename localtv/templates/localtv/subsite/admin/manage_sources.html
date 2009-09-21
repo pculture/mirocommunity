@@ -1,0 +1,238 @@
+
+{% extends "localtv/subsite/admin/base.html" %}
+
+{% load pagetabs i18n versioned %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Manage Sources" %}{% endblock %}
+
+{% block body_class %}incomingfeeds{% endblock body_class %}
+
+{% block head %}
+  <script src="{% versioned "/js/bulk_edit.js" %}"
+          type="text/javascript">
+  </script>
+  <script src="{% versioned "/js/new_edit_form.js" %}"
+          type="text/javascript">
+  </script>
+{% endblock head %}
+
+{% block content %}
+
+<h2 class="page_title marginbottom">Manage Your Video Sources</h2>
+<div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
+
+{% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
+
+{% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
+
+<div id="admin_feed_add" class="rounded">
+  <form method="post" action="{% url localtv_admin_feed_add %}">
+    <strong>Add Sources of Video</strong>
+    <input class="livesearch_feed_url" name="feed_url"/>
+    <button type="submit" class="med_button"><span>Search</span></button>
+  </form>
+  <p>Sources let you automatically import video onto your site from video hosting accounts (ie YouTube users) or RSS. Just paste in a video URL or RSS feed.</p>
+</div>
+
+<div id="admin_search_sources" class="rounded">
+  <form method="get" action="{% url localtv_admin_search %}">
+    <strong>Search Video Sites</strong>
+    <input class="livesearch_feed_url" name="query" />
+    <span class="select_option">and sort by
+    <select>
+      <option value="latest">Latest</option>
+      <option value="relevant">Relevance</option>
+    </select>
+    </span>
+    <button type="submit" class="med_button floatright"><span>Search</span></button>
+  </form>
+  <p>
+    Search will import results from a bunch of video sites. You can pick out videos you think are interesting and optionally create an automated source.
+  </p>
+</div>
+     
+<div class="pag">
+    {% pagetabs page_obj %}
+  </div>
+
+
+  <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
+    <form method="get" action="">
+      <strong>Search Your Sources</strong>
+      <input class="livesearch_feed_url"
+             name="q" />
+      <button type="submit" class="med_button"><span>Search</span></button>
+    </form>
+  </div>
+
+  <div id="labels">
+      <div class="floatleft form_wrap rounded">
+    <select id="bulk_action_selector" class="behave">
+      <option selected="selected" value="edit">Edit</option>
+      <option value="remove" class="delete_icon">Remove</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+  </div>
+
+  <form action="" method="get">
+
+    <div class="floatright form_wrap rounded">
+    <select class="behave" name="category">
+      <option {% if not request.GET.category %}selected="selected"{% endif %} value="">Show All Categories</option>
+      {% for category in categories %}
+      <option {% ifequal category.pk|stringformat:"s" request.GET.category %}selected="selected"{% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <select class="behave" name="author">
+      <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Authors</option>
+      {% for user in users %}
+      <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
+      {% endfor %}
+    </select>
+    <input type="text" class="small_field" name="q" value="{{ search_string }}" />
+    <button class="med_button floatright"><span>Search</span></button>
+  </div>
+  </form>
+
+  <div class="only_show">
+    <h3>Only Show:</h3>
+    <ul>
+      <li><a href="?filter=user">Video Site Users</a></li>
+      <li><a href="?filter=search">Video Site Searches</a></li>
+      <li><a href="?filter=feed">RSS Feeds</a></li>
+    </ul>
+  </div>
+
+  <form method="post" action="{{ request.get_full_path }}">
+  <table class="rounded">
+    <thead>
+      <tr>
+        <th class="checkbox">
+          <input id="toggle_all" type="checkbox"/>
+          <script type="text/javascript">
+              $("#toggle_all").click(function() {
+                  if (this.checked) {
+                      $('td:first-child input[type=checkbox]:not(:checked)').click()
+                  } else {
+                      $('td:first-child input[type=checkbox]:checked').click();
+                  }
+              });
+          </script>
+        </th>
+        {% for header in headers %}
+        <th>
+          {% if header.link %}
+          <a class="{{ header.class }}" href="{{ header.link }}">{{ header.label }}</a>
+          {% else %}
+          <span>{{ header.label }}</span>
+          {% endif %}
+        </th>
+        {% endfor %}
+      </tr>
+      {{ formset.management_form }}
+      <input id="bulk_action" name="bulk_action" value="" type="hidden"/>
+    </thead>
+    <tbody>
+      {% for form in formset.forms|slice:":-1" %}
+      <tr class="{% cycle "" "grey "%}" {% if form.errors %}style="display: none;"{% endif %}>
+        <td>{{ form.bulk }}</td>
+        <td><span class="overflow">
+          <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
+          </span>
+
+          <div class="actions">
+            <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> {{ form.DELETE.as_hidden }} <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+          </div>
+        </td>
+        <td>
+          {% for category in form.instance.auto_categories.all %}
+          {{ category.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+        <td><span class="overflow">{% for user in form.instance.auto_authors.all %}
+          {% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if not forloop.last %}, {% endif %}
+          {% endfor %}</span></td>
+        <td>{% if form.instance.query_string %}
+          Search
+          {% else %}
+          {% with form.instance.video_set.all.0.video_service as video_service %}
+          {% if video_service %}
+          {{ video_service }} User
+          {% else %}
+          Feed
+          {% endif %}
+          {% endwith %}
+          {% endif %}</td>
+        <td class="last {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><span class="on" href="#">On</span> <span class="off" href="#">Off</span></td>
+      </tr>
+      <tr class="editing" {% if not form.errors%}style="display: none;"{% endif %}>
+        <td colspan="2">
+          <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          {{ form.id }}
+          <table>
+            <tbody>
+              {% for field in form.extra_fields %}
+              <tr>
+                <td>
+                  {{ field.label }}
+                </td>
+                <td {% if not field.errors %}colspan="2"{% endif %}>
+                  {{ field }}
+                </td>
+                {% if field.errors %}
+                <td>{{ field.errors }}</td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+          </tbody></table>
+
+          <button class="med_button marginbottom behave" type="submit"><span>Update Source</span></button>
+
+        </td>
+
+        <td class="checklist" width="250">
+          {{ form.auto_categories.errors }}
+          <label class="padding">Categories</label>
+          {{ form.auto_categories }}
+        </td>
+        <td class="checklist" width="250" colspan="2">
+          {{ form.auto_authors.errors }}
+          <label class="padding">Authors</label>
+          {{ form.auto_authors }}
+        </td>
+                <td class="last" width="100px">{{ form.auto_approve }}</td>
+
+      </tr>
+      {% endfor %}
+      
+    </tbody>
+  </table>
+  
+  <div id="massedit" class="bulk_edit_panel" style="display: none;">
+    {% with formset.forms|last as form %}
+    <table class="rounded">
+      <tr class="editing">      
+        <td>
+          <h3>Bulk Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          <span class="bulkedit_auto" style="float:left; padding: 8px 0 0 15px;">(affects all checked sources)</span>
+          <button class="med_button marginbottom behave clear margintop"><span>Bulk Update</span></button>
+        </td>
+        <td class="checklist" width="250">
+          <label class="padding">Categories</label>
+          {{ form.auto_categories }}
+        </td>
+        <td class="checklist" width="250">
+          <label class="padding">Authors</label>
+          {{ form.auto_authors }}
+        </td>
+        <td class="last" width="100px">
+          <label class="padding">Auto-Approve</label>
+          {{ form.auto_approve }}
+        </td>
+      </tr>
+    </table>
+    {% endwith %}
+  </div>
+  </form>
+
+{% endblock content %}

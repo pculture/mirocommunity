@@ -152,7 +152,25 @@ class Tag(models.Model):
         return self.name
 
 
-class Feed(models.Model):
+class Source(models.Model):
+    """
+    An abstract base class to represent things which are sources of multiple
+    videos.  Current subclasses are Feed and SavedSearch.
+    """
+    id = models.AutoField(primary_key=True)
+    site = models.ForeignKey(Site)
+    auto_approve = models.BooleanField(default=False)
+    user = models.ForeignKey('auth.User', null=True, blank=True)
+    auto_categories = models.ManyToManyField("Category", blank=True)
+    auto_authors = models.ManyToManyField("auth.User", blank=True,
+                                          related_name='auto_%(class)s_set')
+
+    objects = models.Manager()
+
+    class Meta:
+        abstract = True
+
+class Feed(Source):
     """
     Feed to pull videos in from.
 
@@ -179,7 +197,6 @@ class Feed(models.Model):
         import
     """
     feed_url = models.URLField(verify_exists=False)
-    site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
     description = models.TextField()
@@ -187,11 +204,6 @@ class Feed(models.Model):
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
-    auto_approve = models.BooleanField(default=False)
-    user = models.ForeignKey('auth.User', null=True, blank=True)
-    auto_categories = models.ManyToManyField("Category", blank=True)
-    auto_authors = models.ManyToManyField("auth.User", blank=True,
-                                          related_name='auto_feed_set')
 
     class Meta:
         unique_together = (
@@ -199,6 +211,10 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_list_feed', [self.pk])
 
     def update_items(self, verbose=False):
         """
@@ -431,7 +447,7 @@ class Profile(models.Model):
         return unicode(self.user)
 
 
-class SavedSearch(models.Model):
+class SavedSearch(Source):
     """
     A set of keywords to regularly pull in new videos from.
 
@@ -445,10 +461,8 @@ class SavedSearch(models.Model):
      - user: the person who saved this search (thus, likely an
        adminsistrator of this subsite)
     """
-    site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
-    user = models.ForeignKey('auth.User', null=True, blank=True)
 
     def __unicode__(self):
         return self.query_string
