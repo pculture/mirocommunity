@@ -71,5 +71,7 @@
       </td>
     </tr>
   </table>
+{% else %}
+  <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{% url localtv_admin_manage_page %}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
 {% endif %}
 {% endblock content %}
