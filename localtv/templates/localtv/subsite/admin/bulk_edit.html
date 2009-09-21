@@ -151,17 +151,11 @@
       </tr>
       <tr class="editing {% cycle "" "grey" %}" {% if not form.errors %}style="display: none;"{% endif %}>
         <td colspan="3">
-          <h3>Quick Edit <a href="{{ request.get_full_path }}">(cancel)</a></h3>
-          {{ form.id }}
           {{ form.non_field_errors }}
+          {{ form.name.errors }}
+          <h3>{{ form.name }} <a href="{{ request.get_full_path }}">(cancel)</a></h3>
+          {{ form.id }}
           <table>
-            <tr>
-              <td colspan="2">
-                <label>Title</label>
-                {{ form.name.errors }}
-                {{ form.name }}
-              </td>
-            </tr>
             <tr>
               <td colspan="2">
                 <label>Video URL</label>

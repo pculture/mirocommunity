@@ -2109,9 +2109,13 @@ padding: 0px !important;
 padding: 0px 0 0 12px !important;
 }
 
-#labels table tr.editing h3{
-font-size: 17px;
+#labels table tr.editing h3 {
 padding: 15px 0 0 15px;
+}
+
+#labels table tr.editing h3 input {
+    font-size: 17px;
+    width: 50%;
 }
 
 #labels table tr.editing h3 a{

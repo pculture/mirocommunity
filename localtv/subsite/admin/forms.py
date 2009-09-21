@@ -201,9 +201,8 @@ SourceFormset = modelformset_factory(models.Source,
 
 class BulkEditVideoForm(EditVideoForm):
     bulk = forms.BooleanField(required=False)
-    name = forms.CharField(widget=forms.TextInput(
-            attrs={'class': 'large_field'}),
-                           required=False)
+    name = forms.CharField(
+        required=False)
     file_url = forms.CharField(widget=forms.TextInput(
             attrs={'class': 'large_field'}),
                                required=False)
