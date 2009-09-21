@@ -2465,11 +2465,11 @@ cursor: pointer;
 }
 
 
-.login {
+div.login {
 padding: 20px;
 }
 
-.login h1 {
+div.login h1 {
 margin: 0;
 padding: 0;
 font-size: 16px;
@@ -2478,7 +2478,7 @@ line-height: 1.3em;
 }
 
 
-.login form p {
+div.login form p {
 clear: both;
 padding: 20px;
 }
