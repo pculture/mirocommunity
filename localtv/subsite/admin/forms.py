@@ -143,7 +143,7 @@ class EditTitleForm(forms.Form):
 
 
 class EditSidebarForm(forms.Form):
-    sidebar = forms.CharField(label="Sidebar Blurb (use html)",
+    sidebar = forms.CharField(label="Sidebar Blurb (use htm)",
                             widget=forms.Textarea, required=False)
     footer = forms.CharField(label="Footer Blurb (use html)",
                              widget=forms.Textarea, required=False,
@@ -174,28 +174,35 @@ class EditMiscDesignForm(forms.Form):
     #theme = forms.ChoiceField(label="Color Theme", choices=(
     #        ("day", "Day"),
     #        ("night", "Night")))
-    layout = forms.ChoiceField(label="Front Page Layout", choices=(
+    layout = forms.ChoiceField(
+        label="Front Page Layout", choices=(
             ("scrolling", "Scrolling big features"),
             ("list", "List style"),
             ("categorized", "Categorized layout")),
-                               help_text=" (note: with the scrolling and categorized layouts, you will need to provide hi-quality images for each featured video)")
+        help_text=(" (note: with the scrolling and categorized layouts, you "
+                   "will need to provide hi-quality images for each featured "
+                   "video)"))
     display_submit_button = forms.BooleanField(
         label="Display the 'submit a video' nav item",
         required=False)
     submission_requires_login = forms.BooleanField(
         label="Require users to login to submit a video",
         required=False)
-    css = forms.CharField(label="Custom CSS",
-                          help_text="Here you can append your own CSS to customize your site.",
-                          widget=forms.Textarea, required=False)
+    css = forms.CharField(
+        label="Custom CSS",
+        help_text="Here you can append your own CSS to customize your site.",
+        widget=forms.Textarea, required=False)
 
     @classmethod
     def create_from_sitelocation(cls, sitelocation):
         self = cls()
         self.initial['css'] = sitelocation.css
-        self.initial['layout'] = sitelocation.frontpage_style
-        self.initial['display_submit_button'] = sitelocation.display_submit_button
-        self.initial['submission_requires_login'] = sitelocation.submission_requires_login
+        self.initial['layout'] = \
+            sitelocation.frontpage_style
+        self.initial['display_submit_button'] = \
+            sitelocation.display_submit_button
+        self.initial['submission_requires_login'] = \
+            sitelocation.submission_requires_login
         return self
 
     def save_to_sitelocation(self, sitelocation):
@@ -206,11 +213,14 @@ class EditMiscDesignForm(forms.Form):
             sitelocation.logo.save(logo.name, logo, save=False)
         background = self.cleaned_data.get('background')
         if background is not None:
-            sitelocation.background.save(background.name, background, save=False)
+            sitelocation.background.save(background.name, background,
+                                         save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
         sitelocation.frontpage_style = self.cleaned_data['layout']
-        sitelocation.display_submit_button = self.cleaned_data['display_submit_button']
-        sitelocation.submission_requires_login = self.cleaned_data['submission_requires_login']
+        sitelocation.display_submit_button = \
+            self.cleaned_data['display_submit_button']
+        sitelocation.submission_requires_login = \
+            self.cleaned_data['submission_`requires_login']
         sitelocation.save()
 
 class CategoryForm(forms.ModelForm):
