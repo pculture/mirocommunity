@@ -26,8 +26,10 @@ function bulkAction() {
     if (action == 'edit') {
         // show the bulk edit window
        $("#massedit").show();
-    } else {
+    } else if (action) {
         $("#bulk_action").val(action);
         $("#labels form:eq(1)").submit();
+    } else {
+        alert('Please select an action.');
     }
 }
