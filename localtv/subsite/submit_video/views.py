@@ -330,7 +330,7 @@ def submit_thanks(request, sitelocation=None):
         context = {
             'video': models.Video.objects.filter(site=sitelocation.site,
                                                  user=request.user).order_by(
-                '-when_approved')[0]
+                '-id')[0]
             }
     else:
         context = {}
