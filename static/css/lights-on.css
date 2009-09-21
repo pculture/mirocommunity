@@ -773,12 +773,12 @@ margin-top: 2px;
 
 /////////////////////////////////////////////*/
 
-#login {
+.login {
 float: right;
 margin-top: 30px;
 }
 
-#login li {
+.login li {
 float: right;
 list-style: none;
 margin-left: 10px;

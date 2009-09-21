@@ -68,7 +68,7 @@
           </h1>
         </div>
         {% if user_is_admin %}
-        <ul id="login">
+        <ul class="login">
           <li>
             <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
           </li>
@@ -119,7 +119,7 @@
         </ul>
       {% endblock %}
       {% if user_is_admin %}
-      <ul id="login">
+      <ul class="login">
         <li>
           <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
         </li>
