@@ -136,7 +136,7 @@ def manage_sources(request, sitelocation=None):
             formset.save()
             for instance in to_delete:
                 instance.delete()
-            return HttpResponseRedirect(request.get_full_path())
+            return HttpResponseRedirect(request.path + '?successful')
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
 
@@ -150,5 +150,6 @@ def manage_sources(request, sitelocation=None):
             'categories': models.Category.objects.filter(
                 site=sitelocation.site),
             'users': User.objects.all(),
+            'successful': 'successful' in request.GET,
             'formset': formset},
                               context_instance=RequestContext(request))

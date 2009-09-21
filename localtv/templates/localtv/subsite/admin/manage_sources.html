@@ -21,9 +21,9 @@
 <h2 class="page_title marginbottom">Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
 
-<div class="successful clear rounded">This is a <strong>successful</strong> alert</div>
+{% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 
-<div class="unsuccessful clear rounded">This is an <strong>unsuccessful</strong> alert</div>
+{% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
 
 <div id="admin_feed_add" class="rounded">
   <form method="post" action="{% url localtv_admin_feed_add %}">
@@ -172,16 +172,16 @@
           <table>
             <tbody>
               {% for field in form.extra_fields %}
-              {% if field.errors %}
-              <tr><td colspan="2"> {{ field.errors }}</td> </tr>
-              {% endif %}
               <tr>
                 <td>
                   {{ field.label }}
                 </td>
-                <td>
+                <td {% if not field.errors %}colspan="2"{% endif %}>
                   {{ field }}
                 </td>
+                {% if field.errors %}
+                <td>{{ field.errors }}</td>
+                {% endif %}
               </tr>
               {% endfor %}
           </tbody></table>
