@@ -51,20 +51,6 @@
   </p>
 </div>
      
-<div class="pag">
-    {% pagetabs page_obj %}
-  </div>
-
-
-  <div style="margin-top: 10px" id="admin_feed_add" class="rounded">
-    <form method="get" action="">
-      <strong>Search Your Sources</strong>
-      <input class="livesearch_feed_url"
-             name="q" />
-      <button type="submit" class="med_button"><span>Search</span></button>
-    </form>
-  </div>
-
   <div id="labels">
       <div class="floatleft form_wrap rounded">
     <select id="bulk_action_selector" class="behave">
@@ -101,6 +87,10 @@
       <li><a href="?filter=search">Video Site Searches</a></li>
       <li><a href="?filter=feed">RSS Feeds</a></li>
     </ul>
+  </div>
+
+  <div class="pag">
+    {% pagetabs page_obj %}
   </div>
 
   <form method="post" action="{{ request.get_full_path }}">
