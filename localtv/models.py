@@ -7,11 +7,14 @@ import StringIO
 
 from django.db import models
 from django.contrib import admin
+from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.mail import send_mail
 from django.forms.fields import slug_re
-from django.template import mark_safe
+from django.template import mark_safe, Context, loader
 
 import feedparser
 import vidscraper
@@ -121,9 +124,18 @@ class SiteLocation(models.Model):
     submission_requires_login = models.BooleanField(default=False)
 
     # comments options
-    screen_all_comments = models.BooleanField(default=False)
-    comments_email_admins = models.BooleanField(default=False)
-    comments_required_login = models.BooleanField(default=False)
+    screen_all_comments = models.BooleanField(
+        default=False,
+        help_text="Screen all comments by default?")
+    comments_email_admins = models.BooleanField(
+        default=False,
+        verbose_name="E-mail Admins",
+        help_text=("If True, admins will get an e-mail when a "
+                   "comment is posted."))
+    comments_required_login = models.BooleanField(
+        default=False,
+        verbose_name="Require Login",
+        help_text="If True, comments require the user to be logged in.")
 
     def __unicode__(self):
         return self.site.name
@@ -818,6 +830,41 @@ class Watch(models.Model):
             user = None
 
         Class(video=video, user=user, ip_address=ip).save()
+
+
+class VideoModerator(CommentModerator):
+
+    def allow(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.comments_required_login:
+            return request.user and request.user.is_authenticated()
+        else:
+            return True
+
+    def email(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.comments_email_admins:
+            recipient_list = sitelocation.admins.exclude(email=None).exclude(
+                email='').values('email', flat=True)
+            t = loader.get_template('comments/comment_notification_email.txt')
+            c = Context({ 'comment': comment,
+                          'content_object': video })
+            subject = '[%s] New comment posted on "%s"' % (video.site.name,
+                                                           video)
+            message = t.render(c)
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+                      recipient_list, fail_silently=True)
+
+    def moderate(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.screen_all_comments:
+            return True
+        else:
+            return False
+
+
+moderator.register(Video, VideoModerator)
+
 
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
