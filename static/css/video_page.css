@@ -40,6 +40,10 @@ font-weight: bold;
 width: 540px;
 }
 
+#tags ul.meta_listing a {
+    color: #4190E4;
+}
+
 #tags ul.meta_listing li.item{
 border-bottom: 1px solid #eee;
 padding: 10px 0 !important; 
@@ -539,6 +543,7 @@ line-height: 1.3em
     float: left;
     margin: 5px 200px 5px 0;
     clear: both;
+    width: 320px;
 }
 
 #id_slug, #id_name{

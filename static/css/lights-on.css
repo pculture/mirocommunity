@@ -143,9 +143,10 @@ margin-bottom: 20px !important;
 
 .title_desc {
 padding-top: 4px;
-height: 57px;
+height: 63px;
 margin-bottom: 13px;
 overflow: hidden;
+line-height: 14px;
 }
 
 #admin .title_desc {
@@ -172,14 +173,15 @@ overflow: hidden;
 font-size: 13px;
 font-weight: bold;
 margin-bottom: 5px;
-line-height: 18px;
+line-height: 15px;
 color: #333;
 letter-spacing: .01em;
-max-height: 3.6em;
+max-height: 32px;
+overflow: hidden;
 }
 
 .title_desc a h3, .title_desc h3 a {
-color: #444;
+color: #4190E4;
 text-decoration: none;
 }
 
@@ -200,12 +202,16 @@ font-size: 11px;
 overflow: hidden;
 }
 
+.title_desc + p + p {
+    max-height: 12px;
+}
+
 .video {
 float: left;
 width: 100%;
 padding: 0 0 5px 2px;
 clear: both;
-margin-bottom: 10px;
+margin-bottom: 20px;
 _overflow: hidden;
 }
 
@@ -219,7 +225,8 @@ text-shadow: none !important;
 }
 
 .video p {
-margin-bottom: 5px;
+margin-bottom: 1px;
+color: #aaa;
 }
 .video p a {
 display: block;
@@ -329,7 +336,7 @@ padding-top: 5px;
 }
 
 .byline a {
-    color: #333;
+    color: #BB2515;
 }
 
 .page_title {
@@ -735,6 +742,7 @@ float: left;
 
 #footer p a {
 float: right;
+color: #4190E4;
 }
 
 
@@ -880,7 +888,7 @@ padding: 6px 0 5px 7px;
 
 #close_submit_box {
 line-height: 25px;
-padding-right: 6px;
+padding: 0 6px 0 0 !important;
 display: block;
 color: #333;
 font-size: 11px;
@@ -1138,6 +1146,9 @@ _width: 140px;
 #video_listing_new .title_desc, #video_listing_popular .title_desc {
 _float: right;
 _width: 140px;
+height: 67px;
+margin-bottm: 9px;
+line-height: 15px;
 }
 
 #video_listing_featured .title_desc .desc, #category .title_desc .desc {
@@ -1332,7 +1343,7 @@ padding: 103px 14px 15px 141px;
 width: 400px;
 float: left;
 margin: 12px 0;
-height: 240px;
+height: 235px;
 padding-left: 10px;
 overflow: hidden;
 }
@@ -1396,6 +1407,10 @@ float: left;
 
 .show_main {
 display: none;
+}
+
+.show_admin {
+    color: #4190E4;
 }
 
 #admin .show_main {
@@ -2346,6 +2361,10 @@ font-size: 11px;
 
 .help {
 display: none;
+}
+
+.help a {
+    color: #4190E4;
 }
 
 #admin .help {
