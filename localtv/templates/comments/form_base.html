@@ -30,6 +30,9 @@
   <input type="hidden" name="email" value="{{ request.user.email }}">
   <input type="hidden" name="url" value="{{ request.user.openiduser.url }}">
   {% endif %}
+  {% if not sitelocation.screen_all_comments %}
+  <input type="hidden" name="next" value="{{ form.target_object.get_absolute_url }}" />
+  {% endif %}
   <p class="submit">
     <input name="submit" class="submit-post floatright" value="Post" type="image" src="{% versioned "/images/post.png" %}">
     <input name="preview" class="submit-preview floatleft" value="Preview" type="image" src="{% versioned "/images/preview.png" %}">

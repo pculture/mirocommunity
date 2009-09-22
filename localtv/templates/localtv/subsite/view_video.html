@@ -160,7 +160,6 @@
     <h2 class="clear post-comment-title">Post a comment</h2>
     {% get_comment_form for current_video as comment_form %}
     <form action="{% comment_form_target %}" method="POST">
-      <input type="hidden" name="next" value="{{ current_video.get_absolute_url }}">
       {% with comment_form as form %}
       {% include "comments/form_base.html" %}
       {% endwith %}
