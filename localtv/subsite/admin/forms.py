@@ -342,7 +342,7 @@ class EditMiscDesignForm(forms.Form):
         sitelocation.display_submit_button = \
             self.cleaned_data['display_submit_button']
         sitelocation.submission_requires_login = \
-            self.cleaned_data['submission_`requires_login']
+            self.cleaned_data['submission_requires_login']
         sitelocation.save()
 
 
