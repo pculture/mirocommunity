@@ -68,7 +68,8 @@ class MetasearchVideo(object):
     def __init__(self, name, description,
                  tags=None, file_url=None,
                  website_url=None, thumbnail_url=None, embed_code='',
-                 flash_enclosure_url=None, publish_date=None, id=None):
+                 flash_enclosure_url=None, publish_date=None, id=None,
+                 video_service_user=None, video_service_url=None):
         self.name = name.strip()
         self.description = sanitize(description,
                                     extra_filters=['img'])
@@ -92,6 +93,8 @@ class MetasearchVideo(object):
         self.embed_code = embed_code or ''
         self.flash_enclosure_url = flash_enclosure_url or ''
         self.publish_date = publish_date
+        self.video_service_user = video_service_user or ''
+        self.video_service_url = video_service_url or ''
 
         ## NOTE: This ID is only for ordering/hashtable purposes, not
         ## the id this should have once it becomes a model
@@ -116,7 +119,9 @@ class MetasearchVideo(object):
             thumbnail_url=self.thumbnail_url,
             embed_code=self.embed_code,
             flash_enclosure_url=self.flash_enclosure_url,
-            when_published=self.publish_date)
+            when_published=self.publish_date,
+            video_service_user=self.video_service_user,
+            video_service_url=self.video_service_url)
 
         video.save()
 
@@ -149,7 +154,9 @@ class MetasearchVideo(object):
             embed_code=vidscraper_dict.get('embed'),
             flash_enclosure_url=vidscraper_dict.get('flash_enclosure_url'),
             publish_date=vidscraper_dict.get('publish_date'),
-            id=vidscraper_dict.get('id'))
+            id=vidscraper_dict.get('id'),
+            video_service_user=vidscraper_dict.get('user'),
+            video_service_url=vidscraper_dict.get('user_url'))
 
     def when(self):
         return self.publish_date
