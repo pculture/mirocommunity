@@ -342,6 +342,14 @@ class EditMiscDesignForm(forms.Form):
             self.cleaned_data['submission_`requires_login']
         sitelocation.save()
 
+
+class EditCommentsForm(forms.ModelForm):
+    class Meta:
+        model = models.SiteLocation
+        fields = ('screen_all_comments', 'comments_email_admins',
+                  'comments_required_login')
+
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = models.Category

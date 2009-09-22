@@ -20,7 +20,8 @@ def render_edit_design(request, context):
 def edit_design(request, sitelocation=None):
     context = {'title_form': forms.EditTitleForm.create_from_sitelocation(sitelocation),
                'sidebar_form': forms.EditSidebarForm.create_from_sitelocation(sitelocation),
-               'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(sitelocation)}
+               'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(sitelocation),
+               'comment_form': forms.EditCommentsForm(instance=sitelocation)}
     if request.method == 'GET':
         return render_edit_design(request, context)
     else:
@@ -47,6 +48,14 @@ def edit_design(request, sitelocation=None):
                 return redirect()
             else:
                 context['misc_form'] = form
+                return render_edit_design(request, context)
+        elif 'type_comment' in request.POST:
+            form = forms.EditCommentsForm(request.POST, instance=sitelocation)
+            if form.is_valid():
+                form.save()
+                return redirect()
+            else:
+                context['comment_form'] = form
                 return render_edit_design(request, context)
         elif 'delete_background' in request.POST:
             if sitelocation.background:
