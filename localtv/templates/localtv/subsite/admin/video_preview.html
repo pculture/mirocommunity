@@ -1,11 +1,28 @@
-{% load video i18n filters %}
+{% load video i18n filters editable_widget %}
 
-{% if current_video.name %}
-  <h2 class="vid_title">{{ current_video.name }}</h2>
-{% else %}
-  <h2 class="vid_title">{% trans "(no title)" %}</h2>
-{% endif %}
-<span class="date">{% blocktrans with current_video.when|simpletimesince as timesince %}{{ timesince }} ago{% endblocktrans %}</span>
+<div class="vid_title">
+  {% if not current_video.metasearch_vid %}
+  {% editable_widget current_video "name" %}
+  {% else %}
+  <h2>
+    {% if current_video.name %}
+    {{ current_video.name }}
+    {% else %}
+    {% trans "(no title)" %}
+    {% endif %}
+  </h2>
+  {% endif %}
+</div>
+
+<span class="date">
+    {% if not current_video.metasearch_vid %}
+    {% editable_widget current_video "when_published" %}
+    {% else %}
+    {% with current_video as instance %}
+    {% include "localtv/subsite/display_templates/video_when_published.html" %}
+    {% endwith %}
+    {% endif %}
+</span>
 
 <div id="video_wrapper">
   {% if current_video.embed_code %}
@@ -13,38 +30,41 @@
   {% else %}
   {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
   {% endif %}
-</div>        
-
-<div class="description">
-  {{ current_video.description|sanitize }}
 </div>
 
-<div id="tags">
-  {% if current_video.categories.objects.count %}
-    <h3>Categories - </h3>
-  
-    <ul>
-      {% for category in current_video.categories.objects.all %}
-        <li>{{ category.name }}</li> 
-      {% endfor %}
-    </ul>
-  {% endif %}
-  
-  {% if current_video.tags.objects.count %}
-    <h3>Tags - </h3>
-  
-    <ul>
-      {% for tag in current_video.tags.objects.all %}
-        <li>{{ tag.name }}</li> 
-      {% endfor %}
-    </ul>
-  {% endif %}
+ {% if not current_video.metasearch_vid %}
+ {% editable_widget current_video "description" %}
+ {% else %}
+ <div class="description">
+   {{ current_video.description|sanitize }}
+ </div>
+ {% endif %}
 
+<div id="tags">
+  <ul class="meta_listing">
+    {% if not current_video.metasearch_vid %}
+    <li class="item">
+      {% editable_widget current_video "categories" %}
+    </li>
+    <li class="item">
+      {% editable_widget current_video "tags" %}
+    </li>
+    {% endif %}
+    <li class="item">
+      {% if not current_video.metasearch_vid %}
+      {% editable_widget current_video "website_url" %}
+      {% else %}
+      {% with current_video as instance %}
+      {% include "localtv/subsite/display_templates/video_website_url.html" %}
+      {% endwith %}
+      {% endif %}
+    </li>
+  </ul>
+</div>
 <!--  <h3>{{ current_video|pprint }}</h3>-->
   {% if currrent_video.submitter %}<h3>Submitted by {{ current_video.submitter }}</h3>{% endif %}
   {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
   {% if current_video.feed %}<h3>From feed {{ current_video.feed }}</h3>{% endif %}
-  <h3>Website URL {{ current_video.website_url|urlize }}</h3>
   
   <div class="clear">&nbsp;</div>
 </div>
