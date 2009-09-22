@@ -22,33 +22,16 @@ VIDEO_SERVICE_TITLES = (
 @require_site_admin
 @get_sitelocation
 def add_feed(request, sitelocation=None):
-    if 'service' in request.POST:
-        video_service_form = forms.VideoServiceForm(request.POST)
-        if video_service_form.is_valid():
-            feed_url = video_service_form.feed_url()
-        else:
-            return HttpResponseBadRequest(
-                'You must provide a video service username')
-    else:
-        feed_url = request.POST.get('feed_url')
     page_num = request.POST.get('page')
 
-    if not feed_url:
-        return HttpResponseBadRequest(
-            "You must provide a feed URL")
+    add_form = forms.AddFeedForm(request.POST)
 
-    if not url_re.match(feed_url):
-        return HttpResponseBadRequest(
-            "Not a valid feed URL")
+    if not add_form.is_valid():
+        return HttpResponseBadRequest(add_form['feed_url'].errors.as_text())
 
-    if models.Feed.objects.filter(
-            feed_url=feed_url,
-            site=sitelocation.site,
-            status=models.FEED_STATUS_ACTIVE).count():
-        return HttpResponseBadRequest(
-            "That feed already exists on this site")
+    feed_url = add_form.cleaned_data['feed_url']
+    parsed_feed = add_form.cleaned_data['parsed_feed']
 
-    parsed_feed = feedparser.parse(feed_url)
     title = parsed_feed.feed.get('title')
     if title is None:
         return HttpResponseBadRequest('That URL does not look like a feed.')

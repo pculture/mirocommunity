@@ -1,3 +1,6 @@
+import re
+import feedparser
+
 from django import forms
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory, BaseModelFormSet
@@ -458,49 +461,53 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-class AddUserForm(forms.Form):
-    user = forms.CharField(
-        help_text=("You can enter a user name, an OpenID, or an e-mail "
-                   "address in this field"))
 
-    def clean_user(self):
-        value = self.cleaned_data['user']
+class AddFeedForm(forms.Form):
+    SERVICE_PROFILES = (
+        (re.compile(
+                r'^(http://)?(www\.)?youtube\.com/profile\?(\w+=\w+&)*'
+                r'user=(?P<name>\w+)'),
+         'youtube'),
+        (re.compile(r'^(http://)?(www\.)?youtube\.com/(?P<name>\w+)$'),
+         'youtube'),
+        (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
+        (re.compile(r'^(http://)?(www\.)?vimeo\.com/(?P<name>\w+)'), 'vimeo'),
+        )
 
-        if value.startswith('http://') or value.startswith('https://'):
-            # possibly an OpenID
-            openid_users = models.OpenIdUser.objects.filter(url=value)
-            if openid_users:
-                return [oid.user for oid in openid_users]
+    SERVICE_FEEDS = {
+        'youtube': 'http://www.youtube.com/rss/user/%s/videos.rss',
+        'blip': 'http://%s.blip.tv/rss',
+        'vimeo': 'http://www.vimeo.com/%s/videos/rss',
+        }
 
-        if '@' in value:
-            # possibly an e-mail address
-            users = User.objects.filter(email=value)
-            if users:
-                return users
+    feed_url = forms.URLField(required=True,
+                              verify_exists=True,
+                              widget=forms.TextInput(
+            attrs={'class': 'livesearch_feed_url'}))
 
-        users = User.objects.filter(username=value)
-        if users:
-            return users
-        else:
-            raise forms.ValidationError('Could not find a matching user')
+    def clean_feed_url(self):
+        value = self.cleaned_data['feed_url']
+        for regexp, service in self.SERVICE_PROFILES:
+            match = regexp.match(value)
+            if match:
+                username = match.group('name')
+                value = self.SERVICE_FEEDS[service] % username
+                break
 
-class VideoServiceForm(forms.Form):
-    URLS = (
-        ('YouTube', 'http://www.youtube.com/rss/user/%s/videos.rss'),
-        ('blip.tv', 'http://%s.blip.tv/rss'),
-        ('Vimeo', 'http://www.vimeo.com/%s/videos/rss'),
-         )
-    service = forms.ChoiceField(
-        choices = enumerate([service for service, url in URLS]))
-    username = forms.CharField(
-        initial="e.g. openvideoalliance")
+        parsed = feedparser.parse(value)
+        if not parsed.feed:
+            raise forms.ValidationError('It does not appear that %s is an '
+                                        'RSS/Atom feed URL.')
 
-    def __init__(self, *args, **kwargs):
-        forms.Form.__init__(self, *args, **kwargs)
-        self.fields['username'].widget.attrs.update(
-            {'onfocus': 'clearText(this)',
-             'class': 'large_field'})
+        site = Site.objects.get_current()
+        if models.Feed.objects.filter(feed_url=value,
+                                      site=site,
+                                      status=models.FEED_STATUS_ACTIVE):
+            raise forms.ValidationError(
+                'That feed already exists on this site.')
 
-    def feed_url(self):
-        index = int(self.cleaned_data['service'])
-        return self.URLS[index][1] % self.cleaned_data['username']
+        # drop the parsed data into cleaned_data so that other code can re-use
+        # the data
+        self.cleaned_data['parsed_feed'] = parsed
+
+        return value

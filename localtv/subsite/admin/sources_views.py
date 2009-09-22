@@ -142,6 +142,7 @@ def manage_sources(request, sitelocation=None):
 
     return render_to_response('localtv/subsite/admin/manage_sources.html',
                               {
+            'add_feed_form': forms.AddFeedForm(),
             'page_obj': page,
             'paginator': paginator,
             'headers': headers,

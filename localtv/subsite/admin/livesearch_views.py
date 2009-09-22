@@ -150,7 +150,6 @@ def livesearch_response(request, sitelocation):
         {'current_video': current_video,
          'page_obj': page,
          'video_list': page.object_list,
-         'video_service_form': forms.VideoServiceForm(),
          'query_string': query_string,
          'order_by': order_by,
          'is_saved_search': is_saved_search,
