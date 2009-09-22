@@ -85,8 +85,8 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
 class BooleanRadioField(forms.BooleanField):
     widget = forms.RadioSelect
     choices = (
-        ('1', 'On'),
-        ('0', 'Off'))
+        (True, 'On'),
+        (False, 'Off'))
 
     def __init__(self, *args, **kwargs):
         forms.BooleanField.__init__(self, *args, **kwargs)
@@ -141,6 +141,8 @@ class SourceForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        if 'auto_approve' in self.initial:
+            self.initial['auto_approve'] = bool(self.initial['auto_approve'])
         site = Site.objects.get_current()
         self.fields['auto_categories'].queryset = \
             self.fields['auto_categories'].queryset.filter(
