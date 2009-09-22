@@ -156,7 +156,7 @@
       {% endfor %}
     </ul>
 
-
+    {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
     <h2 class="clear post-comment-title">Post a comment</h2>
     {% get_comment_form for current_video as comment_form %}
     <form action="{% comment_form_target %}" method="POST">
@@ -165,6 +165,7 @@
       {% include "comments/form_base.html" %}
       {% endwith %}
     </form>
+    {% endif %}
   </div>
 
   <div id="sidebar">
