@@ -120,6 +120,11 @@ class SiteLocation(models.Model):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
 
+    # comments options
+    screen_all_comments = models.BooleanField(default=False)
+    comments_email_admins = models.BooleanField(default=False)
+    comments_required_login = models.BooleanField(default=False)
+
     def __unicode__(self):
         return self.site.name
 
