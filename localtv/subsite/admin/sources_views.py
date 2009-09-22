@@ -116,26 +116,31 @@ def manage_sources(request, sitelocation=None):
                                                 # changing the dictionary
                 if bulk_edits[key] in ['', None]:
                     del bulk_edits[key]
-            to_delete = set()
             bulk_action = request.POST.get('bulk_action', '')
-            if bulk_action:
-                bulk_edits['action'] = bulk_action
-            if bulk_edits:
-                for form in formset.initial_forms:
-                    if not form.cleaned_data['bulk']:
+            for form in formset.initial_forms:
+                if form.cleaned_data['bulk']:
+                    if bulk_action == 'remove':
+                        form.instance.delete()
                         continue
-                    for key, value in bulk_edits.items():
-                        if key == 'action': # do something to the video
-                            if value == 'remove':
-                                to_delete.add(form.instance)
-                        else:
+                    if bulk_edits:
+                        for key, value in bulk_edits.items():
                             form.cleaned_data[key] = value
-            formset.forms = formset.initial_forms # get rid of the extra bulk
-                                                  # edit form
 
-            formset.save()
-            for instance in to_delete:
-                instance.delete()
+                # if the categories or authors changed, update unchanged videos
+                # to the new values
+                old_categories = list(form.instance.auto_categories.all())
+                old_authors = list(form.instance.auto_authors.all())
+                form.save()
+                new_categories = list(form.instance.auto_categories.all())
+                new_authors = list(form.instance.auto_authors.all())
+                if old_categories != new_categories or \
+                        old_authors != new_authors:
+                    for v in form.instance.video_set.all():
+                        if list(v.categories.all()) == old_categories or \
+                                list(v.authors.all()) == old_authors:
+                            v.categories = new_categories
+                            v.authors = new_authors
+                            v.save()
             return HttpResponseRedirect(request.path + '?successful')
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
