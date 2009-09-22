@@ -1,7 +1,8 @@
 from datetime import datetime
 
+from django.core.paginator import Paginator, EmptyPage
 from django.forms.formsets import DELETION_FIELD_NAME
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
@@ -29,6 +30,16 @@ def bulk_edit(request, sitelocation=None):
 
     sort = request.GET.get('sort', 'name')
     videos = videos.order_by(sort)
+
+    video_paginator = Paginator(videos, 50)
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        page = video_paginator.page(video_paginator.num_pages)
+
+    videos = videos[page.start_index():page.end_index()]
     formset = forms.VideoFormSet(queryset=videos)
     headers = [
         sort_header('name', 'Video Title', sort),
@@ -80,6 +91,7 @@ def bulk_edit(request, sitelocation=None):
     return render_to_response('localtv/subsite/admin/bulk_edit.html',
                               {'formset': formset,
                                'headers': headers,
+                               'page': page,
                                'categories': models.Category.objects.filter(
                 site=sitelocation.site)},
                               context_instance=RequestContext(request))

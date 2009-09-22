@@ -454,7 +454,7 @@ body.category_admin a.categories,
 body.user_admin a.users,
 body.searches a.saved,
 body.incomingfeeds a.watched,
-body.bulkedit a.bulk,
+body.bulkedit a.bulkedit,
 body#categories_page li.categories a{
 background: url(../images/nav_right.png) right -69px no-repeat !important;
 _background: url(../images/nav_right.gif) right -69px no-repeat !important;
@@ -475,7 +475,7 @@ body.category_admin a.categories span,
 body.user_admin a.users span,
 body.searches a.saved span,
 body.incomingfeeds a.watched span,
-body.bulkedit a.bulk span,
+body.bulkedit a.bulkedit span,
 body#categories_page li.categories a span{
 background-position: left -69px !important;
 _background: url(../images/nav_left.gif) left -69px no-repeat !important;

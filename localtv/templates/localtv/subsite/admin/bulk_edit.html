@@ -3,7 +3,7 @@
 {% block body_class %}bulkedit{% endblock body_class %}
 
 
-{% load i18n versioned %}
+{% load i18n versioned pagetabs %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Bulk Edit" %}{% endblock %}
 {% block head %}{{ block.super }}
@@ -35,8 +35,10 @@
     <button class="med_button"><span>Filter</span></button>
   </div>
   </form>
-  <form method="POST" action="">
 
+  
+  <form method="POST" action="{{ request.get_full_path }}">
+    {% pagetabs page %}
   <table id="massedit" class="rounded">
 
     <tbody>
@@ -214,7 +216,8 @@
       {% endfor %}
     </tbody>
   </table>
-  </form>
+  {% pagetabs page %}
+</form>
 </div>
 {% endblock content %}
 
