@@ -34,8 +34,8 @@ def approve_reject(request, sitelocation=None):
         except ValueError:
             return HttpResponseBadRequest('Not a page number')
         except EmptyPage:
-            return HttpResponseBadRequest(
-                'Page number request exceeded available pages')
+            page = video_paginator.page(video_paginator.num_pages)
+
 
         current_video = None
         if page.object_list:
