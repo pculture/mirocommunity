@@ -1,5 +1,5 @@
 function showEdit(obj, show) {
-    parent = $(obj).parent().parent().parent();
+    parent = $(obj).parents('tr');
     if (show) {
         other = parent.next();
     } else {
