@@ -1,17 +1,11 @@
 {% extends "localtv/subsite/admin/base.html" %}
 
-{% load i18n versioned %}
+{% load i18n versioned filters %}
 
 {% block head %}
   {{ block.super }}
   <script type="text/javascript" src="{% versioned "/js/urlify.js" %}"></script>
-  <script type="text/javascript">
-      function edit_category(event) {
-          if (event.target.nodeName === 'INPUT') {
-              return false;
-          }
-          $(event.target).parent().hide().next().show();
-      }
+  <script type="text/javascript" src="{% versioned "/js/bulk_edit.js" %}">
   </script>
 {% endblock %}
 {% block title %}{{ block.super }} - {% trans "Admin - Categories" %}{% endblock %}
@@ -29,6 +23,8 @@
 
   <div id="labels">
     <form action="" method="POST" enctype="multipart/form-data">
+      {{ formset.management_form }}
+      {{ formset.non_form_errors }}
       <div class="actions">
       	<select name="action">
         	<option value="">Bulk Actions</option>
@@ -46,9 +42,57 @@
           <th><span>Videos</span></th>
         </tr>
       </thead>
-      {% for category in categories %}
-      <tr valign="middle" class="{% cycle "grey" "white" %}" onclick="edit_category(event);" {% if category.form.errors %}style="display: none;"{% endif %}>
-      {% include "localtv/subsite/admin/category_row.html" %}
+      {% for form in formset.forms %}
+      <tr valign="middle" class="{% cycle "grey" "white" %}" {% if form.errors %}style="display: none;"{% endif %}>
+        <td valign="middle" class="checkbox">{{ form.bulk }}</td>
+        <td valign="middle">
+          {{ form.instance.dashes }}{{ form.instance.name }}
+          <div class="actions">
+            <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+          </div>
+          
+        </td>
+        <td valign="middle">{{ form.instance.description|sanitize }}</td>
+        <td valign="middle">{{ form.instance.slug }}</td>
+        {% with form.instance.video_set.count as count %}
+        <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
+        {% endwith %}
+      </tr>
+      <tr class="editing" {% if not form.errors %}style="display: none;"{% endif %}
+        <td colspan="6">
+          {{ form.non_field_errors }}
+          {{ form.name.errors }}
+          <h3>{{ form.name }} <a href="{{ request.get_full_path }}" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          {{ form.id }}
+          <table style="width: 100%; margin-bottom: 0">
+            <tr>
+              <td>
+                {{ form.logo.errors }}
+                {{ form.logo.label }}
+                {{ form.logo }}
+              </td>
+              <td rowspan="4">
+                {{ form.description.label }}
+                {{ form.description }}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                {{ form.parent.errors }}
+                {{ form.parent.label }}
+                {{ form.parent }}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                {{ form.slug.errors }}
+                {{ form.slug.label }}
+                {{ form.slug }}
+              </td>
+            </tr>
+          </table>
+          <button class="med_button marginbottom behave" type="submit" name="submit" value="Save"><span>Update Video</span></button>
+        </td>
       </tr>
       {% endfor %}
     </table>

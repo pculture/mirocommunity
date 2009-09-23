@@ -367,6 +367,22 @@ class CategoryForm(forms.ModelForm):
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=site)
 
+
+class BaseCategoryFormSet(BaseModelFormSet):
+
+    def add_fields(self, form, i):
+        BaseModelFormSet.add_fields(self, form, i)
+        if i < self.initial_form_count():
+            form.fields['bulk'] = forms.BooleanField(required=False)
+
+
+CategoryFormSet = modelformset_factory(models.Category,
+                                       form=CategoryForm,
+                                       formset=BaseCategoryFormSet,
+                                       can_delete=True,
+                                       extra=0)
+
+
 class AuthorForm(forms.ModelForm):
     role = forms.ChoiceField(choices=(
             ('user', 'User'),
