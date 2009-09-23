@@ -486,7 +486,7 @@ class AddFeedForm(forms.Form):
                 r'^(http://)?(www\.)?youtube\.com/profile\?(\w+=\w+&)*'
                 r'user=(?P<name>\w+)'),
          'youtube'),
-        (re.compile(r'^(http://)?(www\.)?youtube\.com/(?P<name>\w+)$'),
+        (re.compile(r'^(http://)?(www\.)?youtube\.com/(user/)?(?P<name>\w+)$'),
          'youtube'),
         (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
         (re.compile(r'^(http://)?(www\.)?vimeo\.com/(?P<name>\w+)'), 'vimeo'),
