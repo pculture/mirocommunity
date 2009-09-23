@@ -9,7 +9,7 @@ from django.template.context import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
-from localtv.util import sort_header
+from localtv.util import sort_header, MockQueryset
 from localtv.subsite.admin import forms
 
 VIDEO_SERVICE_TITLES = (
@@ -21,25 +21,6 @@ VIDEO_SERVICE_TITLES = (
 ## -------------------
 ## Source administration
 ## -------------------
-
-class MockQueryset(object):
-
-    def __init__(self, objects):
-        self.objects = objects
-        self.ordered = True
-
-    def _clone(self):
-        return self
-
-    def __len__(self):
-        return len(self.objects)
-
-    def __iter__(self):
-        return iter(self.objects)
-
-    def __getitem__(self, k):
-        return self.objects[k]
-
 
 @require_site_admin
 @get_sitelocation

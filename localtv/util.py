@@ -247,3 +247,24 @@ class HttpMixedReplaceResponse(HttpResponse):
          HttpResponse.__init__(self, mixed_replace_generator(generator, bound),
                                content_type=('multipart/x-mixed-replace;'
                                              'boundary=%s' % bound))
+
+class MockQueryset(object):
+    """
+    Wrap a list of objects in an object which pretends to be a QuerySet.
+    """
+
+    def __init__(self, objects):
+        self.objects = objects
+        self.ordered = True
+
+    def _clone(self):
+        return self
+
+    def __len__(self):
+        return len(self.objects)
+
+    def __iter__(self):
+        return iter(self.objects)
+
+    def __getitem__(self, k):
+        return self.objects[k]
