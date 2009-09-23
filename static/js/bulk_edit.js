@@ -4,6 +4,13 @@ function showEdit(obj, show) {
         other = parent.next();
     } else {
         other = parent.prev();
+        // reset the form fields
+        parent.find('input[type=text], input[type=file], textarea').each(function() {
+            this.value = this.defaultValue;
+        });
+        parent.find('input[type=checkbox], input[type=radio]').each(function() {
+            this.checked = this.defaultChecked;
+        });
     }
     parent.hide(); other.show();
     return false;
