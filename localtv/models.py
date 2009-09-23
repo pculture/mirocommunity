@@ -845,7 +845,7 @@ class VideoModerator(CommentModerator):
         sitelocation = SiteLocation.objects.get(site=video.site)
         if sitelocation.comments_email_admins:
             recipient_list = sitelocation.admins.exclude(email=None).exclude(
-                email='').values('email', flat=True)
+                email='').values_list('email', flat=True)
             t = loader.get_template('comments/comment_notification_email.txt')
             c = Context({ 'comment': comment,
                           'content_object': video })
