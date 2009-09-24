@@ -244,7 +244,7 @@ class EditTitleForm(forms.Form):
     """
     """
     title = forms.CharField(label="Site Title")
-    tagline = forms.CharField(label="Site Tagline")
+    tagline = forms.CharField(label="Site Tagline", required=False)
     about = forms.CharField(label="About Us Page (use html)",
                             widget=forms.Textarea, required=False)
 
