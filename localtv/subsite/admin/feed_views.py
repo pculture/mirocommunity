@@ -1,16 +1,15 @@
 import datetime
-import feedparser
 import re
 
 from django.core.urlresolvers import reverse
-from django.forms.fields import url_re
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render_to_response
+from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
-from localtv import models
+from localtv import models, util
 from localtv.subsite.admin import forms
 
 
@@ -22,6 +21,15 @@ VIDEO_SERVICE_TITLES = (
 @require_site_admin
 @get_sitelocation
 def add_feed(request, sitelocation=None):
+    def gen():
+        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+                                 {'feed_url': request.POST.get('feed_url')},
+                                 context_instance=RequestContext(request))
+        yield add_feed_response(request, sitelocation)
+    return util.HttpMixedReplaceResponse(request, gen())
+
+
+def add_feed_response(request, sitelocation=None):
     page_num = request.POST.get('page')
 
     add_form = forms.AddFeedForm(request.POST)
