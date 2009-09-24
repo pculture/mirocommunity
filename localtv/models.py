@@ -202,7 +202,7 @@ class Feed(Source):
       - feed_url: The location of this field
       - site: which site this feed belongs to
       - name: human readable name for this feed
-      - webpage: webpage that this feed's content is associated with
+      - webpage: webpage that this feed\'s content is associated with
       - description: human readable description of this item
       - last_updated: last time we ran self.update_items()
       - when_submitted: when this feed was first registered on this site
@@ -853,7 +853,7 @@ class VideoModerator(CommentModerator):
                 email='').values_list('email', flat=True)
             superuser_list = User.objects.filter(is_superuser=True).exclude(
                 email=None).exclude(email='').values_list('email', flat=True)
-            recipient_list = admin_list + superuser_list
+            recipient_list = set(admin_list) | set(superuser_list)
             t = loader.get_template('comments/comment_notification_email.txt')
             c = Context({ 'comment': comment,
                           'content_object': video })
