@@ -30,15 +30,14 @@ def add_feed(request, sitelocation=None):
 
 
 def add_feed_response(request, sitelocation=None):
-    page_num = request.POST.get('page')
-
     add_form = forms.AddFeedForm(request.POST)
 
     if not add_form.is_valid():
         return HttpResponseBadRequest(add_form['feed_url'].errors.as_text())
 
     feed_url = add_form.cleaned_data['feed_url']
-    parsed_feed = add_form.cleaned_data['parsed_feed']
+    parsed_feed = request.session['parsed_feed'] = \
+        add_form.cleaned_data['parsed_feed']
 
     title = parsed_feed.feed.get('title')
     if title is None:
@@ -49,8 +48,9 @@ def add_feed_response(request, sitelocation=None):
             title = match.group(1)
             break
 
-    defaults = {
+    defaults = request.session['defaults'] = {
         'name': title,
+        'feed_url': feed_url,
         'webpage': parsed_feed.feed.get('link', ''),
         'description': parsed_feed.feed.get('summary', ''),
         'when_submitted': datetime.datetime.now(),
@@ -60,24 +60,71 @@ def add_feed_response(request, sitelocation=None):
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
+    video_count = request.session['video_count'] = int(
+        parsed_feed.feed.get('opensearch_totalresults',
+                             parsed_feed.feed.get('totalresults',
+                                                  len(parsed_feed.entries))))
+
+    form = forms.SourceForm(instance=models.Feed(**defaults))
+    return render_to_response('localtv/subsite/admin/add_feed.html',
+                              {'form': form,
+                               'video_count': video_count},
+                              context_instance=RequestContext(request))
+
+
+@require_site_admin
+@get_sitelocation
+def add_feed_done(request, sitelocation):
+    if 'cancel' in request.POST:
+        # clean up the session
+        del request.session['parsed_feed']
+        del request.session['video_count']
+        del request.session['defaults']
+
+        return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
+
+    def gen():
+        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+                                 {'feed_url': request.POST.get('feed_url')},
+                                 context_instance=RequestContext(request))
+        yield add_feed_done_response(request, sitelocation)
+    return util.HttpMixedReplaceResponse(request, gen())
+
+def add_feed_done_response(request, sitelocation=None):
+    defaults = request.session['defaults']
+
+    form = forms.SourceForm(request.POST)
+    if not form.is_valid():
+        return render_to_response(
+            'localtv/subsite/admin/add_feed.html',
+            {'form': form,
+             'video_count': request.session['video_count']},
+            context_instance=RequestContext(request))
+
     feed, created = models.Feed.objects.get_or_create(
-        feed_url=feed_url,
+        feed_url=defaults['feed_url'],
         site=sitelocation.site,
-        defaults = defaults)
+        defaults=defaults)
 
     if not created:
         for key, value in defaults.items():
             setattr(feed, key, value)
-        feed.save()
 
-    feed.update_items()
+    for key, value in form.cleaned_data.items():
+        setattr(feed, key, value)
+    feed.save()
+
+    feed.update_items(parsed_feed=request.session['parsed_feed'])
+
+    # clean up the session
+    del request.session['parsed_feed']
+    del request.session['video_count']
+    del request.session['defaults']
 
     if feed.auto_approve:
         reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
     else:
         reverse_url = reverse('localtv_admin_manage_page')
-        if page_num:
-            reverse_url += '?page=' + page_num
     return HttpResponseRedirect(reverse_url)
 
 

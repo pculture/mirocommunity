@@ -32,6 +32,8 @@ urlpatterns += patterns(
     'localtv.subsite.admin.feed_views',
     (r'^manage/feed/add$', 'add_feed',
      {}, 'localtv_admin_feed_add'),
+    (r'^manage/feed/add/done$', 'add_feed_done',
+     {}, 'localtv_admin_feed_add_done'),
     (r'^manage/feed/remove$', 'feed_stop_watching',
      {}, 'localtv_admin_feed_remove'),
     (r'^manage/feed/auto_approve/(\d+)$', 'feed_auto_approve',
