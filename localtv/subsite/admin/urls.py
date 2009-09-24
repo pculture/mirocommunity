@@ -34,7 +34,7 @@ urlpatterns += patterns(
      {}, 'localtv_admin_feed_add'),
     (r'^manage/feed/remove$', 'feed_stop_watching',
      {}, 'localtv_admin_feed_remove'),
-    (r'^manage/feed/auto_approve$', 'feed_auto_approve',
+    (r'^manage/feed/auto_approve/(\d+)$', 'feed_auto_approve',
      {}, 'localtv_admin_feed_auto_approve'))
 
 urlpatterns += patterns(
@@ -45,6 +45,8 @@ urlpatterns += patterns(
      {}, 'localtv_admin_search_add'),
     (r'^manage/search/remove$', 'remove_saved_search',
      {}, 'localtv_admin_search_remove'),
+    (r'^manage/search/auto_approve/(\d+)$', 'search_auto_approve',
+     {}, 'localtv_admin_search_auto_approve'),
     (r'^add/approve/$', 'approve',
      {}, 'localtv_admin_search_video_approve'),
     (r'^add/display/$', 'display',

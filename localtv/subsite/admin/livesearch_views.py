@@ -2,7 +2,7 @@ import datetime
 
 from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
@@ -230,3 +230,17 @@ def remove_saved_search(request, sitelocation=None):
     else:
         return HttpResponseBadRequest(
             'Saved search of that query does not exist')
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def search_auto_approve(request, search_id, sitelocation=None):
+    search = get_object_or_404(
+        models.SavedSearch,
+        id=search_id,
+        site=sitelocation.site)
+
+    search.auto_approve = not request.GET.get('disable')
+    search.save()
+
+    return HttpResponse('SUCCESS')

@@ -100,10 +100,10 @@ def feed_stop_watching(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
-def feed_auto_approve(request, sitelocation=None):
+def feed_auto_approve(request, feed_id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
-        id=request.GET.get('feed_id'),
+        id=feed_id,
         site=sitelocation.site)
 
     feed.auto_approve = not request.GET.get('disable')

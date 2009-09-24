@@ -154,7 +154,12 @@
           {% endif %}
           {% endwith %}
           {% endif %}</td>
-        <td class="last {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><span class="on" href="#">On</span> <span class="off" href="#">Off</span></td>
+          {% if form.instance.query_string %}
+          {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
+          {% else %}
+          {% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
+          {% endif %}
+        <td class="last {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><a class="on" href="{{ auto_approve_url }}">On</span> <a class="off" href="{{ auto_approve_url }}?disable=true">Off</span></td>
       </tr>
       <tr class="editing" {% if not form.errors%}style="display: none;"{% endif %}>
         <td colspan="2">
