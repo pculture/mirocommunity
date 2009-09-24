@@ -128,7 +128,6 @@ class SourceChoiceField(forms.ModelChoiceField):
 
 
 class SourceForm(forms.ModelForm):
-    bulk = forms.BooleanField(required=False)
     auto_categories = BulkChecklistField(required=False,
                                     queryset=models.Category.objects)
     auto_authors = BulkChecklistField(required=False,
@@ -194,6 +193,8 @@ class BaseSourceFormSet(BaseModelFormSet):
             initial = None
         self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
                                               initial=initial)
+        if initial:
+            form.fields['bulk'] = forms.BooleanField(required=False)
         BaseFormSet.add_fields(self, form, index)
 
 
