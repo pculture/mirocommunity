@@ -153,7 +153,8 @@ def video_search(request, sitelocation=None):
             allow_empty=True, template_object_name='video',
             extra_context={
                 'pagetabs_url': reverse('localtv_subsite_search'),
-                'pagetabs_args': urllib.urlencode({'query': query_string})})
+                'pagetabs_args': urllib.urlencode(
+                    {'query': query_string.encode('utf8')})})
 
     else:
         return render_to_response(
