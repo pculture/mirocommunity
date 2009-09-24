@@ -19,6 +19,7 @@ function showEdit(obj, show) {
 function toggleDelete(obj) {
     obj = $(obj);
     obj.next().val('checked');
+    $("#labels form:last").submit();
     $("#labels form:last input[type=submit]:eq(0)").click();
     return false;
 }

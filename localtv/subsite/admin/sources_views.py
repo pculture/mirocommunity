@@ -122,6 +122,8 @@ def manage_sources(request, sitelocation=None):
                             v.categories = new_categories
                             v.authors = new_authors
                             v.save()
+            for form in formset.deleted_forms:
+                form.instance.delete()
             return HttpResponseRedirect(request.path + '?successful')
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
