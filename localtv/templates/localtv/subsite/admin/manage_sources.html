@@ -165,6 +165,7 @@
         <td colspan="2">
           <h3>Quick Edit <a href="{{ request.get_full_path }}" onclick="return showEdit(this, false);">(cancel)</a></h3>
           {{ form.id }}
+          {{ form.non_field_errors }}
           <table>
             <tbody>
               {% for field in form.extra_fields %}
