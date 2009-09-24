@@ -237,7 +237,7 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_subsite_list_feed', [self.pk])
 
-    def update_items(self, verbose=False):
+    def update_items(self, verbose=False, parsed_feed=None):
         """
         Fetch and import new videos from this feed.
         """
@@ -248,7 +248,8 @@ class Feed(Source):
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
 
-        parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+        if parsed_feed is None:
+            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
         for entry in parsed_feed['entries'][::-1]:
             skip = False
             guid = entry.get('guid')
