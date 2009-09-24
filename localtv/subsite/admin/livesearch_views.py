@@ -9,7 +9,6 @@ from vidscraper import metasearch
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models, util
-from localtv.subsite.admin import forms
 
 
 ## ----------
