@@ -60,6 +60,16 @@
             </td>
             </tr>
             <tr>
+              <td colspan="2">
+                <label>Thumb URL</label>
+                {{ form.thumbnail_url }}
+                <div style="float: right; width: 286px;">
+                  or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
+                  <span style="display: none;">{{ form.thumbnail }}</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
               <td>
                 <label class="floatnone">Description</label>
                 {{ form.description }}
