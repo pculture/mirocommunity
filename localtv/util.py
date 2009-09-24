@@ -236,6 +236,18 @@ def mixed_replace_generator(content_generator, bound):
     --boundary
     """
     for response in content_generator:
+        if response.status_code >= 300 and response.status_code < 400:
+            # Some hacks to get redirects to work
+            response['Status'] = str(response.status_code)
+            response.content = (
+                '<html><head>'
+                '<meta http-equiv="redirect" content="0;url=%(Location)s">'
+                '<script type="text/javascript">'
+                'location.href="%(Location)s";</script>'
+                '</head><body>'
+                'You are being redirected.  If it does not work, click '
+                '<a href="%(Location)s">here</a>.'
+                '</html>' % response)
         yield ''.join(('--', bound, '\r\n', str(response)))
     yield ''.join(('--', bound, '--\r\n'))
 
