@@ -237,7 +237,7 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_subsite_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, parsed_feed=None):
+    def update_items(self, verbose=False, parsed_feed=None, bulk=False):
         """
         Fetch and import new videos from this feed.
         """
@@ -250,6 +250,36 @@ class Feed(Source):
 
         if parsed_feed is None:
             parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+
+        if bulk:
+            # we look for opensearch values, and then go grab other feeds with
+            # increasing start-index values
+            def _opensearch_get(key):
+                return parsed_feed.feed.get(
+                    'opensearch_%s' % key,
+                    parsed_feed.feed.get(key, None))
+            startindex = _opensearch_get('startindex')
+            itemsperpage = _opensearch_get('itemsperpage')
+            totalresults = _opensearch_get('totalresults')
+            if startindex and itemsperpage and totalresults:
+                startindex = int(startindex)
+                itemsperpage = int(itemsperpage)
+                totalresults = int(totalresults)
+                if startindex + itemsperpage <= totalresults:
+                    # we're on an interior page
+                    if '?' in self.feed_url:
+                        postfix = '&start-index=%i' % (
+                            startindex + itemsperpage,)
+                    else:
+                        postfix = '?start-index=%i' % (
+                            startindex + itemsperpage,)
+                    print 'getting', self.feed_url + postfix
+                    self.update_items(
+                        verbose=verbose,
+                        parsed_feed=feedparser.parse(
+                            self.feed_url+postfix),
+                        bulk=True)
+
         for entry in parsed_feed['entries'][::-1]:
             skip = False
             guid = entry.get('guid')
@@ -274,7 +304,7 @@ class Feed(Source):
             if video_enclosure:
                 file_url = video_enclosure['href']
 
-            if link:
+            if link and not skip:
                 try:
                     scraped_data = vidscraper.auto_scrape(
                         link,
