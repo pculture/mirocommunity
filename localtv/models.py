@@ -7,6 +7,7 @@ import StringIO
 
 from django.db import models
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.conf import settings
@@ -844,8 +845,12 @@ class VideoModerator(CommentModerator):
     def email(self, comment, video, request):
         sitelocation = SiteLocation.objects.get(site=video.site)
         if sitelocation.comments_email_admins:
-            recipient_list = sitelocation.admins.exclude(email=None).exclude(
+            admin_list = sitelocation.admins.filter(
+                is_superuser=False).exclude(email=None).exclude(
                 email='').values_list('email', flat=True)
+            superuser_list = User.objects.filter(is_superuser=True).exclude(
+                email=None).exclude(email='').values_list('email', flat=True)
+            recipient_list = admin_list + superuser_list
             t = loader.get_template('comments/comment_notification_email.txt')
             c = Context({ 'comment': comment,
                           'content_object': video })
