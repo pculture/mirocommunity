@@ -169,7 +169,10 @@ class Tag(models.Model):
     def __unicode__(self):
         return self.name
 
-
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_list_tag', [self.name])
+    
 class Source(models.Model):
     """
     An abstract base class to represent things which are sources of multiple
