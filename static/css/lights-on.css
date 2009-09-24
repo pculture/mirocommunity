@@ -1782,20 +1782,21 @@ line-height: 1.7em;
 }
 */
 
-#admin #video_wrapper object, #admin #video_wrapper embed {
+#admin #video_wrapper {
+    text-align: center;
+    height: auto;
+}
+
+#admin #video_wrapper object, #admin #video_wrapper embed, #admin #video_wrapper video {
 border: 1px solid;
-float: right;
+float: none;
 width: 400px;
 height: 350px;
 }
 
-
-#admin #video_wrapper, #admin #video_wrapper {
-width: 400px;
-height: 350px;
+#admin .description {
+    clear: both;
 }
-
-
 
 #edit_video_wrapper .editable.thumbnail input {
 margin-right: 10px;
