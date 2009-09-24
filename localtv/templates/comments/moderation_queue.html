@@ -1,9 +1,10 @@
-{% extends "admin/change_list.html" %}
-{% load adminmedia i18n %}
+{% extends "localtv/subsite/admin/base.html" %}
+{% load i18n filters %}
+{% block body_class %}comments{% endblock %}
 
-{% block title %}{% trans "Comment moderation queue" %}{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
 
-{% block extrahead %}
+{% block head %}
   {{ block.super }}
   <style type="text/css" media="screen">
     p#nocomments { font-size: 200%; text-align: center; border: 1px #ccc dashed; padding: 4em; }
@@ -14,12 +15,6 @@
     td.actions form input.remove { background: red; color: white; }
   </style>
 {% endblock %}
-
-{% block branding %}
-<h1 id="site-name">{% trans "Comment moderation queue" %}</h1>
-{% endblock %}
-
-{% block breadcrumbs %}{% endblock %}
 
 {% block content %}
 {% if empty %}
@@ -54,13 +49,11 @@
             </form>
           </td>
           <td>{{ comment.name }}</td>
-          <td>{{ comment.comment|truncatewords:"50" }}</td>
+          <td>{{ comment.comment|sanitize }}</td>
           <td>{{ comment.email }}</td>
           <td>{{ comment.url }}</td>
           <td>
-            <img
-              src="{% admin_media_prefix %}img/admin/icon-{% if comment.user %}yes{% else %}no{% endif %}.gif"
-              alt="{% if comment.user %}{% trans "yes" %}{% else %}{% trans "no" %}{% endif %}"
+              {% if comment.user %}{% trans "yes" %}{% else %}{% trans "no" %}{% endif %}
             />
           </td>
           <td>{{ comment.ip_address }}</td>
