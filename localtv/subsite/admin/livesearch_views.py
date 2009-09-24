@@ -101,7 +101,7 @@ def livesearch(request, sitelocation=None):
                                  {'query_string': request.GET['query']},
                                  context_instance=RequestContext(request))
         yield livesearch_response(request, sitelocation)
-    return util.HttpMixedReplaceResponse(gen())
+    return util.HttpMixedReplaceResponse(request, gen())
 
 
 def livesearch_response(request, sitelocation):

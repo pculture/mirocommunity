@@ -220,7 +220,8 @@ def sort_header(sort, label, current):
 def mixed_replace_generator(content_generator, bound):
     """
     We take a generator and a boundary string, and yield back content parts for
-    the multipart/x-mixed-replace content-type.  The generator should yield HTTPResponses.
+    the multipart/x-mixed-replace content-type.  The generator should yield
+    HTTPResponses.
 
     The multipart/x-mixed-replace format looks like this:
 
@@ -236,17 +237,23 @@ def mixed_replace_generator(content_generator, bound):
     """
     for response in content_generator:
         yield ''.join(('--', bound, '\r\n', str(response)))
-        yield '\r\n'
-    yield ''.join(('--', bound, '\r\n'))
-
+    yield ''.join(('--', bound, '--\r\n'))
 
 class HttpMixedReplaceResponse(HttpResponse):
 
-    def __init__(self, generator):
-         bound = str(id(generator)) + str(id(self))
-         HttpResponse.__init__(self, mixed_replace_generator(generator, bound),
-                               content_type=('multipart/x-mixed-replace;'
-                                             'boundary=%s' % bound))
+    def __init__(self, request, generator):
+        if 'Chrome' in request.META.get('HTTP_USER_AGENT'):
+            # Chrome's mixed-replace support doesn't seem to work, so just take
+            # the last thing from the generator
+            response = list(generator)[-1]
+            HttpResponse.__init__(self)
+            self.__dict__ = response.__dict__
+        else:
+            bound = str(id(generator)) + str(id(self))
+            HttpResponse.__init__(self,
+                                  mixed_replace_generator(generator, bound),
+                                  content_type=('multipart/x-mixed-replace;'
+                                             'boundary=\"%s\"' % bound))
 
 class MockQueryset(object):
     """
