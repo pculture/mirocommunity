@@ -203,7 +203,8 @@ overflow: hidden;
 }
 
 .title_desc + p + p {
-    max-height: 12px;
+    max-height: 1.5em;
+    overflow: hidden;
 }
 
 .video {

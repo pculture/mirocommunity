@@ -26,10 +26,12 @@
   </p>
   <p>
     {% if video.authors.count %}
-    By {% for user in video.authors.all %}<span class="author"><a href="{% url localtv_subsite_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}{% endfor %}
+    By {% for user in video.authors.all %}
+    <span class="author"><a href="{% url localtv_subsite_author user.pk %}" title="{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
     {% else %}
     {% if video.feed %}
-    By <span class="author"><a href="{% url localtv_subsite_list_feed video.feed.pk %}">{{ video.feed.name }}</a></span>
+    By <span class="author"><a href="{% url localtv_subsite_list_feed video.feed.pk %}" title="{{ video.feed.name }}">{{ video.feed.name }}</a></span>
     {% endif %}
     {% endif %}
   </p>
