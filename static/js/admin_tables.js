@@ -22,6 +22,9 @@ function load_video(eventdata) {
             url: video_url,
             success: function(data) {
                 admin_rightpane.empty().append(data);
+                if (typeof edit_widgets_setup === 'function') {
+                    edit_widgets_setup();
+                }
                 var selected = $('div.selected');
                 selected.removeClass('selected');
                 selected.addClass('unselected');
