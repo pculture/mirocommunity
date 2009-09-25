@@ -23,7 +23,9 @@
       <tr class="editing">
         <td>
           <h3>{{ form.instance.name }}</h3>
-          <span>YouTube User</span>
+          {% if form.instance.video_service %}
+          <span>{{ form.instance.video_service }} User</span>
+          {% endif %}
           <div class="video_count">
             Found {{ video_count }} video{{ video_count|pluralize }}
             <div>
