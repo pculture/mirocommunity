@@ -132,7 +132,7 @@
     </thead>
     <tbody>
       {% for form in formset.forms|slice:":-1" %}
-      <tr class="{% cycle "" "grey" %}">
+      <tr class="{% cycle "" "grey" %}" {% if form.errors %}style="display: none;"{% endif %}>
         <td>{{ form.bulk }}</td>
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
@@ -153,25 +153,30 @@
         <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
         <td class="last" width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
       </tr>
-      <tr class="editing {% cycle "" "grey" %}" style="display: none;">
+      <tr class="editing {% cycle "" "grey" %}" {% if not form.errors %}style="display: none;"{% endif %}>
         <td colspan="3">
           <h3>Quick Edit <a href="#" onclick="return showEdit(this, false);">(cancel)</a></h3>
           {{ form.id }}
+          {{ form.non_field_errors }}
           <table>
             <tr>
               <td colspan="2">
+                {{ form.name.errors }}
                 <label>Title</label>
                 {{ form.name }}
               </td>
             </tr>
             <tr>
               <td colspan="2">
+                {{ form.file_url.errors }}
                 <label>Video URL</label>
                 {{ form.file_url }}
               </td>
             </tr>
             <tr>
               <td colspan="2">
+                {{ form.thumbnail_url.errors }}
+                {{ form.thumbnail.errors }}
                 <label>Thumb URL</label>
                 {{  form.thumbnail_url }}
                 <div style="float: right; width: 286px;">
@@ -180,16 +185,19 @@
                 </div>
             <tr>
               <td colspan="2">
+                {{ form.when_published.errors }}
                 <label>Date</label>
                 {{ form.when_published }}
             </td>
             </tr>
             <tr>
               <td>
+                {{ form.description.errors }}
                 <label class="floatnone">Description</label>
                 {{ form.description }}
               </td>
               <td>
+                {{ form.tags.errors }}
                 <label class="floatnone">Tags</label>
                 {{ form.tags }}
               </td>
@@ -204,10 +212,12 @@
         </td>
 
         <td width="250" class="checklist">
+          {{ form.categories.errors }}
           <label class="padding">Categories</label>
           {{ form.categories }}
         </td>
         <td width="250" class="checklist">
+          {{ form.authors.errors }}
           <label class="padding">Authors</label>
           {{ form.authors }}
         </td>
