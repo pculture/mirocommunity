@@ -90,7 +90,7 @@ def add_feed_done(request, sitelocation):
                                  {
                 'message': 'Importing %i videos from' % (
                     request.session['video_count'],),
-                'feed_url': request.POST.get('feed_url')},
+                'feed_url': request.session['defaults']['feed_url']},
                                  context_instance=RequestContext(request))
         yield add_feed_done_response(request, sitelocation)
     return util.HttpMixedReplaceResponse(request, gen())
