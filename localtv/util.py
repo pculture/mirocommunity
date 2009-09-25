@@ -235,6 +235,7 @@ def mixed_replace_generator(content_generator, bound):
     <html><body>HTML here!</body></html>
     --boundary
     """
+    yield '--%s' % bound
     for response in content_generator:
         if response.status_code >= 300 and response.status_code < 400:
             # Some hacks to get redirects to work
@@ -248,8 +249,8 @@ def mixed_replace_generator(content_generator, bound):
                 'You are being redirected.  If it does not work, click '
                 '<a href="%(Location)s">here</a>.'
                 '</html>' % response)
-        yield ''.join(('--', bound, '\r\n', str(response)))
-    yield ''.join(('--', bound, '--\r\n'))
+        yield ''.join((str(response), '\r\n--', bound))
+    yield '--'
 
 class HttpMixedReplaceResponse(HttpResponse):
 
