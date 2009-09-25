@@ -253,7 +253,8 @@ class Feed(Source):
 
         if bulk:
             # we look for opensearch values, and then go grab other feeds with
-            # increasing start-index values
+            # increasing start-index values.  The only feeds for which I know
+            # this works are YouTube right now.
             def _opensearch_get(key):
                 return parsed_feed.feed.get(
                     'opensearch_%s' % key,
@@ -265,21 +266,18 @@ class Feed(Source):
                 startindex = int(startindex)
                 itemsperpage = int(itemsperpage)
                 totalresults = int(totalresults)
-                if startindex + itemsperpage <= totalresults:
-                    # we're on an interior page
+                for i in range(startindex, totalresults,
+                                   itemsperpage)[::-1]:
                     if '?' in self.feed_url:
-                        postfix = '&start-index=%i' % (
-                            startindex + itemsperpage,)
+                        postfix = '&start-index=%i' % (i,)
                     else:
-                        postfix = '?start-index=%i' % (
-                            startindex + itemsperpage,)
+                        postfix = '?start-index=%i' % (i,)
                     if verbose:
-                        print 'getting', self.feed_url + postfix
+                        print 'Getting extra feed', self.feed_url + postfix
                     self.update_items(
                         verbose=verbose,
                         parsed_feed=feedparser.parse(
-                            self.feed_url+postfix),
-                        bulk=True)
+                            self.feed_url+postfix))
 
         for entry in parsed_feed['entries'][::-1]:
             skip = False
