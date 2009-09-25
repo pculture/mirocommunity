@@ -273,7 +273,8 @@ class Feed(Source):
                     else:
                         postfix = '?start-index=%i' % (
                             startindex + itemsperpage,)
-                    print 'getting', self.feed_url + postfix
+                    if verbose:
+                        print 'getting', self.feed_url + postfix
                     self.update_items(
                         verbose=verbose,
                         parsed_feed=feedparser.parse(
