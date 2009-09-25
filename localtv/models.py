@@ -387,6 +387,11 @@ class Feed(Source):
         self.last_updated = datetime.datetime.now()
         self.save()
 
+    def video_service(self):
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, self.feed_url, re.I):
+                return service
+
 
 class Category(models.Model):
     """

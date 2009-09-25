@@ -24,7 +24,7 @@
         <td>
           <h3>{{ form.instance.name }}</h3>
           {% if form.instance.video_service %}
-          <span>{{ form.instance.video_service }} User</span>
+          <span class="video_service">{{ form.instance.video_service }} User</span>
           {% endif %}
           <div class="video_count">
             Found {{ video_count }} video{{ video_count|pluralize }}
