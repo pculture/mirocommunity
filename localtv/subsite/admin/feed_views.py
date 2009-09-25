@@ -114,7 +114,8 @@ def add_feed_done_response(request, sitelocation=None):
         setattr(feed, key, value)
     feed.save()
 
-    feed.update_items(parsed_feed=request.session['parsed_feed'])
+    feed.update_items(parsed_feed=request.session['parsed_feed'],
+                      bulk=True)
 
     # clean up the session
     del request.session['parsed_feed']
