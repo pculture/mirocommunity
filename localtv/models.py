@@ -268,16 +268,17 @@ class Feed(Source):
                 totalresults = int(totalresults)
                 for i in range(startindex, totalresults,
                                    itemsperpage)[::-1]:
-                    if '?' in self.feed_url:
+                    if '?' in parsed_feed.href:
                         postfix = '&start-index=%i' % (i,)
                     else:
                         postfix = '?start-index=%i' % (i,)
                     if verbose:
-                        print 'Getting extra feed', self.feed_url + postfix
+                        print 'Getting extra feed', parsed_feed.href + postfix
                     self.update_items(
                         verbose=verbose,
                         parsed_feed=feedparser.parse(
-                            self.feed_url+postfix))
+                            parsed_feed.href+postfix))
+                return # we've loaded all the items
 
         for entry in parsed_feed['entries'][::-1]:
             skip = False
