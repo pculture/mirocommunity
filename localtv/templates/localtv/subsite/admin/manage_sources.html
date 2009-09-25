@@ -146,13 +146,11 @@
         <td>{% if form.instance.query_string %}
           Search
           {% else %}
-          {% with form.instance.video_set.all.0.video_service as video_service %}
-          {% if video_service %}
-          {{ video_service }} User
+          {% if form.instance.video_service %}
+          {{ form.instance.video_service }} User
           {% else %}
           Feed
           {% endif %}
-          {% endwith %}
           {% endif %}</td>
           {% if form.instance.query_string %}
           {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
