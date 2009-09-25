@@ -262,11 +262,27 @@ class HttpMixedReplaceResponse(HttpResponse):
             HttpResponse.__init__(self)
             self.__dict__ = response.__dict__
         else:
+            self.request = request
             bound = str(id(generator)) + str(id(self))
             HttpResponse.__init__(self,
                                   mixed_replace_generator(generator, bound),
                                   content_type=('multipart/x-mixed-replace;'
                                              'boundary=\"%s\"' % bound))
+
+
+    def close(self):
+        HttpResponse.close(self)
+        if hasattr(self, 'request') and hasattr(self.request, 'session'):
+            if self.request.session.modified:
+                # Normally this is done in the response middleware, but because
+                # the views haven't all been run by the time that middleware is
+                # done, we do it again here.
+
+                # TODO(pswartz): This might want to go through all the response
+                # middleware instead of just manually doing the session
+                # middleware
+                self.request.session.save()
+
 
 class MockQueryset(object):
     """
