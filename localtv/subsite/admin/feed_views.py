@@ -23,7 +23,9 @@ VIDEO_SERVICE_TITLES = (
 def add_feed(request, sitelocation=None):
     def gen():
         yield render_to_response('localtv/subsite/admin/feed_wait.html',
-                                 {'feed_url': request.POST.get('feed_url')},
+                                 {
+                'message': 'Checking out this URL',
+                'feed_url': request.POST.get('feed_url')},
                                  context_instance=RequestContext(request))
         yield add_feed_response(request, sitelocation)
     return util.HttpMixedReplaceResponse(request, gen())
@@ -85,7 +87,10 @@ def add_feed_done(request, sitelocation):
 
     def gen():
         yield render_to_response('localtv/subsite/admin/feed_wait.html',
-                                 {'feed_url': request.POST.get('feed_url')},
+                                 {
+                'message': 'Importing %i videos from' % (
+                    request.session['video_count'],),
+                'feed_url': request.POST.get('feed_url')},
                                  context_instance=RequestContext(request))
         yield add_feed_done_response(request, sitelocation)
     return util.HttpMixedReplaceResponse(request, gen())
@@ -122,11 +127,9 @@ def add_feed_done_response(request, sitelocation=None):
     del request.session['video_count']
     del request.session['defaults']
 
-    if feed.auto_approve:
-        reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
-    else:
-        reverse_url = reverse('localtv_admin_manage_page')
-    return HttpResponseRedirect(reverse_url)
+    return render_to_response('localtv/subsite/admin/feed_done.html',
+                              {'feed': feed},
+                              context_instance=RequestContext(request))
 
 
 @referrer_redirect

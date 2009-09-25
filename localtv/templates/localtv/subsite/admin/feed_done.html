@@ -1,0 +1,10 @@
+{% extends "localtv/subsite/admin/base_wait.html" %}
+{% block top %}
+  <p>Finishing importing {{ feed.video_set.count }} videos from <strong style="font-size: 24px">{{ feed.name }}</strong>
+{% endblock %}
+{% block bottom %}
+<p>
+  <a href="{% url localtv_subsite_list_feed feed.pk %}">See this feed</a> or
+  <a href="{% url localtv_admin_manage_page %}">go back to Manage Sources</a>.
+</p>
+{% endblock %}
