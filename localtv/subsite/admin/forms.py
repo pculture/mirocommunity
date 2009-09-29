@@ -55,8 +55,8 @@ class EditVideoForm(forms.ModelForm):
         if 'thumbnail' in self.cleaned_data:
             thumbnail = self.cleaned_data.pop('thumbnail')
             if thumbnail:
-                self.instance.thumbnail_url = \
-                    self.cleaned_data['thumbnail_url'] = ''
+                self.instance.thumbnail_url = ''
+                del self.cleaned_data['thumbnail_url']
                 # since we're no longer using
                 # that URL for a thumbnail
                 self.instance.save_thumbnail_from_file(thumbnail)

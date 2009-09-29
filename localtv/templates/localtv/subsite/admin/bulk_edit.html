@@ -43,7 +43,7 @@
   </div>
   </form>
 
-  <form method="POST" action="{{ request.get_full_path }}">
+  <form method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
   {% pagetabs page %}
   <table id="massedit" class="rounded">
 
@@ -59,6 +59,15 @@
                 {{ form.name }}
               </td>
             </tr>
+            <tr>
+                <td colspan="2">
+                  <label>Thumb URL</label>
+                  {{ form.thumbnail_url }}
+                  <div style="float: right; width: 286px;">
+                    or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
+                    <span style="display: none;">{{ form.thumbnail }}</span>
+                  </div>
+                </td>
             <tr>
               <td colspan="2">
                 <label>Date</label>
@@ -173,6 +182,7 @@
           {{ form.name.errors }}
           <h3>{{ form.name }} <a href="{{ request.get_full_path }}" onclick="return showEdit(this, false);">(cancel)</a></h3>
           {{ form.id }}
+          {{ form.non_field_errors }}
           <table>
             <tr>
               <td colspan="2">
@@ -183,6 +193,8 @@
             </tr>
             <tr>
               <td colspan="2">
+                {{ form.thumbnail_url.errors }}
+                {{ form.thumbnail.errors }}
                 <label>Thumb URL</label>
                 {{ form.thumbnail_url.errors }}{{ form.thumbnail.errors }}
                 {{  form.thumbnail_url }}
@@ -192,6 +204,7 @@
                 </div>
             <tr>
               <td colspan="2">
+                {{ form.when_published.errors }}
                 <label>Date</label>
                 {{ form.when_published.errors }}
                 {{ form.when_published }}
@@ -199,11 +212,13 @@
             </tr>
             <tr>
               <td>
+                {{ form.description.errors }}
                 <label class="floatnone">Description</label>
                 {{ form.description.errors }}
                 {{ form.description }}
               </td>
               <td>
+                {{ form.tags.errors }}
                 <label class="floatnone">Tags</label>
                 {{ form.tags.errors }}
                 {{ form.tags }}
@@ -219,11 +234,13 @@
         </td>
 
         <td width="250" class="checklist">
+          {{ form.categories.errors }}
           <label class="padding">Categories</label>
           {{ form.categories.errors }}
           {{ form.categories }}
         </td>
         <td width="250" class="checklist">
+          {{ form.authors.errors }}
           <label class="padding">Authors</label>
           {{ form.authors.errors }}
           {{ form.authors }}

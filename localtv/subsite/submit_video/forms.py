@@ -23,7 +23,7 @@ class ImageURLField(forms.URLField):
             return content_thumb
 
 class BaseSubmitVideoForm(forms.Form):
-    url = forms.URLField()
+    url = forms.URLField(verify_exists=True)
     tags = forms.CharField(required=False)
 
     # common cleaning methods
@@ -45,9 +45,7 @@ class BaseSubmitVideoForm(forms.Form):
 
 
 class SubmitVideoForm(BaseSubmitVideoForm):
-    url = forms.URLField()
-    tags = forms.CharField(required=False)
-
+    pass
 
 class SecondStepSubmitVideoForm(BaseSubmitVideoForm):
     thumbnail = ImageURLField(required=False)
