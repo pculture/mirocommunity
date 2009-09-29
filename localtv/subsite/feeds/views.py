@@ -35,7 +35,7 @@ class BaseVideosFeed(Feed):
         return video.when_approved
 
     def item_link(self, video):
-        return reverse('localtv_view_video', kwargs={'video_id': video.id})
+        return video.get_absolute_url()
 
     def item_extra_kwargs(self, item):
         if not item.has_thumbnail:
