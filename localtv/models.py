@@ -16,6 +16,7 @@ from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.forms.fields import slug_re
 from django.template import mark_safe, Context, loader
+from django.template.defaultfilters import slugify
 
 import feedparser
 import vidscraper
@@ -633,7 +634,8 @@ class Video(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
-                {'video_id': self.id})
+                {'video_id': self.id,
+                 'slug': slugify(self.name)[:30]})
 
     def try_to_get_file_url_data(self):
         """

@@ -11,7 +11,7 @@ urlpatterns = patterns(
     (r'^author/$', 'author', {}, 'localtv_subsite_author_index'),
     (r'^author/(\d+)$', 'author', {}, 'localtv_subsite_author'),
     (r'^comments/', include('django.contrib.comments.urls')),
-    (r'^video/(?P<video_id>[0-9]+)/$', 'view_video',
+    (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]+)$', 'view_video',
      {}, 'localtv_view_video'))
 
 urlpatterns += patterns(
