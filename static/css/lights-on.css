@@ -1452,7 +1452,6 @@ padding-right: 15px;
 #admin_leftpane {
 padding: 0px 0px 0 0;
 clear: both;
-height: 600px !important;
 }
 
 #admin_leftpane .video {
@@ -1465,6 +1464,8 @@ margin-bottom: 10px;
 
 #admin_rightpane {
 padding: 0 0 0 30px;
+overflow-x: hidden;
+overflow-y: auto;
 }
 
 

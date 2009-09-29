@@ -45,13 +45,12 @@ function load_click_callbacks() {
 }
 
 function resize_admin() {
-    var header = document.getElementById('header');
+    var admin_table = document.getElementById('admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
     var admin_rightpane = document.getElementById('admin_rightpane');
     base_height = (window.innerHeight -
-                   header.clientHeight -
-                   20);
-    admin_leftpane.style.height = base_height + 'px';
+                   admin_table.offsetTop);
+    admin_leftpane.style.height = (base_height - 40) + 'px';
     admin_rightpane.style.height = base_height + 'px';
 }
 
