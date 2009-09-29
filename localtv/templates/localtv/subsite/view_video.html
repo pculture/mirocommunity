@@ -5,7 +5,7 @@
 {% block body_id %}view_video{% endblock %}
 
 
-{% block title %}{{ block.super }} - {{ current_video.name }}{% endblock %}
+{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block head %}
   {% if edit_video_form %}
