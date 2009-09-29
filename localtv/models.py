@@ -237,7 +237,7 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_subsite_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, parsed_feed=None, bulk=False):
+    def update_items(self, verbose=False, parsed_feed=None):
         """
         Fetch and import new videos from this feed.
         """
@@ -250,35 +250,6 @@ class Feed(Source):
 
         if parsed_feed is None:
             parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
-
-        if bulk:
-            # we look for opensearch values, and then go grab other feeds with
-            # increasing start-index values.  The only feeds for which I know
-            # this works are YouTube right now.
-            def _opensearch_get(key):
-                return parsed_feed.feed.get(
-                    'opensearch_%s' % key,
-                    parsed_feed.feed.get(key, None))
-            startindex = _opensearch_get('startindex')
-            itemsperpage = _opensearch_get('itemsperpage')
-            totalresults = _opensearch_get('totalresults')
-            if startindex and itemsperpage and totalresults:
-                startindex = int(startindex)
-                itemsperpage = int(itemsperpage)
-                totalresults = int(totalresults)
-                for i in range(startindex, totalresults,
-                                   itemsperpage)[::-1]:
-                    if '?' in parsed_feed.href:
-                        postfix = '&start-index=%i' % (i,)
-                    else:
-                        postfix = '?start-index=%i' % (i,)
-                    if verbose:
-                        print 'Getting extra feed', parsed_feed.href + postfix
-                    self.update_items(
-                        verbose=verbose,
-                        parsed_feed=feedparser.parse(
-                            parsed_feed.href+postfix))
-                return # we've loaded all the items
 
         for entry in parsed_feed['entries'][::-1]:
             skip = False
