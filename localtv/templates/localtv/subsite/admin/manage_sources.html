@@ -202,6 +202,10 @@
       
     </tbody>
   </table>
+
+  <div class="pag bottom">
+    {% pagetabs page_obj %}
+  </div>
   
   <div id="massedit" class="bulk_edit_panel" style="display: none;">
     {% with formset.forms|last as form %}

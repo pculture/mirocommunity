@@ -36,9 +36,8 @@
   </div>
   </form>
 
-  
   <form method="POST" action="{{ request.get_full_path }}">
-    {% pagetabs page %}
+  {% pagetabs page %}
   <table id="massedit" class="rounded">
 
     <tbody>
@@ -226,7 +225,9 @@
       {% endfor %}
     </tbody>
   </table>
-  {% pagetabs page %}
+  <div class="pag bottom">
+    {% pagetabs page %}
+  </div>
 </form>
 </div>
 {% endblock content %}

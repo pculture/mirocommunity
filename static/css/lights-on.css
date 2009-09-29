@@ -1118,6 +1118,12 @@ border-bottom: 1px solid #eee;
 margin-bottom: 30px;
 }
 
+.pag.bottom {
+    clear: both;
+    border-top: 1px solid #eee;
+    border-bottom: none;
+}
+
 .pag b {
 display: none;
 }
