@@ -12,6 +12,7 @@ from localtv.decorators import get_sitelocation, require_site_admin, \
 from localtv import models, util
 from localtv.subsite.admin import forms
 
+from vidscraper import bulk_import
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -62,10 +63,8 @@ def add_feed_response(request, sitelocation=None):
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
-    video_count = request.session['video_count'] = int(
-        parsed_feed.feed.get('opensearch_totalresults',
-                             parsed_feed.feed.get('totalresults',
-                                                  len(parsed_feed.entries))))
+    video_count = request.session['video_count'] = bulk_import.video_count(
+        feed_url, parsed_feed)
 
     form = forms.SourceForm(instance=models.Feed(**defaults))
     return render_to_response('localtv/subsite/admin/add_feed.html',
@@ -119,8 +118,9 @@ def add_feed_done_response(request, sitelocation=None):
         setattr(feed, key, value)
     feed.save()
 
-    feed.update_items(parsed_feed=request.session['parsed_feed'],
-                      bulk=True)
+    parsed_feed = bulk_import.bulk_import(feed.feed_url,
+                                          request.session['parsed_feed'])
+    feed.update_items(parsed_feed=parsed_feed)
 
     # clean up the session
     del request.session['parsed_feed']
