@@ -27,12 +27,19 @@
 
     <div class="floatleft form_wrap rounded">
     <select class="behave" name="category">
-      <option value="">Show All Categories</option>
+      <option {% if not request.GET.category %}selected="selected"{% endif %}  value="">Show All Categories</option>
       {% for category in categories %}
       <option {% ifequal category.pk|stringformat:"i" request.GET.category %}selected=selected {% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
       {% endfor %}
     </select>
-    <button class="med_button"><span>Filter</span></button>
+    <select class="behave" name="author">
+      <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Authors</option>
+      {% for user in users %}
+      <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
+      {% endfor %}
+    </select>
+    <input type="text" class="small_field" name="q" value="{{ search_string }}" />
+    <button class="med_button floatright"><span>Search</span></button>
   </div>
   </form>
 

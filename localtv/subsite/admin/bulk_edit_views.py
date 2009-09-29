@@ -1,6 +1,8 @@
 from datetime import datetime
 
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Q
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
@@ -27,6 +29,27 @@ def bulk_edit(request, sitelocation=None):
     if category != '':
         videos = videos.filter(categories__pk=category).distinct()
 
+    author = request.GET.get('author', '')
+    try:
+        author = int(author)
+    except ValueError:
+        author = ''
+
+    if author != '':
+        videos = videos.filter(authors__pk=author).distinct()
+
+    search_string = request.GET.get('q', '')
+    if search_string != '':
+        videos = videos.filter(
+            Q(description__icontains=search_string) |
+            Q(name__icontains=search_string) |
+            Q(tags__name__icontains=search_string) |
+            Q(categories__name__icontains=search_string) |
+            Q(user__username__icontains=search_string) |
+            Q(user__first_name__icontains=search_string) |
+            Q(user__last_name__icontains=search_string) |
+            Q(video_service_user__icontains=search_string) |
+            Q(feed__name__icontains=search_string))
 
     sort = request.GET.get('sort', 'name')
     videos = videos.order_by(sort)
@@ -93,5 +116,6 @@ def bulk_edit(request, sitelocation=None):
                                'headers': headers,
                                'page': page,
                                'categories': models.Category.objects.filter(
-                site=sitelocation.site)},
+                site=sitelocation.site),
+                               'users': User.objects.all()},
                               context_instance=RequestContext(request))
