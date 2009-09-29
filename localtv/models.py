@@ -259,8 +259,8 @@ class Feed(Source):
                 feed=self, guid=guid).count():
                 skip = True
             link = entry.get('link')
-            if link is not None and Video.objects.filter(
-                    feed=self, website_url=link).count():
+            if (link is not None and Video.objects.filter(
+                    website_url=link).count()):
                 skip = True
 
             file_url = None
@@ -293,8 +293,8 @@ class Feed(Source):
                                                      thumbnail_url)
                     if 'link' in scraped_data:
                         link = scraped_data['link']
-                        if Video.objects.filter(
-                            feed=self, website_url=link).count():
+                        if (Video.objects.filter(
+                                website_url=link).count()):
                             skip = True
 
                 except vidscraper.errors.Error, e:
@@ -327,7 +327,7 @@ class Feed(Source):
                 when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
-                website_url=entry.get('link', ''),
+                website_url=link,
                 thumbnail_url=thumbnail_url or '')
 
             video.save()
