@@ -38,9 +38,14 @@
       <h2>Design Settings</h2>
       
   <form method="POST" action="" enctype="multipart/form-data">
-    {{ misc_form.as_p }}
-    <input type="submit" name="delete_background" value="delete background"
-    <input type="submit" name="type_misc" value="save">
+    {% for field in misc_form %}
+    <p>
+      {{ field.errors }}
+      <label for="id_{{ field.name }}">{{ field.label }}</label>
+      {{ field }}
+      {% ifequal field.name "background" %}<input type="submit" name="delete_background" value="delete background">{% endifequal %}
+    </p>
+    {% endfor %}
   </form>
     </div>
 
