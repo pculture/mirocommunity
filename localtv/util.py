@@ -29,17 +29,23 @@ def is_video_filename(filename):
 
 
 def get_or_create_tags(tag_list):
-    tags = []
+    tag_set = set()
     for tag_text in tag_list:
-        try:
-            tag = models.Tag.objects.get(name=tag_text)
-        except models.Tag.DoesNotExist:
+        tags = models.Tag.objects.filter(name=tag_text)
+        if not tags:
             tag = models.Tag(name=tag_text)
             tag.save()
+        elif tags.count() == 1:
+            tag = tags[0]
+        else:
+            for tag in tags:
+                if tag.name == tag:
+                    # MySQL doesn't do case-sensitive equals on strings
+                    break
 
-        tags.append(tag)
+        tag_set.add(tag)
 
-    return tags
+    return tag_set
 
 
 def get_scraped_data(url):
