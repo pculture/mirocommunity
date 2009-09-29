@@ -168,7 +168,7 @@ def scraped_submit_video(request, sitelocation=None):
             embed_code=scraped_data.get('embed') or '',
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
-            thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'),
@@ -183,7 +183,8 @@ def scraped_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                scraped_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             scraped_form.cleaned_data.get('tags', []))
@@ -233,7 +234,7 @@ def embedrequest_submit_video(request, sitelocation=None):
                                  extra_filters=['img']),
             embed_code=embed_form.cleaned_data['embed'],
             website_url=embed_form.cleaned_data.get('website_url', ''),
-            thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
             when_submitted=datetime.datetime.now())
 
@@ -244,7 +245,8 @@ def embedrequest_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                embed_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             embed_form.cleaned_data.get('tags', []))
@@ -294,7 +296,7 @@ def directlink_submit_video(request, sitelocation=None):
             description=sanitize(direct_form.cleaned_data['description'],
                                  extra_filters=['img']),
             file_url=direct_form.cleaned_data['url'],
-            thumbnail_url=direct_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),
             user=user,
             when_submitted=datetime.datetime.now())
@@ -306,7 +308,8 @@ def directlink_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                direct_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             direct_form.cleaned_data.get('tags', []))

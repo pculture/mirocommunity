@@ -1,8 +1,26 @@
+import Image
+import urllib
+
 from django import forms
+from django.core.files.base import ContentFile
 from django.utils.html import strip_tags
 
 from localtv import util
 
+class ImageURLField(forms.URLField):
+
+    def clean(self, value):
+        value = forms.URLField.clean(self, value)
+        if not self.required and value in ['', None]:
+            return value
+        content_thumb = ContentFile(urllib.urlopen(value).read())
+        try:
+            Image.open(content_thumb)
+        except IOError:
+            raise forms.ValidationError('Not a valid image.')
+        else:
+            content_thumb.seek(0)
+            return content_thumb
 
 class BaseSubmitVideoForm(forms.Form):
     url = forms.URLField()
@@ -32,7 +50,7 @@ class SubmitVideoForm(BaseSubmitVideoForm):
 
 
 class SecondStepSubmitVideoForm(BaseSubmitVideoForm):
-    thumbnail_url = forms.CharField(required=False)
+    thumbnail = ImageURLField(required=False)
     name = forms.CharField(max_length=250)
     description = forms.CharField(widget=forms.widgets.Textarea)
 
