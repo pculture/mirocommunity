@@ -136,7 +136,7 @@ def scraped_submit_video(request, sitelocation=None):
         scraped_form.set_initial(request)
         scraped_form.initial['name'] = scraped_data.get('title')
         scraped_form.initial['description'] = scraped_data.get('description')
-        scraped_form.initial['thumbnail_url'] = scraped_data.get(
+        scraped_form.initial['thumbnail'] = scraped_data.get(
             'thumbnail_url')
 
         return render_to_response(
