@@ -62,7 +62,7 @@
         <td colspan="6">
           {{ form.non_field_errors }}
           {{ form.name.errors }}
-          <h3>{{ form.name }} <a href="{{ request.get_full_path }}" onclick="return showEdit(this, false);">(cancel)</a></h3>
+          <h3>{{ form.name }}</h3>
           {{ form.id }}
           <table style="width: 100%; margin-bottom: 0">
             <tr>
@@ -91,6 +91,7 @@
               </td>
             </tr>
           </table>
+          <button class="med_button marginbottom behave" type="button" onclick="return showEdit(this, false);"><span>Cancel</span></button>
           <button class="med_button marginbottom behave" type="submit" name="submit" value="Save"><span>Update Category</span></button>
         </td>
       </tr>
