@@ -1,5 +1,5 @@
 
-{% extends "localtv/subsite/admin/base.html" %}
+{% extends "localtv/subsite/admin/bulk_edit.html" %}
 
 {% load pagetabs i18n versioned %}
 
@@ -8,9 +8,7 @@
 {% block body_class %}incomingfeeds{% endblock body_class %}
 
 {% block head %}
-  <script src="{% versioned "/js/bulk_edit.js" %}"
-          type="text/javascript">
-  </script>
+  {{ block.super }}
   <script src="{% versioned "/js/new_edit_form.js" %}"
           type="text/javascript">
   </script>
@@ -31,8 +29,7 @@ $(document).ready(function() {
   </script>
 {% endblock head %}
 
-{% block content %}
-
+{% block pre-labels %}
 <h2 class="page_title marginbottom">Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
 
@@ -65,8 +62,8 @@ $(document).ready(function() {
     Search will import results from a bunch of video sites. You can pick out videos you think are interesting and optionally create an automated source.
   </p>
 </div>
-     
-  <div id="labels">
+{% endblock %}
+{% block pre-form %}
       <div class="floatleft form_wrap rounded">
     <select id="bulk_action_selector" class="behave">
       <option selected="selected" value="">Bulk Actions</option>
@@ -104,44 +101,9 @@ $(document).ready(function() {
       <li><a href="?filter=feed">RSS Feeds</a></li>
     </ul>
   </div>
+{% endblock %}
 
-  <div class="pag">
-    {% pagetabs page_obj %}
-  </div>
-
-  <form method="post" action="{{ request.get_full_path }}">
-  <table class="rounded">
-    <thead>
-      <tr>
-        <th class="checkbox">
-          <input id="toggle_all" type="checkbox"/>
-          <script type="text/javascript">
-              $("#toggle_all").click(function() {
-                  if (this.checked) {
-                      $('td:first-child input[type=checkbox]:not(:checked)').click()
-                  } else {
-                      $('td:first-child input[type=checkbox]:checked').click();
-                  }
-              });
-          </script>
-        </th>
-        {% for header in headers %}
-        <th>
-          {% if header.link %}
-          <a class="{{ header.class }}" href="{{ header.link }}">{{ header.label }}</a>
-          {% else %}
-          <span>{{ header.label }}</span>
-          {% endif %}
-        </th>
-        {% endfor %}
-      </tr>
-      {{ formset.management_form }}
-      <input id="bulk_action" name="bulk_action" value="" type="hidden"/>
-    </thead>
-    <tbody>
-      {% for form in formset.forms|slice:":-1" %}
-      <tr class="{% cycle "" "grey "%}" {% if form.errors %}style="display: none;"{% endif %}>
-        <td>{{ form.bulk }}</td>
+{% block columns %}
         <td><span class="overflow">
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
           </span>
@@ -173,10 +135,11 @@ $(document).ready(function() {
           {% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
           {% endif %}
         <td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><a class="on" href="{{ auto_approve_url }}">On</span> <a class="off" href="{{ auto_approve_url }}?disable=true">Off</span></td>
-      </tr>
-      <tr class="editing" {% if not form.errors%}style="display: none;"{% endif %}>
-        <td colspan="2">
-          <h3>Quick Edit <a href="{{ request.get_full_path }}" onclick="return showEdit(this, false);">(cancel)</a></h3>
+{% endblock %}
+
+{% block quick-edit-title %}Quick Edit{% endblock %}
+{% block quick-edit-colspan %}2{% endblock %}
+{% block quick-edit %}
           {{ form.id }}
           {{ form.non_field_errors }}
           <table>
@@ -195,11 +158,9 @@ $(document).ready(function() {
               </tr>
               {% endfor %}
           </tbody></table>
+{% endblock %}
 
-          <button class="med_button marginbottom behave" type="submit"><span>Update Source</span></button>
-
-        </td>
-
+{% block quick-edit-additional-columns %}
         <td class="checklist" width="250">
           {{ form.auto_categories.errors }}
           <label class="padding">Categories</label>
@@ -210,18 +171,10 @@ $(document).ready(function() {
           <label class="padding">Authors</label>
           {{ form.auto_authors }}
         </td>
-                <td class="last" width="100px">{{ form.auto_approve }}</td>
+        <td class="last" width="100px">{{ form.auto_approve }}</td>
+{% endblock %}
 
-      </tr>
-      {% endfor %}
-      
-    </tbody>
-  </table>
-
-  <div class="pag bottom">
-    {% pagetabs page_obj %}
-  </div>
-  
+{% block massedit %}
   <div id="massedit" class="bulk_edit_panel" style="display: none;">
     {% with formset.forms|last as form %}
     <table class="rounded">
@@ -247,6 +200,5 @@ $(document).ready(function() {
     </table>
     {% endwith %}
   </div>
-  </form>
+  {% endblock %}
 
-{% endblock content %}
