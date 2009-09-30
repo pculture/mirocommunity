@@ -500,7 +500,6 @@ class AddFeedForm(forms.Form):
         }
 
     feed_url = forms.URLField(required=True,
-                              verify_exists=True,
                               widget=forms.TextInput(
             attrs={'class': 'livesearch_feed_url'}))
 
@@ -513,17 +512,17 @@ class AddFeedForm(forms.Form):
                 value = self.SERVICE_FEEDS[service] % username
                 break
 
-        parsed = feedparser.parse(value)
-        if not parsed.feed:
-            raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.')
-
         site = Site.objects.get_current()
         if models.Feed.objects.filter(feed_url=value,
                                       site=site,
                                       status=models.FEED_STATUS_ACTIVE):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
+
+        parsed = feedparser.parse(value)
+        if not parsed.feed and parsed.entries:
+            raise forms.ValidationError('It does not appear that %s is an '
+                                        'RSS/Atom feed URL.')
 
         # drop the parsed data into cleaned_data so that other code can re-use
         # the data
