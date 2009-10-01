@@ -1,0 +1,171 @@
+<rss version="2.0"
+     xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule"
+     xmlns:media="http://search.yahoo.com/mrss/"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+     xmlns:blip="http://blip.tv/dtd/blip/1.0"
+     xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+     xmlns:amp="http://www.adobe.com/amp/1.0"
+     xmlns:dcterms="http://purl.org/dc/terms"
+     xmlns:gm="http://www.google.com/schemas/gm/1.1"
+     xmlns:mediaad="http://blip.tv/dtd/mediaad/1.0"
+     >
+  <channel>
+    <title>miropcf</title>
+    <link>http://miropcf.blip.tv</link>
+    <description>miropcf</description>
+    <itunes:block>no</itunes:block>
+    <generator>http://blip.tv</generator>
+    <lastBuildDate>Mon, 09 Feb 2009 19:42:57 +0000</lastBuildDate>
+    <pubDate>Mon, 09 Feb 2009 19:42:57 +0000</pubDate>
+    <item>
+      <guid isPermaLink="false">D9E50330-F6E1-11DD-A117-BB8AB007511B</guid>
+      <link>http://blip.tv/file/1754930</link>
+      <title>Miro 2.0 Introduction</title>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Hr0lQC" type="application/x-shockwave-flash" width="480" height="364" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+New and improved, Miro 2.0!
+
+]]></description>
+      <comments>http://blip.tv/file/1754930</comments>
+      <category>Default Category</category>
+      <pubDate>Mon, 09 Feb 2009 19:42:57 +0000</pubDate>
+      <enclosure length="12151514" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-Miro20Introduction189.mp4"/>
+      <itunes:keywords></itunes:keywords>
+      <itunes:artwork>Miropcf-Miro20Introduction767.jpg</itunes:artwork>
+      <media:keywords></media:keywords>
+      <media:group>
+        <media:content blip:acodec="faad" blip:role="Source" blip:vcodec="ffh264" expression="full" fileSize="12151514" height="370" isDefault="true" type="video/mp4" url="http://blip.tv/file/get/Miropcf-Miro20Introduction189.mp4" width="555"></media:content>
+        <media:content blip:acodec="faad" blip:role="Web High Resolution" blip:vcodec="ffh264" expression="full" fileSize="22360849" height="540" isDefault="false" type="video/mp4" url="http://blip.tv/file/get/Miropcf-Miro20Introduction825.mp4" width="811"></media:content>
+        <media:content blip:acodec="mp3" blip:role="web" blip:vcodec="ffvp6f" expression="full" fileSize="6717985" height="370" isDefault="false" type="video/x-flv" url="http://blip.tv/file/get/Miropcf-Miro20Introduction903.flv" width="555"></media:content>
+        <media:content blip:role="Portable (other)" expression="full" fileSize="9965060" isDefault="false" type="video/ogg" url="http://blip.tv/file/get/Miropcf-Miro20Introduction771.ogv"></media:content>
+        <media:content blip:role="High Definition" expression="full" fileSize="9436882" isDefault="false" type="video/mp4" url="http://blip.tv/file/get/Miropcf-Miro20Introduction119.mp4"></media:content>
+      </media:group>
+      <media:player url="http://blip.tv/file/1754930"><![CDATA[><embed src="http://blip.tv/play/t2Hr0lQC" type="application/x-shockwave-flash" width="480" height="364" allowscriptaccess="always" allowfullscreen="true"></embed> ]]></media:player>
+      <media:title>Miro 2.0 Introduction</media:title>
+      <media:thumbnail url="http://a.images.blip.tv/Miropcf-Miro20Introduction767.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/publicdomain/</creativeCommons:license>
+    </item>
+    <item>
+      <guid isPermaLink="false">C5BF644E-DFFE-11DD-9B65-932233AE66BA</guid>
+      <link>http://blip.tv/file/1657387</link>
+      <title>Make Internet TV: Re-Intro (small)</title>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Hl13eFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+This is a new intro video for <a href="http://makeinternettv.org/">Make Internet TV</a>.
+
+]]></description>
+      <comments>http://blip.tv/file/1657387</comments>
+      <category>Default Category</category>
+      <pubDate>Sun, 11 Jan 2009 16:42:02 +0000</pubDate>
+      <enclosure length="10086954" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntroSmall693.mp4"/>
+      <itunes:keywords></itunes:keywords>
+      <media:keywords></media:keywords>
+      <media:group>
+        <media:content blip:acodec="faad" blip:role="Source" blip:vcodec="ffh264" expression="full" fileSize="10086954" height="219" isDefault="true" type="video/mp4" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntroSmall693.mp4" width="292"></media:content>
+        <media:content blip:acodec="mp3" blip:role="web" blip:vcodec="ffvp6f" expression="full" fileSize="6050019" height="219" isDefault="false" type="video/x-flv" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntroSmall977.flv" width="292"></media:content>
+      </media:group>
+      <media:player url="http://blip.tv/file/1657387"><![CDATA[><embed src="http://blip.tv/play/t2Hl13eFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed> ]]></media:player>
+      <media:title>Make Internet TV: Re-Intro (small)</media:title>
+      <media:thumbnail url="http://e.static.blip.tv/Miropcf-MakeInternetTVReIntroSmall693-338.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/by-sa/2.0/</creativeCommons:license>
+    </item>
+    <item>
+      <guid isPermaLink="false">87A87D02-DFFA-11DD-BC3B-AF1BC34E2CDF</guid>
+      <link>http://blip.tv/file/1657335</link>
+      <title>Make Internet TV: Re-Intro</title>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Hl10OFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+This is a new intro video for <a href="http://makeinternettv.org">Make Internet TV</a>.
+
+]]></description>
+      <comments>http://blip.tv/file/1657335</comments>
+      <category>Default Category</category>
+      <pubDate>Sun, 11 Jan 2009 16:11:40 +0000</pubDate>
+      <enclosure length="15738647" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntro269.mp4"/>
+      <itunes:keywords></itunes:keywords>
+      <media:keywords></media:keywords>
+      <media:group>
+        <media:content blip:acodec="faad" blip:role="Source" blip:vcodec="ffh264" expression="full" fileSize="15738647" height="480" isDefault="true" type="video/mp4" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntro269.mp4" width="640"></media:content>
+        <media:content blip:acodec="mp3" blip:role="web" blip:vcodec="ffvp6f" expression="full" fileSize="6356307" height="480" isDefault="false" type="video/x-flv" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntro323.flv" width="640"></media:content>
+      </media:group>
+      <media:player url="http://blip.tv/file/1657335"><![CDATA[><embed src="http://blip.tv/play/t2Hl10OFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed> ]]></media:player>
+      <media:title>Make Internet TV: Re-Intro</media:title>
+      <media:thumbnail url="http://e.static.blip.tv/Miropcf-MakeInternetTVReIntro269-826.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/by-sa/2.0/</creativeCommons:license>
+    </item>
+    <item>
+      <guid isPermaLink="false">93032D50-0008-11DD-84AB-8612CEE7B545</guid>
+      <link>http://blip.tv/file/790749</link>
+      <title>OK Go's Andy Ross Supports Miro</title>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Gw02OFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+We're thrilled to have Andy Ross on our team!
+
+]]></description>
+      <comments>http://blip.tv/file/790749</comments>
+      <category>Default Category</category>
+      <pubDate>Tue, 01 Apr 2008 16:27:51 +0000</pubDate>
+      <enclosure length="20438031" type="video/x-m4v" url="http://blip.tv/file/get/Miropcf-OKGosAndyRossSupportsMiro982.m4v"/>
+      <itunes:keywords></itunes:keywords>
+      <media:keywords></media:keywords>
+      <media:group>
+        <media:content blip:acodec="faad" blip:role="Source" blip:vcodec="ffh264" expression="full" fileSize="20438031" height="480" isDefault="true" type="video/x-m4v" url="http://blip.tv/file/get/Miropcf-OKGosAndyRossSupportsMiro982.m4v" width="640"></media:content>
+        <media:content blip:role="web" expression="full" fileSize="4389828" height="480" isDefault="false" type="video/x-flv" url="http://blip.tv/file/get/Miropcf-OKGosAndyRossSupportsMiro982.flv" width="640"></media:content>
+      </media:group>
+      <media:player url="http://blip.tv/file/790749"><![CDATA[><embed src="http://blip.tv/play/t2Gw02OFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed> ]]></media:player>
+      <media:title>OK Go's Andy Ross Supports Miro</media:title>
+      <media:thumbnail url="http://e.static.blip.tv/Miropcf-OKGosAndyRossSupportsMiro305.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/by/2.0/</creativeCommons:license>
+    </item>
+    <item>
+      <guid isPermaLink="false">23C59362-FC55-11DC-AF3F-9C4011C4A055</guid>
+      <link>http://blip.tv/file/779122</link>
+      <title>Dave Glassco Supports Miro</title>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Gv+FmFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+Dave is a great advocate and supporter of Miro.
+
+]]></description>
+      <comments>http://blip.tv/file/779122</comments>
+      <category>Default Category</category>
+      <pubDate>Thu, 27 Mar 2008 23:25:51 +0000</pubDate>
+      <enclosure length="16018279" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-DaveGlasscoSupportsMiro942.mp4"/>
+      <itunes:keywords></itunes:keywords>
+      <media:keywords></media:keywords>
+      <media:group>
+        <media:content blip:acodec="faad" blip:role="Source" blip:vcodec="ffh264" expression="full" fileSize="16018279" height="281" isDefault="true" type="video/mp4" url="http://blip.tv/file/get/Miropcf-DaveGlasscoSupportsMiro942.mp4" width="500"></media:content>
+        <media:content blip:role="web" expression="full" fileSize="11935272" height="281" isDefault="false" type="video/x-flv" url="http://blip.tv/file/get/Miropcf-DaveGlasscoSupportsMiro942.flv" width="500"></media:content>
+      </media:group>
+      <media:player url="http://blip.tv/file/779122"><![CDATA[><embed src="http://blip.tv/play/t2Gv+FmFgl0" type="application/x-shockwave-flash" width="550" height="413" allowscriptaccess="always" allowfullscreen="true"></embed> ]]></media:player>
+      <media:title>Dave Glassco Supports Miro</media:title>
+      <media:thumbnail url="http://e.static.blip.tv/Miropcf-DaveGlasscoSupportsMiro959.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/by/2.0/</creativeCommons:license>
+    </item>
+  </channel>
+</rss>

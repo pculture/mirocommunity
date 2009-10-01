@@ -47,7 +47,7 @@ VIDEO_THUMB_SIZES = [
     (140, 110)]
 
 VIDEO_SERVICE_REGEXES = (
-    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/'),
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/'),
     ('YouTube', r'http://(www\.)?youtube\.com/'),
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
     ('Vimeo', r'http://(www\.)?vimeo\.com/'))
@@ -264,6 +264,8 @@ class Feed(Source):
                 skip = True
 
             file_url = None
+            file_url_length = None
+            file_url_mimetype = None
             embed_code = None
             flash_enclosure_url = None
             if 'updated_parsed' in entry:
@@ -275,6 +277,8 @@ class Feed(Source):
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure['href']
+                file_url_length = video_enclosure.get('length')
+                file_url_mimetype = video_enclosure.get('type')
 
             if link and not skip:
                 try:
@@ -316,10 +320,13 @@ class Feed(Source):
 
             video = Video(
                 name=entry['title'],
+                guid=guid,
                 site=self.site,
                 description=sanitize(entry.get('summary', ''),
                                      extra_filters=['img']),
                 file_url=file_url or '',
+                file_url_length=file_url_length,
+                file_url_mimetype=file_url_mimetype,
                 embed_code=embed_code or '',
                 flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
@@ -793,13 +800,10 @@ class Video(models.Model):
             return 'posted'
 
     def video_service(self):
-        if self.feed:
-            url = self.feed.feed_url
-        elif self.video_service_url:
-            url = self.website_url
-        else:
+        if not self.website_url:
             return
 
+        url = self.website_url
         for service, regexp in VIDEO_SERVICE_REGEXES:
             if re.search(regexp, url, re.I):
                 return service

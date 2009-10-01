@@ -1,4 +1,9 @@
+import datetime
+import os.path
 from urllib import quote_plus, urlencode
+
+import feedparser
+import vidscraper
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -468,3 +473,157 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(video.website_url, self.POST_data['website_url'])
         self.assertEquals(video.file_url, '')
         self.assertEquals(video.embed_code, self.POST_data['embed'])
+
+
+# -----------------------------------------------------------------------------
+# Feed tests
+# -----------------------------------------------------------------------------
+
+class MockVidScraper(object):
+
+    errors = vidscraper.errors
+
+    def auto_scrape(self, link, fields=None):
+        raise vidscraper.errors.Error('could not scrape %s' % link)
+
+class FeedModelTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['default_feed']
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.vidscraper = models.vidscraper
+        models.vidscraper = MockVidScraper()
+
+    def tearDown(self):
+        BaseTestCase.tearDown(self)
+        models.vidscraper = self.vidscraper
+        del self.vidscraper
+
+    def _data_file(self, filename):
+        return os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                'testdata',
+                filename))
+
+    def test_auto_approve_True(self):
+        """
+        If Feed.auto_approve is True, the imported videos should be marked as
+        active.
+        """
+        feed = models.Feed.objects.get()
+        feed.auto_approve = True
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 5)
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+
+    def test_auto_approve_False(self):
+        """
+        If Feed.auto_approve is False, the imported videos should be marked as
+        unapproved.
+        """
+        feed = models.Feed.objects.get()
+        feed.auto_approve = False
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 5)
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
+
+    def test_entries_inserted_in_reverse_order(self):
+        """
+        When adding entries from a feed, they should be added to the database
+        in rever order (oldest first)
+        """
+        feed = models.Feed.objects.get()
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        parsed_feed = feedparser.parse(feed.feed_url)
+        parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
+        db_guids = models.Video.objects.order_by('id').values_list('guid',
+                                                                   flat=True)
+        self.assertEquals(list(parsed_guids), list(db_guids))
+
+    def test_ignore_duplicate_guid(self):
+        """
+        If the GUID already exists for this feed, the newer item should be
+        skipped.
+        """
+        feed = models.Feed.objects.get()
+        feed.feed_url = self._data_file('feed_with_duplicate_guid.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 1)
+        self.assertEquals(models.Video.objects.get().name, 'Old Item')
+
+    def test_ignore_duplicate_link(self):
+        """
+        If the GUID already exists for this feed, the newer item should be
+        skipped.
+        """
+        feed = models.Feed.objects.get()
+        feed.feed_url = self._data_file('feed_with_duplicate_link.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 1)
+        self.assertEquals(models.Video.objects.get().name, 'Old Item')
+
+    def test_entries_include_feed_data(self):
+        """
+        Videos imported from feeds should pull the following from the RSS feed:
+        * GUID
+        * name
+        * description (sanitized)
+        * website URL
+        * publish date
+        * file URL
+        * file length
+        * file MIME type
+        * thumbnail
+        """
+        feed = models.Feed.objects.get()
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
+        self.assertEquals(video.name, u'Dave Glassco Supports Miro')
+        self.assertEquals(video.description,
+                          '>\n\n<br />\n\nDave is a great advocate and '
+                          'supporter of Miro.')
+        self.assertEquals(video.website_url, 'http://blip.tv/file/779122')
+        self.assertEquals(video.file_url,
+                          'http://blip.tv/file/get/'
+                          'Miropcf-DaveGlasscoSupportsMiro942.mp4')
+        self.assertEquals(video.file_url_length, 16018279)
+        self.assertEquals(video.file_url_mimetype, 'video/vnd.objectvideo')
+        self.assertTrue(video.has_thumbnail)
+        self.assertEquals(video.thumbnail_url,
+                          'http://e.static.blip.tv/'
+                          'Miropcf-DaveGlasscoSupportsMiro959.jpg')
+        self.assertEquals(video.when_published,
+                          datetime.datetime(2008, 3, 27, 23, 25, 51))
+        self.assertEquals(video.video_service(), 'blip.tv')
+
+    def test_video_service(self):
+        """
+        Feed.video_service() should return the name of the video service that
+        the feed comes from.  If it doesn't come from a known service, it
+        should return None.
+        """
+        services = (
+            ('YouTube',
+             'http://gdata.youtube.com/feeds/base/standardfeeds/top_rated'),
+            ('YouTube',
+             'http://www.youtube.com/rss/user/test/video.rss'),
+            ('blip.tv', 'http://miropcf.blip.tv/rss'),
+            ('Vimeo', 'http://vimeo.com/tag:miro/rss'))
+
+        feed = models.Feed.objects.get()
+        for service, url in services:
+            feed.feed_url = url
+            self.assertEquals(feed.video_service(), service,
+                              '%s was incorrectly described as %s' %
+                              (url, feed.video_service()))
+

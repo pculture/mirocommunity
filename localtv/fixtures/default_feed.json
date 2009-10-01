@@ -1,0 +1,1 @@
+[{"pk": 1, "model": "localtv.feed", "fields": {"status": 1, "auto_categories": [], "last_updated": "2009-01-01 00:00:00", "name": "miropcf", "feed_url": "http://miropcf.blip.tv/rss", "webpage": "http://miropcf.blip.tv/", "description": "miropcf description", "site": 1, "etag": "", "auto_authors": [], "user": null, "when_submitted": "2009-01-01 00:00:00", "auto_approve": 1}}]
