@@ -7,6 +7,7 @@ import vidscraper
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.base import File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
@@ -27,6 +28,24 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
+        for user in User.objects.all():
+            try:
+                profile = user.get_profile()
+            except models.Profile.DoesNotExist:
+                pass
+            else:
+                if profile.logo:
+                    profile.logo.delete()
+
+    def _data_file(self, filename):
+        """
+        Returns the absolute path to a file in our testdata directory.
+        """
+        return os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                'testdata',
+                filename))
 
     def assertRequiresAuthentication(self, url, *args,
                                      **kwargs):
@@ -496,13 +515,6 @@ class FeedModelTestCase(BaseTestCase):
         models.vidscraper = self.vidscraper
         del self.vidscraper
 
-    def _data_file(self, filename):
-        return os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                'testdata',
-                filename))
-
     def test_auto_approve_True(self):
         """
         If Feed.auto_approve is True, the imported videos should be marked as
@@ -623,3 +635,215 @@ class FeedModelTestCase(BaseTestCase):
                               '%s was incorrectly described as %s' %
                               (url, feed.video_service()))
 
+
+# -----------------------------------------------------------------------------
+# User administration tests
+# -----------------------------------------------------------------------------
+
+
+class UserAdministrationTestCase(BaseTestCase):
+
+    url = reverse('localtv_admin_users')
+
+    def test_authentication(self):
+        """
+        The User administration page should only be visible to administrators.
+        """
+        self.assertRequiresAuthentication(self.url)
+
+        self.assertRequiresAuthentication(self.url,
+                                          username='user', password='password')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.status_code, 200)
+
+    def test_GET(self):
+        """
+        A GET request to the users view should render the
+        'localtv/subsite/admin/users.html' template and include a formset for
+        the users, an add_user_form, and the headers for the formset.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/users.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue('add_user_form' in response.context[0])
+        self.assertTrue('headers' in response.context[0])
+
+    def test_POST_add_failure(self):
+        """
+        A POST to the users view with a POST['submit'] value of 'Add' but a
+        failing form should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url,
+                          {'submit': 'Add'})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/users.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['add_user_form'],
+                    'errors') is not None)
+        self.assertTrue('headers' in response.context[0])
+
+    def test_POST_save_failure(self):
+        """
+        A POST to the users view with a POST['submit'] value of 'Save' but a
+        failing formset should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/users.html')
+        self.assertTrue(
+            getattr(response.context[0]['formset'], 'errors') is not None)
+        self.assertTrue('add_user_form' in response.context[0])
+        self.assertTrue('headers' in response.context[0])
+
+    def test_POST_add_no_password(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Add' and a
+        successful form should create a new user and redirect the user back to
+        the management page.  If the password isn't specified,
+        User.has_unusable_password() should be True.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'new@testserver.local',
+            'role': 'user',
+            'description': 'A New User',
+            'logo': file(self._data_file('logo.png'))
+            }
+        response = c.post(self.url, POST_data)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        new = User.objects.order_by('-id')[0]
+        profile = new.get_profile()
+        for key, value in POST_data.items():
+            if key == 'submit':
+                pass
+            elif key == 'role':
+                new_site_location = models.SiteLocation.objects.get()
+                self.assertFalse(new_site_location.user_is_admin(new))
+            elif key == 'logo':
+                profile.logo.open()
+                value.seek(0)
+                self.assertEquals(profile.logo.read(), value.read())
+            elif key == 'description':
+                self.assertEquals(profile.description, value)
+            else:
+                self.assertEquals(getattr(new, key), value)
+
+        self.assertFalse(new.has_usable_password())
+
+    def test_POST_add_password(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Add' and a
+        successful form should create a new user and redirect the user back to
+        the management page.  If the password is specified, it should be set
+        for the user.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            'description': 'A New User',
+            'logo': file(self._data_file('logo.png')),
+            'password_f': 'new_password',
+            'password_f2': 'new_password'
+            }
+        response = c.post(self.url, POST_data)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        new = User.objects.order_by('-id')[0]
+        profile = new.get_profile()
+        for key, value in POST_data.items():
+            if key in ('submit', 'password_f', 'password_f2'):
+                pass
+            elif key == 'role':
+                new_site_location = models.SiteLocation.objects.get()
+                self.assertTrue(new_site_location.user_is_admin(new))
+            elif key == 'logo':
+                profile.logo.open()
+                value.seek(0)
+                self.assertEquals(profile.logo.read(), value.read())
+            elif key == 'description':
+                self.assertEquals(profile.description, value)
+            else:
+                self.assertEquals(getattr(new, key), value)
+
+        self.assertTrue(new.check_password(POST_data['password_f']))
+
+    def test_POST_save_no_changes(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  The default values of
+        the formset should not change the values of any of the Users.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        user = User.objects.get(username='user')
+        # set some profile data, to make sure we're not erasing it
+        models.Profile.objects.create(
+            user=user,
+            logo=File(file(self._data_file('logo.png'))),
+            description='Some description about the user')
+
+        old_users = User.objects.values()
+        old_profiles = models.Profile.objects.values()
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+
+        POST_data = {
+            'submit': 'Save',
+            'form-TOTAL_FORMS': formset.total_form_count(),
+            'form-INITIAL_FORMS': formset.initial_form_count()}
+
+        for index, form in enumerate(formset.forms):
+            for name, field in form.fields.items():
+                data = form.initial.get(name, field.initial)
+                if callable(data):
+                    data = data()
+                if data is not None:
+                    POST_data['form-%i-%s' % (index, name)] = data
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        for old, new in zip(old_users, User.objects.values()):
+            self.assertEquals(old, new)
+        for old, new in zip(old_profiles, models.Profile.objects.values()):
+            self.assertEquals(old, new)

@@ -27,7 +27,7 @@ def users(request, sitelocation=None):
     add_user_form = forms.AuthorForm()
     if request.method == 'POST':
         if request.POST['submit'] == 'Add':
-            add_user_form = forms.AuthorForm(request.POST)
+            add_user_form = forms.AuthorForm(request.POST, request.FILES)
             if add_user_form.is_valid():
                 user = add_user_form.save()
                 return HttpResponseRedirect(request.path)
