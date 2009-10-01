@@ -28,6 +28,31 @@ class BaseTestCase(TestCase):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
 
+    def assertRequiresAuthentication(self, url, *args,
+                                     **kwargs):
+        """
+        Assert that the given URL requires the user to be authenticated.
+
+        If additional arguments are passed, they are passed to the Client.get
+        method
+
+        If keyword arguments are present, they're passed to Client.login before
+        the URL is accessed.
+
+        @param url_or_reverse: the URL to access, or a name we can reverse
+        """
+        c = Client()
+
+        if kwargs:
+            c.login(**kwargs)
+
+        response = c.get(url, *args)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s?next=%s' %
+                          (self.site_location.site.domain,
+                           settings.LOGIN_URL,
+                           quote_plus(url)))
 
 # -----------------------------------------------------------------------------
 # Video submit tests
@@ -53,14 +78,7 @@ class SubmitVideoBaseTestCase(BaseTestCase):
         """
         self.site_location.submission_requires_login = True
         self.site_location.save()
-        c = Client()
-        response = c.get(self.url, self.GET_data)
-        self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'],
-                          'http://%s%s?next=%s' %
-                          (self.site_location.site.domain,
-                           settings.LOGIN_URL,
-                           quote_plus(self.url)))
+        self.assertRequiresAuthentication(self.url)
 
     def test_permissions_authenticated(self):
         """
@@ -74,19 +92,13 @@ class SubmitVideoBaseTestCase(BaseTestCase):
         user = User.objects.create_user('user', 'user@testserver',
                                         password='password')
 
-        c = Client()
-        c.login(username='user', password='password')
-        response = c.get(self.url, self.GET_data)
-        self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'],
-                          'http://%s%s?next=%s' %
-                          (self.site_location.site.domain,
-                           settings.LOGIN_URL,
-                           quote_plus(self.url)))
+        self.assertRequiresAuthentication(self.url, self.GET_data,
+                                          username='user', password='password')
 
         self.site_location.admins.add(user)
         self.site_location.save()
 
+        c = Client()
         c.login(username='user', password='password')
         response = c.get(self.url, self.GET_data)
         self.assertEquals(response.status_code, 200)
