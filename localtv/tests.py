@@ -15,7 +15,7 @@ from localtv import models
 
 
 class BaseTestCase(TestCase):
-    fixtures = ['default_site', 'users']
+    fixtures = ['site', 'users']
 
     def setUp(self):
         TestCase.setUp(self)
@@ -484,7 +484,7 @@ class MockVidScraper(object):
 
 class FeedModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['default_feed']
+    fixtures = BaseTestCase.fixtures + ['feed']
 
     def setUp(self):
         BaseTestCase.setUp(self)
