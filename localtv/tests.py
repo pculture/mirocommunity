@@ -24,6 +24,10 @@ class BaseTestCase(TestCase):
         settings.SITE_ID = self.old_site_id
 
 
+# -----------------------------------------------------------------------------
+# Video submit tests
+# -----------------------------------------------------------------------------
+
 class SubmitVideoBaseTestCase(BaseTestCase):
     abstract = True
     url = None
@@ -365,6 +369,11 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
 
 
     def test_GET(self):
+        """
+        In addition ot the SecondStepSubmitBaseTestCase.test_GET() assrtions,
+        the form should have the name, description, and thumbnail set from the
+        scraped data.
+        """
         submit_form = SecondStepSubmitBaseTestCase.test_GET(self)
         self.assertEquals(submit_form.initial['name'], 'Fixing Otter')
         self.assertEquals(submit_form.initial['description'],
@@ -376,6 +385,12 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
                           '11156136631.95334664852457-424.jpg')
 
     def test_POST_succeed(self):
+        """
+        In addition ot the SecondStepSubmitBaseTestCase.test_POST_succeed()
+        assrtions, the embed request video should have the website_url set to
+        what was POSTed, and the file_url and embed_code set from the scraped
+        data.
+        """
         video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
         self.assertEquals(video.website_url, self.POST_data['url'])
         self.assertEquals(video.file_url,
@@ -411,6 +426,11 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
             }
 
     def test_POST_succeed(self):
+        """
+        In addition ot the SecondStepSubmitBaseTestCase.test_POST_succeed()
+        assrtions, the embed request video should have the website_url and
+        file_url set to what was POSTed.
+        """
         video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
         self.assertEquals(video.website_url, self.POST_data['website_url'])
         self.assertEquals(video.file_url, self.POST_data['url'])
@@ -439,6 +459,11 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
             }
 
     def test_POST_succeed(self):
+        """
+        In addition ot the SecondStepSubmitBaseTestCase.test_POST_succeed()
+        assrtions, the embed request video should have the website_url and
+        embed_code set to what was POSTed.
+        """
         video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
         self.assertEquals(video.website_url, self.POST_data['website_url'])
         self.assertEquals(video.file_url, '')
