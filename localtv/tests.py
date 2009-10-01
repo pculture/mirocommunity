@@ -15,7 +15,7 @@ from localtv import models
 
 
 class BaseTestCase(TestCase):
-    fixtures = ['default_site']
+    fixtures = ['default_site', 'users']
 
     def setUp(self):
         TestCase.setUp(self)
@@ -89,17 +89,11 @@ class SubmitVideoBaseTestCase(BaseTestCase):
         self.site_location.display_submit_button = False
         self.site_location.save()
 
-        user = User.objects.create_user('user', 'user@testserver',
-                                        password='password')
-
         self.assertRequiresAuthentication(self.url, self.GET_data,
                                           username='user', password='password')
 
-        self.site_location.admins.add(user)
-        self.site_location.save()
-
         c = Client()
-        c.login(username='user', password='password')
+        c.login(username='admin', password='admin')
         response = c.get(self.url, self.GET_data)
         self.assertEquals(response.status_code, 200)
 
@@ -177,13 +171,8 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         should be automatically approved, and the user should be saved along
         with the video.
         """
-        user = User.objects.create_user('user', 'user@testserver',
-                                        password='password')
-        self.site_location.admins.add(user)
-        self.site_location.save()
-
         c = Client()
-        c.login(username='user', password='password')
+        c.login(username='admin', password='admin')
         response = c.post(self.url, self.POST_data)
         self.assertEquals(response.status_code, 302)
         self.assertEquals(response['Location'],
@@ -193,7 +182,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
 
         video = models.Video.objects.all()[0]
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
-        self.assertEquals(video.user, user)
+        self.assertEquals(video.user, User.objects.get(username='admin'))
 
 
 class SubmitVideoTestCase(SubmitVideoBaseTestCase):
@@ -286,13 +275,8 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
             status=models.VIDEO_STATUS_UNAPPROVED,
             website_url='http://www.pculture.org/')
 
-        user = User.objects.create_user('user', 'user@testserver',
-                                        password='password')
-        self.site_location.admins.add(user)
-        self.site_location.save()
-
         c = Client()
-        c.login(username='user', password='password')
+        c.login(username='admin', password='admin')
         response = c.post(self.url,
                           {'url': video.website_url})
         self.assertEquals(response.status_code, 302)
