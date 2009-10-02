@@ -452,14 +452,12 @@ class AuthorForm(forms.ModelForm):
         return self.cleaned_data
 
     def save(self, **kwargs):
-        created = not self.instance.pk
         author = forms.ModelForm.save(self, **kwargs)
-        if created:
-            if self.cleaned_data.get('password_f'):
-                author.set_password(self.cleaned_data['password_f'])
-            else:
-                author.set_unusable_password()
-            author.save()
+        if self.cleaned_data.get('password_f'):
+            author.set_password(self.cleaned_data['password_f'])
+        else:
+            author.set_unusable_password()
+        author.save()
         if 'logo' in self.cleaned_data or 'description' in self.cleaned_data:
             try:
                 profile = author.get_profile()

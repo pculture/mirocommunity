@@ -877,6 +877,8 @@ class UserAdministrationTestCase(BaseTestCase):
         POST_data['form-1-description'] = 'Superuser Description'
         POST_data['form-2-username'] = 'new_admin'
         POST_data['form-2-role'] = 'admin'
+        POST_data['form-2-password_f'] = 'new_admin'
+        POST_data['form-2-password_f2'] = 'new_admin'
 
         POST_response = c.post(self.url, POST_data)
         self.assertEquals(POST_response.status_code, 302)
@@ -890,6 +892,7 @@ class UserAdministrationTestCase(BaseTestCase):
         new_admin = User.objects.get(username='new_admin')
         self.assertEquals(new_admin.pk, 1)
         self.assertTrue(self.site_location.user_is_admin(new_admin))
+        self.assertTrue(new_admin.check_password('new_admin'))
 
         superuser = User.objects.get(username='superuser')
         self.assertEquals(superuser.pk, 2)
