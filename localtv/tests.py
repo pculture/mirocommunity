@@ -367,6 +367,27 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 urlencode({'url': 'http://pculture.org/',
                            'tags': 'tag1, tag2'})))
 
+    def test_POST_succeed_canonical(self):
+        """
+        If the URL is a scraped video but the URL we were given is not the
+        canonical URL for that video, the user should be redirected as normal,
+        but with the canonical URL.
+        """
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        c = Client()
+        youtube_url = 'http://www.youtube.com/watch?v=AfsZzeNF8A4'
+        response = c.post(self.url, {
+                'url': youtube_url + '&feature=player_embedded',
+                'tags': 'tag1, tag2'})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_scraped_video'),
+                urlencode({'url': youtube_url,
+                           'tags': 'tag1, tag2'})))
+
 
 class ScrapedTestCase(SecondStepSubmitBaseTestCase):
 

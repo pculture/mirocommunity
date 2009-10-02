@@ -93,7 +93,8 @@ def submit_video(request, sitelocation=None):
                 if 'link' in scraped_data and \
                         scraped_data['link'] != get_dict['url']:
                     request.POST = dict(request.POST)
-                    request.POST['url'] = scraped_data['link']
+                    request.POST['url'] = scraped_data['link'].encode('utf8')
+                    request.POST['tags'] = get_dict['tags'].encode('utf8')
                     # rerun the view, but with the canonical URL
                     return submit_video(request)
 
