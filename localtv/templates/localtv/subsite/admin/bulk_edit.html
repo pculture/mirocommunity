@@ -123,10 +123,11 @@
   <br />
   {% endblock %}
 
-
+  {% if page %}
     <div class="pag">
     {% pagetabs page %}
     </div>
+    {% endif %}
     <table class="rounded">
     <thead>
       <tr>
@@ -162,7 +163,7 @@
       {% endif %}
       {% for form in formset.forms|slice:":-1" %}
       <tr class="{% cycle "" "grey" %}" {% if form.errors %}style="display: none;"{% endif %}>
-        <td>{{ form.bulk }}</td>
+        <tdfo>{{ form.bulk }}</td>
         {% block columns %}
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
@@ -256,9 +257,11 @@
       {% endfor %}
     </tbody>
   </table>
+  {% if page %}
   <div class="pag bottom">
     {% pagetabs page %}
   </div>
+  {% endif %}
 </form>
 </div>
 {% endblock content %}
