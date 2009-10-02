@@ -433,6 +433,13 @@ class AuthorForm(forms.ModelForm):
         return value
 
     def clean(self):
+        if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
+            # can't delete a superuser, so remove that from the cleaned data
+            self.cleaned_data['DELETE'] = False
+            prefix = self.add_prefix('DELETE')
+            self.data[prefix] = '' # have to set our data directly because
+                                   # BaseModelFormSet pulls the value from
+                                   # there
         if 'password_f' in self.cleaned_data or \
                 'password_f2' in self.cleaned_data:
             password = self.cleaned_data.get('password_f')
@@ -468,7 +475,8 @@ class AuthorForm(forms.ModelForm):
             profile.save()
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':
-                self.sitelocation.admins.add(author)
+                if not author.is_superuser:
+                    self.sitelocation.admins.add(author)
             else:
                 self.sitelocation.admins.remove(author)
             self.sitelocation.save()

@@ -31,16 +31,6 @@ def users(request, sitelocation=None):
             if add_user_form.is_valid():
                 user = add_user_form.save()
                 return HttpResponseRedirect(request.path)
-        elif request.POST['submit'] == 'Delete':
-            user_id = request.POST.get('id')
-            if user_id is not None:
-                try:
-                    user = User.objects.get(pk=user_id)
-                except User.DoesNotExist:
-                    pass
-                else:
-                    sitelocation.admins.remove(user)
-            return HttpResponseRedirect(request.path)
         elif request.POST['submit'] == 'Save':
             formset = forms.AuthorFormSet(request.POST, request.FILES,
                                           queryset=User.objects.all())

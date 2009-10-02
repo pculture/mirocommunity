@@ -645,6 +645,26 @@ class UserAdministrationTestCase(BaseTestCase):
 
     url = reverse('localtv_admin_users')
 
+    @staticmethod
+    def _POST_data_from_formset(formset):
+        """
+        This method encapsulates the logic to turn a Formset object into a
+        dictionary of data that can be sent to a view.
+        """
+        POST_data = {
+            'submit': 'Save',
+            'form-TOTAL_FORMS': formset.total_form_count(),
+            'form-INITIAL_FORMS': formset.initial_form_count()}
+
+        for index, form in enumerate(formset.forms):
+            for name, field in form.fields.items():
+                data = form.initial.get(name, field.initial)
+                if callable(data):
+                    data = data()
+                if data is not None:
+                    POST_data['form-%i-%s' % (index, name)] = data
+        return POST_data
+
     def test_authentication(self):
         """
         The User administration page should only be visible to administrators.
@@ -823,20 +843,7 @@ class UserAdministrationTestCase(BaseTestCase):
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
 
-        POST_data = {
-            'submit': 'Save',
-            'form-TOTAL_FORMS': formset.total_form_count(),
-            'form-INITIAL_FORMS': formset.initial_form_count()}
-
-        for index, form in enumerate(formset.forms):
-            for name, field in form.fields.items():
-                data = form.initial.get(name, field.initial)
-                if callable(data):
-                    data = data()
-                if data is not None:
-                    POST_data['form-%i-%s' % (index, name)] = data
-
-        POST_response = c.post(self.url, POST_data)
+        POST_response = c.post(self.url, self._POST_data_from_formset(formset))
         self.assertEquals(POST_response.status_code, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
@@ -847,3 +854,84 @@ class UserAdministrationTestCase(BaseTestCase):
             self.assertEquals(old, new)
         for old, new in zip(old_profiles, models.Profile.objects.values()):
             self.assertEquals(old, new)
+
+    def test_POST_save_changes(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        # form-0 is admin (3)
+        # form-1 is superuser (2)
+        # form-2 is user (1)
+        POST_data['form-0-first_name'] = 'New First'
+        POST_data['form-0-last_name'] = 'New Last'
+        POST_data['form-0-role'] = 'user'
+        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-description'] = 'Superuser Description'
+        POST_data['form-2-username'] = 'new_admin'
+        POST_data['form-2-role'] = 'admin'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(User.objects.count(), 3) # no one got added
+
+        new_admin = User.objects.get(username='new_admin')
+        self.assertEquals(new_admin.pk, 1)
+        self.assertTrue(self.site_location.user_is_admin(new_admin))
+
+        superuser = User.objects.get(username='superuser')
+        self.assertEquals(superuser.pk, 2)
+        self.assertEquals(superuser.is_superuser, True)
+        self.assertFalse(superuser in self.site_location.admins.all())
+        profile = superuser.get_profile()
+        self.assertTrue(profile.logo.name.endswith('logo.png'))
+        self.assertEquals(profile.description, 'Superuser Description')
+
+        old_admin = User.objects.get(username='admin')
+        self.assertEquals(old_admin.pk, 3)
+        self.assertEquals(old_admin.first_name, 'New First')
+        self.assertEquals(old_admin.last_name, 'New Last')
+        self.assertFalse(self.site_location.user_is_admin(old_admin))
+
+    def test_POST_delete(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  If form-*-DELETE is
+        present, that user should be removed, unless that user is a superuser.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        # form-0 is admin (3)
+        # form-1 is superuser (2)
+        # form-2 is user (1)
+        POST_data['form-1-DELETE'] = 'yes'
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(User.objects.count(), 2) # one user got removed
+
+        self.assertEquals(User.objects.filter(username='user').count(), 0)
+        self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
