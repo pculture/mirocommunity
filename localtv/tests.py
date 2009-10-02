@@ -8,6 +8,7 @@ import vidscraper
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.base import File
+from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
@@ -17,6 +18,14 @@ from localtv import models
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
+
+    def run(self, *args, **kwargs):
+        # hack to prevent the test runner from treating abstract classes as
+        # something with tests to run
+        if self.__class__.__dict__.get('abstract'):
+            return
+        else:
+            return TestCase.run(self, *args, **kwargs)
 
     def setUp(self):
         TestCase.setUp(self)
@@ -47,6 +56,17 @@ class BaseTestCase(TestCase):
                 'testdata',
                 filename))
 
+    def assertIsInstance(self, obj, klass):
+        """
+        Assert that the given object is an instance of the given class.
+
+        @param obj: the object we are testing
+        @param klass: the klass the object should be an instance of
+        """
+        self.assertTrue(isinstance(obj, klass),
+                        "%r is not an instance of %r; %s instead" % (
+                obj, klass, type(obj)))
+
     def assertRequiresAuthentication(self, url, *args,
                                      **kwargs):
         """
@@ -58,7 +78,7 @@ class BaseTestCase(TestCase):
         If keyword arguments are present, they're passed to Client.login before
         the URL is accessed.
 
-        @param url_or_reverse: the URL to access, or a name we can reverse
+        @param url_or_reverse: the URL to access
         """
         c = Client()
 
@@ -81,14 +101,6 @@ class SubmitVideoBaseTestCase(BaseTestCase):
     abstract = True
     url = None
     GET_data = {}
-
-    def run(self, *args, **kwargs):
-        # hack to prevent the test runner from treating abstract classes as
-        # something with tests to run
-        if self.__class__.__dict__.get('abstract'):
-            return
-        else:
-            return BaseTestCase.run(self, *args, **kwargs)
 
     def test_permissions_unauthenticated(self):
         """
@@ -658,11 +670,370 @@ class FeedModelTestCase(BaseTestCase):
 
 
 # -----------------------------------------------------------------------------
+# Approve/reject video tests
+# -----------------------------------------------------------------------------
+
+
+class AdministrationBaseTestCase(BaseTestCase):
+
+    abstract = True
+
+    def test_authentication(self):
+        """
+        This view should only be visible to administrators.
+        """
+        self.assertRequiresAuthentication(self.url)
+
+        self.assertRequiresAuthentication(self.url,
+                                          username='user', password='password')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.status_code, 200)
+
+
+class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    url = reverse('localtv_admin_approve_reject')
+
+    def test_GET(self):
+        """
+        A GET request to the approve/reject view should render the
+        'localtv/subsite/admin/approve_reject_table.html' template.  The
+        context should include 'current_video' (the first Video object),
+        'page_obj' (a Django Page object), and 'video_list' (a list of the
+        Video objects on the current page).
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/approve_reject_table.html')
+        self.assertIsInstance(response.context['current_video'],
+                              models.Video)
+        self.assertIsInstance(response.context['page_obj'],
+                              Page)
+        video_list = response.context['video_list']
+        self.assertEquals(video_list[0], response.context['current_video'])
+        self.assertEquals(len(video_list), 10)
+
+    def test_GET_with_page(self):
+        """
+        A GET request ot the approve/reject view with a 'page' GET argument
+        should return that page of the videos to be approved/rejected.  The
+        first page is the 10 oldest videos, the second page is the next 10,
+        etc.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED).order_by(
+            'when_submitted', 'when_published')
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        page1_response = c.get(self.url,
+                               {'page': '1'})
+        self.assertEquals(list(response.context['video_list']),
+                          list(page1_response.context['video_list']))
+        self.assertEquals(list(page1_response.context['video_list']),
+                          list(unapproved_videos[:10]))
+        page2_response = c.get(self.url,
+                               {'page': '2'})
+        self.assertNotEquals(page1_response, page2_response)
+        self.assertEquals(list(page2_response.context['video_list']),
+                          list(unapproved_videos[10:20]))
+        page3_response = c.get(self.url,
+                               {'page': '3'}) # doesn't exist, should return
+                                              # page 2
+        self.assertEquals(list(page2_response.context['video_list']),
+                          list(page3_response.context['video_list']))
+
+    def test_GET_preview(self):
+        """
+        A GET request to the preview_video view should render the
+        'localtv/subsite/admin/video_preview.html' template and have a
+        'current_video' in the context.  The current_video should be the video
+        with the primary key passed in as GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_preview_video')
+        self.assertRequiresAuthentication(url, {'video_id': str(video.pk)})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url,
+                         {'video_id': str(video.pk)})
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/video_preview.html')
+        self.assertEquals(response.context['current_video'],
+                          video)
+
+    def test_GET_approve(self):
+        """
+        A GET request to the approve_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_approve_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        video = models.Video.objects.get(pk=video.pk) # reload
+        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue(video.when_approved is not None)
+        self.assertTrue(video.last_featured is None)
+
+    def test_GET_approve_with_feature(self):
+        """
+        A GET request to the approve_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  When 'feature' is present in the GET arguments, the
+        video should also be featured.
+        """
+        # XXX why do we have this function
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_approve_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk,
+                                                'feature': 'yes'})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk),
+                               'feature': 'yes'},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        video = models.Video.objects.get(pk=video.pk) # reload
+        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue(video.when_approved is not None)
+        self.assertTrue(video.last_featured is not None)
+
+    def test_GET_reject(self):
+        """
+        A GET request to the reject_video view should reject the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_reject_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        video = models.Video.objects.get(pk=video.pk) # reload
+        self.assertEquals(video.status, models.VIDEO_STATUS_REJECTED)
+        self.assertTrue(video.last_featured is None)
+
+    def test_GET_feature(self):
+        """
+        A GET request to the feature_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  If the video is unapproved, it should become
+        approved.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_feature_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        video = models.Video.objects.get(pk=video.pk) # reload
+        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue(video.when_approved is not None)
+        self.assertTrue(video.last_featured is not None)
+
+    def test_GET_unfeature(self):
+        """
+        A GET request to the unfeature_video view should unfeature the video
+        and redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  The video status is not affected.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_ACTIVE).exclude(
+            last_featured=None)[0]
+
+        url = reverse('localtv_admin_unfeature_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        video = models.Video.objects.get(pk=video.pk) # reload
+        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue(video.last_featured is None)
+
+    def test_GET_reject_all(self):
+        """
+        A GET request to the reject_all view should reject all the videos on
+        the given page and redirect back to the referrer.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+        page2_videos = unapproved_videos[10:20]
+
+        url = reverse('localtv_admin_reject_all')
+        self.assertRequiresAuthentication(url, {'page': 2})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'page': 2},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        for video in page2_videos:
+            self.assertEquals(video.status, models.VIDEO_STATUS_REJECTED)
+
+    def test_GET_approve_all(self):
+        """
+        A GET request to the reject_all view should approve all the videos on
+        the given page and redirect back to the referrer.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+        page2_videos = unapproved_videos[10:20]
+
+        url = reverse('localtv_admin_approve_all')
+        self.assertRequiresAuthentication(url, {'page': 2})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'page': 2},
+                         HTTP_REFERER='http://referer.com')
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://referer.com')
+
+        for video in page2_videos:
+            self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+            self.assertTrue(video.when_approved is not None)
+
+
+    def test_GET_clear_all(self):
+        """
+        A GET request to the clear_all view should render the
+        'localtv/subsite/admin/clear_confirm.html' and have a 'videos' variable
+        in the context which is a list of all the unapproved videos.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos_count = unapproved_videos.count()
+
+        url = reverse('localtv_admin_clear_all')
+        self.assertRequiresAuthentication(url)
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/clear_confirm.html')
+        self.assertEquals(list(response.context['videos']),
+                          list(unapproved_videos))
+
+        # nothing was rejected
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(),
+                          unapproved_videos_count)
+
+    def test_POST_clear_all_failure(self):
+        """
+        A POST request to the clear_all view without POST['confirm'] = 'yes'
+        should render the 'localtv/subsite/admin/clear_confirm.html' template
+        and have a 'videos' variable in the context which is a list of all the
+        unapproved videos.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos_count = unapproved_videos.count()
+
+        url = reverse('localtv_admin_clear_all')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/clear_confirm.html')
+        self.assertEquals(list(response.context['videos']),
+                          list(unapproved_videos))
+
+        # nothing was rejected
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(),
+                          unapproved_videos_count)
+
+    def test_POST_clear_all_succeed(self):
+        """
+        A POST request to the clear_all view with POST['confirm'] = 'yes'
+        should reject all the videos and redirect to the approve_reject view.
+        """
+        unapproved_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos_count = unapproved_videos.count()
+
+        rejected_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_REJECTED)
+        rejected_videos_count = rejected_videos.count()
+
+        url = reverse('localtv_admin_clear_all')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(url, {'confirm': 'yes'})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_admin_approve_reject')))
+
+        # all the unapproved videos are now rejected
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_REJECTED).count(),
+                          unapproved_videos_count + rejected_videos_count)
+
+
+# -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
 
 
-class UserAdministrationTestCase(BaseTestCase):
+class UserAdministrationTestCase(AdministrationBaseTestCase):
 
     url = reverse('localtv_admin_users')
 
@@ -685,20 +1056,6 @@ class UserAdministrationTestCase(BaseTestCase):
                 if data is not None:
                     POST_data['form-%i-%s' % (index, name)] = data
         return POST_data
-
-    def test_authentication(self):
-        """
-        The User administration page should only be visible to administrators.
-        """
-        self.assertRequiresAuthentication(self.url)
-
-        self.assertRequiresAuthentication(self.url,
-                                          username='user', password='password')
-
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
 
     def test_GET(self):
         """

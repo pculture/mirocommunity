@@ -171,7 +171,6 @@ def clear_all(request, sitelocation=None):
         site=sitelocation.site,
         status=models.VIDEO_STATUS_UNAPPROVED)
     if request.POST.get('confirm') == 'yes':
-        print 'clearing'
         for video in videos:
             video.status = models.VIDEO_STATUS_REJECTED
             video.save()
