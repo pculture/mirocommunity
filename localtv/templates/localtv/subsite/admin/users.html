@@ -47,6 +47,8 @@
 {% block quick-edit-colspan %}3{% endblock %}
 {% block quick-edit %}
 {{ form.id }}
+{{ form.username.as_hidden }}
+{{ form.non_field_errors }}
 <table>
   <tbody>
     <tr>

@@ -47,6 +47,7 @@
   {% endblock %}
   <form method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
     {% block massedit %}
+    {% ifnotequal formset.initial_form_count formset.total_form_count %}
   <table id="massedit" class="rounded">
 
     <tbody>
@@ -121,6 +122,7 @@
   <br />
   <br />
   <br />
+  {% endifnotequal %}
   {% endblock %}
 
   {% if page %}
@@ -161,9 +163,9 @@
         <td colspan="4">{{ formset.non_form_errors }}</td>
       </tr>
       {% endif %}
-      {% for form in formset.forms|slice:":-1" %}
+      {% for form in formset.initial_forms %}
       <tr class="{% cycle "" "grey" %}" {% if form.errors %}style="display: none;"{% endif %}>
-        <tdfo>{{ form.bulk }}</td>
+        <td>{{ form.bulk }}</td>
         {% block columns %}
         <td>
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
@@ -237,7 +239,7 @@
           </table>
           {% endblock %}
           <button class="med_button marginbottom behave" type="button" onclick="return showEdit(this, false);"><span>Cancel</span></button>
-          <button class="med_button marginbottom behave"><span>Update</span></button>
+          <button class="med_button marginbottom behave" name="submit" value="Save"><span>Update</span></button>
         </td>
         {% block quick-edit-additional-columns %}
         <td width="250" class="checklist">
