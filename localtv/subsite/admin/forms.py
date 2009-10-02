@@ -393,6 +393,7 @@ class AuthorForm(forms.ModelForm):
     description = forms.CharField(
         widget=forms.Textarea,
         required=False)
+    website = forms.URLField(required=False)
     password_f = forms.CharField(
         widget=forms.PasswordInput,
         required=False,
@@ -424,6 +425,7 @@ class AuthorForm(forms.ModelForm):
                 profile = models.Profile.objects.create(
                     user=self.instance)
             self.fields['description'].initial = profile.description
+            self.fields['website'].initial = profile.website
 
     def clean_username(self):
         value = self.cleaned_data.get('username')
@@ -458,18 +460,20 @@ class AuthorForm(forms.ModelForm):
         else:
             author.set_unusable_password()
         author.save()
-        if 'logo' in self.cleaned_data or 'description' in self.cleaned_data:
+        if 'logo' in self.cleaned_data or 'description' in self.cleaned_data \
+                or 'website' in self.cleaned_data:
             try:
                 profile = author.get_profile()
             except models.Profile.DoesNotExist:
                 profile = models.Profile.objects.create(
                     user=author)
-        if self.cleaned_data.get('logo'):
-            logo = self.cleaned_data['logo']
-            profile.logo = logo
-            profile.save()
-        if 'description' in self.cleaned_data:
-            profile.description = self.cleaned_data['description']
+            if self.cleaned_data.get('logo'):
+                logo = self.cleaned_data['logo']
+                profile.logo = logo
+            if 'description' in self.cleaned_data:
+                profile.description = self.cleaned_data['description']
+            if 'website' in self.cleaned_data:
+                profile.website = self.cleaned_data['website']
             profile.save()
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':
