@@ -1029,6 +1029,71 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
 
 # -----------------------------------------------------------------------------
+# Sources administration tests
+# -----------------------------------------------------------------------------
+
+
+class SourcesAdministrationTestCase(AdministrationBaseTestCase):
+
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'feeds', 'savedsearches']
+
+    url = reverse('localtv_admin_manage_page')
+
+    def test_GET(self):
+        """
+        A GET request to the manage_sources view should return a paged view of
+        the sources (feeds and saved searches), sorted in alphabetical order.
+        It should render the 'localtv/subsite/admin/manage_sources.html'
+        template.
+
+        Variables in the context include:
+
+        * add_feed_form (a form to add a new feed)
+        * page (a Page object for the current page)
+        * headers (a list of headers to display)
+        * search_string (the search string we're using to filter sources)
+        * source_filter (the type of source to show)
+        * categories (a QuerySet of the current categories)
+        * users (a QuerySet of the current users)
+        * successful (True if the last operation was successful)
+        * formset (the FormSet for the sources on this page)
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/manage_sources.html')
+        self.assertTrue('add_feed_form' in response.context[0])
+        self.assertTrue('page' in response.context[0])
+        self.assertTrue('headers' in response.context[0])
+        self.assertEquals(response.context[0]['search_string'], '')
+        self.assertTrue(response.context[0]['source_filter'] is None)
+        self.assertEquals(response.context[0]['categories'].model,
+                          models.Category)
+        self.assertTrue(response.context[0]['users'].model, User)
+        self.assertTrue('successful' in response.context[0])
+        self.assertTrue('formset' in response.context[0])
+
+        page = response.context['page']
+        self.assertEquals(len(page.object_list), 15)
+        self.assertEquals(list(sorted(page.object_list,
+                                 key=lambda x:unicode(x).lower())),
+                          page.object_list)
+
+
+        # TODO(pswartz) things to test:
+        ## editing data on individual forms
+        ## deleting individual forms
+        ## bulk edits
+        ## bulk deleting
+        ## switching categories/authors switches unchanged videos
+        ## sorting
+        ## filtering
+
+
+# -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
 
