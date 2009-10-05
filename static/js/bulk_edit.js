@@ -16,11 +16,16 @@ function showEdit(obj, show) {
     return false;
 }
 
+function bulkSubmit() {
+    $("#labels form:last").submit();
+    $("#labels form:last button[type=submit]:eq(0)").click();
+    $("#labels form:last input[type=submit]:eq(0)").click();
+}
+
 function toggleDelete(obj) {
     obj = $(obj);
     obj.next().val('checked');
-    $("#labels form:last").submit();
-    $("#labels form:last input[type=submit]:eq(0)").click();
+    bulkSubmit();
     return false;
 }
 
@@ -31,7 +36,7 @@ function bulkAction() {
        $("#massedit").show();
     } else if (action) {
         $("#bulk_action").val(action);
-        $("#labels form:eq(1)").submit();
+        bulkSubmit();
     } else {
         alert('Please select an action.');
     }
