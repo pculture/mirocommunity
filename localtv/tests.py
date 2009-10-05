@@ -12,9 +12,10 @@ from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
+from django.utils.encoding import force_unicode
 
 from localtv import models
-
+from localtv.subsite.admin import forms as admin_forms
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
@@ -92,6 +93,35 @@ class BaseTestCase(TestCase):
                           (self.site_location.site.domain,
                            settings.LOGIN_URL,
                            quote_plus(url)))
+
+    @staticmethod
+    def _POST_data_from_formset(formset, **kwargs):
+        """
+        This method encapsulates the logic to turn a Formset object into a
+        dictionary of data that can be sent to a view.
+        """
+        POST_data = {
+            'form-TOTAL_FORMS': formset.total_form_count(),
+            'form-INITIAL_FORMS': formset.initial_form_count()}
+
+        for index, form in enumerate(formset.forms):
+            for name, field in form.fields.items():
+                data = form.initial.get(name, field.initial)
+                if callable(data):
+                    data = data()
+                if isinstance(field, admin_forms.SourceChoiceField):
+                    if data is not None:
+                        data = '%s-%s' % (data.__class__.__name__.lower(),
+                                          data.pk)
+                if isinstance(data, (list, tuple)):
+                    data = [force_unicode(item) for item in data]
+                elif data:
+                    data = force_unicode(data)
+                if data:
+                    POST_data[form.add_prefix(name)] = data
+        POST_data.update(kwargs)
+        return POST_data
+
 
 # -----------------------------------------------------------------------------
 # Video submit tests
@@ -1083,8 +1113,98 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                           page.object_list)
 
 
+    def test_POST_failure(self):
+        """
+        A POST request to the manage_sources view with an invalid formset
+        should cause the page to be rerendered and include the form errors.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data_invalid = POST_data.copy()
+        del POST_data_invalid['form-0-name'] # don't include some mandatory
+                                             # fields
+        del POST_data_invalid['form-0-feed_url']
+        del POST_data_invalid['form-1-query_string']
+
+        POST_response = c.post(self.url, POST_data_invalid)
+        self.assertEquals(POST_response.status_code, 200)
+        self.assertTrue(POST_response.context['formset'].is_bound)
+        self.assertFalse(POST_response.context['formset'].is_valid())
+        self.assertEquals(len(POST_response.context['formset'].errors[0]), 2)
+        self.assertEquals(len(POST_response.context['formset'].errors[1]), 1)
+
+        # make sure the data hasn't changed
+        self.assertEquals(POST_data,
+                          self._POST_data_from_formset(
+                POST_response.context['formset']))
+
+    def test_POST_succeed(self):
+        """
+        A POST request to the manage_sources view with a valid formset should
+        save the updated models and redirect to the same URL with a
+        'successful' field in the GET query.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data.update({
+                'form-0-name': 'new name!',
+                'form-0-feed_url': 'http://pculture.org/',
+                'form-0-webpage': 'http://getmiro.com/',
+                'form-1-query_string': 'localtv'})
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertEquals(POST_response.status_code, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        self.site_location.site.domain,
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has been updated
+        feed = models.Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
+        self.assertEquals(feed.name, POST_data['form-0-name'])
+        self.assertEquals(feed.feed_url, POST_data['form-0-feed_url'])
+        self.assertEquals(feed.webpage, POST_data['form-0-webpage'])
+
+        search = models.SavedSearch.objects.get(
+            pk=POST_data['form-1-id'].split('-')[1])
+        self.assertEquals(search.query_string,
+                          POST_data['form-1-query_string'])
+
+
+    def test_POST_succeed_with_page(self):
+        """
+        A POST request to the manage_sources view with a valid formset should
+        save the updated models and redirect to the same URL with a
+        'successful' field in the GET query, even with a 'page' argument in the
+        query string of the POST request.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'page': 2})
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_response = c.post(self.url+"?page=2", POST_data,
+                               follow=True)
+        self.assertEquals(POST_response.status_code, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?page=2&successful' % (
+                        self.site_location.site.domain,
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+
         # TODO(pswartz) things to test:
-        ## editing data on individual forms
         ## deleting individual forms
         ## bulk edits
         ## bulk deleting
@@ -1101,26 +1221,6 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 class UserAdministrationTestCase(AdministrationBaseTestCase):
 
     url = reverse('localtv_admin_users')
-
-    @staticmethod
-    def _POST_data_from_formset(formset):
-        """
-        This method encapsulates the logic to turn a Formset object into a
-        dictionary of data that can be sent to a view.
-        """
-        POST_data = {
-            'submit': 'Save',
-            'form-TOTAL_FORMS': formset.total_form_count(),
-            'form-INITIAL_FORMS': formset.initial_form_count()}
-
-        for index, form in enumerate(formset.forms):
-            for name, field in form.fields.items():
-                data = form.initial.get(name, field.initial)
-                if callable(data):
-                    data = data()
-                if data is not None:
-                    POST_data['form-%i-%s' % (index, name)] = data
-        return POST_data
 
     def test_GET(self):
         """
@@ -1286,7 +1386,9 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
 
-        POST_response = c.post(self.url, self._POST_data_from_formset(formset))
+        POST_response = c.post(self.url, self._POST_data_from_formset(
+                formset,
+                submit='Save'))
         self.assertEquals(POST_response.status_code, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
@@ -1308,7 +1410,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
-        POST_data = self._POST_data_from_formset(formset)
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
 
         # form-0 is admin (3)
         # form-1 is superuser (2)
@@ -1362,7 +1465,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
-        POST_data = self._POST_data_from_formset(formset)
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
 
         # form-0 is admin (3)
         # form-1 is superuser (2)
