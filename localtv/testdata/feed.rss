@@ -68,7 +68,7 @@ This is a new intro video for <a href="http://makeinternettv.org/">Make Internet
       <comments>http://blip.tv/file/1657387</comments>
       <category>Default Category</category>
       <pubDate>Sun, 11 Jan 2009 16:42:02 +0000</pubDate>
-      <enclosure length="10086954" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntroSmall693.mp4"/>
+      <enclosure url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntroSmall693.mp4"/>
       <itunes:keywords></itunes:keywords>
       <media:keywords></media:keywords>
       <media:group>
@@ -97,7 +97,7 @@ This is a new intro video for <a href="http://makeinternettv.org">Make Internet 
       <comments>http://blip.tv/file/1657335</comments>
       <category>Default Category</category>
       <pubDate>Sun, 11 Jan 2009 16:11:40 +0000</pubDate>
-      <enclosure length="15738647" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntro269.mp4"/>
+      <enclosure length="15738647" url="http://blip.tv/file/get/Miropcf-MakeInternetTVReIntro269.mp4"/>
       <itunes:keywords></itunes:keywords>
       <media:keywords></media:keywords>
       <media:group>
@@ -126,7 +126,7 @@ We're thrilled to have Andy Ross on our team!
       <comments>http://blip.tv/file/790749</comments>
       <category>Default Category</category>
       <pubDate>Tue, 01 Apr 2008 16:27:51 +0000</pubDate>
-      <enclosure length="20438031" type="video/x-m4v" url="http://blip.tv/file/get/Miropcf-OKGosAndyRossSupportsMiro982.m4v"/>
+      <enclosure type="video/x-m4v" url="http://blip.tv/file/get/Miropcf-OKGosAndyRossSupportsMiro982.m4v"/>
       <itunes:keywords></itunes:keywords>
       <media:keywords></media:keywords>
       <media:group>

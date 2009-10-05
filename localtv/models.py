@@ -326,7 +326,7 @@ class Feed(Source):
                                      extra_filters=['img']),
                 file_url=file_url or '',
                 file_url_length=file_url_length,
-                file_url_mimetype=file_url_mimetype,
+                file_url_mimetype=file_url_mimetype or '',
                 embed_code=embed_code or '',
                 flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
