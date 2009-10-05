@@ -1,5 +1,5 @@
 import re
-from BeautifulSoup import BeautifulSoup, Comment
+from BeautifulSoup import BeautifulSoup, Comment, Tag
 from django.template import Library
 from django.utils.safestring import mark_safe
 
@@ -50,5 +50,22 @@ def sanitize(value, extra_filters=None):
 
     return mark_safe(soup.renderContents().decode('utf8'))
 
+
+def wmode_transparent(value):
+    soup = BeautifulSoup(value)
+    param_tag = Tag(soup, 'param', [
+            ('name', 'wmode'),
+            ('value', 'transparent')])
+
+    for html_object in soup.findAll('object'):
+        html_object.insert(0, param_tag)
+
+    for flash_embed in soup.findAll('embed',
+                                type="application/x-shockwave-flash"):
+        flash_embed['wmode'] = 'transparent'
+
+    return mark_safe(soup.prettify())
+
 register.filter(simpletimesince)
 register.filter(sanitize)
+register.filter(wmode_transparent)

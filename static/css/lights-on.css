@@ -1102,6 +1102,8 @@ clear: both;
 width: 534px;
 padding-left: 2px;
 float: left;
+z-index: 0;
+
 }
 
 #video_wrapper embed, #video_wrapper object {

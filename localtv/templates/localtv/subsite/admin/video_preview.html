@@ -26,7 +26,7 @@
 
 <div id="video_wrapper">
   {% if current_video.embed_code %}
-  {{ current_video.embed_code|safe }}
+  {{ current_video.embed_code|wmode_transparent }}
   {% else %}
   {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
   {% endif %}
