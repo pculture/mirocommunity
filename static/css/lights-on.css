@@ -1103,6 +1103,7 @@ width: 534px;
 padding-left: 2px;
 float: left;
 z-index: 0;
+position: relative;
 
 }
 
@@ -1111,7 +1112,15 @@ width: 100%;
 height: 430px;
 }
 
-
+#video_wrapper img {
+    height: 430px;
+    width: 534px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    padding-left: 2px;
+}
 
 .pag {
 height: 45px;

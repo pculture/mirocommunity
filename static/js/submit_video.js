@@ -10,6 +10,7 @@ function replace_submit_video_and_setup_callbacks(result) {
 }
 
 function start_submit_process() {
+    $("object").hide();
     jQuery.get($('#submit_button').attr('href'),
                replace_submit_video_and_setup_callbacks);
     $('#hover_wrap').css('display', 'block');
@@ -17,9 +18,10 @@ function start_submit_process() {
 }
 
 function close_submit_box() {
+    $("object").show();
     $('#hover_wrap').css('display', 'none');
     return false;
-}    
+}
 
 function add_submit_callback() {
     $('#submit_button').click(start_submit_process);

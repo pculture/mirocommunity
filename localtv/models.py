@@ -43,6 +43,7 @@ SITE_STATUSES = (
     (SITE_STATUS_ACTIVE, 'Active'))
 
 VIDEO_THUMB_SIZES = [
+    (534, 430), # behind a video
     (375, 295), # featured on frontpage
     (140, 110)]
 

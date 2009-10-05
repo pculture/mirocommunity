@@ -1,6 +1,6 @@
 {% extends "localtv/subsite/base.html" %}
 
-{% load video i18n comments filters versioned editable_widget %}
+{% load video i18n comments filters versioned editable_widget localtv_thumbnail %}
 
 {% block body_id %}view_video{% endblock %}
 
@@ -63,6 +63,7 @@
         {% else %}
         {% video current_video.file_url mime_type=current_video.file_url_mimetype %}
         {% endif %}
+        <img src="{% get_thumbnail_url current_video 534 430 %}" />
     </div>
 
     <div class="action">

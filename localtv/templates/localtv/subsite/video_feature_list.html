@@ -11,5 +11,6 @@
   {% else %}
   {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
   {% endif %}
+  <img src="{% get_thumbnail_url current_video 534 430 %}" />
 </div>
 <br />
