@@ -536,7 +536,7 @@ class MockVidScraper(object):
 
 class FeedModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['feed']
+    fixtures = BaseTestCase.fixtures + ['feeds']
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -553,7 +553,7 @@ class FeedModelTestCase(BaseTestCase):
         If Feed.auto_approve is True, the imported videos should be marked as
         active.
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = True
         feed.feed_url = self._data_file('feed.rss')
         feed.update_items()
@@ -566,7 +566,7 @@ class FeedModelTestCase(BaseTestCase):
         If Feed.auto_approve is False, the imported videos should be marked as
         unapproved.
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = False
         feed.feed_url = self._data_file('feed.rss')
         feed.update_items()
@@ -579,7 +579,7 @@ class FeedModelTestCase(BaseTestCase):
         When adding entries from a feed, they should be added to the database
         in rever order (oldest first)
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.feed_url = self._data_file('feed.rss')
         feed.update_items()
         parsed_feed = feedparser.parse(feed.feed_url)
@@ -593,7 +593,7 @@ class FeedModelTestCase(BaseTestCase):
         If the GUID already exists for this feed, the newer item should be
         skipped.
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.feed_url = self._data_file('feed_with_duplicate_guid.rss')
         feed.update_items()
         self.assertEquals(models.Video.objects.count(), 1)
@@ -604,7 +604,7 @@ class FeedModelTestCase(BaseTestCase):
         If the GUID already exists for this feed, the newer item should be
         skipped.
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.feed_url = self._data_file('feed_with_duplicate_link.rss')
         feed.update_items()
         self.assertEquals(models.Video.objects.count(), 1)
@@ -623,7 +623,7 @@ class FeedModelTestCase(BaseTestCase):
         * file MIME type
         * thumbnail
         """
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         feed.feed_url = self._data_file('feed.rss')
         feed.update_items()
         video = models.Video.objects.order_by('id')[0]
@@ -661,7 +661,7 @@ class FeedModelTestCase(BaseTestCase):
             ('blip.tv', 'http://miropcf.blip.tv/rss'),
             ('Vimeo', 'http://vimeo.com/tag:miro/rss'))
 
-        feed = models.Feed.objects.get()
+        feed = models.Feed.objects.get(pk=1)
         for service, url in services:
             feed.feed_url = url
             self.assertEquals(feed.video_service(), service,
