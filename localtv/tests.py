@@ -1066,7 +1066,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
     fixtures = AdministrationBaseTestCase.fixtures + [
-        'feeds', 'savedsearches']
+        'feeds', 'savedsearches', 'videos']
 
     url = reverse('localtv_admin_manage_page')
 
@@ -1203,9 +1203,53 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
+    def test_POST_delete(self):
+        """
+        A POST request to the manage sources view with a valid formset and a
+        DELETE value for a source should remove that source along with all of
+        its videos.`
+        """
+        feed = models.Feed.objects.get(pk=3)
+        saved_search = models.SavedSearch.objects.get(pk=8)
+
+        for v in models.Video.objects.all()[:5]:
+            v.feed = feed
+            v.save()
+
+        for v in models.Video.objects.all()[5:10]:
+            v.search = saved_search
+            v.save()
+
+        video_count = models.Video.objects.count()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+        POST_data['form-0-DELETE'] = 'yes'
+        POST_data['form-1-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(
+            models.Feed.objects.filter(pk=3).count(), # form 0
+            0)
+
+        self.assertEquals(
+            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+            0)
+
+        # make sure the 10 videos got removed
+        self.assertEquals(models.Video.objects.count(),
+                          video_count - 10)
 
         # TODO(pswartz) things to test:
-        ## deleting individual forms
         ## bulk edits
         ## bulk deleting
         ## switching categories/authors switches unchanged videos
