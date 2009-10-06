@@ -1153,7 +1153,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url, {'sort': 'type'})
         page = response.context['page']
         self.assertEquals(list(sorted(page.object_list,
-                                      key=lambda x:x.source_type())),
+                                      key=lambda x:x.source_type().lower())),
                           page.object_list)
 
         # reversed type (user, search, feed)
@@ -1161,7 +1161,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         page = response.context['page']
         self.assertEquals(list(sorted(page.object_list,
                                       reverse=True,
-                                      key=lambda x:x.source_type())),
+                                      key=lambda x:x.source_type().lower())),
                           page.object_list)
 
 

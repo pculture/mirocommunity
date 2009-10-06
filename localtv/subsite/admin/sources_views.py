@@ -98,7 +98,7 @@ def manage_sources(request, sitelocation=None):
         reverse = (sort[0] == '-')
         queryset = sorted(queryset,
                           reverse=reverse,
-                          key=lambda source: source.source_type())
+                          key=lambda source: source.source_type().lower())
 
     paginator = Paginator(queryset, 15)
     try:
