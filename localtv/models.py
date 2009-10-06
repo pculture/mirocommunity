@@ -368,6 +368,13 @@ class Feed(Source):
         self.last_updated = datetime.datetime.now()
         self.save()
 
+    def source_type(self):
+        video_service = self.video_service()
+        if video_service is None:
+            return u'Feed'
+        else:
+            return u'User: %s' % video_service
+
     def video_service(self):
         for service, regexp in VIDEO_SERVICE_REGEXES:
             if re.search(regexp, self.feed_url, re.I):
@@ -528,6 +535,9 @@ class SavedSearch(Source):
                                                 initial_status)
             video.categories = self.auto_categories.all()
             video.authors = self.auto_authors.all()
+
+    def source_type(self):
+        return 'Search'
 
 
 class VideoManager(models.Manager):

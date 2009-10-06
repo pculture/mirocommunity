@@ -120,15 +120,7 @@ $(document).ready(function() {
         <td><span class="overflow">{% for user in form.instance.auto_authors.all %}
           {% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if not forloop.last %}, {% endif %}
           {% endfor %}</span></td>
-        <td>{% if form.instance.query_string %}
-          Search
-          {% else %}
-          {% if form.instance.video_service %}
-          {{ form.instance.video_service }} User
-          {% else %}
-          Feed
-          {% endif %}
-          {% endif %}</td>
+        <td>{{ form.instance.source_type }}</td>
           {% if form.instance.query_string %}
           {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
           {% else %}

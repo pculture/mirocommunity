@@ -1109,7 +1109,59 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         page = response.context['page']
         self.assertEquals(len(page.object_list), 15)
         self.assertEquals(list(sorted(page.object_list,
-                                 key=lambda x:unicode(x).lower())),
+                                      key=lambda x:unicode(x).lower())),
+                          page.object_list)
+
+    def test_GET_sorting(self):
+        """
+        A GET request with a 'sort' key in the GET request should sort the
+        sources by that field.  The default sort should be by the lower-case
+        name of the source.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:unicode(x).lower())),
+                          page.object_list)
+
+        # reversed name
+        response = c.get(self.url, {'sort': '-name__lower'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:unicode(x).lower())),
+                          page.object_list)
+
+        # auto approve
+        response = c.get(self.url, {'sort': 'auto_approve'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:x.auto_approve)),
+                          page.object_list)
+
+        # reversed auto_approve
+        response = c.get(self.url, {'sort': '-auto_approve'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:x.auto_approve)),
+                          page.object_list)
+
+        # type (feed, search, user)
+        response = c.get(self.url, {'sort': 'type'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:x.source_type())),
+                          page.object_list)
+
+        # reversed type (user, search, feed)
+        response = c.get(self.url, {'sort': '-type'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:x.source_type())),
                           page.object_list)
 
 
@@ -1456,7 +1508,6 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                 self.fail('invalid search video pk: %i' % v.pk)
 
         # TODO(pswartz) things to test:
-        ## sorting
         ## filtering
 
 

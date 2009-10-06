@@ -34,14 +34,21 @@ def manage_sources(request, sitelocation=None):
         sort_header('auto_approve', 'Auto Approve', sort)
         ]
 
+    if sort.endswith('type'):
+        if sort[0] == '-':
+            orm_sort = '-name__lower'
+        else:
+            orm_sort = 'name__lower'
+    else:
+        orm_sort = sort
     feeds = models.Feed.objects.filter(
         site=sitelocation.site,
         status=models.FEED_STATUS_ACTIVE).extra(select={
-            'name__lower': 'LOWER(name)'}).order_by('name__lower')
+            'name__lower': 'LOWER(name)'}).order_by(orm_sort)
     searches = models.SavedSearch.objects.filter(
         site=sitelocation.site).extra(select={
             'name__lower': 'LOWER(query_string)'}).order_by(
-            'name__lower')
+            orm_sort)
 
     search_string = request.GET.get('q', '')
 
@@ -76,11 +83,22 @@ def manage_sources(request, sitelocation=None):
         else:
             queryset = feeds.exclude(q)
     else:
-        feeds_list = [(feed.name.lower(), feed)
+        reverse = False
+        if orm_sort[0] == '-':
+            reverse = True
+            orm_sort = orm_sort[1:]
+        feeds_list = [(getattr(feed, orm_sort), feed)
                       for feed in feeds]
-        searches_list = [(search.query_string.lower(), search)
+        searches_list = [(getattr(search, orm_sort), search)
                          for search in searches]
-        queryset = [l[1] for l in sorted(feeds_list + searches_list)]
+        queryset = [l[1] for l in sorted(feeds_list + searches_list,
+                                         reverse=reverse)]
+
+    if sort.endswith('type'):
+        reverse = (sort[0] == '-')
+        queryset = sorted(queryset,
+                          reverse=reverse,
+                          key=lambda source: source.source_type())
 
     paginator = Paginator(queryset, 15)
     try:
