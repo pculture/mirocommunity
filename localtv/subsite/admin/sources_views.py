@@ -109,18 +109,22 @@ def manage_sources(request, sitelocation=None):
 
                 # if the categories or authors changed, update unchanged videos
                 # to the new values
-                old_categories = list(form.instance.auto_categories.all())
-                old_authors = list(form.instance.auto_authors.all())
+                old_categories = set(form.instance.auto_categories.all())
+                old_authors = set(form.instance.auto_authors.all())
                 form.save()
-                new_categories = list(form.instance.auto_categories.all())
-                new_authors = list(form.instance.auto_authors.all())
+                new_categories = set(form.instance.auto_categories.all())
+                new_authors = set(form.instance.auto_authors.all())
                 if old_categories != new_categories or \
                         old_authors != new_authors:
                     for v in form.instance.video_set.all():
-                        if list(v.categories.all()) == old_categories or \
-                                list(v.authors.all()) == old_authors:
+                        changed = False
+                        if set(v.categories.all()) == old_categories:
+                            changed = True
                             v.categories = new_categories
+                        if set(v.authors.all()) == old_authors:
+                            changed = True
                             v.authors = new_authors
+                        if changed:
                             v.save()
             for form in formset.deleted_forms:
                 form.instance.delete()

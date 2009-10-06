@@ -1066,7 +1066,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
     fixtures = AdministrationBaseTestCase.fixtures + [
-        'feeds', 'savedsearches', 'videos']
+        'feeds', 'savedsearches', 'videos', 'categories']
 
     url = reverse('localtv_admin_manage_page')
 
@@ -1249,10 +1249,213 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(models.Video.objects.count(),
                           video_count - 10)
 
+    def test_POST_bulk_edit(self):
+        """
+        A POST request to the manage_sources view with a valid formset and the
+        extra form filled out should update any source with the bulk option
+        checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-15-auto_categories'] = [1, 2]
+        POST_data['form-15-auto_authors'] = [1, 2]
+        POST_data['form-15-auto_approve'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        feed = models.Feed.objects.get(pk=3) # form 0
+        saved_search = models.SavedSearch.objects.get(pk=8) # form 1
+
+        self.assertEquals(feed.auto_approve, True)
+        self.assertEquals(saved_search.auto_approve, True)
+        self.assertEquals(
+            set(feed.auto_categories.values_list('pk', flat=True)),
+            set([1, 2]))
+        self.assertEquals(
+            set(saved_search.auto_categories.values_list('pk', flat=True)),
+            set([1, 2]))
+        self.assertEquals(
+            set(feed.auto_authors.values_list('pk', flat=True)),
+            set([1, 2]))
+        self.assertEquals(
+            set(saved_search.auto_authors.values_list('pk', flat=True)),
+            set([1, 2]))
+
+    def test_POST_bulk_delete(self):
+        """
+        A POST request to the manage_sources view with a valid formset and a
+        POST['bulk_action'] of 'remove' should remove the videos with the bulk
+        option checked.
+        """
+        feed = models.Feed.objects.get(pk=3)
+        saved_search = models.SavedSearch.objects.get(pk=8)
+
+        for v in models.Video.objects.all()[:5]:
+            v.feed = feed
+            v.save()
+
+        for v in models.Video.objects.all()[5:10]:
+            v.search = saved_search
+            v.save()
+
+        video_count = models.Video.objects.count()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'remove'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(
+            models.Feed.objects.filter(pk=3).count(), # form 0
+            0)
+
+        self.assertEquals(
+            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+            0)
+
+        # make sure the 10 videos got removed
+        self.assertEquals(models.Video.objects.count(),
+                          video_count - 10)
+
+    def test_POST_switching_categories_authors(self):
+        """
+        A POST request to the manage_sources view with a valid formset that
+        includes changed categories or authors, videos that had the old
+        categories/authors should be updated to the new values.
+        """
+        feed = models.Feed.objects.get(pk=3)
+        saved_search = models.SavedSearch.objects.get(pk=8)
+        category = models.Category.objects.get(pk=1)
+        user = User.objects.get(pk=1)
+        category2 = models.Category.objects.get(pk=2)
+        user2 = User.objects.get(pk=2)
+
+        for v in models.Video.objects.order_by('pk')[:3]:
+            v.feed = feed
+            if v.pk == 1:
+                v.categories.add(category)
+                v.authors.add(user)
+            elif v.pk == 2:
+                v.categories.add(category)
+            elif v.pk == 3:
+                v.authors.add(user)
+            else:
+                self.fail('invalid feed pk: %i' % v.pk)
+            v.save()
+
+        for v in models.Video.objects.order_by('pk')[3:6]:
+            v.search = saved_search
+            if v.pk == 4:
+                v.categories.add(category)
+                v.authors.add(user)
+            elif v.pk == 5:
+                v.categories.add(category)
+            elif v.pk == 6:
+                v.authors.add(user)
+            else:
+                self.fail('invalid search pk: %i' % v.pk)
+            v.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        for i in range(2):
+            POST_data['form-%i-bulk'% i] = 'yes'
+        POST_data['form-15-auto_categories'] = [category2.pk]
+        POST_data['form-15-auto_authors'] = [user2.pk]
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertEquals(POST_response.status_code, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        for v in models.Video.objects.order_by('pk')[:3]:
+            self.assertEquals(v.feed, feed)
+            if v.pk == 1:
+                # nothing changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user]))
+            elif v.pk == 2:
+                # user changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user2]))
+            elif v.pk == 3:
+                # category changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category2]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user]))
+            else:
+                self.fail('invalid feed video pk: %i' % v.pk)
+
+        for v in models.Video.objects.order_by('pk')[3:6]:
+            self.assertEquals(v.search, saved_search)
+            if v.pk == 4:
+                # nothing changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user]))
+            elif v.pk == 5:
+                # user changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user2]))
+            elif v.pk == 6:
+                # category changed
+                self.assertEquals(
+                    set(v.categories.all()),
+                    set([category2]))
+                self.assertEquals(
+                    set(v.authors.all()),
+                    set([user]))
+            else:
+                self.fail('invalid search video pk: %i' % v.pk)
+
         # TODO(pswartz) things to test:
-        ## bulk edits
-        ## bulk deleting
-        ## switching categories/authors switches unchanged videos
         ## sorting
         ## filtering
 
