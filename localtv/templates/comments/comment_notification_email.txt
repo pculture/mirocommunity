@@ -10,4 +10,4 @@ You can see all comments on this post here:
 http://{{ content_object.site.domain }}{{ content_object.get_absolute_url }}#comments
 
 Delete it: http://{{ content_object.site.domain }}{% url comments-delete comment.pk %}
-Spam it: http://{{ content_object.site.domain }}[% url comments-spam comment.pk %}
+Spam it: http://{{ content_object.site.domain }}{% url comments-spam comment.pk %}
