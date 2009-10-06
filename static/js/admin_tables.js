@@ -30,6 +30,7 @@ function load_video(eventdata) {
                 selected.addClass('unselected');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
+                resize_admin();
                 }});
     return false;
 }
@@ -47,11 +48,11 @@ function load_click_callbacks() {
 function resize_admin() {
     var admin_table = document.getElementById('admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
-    var admin_rightpane = document.getElementById('admin_rightpane');
+    //var admin_rightpane = document.getElementById('admin_rightpane');
     base_height = (window.innerHeight -
                    admin_table.offsetTop);
     admin_leftpane.style.height = (base_height - 40) + 'px';
-    admin_rightpane.style.height = base_height + 'px';
+    //admin_rightpane.style.height = base_height + 'px';
 }
 
 if ('attachEvent' in window) {
