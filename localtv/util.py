@@ -261,7 +261,8 @@ def mixed_replace_generator(content_generator, bound):
 class HttpMixedReplaceResponse(HttpResponse):
 
     def __init__(self, request, generator):
-        if 'Chrome' in request.META.get('HTTP_USER_AGENT'):
+        user_agent = request.META.get('HTTP_USER_AGENT')
+        if user_agent is None or 'Chrome' in user_agent:
             # Chrome's mixed-replace support doesn't seem to work, so just take
             # the last thing from the generator
             response = list(generator)[-1]

@@ -2,6 +2,7 @@ import datetime
 import re
 import urllib
 import urllib2
+import urlparse
 import Image
 import StringIO
 
@@ -274,10 +275,16 @@ class Feed(Source):
             else:
                 publish_date = None
             thumbnail_url = miroguide_util.get_thumbnail_url(entry) or ''
+            if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
+                thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
+                                                 thumbnail_url)
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure['href']
+                if not urlparse.urlparse(file_url)[0]:
+                    file_url = urlparse.urljoin(parsed_feed.feed.link,
+                                                file_url)
                 file_url_length = video_enclosure.get('length')
                 file_url_mimetype = video_enclosure.get('type')
 

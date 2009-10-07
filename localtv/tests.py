@@ -1540,6 +1540,185 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
 
 # -----------------------------------------------------------------------------
+# Feed Administration tests
+# -----------------------------------------------------------------------------
+
+
+class FeedAdministrationTestCase(BaseTestCase):
+
+    url = reverse('localtv_admin_feed_add')
+    feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
+
+    def test_authentication_done(self):
+        """
+        The localtv_admin_feed_add_done view should require administration
+        priviledges.
+        """
+        url = reverse('localtv_admin_feed_add_done')
+        self.assertRequiresAuthentication(url)
+
+        self.assertRequiresAuthentication(url,
+                                          username='user', password='password')
+
+    def test_GET(self):
+        """
+        A GET request to the add_feed view should render the
+        'localtv/subsite/admin/add_feed.html' template.  Context:
+
+        * form: a SourceForm to allow setting auto categories/authors
+        * video_count: the number of videos we think we can get out of the feed
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'feed_url': self.feed_url})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/add_feed.html')
+        self.assertTrue(response.context[2]['form'].instance.feed_url,
+                        self.feed_url)
+        self.assertEquals(response.context[2]['video_count'], 1)
+
+    def test_POST_failure(self):
+        """
+        A POST request to the add_feed view should rerender the template with
+        the form incluing the errors.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url, {'feed_url': self.feed_url})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/add_feed.html')
+        self.assertTrue(response.context[0]['form'].instance.feed_url,
+                        self.feed_url)
+        self.assertFalse(response.context[0]['form'].is_valid())
+        self.assertEquals(response.context[0]['video_count'], 1)
+
+    def test_POST_cancel(self):
+        """
+        A POST request to the add_feed view with POST['cancel'] set should
+        redirect the user to the localtv_admin_manage_page view.  No objects
+        should be created.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url, {'feed_url': self.feed_url,
+                                     'auto_approve': 'yes',
+                                     'cancel': 'yes'})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_admin_manage_page')))
+
+        self.assertEquals(models.Feed.objects.count(), 0)
+
+    def test_POST_succeed(self):
+        """
+        A POST request to the add_feed view with a valid form should redirect
+        the user to the localtv_admin_add_feed_done view with the id of the
+        newly created feed in the GET arguments.
+
+        A Feed object should also be created, but not have any items.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url, {'feed_url': self.feed_url,
+                                     'auto_approve': 'yes'})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s?feed_id=1' % (
+                self.site_location.site.domain,
+                reverse('localtv_admin_feed_add_done')))
+
+        feed = models.Feed.objects.get()
+        self.assertEquals(feed.name, 'Valid Feed with Relative Links')
+        self.assertEquals(feed.feed_url, self.feed_url)
+        self.assertTrue(feed.auto_approve)
+
+    def test_GET_done(self):
+        """
+        A GET request to the add_feed_done view should import videos from the
+        given feed.  It should also render the
+        'localtv/subsite/admin/feed_done.html' template and have a 'feed'
+        variable in the context pointing to the Feed object.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.post(self.url, {'feed_url': self.feed_url,
+                          'auto_approve': 'yes'})
+
+        response = c.get(reverse('localtv_admin_feed_add_done'),
+                         {'feed_id': 1})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/feed_done.html')
+        feed = models.Feed.objects.get()
+        self.assertEquals(response.context[2]['feed'], feed)
+        self.assertEquals(feed.video_set.count(), 1)
+
+        video = feed.video_set.all()[0]
+        self.assertEquals(video.status,
+                          models.VIDEO_STATUS_ACTIVE)
+        self.assertEquals(video.thumbnail_url,
+                          ('http://participatoryculture.org/feeds_test/'
+                           'mike_tv_drawing_cropped.jpg'))
+        self.assertEquals(video.file_url,
+                          ('http://participatoryculture.org/feeds_test/'
+                           'py1.mov'))
+        self.assertEquals(video.file_url_mimetype, 'video/quicktime')
+        self.assertEquals(video.file_url_length, 842)
+
+    def test_GET_auto_approve(self):
+        """
+        A GET request to the feed_auto_approve view should set the auto_approve
+        bit on the feed specified in the URL and redirect back to the referrer.
+        It should also require the user to be an administrator.
+        """
+        feed = models.Feed.objects.create(site=self.site_location.site,
+                                          name='name',
+                                          feed_url='feed_url',
+                                          auto_approve=False,
+                                          last_updated=datetime.datetime.now(),
+                                          status=models.FEED_STATUS_ACTIVE)
+        url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
+        self.assertRequiresAuthentication(url)
+        self.assertRequiresAuthentication(url,
+                                          username='user',
+                                          password='password')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url,
+                         HTTP_REFERER='http://www.google.com/')
+        self.assertEquals(feed.auto_approve, False)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://www.google.com/')
+
+    def test_GET_auto_approve_disable(self):
+        """
+        A GET request to the feed_auto_approve view with GET['disable'] set
+        should remove the auto_approve bit on the feed specified in the URL and
+        redirect back to the referrer.
+        """
+        feed = models.Feed.objects.create(site=self.site_location.site,
+                                          name='name',
+                                          feed_url='feed_url',
+                                          auto_approve=True,
+                                          last_updated=datetime.datetime.now(),
+                                          status=models.FEED_STATUS_ACTIVE)
+        url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'disable': 'yes'},
+                         HTTP_REFERER='http://www.google.com/')
+        self.assertEquals(feed.auto_approve, True)
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://www.google.com/')
+
+
+# -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
 
