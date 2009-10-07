@@ -1164,6 +1164,37 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                                       key=lambda x:x.source_type().lower())),
                           page.object_list)
 
+    def test_GET_filtering(self):
+        """
+        A GET request with a 'filter' key in the GET request should filter the
+        sources to feeds/users/searches.
+        """
+
+        c = Client()
+        c.login(username='admin', password='admin')
+
+        # search filter
+        response = c.get(self.url, {'filter': 'search'})
+        page = response.context['page']
+        self.assertEquals(
+            list(page.object_list),
+            list(models.SavedSearch.objects.extra({
+                        'name__lower': 'LOWER(query_string)'}).order_by(
+                    'name__lower')[:10]))
+
+        # feed filter (ignores feeds that represent video service users)
+        response = c.get(self.url, {'filter': 'feed'})
+        page = response.context['page']
+        self.assertEquals(len(page.object_list), 6)
+        for feed in page.object_list:
+            self.assertTrue(feed.video_service() is None)
+
+        # user filter (only includes feeds that represent video service users)
+        response = c.get(self.url, {'filter': 'user'})
+        page = response.context['page']
+        self.assertEquals(len(page.object_list), 4)
+        for feed in page.object_list:
+            self.assertTrue(feed.video_service() is not None)
 
     def test_POST_failure(self):
         """
@@ -1506,9 +1537,6 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                     set([user]))
             else:
                 self.fail('invalid search video pk: %i' % v.pk)
-
-        # TODO(pswartz) things to test:
-        ## filtering
 
 
 # -----------------------------------------------------------------------------
