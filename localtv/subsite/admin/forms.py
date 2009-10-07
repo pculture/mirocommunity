@@ -6,6 +6,7 @@ from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.cache import cache
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
@@ -132,7 +133,7 @@ class SourceForm(forms.ModelForm):
                                     queryset=models.Category.objects)
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects)
-    auto_approve = BooleanRadioField(required=False)
+    auto_approve = BooleanRadioField(required=True)
 
     class Meta:
         model = models.Source
@@ -513,6 +514,10 @@ class AddFeedForm(forms.Form):
                               widget=forms.TextInput(
             attrs={'class': 'livesearch_feed_url'}))
 
+    @staticmethod
+    def _feed_url_key(feed_url):
+        return 'localtv:add_feed_form:%i' % hash(feed_url)
+
     def clean_feed_url(self):
         value = self.cleaned_data['feed_url']
         for regexp, service in self.SERVICE_PROFILES:
@@ -529,7 +534,11 @@ class AddFeedForm(forms.Form):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
 
-        parsed = feedparser.parse(value)
+        key = self._feed_url_key(value)
+        parsed = cache.get(key)
+        if parsed is None:
+            parsed = feedparser.parse(value)
+            cache.set(key, parsed)
         if not parsed.feed and parsed.entries:
             raise forms.ValidationError('It does not appear that %s is an '
                                         'RSS/Atom feed URL.')
