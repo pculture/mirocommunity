@@ -1,0 +1,49 @@
+{% load versioned %}
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style>
+
+body{
+background: #eee;
+padding: 0;
+margin: 0;
+}
+
+div{
+background: #fff;
+padding: 30px;
+border-top: 1px solid #ddd;
+border-bottom: 1px solid #ddd;
+}
+
+p{
+font-size: 190%;
+padding: 0px 0;
+color: #999;
+margin: 8% 0;
+}
+
+div p{
+color: #666;
+margin: 6% 0;
+}
+
+</style>
+</head>
+
+  <body>
+  <center>
+    {% block top %}
+    <p>Just a Moment<br /><br /><img src="{% versioned "/images/ajax-loader.gif" %}"/></p>
+    {% endblock %}
+  <div>
+    {% block bottom %}
+    <p style="font-size: 18px;">Checking out this URL
+    <br/> <br/><strong style="font-size: 24px;">"{{ feed_url }}"</strong>
+    </p>
+    {% endblock %}
+    </div>
+    </center>
+  </body>
+</html>

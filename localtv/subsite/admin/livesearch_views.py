@@ -2,14 +2,14 @@ import datetime
 
 from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models, util
-from localtv.subsite.admin import forms
+
 
 ## ----------
 ## Utils
@@ -44,13 +44,13 @@ def remove_video_from_session(request):
     for this_result in subkey_videos:
         if this_result.id == int(request.GET['video_id']):
             subkey_videos.pop(video_index)
-            
+
             session_searches[query_subkey] = subkey_videos
             request.session['localtv_livesearches'] = session_searches
             request.session.save()
             return
         video_index += 1
-    
+
 
 ## ----------
 ## Decorators
@@ -92,15 +92,15 @@ def get_search_video(view_func):
 
 @require_site_admin
 @get_sitelocation
-def livesearch_page(request, sitelocation=None):
-    if 'query' not in request.GET:
+def livesearch(request, sitelocation=None):
+    if 'query' not in request.GET or 'debug' in request.GET:
         return livesearch_response(request, sitelocation)
     def gen():
         yield render_to_response('localtv/subsite/admin/livesearch_wait.html',
                                  {'query_string': request.GET['query']},
                                  context_instance=RequestContext(request))
         yield livesearch_response(request, sitelocation)
-    return util.HttpMixedReplaceResponse(gen())
+    return util.HttpMixedReplaceResponse(request, gen())
 
 
 def livesearch_response(request, sitelocation):
@@ -108,7 +108,7 @@ def livesearch_response(request, sitelocation):
 
     results = []
     if query_string:
-        session_livesearches = request.session.get('localtv_livesearches') or {}
+        session_livesearches = request.session.get('localtv_livesearches', {})
         if session_livesearches.get(query_subkey):
             results = session_livesearches[query_subkey]
 
@@ -124,7 +124,7 @@ def livesearch_response(request, sitelocation):
             session_livesearches[query_subkey] = results
             request.session['localtv_livesearches'] = session_livesearches
             request.session.save()
-            
+
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
             site=sitelocation.site,
@@ -137,8 +137,7 @@ def livesearch_response(request, sitelocation):
     except ValueError:
         return HttpResponseBadRequest('Not a page number')
     except EmptyPage:
-        return HttpResponseBadRequest(
-            'Page number request exceeded available pages')
+        page = video_paginator.page(video_paginator.num_pages)
 
     current_video = None
     if page.object_list:
@@ -149,11 +148,11 @@ def livesearch_response(request, sitelocation):
         {'current_video': current_video,
          'page_obj': page,
          'video_list': page.object_list,
-         'video_service_form': forms.VideoServiceForm(),
          'query_string': query_string,
          'order_by': order_by,
          'is_saved_search': is_saved_search,
-         'saved_searches': models.SavedSearch.objects.filter(site=sitelocation.site)},
+         'saved_searches': models.SavedSearch.objects.filter(
+                site=sitelocation.site)},
         context_instance=RequestContext(request))
 
 
@@ -215,6 +214,7 @@ def create_saved_search(request, sitelocation=None):
 
     return HttpResponse('SUCCESS')
 
+
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
@@ -230,3 +230,17 @@ def remove_saved_search(request, sitelocation=None):
     else:
         return HttpResponseBadRequest(
             'Saved search of that query does not exist')
+
+@referrer_redirect
+@require_site_admin
+@get_sitelocation
+def search_auto_approve(request, search_id, sitelocation=None):
+    search = get_object_or_404(
+        models.SavedSearch,
+        id=search_id,
+        site=sitelocation.site)
+
+    search.auto_approve = not request.GET.get('disable')
+    search.save()
+
+    return HttpResponse('SUCCESS')

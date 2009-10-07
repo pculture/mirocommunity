@@ -1,29 +1,17 @@
 from datetime import datetime
 
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Q
 from django.forms.formsets import DELETION_FIELD_NAME
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.subsite.admin import forms
-
-def _header(sort, label, current):
-    if current.endswith(sort):
-        # this is the current sort
-        css_class = 'sortup'
-        if current[0] != '-':
-            sort = '-%s' % sort
-            css_class = 'sortdown'
-    else:
-        css_class = ''
-    return {
-        'sort': sort,
-        'link': '?sort=%s' % sort,
-        'label': label,
-        'class': css_class
-        }
+from localtv.util import sort_header
 
 @get_sitelocation
 @require_site_admin
@@ -41,15 +29,46 @@ def bulk_edit(request, sitelocation=None):
     if category != '':
         videos = videos.filter(categories__pk=category).distinct()
 
+    author = request.GET.get('author', '')
+    try:
+        author = int(author)
+    except ValueError:
+        author = ''
+
+    if author != '':
+        videos = videos.filter(authors__pk=author).distinct()
+
+    search_string = request.GET.get('q', '')
+    if search_string != '':
+        videos = videos.filter(
+            Q(description__icontains=search_string) |
+            Q(name__icontains=search_string) |
+            Q(tags__name__icontains=search_string) |
+            Q(categories__name__icontains=search_string) |
+            Q(user__username__icontains=search_string) |
+            Q(user__first_name__icontains=search_string) |
+            Q(user__last_name__icontains=search_string) |
+            Q(video_service_user__icontains=search_string) |
+            Q(feed__name__icontains=search_string))
 
     sort = request.GET.get('sort', 'name')
     videos = videos.order_by(sort)
+
+    video_paginator = Paginator(videos, 50)
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        page = video_paginator.page(video_paginator.num_pages)
+
+    videos = videos[page.start_index():page.end_index()]
     formset = forms.VideoFormSet(queryset=videos)
     headers = [
-        _header('name', 'Video Title', sort),
-        _header('feed__feed_url', 'Source', sort),
+        sort_header('name', 'Video Title', sort),
+        sort_header('feed__feed_url', 'Source', sort),
         {'label': 'Categories'},
-        _header('when_published', 'Date Posted', sort)]
+        sort_header('when_published', 'Date Posted', sort)]
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,
@@ -95,6 +114,8 @@ def bulk_edit(request, sitelocation=None):
     return render_to_response('localtv/subsite/admin/bulk_edit.html',
                               {'formset': formset,
                                'headers': headers,
+                               'page': page,
                                'categories': models.Category.objects.filter(
-                site=sitelocation.site)},
+                site=sitelocation.site),
+                               'users': User.objects.all()},
                               context_instance=RequestContext(request))

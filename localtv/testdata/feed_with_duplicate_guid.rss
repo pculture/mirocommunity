@@ -1,0 +1,24 @@
+<rss version="2.0">
+  <channel>
+    <title>miropcf</title>
+    <link>http://miropcf.blip.tv</link>
+    <description>miropcf</description>
+    <generator>http://blip.tv</generator>
+    <lastBuildDate>Mon, 09 Feb 2009 19:42:57 +0000</lastBuildDate>
+    <pubDate>Mon, 09 Feb 2009 19:42:57 +0000</pubDate>
+    <item>
+      <guid isPermaLink="false">D9E50330-F6E1-11DD-A117-BB8AB007511B</guid>
+      <link>http://blip.tv/file/1754930/new</link>
+      <title>New Item</title>
+      <description>New Item</description>
+      <enclosure length="12151514" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-Miro20Introduction189_new.mp4"/>
+    </item>
+    <item>
+      <guid isPermaLink="false">D9E50330-F6E1-11DD-A117-BB8AB007511B</guid>
+      <link>http://blip.tv/file/1754930/old</link>
+      <title>Old Item</title>
+      <description>New Item</description>
+      <enclosure length="12151514" type="video/vnd.objectvideo" url="http://blip.tv/file/get/Miropcf-Miro20Introduction189_old.mp4"/>
+    </item>
+  </channel>
+</rss>

@@ -24,30 +24,35 @@ urlpatterns = patterns(
 
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.feed_views',
-    (r'^feeds/$', 'feeds_page',
-     {}, 'localtv_admin_source_page'),
-    (r'^feeds/add_feed/$', 'add_feed',
-     {}, 'localtv_admin_feed_add'),
-    (r'^feeds/stop_watching/$', 'feed_stop_watching',
-     {}, 'localtv_admin_feed_stop_watching'),
-    (r'^feeds/auto_approve/$', 'feed_auto_approve',
-     {}, 'localtv_admin_feed_auto_approve'))
+    'localtv.subsite.admin.sources_views',
+    (r'^manage/$', 'manage_sources',
+     {}, 'localtv_admin_manage_page'))
 
+urlpatterns += patterns(
+    'localtv.subsite.admin.feed_views',
+    (r'^manage/feed/add$', 'add_feed',
+     {}, 'localtv_admin_feed_add'),
+    (r'^manage/feed/add/done$', 'add_feed_done',
+     {}, 'localtv_admin_feed_add_done'),
+    (r'^manage/feed/remove$', 'feed_stop_watching',
+     {}, 'localtv_admin_feed_remove'),
+    (r'^manage/feed/auto_approve/(\d+)$', 'feed_auto_approve',
+     {}, 'localtv_admin_feed_auto_approve'))
 
 urlpatterns += patterns(
     'localtv.subsite.admin.livesearch_views',
-    (r'^livesearch/$', 'livesearch_page',
-     {}, 'localtv_admin_livesearch_page'),
-    (r'^livesearch/approve/$', 'approve',
-     {}, 'localtv_admin_livesearch_approve'),
-    (r'^livesearch/display/$', 'display',
-     {}, 'localtv_admin_livesearch_display'),
-    (r'^livesearch/save_search/$', 'create_saved_search',
-     {}, 'localtv_admin_livesearch_save_search'),
-    (r'^livesearch/remove/$', 'remove_saved_search',
-     {}, 'localtv_admin_livesearch_remove'))
-
+    (r'^manage/search/$', 'livesearch',
+     {}, 'localtv_admin_search'),
+    (r'^manage/search/add$', 'create_saved_search',
+     {}, 'localtv_admin_search_add'),
+    (r'^manage/search/remove$', 'remove_saved_search',
+     {}, 'localtv_admin_search_remove'),
+    (r'^manage/search/auto_approve/(\d+)$', 'search_auto_approve',
+     {}, 'localtv_admin_search_auto_approve'),
+    (r'^add/approve/$', 'approve',
+     {}, 'localtv_admin_search_video_approve'),
+    (r'^add/display/$', 'display',
+     {}, 'localtv_admin_search_video_display'))
 
 urlpatterns += patterns(
     'localtv.subsite.admin.edit_video_views',
@@ -63,13 +68,6 @@ urlpatterns += patterns(
     'localtv.subsite.admin.category_views',
     (r'^categories/$', 'categories',
      {}, 'localtv_admin_categories'))
-
-urlpatterns += patterns(
-    'localtv.subsite.admin.author_views',
-    (r'^authors/$', 'authors',
-     {}, 'localtv_admin_authors'),
-    (r'^authors/delete$', 'delete',
-     {}, 'localtv_admin_authors_delete'))
 
 urlpatterns += patterns(
     'localtv.subsite.admin.bulk_edit_views',

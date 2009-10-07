@@ -1,0 +1,11 @@
+{% if not sitelocation %}
+<span id="add_cat" class="edit_link"><span>Edit</span></span>
+{% endif %}
+<div class="floatleft">
+  <h3>Category</h3>
+  <ul>
+    {% for category in instance.categories.all %}
+    <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+    {% endfor %}
+  </ul>
+</div>

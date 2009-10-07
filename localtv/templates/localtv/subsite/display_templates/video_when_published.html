@@ -1,0 +1,6 @@
+{% load filters %}
+{{ instance.when_prefix|title }} {{ instance.when|simpletimesince }} ago
+{% if not sitelocation %}
+<span class="edit_link">Edit</span>
+{% endif %}
+

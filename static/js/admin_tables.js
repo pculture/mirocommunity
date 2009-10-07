@@ -22,11 +22,15 @@ function load_video(eventdata) {
             url: video_url,
             success: function(data) {
                 admin_rightpane.empty().append(data);
+                if (typeof edit_widgets_setup === 'function') {
+                    edit_widgets_setup();
+                }
                 var selected = $('div.selected');
                 selected.removeClass('selected');
                 selected.addClass('unselected');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
+                resize_admin();
                 }});
     return false;
 }
@@ -42,14 +46,13 @@ function load_click_callbacks() {
 }
 
 function resize_admin() {
-    var header = document.getElementById('header');
+    var admin_table = document.getElementById('admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
-    var admin_rightpane = document.getElementById('admin_rightpane');
+    //var admin_rightpane = document.getElementById('admin_rightpane');
     base_height = (window.innerHeight -
-                   header.clientHeight -
-                   20);
-    admin_leftpane.style.height = base_height + 'px';
-    admin_rightpane.style.height = base_height + 'px';
+                   admin_table.offsetTop);
+    admin_leftpane.style.height = (base_height - 40) + 'px';
+    //admin_rightpane.style.height = base_height + 'px';
 }
 
 if ('attachEvent' in window) {

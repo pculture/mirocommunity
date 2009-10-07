@@ -13,6 +13,7 @@ from django.template import RequestContext
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.subsite.submit_video import forms
+from localtv.templatetags.filters import sanitize
 
 def _check_submit_permissions(request):
     sitelocation = models.SiteLocation.objects.get(
@@ -56,25 +57,29 @@ def submit_video(request, sitelocation=None):
                         website_url=submit_form.cleaned_data['url'],
                         site=sitelocation.site).exclude(
                         status=models.VIDEO_STATUS_ACTIVE):
+                        v.user = request.user
                         v.status = models.VIDEO_STATUS_ACTIVE
                         v.when_approved = datetime.datetime.now()
                         v.save()
-                # pick the first approved video to redirect the user to
-                videos = models.Video.objects.filter(
-                    website_url=submit_form.cleaned_data['url'],
-                    site=sitelocation.site,
-                    status=models.VIDEO_STATUS_ACTIVE)
-                if videos.count():
-                    video = videos[0]
+                        return HttpResponseRedirect(
+                            reverse('localtv_submit_thanks'))
                 else:
-                    video = None
-                return render_to_response(
-                    'localtv/subsite/submit/submit_video.html',
-                    {'sitelocation': sitelocation,
-                     'submit_form': forms.SubmitVideoForm(),
-                     'was_duplicate': True,
-                     'video': video},
-                    context_instance=RequestContext(request))
+                    # pick the first approved video to point the user at
+                    videos = models.Video.objects.filter(
+                        website_url=submit_form.cleaned_data['url'],
+                        site=sitelocation.site,
+                        status=models.VIDEO_STATUS_ACTIVE)
+                    if videos.count():
+                        video = videos[0]
+                    else:
+                        video = None
+                    return render_to_response(
+                        'localtv/subsite/submit/submit_video.html',
+                        {'sitelocation': sitelocation,
+                         'submit_form': forms.SubmitVideoForm(),
+                         'was_duplicate': True,
+                         'video': video},
+                        context_instance=RequestContext(request))
 
             scraped_data = util.get_scraped_data(
                 submit_form.cleaned_data['url'])
@@ -84,12 +89,21 @@ def submit_video(request, sitelocation=None):
                 get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
             get_params = urllib.urlencode(get_dict)
 
-            if scraped_data and (
-                    scraped_data.get('embed')
+            if scraped_data:
+                if 'link' in scraped_data and \
+                        scraped_data['link'] != get_dict['url']:
+                    request.POST = dict(request.POST)
+                    request.POST['url'] = scraped_data['link'].encode('utf8')
+                    request.POST['tags'] = get_dict['tags'].encode('utf8')
+                    # rerun the view, but with the canonical URL
+                    return submit_video(request)
+
+                if (scraped_data.get('embed')
                     or (scraped_data.get('file_url')
                         and not scraped_data.get('file_url_is_flaky'))):
-                return HttpResponseRedirect(
-                    reverse('localtv_submit_scraped_video') + '?' + get_params)
+                    return HttpResponseRedirect(
+                        reverse('localtv_submit_scraped_video') + '?' +
+                        get_params)
 
             # otherwise if it looks like a video file
             elif util.is_video_filename(url_filename):
@@ -123,7 +137,7 @@ def scraped_submit_video(request, sitelocation=None):
         scraped_form.set_initial(request)
         scraped_form.initial['name'] = scraped_data.get('title')
         scraped_form.initial['description'] = scraped_data.get('description')
-        scraped_form.initial['thumbnail_url'] = scraped_data.get(
+        scraped_form.initial['thumbnail'] = scraped_data.get(
             'thumbnail_url')
 
         return render_to_response(
@@ -149,12 +163,13 @@ def scraped_submit_video(request, sitelocation=None):
         video = models.Video(
             name=scraped_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=scraped_form.cleaned_data['description'],
+            description=sanitize(scraped_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             file_url=file_url or '',
             embed_code=scraped_data.get('embed') or '',
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
             website_url=scraped_form.cleaned_data['url'],
-            thumbnail_url=scraped_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'),
@@ -169,7 +184,8 @@ def scraped_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                scraped_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             scraped_form.cleaned_data.get('tags', []))
@@ -215,10 +231,11 @@ def embedrequest_submit_video(request, sitelocation=None):
         video = models.Video(
             name=embed_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=embed_form.cleaned_data['description'],
+            description=sanitize(embed_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             embed_code=embed_form.cleaned_data['embed'],
             website_url=embed_form.cleaned_data.get('website_url', ''),
-            thumbnail_url=embed_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
             when_submitted=datetime.datetime.now())
 
@@ -229,7 +246,8 @@ def embedrequest_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                embed_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             embed_form.cleaned_data.get('tags', []))
@@ -243,7 +261,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/subsite/submit/embed_submit_video.html',
             {'sitelocation': sitelocation,
-             'scraped_form': embed_form},
+             'embed_form': embed_form},
             context_instance=RequestContext(request))
 
 
@@ -276,9 +294,10 @@ def directlink_submit_video(request, sitelocation=None):
         video = models.Video(
             name=direct_form.cleaned_data['name'],
             site=sitelocation.site,
-            description=direct_form.cleaned_data['description'],
+            description=sanitize(direct_form.cleaned_data['description'],
+                                 extra_filters=['img']),
             file_url=direct_form.cleaned_data['url'],
-            thumbnail_url=direct_form.cleaned_data.get('thumbnail_url', ''),
+            thumbnail_url=request.POST.get('thumbnail', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),
             user=user,
             when_submitted=datetime.datetime.now())
@@ -290,7 +309,8 @@ def directlink_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail()
+            video.save_thumbnail_from_file(
+                direct_form.cleaned_data['thumbnail'])
 
         tags = util.get_or_create_tags(
             direct_form.cleaned_data.get('tags', []))
@@ -313,7 +333,8 @@ def submit_thanks(request, sitelocation=None):
     if sitelocation.user_is_admin(request.user):
         context = {
             'video': models.Video.objects.filter(site=sitelocation.site,
-                                                user=request.user)[0]
+                                                 user=request.user).order_by(
+                '-id')[0]
             }
     else:
         context = {}

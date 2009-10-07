@@ -2,11 +2,11 @@
 
 <div class="video">
   
-       <a href="{% url localtv_view_video video_id=video.id %}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;">
+       <a href="{{ video.get_absolute_url }}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;">
    <img src="{% versioned "/images/vid_overlay.png" %}" /></a>
 
   <div class="title_desc">
-    <a href="{% url localtv_view_video video_id=video.id %}">
+    <a href="{{ video.get_absolute_url }}">
       {% if video.name %}
         <h3>{{ video.name }}</h3>
       {% else %}

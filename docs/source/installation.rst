@@ -110,10 +110,10 @@ virtualenv environment to add these following directories:
 Django
 ------
 
-Presently LocalTv works with Django 1.0.2.  While in the virtualenv
+Presently LocalTv works with Django 1.1.  While in the virtualenv
 environment you can type the following::
 
-    easy_install -UaZ Django
+    easy_install -UaZ Django==1.1
 
 This should do everything you need for django, including putting it in
 the virtualenv python path.
@@ -197,6 +197,24 @@ Page Tabs
     git clone https://git.participatoryculture.org/djpagetabs djpagetabs
 
 
+
+Video
+-----
+
+::
+
+    git clone https://git.participatoryculture.org/djvideo djvideo
+
+
+
+BeautifulSoup
+-------------
+
+::
+
+    easy_install -UaZ BeautifulSoup
+
+
 Modifying easy_install.pth
 --------------------------
 
@@ -221,12 +239,13 @@ As you can see, paths can be relative.  Modify your file to look like so::
 
     import sys; sys.__plen = len(sys.path)
     ./setuptools-0.6c8-py2.5.egg
-    ./Django-1.0.2_final-py2.5.egg
-    ../../../src/django-evolution
+    ./Django-1.1-py2.5.egg
+    ../../../src/south
     ../../../src/DjangoOpenid
     ../../../src/LocalTv
     ../../../src/VidScraper
     ../../../src/djpagetabs
+    ../../../src/djvideo
     ../../../djangoproject
     import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
 
@@ -335,6 +354,7 @@ Sync the database
 ::
 
     django-admin.py syncdb --settings=mainsite_project.settings
+    django-admin.py migrate --settings=mainsite_project.settings
 
 
 Subsites

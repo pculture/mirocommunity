@@ -1,52 +1,125 @@
-{% extends "localtv/subsite/admin/base.html" %}
+{% extends "localtv/subsite/admin/bulk_edit.html" %}
 
-{% load i18n %}
+{% load i18n versioned %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Users" %}{% endblock %}
-
+{% block head %}
+  {{ block.super }}
+  <style type="text/css">
+#labels form > table tr td:first-child, #labels form > table tr th.checkbox {
+    display: none;
+}
+#labels form > table tr.editing td:first-child {
+    display: table-cell;
+}
+  </style>
+{% endblock %}
 {% block body_class %}user_admin{% endblock body_class %}
 
-{% block content %}
-
+{% block pre-labels %}
   <div id="label_sidebar">
     <div id="add_user" class="rounded">
       <h1>Add a User</h1>
-      <form action="" method="POST">
+      <form action="" method="POST" enctype="multipart/form-data">
         {{ add_user_form.as_p }}
         <input type="submit" value="Add" name="submit">
       </form>
     </div>
-
-    <div id="create_user" class="rounded">
-      <h1>Create a User</h1>
-      <form action="" method="POST">
-        {{ create_user_form.as_p }}
-        <input type="submit" value="Create" name="submit">
-      </form>
-    </div>
   </div>
-
-  <div id="labels">
-    <table class="rounded">
-      <thead>
-        <th><span>Username</span></th>
-        <th><span>Email</span></th>
-        <th><span>OpenID</span></th>
-        <th></th>
-      </thead>
-      <tbody>
-      {% for user in admins %}
-      <tr class="{% cycle "grey" "white" %}">
-        <form action="" method="POST">
-          <input type="hidden" name="id" value="{{ user.pk }}">
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td width="50px">{{ user.openiduser.url }}</td>
-          <td><button class="med_button" type="submit" name="submit" value="Delete"><span class="reject">Delete</span></button></td>
-        </form>
+{% endblock %}
+{% block pre-form %}{% endblock %}
+{% block columns %}
+<td>
+  {{ form.instance.username }}
+  <div class="actions">
+    <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{% url localtv_subsite_author form.instance.pk %}" class="view_icon">View</a>
+  </div>
+</td>
+<td>{{ form.instance.get_full_name }}</td>
+<td>{{ form.instance.email }}</td>
+<td style="max-width: 150px; overflow: hidden;">{{ form.instance.openiduser.url }}</td>
+<td>{% ifequal form.role.field.initial "admin" %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endifequal %}</td>
+<td>{% if form.instance.get_profile.logo %}<a href="{{ form.instance.get_profile.logo.url }}" onClick="$(this).hide().next().show(); return false;">Click to View</a><img style="display: none;" src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
+<td>{% if form.instance.get_profile.description %}{{ form.instance.get_profile.description }}{% endif %}</td>
+<td>{% if form.instance.authored_set__count %}<a href="{% url localtv_subsite_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>
+{% endblock %}
+{% block quick-edit-title %}Edit User: {{ form.instance.username }}{% endblock %}
+{% block quick-edit-colspan %}3{% endblock %}
+{% block quick-edit %}
+{{ form.id }}
+{{ form.username.as_hidden }}
+{{ form.non_field_errors }}
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {{ form.email.errors }}
+        {{ form.email.label_tag }}
+        {{ form.email }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.website.errors }}
+        {{ form.website.label_tag }}
+        {{ form.website }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.logo.errors }}
+        {{ form.logo.label_tag }}
+        {{ form.logo }}
+    </td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
+{% block quick-edit-additional-columns %}
+<td class="checklist" colspan="2">
+  <table class="larger_labels">
+    <tbody>
+      <tr>
+        <td>
+          {{ form.role.errors }}
+          {{ form.role.label_tag }}
+          {{ form.role }}
+        </td>
       </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endblock content %}
+      <tr>
+        <td colspan="2">
+          {{ form.first_name.errors }}
+          {{ form.first_name.label_tag  }}
+          {{ form.first_name }}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {{ form.last_name.errors }}
+          {{ form.last_name.label_tag }}
+          {{ form.last_name }}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {{ form.password_f.errors }}
+          {{ form.password_f.label_tag }}
+          {{ form.password_f }}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {{ form.password_f2.errors }}
+          {{ form.password_f2.label_tag }}
+          {{ form.password_f2 }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</td>
+<td class="checklist" width="250" colspan="3">
+  {{ form.description.errors }}
+  {{ form.description.label_tag }}
+  {{ form.description }}
+</td>
+{% endblock %}

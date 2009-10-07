@@ -1,12 +1,11 @@
  <ul id="admin_nav">
     <li><a class="sub" href="{% url localtv_admin_approve_reject %}"><span>To Be Reviewed</span></a></li>
-    <li><a class="watched" href="{% url localtv_admin_source_page %}"><span>Manage Sources</span></a></li>
-    <li><a class="saved" href="{% url localtv_admin_livesearch_page %}"><span>Add Sources</span></a></li>
+    <li><a class="watched" href="{% url localtv_admin_manage_page %}"><span>Manage Sources</span></a></li>
     <li><a class="bulkedit" href="{% url localtv_admin_bulk_edit %}"><span>Bulk Edit</span></a></li>
-    <li><a class="design" href="{% url localtv_admin_edit_design %}"><span>Customize Design</span></a></li>
+    <li><a class="design" href="{% url localtv_admin_edit_design %}"><span>Design Settings</span></a></li>
     <li><a class="categories" href="{% url localtv_admin_categories %}"><span>Categories</span></a></li>
-    <li><a class="authors" href="{% url localtv_admin_authors %}"><span>Authors</span></a></li>
     <li><a class="users" href="{% url localtv_admin_users %}"><span>Users</span></a></li>
+    <li><a class="comments" href="{% url comments-moderation-queue %}"><span>Moderate Comments</span></a></li>
     <li><a id="submit_button" href="{% url localtv_submit_video %}"><span>Submit a Video</span></a></li>
  </ul>
 <br style="clear:both;" />

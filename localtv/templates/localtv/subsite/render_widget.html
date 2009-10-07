@@ -3,9 +3,9 @@
     <span class="display_data">{{ display_content }}</span>
   {% endautoescape %}
   <span class="post_url">{{ post_url }}</span>
-  <span class="input_field">
+  <span class="input_field">{% block input_field %}
     <ul>
       {{ form.as_ul }}
     </ul>
-  </span>
+  {% endblock %}</span>
 </div>

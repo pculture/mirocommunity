@@ -1,0 +1,8 @@
+{% extends "localtv/subsite/render_widget.html" %}
+{% block input_field %}
+  <div class="checklist">
+    {% for field in form %}
+    {{ field }}
+    {% endfor %}
+  </div>
+  {% endblock %}

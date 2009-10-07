@@ -7,14 +7,21 @@ import StringIO
 
 from django.db import models
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.mail import send_mail
 from django.forms.fields import slug_re
-from django.template import mark_safe
+from django.template import mark_safe, Context, loader
+from django.template.defaultfilters import slugify
 
 import feedparser
 import vidscraper
+
+from localtv.templatetags.filters import sanitize
 
 
 # the difference between unapproved and rejected is that unapproved simply
@@ -36,18 +43,15 @@ SITE_STATUSES = (
     (SITE_STATUS_ACTIVE, 'Active'))
 
 VIDEO_THUMB_SIZES = [
+    (534, 430), # behind a video
     (375, 295), # featured on frontpage
     (140, 110)]
 
-VIDEO_USER_REGEXES = (
-    ('YouTube', r'http://(www\.)?youtube\.com/rss/user/.+/videos\.rss'),
-    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/videos/-/.+'),
-    ('YouTube', r'http://(www\.)?youtube\.com/user/.+'),
-    ('blip.tv', r'http://.+\.blip\.tv/\?skin=rss'),
-    ('blip.tv', r'http://.+\.blip\.tv/rss'),
-    ('blip.tv', r'http://.+\.blip\.tv/'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/user:[0-9]+/clips/rss'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/.+'))
+VIDEO_SERVICE_REGEXES = (
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/'),
+    ('YouTube', r'http://(www\.)?youtube\.com/'),
+    ('blip.tv', r'http://(.+\.)?blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -109,8 +113,8 @@ class SiteLocation(models.Model):
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
                                    blank=True)
-    admins_user = models.ManyToManyField('auth.User', blank=True,
-                                         related_name='admin_for')
+    admins = models.ManyToManyField('auth.User', blank=True,
+                                    related_name='admin_for')
     status = models.IntegerField(
         choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
     sidebar_html = models.TextField(blank=True)
@@ -121,6 +125,20 @@ class SiteLocation(models.Model):
     frontpage_style = models.CharField(max_length=32, default="list")
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
+
+    # comments options
+    screen_all_comments = models.BooleanField(
+        default=False,
+        help_text="Screen all comments by default?")
+    comments_email_admins = models.BooleanField(
+        default=False,
+        verbose_name="E-mail Admins",
+        help_text=("If True, admins will get an e-mail when a "
+                   "comment is posted."))
+    comments_required_login = models.BooleanField(
+        default=False,
+        verbose_name="Require Login",
+        help_text="If True, comments require the user to be logged in.")
 
     def __unicode__(self):
         return self.site.name
@@ -136,12 +154,8 @@ class SiteLocation(models.Model):
         if user.is_superuser:
             return True
 
-        for sitelocation in user.admin_for.all():
-            if self == sitelocation:
-                return True
+        return bool(self.admins.filter(pk=user.pk).count())
 
-        return False
-    
 class Tag(models.Model):
     """
     Tags for videos.
@@ -157,8 +171,29 @@ class Tag(models.Model):
     def __unicode__(self):
         return self.name
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_list_tag', [self.name])
+    
+class Source(models.Model):
+    """
+    An abstract base class to represent things which are sources of multiple
+    videos.  Current subclasses are Feed and SavedSearch.
+    """
+    id = models.AutoField(primary_key=True)
+    site = models.ForeignKey(Site)
+    auto_approve = models.BooleanField(default=False)
+    user = models.ForeignKey('auth.User', null=True, blank=True)
+    auto_categories = models.ManyToManyField("Category", blank=True)
+    auto_authors = models.ManyToManyField("auth.User", blank=True,
+                                          related_name='auto_%(class)s_set')
 
-class Feed(models.Model):
+    objects = models.Manager()
+
+    class Meta:
+        abstract = True
+
+class Feed(Source):
     """
     Feed to pull videos in from.
 
@@ -169,7 +204,7 @@ class Feed(models.Model):
       - feed_url: The location of this field
       - site: which site this feed belongs to
       - name: human readable name for this feed
-      - webpage: webpage that this feed's content is associated with
+      - webpage: webpage that this feed\'s content is associated with
       - description: human readable description of this item
       - last_updated: last time we ran self.update_items()
       - when_submitted: when this feed was first registered on this site
@@ -185,7 +220,6 @@ class Feed(models.Model):
         import
     """
     feed_url = models.URLField(verify_exists=False)
-    site = models.ForeignKey(Site)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
     description = models.TextField()
@@ -193,10 +227,6 @@ class Feed(models.Model):
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
-    auto_approve = models.BooleanField(default=False)
-    user = models.ForeignKey('auth.User', null=True, blank=True)
-    auto_categories = models.ManyToManyField("Category", blank=True)
-    auto_authors = models.ManyToManyField("Author", blank=True)
 
     class Meta:
         unique_together = (
@@ -205,7 +235,11 @@ class Feed(models.Model):
     def __unicode__(self):
         return self.name
 
-    def update_items(self, verbose=False):
+    @models.permalink
+    def get_absolute_url(self):
+        return ('localtv_subsite_list_feed', [self.pk])
+
+    def update_items(self, verbose=False, parsed_feed=None):
         """
         Fetch and import new videos from this feed.
         """
@@ -216,7 +250,9 @@ class Feed(models.Model):
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
 
-        parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+        if parsed_feed is None:
+            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+
         for entry in parsed_feed['entries'][::-1]:
             skip = False
             guid = entry.get('guid')
@@ -224,15 +260,13 @@ class Feed(models.Model):
                 feed=self, guid=guid).count():
                 skip = True
             link = entry.get('link')
-            if link is not None and Video.objects.filter(
-                    feed=self, website_url=link).count():
+            if (link is not None and Video.objects.filter(
+                    website_url=link).count()):
                 skip = True
-            if skip:
-                if verbose:
-                    print "Skipping %s" % entry['title']
-                continue
 
             file_url = None
+            file_url_length = None
+            file_url_mimetype = None
             embed_code = None
             flash_enclosure_url = None
             if 'updated_parsed' in entry:
@@ -244,13 +278,15 @@ class Feed(models.Model):
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure['href']
+                file_url_length = video_enclosure.get('length')
+                file_url_mimetype = video_enclosure.get('type')
 
-            if link:
+            if link and not skip:
                 try:
                     scraped_data = vidscraper.auto_scrape(
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date', 'thumbnail_url'])
+                                'publish_date', 'thumbnail_url', 'link'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -260,9 +296,21 @@ class Feed(models.Model):
                     publish_date = scraped_data.get('publish_date')
                     thumbnail_url = scraped_data.get('thumbnail_url',
                                                      thumbnail_url)
+                    if 'link' in scraped_data:
+                        link = scraped_data['link']
+                        if (Video.objects.filter(
+                                website_url=link).count()):
+                            skip = True
+
                 except vidscraper.errors.Error, e:
                     if verbose:
                         print "Vidscraper error: %s" % e
+
+            if skip:
+                if verbose:
+                    print "Skipping %s" % entry['title']
+                continue
+
 
             if not (file_url or embed_code):
                 if verbose:
@@ -273,9 +321,13 @@ class Feed(models.Model):
 
             video = Video(
                 name=entry['title'],
+                guid=guid,
                 site=self.site,
-                description=entry.get('summary', ''),
+                description=sanitize(entry.get('summary', ''),
+                                     extra_filters=['img']),
                 file_url=file_url or '',
+                file_url_length=file_url_length,
+                file_url_mimetype=file_url_mimetype or '',
                 embed_code=embed_code or '',
                 flash_enclosure_url=flash_enclosure_url or '',
                 when_submitted=datetime.datetime.now(),
@@ -283,7 +335,7 @@ class Feed(models.Model):
                 when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
-                website_url=entry.get('link', ''),
+                website_url=link,
                 thumbnail_url=thumbnail_url or '')
 
             video.save()
@@ -315,6 +367,18 @@ class Feed(models.Model):
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
         self.save()
+
+    def source_type(self):
+        video_service = self.video_service()
+        if video_service is None:
+            return u'Feed'
+        else:
+            return u'User: %s' % video_service
+
+    def video_service(self):
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, self.feed_url, re.I):
+                return service
 
 
 class Category(models.Model):
@@ -405,48 +469,30 @@ class Category(models.Model):
         return objects
 
     def approved_set(self):
-        return self.video_set.filter(status=VIDEO_STATUS_ACTIVE).extra(
-        select={'best_date': 'COALESCE(localtv_video.when_published,'
-                'localtv_video.when_submitted)'}).order_by(
-            '-best_date')
+        return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
+                                 categories=self)
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
-class Author(models.Model):
+class Profile(models.Model):
     """
-    The author of a video.
-
-    One of the ambitions of LocalTV is to create some communication between our
-    project and the authors of media, so we try and collect this information so
-    we can link back to them.
-
-    Fields:
-     - site: the site this author is bound to
-     - name: name of the author
-     - logo: a thumbnail to represent the author by
+    Some extra data that we store about users.  Gets linked to a User object
+    through the Django authentication system.
     """
-    site = models.ForeignKey(Site)
-    name = models.CharField(max_length=80, verbose_name='Author Name')
-    logo = models.ImageField(upload_to="localtv/category_logos", blank=True,
-                             verbose_name='Author Image')
-
-    class Meta:
-        ordering = ['name']
-        unique_together = (
-            ('name', 'site'))
+    user = models.ForeignKey('auth.User')
+    logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
+                             verbose_name='Image')
+    description = models.TextField(blank=True, default='')
+    website = models.URLField(blank=True, default='')
 
     def __unicode__(self):
-        return self.name
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('localtv_subsite_author', [str(self.id)])
+        return unicode(self.user)
 
 
-class SavedSearch(models.Model):
+class SavedSearch(Source):
     """
     A set of keywords to regularly pull in new videos from.
 
@@ -460,10 +506,8 @@ class SavedSearch(models.Model):
      - user: the person who saved this search (thus, likely an
        adminsistrator of this subsite)
     """
-    site = models.ForeignKey(Site)
     query_string = models.TextField()
     when_created = models.DateTimeField()
-    user = models.ForeignKey('auth.User', null=True, blank=True)
 
     def __unicode__(self):
         return self.query_string
@@ -481,21 +525,27 @@ class SavedSearch(models.Model):
             [result for result in raw_results if result is not None],
             self.site)
 
+        if self.auto_approve:
+            initial_status = VIDEO_STATUS_ACTIVE
+        else:
+            initial_status = VIDEO_STATUS_UNAPPROVED
+
         for result in raw_results:
-            result.generate_video_model(self.site,
-                                        VIDEO_STATUS_UNAPPROVED)
+            video = result.generate_video_model(self.site,
+                                                initial_status)
+            video.categories = self.auto_categories.all()
+            video.authors = self.auto_authors.all()
+
+    def source_type(self):
+        return 'Search'
 
 
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
-        videos = self.extra(select={'best_date': """CASE
-WHEN localtv_video.feed_id IS NULL
-THEN
-localtv_video.when_submitted
-ELSE
-COALESCE(localtv_video.when_published,localtv_video.when_submitted)
-END"""})
+        videos = self.extra(select={'best_date': """
+COALESCE(localtv_video.when_published,localtv_video.when_approved,
+localtv_video.when_submitted)"""})
         return videos.filter(**kwargs).order_by('-best_date')
 
     def popular_since(self, delta, sitelocation=None, **kwargs):
@@ -567,7 +617,8 @@ class Video(models.Model):
     description = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
-    authors = models.ManyToManyField(Author, blank=True)
+    authors = models.ManyToManyField('auth.User', blank=True,
+                                     related_name='authored_set')
     file_url = models.URLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
@@ -602,7 +653,8 @@ class Video(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
-                {'video_id': self.id})
+                {'video_id': self.id,
+                 'slug': slugify(self.name)[:30]})
 
     def try_to_get_file_url_data(self):
         """
@@ -747,32 +799,24 @@ class Video(models.Model):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if self.feed or self.search and self.when_published:
-            return self.when_published
-        elif self.when_approved is not None:
-            return self.when_approved
-        else:
-            return self.when_submitted
+        return self.when_published or self.when_approved or self.when_submitted
 
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-        if self.feed or self.search and self.when_published:
+        if self.when_published:
             return 'published'
         else:
             return 'posted'
 
     def video_service(self):
-        if self.feed:
-            url = self.feed.feed_url
-        elif self.video_service_url:
-            url = self.video_service_url
-        else:
+        if not self.website_url:
             return
 
-        for service, regexp in VIDEO_USER_REGEXES:
+        url = self.website_url
+        for service, regexp in VIDEO_SERVICE_REGEXES:
             if re.search(regexp, url, re.I):
                 return service
 
@@ -816,12 +860,51 @@ class Watch(models.Model):
 
         Class(video=video, user=user, ip_address=ip).save()
 
+
+class VideoModerator(CommentModerator):
+
+    def allow(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.comments_required_login:
+            return request.user and request.user.is_authenticated()
+        else:
+            return True
+
+    def email(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.comments_email_admins:
+            admin_list = sitelocation.admins.filter(
+                is_superuser=False).exclude(email=None).exclude(
+                email='').values_list('email', flat=True)
+            superuser_list = User.objects.filter(is_superuser=True).exclude(
+                email=None).exclude(email='').values_list('email', flat=True)
+            recipient_list = set(admin_list) | set(superuser_list)
+            t = loader.get_template('comments/comment_notification_email.txt')
+            c = Context({ 'comment': comment,
+                          'content_object': video })
+            subject = '[%s] New comment posted on "%s"' % (video.site.name,
+                                                           video)
+            message = t.render(c)
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+                      recipient_list, fail_silently=True)
+
+    def moderate(self, comment, video, request):
+        sitelocation = SiteLocation.objects.get(site=video.site)
+        if sitelocation.screen_all_comments:
+            return True
+        else:
+            return False
+
+
+moderator.register(Video, VideoModerator)
+
+
 admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Author)
+admin.site.register(Profile)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)

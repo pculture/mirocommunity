@@ -6,7 +6,7 @@
 <div id="author_list">
   <ul>
   {% for author in authors %}
-    <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li>
+    <li><a href="{% url localtv_subsite_author author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
   {% endfor %}
   </ul>
 </div>

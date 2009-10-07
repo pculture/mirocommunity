@@ -4,5 +4,6 @@
 {% block title %}{% trans "Thanks for commenting" %}.{% endblock %}
 
 {% block content %}
-  <h1>{% trans "Thank you for your comment" %}.</h1>
+  <h1>{% trans "Thank you for your comment. Our moderators will review it shortly." %}.</h1>
+  <a href="{{ comment.get_content_object_url }}">Return to the video</a>
 {% endblock %}

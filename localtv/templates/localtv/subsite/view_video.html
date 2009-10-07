@@ -1,16 +1,19 @@
 {% extends "localtv/subsite/base.html" %}
 
-{% load video i18n comments filters versioned %}
+{% load video i18n comments filters versioned editable_widget localtv_thumbnail %}
 
 {% block body_id %}view_video{% endblock %}
 
 
-{% block title %}{{ block.super }} - {{ current_video.name }}{% endblock %}
+{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block head %}
   {% if edit_video_form %}
-    <script src="{% versioned "/js/edit_form.js" %}"
+    <script src="{% versioned "/js/new_edit_form.js" %}"
             type="text/javascript">
+    </script>
+    <script type="text/javascript"
+            src="{% versioned "/js/edit_form.js" %}">
     </script>
   {% endif %}
 {% endblock %}
@@ -22,24 +25,45 @@
 
   <div id="main">
     <div class="vid_title_wrapper">
-      <div class="vid_title{% if edit_video_form %} editable{% endif %}">
-        {% if current_video.name %}
-        <h2>{{ current_video.name }}</h2>
+      <div class="vid_title">
+        {% if user_is_admin %}
+        {% editable_widget current_video "name" %}
         {% else %}
-        <h2{% trans "(no title)" %}</h2>
+        <h2>
+        {% if current_video.name %}
+        {{ current_video.name }}
+        {% else %}
+        {% trans "(no title)" %}
+        {% endif %}
+        </h2>
         {% endif %}
       </div>
     </div>
-    <span class="date{% if edit_video_form %} editable{% endif %}">{{ current_video.when_prefix|title }} {{ current_video.when|simpletimesince }} ago</span>
-    {% with current_video as video %}
-    {% include "localtv/subsite/video_byline.html" %}
+    <span class="date">
+    {% if user_is_admin %}
+    {% editable_widget current_video "when_published" %}
+    {% else %}
+    {% with current_video as instance %}
+    {% include "localtv/subsite/display_templates/video_when_published.html" %}
     {% endwith %}
+    {% endif %}
+    </span>
+    <span class="byline">
+    {% if user_is_admin %}
+      {% editable_widget current_video "authors" %}
+    {% else %}
+      {% with current_video as instance %}
+      {% include "localtv/subsite/display_templates/video_authors.html" %}
+      {% endwith %}
+    {% endif %}
+    </span>
     <div id="video_wrapper">
         {% if current_video.embed_code %}
-        {{ current_video.embed_code|safe }}
+        {{ current_video.embed_code|wmode_transparent }}
         {% else %}
         {% video current_video.file_url mime_type=current_video.file_url_mimetype %}
         {% endif %}
+        <img src="{% get_thumbnail_url current_video 534 430 %}" />
     </div>
 
     <div class="action">
@@ -48,7 +72,7 @@
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" /></span> 
+        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" /></span>
       </a>
 
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
@@ -56,79 +80,40 @@
       </a>
     </div>
 
+    {% if user_is_admin %}
+    {% editable_widget current_video "description" %}
+    {% else %}
     <div class="description">
       {{ current_video.description|sanitize }}
-      {{ description }}
-      {% if edit_video_form %}
-      <span class="editable">Change Description</span>
-      {% endif %}
     </div>
-
+    {% endif %}
     <div id="tags">
-      {% if current_video.categories.count or edit_video_form %}
-                		 {% if edit_video_form %} <a href="#add_cat" id="add_cat" class="categories editable"><span>Change Category</span></a>{% endif %}
-
-        
-	<div class="floatleft">        
-        <h3>Category - </h3>
-
-        <ul>
-          {% for category in current_video.categories.all %}
-            <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li> 
-          {% endfor %}
-        </ul>
-        
-	</div>
-        
-      {% endif %}
-
-      {% if current_video.tags.count or edit_video_form %}
-        
-        
-                 {% if edit_video_form %}<a href="#add_tag" id="add_tag" class="tags editable"><span>Edit Tags</span></a>{% endif %}
-
-        
-       <div class="floatleft">        
-
-        <h3>Tags - </h3>
-
-        <ul>
-          {% for tag in current_video.tags.all %}
-            <li><a href="{% url localtv_subsite_list_tag tag.name %}">{{ tag.name }}</a></li> 
-          {% endfor %}
-        </ul>
-        
-        
-        </div>
-        
-        
-      {% endif %}
-      {% if current_video.authors.count or edit_video_form %}
-     
-         {% if edit_video_form %}<a href="#add_author" id="add_author" class="authors editable"><span>Add an Author</span></a>{% endif %}
-
-     
-     	<div class="floatleft">        
-
-     <h3>Authors - </h3>
-      
-     
-        <ul>
-          {% for author in current_video.authors.all %}
-            <li><a href="{{ author.get_absolute_url }}">{{ author.name }}</a></li> 
-          {% endfor %}
-        </ul>
-		</div>
-
-
-
-      {% endif %}
-      {% if user_is_admin %}
-  <!--<h3>{{ current_video|pprint }}</h3> -->
-  {% if currrent_video.submitter %}<h3>Submitted by <ul><li>{{ current_video.submitter }}</h3>{% endif %}
-  {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
-  {% if current_video.feed %}<h3>From feed <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></h3>{% endif %}
-  <h3>Website: {{ current_video.website_url|urlize }}</h3>
+      <ul class="meta_listing">
+        <li class="item">
+          {% if user_is_admin %}
+          {% editable_widget current_video "categories" %}
+          {% else %}
+            {% with current_video as instance %}
+            {% include "localtv/subsite/display_templates/video_categories.html" %}
+            {% endwith %}
+          {% endif %}
+        </li>
+        <li class="item">
+          {% if user_is_admin %}
+          {% editable_widget current_video "tags" %}
+          {% else %}
+            {% with current_video as instance %}
+            {% include "localtv/subsite/display_templates/video_tags.html" %}
+            {% endwith %}
+          {% endif %}
+        </li>
+        {% if user_is_admin %}
+  <li class="item">
+    {% editable_widget current_video "website_url" %}
+  </li>
+  {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
+  {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>>{% endif %}
+  {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
   {% endif %}
   {% comment %}
       <form id="add_tag">
@@ -138,37 +123,49 @@
         <a href="#" class="log_push">Login to add a tag</a>
       </form>
 {% endcomment %}
-      <br class="clear" />
+    </ul>
+    <br class="clear" />
     </div>
 
+    {% get_comment_count for current_video as comment_count %}
+
+
+    <h2 class="comments-title">{{ comment_count }} Comments</h2>
     <ul id="comments">
       {% get_comment_list for current_video as comments %}
       {% for comment in comments %}
       <li>
-        <p>{{ comment }}</p>
-        {% if user_is_admin %}
-        <div class="comment-moderation">
-          <form action="{% url comments-delete comment.id %}" method="post">
-            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-            <button type="submit">delete</button>
-          </form>
-          <form action="{% url comments-spam comment.id %}" method="post">
-            <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-            <button type="submit">spam</button>
-          </form>
+        <div class="comment-poster">
+          <h4>{{ comment.user_name }}</h4>
+          {% if user_is_admin %}
+          <div class="comment-moderation">
+            <form action="{% url comments-delete comment.id %}" method="post">
+              <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+              <button type="submit">delete</button>
+            </form>
+            <form action="{% url comments-spam comment.id %}" method="post">
+              <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+              <button type="submit">spam</button>
+            </form>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
+        <div class="comment-body">
+          {{ comment.comment|sanitize }}
+        </div>
       </li>
-      </p>
       {% endfor %}
-      <h2>Post a comment</h2>
-      {% get_comment_form for current_video as comment_form %}
-      <form action="{% comment_form_target %}" method="POST">
-        <input type="hidden" name="next" value="{{ current_video.get_absolute_url }}w">
-        {% with comment_form as form %}
-        {% include "comments/form_base.html" %}
-        {% endwith %}
-    </div>
+    </ul>
+
+    {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+    <h2 class="clear post-comment-title">Post a comment</h2>
+    {% get_comment_form for current_video as comment_form %}
+    <form action="{% comment_form_target %}" method="POST">
+      {% with comment_form as form %}
+      {% include "comments/form_base.html" %}
+      {% endwith %}
+    </form>
+    {% endif %}
   </div>
 
   <div id="sidebar">

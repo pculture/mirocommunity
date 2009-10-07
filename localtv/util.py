@@ -8,6 +8,7 @@ import vidscraper
 from vidscraper import metasearch
 
 from localtv import models
+from localtv.templatetags.filters import sanitize
 
 
 VIDEO_EXTENSIONS = [
@@ -28,17 +29,23 @@ def is_video_filename(filename):
 
 
 def get_or_create_tags(tag_list):
-    tags = []
+    tag_set = set()
     for tag_text in tag_list:
-        try:
-            tag = models.Tag.objects.get(name=tag_text)
-        except models.Tag.DoesNotExist:
+        tags = models.Tag.objects.filter(name=tag_text)
+        if not tags:
             tag = models.Tag(name=tag_text)
             tag.save()
+        elif tags.count() == 1:
+            tag = tags[0]
+        else:
+            for tag in tags:
+                if tag.name == tag:
+                    # MySQL doesn't do case-sensitive equals on strings
+                    break
 
-        tags.append(tag)
+        tag_set.add(tag)
 
-    return tags
+    return tag_set
 
 
 def get_scraped_data(url):
@@ -67,9 +74,11 @@ class MetasearchVideo(object):
     def __init__(self, name, description,
                  tags=None, file_url=None,
                  website_url=None, thumbnail_url=None, embed_code='',
-                 flash_enclosure_url=None, publish_date=None, id=None):
+                 flash_enclosure_url=None, publish_date=None, id=None,
+                 video_service_user=None, video_service_url=None):
         self.name = name.strip()
-        self.description = description
+        self.description = sanitize(description,
+                                    extra_filters=['img'])
         if tags:
             self.tags = {
                 'objects': {
@@ -90,6 +99,8 @@ class MetasearchVideo(object):
         self.embed_code = embed_code or ''
         self.flash_enclosure_url = flash_enclosure_url or ''
         self.publish_date = publish_date
+        self.video_service_user = video_service_user or ''
+        self.video_service_url = video_service_url or ''
 
         ## NOTE: This ID is only for ordering/hashtable purposes, not
         ## the id this should have once it becomes a model
@@ -114,7 +125,9 @@ class MetasearchVideo(object):
             thumbnail_url=self.thumbnail_url,
             embed_code=self.embed_code,
             flash_enclosure_url=self.flash_enclosure_url,
-            when_published=self.publish_date)
+            when_published=self.publish_date,
+            video_service_user=self.video_service_user,
+            video_service_url=self.video_service_url)
 
         video.save()
 
@@ -147,7 +160,9 @@ class MetasearchVideo(object):
             embed_code=vidscraper_dict.get('embed'),
             flash_enclosure_url=vidscraper_dict.get('flash_enclosure_url'),
             publish_date=vidscraper_dict.get('publish_date'),
-            id=vidscraper_dict.get('id'))
+            id=vidscraper_dict.get('id'),
+            video_service_user=vidscraper_dict.get('user'),
+            video_service_url=vidscraper_dict.get('user_url'))
 
     def when(self):
         return self.publish_date
@@ -182,11 +197,37 @@ def strip_existing_metasearchvideos(metasearchvideos, site):
     return filtered_vids
 
 
+def sort_header(sort, label, current):
+    """
+    Generate some metadata for a sortable header.
+
+    @param sort: the sort which this header represents
+    @param label: the human-readable label
+    @param the current sort
+
+    Returns a dictionary with a link and a CSS class to use for this header,
+    based on the scurrent sort.
+    """
+    if current.endswith(sort):
+        # this is the current sort
+        css_class = 'sortup'
+        if current[0] != '-':
+            sort = '-%s' % sort
+            css_class = 'sortdown'
+    else:
+        css_class = ''
+    return {
+        'sort': sort,
+        'link': '?sort=%s' % sort,
+        'label': label,
+        'class': css_class
+        }
 
 def mixed_replace_generator(content_generator, bound):
     """
     We take a generator and a boundary string, and yield back content parts for
-    the multipart/x-mixed-replace content-type.  The generator should yield HTTPResponses.
+    the multipart/x-mixed-replace content-type.  The generator should yield
+    HTTPResponses.
 
     The multipart/x-mixed-replace format looks like this:
 
@@ -200,16 +241,72 @@ def mixed_replace_generator(content_generator, bound):
     <html><body>HTML here!</body></html>
     --boundary
     """
+    yield '--%s' % bound
     for response in content_generator:
-        yield ''.join(('--', bound, '\r\n', str(response)))
-        yield '\r\n'
-    yield ''.join(('--', bound, '\r\n'))
-
+        if response.status_code >= 300 and response.status_code < 400:
+            # Some hacks to get redirects to work
+            response['Status'] = str(response.status_code)
+            response.content = (
+                '<html><head>'
+                '<meta http-equiv="redirect" content="0;url=%(Location)s">'
+                '<script type="text/javascript">'
+                'location.href="%(Location)s";</script>'
+                '</head><body>'
+                'You are being redirected.  If it does not work, click '
+                '<a href="%(Location)s">here</a>.'
+                '</html>' % response)
+        yield ''.join((str(response), '\r\n--', bound))
+    yield '--'
 
 class HttpMixedReplaceResponse(HttpResponse):
 
-    def __init__(self, generator):
-         bound = str(id(generator)) + str(id(self))
-         HttpResponse.__init__(self, mixed_replace_generator(generator, bound),
-                               content_type=('multipart/x-mixed-replace;'
-                                             'boundary=%s' % bound))
+    def __init__(self, request, generator):
+        if 'Chrome' in request.META.get('HTTP_USER_AGENT'):
+            # Chrome's mixed-replace support doesn't seem to work, so just take
+            # the last thing from the generator
+            response = list(generator)[-1]
+            HttpResponse.__init__(self)
+            self.__dict__ = response.__dict__
+        else:
+            self.request = request
+            bound = str(id(generator)) + str(id(self))
+            HttpResponse.__init__(self,
+                                  mixed_replace_generator(generator, bound),
+                                  content_type=('multipart/x-mixed-replace;'
+                                             'boundary=\"%s\"' % bound))
+
+
+    def close(self):
+        HttpResponse.close(self)
+        if hasattr(self, 'request') and hasattr(self.request, 'session'):
+            if self.request.session.modified:
+                # Normally this is done in the response middleware, but because
+                # the views haven't all been run by the time that middleware is
+                # done, we do it again here.
+
+                # TODO(pswartz): This might want to go through all the response
+                # middleware instead of just manually doing the session
+                # middleware
+                self.request.session.save()
+
+
+class MockQueryset(object):
+    """
+    Wrap a list of objects in an object which pretends to be a QuerySet.
+    """
+
+    def __init__(self, objects):
+        self.objects = objects
+        self.ordered = True
+
+    def _clone(self):
+        return self
+
+    def __len__(self):
+        return len(self.objects)
+
+    def __iter__(self):
+        return iter(self.objects)
+
+    def __getitem__(self, k):
+        return self.objects[k]

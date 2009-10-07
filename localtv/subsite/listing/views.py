@@ -71,11 +71,9 @@ def tag_videos(request, tag, sitelocation=None):
 def feed_videos(request, feed_id, sitelocation=None):
     feed = get_object_or_404(models.Feed, pk=feed_id,
                              site=sitelocation.site)
-    videos = feed.video_set.filter(
-        site=sitelocation.site,
-        status=models.VIDEO_STATUS_ACTIVE)
-    videos = videos.order_by(
-        '-when_approved', '-when_published', '-when_submitted')
+    videos = models.Video.objects.new(site=sitelocation.site,
+                                      feed=feed,
+                                      status=models.VIDEO_STATUS_ACTIVE)
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,

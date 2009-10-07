@@ -7,9 +7,10 @@
 <span class="date">{{ video.when|simpletimesince }} ago</span>
 <div id="video_wrapper">
   {% if video.embed_code %}
-  {{ video.embed_code|safe }}
+  {{ video.embed_code|wmode_transparent }}
   {% else %}
   {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
   {% endif %}
+  <img src="{% get_thumbnail_url current_video 534 430 %}" />
 </div>
 <br />

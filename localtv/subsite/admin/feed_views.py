@@ -2,40 +2,17 @@ import datetime
 import re
 
 from django.core.urlresolvers import reverse
-from django.db.models import Q
-from django.forms.fields import url_re
-from django.http import (
-    HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
-from django.shortcuts import get_object_or_404
-from django.views.generic.list_detail import object_list
-import feedparser
+from django.http import (HttpResponse, HttpResponseBadRequest,
+                         HttpResponseRedirect)
+from django.shortcuts import get_object_or_404, render_to_response
+from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
-from localtv import models
+from localtv import models, util
 from localtv.subsite.admin import forms
 
-
-## -------------------
-## Feed administration
-## -------------------
-
-class MockQueryset(object):
-
-    def __init__(self, objects):
-        self.objects = objects
-
-    def _clone(self):
-        return self
-
-    def __len__(self):
-        return len(self.objects)
-
-    def __iter__(self):
-        return iter(self.objects)
-
-    def __getitem__(self, k):
-        return self.objects[k]
+from vidscraper import bulk_import
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -44,83 +21,27 @@ VIDEO_SERVICE_TITLES = (
 
 @require_site_admin
 @get_sitelocation
-def feeds_page(request, sitelocation=None):
-    search_string = request.GET.get('q', '')
-
-    feeds = models.Feed.objects.filter(
-        site=sitelocation.site,
-        status=models.FEED_STATUS_ACTIVE).extra(select={
-            'name__lower': 'LOWER(name)'}).order_by('name__lower')
-    searches = models.SavedSearch.objects.filter(
-        site=sitelocation.site).extra(select={
-            'query_string__lower': 'LOWER(query_string)'}).order_by(
-            'query_string__lower')
-
-    if search_string:
-        feeds = feeds.filter(Q(feed_url__icontains=search_string) |
-                             Q(name__icontains=search_string) |
-                             Q(webpage__icontains=search_string) |
-                             Q(description__icontains=search_string))
-        searches = searches.filter(query_string__icontains=search_string)
-
-    source_filter = request.GET.get('filter')
-    if source_filter == 'search':
-        queryset = searches
-    elif source_filter in ('feed', 'user'):
-        q = Q(feed_url__iregex=models.VIDEO_USER_REGEXES[0][1])
-        for service, regexp in models.VIDEO_USER_REGEXES[1:]:
-            q = q | Q(feed_url__iregex=regexp)
-        if source_filter == 'user':
-            queryset = feeds.filter(q)
-        else:
-            queryset = feeds.exclude(q)
-    else:
-        feeds_list = [(feed.name.lower(), feed)
-                      for feed in feeds]
-        searches_list = [(search.query_string.lower(), search)
-                         for search in searches]
-        queryset = MockQueryset(
-            [l[1] for l in sorted(feeds_list + searches_list)])
-
-    return object_list(
-        request=request, queryset=queryset,
-        paginate_by=15,
-        template_name='localtv/subsite/admin/feed_page.html',
-        allow_empty=True, template_object_name='feed',
-        extra_context = {'search_string': search_string,
-                         'source_filter': source_filter})
-
-
-@require_site_admin
-@get_sitelocation
 def add_feed(request, sitelocation=None):
-    if 'service' in request.POST:
-        video_service_form = forms.VideoServiceForm(request.POST)
-        if video_service_form.is_valid():
-            feed_url = video_service_form.feed_url()
-        else:
-            return HttpResponseBadRequest(
-                'You must provide a video service username')
-    else:
-        feed_url = request.POST.get('feed_url')
-    page_num = request.POST.get('page')
+    def gen():
+        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+                                 {
+                'message': 'Checking out this URL',
+                'feed_url': request.POST.get('feed_url')},
+                                 context_instance=RequestContext(request))
+        yield add_feed_response(request, sitelocation)
+    return util.HttpMixedReplaceResponse(request, gen())
 
-    if not feed_url:
-        return HttpResponseBadRequest(
-            "You must provide a feed URL")
 
-    if not url_re.match(feed_url):
-        return HttpResponseBadRequest(
-            "Not a valid feed URL")
+def add_feed_response(request, sitelocation=None):
+    add_form = forms.AddFeedForm(request.POST)
 
-    if models.Feed.objects.filter(
-            feed_url=feed_url,
-            site=sitelocation.site,
-            status=models.FEED_STATUS_ACTIVE).count():
-        return HttpResponseBadRequest(
-            "That feed already exists on this site")
+    if not add_form.is_valid():
+        return HttpResponseBadRequest(add_form['feed_url'].errors.as_text())
 
-    parsed_feed = feedparser.parse(feed_url)
+    feed_url = add_form.cleaned_data['feed_url']
+    parsed_feed = request.session['parsed_feed'] = \
+        add_form.cleaned_data['parsed_feed']
+
     title = parsed_feed.feed.get('title')
     if title is None:
         return HttpResponseBadRequest('That URL does not look like a feed.')
@@ -130,8 +51,9 @@ def add_feed(request, sitelocation=None):
             title = match.group(1)
             break
 
-    defaults = {
+    defaults = request.session['defaults'] = {
         'name': title,
+        'feed_url': feed_url,
         'webpage': parsed_feed.feed.get('link', ''),
         'description': parsed_feed.feed.get('summary', ''),
         'when_submitted': datetime.datetime.now(),
@@ -141,25 +63,73 @@ def add_feed(request, sitelocation=None):
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
+    video_count = request.session['video_count'] = bulk_import.video_count(
+        feed_url, parsed_feed)
+
+    form = forms.SourceForm(instance=models.Feed(**defaults))
+    return render_to_response('localtv/subsite/admin/add_feed.html',
+                              {'form': form,
+                               'video_count': video_count},
+                              context_instance=RequestContext(request))
+
+
+@require_site_admin
+@get_sitelocation
+def add_feed_done(request, sitelocation):
+    if 'cancel' in request.POST:
+        # clean up the session
+        del request.session['parsed_feed']
+        del request.session['video_count']
+        del request.session['defaults']
+
+        return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
+
+    def gen():
+        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+                                 {
+                'message': 'Importing %i videos from' % (
+                    request.session['video_count'],),
+                'feed_url': request.session['defaults']['feed_url']},
+                                 context_instance=RequestContext(request))
+        yield add_feed_done_response(request, sitelocation)
+    return util.HttpMixedReplaceResponse(request, gen())
+
+def add_feed_done_response(request, sitelocation=None):
+    defaults = request.session['defaults']
+
+    form = forms.SourceForm(request.POST)
+    if not form.is_valid():
+        return render_to_response(
+            'localtv/subsite/admin/add_feed.html',
+            {'form': form,
+             'video_count': request.session['video_count']},
+            context_instance=RequestContext(request))
+
     feed, created = models.Feed.objects.get_or_create(
-        feed_url=feed_url,
+        feed_url=defaults['feed_url'],
         site=sitelocation.site,
-        defaults = defaults)
+        defaults=defaults)
 
     if not created:
         for key, value in defaults.items():
             setattr(feed, key, value)
-        feed.save()
 
-    feed.update_items()
+    for key, value in form.cleaned_data.items():
+        setattr(feed, key, value)
+    feed.save()
 
-    if feed.auto_approve:
-        reverse_url = reverse('localtv_subsite_list_feed', args=(feed.pk,))
-    else:
-        reverse_url = reverse('localtv_admin_source_page')
-        if page_num:
-            reverse_url += '?page=' + page_num
-    return HttpResponseRedirect(reverse_url)
+    parsed_feed = bulk_import.bulk_import(feed.feed_url,
+                                          request.session['parsed_feed'])
+    feed.update_items(parsed_feed=parsed_feed)
+
+    # clean up the session
+    del request.session['parsed_feed']
+    del request.session['video_count']
+    del request.session['defaults']
+
+    return render_to_response('localtv/subsite/admin/feed_done.html',
+                              {'feed': feed},
+                              context_instance=RequestContext(request))
 
 
 @referrer_redirect
@@ -181,10 +151,10 @@ def feed_stop_watching(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
-def feed_auto_approve(request, sitelocation=None):
+def feed_auto_approve(request, feed_id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
-        id=request.GET.get('feed_id'),
+        id=feed_id,
         site=sitelocation.site)
 
     feed.auto_approve = not request.GET.get('disable')

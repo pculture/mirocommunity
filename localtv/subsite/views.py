@@ -2,7 +2,9 @@ import urllib
 import datetime
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, resolve, Resolver404
+from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.db.models import Q
@@ -49,9 +51,16 @@ def about(request):
 
 
 @get_sitelocation
-def view_video(request, video_id, sitelocation=None):
+def view_video(request, video_id, slug=None, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id,
                               site=sitelocation.site)
+
+    if video.status != models.VIDEO_STATUS_ACTIVE and \
+            not sitelocation.user_is_admin(request.user):
+        raise Http404
+
+    if slug is not None and request.path != video.get_absolute_url():
+        return HttpResponsePermanentRedirect(video.get_absolute_url())
 
     edit_video_form = None
     if sitelocation.user_is_admin(request.user):
@@ -126,13 +135,23 @@ def video_search(request, sitelocation=None):
             videos = videos.filter(
                 Q(description__icontains=term) | Q(name__icontains=term) |
                 Q(tags__name__icontains=term) |
-                Q(categories__name__icontains=term))
+                Q(categories__name__icontains=term) |
+                Q(user__username__icontains=term) |
+                Q(user__first_name__icontains=term) |
+                Q(user__last_name__icontains=term) |
+                Q(video_service_user__icontains=term) |
+                Q(feed__name__icontains=term))
 
         for term in stripped_exclude_terms:
             videos = videos.exclude(
                 Q(description__icontains=term) | Q(name__icontains=term) |
                 Q(tags__name__icontains=term) |
-                Q(categories__name__icontains=term))
+                Q(categories__name__icontains=term) |
+                Q(user__username__icontains=term) |
+                Q(user__first_name__icontains=term) |
+                Q(user__last_name__icontains=term) |
+                Q(video_service_user__icontains=term) |
+                Q(feed__name__icontains=term))
 
         videos = videos.distinct()
 
@@ -143,7 +162,8 @@ def video_search(request, sitelocation=None):
             allow_empty=True, template_object_name='video',
             extra_context={
                 'pagetabs_url': reverse('localtv_subsite_search'),
-                'pagetabs_args': urllib.urlencode({'query': query_string})})
+                'pagetabs_args': urllib.urlencode(
+                    {'query': query_string.encode('utf8')})})
 
     else:
         return render_to_response(
@@ -176,15 +196,19 @@ def author(request, id=None, sitelocation=None):
     if id is None:
         return render_to_response(
             'localtv/subsite/author_list.html',
-            {'authors': models.Author.objects.all()},
+            {'authors': User.objects.all()},
             context_instance=RequestContext(request))
     else:
-        author = get_object_or_404(models.Author,
+        author = get_object_or_404(User,
                                    pk=id)
+        videos = models.Video.objects.filter(
+            Q(authors=author) | Q(user=author),
+            site=sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE).distinct()
         return render_to_response(
             'localtv/subsite/author.html',
             {'author': author,
-             'video_list': author.video_set.all()},
+             'video_list': videos},
             context_instance=RequestContext(request))
 
 

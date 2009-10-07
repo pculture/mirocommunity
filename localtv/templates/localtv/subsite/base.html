@@ -9,7 +9,7 @@
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/tb.css" %}" />
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
-    {{ sitelocation.css }}
+    {{ sitelocation.css|safe }}
     {% if sitelocation.background %}body {
        background: url("{{ sitelocation.background.url }}");
     }{% endif %}
@@ -63,12 +63,12 @@
             <a href="{% url localtv_subsite_index %}">
               <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% versioned "/images/logo.gif" %}{% endif %}" />
               <span class="name">{{ sitelocation.site.name }}</span>
-              <span class="tagline">{{ sitelocation.tagline }}</span>
             </a>
+            <span class="tagline">{{ sitelocation.tagline|safe }}</span>
           </h1>
         </div>
         {% if user_is_admin %}
-        <ul id="login">
+        <ul class="login">
           <li>
             <a class="nick show_main med_button" href="{% url localtv_subsite_index %}"><span>View Main Site</span></a>
           </li>
@@ -119,7 +119,7 @@
         </ul>
       {% endblock %}
       {% if user_is_admin %}
-      <ul id="login">
+      <ul class="login">
         <li>
           <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
         </li>
