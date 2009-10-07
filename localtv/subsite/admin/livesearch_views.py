@@ -218,22 +218,6 @@ def create_saved_search(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
-def remove_saved_search(request, sitelocation=None):
-    search_id = request.GET.get('search_id')
-    existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation.site,
-        pk=search_id)
-
-    if existing_saved_search.count():
-        existing_saved_search.delete()
-        return HttpResponse('SUCCESS')
-    else:
-        return HttpResponseBadRequest(
-            'Saved search of that query does not exist')
-
-@referrer_redirect
-@require_site_admin
-@get_sitelocation
 def search_auto_approve(request, search_id, sitelocation=None):
     search = get_object_or_404(
         models.SavedSearch,

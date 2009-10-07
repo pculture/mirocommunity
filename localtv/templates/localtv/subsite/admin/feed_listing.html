@@ -1,7 +1,0 @@
-{% for feed in feed_list %}
-  {% if feed.query_string %}
-  {% include "localtv/subsite/admin/search_listing_individual.html" %}
-  {% else %}
-  {% include "localtv/subsite/admin/feed_listing_individual.html" %}
-  {% endif %}
-{% endfor %}

@@ -135,22 +135,6 @@ def add_feed_done_response(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
-def feed_stop_watching(request, sitelocation=None):
-    feed = get_object_or_404(
-        models.Feed,
-        id=request.GET.get('feed_id'),
-        site=sitelocation.site)
-
-    feed.status = models.FEED_STATUS_REJECTED
-    feed.video_set.all().delete()
-    feed.save()
-
-    return HttpResponse('SUCCESS')
-
-
-@referrer_redirect
-@require_site_admin
-@get_sitelocation
 def feed_auto_approve(request, feed_id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
