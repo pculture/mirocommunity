@@ -1,3 +1,4 @@
+{% load versioned %}
 <form action="{% url localtv_submit_embedrequest_video %}" method="post">
   <table>
     {{ embed_form.as_table }}
