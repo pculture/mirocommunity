@@ -604,6 +604,19 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
 
+    def test_uses_given_parsed_feed(self):
+        """
+        When adding entries in update_items with a given FeedParser instance,
+        the method should not download the feed itself.
+        """
+        parsed_feed = feedparser.parse(self._data_file('feed.rss'))
+        feed = models.Feed.objects.get(pk=1)
+        feed.update_items(parsed_feed=parsed_feed)
+        parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
+        db_guids = models.Video.objects.order_by('id').values_list('guid',
+                                                                   flat=True)
+        self.assertEquals(list(parsed_guids), list(db_guids))
+
     def test_entries_inserted_in_reverse_order(self):
         """
         When adding entries from a feed, they should be added to the database
@@ -1554,7 +1567,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         The localtv_admin_feed_add_done view should require administration
         priviledges.
         """
-        url = reverse('localtv_admin_feed_add_done')
+        url = reverse('localtv_admin_feed_add_done', args=[1])
         self.assertRequiresAuthentication(url)
 
         self.assertRequiresAuthentication(url,
@@ -1585,8 +1598,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url, {'feed_url': self.feed_url})
-        self.assertEquals(response.status_code, 200)
+        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                          {'feed_url': self.feed_url,
+                           'auto_categories': [1]})
+        self.assertEquals(response.status_code, 200,
+                          'Status Code: %i\nData: %s' % (response.status_code,
+                                                         response.content))
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
@@ -1602,9 +1619,10 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url, {'feed_url': self.feed_url,
-                                     'auto_approve': 'yes',
-                                     'cancel': 'yes'})
+        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                          {'feed_url': self.feed_url,
+                           'auto_approve': 'yes',
+                           'cancel': 'yes'})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
@@ -1616,20 +1634,20 @@ class FeedAdministrationTestCase(BaseTestCase):
     def test_POST_succeed(self):
         """
         A POST request to the add_feed view with a valid form should redirect
-        the user to the localtv_admin_add_feed_done view with the id of the
-        newly created feed in the GET arguments.
+        the user to the localtv_admin_add_feed_done view.
 
         A Feed object should also be created, but not have any items.
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url, {'feed_url': self.feed_url,
-                                     'auto_approve': 'yes'})
+        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                          {'feed_url': self.feed_url,
+                           'auto_approve': 'yes'})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(response['Location'],
-                          'http://%s%s?feed_id=1' % (
+                          'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_admin_feed_add_done')))
+                reverse('localtv_admin_feed_add_done', args=[1])))
 
         feed = models.Feed.objects.get()
         self.assertEquals(feed.name, 'Valid Feed with Relative Links')
@@ -1645,11 +1663,11 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        c.post(self.url, {'feed_url': self.feed_url,
-                          'auto_approve': 'yes'})
+        c.post(self.url + "?feed_url=%s" % self.feed_url,
+               {'feed_url': self.feed_url,
+                'auto_approve': 'yes'})
 
-        response = c.get(reverse('localtv_admin_feed_add_done'),
-                         {'feed_id': 1})
+        response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.template[2].name,
                           'localtv/subsite/admin/feed_done.html')

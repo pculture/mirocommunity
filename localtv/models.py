@@ -244,6 +244,18 @@ class Feed(Source):
         """
         Fetch and import new videos from this feed.
         """
+        for i in self._update_items_generator(verbose, parsed_feed):
+            pass
+
+    def _update_items_generator(self, verbose=False, parsed_feed=None):
+        """
+        Fetch and import new videos from this field.  After each imported
+        video, we yield a dictionary:
+        {'index': the index of the video we've just imported,
+         'total': the total number of videos in the feed,
+         'video': the Video object we just imported
+        }
+        """
         from localtv import miroguide_util, util
 
         if self.auto_approve:
@@ -254,7 +266,7 @@ class Feed(Source):
         if parsed_feed is None:
             parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
 
-        for entry in parsed_feed['entries'][::-1]:
+        for index, entry in enumerate(parsed_feed['entries'][::-1]):
             skip = False
             guid = entry.get('guid')
             if guid is not None and Video.objects.filter(
@@ -370,6 +382,10 @@ class Feed(Source):
 
             for author in self.auto_authors.all():
                 video.authors.add(author)
+
+            yield {'index': index,
+                   'total': len(parsed_feed.entries),
+                   'video': video}
 
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()

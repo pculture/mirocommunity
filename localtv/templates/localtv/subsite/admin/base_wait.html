@@ -30,6 +30,18 @@ margin: 6% 0;
 }
 
 </style>
+ {% block error %}
+ <script type="text/javascript">
+     function multipartError() {
+         location.href = location.href;
+     }
+     if ('attachEvent' in window) {
+         window.attachEvent('onload', multipartError);
+     } else {
+         window.addEventListener('load', multipartError, false);
+     }
+ </script>
+ {% endblock %}
 </head>
 
   <body>
