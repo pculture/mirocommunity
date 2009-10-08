@@ -10,7 +10,7 @@
 {% block content %}
 
 <div id="labels">
-  <form method="post" action="{% url localtv_admin_feed_add_done %}">
+  <form method="post" action="{{ request.get_full_path }}">
   <table class="rounded">
     <thead>
       <tr>
@@ -23,6 +23,7 @@
       <tr class="editing">
         <td>
           <h3>{{ form.instance.name }}</h3>
+          {{ form.instance.feed_url }}
           {% if form.instance.video_service %}
           <span class="video_service">{{ form.instance.video_service }} User</span>
           {% endif %}

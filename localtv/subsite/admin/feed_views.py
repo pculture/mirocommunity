@@ -36,7 +36,7 @@ def add_feed(request, sitelocation=None):
 
 
 def add_feed_response(request, sitelocation=None):
-    add_form = forms.AddFeedForm(request.REQUEST)
+    add_form = forms.AddFeedForm(request.GET)
 
     if not add_form.is_valid():
         return HttpResponseBadRequest(
@@ -93,9 +93,8 @@ def add_feed_response(request, sitelocation=None):
                 setattr(feed, key, value)
             feed.save()
 
-            return HttpResponseRedirect('%s?feed_id=%i' % (
-                    reverse('localtv_admin_feed_add_done'),
-                    feed.pk))
+            return HttpResponseRedirect(reverse('localtv_admin_feed_add_done',
+                                                args=[feed.pk]))
 
     else:
         form = forms.SourceForm(instance=models.Feed(**defaults))
@@ -107,7 +106,7 @@ def add_feed_response(request, sitelocation=None):
 
 @require_site_admin
 @get_sitelocation
-def add_feed_done(request, sitelocation):
+def add_feed_done(request, feed_id, sitelocation):
     def gen():
         yield render_to_response('localtv/subsite/admin/feed_wait.html',
                                  {
@@ -115,13 +114,13 @@ def add_feed_done(request, sitelocation):
                     request.session['video_count'],),
                 'feed_url': request.session['parsed_feed']['feed']['link']},
                                  context_instance=RequestContext(request))
-        yield add_feed_done_response(request, sitelocation)
+        yield add_feed_done_response(request, feed_id, sitelocation)
     return util.HttpMixedReplaceResponse(request, gen())
 
-def add_feed_done_response(request, sitelocation=None):
+def add_feed_done_response(request, feed_id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
-        pk=request.GET.get('feed_id'))
+        pk=feed_id)
 
     parsed_feed = bulk_import.bulk_import(feed.feed_url,
                                           request.session['parsed_feed'])
