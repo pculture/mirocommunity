@@ -34,10 +34,7 @@
 	{% block helpful %}<div class="helpful rounded">Videos here require moderator approval before appearing on the site.</div>{% endblock %}
 
 
-  <table id="admin_table">
-    <tr>
-      <td style="vertical-align: top;" width="65%">
-     
+  <div id="admin_table">
                {% block leftpane %}
 
      <div class="top_bar">
@@ -50,7 +47,7 @@
               </div>
             </div>
 
-        <div id="admin_leftpane" style="overflow: auto; width: 100%;">
+        <div id="admin_leftpane">
 
 			
               <div id="admin_videolisting_row">
@@ -63,8 +60,6 @@
               
           {% endblock leftpane %}
         </div>
-      </td>
-      <td style="vertical-align: top;" width="590">
         <div id="admin_rightpane">
           {% block rightpane %}
             {% if current_video %}
@@ -72,9 +67,7 @@
             {% endif %}
           {% endblock rightpane %}
         </div>
-      </td>
-    </tr>
-  </table>
+  </div>
 {% else %}
   <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{% url localtv_admin_manage_page %}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
 {% endif %}

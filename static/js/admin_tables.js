@@ -31,7 +31,6 @@ function load_video(eventdata) {
                 selected.addClass('unselected');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
-                resize_admin();
                 }});
     return false;
 }
@@ -46,24 +45,35 @@ function load_click_callbacks() {
     $('div.video').click(load_video);
 }
 
-function resize_admin() {
-    var admin_table = document.getElementById('admin_table');
-    var admin_leftpane = document.getElementById('admin_leftpane');
-    //var admin_rightpane = document.getElementById('admin_rightpane');
-    base_height = ($(window).height() -
-                   admin_table.offsetTop);
-    admin_leftpane.style.height = (base_height - 40);
-    //admin_rightpane.style.height = base_height + 'px';
+function scroll_admin() {
+    admin_table = document.getElementById('admin_table');
+    admin_leftpane = document.getElementById('admin_leftpane');
+    admin_rightpane = document.getElementById('admin_rightpane');
+    if (admin_rightpane.clientHeight > window.innerHeight) {
+        diff = admin_rightpane.clientHeight - window.innerHeight;
+    } else {
+        diff = 0;
+    }
+    if (admin_table.offsetTop + diff > window.scrollY) {
+        admin_rightpane.style.top = (admin_table.offsetTop - window.scrollY) + 'px';
+    } else {
+        admin_rightpane.style.top = (-diff) + 'px';
+    }
+    admin_rightpane.style.right = admin_table.offsetLeft + 'px';
+    admin_leftpane.style.width = (admin_table.clientWidth - 590) + 'px';
+    admin_rightpane.style.display = "block";
 }
 
 if ('attachEvent' in window) {
-    window.attachEvent('onload', resize_admin);
+    window.attachEvent('onload', scroll_admin);
     window.attachEvent('onload', load_click_callbacks);
-    window.attachEvent('onresize', resize_admin);
+    window.attachEvent('onscroll', scroll_admin);
+    window.attachEvent('onresize', scroll_admin);
 }
 else {
-    window.addEventListener('load', resize_admin, false);
+    window.addEventListener('load', scroll_admin, false);
     window.addEventListener('load', load_click_callbacks, false);
-    window.addEventListener('resize', resize_admin, false);
+    window.addEventListener('scroll', scroll_admin, false);
+    window.addEventListener('resize', scroll_admin, false);
 }
 
