@@ -910,6 +910,10 @@ background: url(../images/med_left.png) no-repeat;
 _background: url(../images/med_left.gif) no-repeat;
 }
 
+#submit_box #id_description {
+    width: 100%;
+}
+
 .hoverable {
 cursor: pointer;
 }
