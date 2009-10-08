@@ -55,7 +55,7 @@ def add_feed_response(request, sitelocation=None):
             title = match.group(1)
             break
 
-    defaults = request.session['defaults'] = {
+    defaults = {
         'name': title,
         'feed_url': feed_url,
         'webpage': parsed_feed.feed.get('link', ''),
@@ -107,33 +107,40 @@ def add_feed_response(request, sitelocation=None):
 @require_site_admin
 @get_sitelocation
 def add_feed_done(request, feed_id, sitelocation):
-    def gen():
-        yield render_to_response('localtv/subsite/admin/feed_wait.html',
-                                 {
-                'message': 'Importing %i videos from' % (
-                    request.session['video_count'],),
-                'feed_url': request.session['parsed_feed']['feed']['link']},
-                                 context_instance=RequestContext(request))
-        yield add_feed_done_response(request, feed_id, sitelocation)
-    return util.HttpMixedReplaceResponse(request, gen())
-
-def add_feed_done_response(request, feed_id, sitelocation=None):
     feed = get_object_or_404(
         models.Feed,
         pk=feed_id)
 
-    parsed_feed = bulk_import.bulk_import(feed.feed_url,
-                                          request.session['parsed_feed'])
-    feed.update_items(parsed_feed=parsed_feed)
+    def gen():
+        context = {
+            'message': 'Importing %i videos from' % (
+                request.session['video_count'],),
+            'feed_url': request.session['parsed_feed']['feed']['link']}
+        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+                                 context,
+                                 context_instance=RequestContext(request))
 
-    # clean up the session
-    del request.session['parsed_feed']
-    del request.session['video_count']
-    del request.session['defaults']
+        parsed_feed = bulk_import.bulk_import(feed.feed_url,
+                                              request.session['parsed_feed'])
 
-    return render_to_response('localtv/subsite/admin/feed_done.html',
-                              {'feed': feed},
-                              context_instance=RequestContext(request))
+        for last in feed._update_items_generator(parsed_feed=parsed_feed):
+            if last['index'] + 1 != last['total']: # last video
+                context['message'] = 'Imported %i of %i videos from' % (
+                    last['index'] + 1, last['total'])
+                yield render_to_response(
+                    'localtv/subsite/admin/feed_wait.html',
+                    context,
+                    context_instance=RequestContext(request))
+
+        # clean up the session
+        del request.session['parsed_feed']
+        del request.session['video_count']
+
+        yield render_to_response('localtv/subsite/admin/feed_done.html',
+                                 {'feed': feed},
+                                 context_instance=RequestContext(request))
+
+    return util.HttpMixedReplaceResponse(request, gen())
 
 
 @referrer_redirect
