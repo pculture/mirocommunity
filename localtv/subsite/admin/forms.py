@@ -269,7 +269,7 @@ class EditTitleForm(forms.Form):
 
 
 class EditSidebarForm(forms.Form):
-    sidebar = forms.CharField(label="Sidebar Blurb (use htm)",
+    sidebar = forms.CharField(label="Sidebar Blurb (use html)",
                             widget=forms.Textarea, required=False)
     footer = forms.CharField(label="Footer Blurb (use html)",
                              widget=forms.Textarea, required=False,
