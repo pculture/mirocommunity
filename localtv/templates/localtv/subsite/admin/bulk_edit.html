@@ -35,7 +35,7 @@
       {% endfor %}
     </select>
     <select class="behave" name="author">
-      <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Authors</option>
+      <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Users</option>
       {% for user in users %}
       <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
       {% endfor %}
@@ -110,7 +110,7 @@
           {{ form.categories }}
         </td>
         <td width="250" class="checklist">
-          <label class="padding">Authors</label>
+          <label class="padding">Users</label>
           {{ form.authors }}
         </td>
       {% endwith %}
@@ -250,7 +250,7 @@
         </td>
         <td width="250" class="checklist">
           {{ form.authors.errors }}
-          <label class="padding">Authors</label>
+          <label class="padding">Users</label>
           {{ form.authors.errors }}
           {{ form.authors }}
         </td>
