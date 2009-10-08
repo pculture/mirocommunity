@@ -163,7 +163,10 @@ $(document).ready(function() {
           <label class="padding">Authors</label>
           {{ form.auto_authors }}
         </td>
-        <td class="last" width="100px">{{ form.auto_approve }}</td>
+        <td class="last" width="100px">
+          {{ form.auto_approve.errors }}
+            {{ form.auto_approve }}
+        </td>
 {% endblock %}
 
 {% block massedit %}
