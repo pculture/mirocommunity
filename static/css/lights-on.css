@@ -1584,6 +1584,21 @@ width: 100%;
 clear: both;
 }
 
+#admin_leftpane {
+    width: 100%;
+    overflow: hidden;
+}
+
+#admin_rightpane {
+    padding: 0;
+    margin: 0;
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 590px;
+}
+
 .fields {
 padding: 2px 0 0 5px;
 }
