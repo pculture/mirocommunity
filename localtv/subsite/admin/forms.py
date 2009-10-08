@@ -133,7 +133,7 @@ class SourceForm(forms.ModelForm):
                                     queryset=models.Category.objects)
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects)
-    auto_approve = BooleanRadioField(required=True)
+    auto_approve = BooleanRadioField(required=False)
 
     class Meta:
         model = models.Source
