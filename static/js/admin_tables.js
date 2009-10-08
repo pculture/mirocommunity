@@ -1,3 +1,4 @@
+
 /* TODO: Allow and adjust for padding */
 
 function remove_video_and_refresh_list(video_div) {
@@ -49,9 +50,9 @@ function resize_admin() {
     var admin_table = document.getElementById('admin_table');
     var admin_leftpane = document.getElementById('admin_leftpane');
     //var admin_rightpane = document.getElementById('admin_rightpane');
-    base_height = (window.innerHeight -
+    base_height = ($(window).height() -
                    admin_table.offsetTop);
-    admin_leftpane.style.height = (base_height - 40) + 'px';
+    admin_leftpane.style.height = (base_height - 40);
     //admin_rightpane.style.height = base_height + 'px';
 }
 
@@ -63,5 +64,6 @@ if ('attachEvent' in window) {
 else {
     window.addEventListener('load', resize_admin, false);
     window.addEventListener('load', load_click_callbacks, false);
+    window.addEventListener('resize', resize_admin, false);
 }
-window.addEventListener('resize', resize_admin, false);
+
