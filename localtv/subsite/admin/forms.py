@@ -495,8 +495,8 @@ AuthorFormSet = modelformset_factory(User,
 class AddFeedForm(forms.Form):
     SERVICE_PROFILES = (
         (re.compile(
-                r'^(http://)?(www\.)?youtube\.com/profile\?(\w+=\w+&)*'
-                r'user=(?P<name>\w+)'),
+                r'^(http://)?(www\.)?youtube\.com/profile(_videos)?'
+                r'\?(\w+=\w+&)*user=(?P<name>\w+)'),
          'youtube'),
         (re.compile(r'^(http://)?(www\.)?youtube\.com/(user/)?(?P<name>\w+)$'),
          'youtube'),
