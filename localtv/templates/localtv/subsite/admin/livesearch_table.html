@@ -36,7 +36,7 @@
     
   </form>
   {% if is_saved_search %}
-    <i class="floatleft">This search is saved</i>
+    <i class="floatright">This search is saved</i>
   {% else %}
     <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="med_button allsites">
       <span>Save as Source</span></a>
