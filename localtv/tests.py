@@ -604,6 +604,19 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
 
+    def test_uses_given_parsed_feed(self):
+        """
+        When adding entries in update_items with a given FeedParser instance,
+        the method should not download the feed itself.
+        """
+        parsed_feed = feedparser.parse(self._data_file('feed.rss'))
+        feed = models.Feed.objects.get(pk=1)
+        feed.update_items(parsed_feed=parsed_feed)
+        parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
+        db_guids = models.Video.objects.order_by('id').values_list('guid',
+                                                                   flat=True)
+        self.assertEquals(list(parsed_guids), list(db_guids))
+
     def test_entries_inserted_in_reverse_order(self):
         """
         When adding entries from a feed, they should be added to the database
