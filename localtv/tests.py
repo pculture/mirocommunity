@@ -16,6 +16,7 @@ from django.utils.encoding import force_unicode
 
 from localtv import models
 from localtv.subsite.admin import forms as admin_forms
+from localtv import util
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
@@ -1740,8 +1741,232 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(url, {'disable': 'yes'},
                          HTTP_REFERER='http://www.google.com/')
         self.assertEquals(feed.auto_approve, True)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], 'http://www.google.com/')
+
+
+# -----------------------------------------------------------------------------
+# Search administration tests
+# -----------------------------------------------------------------------------
+
+
+class SearchAdministrationTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_search')
+
+    def test_GET(self):
+        """
+        A GET request to the livesearch view should render the
+        'localtv/subsite/admin/livesearch_table.html' template.  Context:
+
+        * current_video: a Video object for the video to display
+        * page_obj: a Page object for the current page of results
+        * query_string: the search query
+        * order_by: 'relevant' or 'latest'
+        * is_saved_search: True if the query was already saved
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/livesearch_table.html')
+        self.assertTrue('current_video' in response.context[0])
+        self.assertTrue('page_obj' in response.context[0])
+        self.assertTrue('query_string' in response.context[0])
+        self.assertTrue('order_by' in response.context[0])
+        self.assertTrue('is_saved_search' in response.context[0])
+
+    def test_GET_query(self):
+        """
+        A GET request to the livesearch view and GET['query'] argument should
+        list some videos that match the query.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/livesearch_table.html')
+        self.assertIsInstance(response.context[2]['current_video'],
+                              util.MetasearchVideo)
+        self.assertEquals(response.context[2]['page_obj'].number, 1)
+        self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
+        self.assertEquals(response.context[2]['query_string'], 'search string')
+        self.assertEquals(response.context[2]['order_by'], 'latest')
+        self.assertEquals(response.context[2]['is_saved_search'], False)
+
+    def test_GET_query_pagination(self):
+        """
+        A GET request to the livesearch view with GET['query'] and GET['page']
+        arguments should return another page of results.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        self.assertEquals(response.context[2]['page_obj'].number, 1)
+        self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
+
+        response2 = c.get(self.url,
+                         {'query': 'search string',
+                          'page': '2'})
+        self.assertEquals(response2.context[2]['page_obj'].number, 2)
+        self.assertEquals(len(response2.context[2]['page_obj'].object_list),
+                          10)
+
+        self.assertNotEquals([v.id for v in
+                              response.context[2]['page_obj'].object_list],
+                             [v.id for v in
+                              response2.context[2]['page_obj'].object_list])
+
+
+    def test_GET_approve(self):
+        """
+        A GET request to the approve view should create a new video object from
+        the search and redirect back to the referrer.  The video should be
+        removed from subsequent search listings.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        metasearch_video = response.context[2]['page_obj'].object_list[0]
+        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
+
+        response = c.get(reverse('localtv_admin_search_video_approve'),
+                         {'query': 'search string',
+                          'video_id': metasearch_video.id},
+                         HTTP_REFERER="http://www.getmiro.com/")
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], "http://www.getmiro.com/")
+
+        v = models.Video.objects.get()
+        self.assertEquals(v.site, self.site_location.site)
+        self.assertEquals(v.name, metasearch_video.name)
+        self.assertEquals(v.description, metasearch_video.description)
+        self.assertEquals(v.file_url, metasearch_video.file_url)
+        self.assertEquals(v.embed_code, metasearch_video.embed_code)
+        self.assertTrue(v.last_featured is None)
+
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
+                          metasearch_video2.id)
+
+    def test_GET_approve_feature(self):
+        """
+        A GET request to the approve view should create a new video object from
+        the search and redirect back to the referrer.  If GET['feature'] is
+        present, the video should also be marked as featured.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        metasearch_video = response.context[2]['page_obj'].object_list[0]
+
+        response = c.get(reverse('localtv_admin_search_video_approve'),
+                         {'query': 'search string',
+                          'feature': 'yes',
+                          'video_id': metasearch_video.id},
+                         HTTP_REFERER="http://www.getmiro.com/")
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], "http://www.getmiro.com/")
+
+        v = models.Video.objects.get()
+        self.assertTrue(v.last_featured is not None)
+
+    def test_GET_display(self):
+        """
+        A GET request to the display view should render the
+        'localtv/subsite/admin/video_preview.html' and include the
+        MetasearchVideo as 'current_video' in the context.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        metasearch_video = response.context[2]['page_obj'].object_list[0]
+
+        response = c.get(reverse('localtv_admin_search_video_display'),
+                         {'query': 'search string',
+                          'video_id': metasearch_video.id})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/video_preview.html')
+        self.assertEquals(response.context[0]['current_video'].id,
+                          metasearch_video.id)
+
+    def test_GET_create_saved_search(self):
+        """
+        A GET request to the create_saved_search view should create a new
+        SavedSearch object and redirect back to the referrer.  Requests to the
+        livesearch view should then indicate that this search is saved.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_search_add'),
+                         {'query': 'search string'},
+                         HTTP_REFERER='http://www.getmiro.com/')
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://www.getmiro.com/')
+
+        saved_search = models.SavedSearch.objects.get()
+        self.assertEquals(saved_search.query_string, 'search string')
+        self.assertEquals(saved_search.site, self.site_location.site)
+        self.assertEquals(saved_search.user.username, 'admin')
+
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        self.assertTrue(response.context[2]['is_saved_search'])
+
+    def test_GET_search_auto_approve(self):
+        """
+        A GET request to the search_auto_appprove view should set the
+        auto_approve bit to True on the given SavedSearch object and redirect
+        back to the referrer
+        """
+        saved_search = models.SavedSearch.objects.create(
+            site=self.site_location.site,
+            query_string='search string')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_search_auto_approve',
+                                 args=[saved_search.pk]),
+                         HTTP_REFERER='http://www.getmiro.com/')
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://www.getmiro.com/')
+
+        saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
+        self.assertTrue(saved_search.auto_approve)
+
+    def test_GET_search_auto_approve_disable(self):
+        """
+        A GET request to the search_auto_appprove view with GET['disable'] set
+        should set the auto_approve bit to False on the given SavedSearch
+        object and redirect back to the referrer
+        """
+        saved_search = models.SavedSearch.objects.create(
+            site=self.site_location.site,
+            auto_approve=True,
+            query_string='search string')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_search_auto_approve',
+                                 args=[saved_search.pk]),
+                                 {'disable': 'yes'},
+                         HTTP_REFERER='http://www.getmiro.com/')
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://www.getmiro.com/')
+
+        saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
+        self.assertFalse(saved_search.auto_approve)
 
 
 # -----------------------------------------------------------------------------
