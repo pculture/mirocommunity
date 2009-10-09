@@ -310,4 +310,6 @@ class MockQueryset(object):
         return iter(self.objects)
 
     def __getitem__(self, k):
+        if isinstance(k, slice):
+            return MockQueryset(self.objects[k])
         return self.objects[k]

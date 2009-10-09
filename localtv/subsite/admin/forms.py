@@ -236,6 +236,11 @@ class BulkEditVideoForm(EditVideoForm):
             self.fields['categories'].queryset.filter(
             site=site)
 
+    def clean_name(self):
+        if self.instance.pk and not self.cleaned_data.get('name'):
+            raise forms.ValidationError('This field is required.')
+        return self.cleaned_data['name']
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
                                     can_delete=True,

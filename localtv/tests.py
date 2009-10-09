@@ -2275,3 +2275,378 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
+
+
+# -----------------------------------------------------------------------------
+# Bulk edit administration tests
+# -----------------------------------------------------------------------------
+
+
+class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
+
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'feeds', 'videos', 'categories']
+
+    url = reverse('localtv_admin_bulk_edit')
+
+    def test_GET(self):
+        """
+        A GET request to the bulk_edit view should return a paged view of the
+        videos, sorted in alphabetical order.  It should render the
+        'localtv/subsite/admin/bulk_edit.html' template.
+
+        Context:
+
+        * formset: the FormSet for the videos on the current page
+        * page: the Page object for the current page
+        * headers: the headers for the table
+        * categories: a QuerySet for the categories of the site
+        * users: a Queryset for the users on the site
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/bulk_edit.html')
+        self.assertEquals(response.context[0]['page'].number, 1)
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue('headers' in response.context[0])
+        self.assertEquals(list(response.context[0]['categories']),
+                          list(models.Category.objects.filter(
+                site=self.site_location.site)))
+        self.assertEquals(list(response.context[0]['users']),
+                          list(User.objects.all()))
+
+
+    def test_GET_sorting(self):
+        """
+        A GET request with a 'sort' key in the GET request should sort the
+        sources by that field.  The default sort should be by the name of the
+        video.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:unicode(x).lower())),
+                          list(page.object_list))
+
+        # reversed name
+        response = c.get(self.url, {'sort': '-name'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:unicode(x).lower())),
+                          list(page.object_list))
+
+        # auto approve
+        response = c.get(self.url, {'sort': 'when_published'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:x.when_published)),
+                          list(page.object_list))
+
+        # reversed auto_approve
+        response = c.get(self.url, {'sort': '-when_published'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:x.when_published)),
+                          list(page.object_list))
+
+        # source (feed, search, user)
+        response = c.get(self.url, {'sort': 'source'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      key=lambda x:x.source_type())),
+                          list(page.object_list))
+
+        # reversed source (user, search, feed)
+        response = c.get(self.url, {'sort': '-source'})
+        page = response.context['page']
+        self.assertEquals(list(sorted(page.object_list,
+                                      reverse=True,
+                                      key=lambda x:x.source_type())),
+                          list(page.object_list))
+
+    def test_POST_failure(self):
+        """
+        A POST request to the bulk_edit view with an invalid formset
+        should cause the page to be rerendered and include the form errors.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data_invalid = POST_data.copy()
+        del POST_data_invalid['form-0-name'] # don't include some mandatory
+                                             # fields
+        del POST_data_invalid['form-1-name']
+
+        POST_response = c.post(self.url, POST_data_invalid)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertTrue(POST_response.context['formset'].is_bound)
+        self.assertFalse(POST_response.context['formset'].is_valid())
+        self.assertEquals(len(POST_response.context['formset'].errors[0]), 1)
+        self.assertEquals(len(POST_response.context['formset'].errors[1]), 1)
+
+        # make sure the data hasn't changed
+        self.assertEquals(POST_data,
+                          self._POST_data_from_formset(
+                POST_response.context['formset']))
+
+    def test_POST_succeed(self):
+        """
+        A POST request to the bulk_edit view with a valid formset should
+        save the updated models and redirect to the same URL with a
+        'successful' field in the GET query.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data.update({
+                'form-0-name': 'new name!',
+                'form-0-file_url': 'http://pculture.org/',
+                'form-1-description': 'localtv'})
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        self.site_location.site.domain,
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEquals(video1.name, POST_data['form-0-name'])
+        self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertEquals(video2.description,
+                          POST_data['form-1-description'])
+
+    def test_POST_succeed_with_page(self):
+        """
+        A POST request to the bulk_edit view with a valid formset should
+        save the updated models and redirect to the same URL with a
+        'successful' field in the GET query, even with a 'page' argument in the
+        query string of the POST request.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'page': 2})
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_response = c.post(self.url+"?page=2", POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?page=2&successful' % (
+                        self.site_location.site.domain,
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+    def test_POST_delete(self):
+        """
+        A POST request to the manage sources view with a valid formset and a
+        DELETE value for a source should reject that video.`
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+        POST_data['form-0-DELETE'] = 'yes'
+        POST_data['form-1-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEquals(video1.status, models.VIDEO_STATUS_REJECTED)
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertEquals(video2.status, models.VIDEO_STATUS_REJECTED),
+
+    def test_POST_bulk_edit(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and the
+        extra form filled out should update any source with the bulk option
+        checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-21-categories'] = [1, 2]
+        POST_data['form-21-authors'] = [1, 2]
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+
+        for video in video1, video2:
+            self.assertEquals(
+                set(video.categories.values_list('pk', flat=True)),
+                set([1, 2]))
+            self.assertEquals(
+                set(video.authors.values_list('pk', flat=True)),
+                set([1, 2]))
+
+    def test_POST_bulk_delete(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and a
+        POST['action'] of 'delete' should reject the videos with the bulk
+        option checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'delete'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEquals(video1.status, models.VIDEO_STATUS_REJECTED)
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertEquals(video2.status, models.VIDEO_STATUS_REJECTED)
+
+    def test_POST_bulk_unapprove(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and a
+        POST['action'] of 'unapprove' should unapprove the videos with the bulk
+        option checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'unapprove'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEquals(video1.status, models.VIDEO_STATUS_UNAPPROVED)
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertEquals(video2.status, models.VIDEO_STATUS_UNAPPROVED)
+
+    def test_POST_bulk_feature(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and a
+        POST['action'] of 'feature' should feature the videos with the bulk
+        option checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'feature'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertTrue(video1.last_featured is not None)
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertTrue(video2.last_featured is not None)
+
+    def test_POST_bulk_unfeature(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and a
+        POST['action'] of 'feature' should feature the videos with the bulk
+        option checked.
+        """
+        for v in models.Video.objects.all():
+            v.last_featured = datetime.datetime.now()
+            v.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'unfeature'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertTrue(video1.last_featured is None)
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertTrue(video2.last_featured is None)

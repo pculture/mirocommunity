@@ -11,7 +11,15 @@ from django.template.context import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.subsite.admin import forms
-from localtv.util import sort_header
+from localtv.util import sort_header, MockQueryset
+
+try:
+    from operator import methodcaller
+except ImportError:
+    def methodcaller(name):
+        def wrapper(obj):
+            return getattr(obj, name)()
+        return wrapper
 
 @get_sitelocation
 @require_site_admin
@@ -52,7 +60,14 @@ def bulk_edit(request, sitelocation=None):
             Q(feed__name__icontains=search_string))
 
     sort = request.GET.get('sort', 'name')
-    videos = videos.order_by(sort)
+    if sort.endswith('source'):
+        reverse = sort.startswith('-')
+        videos = MockQueryset(
+            sorted(videos.order_by(sort.replace('source', 'name')),
+                   reverse=reverse,
+                   key=methodcaller('source_type')))
+    else:
+        videos = videos.order_by(sort)
 
     video_paginator = Paginator(videos, 50)
     try:
@@ -63,10 +78,10 @@ def bulk_edit(request, sitelocation=None):
         page = video_paginator.page(video_paginator.num_pages)
 
     videos = videos[page.start_index():page.end_index()]
-    formset = forms.VideoFormSet(queryset=videos)
+
     headers = [
         sort_header('name', 'Video Title', sort),
-        sort_header('feed__feed_url', 'Source', sort),
+        sort_header('source', 'Source', sort),
         {'label': 'Categories'},
         sort_header('when_published', 'Date Posted', sort)]
 
@@ -106,10 +121,15 @@ def bulk_edit(request, sitelocation=None):
                             form.cleaned_data[key] = value
             formset.forms = formset.initial_forms # get rid of the extra bulk
                                                   # edit form
-            formset._deleted_forms = []
+            formset.can_delete = False
             formset.save()
-            return HttpResponseRedirect(request.path)
-
+            path = request.get_full_path()
+            if '?' in path:
+                return HttpResponseRedirect(path + '&successful')
+            else:
+                return HttpResponseRedirect(path + '?successful')
+    else:
+        formset = forms.VideoFormSet(queryset=videos)
 
     return render_to_response('localtv/subsite/admin/bulk_edit.html',
                               {'formset': formset,
