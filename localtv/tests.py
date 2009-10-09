@@ -1855,6 +1855,17 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
                           metasearch_video2.id)
 
+    def test_GET_approve_authentication(self):
+        """
+        A GET request to the approve view should require that the user is
+        authenticated.
+        """
+        url = reverse('localtv_admin_search_video_approve')
+
+        self.assertRequiresAuthentication(url)
+        self.assertRequiresAuthentication(url,
+                                          username='user', password='password')
+
     def test_GET_approve_feature(self):
         """
         A GET request to the approve view should create a new video object from
@@ -1922,6 +1933,17 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'query': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
+    def test_GET_create_saved_search_authentication(self):
+        """
+        A GET request to the create_saved_search view should require that the
+        user is authenticated.
+        """
+        url = reverse('localtv_admin_search_add')
+
+        self.assertRequiresAuthentication(url)
+        self.assertRequiresAuthentication(url,
+                                          username='user', password='password')
+
     def test_GET_search_auto_approve(self):
         """
         A GET request to the search_auto_appprove view should set the
@@ -1943,6 +1965,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
         saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
         self.assertTrue(saved_search.auto_approve)
+
+    def test_GET_search_auto_approve_authentication(self):
+        """
+        A GET request to the search_auto_approve view should require that the
+        user is authenticated.
+        """
+        url = reverse('localtv_admin_search_auto_approve',
+                      args=[1])
+
+        self.assertRequiresAuthentication(url)
+        self.assertRequiresAuthentication(url,
+                                          username='user', password='password')
 
     def test_GET_search_auto_approve_disable(self):
         """
