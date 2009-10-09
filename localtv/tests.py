@@ -68,6 +68,16 @@ class BaseTestCase(TestCase):
                         "%r is not an instance of %r; %s instead" % (
                 obj, klass, type(obj)))
 
+    def assertStatusCodeEquals(self, response, status_code):
+        """
+        Assert that the response has the given status code.  If not, give a
+        useful error mesage.
+        """
+        self.assertEquals(response.status_code, status_code,
+                          'Status Code: %i != %i\nData: %s' % (
+                response.status_code, status_code,
+                response.content))
+
     def assertRequiresAuthentication(self, url, *args,
                                      **kwargs):
         """
@@ -87,7 +97,7 @@ class BaseTestCase(TestCase):
             c.login(**kwargs)
 
         response = c.get(url, *args)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?next=%s' %
                           (self.site_location.site.domain,
@@ -156,7 +166,7 @@ class SubmitVideoBaseTestCase(BaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, self.GET_data)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
 
 
 class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
@@ -176,7 +186,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.get(self.url, self.GET_data)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           self.template_name)
         self.assertTrue(self.form_name in response.context)
@@ -195,7 +205,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, self.GET_data)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           self.template_name)
         self.assertTrue(self.form_name in response.context)
@@ -211,7 +221,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, self.POST_data)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -235,7 +245,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.post(self.url, self.POST_data)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -260,7 +270,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         """
         c = Client()
         response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           'localtv/subsite/submit/submit_video.html')
         self.assert_('submit_form' in response.context)
@@ -273,7 +283,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.post(self.url,
                           {'url': 'not a URL'})
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           'localtv/subsite/submit/submit_video.html')
         self.assertTrue('submit_form' in response.context)
@@ -295,7 +305,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.post(self.url,
                           {'url': video.website_url})
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           'localtv/subsite/submit/submit_video.html')
         self.assertTrue('submit_form' in response.context)
@@ -317,7 +327,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.post(self.url,
                           {'url': video.website_url})
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template.name,
                           'localtv/subsite/submit/submit_video.html')
         self.assertTrue('submit_form' in response.context)
@@ -340,7 +350,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(self.url,
                           {'url': video.website_url})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -361,7 +371,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url, {
                 'url': 'http://blip.tv/file/10',
                 'tags': 'tag1, tag2'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
@@ -381,7 +391,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 'url': ('http://blip.tv/file/get/'
                         'Miropcf-Miro20Introduction119.mp4'),
                 'tags': 'tag1, tag2'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
@@ -401,7 +411,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url, {
                 'url': 'http://pculture.org/',
                 'tags': 'tag1, tag2'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
@@ -422,7 +432,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url, {
                 'url': youtube_url + '&feature=player_embedded',
                 'tags': 'tag1, tag2'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
@@ -733,7 +743,7 @@ class AdministrationBaseTestCase(BaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
 
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
@@ -829,7 +839,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -857,7 +867,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'video_id': str(video.pk),
                                'feature': 'yes'},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -881,7 +891,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -905,7 +915,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -931,7 +941,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -955,7 +965,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'page': 2},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -978,7 +988,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url, {'page': 2},
                          HTTP_REFERER='http://referer.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://referer.com')
 
@@ -1003,7 +1013,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/clear_confirm.html')
         self.assertEquals(list(response.context['videos']),
@@ -1030,7 +1040,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.post(url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/clear_confirm.html')
         self.assertEquals(list(response.context['videos']),
@@ -1059,7 +1069,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.post(url, {'confirm': 'yes'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1105,7 +1115,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/manage_sources.html')
         self.assertTrue('add_feed_form' in response.context[0])
@@ -1227,7 +1237,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         del POST_data_invalid['form-1-query_string']
 
         POST_response = c.post(self.url, POST_data_invalid)
-        self.assertEquals(POST_response.status_code, 200)
+        self.assertStatusCodeEquals(POST_response, 200)
         self.assertTrue(POST_response.context['formset'].is_bound)
         self.assertFalse(POST_response.context['formset'].is_valid())
         self.assertEquals(len(POST_response.context['formset'].errors[0]), 2)
@@ -1258,7 +1268,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data,
                                follow=True)
-        self.assertEquals(POST_response.status_code, 200)
+        self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         self.site_location.site.domain,
@@ -1292,7 +1302,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url+"?page=2", POST_data,
                                follow=True)
-        self.assertEquals(POST_response.status_code, 200)
+        self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
                         self.site_location.site.domain,
@@ -1327,7 +1337,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-1-DELETE'] = 'yes'
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
                 self.site_location.site.domain,
@@ -1364,7 +1374,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-15-auto_approve'] = 'yes'
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
                 self.site_location.site.domain,
@@ -1418,7 +1428,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['bulk_action'] = 'remove'
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
                 self.site_location.site.domain,
@@ -1487,7 +1497,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-15-auto_authors'] = [user2.pk]
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
                 self.site_location.site.domain,
@@ -1584,7 +1594,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': self.feed_url})
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
                           'localtv/subsite/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
@@ -1601,9 +1611,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.post(self.url + "?feed_url=%s" % self.feed_url,
                           {'feed_url': self.feed_url,
                            'auto_categories': [1]})
-        self.assertEquals(response.status_code, 200,
-                          'Status Code: %i\nData: %s' % (response.status_code,
-                                                         response.content))
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
@@ -1623,7 +1631,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                           {'feed_url': self.feed_url,
                            'auto_approve': 'yes',
                            'cancel': 'yes'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1643,7 +1651,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.post(self.url + "?feed_url=%s" % self.feed_url,
                           {'feed_url': self.feed_url,
                            'auto_approve': 'yes'})
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1668,7 +1676,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                 'auto_approve': 'yes'})
 
         response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
                           'localtv/subsite/admin/feed_done.html')
         feed = models.Feed.objects.get()
@@ -1710,7 +1718,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(url,
                          HTTP_REFERER='http://www.google.com/')
         self.assertEquals(feed.auto_approve, False)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], 'http://www.google.com/')
 
     def test_GET_auto_approve_disable(self):
@@ -1754,7 +1762,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/users.html')
         self.assertTrue('formset' in response.context[0])
@@ -1770,7 +1778,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(self.url,
                           {'submit': 'Add'})
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/users.html')
         self.assertTrue('formset' in response.context[0])
@@ -1787,7 +1795,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEquals(response.status_code, 200)
+        self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/subsite/admin/users.html')
         self.assertTrue(
@@ -1815,7 +1823,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             'logo': file(self._data_file('logo.png'))
             }
         response = c.post(self.url, POST_data)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1862,7 +1870,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             'password_f2': 'new_password'
             }
         response = c.post(self.url, POST_data)
-        self.assertEquals(response.status_code, 302)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1912,7 +1920,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self._POST_data_from_formset(
                 formset,
                 submit='Save'))
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1950,7 +1958,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-2-password_f2'] = 'new_admin'
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
@@ -1998,7 +2006,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-2-DELETE'] = 'yes'
 
         POST_response = c.post(self.url, POST_data)
-        self.assertEquals(POST_response.status_code, 302)
+        self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
