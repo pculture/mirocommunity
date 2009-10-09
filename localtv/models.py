@@ -530,7 +530,7 @@ class SavedSearch(Source):
        adminsistrator of this subsite)
     """
     query_string = models.TextField()
-    when_created = models.DateTimeField()
+    when_created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return self.query_string
