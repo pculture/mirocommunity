@@ -802,6 +802,23 @@ class Video(models.Model):
         return 'localtv/video_thumbs/%s/%sx%s.png' % (
             self.id, width, height)
 
+    def source_type(self):
+        if self.search:
+            return 'Search: %s' % self.search
+        elif self.feed:
+            if self.feed.video_service():
+                return 'User: %s: %s' % (
+                    self.feed.video_service(),
+                    self.feed)
+            else:
+                return 'Feed: %s' % self.feed
+        elif self.video_service_user:
+            return 'User: %s: %s' % (
+                self.video_service(),
+                self.video_service_user)
+        else:
+            return ''
+
     def submitter(self):
         """
         Return the user that submitted this video.  If necessary, use the
