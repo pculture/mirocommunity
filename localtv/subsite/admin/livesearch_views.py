@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render_to_response
@@ -25,7 +26,7 @@ def get_query_components(request):
     if not order_by in ('relevant', 'latest'):
         order_by = 'latest'
 
-    query_subkey = '%s-%s' % (order_by, query_string)
+    query_subkey = 'livesearch-%s-%s' % (order_by, hash(query_string))
     return query_string, order_by, query_subkey
 
 
@@ -37,17 +38,15 @@ def remove_video_from_session(request):
     """
     query_string, order_by, query_subkey = get_query_components(request)
 
-    session_searches = request.session.get('localtv_livesearches')
+    subkey_videos = cache.get(query_subkey)
 
     video_index = 0
-    subkey_videos = session_searches[query_subkey]
+
     for this_result in subkey_videos:
         if this_result.id == int(request.GET['video_id']):
             subkey_videos.pop(video_index)
 
-            session_searches[query_subkey] = subkey_videos
-            request.session['localtv_livesearches'] = session_searches
-            request.session.save()
+            cache.set(query_subkey, subkey_videos)
             return
         video_index += 1
 
@@ -60,14 +59,14 @@ def get_search_video(view_func):
     def new_view_func(request, *args, **kwargs):
         query_string, order_by, query_subkey = get_query_components(request)
 
-        session_searches = request.session.get('localtv_livesearches')
+        subkey_videos = cache.get(query_subkey)
 
-        if not session_searches or not session_searches.get(query_subkey):
+        if not subkey_videos:
             return HttpResponseBadRequest(
                 'No matching livesearch results in your session')
 
         search_video = None
-        for this_result in session_searches.get(query_subkey):
+        for this_result in subkey_videos:
             if this_result.id == int(request.GET['video_id']):
                 search_video = this_result
                 break
@@ -108,11 +107,8 @@ def livesearch_response(request, sitelocation):
 
     results = []
     if query_string:
-        session_livesearches = request.session.get('localtv_livesearches', {})
-        if session_livesearches.get(query_subkey):
-            results = session_livesearches[query_subkey]
-
-        else:
+        results = cache.get(query_subkey)
+        if results is None:
             raw_results = util.metasearch_from_querystring(
                 query_string, order_by)
             sorted_raw_results = metasearch.intersperse_results(raw_results)
@@ -121,9 +117,7 @@ def livesearch_response(request, sitelocation):
                 for raw_result in sorted_raw_results]
             results = util.strip_existing_metasearchvideos(
                 results, sitelocation.site)
-            session_livesearches[query_subkey] = results
-            request.session['localtv_livesearches'] = session_livesearches
-            request.session.save()
+            cache.add(query_subkey, results)
 
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
