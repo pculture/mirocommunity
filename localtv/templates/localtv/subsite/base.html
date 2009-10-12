@@ -7,6 +7,9 @@
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/lights-on.css" %}" />
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/video_page.css" %}" />
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/tb.css" %}" />
+<!--[if lt IE 8]>
+   <link rel="StyleSheet" type="text/css" href="{% versioned "/css/msie7.css" %}" />
+<![endif]-->
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
     {{ sitelocation.css|safe }}
@@ -21,16 +24,16 @@
     <script src="{% versioned "/js/extern/jquery.form.js" %}"
             type="text/javascript">
     </script>
-    <![if !IE]>
     <script src="{% versioned "/js/extern/jquery.corners.js" %}"
             type="text/javascript">
     </script>
     <script type="text/javascript">
-    $(document).ready( function(){
+        if (!$.browser.msie) {
+            $(document).ready( function(){
   		$('.rounded').corners();
-		});
+	    });
+        }
     </script>
-    <![endif]>
     <script src="{% versioned "/js/extern/jquery.tb.min.js" %}"
             type="text/javascript">
     </script>
