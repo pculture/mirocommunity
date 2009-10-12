@@ -377,6 +377,26 @@ class CategoryForm(forms.ModelForm):
 
 class BaseCategoryFormSet(BaseModelFormSet):
 
+    def clean(self):
+        BaseModelFormSet.clean(self)
+        deleted_ids = set()
+        parents = {}
+        # first pass: get the deleted items and map parents to items
+        for i, data in enumerate(self.cleaned_data):
+            if data.get('DELETE'):
+                deleted_ids.add(data['id'])
+            if data.get('parent'):
+                parents.setdefault(data['parent'], set()).add(i)
+
+        # second pass: set children of deleted items to None:
+        for parent in deleted_ids:
+            if parent not in parents:
+                continue
+            for form_index in parents[parent]:
+                form = self.forms[form_index]
+                form.instance.parent = None
+                form.instance.save()
+
     def add_fields(self, form, i):
         BaseModelFormSet.add_fields(self, form, i)
         if i < self.initial_form_count():

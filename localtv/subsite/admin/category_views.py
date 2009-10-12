@@ -23,7 +23,7 @@ def categories(request, sitelocation=None):
     else:
         if request.POST['submit'] == 'Add':
             category = Category(site=sitelocation.site)
-            add_category_form = forms.CategoryForm(request.POST,
+            add_category_form = forms.CategoryForm(request.POST, request.FILES,
                                                    instance=category)
             if add_category_form.is_valid():
                 try:
@@ -33,10 +33,10 @@ def categories(request, sitelocation=None):
                         'There was an error adding this category.  Does it '\
                         'already exist?'
                 else:
-                    return HttpResponseRedirect(request.path)
+                    return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/subsite/admin/categories.html',
-                                      {'categories': categories,
+                                      {'formset': formset,
                                        'add_category_form': add_category_form},
                                       context_instance=RequestContext(request))
         elif request.POST['submit'] == 'Save':
@@ -44,11 +44,11 @@ def categories(request, sitelocation=None):
                                             queryset=categories)
             if formset.is_valid():
                 formset.save()
-                return HttpResponseRedirect(request.path)
+                return HttpResponseRedirect(request.path + '?successful')
             else:
                 return render_to_response(
                     'localtv/subsite/admin/categories.html',
-                    {'categories': categories,
+                    {'formset': formset,
                      'add_category_form': add_category_form},
                     context_instance=RequestContext(request))
 
@@ -59,6 +59,12 @@ def categories(request, sitelocation=None):
                 formset.save()
             action = request.POST['action']
             if action == 'delete':
-                for category in categories:
-                    category.delete()
-            return HttpResponseRedirect(request.path)
+                for data in  formset.cleaned_data:
+                    if data['bulk']:
+                        category = data['id']
+                        for child in category.child_set.all():
+                            # reset children to no parent
+                            child.parent = None
+                            child.save()
+                        data['id'].delete()
+            return HttpResponseRedirect(request.path + '?successful')

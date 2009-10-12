@@ -39,14 +39,12 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
-        for user in User.objects.all():
-            try:
-                profile = user.get_profile()
-            except models.Profile.DoesNotExist:
-                pass
-            else:
-                if profile.logo:
-                    profile.logo.delete()
+        for profile in models.Profile.objects.all():
+            if profile.logo:
+                profile.logo.delete()
+        for category in models.Category.objects.all():
+            if category.logo:
+                category.logo.delete()
 
     def _data_file(self, filename):
         """
@@ -2275,6 +2273,240 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
+
+
+# -----------------------------------------------------------------------------
+# Category administration tests
+# -----------------------------------------------------------------------------
+
+
+class CategoryAdministrationTestCase(AdministrationBaseTestCase):
+
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'categories']
+
+    url = reverse('localtv_admin_categories')
+
+    def test_GET(self):
+        """
+        A GET request to the categories view should render the
+        'localtv/subsite/admin/categories.html' template and include a formset
+        for the categories and an add_category_form.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue('add_category_form' in response.context[0])
+
+    def test_POST_add_failure(self):
+        """
+        A POST to the categories view with a POST['submit'] value of 'Add' but
+        a failing form should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url,
+                          {'submit': 'Add'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['add_category_form'],
+                    'errors') is not None)
+
+    def test_POST_save_failure(self):
+        """
+        A POST to the categories view with a POST['submit'] value of 'Save' but
+        a failing formset should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/categories.html')
+        self.assertTrue(
+            getattr(response.context[0]['formset'], 'errors') is not None)
+        self.assertTrue('add_category_form' in response.context[0])
+
+    def test_POST_add(self):
+        """
+        A POST to the categories view with a POST['submit'] of 'Add' and a
+        successful form should create a new category and redirect the user back
+        to the management page.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'name': 'new category',
+            'slug': 'newcategory',
+            'description': 'A New User',
+            'logo': file(self._data_file('logo.png')),
+            'parent': 1,
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        new = models.Category.objects.order_by('-id')[0]
+
+        self.assertEquals(new.site, self.site_location.site)
+
+        for key, value in POST_data.items():
+            if key == 'submit':
+                pass
+            elif key == 'logo':
+                new.logo.open()
+                value.seek(0)
+                self.assertEquals(new.logo.read(), value.read())
+            elif key == 'parent':
+                self.assertEquals(new.parent.pk, value)
+            else:
+                self.assertEquals(getattr(new, key), value)
+
+    def test_POST_save_no_changes(self):
+        """
+        A POST to the categoriess view with a POST['submit'] of 'Save' and a
+        successful formset should update the category data.  The default values
+        of the formset should not change the values of any of the Categorys.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        old_categories = models.Category.objects.values()
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+
+        POST_response = c.post(self.url, self._POST_data_from_formset(
+                formset,
+                submit='Save'))
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        for old, new in zip(old_categories, models.Category.objects.values()):
+            self.assertEquals(old, new)
+
+    def test_POST_save_changes(self):
+        """
+        A POST to the categories view with a POST['submit'] of 'Save' and a
+        successful formset should update the category data.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+
+        POST_data['form-0-name'] = 'New Name'
+        POST_data['form-0-slug'] = 'newslug'
+        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-description'] = 'New Description'
+        POST_data['form-2-parent'] = 5
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(models.Category.objects.count(), 5) # no one got
+                                                              # added
+
+        new_slug = models.Category.objects.get(slug='newslug')
+        self.assertEquals(new_slug.pk, 5)
+        self.assertEquals(new_slug.name, 'New Name')
+
+        new_logo = models.Category.objects.get(slug='miro')
+        new_logo.logo.open()
+        self.assertEquals(new_logo.logo.read(),
+                          file(self._data_file('logo.png')).read())
+        self.assertEquals(new_logo.description, 'New Description')
+
+        new_parent = models.Category.objects.get(slug='linux')
+        self.assertEquals(new_parent.parent.pk, 5)
+
+    def test_POST_delete(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  If form-*-DELETE is
+        present, that user should be removed, unless that user is a superuser.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        POST_data['form-0-DELETE'] = 'yes'
+        POST_data['form-1-DELETE'] = 'yes'
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # three categories got removed
+        self.assertEquals(models.Category.objects.count(), 2)
+
+        # both of the other categories got their parents reassigned to None
+        self.assertEquals(models.Category.objects.filter(parent=None).count(),
+                          2)
+
+    def test_POST_bulk_delete(self):
+        """
+        A POST request to the categories view with a valid formset and a
+        POST['action'] of 'delete' should reject the videos with the bulk
+        option checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-2-bulk'] = 'yes'
+        POST_data['submit'] = 'Apply'
+        POST_data['action'] = 'delete'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+
+        # three categories got removed
+        self.assertEquals(models.Category.objects.count(), 2)
+
+        # both of the other categories got their parents reassigned to None
+        self.assertEquals(models.Category.objects.filter(parent=None).count(),
+                          2)
 
 
 # -----------------------------------------------------------------------------
