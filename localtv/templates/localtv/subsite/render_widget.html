@@ -1,11 +1,11 @@
 <div class="editable">
   {% autoescape off %}
-    <span class="display_data">{{ display_content }}</span>
+    <div class="display_data">{{ display_content }}</div>
   {% endautoescape %}
-  <span class="post_url">{{ post_url }}</span>
-  <span class="input_field">{% block input_field %}
+  <div class="post_url">{{ post_url }}</div>
+  <div class="input_field">{% block input_field %}
     <ul>
       {{ form.as_ul }}
     </ul>
-  {% endblock %}</span>
+  {% endblock %}</div>
 </div>

@@ -1,19 +1,17 @@
 {% load i18n localtv_thumbnail filters versioned %}
 
 <div class="video">
-  
-       <a href="{{ video.get_absolute_url }}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;">
-   <img src="{% versioned "/images/vid_overlay.png" %}" /></a>
-
+  <a href="{{ video.get_absolute_url }}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;">
+  <img src="{% versioned "/images/vid_overlay.png" %}" alt="Thumbnail for {{ video.name }}"/></a>
   <div class="title_desc">
-    <a href="{{ video.get_absolute_url }}">
+    <h3><a href="{{ video.get_absolute_url }}">
       {% if video.name %}
-        <h3>{{ video.name }}</h3>
+      {{ video.name }}
       {% else %}
-        <h3>{% trans "(no title)" %}</h3>
+      {% trans "(no title)" %}
       {% endif %}
     </a>
-      
+    </h3>
     {% autoescape off %}
       <p>{{ video.description|striptags }}</p>
     {% endautoescape %}
