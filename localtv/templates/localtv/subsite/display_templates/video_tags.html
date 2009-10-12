@@ -3,9 +3,11 @@
 {% endif %}
 <div class="floatleft">
   <h3>Tags</h3>
+  {% if instance.tags.count %}
   <ul>
     {% for tag in instance.tags.all %}
     <li><a href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>
     {% endfor %}
   </ul>
+  {% endif %}
 </div>

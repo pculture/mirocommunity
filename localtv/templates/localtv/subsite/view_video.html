@@ -39,7 +39,7 @@
         {% endif %}
       </div>
     </div>
-    <span class="date">
+    <div class="date">
     {% if user_is_admin %}
     {% editable_widget current_video "when_published" %}
     {% else %}
@@ -47,8 +47,8 @@
     {% include "localtv/subsite/display_templates/video_when_published.html" %}
     {% endwith %}
     {% endif %}
-    </span>
-    <span class="byline">
+    </div>
+    <div class="byline">
     {% if user_is_admin %}
       {% editable_widget current_video "authors" %}
     {% else %}
@@ -56,23 +56,23 @@
       {% include "localtv/subsite/display_templates/video_authors.html" %}
       {% endwith %}
     {% endif %}
-    </span>
+    </div>
     <div id="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|wmode_transparent }}
         {% else %}
         {% video current_video.file_url mime_type=current_video.file_url_mimetype %}
         {% endif %}
-        <img src="{% get_thumbnail_url current_video 534 430 %}" />
+        <img src="{% get_thumbnail_url current_video 534 430 %}" alt="Background thumbnail for {{ current_video.name }}" />
     </div>
 
     <div class="action">
       <a href="#" id="flag_button" class="med_button">
-        <span>Flag Video<img src="{% versioned "/images/arrow_down.png" %}" /></span>
+        <span>Flag Video<img src="{% versioned "/images/arrow_down.png" %}" alt="Down arrow" /></span>
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" /></span>
+        <span>Share Video<img src="{% versioned "/images/arrow_down.png" %}" alt="Down arrow" /></span>
       </a>
 
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
@@ -131,8 +131,9 @@
 
 
     <h2 class="comments-title">{{ comment_count }} Comments</h2>
+    {% get_comment_list for current_video as comments %}
+    {% if comments %}
     <ul id="comments">
-      {% get_comment_list for current_video as comments %}
       {% for comment in comments %}
       <li>
         <div class="comment-poster">
@@ -156,11 +157,11 @@
       </li>
       {% endfor %}
     </ul>
-
+    {% endif %}
     {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
     <h2 class="clear post-comment-title">Post a comment</h2>
     {% get_comment_form for current_video as comment_form %}
-    <form action="{% comment_form_target %}" method="POST">
+    <form action="{% comment_form_target %}" method="post">
       {% with comment_form as form %}
       {% include "comments/form_base.html" %}
       {% endwith %}
@@ -194,4 +195,5 @@
       {% include "localtv/subsite/sidebar_video.html" %}
     {% endfor %}
   </div>
+
 {% endblock content %}

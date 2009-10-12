@@ -80,7 +80,7 @@
         {% block nav %}
          <form id="search"
               action="{% url localtv_subsite_search %}"
-              method="GET">
+              method="get">
           <input name="query" type="text" id="search_field" />
           <input type="image" id="searchbutton" src="{% versioned "/images/search.png" %}" value="submit" />
         </form>
@@ -176,7 +176,6 @@
           </div>
         </div>
       {% endblock footer_wrapper %}
-    </div>
     {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?

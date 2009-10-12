@@ -41,3 +41,13 @@ function bulkAction() {
         alert('Please select an action.');
     }
 }
+
+$(document).ready(function() {
+    $("#toggle_all").click(function() {
+        if (this.checked) {
+            $('td:first-child input[type=checkbox]:not(:checked)').click();
+        } else {
+            $('td:first-child input[type=checkbox]:checked').click();
+        }
+    });
+});

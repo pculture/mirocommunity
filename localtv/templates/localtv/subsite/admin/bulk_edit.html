@@ -25,7 +25,7 @@
     <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
   </div>
 
-  <form action="" method="GET">
+  <form action="" method="get">
 
     <div class="floatleft form_wrap rounded">
     <select class="behave" name="category">
@@ -45,7 +45,7 @@
   </div>
   </form>
   {% endblock %}
-  <form method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
+  <form method="post" action="{{ request.get_full_path }}" enctype="multipart/form-data">
     {% block massedit %}
     {% ifnotequal formset.initial_form_count formset.total_form_count %}
   <table id="massedit" class="rounded">
@@ -71,20 +71,11 @@
                     <span style="display: none;">{{ form.thumbnail }}</span>
                   </div>
                 </td>
+            </tr>
             <tr>
               <td colspan="2">
                 <label>Date</label>
                 {{ form.when_published }}
-            </td>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <label>Thumb URL</label>
-                {{ form.thumbnail_url }}
-                <div style="float: right; width: 286px;">
-                  or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
-                  <span style="display: none;">{{ form.thumbnail }}</span>
-                </div>
               </td>
             </tr>
             <tr>
@@ -133,16 +124,11 @@
     <table class="rounded">
     <thead>
       <tr>
-        <th class="checkbox"><input type="checkbox" id="toggle_all"/></th>
-        <script type="text/javascript">
-            $("#toggle_all").click(function() {
-                if (this.checked) {
-                    $('td:first-child input[type=checkbox]:not(:checked)').click()
-                } else {
-                    $('td:first-child input[type=checkbox]:checked').click();
-                }
-            });
-        </script>
+        <th class="checkbox">
+          {{ formset.management_form }}
+          <input type="hidden" id="bulk_action" name="bulk_action" value="" />
+          <input type="checkbox" id="toggle_all"/>
+        </th>
         {% for header in headers %}
         <th>
             {% if header.sort %}
@@ -150,12 +136,11 @@
               {{ header.label }}
             </a>
             {% else %}
-            <span>{{ header.label }}
+            <span>{{ header.label }}</span>
             {% endif %}
+        </th>
         {% endfor %}
       </tr>
-      {{ formset.management_form }}
-      <input type="hidden" id="bulk_action" name="bulk_action" value="">
     </thead>
     <tbody>
       {% if formset.non_form_errors %}
@@ -212,6 +197,8 @@
                   or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
                   <span style="display: none;">{{ form.thumbnail }}</span>
                 </div>
+              </td>
+            </tr>
             <tr>
               <td colspan="2">
                 {{ form.when_published.errors }}
