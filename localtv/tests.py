@@ -2882,3 +2882,220 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         video2 = models.Video.objects.get(
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is None)
+
+
+# -----------------------------------------------------------------------------
+# Design administration tests
+# -----------------------------------------------------------------------------
+
+
+class DesignAdministrationTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_edit_design')
+
+    def test_GET(self):
+        """
+        A GET request to the edit_design view should render the
+        'localtv/subsite/admin/edit_design.html' template and include 4 forms:
+
+        * title_form
+        * sidebar_form
+        * misc_form
+        * comment_form.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/edit_design.html')
+        self.assertTrue('title_form' in response.context[0])
+        self.assertTrue('sidebar_form' in response.context[0])
+        self.assertTrue('misc_form' in response.context[0])
+        self.assertTrue('comment_form' in response.context[0])
+
+    def test_POST_title_failure(self):
+        """
+        A POST request to the edit design view with POST['type_title'] but an
+        invalid title form should rerender the template and include the
+        title_form errors.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {'type_title': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/subsite/admin/edit_design.html')
+        self.assertFalse(POST_response.context['title_form'].is_valid())
+
+    def test_POST_title_succeed(self):
+        """
+        A POST request to the edit_design veiw with POST['type_title'] and a
+        valid title form should save the title data and redirect back to the
+        edit design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {
+                'title': 'New Title',
+                'tagline': 'New Tagline',
+                'about': 'New About',
+                'type_title': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertEquals(site_location.site.name, 'New Title')
+        self.assertEquals(site_location.tagline, 'New Tagline')
+        self.assertEquals(site_location.about_html, 'New About')
+
+
+    def test_POST_sidebar_failure(self):
+        """
+        A POST request to the edit design view with POST['type_sidebar'] but an
+        invalid sidebar form should rerender the template and include the
+        sidebar_form errors.
+        """
+        # TODO(pswartz): not sure how to get the sidebar form to fail
+        return
+
+    def test_POST_sidebar_succeed(self):
+        """
+        A POST request to the edit_design veiw with POST['type_sidebar'] and a
+        valid sidebar form should save the sidebar data and redirect back to
+        the edit design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {
+                'sidebar': 'New Sidebar',
+                'footer': 'New Footer',
+                'type_sidebar': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertEquals(site_location.sidebar_html, 'New Sidebar')
+        self.assertEquals(site_location.footer_html, 'New Footer')
+
+
+    def test_POST_misc_failure(self):
+        """
+        A POST request to the edit design view with POST['type_misc'] but an
+        invalid misc form should rerender the template and include the
+        misc_form errors.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {'type_misc': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/subsite/admin/edit_design.html')
+        self.assertFalse(POST_response.context['misc_form'].is_valid())
+
+    def test_POST_misc_succeed(self):
+        """
+        A POST request to the edit_design veiw with POST['type_misc'] and a
+        valid misc form should save the misc data and redirect back to the
+        edit design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {
+                'logo': file(self._data_file('logo.png')),
+                'background': file(self._data_file('logo.png')),
+                'layout': 'categorized',
+                'display_submit_button': 'yes',
+                'submission_requires_login': 'yes',
+                'css': 'New Css',
+                'type_misc': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertEquals(site_location.frontpage_style, 'categorized')
+        self.assertEquals(site_location.css, 'New Css')
+        self.assertTrue(site_location.display_submit_button)
+        self.assertTrue(site_location.submission_requires_login)
+
+        logo_data = file(self._data_file('logo.png')).read()
+        site_location.logo.open()
+        self.assertEquals(site_location.logo.read(), logo_data)
+        site_location.background.open()
+        self.assertEquals(site_location.background.read(), logo_data)
+
+    def test_POST_comment_failure(self):
+        """
+        A POST request to the edit design view with POST['type_comment'] but an
+        invalid comment form should rerender the template and include the
+        comment_form errors.
+        """
+        # TODO(pswartz) not sure how to make the comments form fail
+        return
+
+    def test_POST_comment_succeed(self):
+        """
+        A POST request to the edit_design veiw with POST['type_comment'] and a
+        valid comment form should save the comment data and redirect back to
+        the edit design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {
+                'screen_all_comments': 'yes',
+                'comments_email_admins': 'yes',
+                'comments_required_login': 'yes',
+                'type_comment': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertTrue(site_location.screen_all_comments)
+        self.assertTrue(site_location.comments_email_admins)
+        self.assertTrue(site_location.comments_required_login)
+
+
+    def test_POST_delete_background(self):
+        """
+        A POST request to the edit_design veiw with POST['delete_background']
+        should remove the background image and redirect back to the edit
+        design view.
+        """
+        self.site_location.background = File(file(self._data_file('logo.png')))
+        self.site_location.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {'delete_background': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertEquals(site_location.background, '')
