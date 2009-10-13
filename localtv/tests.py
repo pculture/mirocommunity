@@ -487,7 +487,7 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(video.website_url, self.POST_data['url'])
         self.assertEquals(video.file_url,
                           'http://blip.tv/file/get/'
-                          '11156136631.95334664852457.flv')
+                          '11156136631.95334664852457.mp4')
         self.assertEquals(video.embed_code,
                           '<embed src="http://blip.tv/play/g_5Qgm8C" '
                           'type="application/x-shockwave-flash" '
