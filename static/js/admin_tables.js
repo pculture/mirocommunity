@@ -62,6 +62,9 @@ function scroll_admin() {
     admin_rightpane.style.right = admin_table.offsetLeft + 'px';
     admin_leftpane.style.width = (admin_table.clientWidth - 590) + 'px';
     admin_rightpane.style.display = "block";
+    if (admin_leftpane.clientHeight < admin_rightpane.clientHeight) {
+        admin_leftpane.style.height = admin_rightpane.clientHeight + 'px';
+    }
 }
 
 if ('attachEvent' in window) {
