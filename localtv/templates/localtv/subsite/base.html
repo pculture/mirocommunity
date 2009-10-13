@@ -173,7 +173,7 @@
           {% if request.user.is_authenticated %}
             <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
           {% else %}
-            <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}&height=450&width=450&modal=true" class="thickbox" title="Please Sign In">Login</a>
+            <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}&amp;height=450&amp;width=450&amp;modal=true" class="thickbox" title="Please Sign In">Login</a>
           {% endif %}
         </p>
           </div>
