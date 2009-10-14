@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.test import TestCase
 from django.test.client import Client
 from django.utils.encoding import force_unicode
@@ -3099,3 +3100,399 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         site_location = models.SiteLocation.objects.get(
             pk=self.site_location.pk)
         self.assertEquals(site_location.background, '')
+
+
+
+
+# -----------------------------------------------------------------------------
+# View tests
+# -----------------------------------------------------------------------------
+
+
+class ViewTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'videos',
+                                        'watched']
+
+    def test_subsite_index(self):
+        """
+        The subsite_index view should render the
+        'localtv/subsite/index_STYLE.html' (STYLE being the frontpage_style for
+        the sitelocation.  The context should include 10 featured videos, 10
+        popular videos, 10 new views, and the base categories (those without
+        parents).
+        """
+        for watched in models.Watch.objects.all():
+            watched.timestamp = datetime.datetime.now() # so that they're
+                                                        # recent
+            watched.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/index_list.html')
+        self.assertEquals(list(response.context['featured_videos']),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    last_featured__isnull=False)))
+        self.assertEquals(list(response.context['popular_videos']),
+                          list(models.Video.objects.popular_since(
+                    datetime.timedelta.max,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+        self.assertEquals(list(response.context['new_videos']),
+                          list(models.Video.objects.new(
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+        for style in ('scrolling', 'categorized'):
+            self.site_location.frontpage_style = style
+            self.site_location.save()
+            response = c.get(reverse('localtv_subsite_index'))
+            self.assertStatusCodeEquals(response, 200)
+            self.assertEquals(response.template[0].name,
+                              'localtv/subsite/index_%s.html' % style)
+
+    def test_about(self):
+        """
+        The about view should render the 'localtv/subsite/about.html' template.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_about'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/about.html')
+
+    def test_view_video(self):
+        """
+        The view_video view should render the 'localtv/subsite/view_video.html'
+        template.  It should include the current video, and a QuerySet of other
+        popular videos.
+        """
+        for watched in models.Watch.objects.all():
+            watched.timestamp = datetime.datetime.now() # so that they're
+                                                        # recent
+            watched.save()
+
+        video = models.Video.objects.get(pk=20)
+
+        c = Client()
+        response = c.get(video.get_absolute_url())
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/view_video.html')
+        self.assertEquals(response.context[0]['current_video'], video)
+        self.assertEquals(list(response.context[0]['popular_videos']),
+                          list(models.Video.objects.popular_since(
+                    datetime.timedelta.max,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+    def test_view_video_admins_see_rejected(self):
+        """
+        The view_video view should return a 404 for rejected videos, unless the
+        user is an admin.
+        """
+        video = models.Video.objects.get(pk=1)
+
+        c = Client()
+        response = c.get(video.get_absolute_url())
+        self.assertStatusCodeEquals(response, 404)
+
+        c.login(username='admin', password='admin')
+        response = c.get(video.get_absolute_url())
+        self.assertStatusCodeEquals(response, 200)
+
+    def test_view_video_slug_redirect(self):
+        """
+        The view_video view should redirect the user to the URL with the slug
+        if the URL doesn't include it or includes the wrong one.
+        """
+        video = models.Video.objects.get(pk=20)
+
+        c = Client()
+        response = c.get(reverse('localtv_view_video',
+                                 args=[20, 'wrong-slug']))
+        # 301 is a permanent redirect
+        self.assertStatusCodeEquals(response, 301)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                video.get_absolute_url()))
+
+        response = c.get(reverse('localtv_view_video',
+                                 args=[20, '']))
+        self.assertStatusCodeEquals(response, 301)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                video.get_absolute_url()))
+
+    def test_view_video_category(self):
+        """
+        If the video has categories, the view_video view should include a
+        category in the template and those videos should be shown in place of
+        the regular popular videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.categories = [2]
+        video.save()
+
+        c = Client()
+        response = c.get(video.get_absolute_url(),
+                         HTTP_HOST=self.site_location.site.domain,
+                         HTTP_REFERER='http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_subsite_category',
+                        args=['miro'])))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['category'].pk, 1)
+        self.assertEquals(list(response.context[0]['popular_videos']),
+                          list(models.Video.objects.popular_since(
+                    datetime.timedelta.max,
+                    categories__pk=1,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+    def test_view_video_category_referer(self):
+        """
+        If the view_video referrer was a category page, that category should be
+        included in the template and those videos should be shown in place of
+        the regular popular videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.categories = [1, 2]
+        video.save()
+
+        c = Client()
+        response = c.get(video.get_absolute_url(),
+                         HTTP_HOST=self.site_location.site.domain,
+                         HTTP_REFERER='http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_subsite_category',
+                        args=['miro'])))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['category'].pk, 1)
+        self.assertEquals(list(response.context[0]['popular_videos']),
+                          list(models.Video.objects.popular_since(
+                    datetime.timedelta.max,
+                    categories__pk=1,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+    def test_video_search(self):
+        """
+        The video_search view should take a GET['query'] and search through the
+        videos.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'blend'}) # lots of Blender videos in the
+                                             # test data
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 4)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.filter(
+                    Q(name__icontains="blend") |
+                    Q(description__icontains="blend") |
+                    Q(feed__name__icontains="blend"),
+                    status=models.VIDEO_STATUS_ACTIVE)[:5]))
+
+    def test_video_search_pagination(self):
+        """
+        The video_search view should take a GET['page'] argument which shows
+        the next page of search results.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'blend',
+                          'page': 2})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 2)
+        self.assertEquals(response.context['pages'], 4)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.filter(
+                    Q(name__icontains="blend") |
+                    Q(description__icontains="blend") |
+                    Q(feed__name__icontains="blend"),
+                    status=models.VIDEO_STATUS_ACTIVE)[5:10]))
+
+    def test_video_search_includes_tags(self):
+        """
+        The video_search view should search the tags for videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.tags = util.get_or_create_tags(['tag1', 'tag2'])
+        video.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'tag1'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'tag2'})
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'tag2 tag1'})
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_video_search_includes_categories(self):
+        """
+        The video_search view should search the category for videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.categories = [1, 2] # Miro, Linux
+        video.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'Miro'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'Linux'})
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'Miro Linux'})
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_video_search_includes_user(self):
+        """
+        The video_search view should search the user who submitted videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.user = User.objects.get(username='user')
+        video.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'user'}) # username
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'firstname'}) # first name
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'lastname'}) # last name
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_video_search_includes_video_service_user(self):
+        """
+        The video_search view should search the video service user for videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.video_service_user = 'Video_service_user'
+        video.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'video_service_user'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_video_search_includes_feed_name(self):
+        """
+        The video_search view should search the feed name for videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        # feed is miropcf
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': 'miropcf'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page'], 1)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_video_search_exclude_terms(self):
+        """
+        The video_search view should exclude terms that start with - (hyphen).
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'),
+                         {'query': '-blender'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['pages'], 2)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE).exclude(
+                    name__icontains='blender').exclude(
+                    description__icontains='blender').exclude(
+                    feed__name__icontains='blender')[:5]))
+
+    def test_category_index(self):
+        """
+        The category_index view should render the
+        'localtv/subsite/categories.html' template and include the root
+        categories (those without parents).
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_category_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Category.objects.filter(parent=None)))
+
+    def test_category(self):
+        """
+        The category view should render the 'localtv/subsite/category.html'
+        template, and include the appropriate category.
+        """
+        category = models.Category.objects.get(slug='miro')
+        c = Client()
+        response = c.get(category.get_absolute_url())
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['category'], category)
+
+    def test_author_index(self):
+        """
+        The author_index view should render the
+        'localtv/subsite/author_list.html' template and include the authors in
+        the context.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_author_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(list(response.context['authors']),
+                          list(User.objects.all()))
+
+    def test_author(self):
+        """
+        The author view should render the 'localtv/subsite/author.html'
+        template and include the author and their videos.
+        """
+        author = User.objects.get(username='admin')
+        c = Client()
+        response = c.get(reverse('localtv_subsite_author',
+                                 args=[author.pk]))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['author'], author)
+        self.assertEquals(len(response.context['video_list']), 2)
+        self.assertEquals(list(response.context['video_list']),
+                          list(models.Video.objects.filter(
+                    Q(user=author) | Q(authors=author),
+                    status=models.VIDEO_STATUS_ACTIVE)))

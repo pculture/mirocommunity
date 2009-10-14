@@ -22,15 +22,15 @@ def subsite_index(request, sitelocation=None):
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
         '-last_featured', '-when_approved', '-when_published',
-        '-when_submitted')[:10]
+        '-when_submitted')
 
     popular_videos = models.Video.objects.popular_since(
         datetime.timedelta(days=7), sitelocation=sitelocation,
-        status=models.VIDEO_STATUS_ACTIVE)[:10]
+        status=models.VIDEO_STATUS_ACTIVE)
 
     new_videos = models.Video.objects.new(
         site=sitelocation.site,
-        status=models.VIDEO_STATUS_ACTIVE)[:10]
+        status=models.VIDEO_STATUS_ACTIVE)
 
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
@@ -99,12 +99,12 @@ def view_video(request, video_id, slug=None, sitelocation=None):
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE,
-            categories__pk=category_obj.pk).distinct()[:9]
+            categories__pk=category_obj.pk).distinct()
     else:
         context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
-            status=models.VIDEO_STATUS_ACTIVE)[:9]
+            status=models.VIDEO_STATUS_ACTIVE)
     models.Watch.add(request, video)
 
     return render_to_response(
@@ -141,15 +141,15 @@ def video_search(request, sitelocation=None):
                 Q(feed__name__icontains=term))
 
         for term in stripped_exclude_terms:
-            videos = videos.exclude(
-                Q(description__icontains=term) | Q(name__icontains=term) |
-                Q(tags__name__icontains=term) |
-                Q(categories__name__icontains=term) |
-                Q(user__username__icontains=term) |
-                Q(user__first_name__icontains=term) |
-                Q(user__last_name__icontains=term) |
-                Q(video_service_user__icontains=term) |
-                Q(feed__name__icontains=term))
+            videos = videos.exclude(description__icontains=term)
+            videos = videos.exclude(name__icontains=term)
+            videos = videos.exclude(tags__name__icontains=term)
+            videos = videos.exclude(categories__name__icontains=term)
+            videos = videos.exclude(user__username__icontains=term)
+            videos = videos.exclude(user__first_name__icontains=term)
+            videos = videos.exclude(user__last_name__icontains=term)
+            videos = videos.exclude(video_service_user__icontains=term)
+            videos = videos.exclude(feed__name__icontains=term)
 
         videos = videos.distinct()
 

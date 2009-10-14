@@ -1,4 +1,4 @@
-{% load video i18n filters %}
+{% load video i18n filters localtv_thumbnail %}
 {% if video.name %}
   <h2 class="vid_title"><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h2>
 {% else %}
@@ -10,7 +10,7 @@
   {{ video.embed_code|wmode_transparent }}
   {% else %}
   {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
-  {% endif %}
-  <img src="{% get_thumbnail_url current_video 534 430 %}" />
+  {% endif %}mode
+  <img src="{% get_thumbnail_url video 534 430 %}" />
 </div>
 <br />
