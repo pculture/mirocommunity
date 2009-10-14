@@ -67,8 +67,6 @@ def view_video(request, video_id, slug=None, sitelocation=None):
         edit_video_form = admin_forms.EditVideoForm(instance=video)
 
     context = {'current_video': video,
-               'intensedebate_acct': getattr(
-            settings, 'LOCALTV_INTENSEDEBATE_ACCT', None),
                'edit_video_form': edit_video_form}
 
     if video.categories.count():
