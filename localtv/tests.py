@@ -3279,13 +3279,16 @@ class ViewTestCase(BaseTestCase):
     def test_video_search(self):
         """
         The video_search view should take a GET['query'] and search through the
-        videos.
+        videos.  It should render the
+        'localtv/subsite/video_listing_search.html' template.
         """
         c = Client()
         response = c.get(reverse('localtv_subsite_search'),
                          {'query': 'blend'}) # lots of Blender videos in the
                                              # test data
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_search.html')
         self.assertEquals(response.context['page'], 1)
         self.assertEquals(response.context['pages'], 4)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -3453,6 +3456,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_subsite_category_index'))
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/categories.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Category.objects.filter(parent=None)))
@@ -3466,6 +3471,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/category.html')
         self.assertEquals(response.context['category'], category)
 
     def test_author_index(self):
@@ -3476,6 +3483,8 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_subsite_author_index'))
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(list(response.context['authors']),
                           list(User.objects.all()))
@@ -3490,9 +3499,131 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_subsite_author',
                                  args=[author.pk]))
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/author.html')
         self.assertEquals(response.context['author'], author)
         self.assertEquals(len(response.context['video_list']), 2)
         self.assertEquals(list(response.context['video_list']),
                           list(models.Video.objects.filter(
                     Q(user=author) | Q(authors=author),
                     status=models.VIDEO_STATUS_ACTIVE)))
+
+
+# -----------------------------------------------------------------------------
+# Listing Views tests
+# -----------------------------------------------------------------------------
+
+
+class ListingViewTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'watched']
+
+    def test_index(self):
+        """
+        The listing index view should render the 'localtv/subsite/browse.html'
+        template.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/browse.html')
+
+    def test_new_videos(self):
+        """
+        The new_videos view should render the
+        'localtv/subsite/video_listing_new.html' template and include the new
+        videos.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_new'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_new.html')
+        self.assertEquals(response.context['pages'], 2)
+        self.assertEquals(len(response.context['page_obj'].object_list), 15)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.new(
+                    status=models.VIDEO_STATUS_ACTIVE)[:15]))
+
+    def test_popular_videos(self):
+        """
+        The popular_videos view should render the
+        'localtv/subsite/video_listing_popular.html' template and include the
+        popular videos.
+        """
+        for w in models.Watch.objects.all():
+            w.timestamp = datetime.datetime.now()
+            w.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_popular'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_popular.html')
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(len(response.context['page_obj'].object_list), 2)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.popular_since(
+                    datetime.timedelta.max,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+    def test_featured_videos(self):
+        """
+        The featured_videos view should render the
+        'localtv/subsite/video_listing_featured.html' template and include the
+        featured videos.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_featured'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_featured.html')
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(len(response.context['page_obj'].object_list), 2)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(models.Video.objects.filter(
+                    last_featured__isnull=False,
+                    status=models.VIDEO_STATUS_ACTIVE)))
+
+    def test_tag_videos(self):
+        """
+        The tag_videos view should render the
+        'localtv/subsite/video_listing_tag.html' template and include the
+        tagged videos.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.tags = util.get_or_create_tags(['tag1'])
+        video.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_tag',
+                         args=['tag1']))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_tag.html')
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(len(response.context['page_obj'].object_list), 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          [video])
+
+    def test_feed_videos(self):
+        """
+        The feed_videos view should render the
+        'localtv/subsite/video_listing_feed.html' template and include the
+        videos from the given feed.
+        """
+        feed = models.Feed.objects.get(pk=1)
+
+        c = Client()
+        response = c.get(reverse('localtv_subsite_list_feed',
+                                 args=[feed.pk]))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_feed.html')
+        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(len(response.context['page_obj'].object_list), 1)
+        self.assertEquals(list(response.context['page_obj'].object_list),
+                          list(feed.video_set.filter(
+                    status=models.VIDEO_STATUS_ACTIVE)))
+

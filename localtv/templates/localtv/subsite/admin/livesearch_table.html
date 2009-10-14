@@ -38,8 +38,10 @@
   {% if is_saved_search %}
     <i class="floatright">This search is saved</i>
   {% else %}
+  {% if query_string %}
     <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="med_button allsites">
-      <span>Save as Source</span></a>
+      <span>Save "{{ query_string }}" as Source</span></a>
+  {% endif %}
   {% endif %}
 	</div>
   {{ block.super }}
