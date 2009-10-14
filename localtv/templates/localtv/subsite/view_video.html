@@ -191,7 +191,7 @@
       {% endif %}
     </div>
 
-    {% for video in popular_videos %}
+    {% for video in popular_videos|slice:":9" %}
       {% include "localtv/subsite/sidebar_video.html" %}
     {% endfor %}
   </div>

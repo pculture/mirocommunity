@@ -579,7 +579,11 @@ localtv_video.when_submitted)"""})
         @type delta: L{datetime.timedelta)
         @type sitelocation: L{SiteLocation}
         """
-        earliest_time = datetime.datetime.now() - delta
+        try:
+            earliest_time = datetime.datetime.now() - delta
+        except OverflowError:
+            earliest_time = datetime.datetime(1900, 1, 1)
+
         videos = self.filter(
             watch__timestamp__gte=earliest_time)
         if sitelocation is not None:
