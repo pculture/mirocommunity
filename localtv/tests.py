@@ -3279,13 +3279,16 @@ class ViewTestCase(BaseTestCase):
     def test_video_search(self):
         """
         The video_search view should take a GET['query'] and search through the
-        videos.
+        videos.  It should render the
+        'localtv/subsite/video_listing_search.html' template.
         """
         c = Client()
         response = c.get(reverse('localtv_subsite_search'),
                          {'query': 'blend'}) # lots of Blender videos in the
                                              # test data
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_search.html')
         self.assertEquals(response.context['page'], 1)
         self.assertEquals(response.context['pages'], 4)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -3453,6 +3456,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_subsite_category_index'))
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/categories.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Category.objects.filter(parent=None)))
@@ -3466,6 +3471,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/category.html')
         self.assertEquals(response.context['category'], category)
 
     def test_author_index(self):
@@ -3476,6 +3483,8 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_subsite_author_index'))
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(list(response.context['authors']),
                           list(User.objects.all()))
@@ -3490,6 +3499,8 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_subsite_author',
                                  args=[author.pk]))
         self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/author.html')
         self.assertEquals(response.context['author'], author)
         self.assertEquals(len(response.context['video_list']), 2)
         self.assertEquals(list(response.context['video_list']),
