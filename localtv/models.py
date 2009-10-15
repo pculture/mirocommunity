@@ -935,7 +935,10 @@ class VideoModerator(CommentModerator):
     def moderate(self, comment, video, request):
         sitelocation = SiteLocation.objects.get(site=video.site)
         if sitelocation.screen_all_comments:
-            return True
+            if not getattr(request, 'user'):
+                return True
+            else:
+                return not sitelocation.user_is_admin(request.user)
         else:
             return False
 

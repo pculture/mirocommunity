@@ -3684,6 +3684,30 @@ class CommentModerationTestCase(BaseTestCase):
         self.assertEquals(comment.email, 'post@email.com')
         self.assertEquals(comment.url, 'http://posturl.com/')
 
+    def test_screen_all_comments_True_admin(self):
+        """
+        Even if SiteLocation,screen_all_comments is True, comments from logged
+        in admins should not be screened.
+        """
+        self.site_location.screen_all_comments = True
+        self.site_location.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+        comment.delete()
+
+        c.login(username='superuser', password='superuser')
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+
     def test_comments_email_admins_False(self):
         """
         If SiteLocation.comments_email_admins is False, no e-mail should be
