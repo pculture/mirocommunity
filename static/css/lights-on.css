@@ -2087,6 +2087,12 @@ width: 100%;
 margin-bottom: 20px;
 }
 
+body#admin.user_admin #labels form > table {
+    width: auto;
+    float: left;
+    clear: right;
+}
+
 .floatnone{
 float: none !important;
 
@@ -2114,7 +2120,7 @@ border: 0;
 }
 
 #labels table td{
-padding: 8px 14px 8px 12px !important;
+padding: 8px 14px 8px 12px;
 line-height: 1.4em;
 font-size: 11px;
 border-bottom: 1px solid #ddd;
@@ -2159,11 +2165,11 @@ width: 100%;
 }
 
 #labels table tr.editing td{
-padding: 0px !important;
+padding: 0px;
 }
 
 #labels table tr.editing td.last{
-padding: 0px 0 0 12px !important;
+padding: 0px 0 0 12px;
 }
 
 #labels table tr.editing h3 {

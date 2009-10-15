@@ -35,16 +35,12 @@
     <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{% url localtv_subsite_author form.instance.pk %}" class="view_icon">View</a>
   </div>
 </td>
-<td>{{ form.instance.get_full_name }}</td>
 <td>{{ form.instance.email }}</td>
-<td style="max-width: 150px; overflow: hidden;">{{ form.instance.openiduser.url }}</td>
 <td>{% ifequal form.role.field.initial "admin" %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endifequal %}</td>
-<td>{% if form.instance.get_profile.logo %}<a href="{{ form.instance.get_profile.logo.url }}" onClick="$(this).hide().next().show(); return false;">Click to View</a><img style="display: none;" src="{{ form.instance.get_profile.logo.url }}">{% endif %}</td>
-<td>{% if form.instance.get_profile.description %}{{ form.instance.get_profile.description }}{% endif %}</td>
 <td>{% if form.instance.authored_set__count %}<a href="{% url localtv_subsite_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>
 {% endblock %}
 {% block quick-edit-title %}Edit User: {{ form.instance.username }}{% endblock %}
-{% block quick-edit-colspan %}3{% endblock %}
+{% block quick-edit-colspan %}2{% endblock %}
 {% block quick-edit %}
 {{ form.id }}
 {{ form.username.as_hidden }}
@@ -70,13 +66,20 @@
         {{ form.logo.errors }}
         {{ form.logo.label_tag }}
         {{ form.logo }}
-    </td>
+      </td>
+    </tr>
+    <tr>
+      <td class="checklist" width="250" colspan="3">
+        {{ form.description.errors }}
+        {{ form.description.label_tag }}
+        {{ form.description }}
+      </td>
     </tr>
   </tbody>
 </table>
 {% endblock %}
 {% block quick-edit-additional-columns %}
-<td class="checklist" colspan="2">
+<td style="padding-right: 20px;" colspan="2">
   <table class="larger_labels">
     <tbody>
       <tr>
@@ -116,10 +119,5 @@
       </tr>
     </tbody>
   </table>
-</td>
-<td class="checklist" width="250" colspan="3">
-  {{ form.description.errors }}
-  {{ form.description.label_tag }}
-  {{ form.description }}
 </td>
 {% endblock %}
