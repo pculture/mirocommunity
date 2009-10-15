@@ -1,8 +1,28 @@
+import urlparse
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 
 from localtv import models
 
+class FixAJAXMiddleware:
+    """
+    Firefox doesn't handle redirects in XMLHttpRequests correctly (it doesn't
+    set X-Requested-With) so we fake it with a GET argument.
+    """
+    def process_request(self, request):
+        if 'from_ajax' in request.GET and not request.is_ajax():
+            request.META['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
+
+    def process_response(self, request, response):
+        if 300 <= response.status_code < 400 and request.is_ajax():
+            parts = list(urlparse.urlparse(response['Location']))
+            if parts[4]: # query
+                parts[4] = parts[4] + '&from_ajax'
+            else:
+                parts[4] = 'from_ajax'
+            response['Location'] = urlparse.urlunparse(parts)
+        return response
 
 def context_processor(request):
     sitelocation = models.SiteLocation.objects.get(
