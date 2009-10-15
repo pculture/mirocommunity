@@ -14,13 +14,9 @@ def users(request, sitelocation=None):
     sort = request.GET.get('sort', 'username')
     headers = [
         sort_header('username', 'Username', sort),
-        {'label': 'Name'},
-        {'label': 'Email'},
-        {'label': 'OpenID'},
-        {'label': 'Role'},
-        {'label': 'Thumbnail'},
-        {'label': 'Description'},
-        sort_header('authored_set__count', 'Videos', sort)
+         {'label': 'Email'},
+         {'label': 'Role'},
+         sort_header('authored_set__count', 'Videos', sort)
         ]
     users = User.objects.all().annotate(Count('authored_set')).order_by(sort)
     formset = forms.AuthorFormSet(queryset=users)
