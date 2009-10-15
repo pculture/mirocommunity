@@ -182,7 +182,6 @@
           </div>
         </div>
       {% endblock footer_wrapper %}
-      {% endif %}
     {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?
@@ -198,6 +197,7 @@
       {% endif %}
       pageTracker._trackPageview();
   } catch(err) {}</script>
+  {% endif %}
   {% endif %}
   </body>
 </html>
