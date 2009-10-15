@@ -190,9 +190,9 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.get(self.url, self.GET_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           self.template_name)
-        self.assertTrue(self.form_name in response.context)
+        self.assertTrue(self.form_name in response.context[0])
 
         submit_form = response.context[self.form_name]
         self.assertEquals(submit_form.initial['url'], self.POST_data['url'])
@@ -209,9 +209,9 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.post(self.url, self.GET_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           self.template_name)
-        self.assertTrue(self.form_name in response.context)
+        self.assertTrue(self.form_name in response.context[0])
         self.assertTrue(
             getattr(response.context[self.form_name], 'errors') is not None)
 
@@ -274,9 +274,49 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           'localtv/subsite/submit/submit_video.html')
-        self.assert_('submit_form' in response.context)
+        self.assert_('submit_form' in response.context[0])
+
+    def test_GET_thanks(self):
+        """
+        A GET request to the thanks view should render the
+        'localtv/subsite/submit/thanks.html' template.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_submit_thanks'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/submit/thanks.html')
+
+    def test_GET_thanks_admin(self):
+        """
+        A GET request to the thanks view from an admin should include their
+        last video in the template.
+        """
+        user = User.objects.get(username='admin')
+
+        models.Video.objects.create(
+            site=self.site_location.site,
+            name='Participatory Culture',
+            status=models.VIDEO_STATUS_ACTIVE,
+            website_url='http://www.pculture.org/',
+            user=user)
+
+        video2 = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Get Miro',
+            status=models.VIDEO_STATUS_ACTIVE,
+            website_url='http://www.getmiro.com/',
+            user=user)
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_submit_thanks'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/submit/thanks.html')
+        self.assertEquals(response.context['video'], video2)
 
     def test_POST_fail_invalid_form(self):
         """
@@ -287,9 +327,9 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url,
                           {'url': 'not a URL'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           'localtv/subsite/submit/submit_video.html')
-        self.assertTrue('submit_form' in response.context)
+        self.assertTrue('submit_form' in response.context[0])
         self.assertTrue(getattr(
                 response.context['submit_form'], 'errors') is not None)
 
@@ -309,9 +349,9 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url,
                           {'url': video.website_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           'localtv/subsite/submit/submit_video.html')
-        self.assertTrue('submit_form' in response.context)
+        self.assertTrue('submit_form' in response.context[0])
         self.assertTrue(response.context['was_duplicate'])
         self.assertEquals(response.context['video'], video)
 
@@ -331,9 +371,9 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url,
                           {'url': video.website_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template.name,
+        self.assertEquals(response.template[0].name,
                           'localtv/subsite/submit/submit_video.html')
-        self.assertTrue('submit_form' in response.context)
+        self.assertTrue('submit_form' in response.context[0])
         self.assertTrue(response.context['was_duplicate'])
         self.assertTrue(response.context['video'] is None)
 
