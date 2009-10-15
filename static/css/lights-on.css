@@ -52,7 +52,10 @@ select option {
 text-shadow: 0; !important
 }
 	
-
+blockquote {
+    clear: both;
+    padding: 10px;
+}
 
 /*/////////////////////////////////////////////
 
@@ -2445,6 +2448,7 @@ font-weight: bold;
 }
 
 .posting-as {
+width: 524px;
 margin-top: 10px;
 background: #eee;
 padding: 7px;

@@ -7,7 +7,10 @@ import vidscraper
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.comments.forms import CommentForm
+from django.contrib.comments.models import Comment
 from django.core.files.base import File
+from django.core import mail
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -3627,3 +3630,121 @@ class ListingViewTestCase(BaseTestCase):
                           list(feed.video_set.filter(
                     status=models.VIDEO_STATUS_ACTIVE)))
 
+
+# -----------------------------------------------------------------------------
+# Comment moderation tests
+# -----------------------------------------------------------------------------
+
+class CommentModerationTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.video = models.Video.objects.get(pk=20)
+        self.url = reverse('comments-post-comment')
+        self.form = CommentForm(self.video,
+                                initial={
+                'name': 'postname',
+                'email': 'post@email.com',
+                'url': 'http://posturl.com/'})
+        self.POST_data = self.form.initial
+        self.POST_data['comment'] = 'comment string'
+
+    def test_screen_all_comments_False(self):
+        """
+        If SiteLocation.screen_all_comments is False, the comment should be
+        saved and marked as public.
+        """
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+        self.assertEquals(comment.name, 'postname')
+        self.assertEquals(comment.email, 'post@email.com')
+        self.assertEquals(comment.url, 'http://posturl.com/')
+
+    def test_screen_all_comments_True(self):
+        """
+        If SiteLocation.screen_all_comments is True, the comment should be
+        moderated (not public).
+        """
+        self.site_location.screen_all_comments = True
+        self.site_location.save()
+
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertFalse(comment.is_public)
+        self.assertEquals(comment.name, 'postname')
+        self.assertEquals(comment.email, 'post@email.com')
+        self.assertEquals(comment.url, 'http://posturl.com/')
+
+    def test_comments_email_admins_False(self):
+        """
+        If SiteLocation.comments_email_admins is False, no e-mail should be
+        sent when a comment is made.
+        """
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        self.assertEquals(mail.outbox, [])
+
+    def test_comments_email_admins_True(self):
+        """
+        If SiteLocation.comments_email_admins is True, an e-mail should be
+        sent when a comment is made to each admin/superuser.
+        """
+        self.site_location.comments_email_admins = True
+        self.site_location.save()
+
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+
+    def test_comments_required_login_False(self):
+        """
+        If SiteLocation.comments_required_login is False, comments should be
+        allowed by any user.  This is the same test code as
+        test_screen_all_comments_False().
+        """
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+        self.assertEquals(comment.name, 'postname')
+        self.assertEquals(comment.email, 'post@email.com')
+        self.assertEquals(comment.url, 'http://posturl.com/')
+
+    def test_comments_required_login_True(self):
+        """
+        If SiteLocation.comments_required_login, making a comment should
+        require a logged-in user.
+        """
+        self.site_location.comments_required_login = True
+        self.site_location.save()
+
+        c = Client()
+        response = c.post(self.url, self.POST_data)
+        self.assertStatusCodeEquals(response, 400)
+        self.assertEquals(Comment.objects.count(), 0)
+
+        c.login(username='user', password='password')
+        c.post(self.url, self.POST_data)
+
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+        self.assertEquals(comment.name, 'Firstname Lastname')
+        self.assertEquals(comment.email, 'user@testserver.local')
+        self.assertEquals(comment.url, 'http://posturl.com/')

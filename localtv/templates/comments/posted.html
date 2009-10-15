@@ -1,9 +1,8 @@
-{% extends "comments/base.html" %}
+{% extends "localtv/subsite/base.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Thanks for commenting" %}.{% endblock %}
 
 {% block content %}
-  <h1>{% trans "Thank you for your comment. Our moderators will review it shortly." %}.</h1>
-  <a href="{{ comment.get_content_object_url }}">Return to the video</a>
+  <h2 class="page_title">Your comment has been sent to the moderators. Click <a href="{{ comment.get_content_object_url }}">here</a> to go back to <a href="{{ comment.get_content_object_url }}">{{ comment.get_content_object.name }}</a>.</h2>
 {% endblock %}
