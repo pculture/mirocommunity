@@ -2933,6 +2933,24 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
                           'localtv/subsite/admin/edit_design.html')
         self.assertFalse(POST_response.context['title_form'].is_valid())
 
+    def test_POST_title_long_title(self):
+        """
+        A POST request to the edit design view with POST['type_title'] and a
+        long (>50 character) title should give a form error, not a 500 error.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, {
+                'title': 'New Title' * 10,
+                'tagline': 'New Tagline',
+                'about': 'New About',
+                'type_title': 'yes'})
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/subsite/admin/edit_design.html')
+        self.assertFalse(POST_response.context['title_form'].is_valid())
+
     def test_POST_title_succeed(self):
         """
         A POST request to the edit_design veiw with POST['type_title'] and a
