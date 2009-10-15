@@ -2336,7 +2336,7 @@ width: 200px !important;
 
 .byline .checklist ul{
 position: absolute;
-
+z-index: 1;
 }
 
 .byline .checklist ul li, #tags .checklist ul li{

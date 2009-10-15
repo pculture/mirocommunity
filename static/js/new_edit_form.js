@@ -4,6 +4,7 @@ function inline_edit_open() {
         obj = obj.parent();
     }
     var editable_wrapper = obj.parent('.editable');
+    $("object").hide();
     obj.css('display', 'none');
     editable_wrapper.children('.input_field').css('display', 'inline');
 }
@@ -28,7 +29,7 @@ function inline_save() {
 
     var post_data = inputs.serialize();
     var post_url = editable_wrapper.children('.post_url').text();
-
+    
     jQuery.post(
         post_url, post_data,
         function(data) {
@@ -39,6 +40,7 @@ function inline_save() {
                 insert_and_activate_action_buttons(input_wrapper);
                 input_wrapper.css('display', 'none');
                 display_wrapper.css('display', 'inline');
+                $("object").show();
             } else if (data['post_status'] == 'FAIL') {
                 input_wrapper.html(data['input_html']);
                 insert_and_activate_action_buttons(input_wrapper);
