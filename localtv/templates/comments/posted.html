@@ -4,6 +4,5 @@
 {% block title %}{% trans "Thanks for commenting" %}.{% endblock %}
 
 {% block content %}
-  <h2 class="page_title">{% trans "Thank you for your comment. Our moderators will review it shortly." %}</h2>
-  <div style="padding-top: 10px; clear: left;"><a href="{{ comment.get_content_object_url }}">Return to the video</a></div>
+  <h2 class="page_title">Your comment has been sent to the moderators. Click <a href="{{ comment.get_content_object_url }}">here</a> to go back to <a href="{{ comment.get_content_object_url }}">{{ comment.get_content_object.name }}</a>.</h2>
 {% endblock %}
