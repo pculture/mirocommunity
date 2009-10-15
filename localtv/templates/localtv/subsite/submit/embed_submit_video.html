@@ -1,4 +1,7 @@
+{% extends "localtv/subsite/base.html" %}
 {% load versioned %}
+{% block title %}Submit a Video{% endblock %}
+{% block content %}
 <form action="{% url localtv_submit_embedrequest_video %}" method="post">
   <table>
     {{ embed_form.as_table }}
@@ -8,3 +11,4 @@
     </tr>
   </table>
 </form>
+{% endblock %}
