@@ -18,48 +18,47 @@ def render_edit_design(request, context):
 @require_site_admin
 @get_sitelocation
 def edit_design(request, sitelocation=None):
-    context = {'title_form': forms.EditTitleForm.create_from_sitelocation(sitelocation),
-               'sidebar_form': forms.EditSidebarForm.create_from_sitelocation(sitelocation),
-               'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(sitelocation),
+    context = {'title_form': forms.EditTitleForm.create_from_sitelocation(
+            sitelocation),
+               'sidebar_form': forms.EditSidebarForm.create_from_sitelocation(
+            sitelocation),
+               'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(
+            sitelocation),
                'comment_form': forms.EditCommentsForm(instance=sitelocation)}
-    if request.method == 'GET':
-        return render_edit_design(request, context)
-    else:
-        if 'type_title' in request.POST:
-            form = forms.EditTitleForm(request.POST)
-            if form.is_valid():
-                form.save_to_sitelocation(sitelocation)
-                return redirect()
-            else:
-                context['title_form'] = form
-                return render_edit_design(request, context)
-        elif 'type_sidebar' in request.POST:
-            form = forms.EditSidebarForm(request.POST)
-            if form.is_valid():
-                form.save_to_sitelocation(sitelocation)
-                return redirect()
-            else:
-                context['sidebar_form'] = form
-                return render_edit_design(request, context)
-        elif 'type_misc' in request.POST:
-            form = forms.EditMiscDesignForm(request.POST, request.FILES)
-            if form.is_valid():
-                form.save_to_sitelocation(sitelocation)
-                return redirect()
-            else:
-                context['misc_form'] = form
-                return render_edit_design(request, context)
-        elif 'type_comment' in request.POST:
-            form = forms.EditCommentsForm(request.POST, instance=sitelocation)
-            if form.is_valid():
-                form.save()
-                return redirect()
-            else:
-                context['comment_form'] = form
-                return render_edit_design(request, context)
-        elif 'delete_background' in request.POST:
+
+    if request.method == 'POST':
+        errors = False
+        title_form = forms.EditTitleForm(request.POST)
+        if title_form.is_valid():
+            title_form.save_to_sitelocation(sitelocation)
+        else:
+            errors = True
+            context['title_form'] = title_form
+        sidebar_form = forms.EditSidebarForm(request.POST)
+        if sidebar_form.is_valid():
+                sidebar_form.save_to_sitelocation(sitelocation)
+        else:
+            errors = True
+            context['sidebar_form'] = sidebar_form
+        misc_form = forms.EditMiscDesignForm(request.POST, request.FILES)
+        if misc_form.is_valid():
+            misc_form.save_to_sitelocation(sitelocation)
+        else:
+            errors = True
+            context['misc_form'] = misc_form
+        comment_form = forms.EditCommentsForm(request.POST,
+                                               instance=sitelocation)
+        if comment_form.is_valid():
+            comment_form.save()
+        else:
+            errors = True
+            context['comment_form'] = comment_form
+
+        if 'delete_background' in request.POST:
             if sitelocation.background:
                 sitelocation.background.delete()
+
+        if not errors:
             return redirect()
-        else:
-            raise Http404
+
+    return render_edit_design(request, context)
