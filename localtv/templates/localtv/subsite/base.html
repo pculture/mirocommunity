@@ -1,6 +1,7 @@
 {% load versioned %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
+  {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="StyleSheet" type="text/css" href="{% versioned "/css/reset.css" %}" />
@@ -57,9 +58,10 @@
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
     {% block head %}{% endblock head %}
   </head>
-
+  {% endif %}
   <body id="{% block body_id %}video_page{% endblock body_id %}" class="{% block body_class %}{% endblock %}" onload="add_submit_callback();">
-                          <p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
+    {% if not request.is_ajax %}
+    <p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
 
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
@@ -142,7 +144,7 @@
           </div>
         </div>
       </div>
- 
+      {% endif %}
       <div id="content">
      
         {% block content %}
@@ -152,6 +154,7 @@
 
         
       </div>
+      {% if not request.is_ajax %}
     </div>
       {% block footer_wrapper %}
         <div id="footer">
@@ -179,6 +182,7 @@
           </div>
         </div>
       {% endblock footer_wrapper %}
+      {% endif %}
     {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?

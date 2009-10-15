@@ -1,4 +1,7 @@
+{% extends "localtv/subsite/base.html" %}
 {% load versioned %}
+{% block title %}Submit a Video{% endblock %}
+{% block content %}
 <form action="{% url localtv_submit_video %}" method="post">
 
   {% if was_duplicate %}
@@ -17,3 +20,4 @@
     </tr>
   </table>
 </form>
+{% endblock content %}

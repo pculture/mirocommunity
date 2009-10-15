@@ -1,8 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-  "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-<head>
-<title>Sign in</title>
+{% extends "localtv/subsite/base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block head %}
 <style type="text/css">
 input.openid {
   background: url({{ logo }}) no-repeat; 
@@ -44,9 +42,8 @@ label, label + input {
     clear: left;
 }
 </style>
-</head>
-<body>
-
+{% endblock head %}
+{% block content %}
 <div class="login">
 <h1>Sign in with a Username/Password</h1>
   <form action="{{ settings.LOGIN_URL }}" method="POST">
@@ -79,6 +76,7 @@ label, label + input {
 </form>
 
 </div>
+ {% if request.is_ajax %}
  <input id="cancel_button" value="Cancel" type="submit" onclick="tb_remove();" />
-</body>
-</html>
+ {% endif %}
+{% endblock %}
