@@ -155,7 +155,9 @@ South
 ::
 
     hg clone http://bitbucket.org/andrewgodwin/south/
+    cd south
     hg update -C stableish
+    cd ..
 
 
 lxml
@@ -281,6 +283,8 @@ your django projects, but I do so to avoid naming conflicts)
 settings.py
 -----------
 
+(There's an example settings.py in LocalTv/localtv/settings.py)
+
 Edit your ``mainsite_project/settings.py``.  Fill out the usual stuff,
 including:
 
@@ -328,7 +332,6 @@ Set up the OpenID authentication::
 
     AUTHENTICATION_BACKENDS = (
         'localtv.openid.OpenIdBackend',
-        'django.contrib.auth.backends.ModelBackend',
         )
 
 

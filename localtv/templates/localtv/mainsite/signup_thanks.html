@@ -1,3 +1,4 @@
+{% extends "localtv/mainsite/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -17,6 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% for video in video_list %}
-  {% include "localtv/subsite/admin/video_listing_individual.html" %}
-{% endfor %}
+{% block body_id %}signup_thanks{% endblock %}
+{% block content %}
+  Thanks for creating a Miro Community site.  You can visit it at <a href="http://{{ form.cleaned_data.url }}.mirocommunity.org/">http://{{ form.cleaned_data.url }}.mirocommunity.org/</a>.
+{% endblock %}
