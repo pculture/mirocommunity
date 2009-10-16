@@ -27,4 +27,6 @@ urlpatterns = patterns(
      'django.views.generic.simple.direct_to_template',
      {'template': 'localtv/mainsite/college.html'},
      'localtv_mainsite_index'),
+    ('^signup/?$', 'localtv.mainsite.views.signup_for_site', {},
+     'localtv_mainsite_signup'),
     )
