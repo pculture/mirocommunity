@@ -24,7 +24,7 @@ class SignupForm(UserCreationForm):
         url = self.cleaned_data['url']
         if os.path.exists(os.path.join(
                 settings.PROJECT_ROOT,
-                url)):
+                '%s_project' % url)):
             raise forms.ValidationError('That project is already created.')
         return url
 
@@ -39,7 +39,7 @@ def signup_for_site(request):
             with file(
                 os.path.join(settings.PROJECT_ROOT,
                              '%(url)s.txt' % form.cleaned_data), 'a') as out:
-                subprocess.check_call([sys.executable, settings.PROJECT_SCRIPT,
+                subprocess.check_call([settings.PROJECT_SCRIPT,
                                        form.cleaned_data['url']],
                                       stdout=out,
                                       env={
