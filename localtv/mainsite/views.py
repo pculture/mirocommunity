@@ -8,6 +8,7 @@ from django import forms
 from django.http import Http404
 from django.conf import settings
 from django.shortcuts import render_to_response
+from django.views.defaults import page_not_found
 
 class SignupForm(UserCreationForm):
     url = forms.RegexField(r'^[A-Za-z0-9]\w*$',
@@ -58,3 +59,6 @@ def signup_for_site(request):
 
     return render_to_response('localtv/mainsite/signup.html',
                               {'form': form})
+
+def handle_404(request):
+    return page_not_found(request, 'localtv/mainsite/404.html')
