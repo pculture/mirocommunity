@@ -16,6 +16,19 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import patterns
+from django.template import TemplateDoesNotExist
+from django.views.generic.simple import direct_to_template
+from django.http import Http404
+
+def render_template(request, path):
+    if path.startswith('signup'):
+        raise Http404
+    else:
+        try:
+            return direct_to_template(request,
+                                      'localtv/mainsite/%s.html' % path)
+        except TemplateDoesNotExist:
+            raise Http404
 
 urlpatterns = patterns(
     "",
@@ -23,10 +36,7 @@ urlpatterns = patterns(
      'django.views.generic.simple.direct_to_template',
      {'template': 'localtv/mainsite/index.html'},
      'localtv_mainsite_index'),
-    (r'^college/?$',
-     'django.views.generic.simple.direct_to_template',
-     {'template': 'localtv/mainsite/college.html'},
-     'localtv_mainsite_index'),
     ('^signup/?$', 'localtv.mainsite.views.signup_for_site', {},
      'localtv_mainsite_signup'),
+    ('^(\w+)/?$', render_template)
     )
