@@ -22,7 +22,7 @@ class SignupForm(UserCreationForm):
         return self.cleaned_data['username']
 
     def clean_url(self):
-        url = self.cleaned_data['url']
+        url = self.cleaned_data['url'].lower()
         if os.path.exists(os.path.join(
                 settings.PROJECT_ROOT,
                 '%s_project' % url)):
