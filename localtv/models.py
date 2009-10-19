@@ -314,7 +314,10 @@ class Feed(Source):
                 if not urlparse.urlparse(file_url)[0]:
                     file_url = urlparse.urljoin(parsed_feed.feed.link,
                                                 file_url)
-                file_url_length = video_enclosure.get('length')
+                try:
+                    file_url_length = int(video_enclosure.get('length'))
+                except ValueError:
+                    file_url_length = None
                 file_url_mimetype = video_enclosure.get('type')
 
             if link and not skip:
@@ -332,7 +335,7 @@ class Feed(Source):
                     publish_date = scraped_data.get('publish_date')
                     thumbnail_url = scraped_data.get('thumbnail_url',
                                                      thumbnail_url)
-                    if 'link' in scraped_data:
+                    if scraped_data.get('link'):
                         link = scraped_data['link']
                         if (Video.objects.filter(
                                 website_url=link).count()):
@@ -373,7 +376,6 @@ class Feed(Source):
                 feed=self,
                 website_url=link,
                 thumbnail_url=thumbnail_url or '')
-
             video.save()
 
             try:

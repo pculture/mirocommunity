@@ -71,16 +71,18 @@ class BaseVideosFeed(Feed):
             return video.flash_enclosure_url
 
     def item_enclosure_length(self, video):
-        if video.file_url:
+        if video.file_url_length:
             return video.file_url_length
-        elif video.flash_enclosure_url:
+        else:
             return FLASH_ENCLOSURE_STATIC_LENGTH
 
     def item_enclosure_mime_type(self, video):
-        if video.file_url:
+        if video.file_url_mimetype:
             return video.file_url_mimetype
-        else:
+        elif video.flash_enclosure_url:
             return 'application/x-shockwave-flash'
+        else:
+            return ""
 
 
 class NewVideosFeed(BaseVideosFeed):
