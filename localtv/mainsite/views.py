@@ -43,6 +43,7 @@ def signup_for_site(request):
                 subprocess.check_call([settings.PROJECT_SCRIPT,
                                        form.cleaned_data['url']],
                                       stdout=out,
+                                      stderr=out,
                                       env={
                         'DJANGO_SETTINGS_MODULE':
                             os.environ['DJANGO_SETTINGS_MODULE'],
