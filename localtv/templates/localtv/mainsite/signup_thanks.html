@@ -20,5 +20,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_id %}signup_thanks{% endblock %}
 {% block content %}
-  Thanks for creating a Miro Community site.  http://{{ form.cleaned_data.url }}.mirocommunity.org/ should be available within the next few minutes.
+  Thanks for creating a Miro Community site.  http://{{ form.cleaned_data.url }}.mirocommunity.org/ should be available in {{ available_at|timeuntil }} ({{ available_at|date:"P" }} ET).
 {% endblock %}

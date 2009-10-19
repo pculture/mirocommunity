@@ -1,7 +1,7 @@
 from __future__ import with_statement
+import datetime
 import os.path
 import subprocess
-import sys
 
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
@@ -49,9 +49,19 @@ def signup_for_site(request):
                         'NEW_USERNAME': form.cleaned_data['username'],
                         'NEW_PASSWORD': form.cleaned_data['password1'],
                         'NEW_EMAIL': form.cleaned_data['email']})
+                now = datetime.datetime.now()
+                if now.minute < 50:
+                    now = now.replace(hour=now.hour+1,
+                                      minute=0,
+                                      second=0)
+                else:
+                    now = now.replace(hour=now.hour+2,
+                                      minute=0,
+                                      second=0)
                 return render_to_response(
                     'localtv/mainsite/signup_thanks.html',
-                    {'form': form})
+                    {'available_at': now,
+                     'form': form})
 
     else:
         form = SignupForm()
