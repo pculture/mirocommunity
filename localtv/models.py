@@ -316,7 +316,7 @@ class Feed(Source):
                                                 file_url)
                 try:
                     file_url_length = int(video_enclosure.get('length'))
-                except ValueError:
+                except (ValueError, TypeError):
                     file_url_length = None
                 file_url_mimetype = video_enclosure.get('type')
 
