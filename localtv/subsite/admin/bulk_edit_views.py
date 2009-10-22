@@ -74,7 +74,7 @@ def bulk_edit(request, sitelocation=None):
             Q(user__first_name__icontains=search_string) |
             Q(user__last_name__icontains=search_string) |
             Q(video_service_user__icontains=search_string) |
-            Q(feed__name__icontains=search_string))
+            Q(feed__name__icontains=search_string)).distinct()
 
     sort = request.GET.get('sort', 'name')
     if sort.endswith('source'):
