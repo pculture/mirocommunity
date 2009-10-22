@@ -2665,6 +2665,22 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                                       key=lambda x:x.source_type())),
                           list(page.object_list))
 
+    def test_GET_search(self):
+        """
+        A GET request with a 'q' key in the GET request should search the
+        videos for that string.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'q': 'blend'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    Q(name__icontains="blend") |
+                    Q(description__icontains="blend") |
+                    Q(feed__name__icontains="blend"),
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    ).order_by('name')))
+
     def test_POST_failure(self):
         """
         A POST request to the bulk_edit view with an invalid formset
