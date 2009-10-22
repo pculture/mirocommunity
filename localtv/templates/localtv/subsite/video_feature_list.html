@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {{ video.embed_code|wmode_transparent }}
   {% else %}
   {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
-  {% endif %}mode
+  {% endif %}
   <img src="{% get_thumbnail_url video 534 430 %}" />
 </div>
 <br />

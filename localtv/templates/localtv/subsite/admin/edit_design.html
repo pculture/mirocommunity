@@ -28,7 +28,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   <br class-"clearboth" />
-  
+  <form method="POST" action="">
+
   <table>
   <tr>
   <td width="20%">
@@ -45,10 +46,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="about_me rounded">
       <h2>Organization Information</h2>
 
-  <form method="POST" action="">
     {{ sidebar_form.as_p }}
     <input type="submit" name="type_sidebar" value="save">
-  </form>
+
   </div>
 	</td>
 		
@@ -56,7 +56,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="look rounded">
       <h2>Design Settings</h2>
       
-  <form method="POST" action="" enctype="multipart/form-data">
     {% for field in misc_form %}
     <p>
       {{ field.errors }}
@@ -66,17 +65,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </p>
     {% endfor %}
     <input type="submit" name="type_misc" value="save">
-  </form>
     </div>
 
     <div class="look rounded">
       <h2>Comment Settings</h2>
-      <form method="post">
         {{ comment_form.as_p }}
         <input type="submit" name="type_comment" value="save">
-      </form>
     </div>
 </td>
 </tr>
 </table>
+</form>
 {% endblock content %}
