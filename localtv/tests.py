@@ -2293,6 +2293,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(superuser.pk, 2)
         self.assertEquals(superuser.is_superuser, True)
         self.assertFalse(superuser in self.site_location.admins.all())
+        self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
         self.assertTrue(profile.logo.name.endswith('logo.png'))
         self.assertEquals(profile.description, 'Superuser Description')
@@ -2302,6 +2303,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(old_admin.first_name, 'New First')
         self.assertEquals(old_admin.last_name, 'New Last')
         self.assertFalse(self.site_location.user_is_admin(old_admin))
+        self.assertTrue(old_admin.check_password('admin'))
 
     def test_POST_delete(self):
         """
