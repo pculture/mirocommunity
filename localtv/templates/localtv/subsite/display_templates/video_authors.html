@@ -22,7 +22,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% else %}
   {% if instance.feed %}
   Posted by <a href="{% url localtv_subsite_list_feed instance.feed.pk %}">{{ instance.feed.name }}</a>
-{% endif %}
+  {% else %}
+    {% if instance.video_service_user %}
+    Posted by {{ instance.video_service_user }}
+    {% endif %}
+  {% endif %}
 {% endif %}
   {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
   <a href="#" class="edit_link">Edit {% if not instance.authors.count and not instance.video_service and not instance.user %}Attribution{% endif %}</a
