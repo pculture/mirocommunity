@@ -497,10 +497,11 @@ class AuthorForm(forms.ModelForm):
         return self.cleaned_data
 
     def save(self, **kwargs):
+        is_new = not self.instance.pk
         author = forms.ModelForm.save(self, **kwargs)
         if self.cleaned_data.get('password_f'):
             author.set_password(self.cleaned_data['password_f'])
-        else:
+        elif is_new:
             author.set_unusable_password()
         author.save()
         if 'logo' in self.cleaned_data or 'description' in self.cleaned_data \
