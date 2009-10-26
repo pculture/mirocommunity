@@ -11,6 +11,10 @@ from django.shortcuts import render_to_response
 from django.views.defaults import page_not_found
 
 class SignupForm(UserCreationForm):
+    username = forms.CharField(
+        label='Username', max_length=30,
+        help_text=('Alphanumeric characters only '
+                   '(letters, digits and underscores).'))
     url = forms.RegexField(r'^[A-Za-z0-9]\w*$',
                            help_text='.mirocommunity.org')
     email = forms.EmailField()
