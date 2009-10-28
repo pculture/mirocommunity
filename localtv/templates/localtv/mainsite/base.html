@@ -26,6 +26,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <link rel="stylesheet" type="text/css" href="/styles.css" />
 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+{% block extrahead %}
+{% endblock extrahead %}
+
 </head>
 <body id="{% block body_id %}{% endblock %}">
 
@@ -33,18 +37,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="wrap">
 
 <div id="header">
-        		<h1>Miro Community</h1>
-        		<h2>elegant video presentation on your own website</h2>
+        		<a href="http://www.mirocommunity.org/"><h1>Miro Community</h1></a>
+        		<a href="http://www.mirocommunity.org/"><h2>elegant video presentation on your own website</h2></a>
         		 
 </div><!-- header -->
 
 
 	<ul id="nav">
 	
-		<li class="intro_link"><a href="/">Introduction</a></li>
-<!-->		<li class="features_link"><a href="http://www.getmiro.com/using-miro/">Features and Demos</a></li>
-		<li class="faq_link"><a href="http://www.getmiro.com/publish/">FAQ</a></li> -->
-		<li class="colleges_link"><a href="/college/">Colleges and Universities<span class="bump"></a></span></li>
+		<li><a href="/">Introduction</a></li>
+		<li><a href="/features/">Features</a></li>
+		<li><a href="/college/">Colleges &amp; Universities</a></li>
+		<li><a href="/signup/">Make a Site</a></li>
 
 	</ul>
 
@@ -53,38 +57,39 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 </div>
 
-
+{% block sidebar %}
 <div id="sidebar">
-	<h1>Advantages of Miro Community</h1>
-	
-	<ul>
-		 <li class="domain"><div>Run a beautiful video presentation website on your own domain, without having to maintain the software.</div></li>
+       <h1>Advantages of Miro Community</h1>
+       
+       <ul>
+                <li class="domain"><div>Run a beautiful video presentation website on your own domain, without having to maintain the software.</div></li>
 
-		 <li class="existing"><div>Works with your existing video hosting setup and workflow - no need to re-post videos.</div></li>
-		 <li class="free"><div>Works with free video hosting services, if you don't already have videos online.</div></li>
-		  <li class="variety"><div>Let's you bring together videos from a wide-variety of hosts and sources, into one curated experience.</div></li>
+                <li class="existing"><div>Works with your existing video hosting setup and workflow - no need to re-post videos.</div></li>
+                <li class="free"><div>Works with free video hosting services, if you don't already have videos online.</div></li>
+                 <li class="variety"><div>Let's you bring together videos from a wide-variety of hosts and sources, into one curated experience.</div></li>
 
-		 <li class="automatic"><div>Automatically import and publish RSS feeds of videos from any source.</div></li>
-		 <li class="discussion"><div>Create a discussion space for video about your community; strengthen your relationships with your community.</div></li>
-		 <li class="opensource"><div>Runs on open-source software.</div></li>
-	</ul>
-	<br /><br />
-		
-	
+                <li class="automatic"><div>Automatically import and publish RSS feeds of videos from any source.</div></li>
+                <li class="discussion"><div>Create a discussion space for video about your community; strengthen your relationships with your community.</div></li>
+                <li class="opensource"><div>Runs on open-source software.</div></li>
+       </ul>
+       <br /><br />
 </div> 
+{% endblock sidebar %}
 
+{% block getting_started %}
 <div id="get_started">
 <h1>Getting Started</h1>
-<p>Interested in Miro Community?  Email <a href="mailto:mirocommunity@pculture.org">mirocommunity@pculture.org</a> and we'll give you a quote for your organization.</p>
+<p>It's easy to build a site &amp; import video from anywhere on the web. <a href="/signup/">Make Your Site Today &gt;&gt;</a></p>
 </div>
+{% endblock %}
 
 <div id="footer">
            		
-                <p class="first">Miro is a project of the Participatory Culture Foundation, a non-profit organization.</p>
+                <p class="first">Miro Community is a project of the Participatory Culture Foundation, a non-profit organization and was made possible through a grant from the <a href="http://www.knightfoundation.org/">John S. and James L. Knight Foundation</a>.</p>
 
-				<p>The Miro name, logo, and icon are trademarks of the Participatory Culture Foundation (PCF).</p>
+				<p>The Miro &amp; Miro Community names, logos, and icons are trademarks of the Participatory Culture Foundation (PCF).</p>
 				
-				<p>All text and image content on getmiro.com, unless otherwise specified, is released by PCF into the public domain. This does not include the Miro name, logo, and icon. This does not include the software code, which is licensed under the GPL. Please share, re-publish, re-use, and re-imagine this site.</p>
+				<p>All text and image content on getmiro.com, unless otherwise specified, is released by PCF into the public domain. This does not include the Miro and Miro Community name, logo, and icon. This does not include the <a href="https://git.participatoryculture.org/localtv">Miro Community code</a>, which is licensed under the GPL. Please share, re-publish, re-use, and re-imagine this site.</p>
 			</div>
             
 

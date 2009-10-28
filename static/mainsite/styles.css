@@ -30,8 +30,9 @@ color: #444;
 margin: 0px 0 10px 0 !important;
 }
 
-
-
+.clear{
+	clear:both;
+}
 
 h1 a{
 padding-top: 79px;
@@ -142,7 +143,7 @@ background: url(/images/blue_bg.png) left top repeat-x;
 
 #wrap{
 width: 900px;
-padding-bottom: 20px;
+padding:0 5px 20px 15px;
 margin: 0 auto;
 }
 
@@ -268,9 +269,19 @@ margin-top: 30px;
 top: 830px;
 position: absolute;
 width: 900px;
-
 }
 
+#features #main{
+border-top-width: 0px;
+margin-top: 30px;
+top: 830px;
+width: 900px;
+}
+
+.featuredmain{
+	padding:0 !important;
+	margin:0 !important;
+}
 
 #main_left{
 padding-left: 0px;
@@ -278,9 +289,7 @@ padding-bottom: 30px;
 padding-right: 20px;
 float: left;
 width: 550px;
-
 }
-
 
 #main_right{
 padding-left: 20px;
@@ -317,6 +326,43 @@ font-family: Helvetica, Verdana, Arial, sans-serif;
 font-weight: bold;
 font-size: 14px;
 }
+
+h4.partners{
+margin:0;
+padding:0 0 6px 0;
+color: #7d7d7d;
+font-weight: normal;
+font-size: 12px;
+}
+
+#partnerlogos{
+	height: 70px;
+	border-top: 1px solid #EFEFEF;
+	background-repeat: no-repeat;
+	background-image: url(/images/partnerlogos.png);
+}
+
+a#wnyc{
+	float:left;
+	padding: 20px 95px 35px 95px;
+	text-decoration: none;
+	margin-left: 40px;
+}
+
+a#economystory{
+	float:left;
+	padding: 20px 150px 35px 150px;
+	text-decoration: none;
+	margin-left: 57px;
+}
+
+a#bavc{
+	float:left;
+	padding: 20px 95px 35px 95px;
+	text-decoration: none;
+	margin-left: 52px;
+}
+	
 
 #main p{
 padding-bottom: 15px;
@@ -393,6 +439,10 @@ font-weight: normal;
 font-size: 16px;
 }
 
+#get_started a{
+	color: #000000;
+}
+
 
 #third{
 padding: 30px;
@@ -446,10 +496,6 @@ font-weight: bold;
 
 
 #index #intro {
-height: 380px;
-background-repeat: no-repeat;
-background-position: 400px 30px;
-background-image: url(/images/MC_uniqueu_site.png);
 padding-left: 0px;
 padding-right: 20px;
 padding-top: 30px;
@@ -505,6 +551,18 @@ padding-top: 30px;
 	width: 380px;
 }
 
+#intro_right {
+	float: right;
+	width: 500px;
+	height: 350px;
+	padding: 0px;
+	margin: 15px 1px 80px 0;
+}
+
+#intro_right img{
+	border: 1px solid #aaa;
+}
+
 #intro h1{
 float: left;
 margin: 10px 0 0 0;
@@ -555,23 +613,17 @@ margin-right: 30px;
 
 
 #intro img{
-
 	padding-top: 0px;
-
 	padding-bottom: 0px;
-
 	padding-right: 0px;
-
 	padding-left: 25px;
-
 	text-align: right;
-
 }
 
 
 #solution_button{
 	padding-right: 0px;
-	padding-left: 18px;
+	padding-left: 0px;
 	padding-bottom: 0px;
 	padding-top: 16px;
 	margin-left: 0px;
@@ -581,28 +633,37 @@ margin-right: 30px;
 	color: white;
 	font-family: Helvetica, Verdana, Arial, sans-serif;
 	font-size: 18px;
-	height: 53px;
-	width: 324px;
+	height: 35px;
+	width: 302px;
 	background-repeat: no-repeat;
 	background-image: url(/images/solution_button.png);
+	text-align: center;
 }
 
 
 #solution_button a{
 	text-decoration: none;
 	color: white;
+	padding: 12px 60px;
 }
 
 
 #solution_button a:hover{
-	text-decoration: underline;
+	text-decoration: none;
 	color: #c3c3c3;
 }
 
+p.subtext {
+	font-size: 10px !important;
+	color: #444444 !important;
+	margin: 0 !important;
+	text-align: center !important;
+	width: 302px !important;
+}
 
 #header {
 	height: 90px;
-	background-position: 0px 30px;
+	background-position: 0px 16px;
 	background-image: url(/images/miro_community_logo.png);
 	background-repeat: no-repeat;
 	padding-left: 0px;
@@ -626,7 +687,7 @@ margin-right: 30px;
 
 #header h1{
 padding-bottom: 0px;
-padding-left: 90px;
+padding-left: 105px;
 display: block;
 clear: right;
 margin-bottom: 0;
@@ -638,10 +699,16 @@ font-weight: normal;
 font-size: 48px;
 }
 
+#header a{
+	text-decoration: none;
+}
+
 #header h2{
-padding-left: 90px;
+padding-left: 105px;
 margin-bottom: 0px;
-margin-top: 5px;
+margin-top: 0;
+padding-top: 5px;
+padding-bottom: 10px;
 clear: left;
 display: block;
 color: #333333;
@@ -810,3 +877,131 @@ font-style: italic;
 padding-top: 10px;
 }
 
+/*////////////////////////////////////////////
+
+~ Features 
+
+////////////////////////////////////////////*/
+
+#featuresnav{
+	width: 210px;
+	float: left;
+	font-size: 15px; 
+	font-family: arial, helvetica, sans-serif;
+	color: 444444;
+	padding: 55px 0 0 0;
+	margin: 0;
+	list-style-type: none;
+}
+
+#featuresnav li{
+	padding: 6px 10px 6px 10px;
+	cursor:pointer;
+	display:block;
+}
+
+#featuresnav li.current{
+	color: #ffffff;
+	background-color: #444444;
+}
+
+#featuresmatrix{
+	width: 668px;
+	float: right;
+	border: 1px solid #dedede;
+	background-color: #ffffff;
+	padding-top: 22px;
+}
+
+.matrixheader{
+	padding: 0;
+	margin: 0;
+	list-style-type: none;
+}
+
+.matrixheader li{
+	padding: 5px 0px 5px 15px;
+	font-weight: bold;
+	font-size: 18px;
+	color: #444444;
+}
+
+.matrixfeature{
+	padding: 0;
+	margin: 0;
+	list-style-type: none;
+}
+
+.matrixfeature li{
+	padding: 5px 30px 10px 35px;
+	line-height: 130%;
+	font-weight: normal;
+	font-size: 13px;
+	color: #444444;
+}
+
+.matrixfeature li.alt{
+	background-color: #eaeaea;
+}
+
+.subfeature{
+	padding-bottom: 10px;
+}
+
+.subfeature li{
+	margin: 0px 30px 0 35px;
+	padding: 0;
+	list-style-type: disc;
+	font-weight: normal;
+	font-size: 13px;
+	color: #444444;
+}
+
+.management{
+	display: block;
+}
+
+.presentation{
+	display: none;
+}
+
+.engagement{
+	display: none;
+}
+
+#get_started p {
+	margin-top: 0;
+}
+
+/*////////////////////////////////////////////
+
+~ Signup Form 
+
+////////////////////////////////////////////*/
+
+#signupform{
+	margin: 70px 0 30px 0;
+}
+
+#signupform label{
+	font-weight: bold;
+	margin-right: 8px;
+}
+
+#signupform p{
+	margin-top: 0px;
+	margin-bottom: 4px;
+}
+
+.errorlist{
+	margin:0;
+	list-style-type: none;
+	margin-top: 20px;
+	margin-bottom:3px;
+	padding: 0;
+	color: red;
+}
+
+#signupform input{
+	margin-top:13px;
+}
