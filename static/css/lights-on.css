@@ -147,7 +147,7 @@ margin-bottom: 20px !important;
 .title_desc {
 padding-top: 4px;
 height: 63px;
-margin-bottom: 13px;
+margin-bottom: 7px;
 overflow: hidden;
 line-height: 14px;
 }
@@ -300,6 +300,7 @@ float: left;
 
 .vid_title a {
 text-decoration: none;
+color:#4190E4;
 }
 
 .vid_title a:hover {
@@ -662,7 +663,8 @@ clear: both;
 height: 40px;
 background: url(../images/main_header.png) left top no-repeat;
 _background: url(../images/main_header.gif) left top no-repeat;
-margin: 34px 0 20px;
+margin: 20px 0;
+
 }
 
 #main_header.small {
