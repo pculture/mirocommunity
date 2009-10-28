@@ -53,8 +53,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 </div>
 
-
 <div id="sidebar">
+{% block sidebar %}
 	<h1>Advantages of Miro Community</h1>
 	
 	<ul>
@@ -70,12 +70,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</ul>
 	<br /><br />
 		
-	
+{% endblock %}	
 </div> 
 
 <div id="get_started">
+{% block getting_started %}
 <h1>Getting Started</h1>
 <p>Interested in Miro Community?  Email <a href="mailto:mirocommunity@pculture.org">mirocommunity@pculture.org</a> and we'll give you a quote for your organization.</p>
+{% endblock %}
 </div>
 
 <div id="footer">
