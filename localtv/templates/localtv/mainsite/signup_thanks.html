@@ -20,5 +20,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_id %}signup_thanks{% endblock %}
 {% block content %}
-  Thanks for creating a Miro Community site.  http://{{ form.cleaned_data.url }}.mirocommunity.org/ should be available in {{ available_at|timeuntil }} ({{ available_at|date:"P" }} ET).
+
+<div id="signupform"> 
+<p>Thanks for creating a Miro Community site.  <a href="http://{{ form.cleaned_data.url }}.mirocommunity.org/">http://{{ form.cleaned_data.url }}.mirocommunity.org/</a> should be available in {{ available_at|timeuntil }} ({{ available_at|date:"P" }} ET).</p>
+<br />
+<p>Please don't forget to write down your username and password!</p>
+</div>
 {% endblock %}

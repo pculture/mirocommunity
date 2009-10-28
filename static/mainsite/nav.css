@@ -31,7 +31,7 @@ background: url(/images/nav_li.gif) no-repeat;
 ul#nav li a{
 display: block;
 height: 23px;
-padding: 8px 0 0;
+padding: 8px 25px;
 text-transform: uppercase;
 text-decoration: none;
 font-weight: bold;
@@ -43,7 +43,7 @@ background: url(/images/nav_a.gif) no-repeat;
 }
 
 ul#nav li a:hover{
-background: url(/images/nav_a_hov.gif);
+background: url(/images/nav_a_hov.gif) repeat-x;
 }
 
 
@@ -67,16 +67,13 @@ _background-position: -20px -33px;
 }
 
 
-
-
-
 .intro_link{
 width: 140px;
 }
 
 
 .features_link{
-width: 200px;
+width: 125px;
 }
 
 .faq_link{
