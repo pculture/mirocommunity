@@ -190,7 +190,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           
           <div>
           
-			<p class="powered"><span><a href="http://{{ sitelocation.site.domain }}">{{ sitelocation.site.name }}</a> is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
+			<p class="powered"><span>{{ sitelocation.site.name }} is powered by Miro Community</span>
 
           {% if request.user.is_authenticated %}
             <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
