@@ -2726,7 +2726,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_data.update({
                 'form-0-name': 'new name!',
                 'form-0-file_url': 'http://pculture.org/',
-                'form-1-description': 'localtv'})
+                'form-1-description': 'localtv',
+                'form-1-embed_code': 'new embed code'
+                })
 
         POST_response = c.post(self.url, POST_data,
                                follow=True)
@@ -2741,11 +2743,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
         self.assertEquals(video1.name, POST_data['form-0-name'])
         self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
+        self.assertEquals(video1.embed_code, POST_data['form-0-embed_code'])
 
         video2 = models.Video.objects.get(
             pk=POST_data['form-1-id'])
         self.assertEquals(video2.description,
                           POST_data['form-1-description'])
+        self.assertEquals(video2.embed_code,
+                          POST_data['form-1-embed_code'])
 
     def test_POST_succeed_with_page(self):
         """

@@ -234,6 +234,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                 {{ form.description }}
               </td>
               <td>
+                {{ form.embed_code.errors }}
+                <label class="floatnone">Embed Code</label>
+                {{ form.embed_code }}
                 {{ form.tags.errors }}
                 <label class="floatnone">Tags</label>
                 {{ form.tags.errors }}

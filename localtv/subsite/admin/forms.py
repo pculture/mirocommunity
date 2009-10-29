@@ -230,6 +230,8 @@ class BulkEditVideoForm(EditVideoForm):
     file_url = forms.CharField(widget=forms.TextInput(
             attrs={'class': 'large_field'}),
                                required=False)
+    embed_code = forms.CharField(widget=forms.Textarea,
+                                 required=False)
     thumbnail_url = forms.CharField(widget=forms.TextInput(
             attrs={'class': 'large_field'}),
                                     required=False)
@@ -244,7 +246,8 @@ class BulkEditVideoForm(EditVideoForm):
     class Meta:
         model = models.Video
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
-                  'categories', 'authors', 'when_published', 'file_url')
+                  'categories', 'authors', 'when_published', 'file_url',
+                  'embed_code')
 
     def __init__(self, *args, **kwargs):
         EditVideoForm.__init__(self, *args, **kwargs)
