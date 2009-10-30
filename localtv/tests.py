@@ -3406,6 +3406,17 @@ class ViewTestCase(BaseTestCase):
                     Q(feed__name__icontains="blend"),
                     status=models.VIDEO_STATUS_ACTIVE)[:5]))
 
+    def test_video_search_no_query(self):
+        """
+        The video_search view should render the
+        'localtv/subsite/video_listing_search.html' template.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_subsite_search'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/video_listing_search.html')
+
     def test_video_search_pagination(self):
         """
         The video_search view should take a GET['page'] argument which shows

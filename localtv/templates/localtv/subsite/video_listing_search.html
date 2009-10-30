@@ -26,3 +26,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Search" %}{% endblock %}
 
 {% block body_id %}video_listing_search{% endblock body_id %}
+
+{% block content %}
+  {% if not page_obj %}
+  <h2>Sorry, we could not find any videos matching that query.</h2>
+  {% else %}
+  {{ block.super }}
+  {% endif %}
+{% endblock %}
