@@ -748,9 +748,12 @@ border-top: 1px solid #ddd;
 float: left;
 }
 
-#footer p a {
-float: right;
+#footer a {
 color: #4190E4;
+}
+
+#footer p > a {
+    float: right;
 }
 
 
