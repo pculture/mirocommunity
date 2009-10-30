@@ -2126,7 +2126,7 @@ border: 0;
 }
 
 #labels table td{
-padding: 8px 14px 8px 12px;
+padding: 8px 14px 8px 12px !important;
 line-height: 1.4em;
 font-size: 11px;
 border-bottom: 1px solid #ddd;
