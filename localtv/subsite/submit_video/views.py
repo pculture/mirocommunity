@@ -103,7 +103,9 @@ def submit_video(request, sitelocation=None):
 
             get_dict = {'url': submit_form.cleaned_data['url']}
             if submit_form.cleaned_data.get('tags'):
-                get_dict['tags'] = ', '.join(submit_form.cleaned_data['tags'])
+                get_dict['tags'] = ', '.join(
+                    tag.encode('utf8') for tag in
+                    submit_form.cleaned_data['tags'])
             get_params = urllib.urlencode(get_dict)
 
             if scraped_data:

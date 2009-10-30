@@ -430,14 +430,16 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         response = c.post(self.url, {
                 'url': 'http://blip.tv/file/10',
-                'tags': 'tag1, tag2'})
+                'tags': u'tag1, tag2, conservaci\xf3n'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
-                urlencode({'url': 'http://blip.tv/file/10',
-                           'tags': 'tag1, tag2'})))
+                urlencode({
+                        'url': 'http://blip.tv/file/10',
+                        'tags': u'tag1, tag2, conservaci\xf3n'.encode('utf8')
+                        })))
 
     def test_POST_succeed_directlink(self):
         """
@@ -450,7 +452,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         response = c.post(self.url, {
                 'url': ('http://blip.tv/file/get/'
                         'Miropcf-Miro20Introduction119.mp4'),
-                'tags': 'tag1, tag2'})
+                'tags': u'tag1, tag2'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
