@@ -616,9 +616,10 @@ font-weight: normal;
 }
 
 #logo h1 span.tagline {
+width: 400px;
 color: #888;
 display: block;
-float: left;
+float: none;
 font-size: 12px;
 padding: 0px 2px;
 font-weight: normal;
