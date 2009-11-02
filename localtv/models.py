@@ -140,7 +140,7 @@ class SiteLocation(models.Model):
     about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
     css = models.TextField(blank=True)
-    frontpage_style = models.CharField(max_length=32, default="list")
+    frontpage_style = models.CharField(max_length=32, default="scrolling")
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
 
