@@ -3769,6 +3769,22 @@ class CommentModerationTestCase(BaseTestCase):
         self.POST_data = self.form.initial
         self.POST_data['comment'] = 'comment string'
 
+    def test_comment_does_not_require_email_or_url(self):
+        """
+        Posting a comment should not require an e-mail address or URL.
+        """
+        del self.POST_data['email']
+        del self.POST_data['url']
+
+        c = Client()
+        c.post(self.url, self.POST_data)
+        comment = Comment.objects.get()
+        self.assertEquals(comment.content_object, self.video)
+        self.assertTrue(comment.is_public)
+        self.assertEquals(comment.name, 'postname')
+        self.assertEquals(comment.email, '')
+        self.assertEquals(comment.url, '')
+
     def test_screen_all_comments_False(self):
         """
         If SiteLocation.screen_all_comments is False, the comment should be

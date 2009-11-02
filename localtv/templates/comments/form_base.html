@@ -25,34 +25,33 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if field.is_hidden %}
       {{ field }}
     {% else %}
-      {% if request.user.is_authenticated %}
-        {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}
+    {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}
       <p
         {% if field.errors %} class="error"{% endif %}
         {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
         {% if field.errors %}{{ field.errors }}{% endif %}
         {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
       </p>
-        {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
-      {% else %}
-      <p
-        {% if field.errors %} class="error"{% endif %}
-        {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
-        {% if field.errors %}{{ field.errors }}{% endif %}
-        {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
-      </p>
-      {% endif %}
+    {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
     {% endif %}
   {% endfor %}
   {% if request.user.is_authenticated %}
   <input type="hidden" name="name" value="{{ request.user.username }}" />
   <input type="hidden" name="email" value="{{ request.user.email }}" />
   <input type="hidden" name="url" value="{{ request.user.openiduser.url }}" />
+  {% else %}
+  <p{% if form.name.errors %} class="error"{% endif %}>
+    {{ form.name.errors }}
+    {{ form.name.label_tag }} {{ form.name }}
+  </p>
+  <p{% if form.email.errors %} class="error"{% endif %}>
+    {{ form.email.errors }}
+    {{ form.email.label_tag }} {{ form.email }}
+  </p>
   {% endif %}
   {% if not sitelocation.screen_all_comments %}
   <input type="hidden" name="next" value="{{ form.target_object.get_absolute_url }}" />
   {% endif %}
   <p class="submit">
     <input name="submit" class="submit-post floatright" value="Post" type="image" src="{% versioned "/images/post.png" %}" />
-    <input name="preview" class="submit-preview floatleft" value="Preview" type="image" src="{% versioned "/images/preview.png" %}" />
   </p>

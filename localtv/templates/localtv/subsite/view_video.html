@@ -149,7 +149,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% get_comment_count for current_video as comment_count %}
 
 
-    <h2 class="comments-title">{{ comment_count }} Comments</h2>
+    {% if comment_count %}<h2 class="comments-title">{{ comment_count }} Comment{{ comment_count|pluralize }}</h2>{% endif %}
     {% get_comment_list for current_video as comments %}
     {% if comments %}
     <ul id="comments">
