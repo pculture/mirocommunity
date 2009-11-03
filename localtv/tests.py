@@ -1681,6 +1681,18 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertFalse(response.context[0]['form'].is_valid())
         self.assertEquals(response.context[0]['video_count'], 1)
 
+    def test_POST_failure_bad_url(self):
+        """
+        A POST request to the add_feed view with a non-feed URL should display
+        an error message.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url + "?feed_url=http://www.google.com",
+                          {'feed_url': "http://www.google.com",
+                           'auto_categories': [1]})
+        self.assertStatusCodeEquals(response, 400)
+
     def test_POST_cancel(self):
         """
         A POST request to the add_feed view with POST['cancel'] set should

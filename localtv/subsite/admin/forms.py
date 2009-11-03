@@ -585,9 +585,9 @@ class AddFeedForm(forms.Form):
         if parsed is None:
             parsed = feedparser.parse(value)
             cache.set(key, parsed)
-        if not parsed.feed and parsed.entries:
+        if not (parsed.feed and parsed.entries and parsed.feed.get('title')):
             raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.')
+                                        'RSS/Atom feed URL.' % value)
 
         # drop the parsed data into cleaned_data so that other code can re-use
         # the data
