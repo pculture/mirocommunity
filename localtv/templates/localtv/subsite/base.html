@@ -85,9 +85,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
         <div id="logo">
+          {% url localtv_subsite_index as localtv_subsite_index %}
+          <a href="{{ localtv_subsite_index }}">
+            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% versioned "/images/logo.gif" %}{% endif %}" />
+          </a>
           <h1 style="text-decoration: none;">
             <a href="{% url localtv_subsite_index %}">
-              <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% versioned "/images/logo.gif" %}{% endif %}" />
               <span class="name">{{ sitelocation.site.name }}</span>
             </a>
             <span class="tagline">{{ sitelocation.tagline|safe }}</span>

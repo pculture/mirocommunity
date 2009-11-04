@@ -609,18 +609,14 @@ text-decoration: none;
 line-height: 1.2em;
 padding-top: 18px;
 display: block;
-float: left;
 margin-bottom: 0;
 color: #000000;
 font-weight: normal;
-min-width: 370px;
 }
 
 #logo h1 span.tagline {
-width: 400px;
 color: #888;
 display: block;
-float: none;
 font-size: 12px;
 padding: 0px 2px;
 font-weight: normal;
