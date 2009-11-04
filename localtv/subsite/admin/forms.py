@@ -585,6 +585,9 @@ class AddFeedForm(forms.Form):
         parsed = cache.get(key)
         if parsed is None:
             parsed = feedparser.parse(value)
+            if 'bozo_exception' in parsed:
+                # can't cache exceptions
+                del parsed['bozo_exception']
             cache.set(key, parsed)
         if not (parsed.feed and parsed.entries and parsed.feed.get('title')):
             raise forms.ValidationError('It does not appear that %s is an '
