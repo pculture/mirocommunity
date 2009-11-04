@@ -3253,7 +3253,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_subsite_index'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/index_list.html')
+                          'localtv/subsite/index_scrolling.html')
         self.assertEquals(list(response.context['featured_videos']),
                           list(models.Video.objects.filter(
                     status=models.VIDEO_STATUS_ACTIVE,
@@ -3266,7 +3266,7 @@ class ViewTestCase(BaseTestCase):
                           list(models.Video.objects.new(
                     status=models.VIDEO_STATUS_ACTIVE)))
 
-        for style in ('scrolling', 'categorized'):
+        for style in ('list', 'categorized'):
             self.site_location.frontpage_style = style
             self.site_location.save()
             response = c.get(reverse('localtv_subsite_index'))
