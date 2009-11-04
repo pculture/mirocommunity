@@ -685,8 +685,10 @@ class Video(models.Model):
     thumbnail_extension = models.CharField(max_length=8, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
-    video_service_user = models.CharField(max_length=250, blank=True, default='')
-    video_service_url = models.URLField(verify_exists=False, blank=True, default='')
+    video_service_user = models.CharField(max_length=250, blank=True,
+                                          default='')
+    video_service_url = models.URLField(verify_exists=False, blank=True,
+                                        default='')
 
     objects = VideoManager()
 
