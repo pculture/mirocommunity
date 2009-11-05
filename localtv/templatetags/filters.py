@@ -44,11 +44,12 @@ def sanitize(value, extra_filters=None):
     """
     if value is None:
         return u''
-    
+
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)
-    allowed_tags = 'p i strong em b u a h1 h2 h3 h4 h5 h6 pre br img'.split()
-    allowed_attributes = 'href src'.split()
+    allowed_tags = ('p i strong em b u a h1 h2 h3 h4 h5 h6 pre br img ul '
+                    'ol li span').split()
+    allowed_attributes = 'href src style'.split()
 
     soup = BeautifulSoup(value)
     for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
