@@ -548,7 +548,9 @@ class AddFeedForm(forms.Form):
         (re.compile(r'^(http://)?(www\.)?youtube\.com/(user/)?(?P<name>\w+)$'),
          'youtube'),
         (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
-        (re.compile(r'^(http://)?(www\.)?vimeo\.com/(?P<name>\w+)'), 'vimeo'),
+        (re.compile(
+                r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
+         'vimeo'),
         )
 
     SERVICE_FEEDS = {

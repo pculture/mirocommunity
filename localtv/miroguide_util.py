@@ -55,31 +55,26 @@ def get_first_video_enclosure(entry):
     """Find the first video enclosure in a feedparser entry.  Returns the
     enclosure, or None if no video enclosure is found.
     """
-
-    try:
-        enclosures = entry.enclosures
-    except (KeyError, AttributeError):
+    enclosures = entry.get('media_content') or entry.get('enclosures')
+    if not enclosures:
         return None
+    best_enclosure = None
     for enclosure in enclosures:
-        if has_video_type(enclosure):
-            return enclosure
-        if filetypes.isAllowedFilename(enclosure['href']):
-            return enclosure
-    return None
+        if has_video_type(enclosure) or \
+                filetypes.isAllowedFilename(enclosure.url):
+            if enclosure.get('isdefault'):
+                return enclosure
+            elif best_enclosure is None:
+                best_enclosure = enclosure
+    return best_enclosure
 
 
 def get_thumbnail_url(entry):
     """Get the URL for a thumbnail from a feedparser entry."""
     # Try the video enclosure
     def _get(d):
-        if 'thumbnail' in d and d.thumbnail:
-            if hasattr(d['thumbnail'], 'get') and  d['thumbnail'].get(
-                'url') is not None:
-                return to_utf8(d['thumbnail']['url'])
-            else:
-                return to_utf8(d['thumbnail'])
-        if 'media_thumbnail' in d and d.media_thumbnail:
-            return to_utf8(d['media_thumbnail'])
+        if 'media_thumbnail' in d:
+            return d.media_thumbnail[0]['url']
         if 'blip_thumbnail_src' in d and d.blip_thumbnail_src:
             return 'http://a.images.blip.tv/' + to_utf8(
                 d['blip_thumbnail_src'])
@@ -91,13 +86,14 @@ def get_thumbnail_url(entry):
         except KeyError:
             pass
     # Try to get any enclosure thumbnail
-    if 'enclosures' in entry:
-        for enclosure in entry.enclosures:
-            try:
-                return _get(enclosure)
-            except KeyError:
-                pass
-        # Try to get the thumbnail for our entry
+    for key in 'media_content', 'enclosures':
+        if key in entry:
+            for enclosure in entry[key]:
+                try:
+                    return _get(enclosure)
+                except KeyError:
+                    pass
+    # Try to get the thumbnail for our entry
     try:
         return _get(entry)
     except KeyError:

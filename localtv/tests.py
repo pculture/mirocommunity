@@ -753,7 +753,7 @@ class FeedModelTestCase(BaseTestCase):
                           'http://blip.tv/file/get/'
                           'Miropcf-DaveGlasscoSupportsMiro942.mp4')
         self.assertEquals(video.file_url_length, 16018279)
-        self.assertEquals(video.file_url_mimetype, 'video/vnd.objectvideo')
+        self.assertEquals(video.file_url_mimetype, 'video/mp4')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
                           'http://e.static.blip.tv/'
@@ -1662,6 +1662,38 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
         self.assertEquals(response.context[2]['video_count'], 1)
+
+    def test_GET_vimeo(self):
+        """
+        A GET request to the add_feed view should render the
+        'localtv/subsite/admin/add_feed.html' template if the URL is a Vimeo
+        User RSS url.
+        """
+        url = 'http://www.vimeo.com/user1054395/videos/rss'
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'feed_url': url})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/add_feed.html')
+        self.assertTrue(response.context[2]['form'].instance.feed_url,
+                        url)
+
+    def test_GET_vimeo_channel(self):
+        """
+        A GET request to the add_feed view should render the
+        'localtv/subsite/admin/add_feed.html' template if the URL is a Vimeo
+        Channel RSS url.
+        """
+        url = 'http://vimeo.com/channels/sparkyawards/videos/rss'
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'feed_url': url})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/add_feed.html')
+        self.assertTrue(response.context[2]['form'].instance.feed_url,
+                        url)
 
     def test_POST_failure(self):
         """

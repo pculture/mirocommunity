@@ -41,7 +41,6 @@ import vidscraper
 
 from localtv.templatetags.filters import sanitize
 
-
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
@@ -310,12 +309,13 @@ class Feed(Source):
 
             video_enclosure = miroguide_util.get_first_video_enclosure(entry)
             if video_enclosure:
-                file_url = video_enclosure['href']
+                file_url = video_enclosure['url']
                 if not urlparse.urlparse(file_url)[0]:
                     file_url = urlparse.urljoin(parsed_feed.feed.link,
                                                 file_url)
                 try:
-                    file_url_length = int(video_enclosure.get('length'))
+                    file_url_length = int(video_enclosure.get('filesize') or
+                                          video_enclosure.get('length'))
                 except (ValueError, TypeError):
                     file_url_length = None
                 file_url_mimetype = video_enclosure.get('type')
