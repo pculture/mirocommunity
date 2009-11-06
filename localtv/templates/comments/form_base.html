@@ -49,7 +49,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {{ form.email.label_tag }} {{ form.email }}
   </p>
   {% endif %}
-  {% if not sitelocation.screen_all_comments %}
+  {% if not sitelocation.screen_all_comments or user_is_admin %}
   <input type="hidden" name="next" value="{{ form.target_object.get_absolute_url }}" />
   {% endif %}
   <p class="submit">
