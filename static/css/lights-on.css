@@ -3027,6 +3027,10 @@ margin-top: 90px !important;
 	background-color: #dee8ff;
 	border: solid 2px #3f3f3f;
         margin: 50px auto;
+        font-size: 18px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 18px;
+	font-weight: normal;
 }
 
 #welcomebox a{
@@ -3037,18 +3041,13 @@ margin-top: 90px !important;
 	margin: 25px 0 0 50px;
 	padding: 0;
 	font-size: 38px;
-	font-weight: normal;
 	color: #4e4e4e;
-	font-family: Arial, Helvetica, sans-serif;
 }
 
 #welcomebox p{
 	margin: 13px 60px 10px 50px;
 	padding: 0;
 	color: #4e4e4e;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 18px;
-	font-weight: normal;
 	line-height: 22px;
 }
 
@@ -3069,31 +3068,33 @@ margin-top: 90px !important;
 	padding: 0;
 }
 
+#loginfields label {
+    float: left;
+    padding: 10px 5px 0 0;
+}
+
 #loginfields input{
 	float: left;
+        clear: left;
 	width: 175px;
 	height: 30px;
 	margin-top: 6px;
 	padding: 2px 0 0 10px;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 18px;
-	font-weight: normal;
 	background-color: #FFF;
 	border: 1px solid #000;
 	color: #4e4e4e;
+        font-size: 18px;
 }
 
 #loginfields input.loginbutton{
 	height: 30px;
 	width: auto;
 	margin-left: 15px;
-	font-family: Arial, Helvetica, sans-serif;
 	font-size: 18px;
 	font-weight: normal;
 	background-color: #e8e8e8;
-	border: 1px solid #000;
-	color: #4e4e4e;
 	padding: 2px;
+        clear: none;
 }
 
 #featurebuttondemo{

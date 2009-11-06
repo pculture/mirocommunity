@@ -63,13 +63,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="loginfields">
       <form action="{{ settings.LOGIN_URL }}" method="post">
         <div id="loginusername">
-          <p>Username </br>
-          <input name="username" /></p>
+          <p>
+            <label for="id_username">Username</label>
+            <input id="id_username"name="username" />
+          </p>
         </div>
         <div id="loginpassword">
-          <p>Password </p>
-          <input type="password" name="password" />
-          <input class="loginbutton" type="submit" value="login" />
+          <p>
+            <label for="id_password">Password</label>
+            <input id="id_password" type="password" name="password" />
+            <input class="loginbutton" type="submit" value="login" />
+          </p>
         </div>
       </form>
     </div>
