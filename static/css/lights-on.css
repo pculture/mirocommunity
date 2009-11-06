@@ -1,18 +1,18 @@
 @charset "UTF-8";
-/* CSS Document 
+/* CSS Document
 
 Dear truth, knowledge, and understanding,
 
 You are one step closer to being free.
 
-Love, 
+Love,
 PCF
-  
+
 */
 
 /*/////////////////////////////////////////////
- 
-~ Markup 
+
+~ Markup
 
 /////////////////////////////////////////////*/
 
@@ -51,7 +51,7 @@ text-shadow: #eee 1px 1px 0px ;
 select option {
 text-shadow: 0; !important
 }
-	
+
 blockquote {
     clear: both;
     padding: 10px;
@@ -140,7 +140,7 @@ background: url(../images/default_vid.gif) left top no-repeat;
 _height: 0px;
 _padding-top: 102px;
 overflow: hidden;
-height: 110px; 
+height: 110px;
 width: 140px;
 }
 
@@ -395,7 +395,7 @@ clear: both;
 
 /*/////////////////////////////////////////////
 
-~ Navigate 
+~ Navigate
 
 /////////////////////////////////////////////*/
 
@@ -495,7 +495,7 @@ _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 
 /*/////////////////////////////////////////////
 
-~ Admins need to Navigate too 
+~ Admins need to Navigate too
 
 /////////////////////////////////////////////*/
 
@@ -579,7 +579,7 @@ height: 150px;
 }
 
 #logo {
-width: 660px;		
+width: 660px;
 display: block;
 float: left;
 height: 80px;
@@ -1236,12 +1236,12 @@ padding: 0;
 }
 
 
-		
+
 #slider2 li {
-/* 
+/*
 	define width and height of list item (slide)
 	entire slider area will adjust according to the parameters provided here
-*/ 
+*/
 width: 860px;
 list-style: none;
 height: 340px;
@@ -1276,16 +1276,16 @@ text-shadow: #333 1px 1px 0px !important;
 #slider2 li div.copy span{
 text-shadow: #333 1px 1px 0px !important;
 }
-		
+
 #slider2 li div.copy div a, #slider2 li div.copy span a{
 text-shadow: #000 1px 1px 9px, #000 1px 1px 1px, #000 1px 1px 0px, #000 1px 1px 3px !important;
 color: #fff;
 }
-		
+
 .copy div a{
 color: #fff !important;
 }
-		
+
 .copy div a:hover{
 text-shadow: #450802 1px 1px 10px !important;
 text-decoration: underline !important;
@@ -1294,12 +1294,12 @@ text-decoration: underline !important;
 .copy h2 a{
 color: #fff !important;
 }
-		
+
 p#controls, p#controls2 {
 margin: 0;
 }
 
-	
+
 #prevBtn2, #nextBtn2 {
 display: block;
 margin: 0;
@@ -1309,7 +1309,7 @@ width: 37px;
 height: 77px;
 }
 
-		
+
 #prevBtn2 {
 float: left;
 }
@@ -1356,7 +1356,7 @@ top: -260px;
 a.image {
 width: 220px;
 float: left;
-height: 0px; 
+height: 0px;
 padding: 295px 0 0 155px;
 background: url(../images/default_big.jpg) center;
 margin: 20px 30px 0 15px;
@@ -2084,7 +2084,7 @@ color: #555;
 }
 
 #labels table a:hover {
-text-decoration: underline; 
+text-decoration: underline;
 }
 
 body#admin.bulkedit #labels table, body#admin.incomingfeeds #labels table, body#admin.user_admin #labels table {
@@ -2696,7 +2696,7 @@ border: 4px solid #aaa;
 clear: both;
 margin-right: 0 !important;
 }
- 
+
 #add_feed {
 float: left;
 width: 45%;
@@ -2773,7 +2773,7 @@ padding-top: 1px;
 padding-right: 6px;
 background-position: right 0px;
 }
-	
+
 	input.large_field {
 padding-top: 1px !important;
 }
@@ -2916,14 +2916,14 @@ width: inherit;
 background: #fffbd8;
 padding: 15px;
 border: 1px solid #f7f2c9;
-margin-bottom: 15px; 
+margin-bottom: 15px;
 }
 
 .successful{
 background: #7abf54;
 padding: 15px;
 border: 1px solid #5b9c37;
-margin-bottom: 15px; 
+margin-bottom: 15px;
 color: #f1ffea;
 }
 
@@ -2933,7 +2933,7 @@ background: #cc3131;
 padding: 15px;
 border: 1px solid #ac1e1e;
 color: #ffdada;
-margin-bottom: 15px; 
+margin-bottom: 15px;
 }
 
 .helpful,
@@ -3025,5 +3025,83 @@ margin-top: 90px !important;
 }
 
 
+#welcomebox{
+	width: 730px;
+	height: 275px;
+	background-color: #dee8ff;
+	border: solid 2px #3f3f3f;
+        margin: 50px auto;
+        font-size: 18px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 18px;
+	font-weight: normal;
+}
 
+#welcomebox a{
+	color: #117ffb;
+}
 
+#welcomebox h1{
+	margin: 25px 0 0 50px;
+	padding: 0;
+	font-size: 38px;
+	color: #4e4e4e;
+}
+
+#welcomebox p{
+	margin: 13px 60px 10px 50px;
+	padding: 0;
+	color: #4e4e4e;
+	line-height: 22px;
+}
+
+#loginusername{
+	float: left;
+	margin: 12px 0 0 50px;
+	padding: 0;
+}
+
+#loginpassword{
+	float: left;
+	margin: 12px 0 0 30px;
+	padding: 0;
+}
+
+#loginfields p{
+	margin: 0;
+	padding: 0;
+}
+
+#loginfields label {
+    float: left;
+    padding: 10px 5px 0 0;
+}
+
+#loginfields input{
+	float: left;
+        clear: left;
+	width: 175px;
+	height: 30px;
+	margin-top: 6px;
+	padding: 2px 0 0 10px;
+	background-color: #FFF;
+	border: 1px solid #000;
+	color: #4e4e4e;
+        font-size: 18px;
+}
+
+#loginfields input.loginbutton{
+	height: 30px;
+	width: auto;
+	margin-left: 15px;
+	font-size: 18px;
+	font-weight: normal;
+	background-color: #e8e8e8;
+	padding: 2px;
+        clear: none;
+}
+
+#featurebuttondemo{
+	padding: 0 0 3px 120px;
+	background: url(../images/featurebuttondemo.png) no-repeat 0 0;
+}

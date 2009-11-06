@@ -25,24 +25,63 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block head %}
       <script type="text/javascript" src="{% versioned "js/easySlider1.5.js" %}"></script>
 	<script type="text/javascript">
-		$(document).ready(function(){	
+		$(document).ready(function(){
 			$("#slider2").easySlider({
 				controlsBefore:	'<p id="controls">',
-				controlsAfter:	'</p>',		
+				controlsAfter:	'</p>',
 				prevId: 'prevBtn2',
-				nextId: 'nextBtn2',	
+				nextId: 'nextBtn2',
 				auto: true,
 				pause: 4500,
 				controlsFade: true,
 				continuous: true
-			});			
-		});	
+			});
+		});
 	</script>
 {% endblock %}
 
 {% block content %}
 
   <div id="slider">
+  {% if not featured_videos %}
+  <div id="welcomebox">
+    {% if new_videos.count %}
+    {# videos, but nothing featured #}
+    <h1>Time to Feature a Video!</h1>
+    <p>Visit any video and click on the <span id="featurebuttondemo">button</span>. We'll put three videos in this top area and they'll also go into the featured section. Once you feature a video, this text box will disappear.</p>
+    <p>Also, don't forget that you can customize the <a href="{% url localtv_admin_edit_design %}">Design Settings</a> for your site. It's easy to add a site logo or try a different site layout. More advanced users can add custom HTML or CSS to the site.</p>
+    {% else %}
+    {% if user_is_admin %}
+    {# admin but not videos #}
+    <h1>Add Some Videos</h1>
+    <p>Use the "Submit a Video" button (above) to add a single video. You can paste in a YouTube, Vimeo, or blip.tv url, a direct url (eg. yourclip.mov), or the page that contains an embedable video (and then the embed code).</p>
+    <p>The real power of Miro Community is importing multiple videos in at once, via <a href="{% url localtv_admin_manage_page %}">Manage Sources</a>. For example, you can auto-import videos from YouTube user accounts, video RSS feeds, saved searches from hosting sites, etc.</p>
+    {% else %}
+    {# new site #}
+    <h1>Welcome to Your New Site!</h1>
+    <p>The first step is to add videos to your site. Videos can be added one at a time or lots at once from a source (such as a YouTube account, or an RSS feed). <br />To get started, log in:</p>
+    <div id="loginfields">
+      <form action="{{ settings.LOGIN_URL }}" method="post">
+        <div id="loginusername">
+          <p>
+            <label for="id_username">Username</label>
+            <input id="id_username"name="username" />
+          </p>
+        </div>
+        <div id="loginpassword">
+          <p>
+            <label for="id_password">Password</label>
+            <input id="id_password" type="password" name="password" />
+            <input class="loginbutton" type="submit" value="login" />
+          </p>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% else %}
+
     <div id="slider2">
       <ul>
         {% for video in featured_videos|slice:":3" %}
@@ -52,8 +91,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endfor %}
       </ul>
     </div>
-  </div>
 
+  {% endif %}
+  </div>
   <div class="featured_small_list">
     <div id="main_header" class="small">
       <h2>Featured</h2>
