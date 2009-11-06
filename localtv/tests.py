@@ -762,6 +762,17 @@ class FeedModelTestCase(BaseTestCase):
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
         self.assertEquals(video.video_service(), 'blip.tv')
 
+    def test_entries_link_optional(self):
+        """
+        A link in the feed to the original source should be optional.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_without_link.rss')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that

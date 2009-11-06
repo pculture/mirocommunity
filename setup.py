@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.0.1'
+version = '0.9-pre'
 
 setup(name="Miro Community",
       version=version,
@@ -13,6 +13,5 @@ setup(name="Miro Community",
       localtv_update_saved_searches = localtv.feedimport:update_saved_searches
       localtv_update_publish_date = localtv.feedimport:update_publish_date
       """)
-      
 
 

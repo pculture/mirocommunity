@@ -1,0 +1,18 @@
+-e git+http://git.participatoryculture.org/localtv#egg=Miro_Community-dev
+-e git+http://git.participatoryculture.org/djpagetabs#egg=djpagetabs-dev
+-e git+http://git.participatoryculture.org/djvideo#egg=djvideo-dev
+-e git+http://git.participatoryculture.org/vidscraper#egg=vidscraper-dev
+BeautifulSoup==3.0.7a
+Django==1.1.1
+django-tinymce==1.5
+http://effbot.org/downloads/Imaging-1.1.6.tar.gz
+South==0.6.2
+-e svn+http://feedparser.googlecode.com/svn/trunk/feedparser@295#egg=feedparser-dev
+flup>=1.0.2
+lxml==2.1.5
+nose==0.11.1
+python-memcached==1.44
+python-openid==2.2.4
+python-yadis==1.1.0
+simplejson==1.9.2
+wsgiref==0.1.2

@@ -35,6 +35,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             src="{% versioned "/js/edit_form.js" %}">
     </script>
   {% endif %}
+  {% get_comment_form for current_video as comment_form %}
+  {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+  {{ comment_form.media }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
