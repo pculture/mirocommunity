@@ -374,7 +374,7 @@ class Feed(Source):
                 when_published=publish_date,
                 status=initial_video_status,
                 feed=self,
-                website_url=link,
+                website_url=link or '',
                 thumbnail_url=thumbnail_url or '')
             video.save()
 
