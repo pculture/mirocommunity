@@ -70,7 +70,9 @@ margin-bottom:10px;
 <p class='terms'> At this time, hosted Miro Community sites are free for everyone. Basic hosted sites will always remain free to individuals and small non-profit organizations. Once out of beta we will announce a pricing and payment system for larger non-profits and corporations.</p>
 
 	<form method="post" action="">
-	  {{ form.as_p }}
+          {% for field in form %}
+          <p><label for="id_{{ field.name }}">{{ field.label }}</label> {{ field }} {{ field.help_text }}</p>
+          {% endfor %}
 	  <input type="submit" value='Create my Site'>
 	</form>
 <br /><p class='terms'>Need help getting your site off the ground? Feel free to contact <span style="color:red;">Anne [a] pculture.org</span> for assistance.</p>

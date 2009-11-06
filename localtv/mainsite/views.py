@@ -15,7 +15,7 @@ class SignupForm(UserCreationForm):
         label='Username', max_length=30,
         help_text=('Alphanumeric characters only '
                    '(letters, digits and underscores).'))
-    url = forms.RegexField(r'^[A-Za-z0-9]\w*$',
+    url = forms.RegexField(r'^[A-Za-z0-9]\w*$', label='URL',
                            help_text='.mirocommunity.org')
     email = forms.EmailField()
 
