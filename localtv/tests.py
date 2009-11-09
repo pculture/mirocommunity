@@ -29,8 +29,9 @@ from django.contrib.comments.models import Comment
 from django.core.files.base import File
 from django.core import mail
 from django.core.paginator import Page
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import get_callable, get_resolver, reverse
 from django.db.models import Q
+from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 from django.test.client import Client
 from django.utils.encoding import force_unicode
@@ -3961,3 +3962,102 @@ class CommentModerationTestCase(BaseTestCase):
         self.assertEquals(comment.name, 'Firstname Lastname')
         self.assertEquals(comment.email, 'user@testserver.local')
         self.assertEquals(comment.url, 'http://posturl.com/')
+
+# -----------------------------------------------------------------------------
+# HttpMixedReplaceResponse tests
+# -----------------------------------------------------------------------------
+
+class HttpMixedReplaceResponseTestCase(BaseTestCase):
+
+    def _request(self, user_agent='Mozilla/5.0'):
+        """
+        Returns an HttpRequest() object with the given user agent.
+        """
+        request = HttpRequest()
+        request.META['HTTP_USER_AGENT'] = user_agent
+        return request
+
+    def test_basic(self):
+        """
+        HttpMixedReplaceResponse takes a request and a generator, and returns
+        each response as a part of an multiplart/mixed-replace response.
+        """
+        response1 = HttpResponse('response1', content_type='text/plain')
+        response2 = HttpResponse('response2')
+        def gen():
+            yield response1
+            yield response2
+
+        mixed_response = util.HttpMixedReplaceResponse(
+            self._request(), gen())
+
+        self.assertEquals(mixed_response['Content-Type'].split(';')[0],
+                          'multipart/x-mixed-replace')
+
+        boundary = mixed_response['Content-Type'].split('"')[1]
+        self.assertEquals(mixed_response.content, """--%(boundary)s\
+Content-Type: text/plain
+
+%(response1)s
+--%(boundary)s\
+Content-Type: text/html; charset=utf-8
+
+%(response2)s
+--%(boundary)s--""" % {
+                'boundary': boundary,
+                'response1': response1.content,
+                'response2': response2.content
+                })
+
+    def test_chrome(self):
+        """
+        If the user-agent is Chrome, just return the last response.  Chrome
+        sometimes freaks out when handling this type of response.
+        """
+        response1 = HttpResponse('response1', content_type='text/plain')
+        response2 = HttpResponse('response2')
+        def gen():
+            yield response1
+            yield response2
+
+        mixed_response = util.HttpMixedReplaceResponse(
+            self._request('Chrome'), gen())
+
+        self.assertEquals(mixed_response['Content-Type'],
+                          response2['Content-Type'])
+        self.assertEquals(mixed_response.content,
+                          response2.content)
+
+    def test_error(self):
+        """
+        If one of the responses raises an exception, a 500 page should be
+        rendered.
+        """
+        response1 = HttpResponse('response1', content_type='text/plain')
+        def gen():
+            yield response1
+            raise IndexError('should get caught')
+
+        request = self._request()
+        mixed_response = util.HttpMixedReplaceResponse(
+            request, gen())
+
+        self.assertEquals(mixed_response['Content-Type'].split(';')[0],
+                          'multipart/x-mixed-replace')
+
+        error_view = get_resolver(None).resolve500()
+        error_response = error_view[0](request, **error_view[1])
+        boundary = mixed_response['Content-Type'].split('"')[1]
+        self.assertEquals(mixed_response.content, """--%(boundary)s\
+Content-Type: text/plain
+
+%(response1)s
+--%(boundary)s\
+Content-Type: text/html; charset=utf-8
+
+%(error_response)s
+--%(boundary)s--""" % {
+                'boundary': boundary,
+                'response1': response1.content,
+                'error_response': error_response.content
+                })

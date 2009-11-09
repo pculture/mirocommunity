@@ -240,7 +240,7 @@ def sort_header(sort, label, current):
         'class': css_class
         }
 
-def mixed_replace_generator(content_generator, bound):
+def mixed_replace_generator(request, content_generator, bound):
     """
     We take a generator and a boundary string, and yield back content parts for
     the multipart/x-mixed-replace content-type.  The generator should yield
@@ -256,23 +256,30 @@ def mixed_replace_generator(content_generator, bound):
     Content-type: text/plain
 
     <html><body>HTML here!</body></html>
-    --boundary
+    --boundary--
     """
     yield '--%s' % bound
-    for response in content_generator:
-        if response.status_code >= 300 and response.status_code < 400:
-            # Some hacks to get redirects to work
-            response['Status'] = str(response.status_code)
-            response.content = (
-                '<html><head>'
-                '<meta http-equiv="redirect" content="0;url=%(Location)s">'
-                '<script type="text/javascript">'
-                'location.href="%(Location)s";</script>'
-                '</head><body>'
-                'You are being redirected.  If it does not work, click '
-                '<a href="%(Location)s">here</a>.'
-                '</html>' % response)
-        yield ''.join((str(response), '\r\n--', bound))
+    try:
+        for response in content_generator:
+            if response.status_code >= 300 and response.status_code < 400:
+                # Some hacks to get redirects to work
+                response['Status'] = str(response.status_code)
+                response.content = (
+                    '<html><head>'
+                    '<meta http-equiv="redirect" content="0;url=%(Location)s">'
+                    '<script type="text/javascript">'
+                    'location.href="%(Location)s";</script>'
+                    '</head><body>'
+                    'You are being redirected.  If it does not work, click '
+                    '<a href="%(Location)s">here</a>.'
+                    '</html>' % response)
+            yield ''.join((str(response), '\n--', bound))
+    except Exception:
+        from django.core.urlresolvers import get_resolver
+        error_view = get_resolver(None).resolve500()
+        error_response = error_view[0](request,
+                                       **error_view[1])
+        yield ''.join((str(error_response), '\n--', bound))
     yield '--'
 
 class HttpMixedReplaceResponse(HttpResponse):
@@ -289,7 +296,8 @@ class HttpMixedReplaceResponse(HttpResponse):
             self.request = request
             bound = str(id(generator)) + str(id(self))
             HttpResponse.__init__(self,
-                                  mixed_replace_generator(generator, bound),
+                                  mixed_replace_generator(request, generator,
+                                                          bound),
                                   content_type=('multipart/x-mixed-replace;'
                                              'boundary=\"%s\"' % bound))
 
