@@ -29,7 +29,7 @@ from django.template import RequestContext
 
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
-from localtv.subsite.submit_video import forms
+from localtv.submit_video import forms
 from localtv.templatetags.filters import sanitize
 
 def _check_submit_permissions(request):
@@ -54,7 +54,7 @@ def submit_video(request, sitelocation=None):
     if request.method == "GET":
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
-            'localtv/subsite/submit/submit_video.html',
+            'localtv/submit_video/submit.html',
             {'sitelocation': sitelocation,
              'submit_form': submit_form},
             context_instance=RequestContext(request))
@@ -91,7 +91,7 @@ def submit_video(request, sitelocation=None):
                     else:
                         video = None
                     return render_to_response(
-                        'localtv/subsite/submit/submit_video.html',
+                        'localtv/submit_video/submit.html',
                         {'sitelocation': sitelocation,
                          'submit_form': forms.SubmitVideoForm(),
                          'was_duplicate': True,
@@ -136,7 +136,7 @@ def submit_video(request, sitelocation=None):
             
         else:
             return render_to_response(
-                'localtv/subsite/submit/submit_video.html',
+                'localtv/submit_video/submit.html',
                 {'sitelocation': sitelocation,
                  'submit_form': submit_form},
                 context_instance=RequestContext(request))
@@ -160,7 +160,7 @@ def scraped_submit_video(request, sitelocation=None):
             'thumbnail_url')
 
         return render_to_response(
-            'localtv/subsite/submit/scraped_submit_video.html',
+            'localtv/submit_video/scraped.html',
             {'sitelocation': sitelocation,
              'scraped_form': scraped_form},
             context_instance=RequestContext(request))
@@ -216,7 +216,7 @@ def scraped_submit_video(request, sitelocation=None):
 
     else:
         return render_to_response(
-            'localtv/subsite/submit/scraped_submit_video.html',
+            'localtv/submit_video/scraped.html',
             {'sitelocation': sitelocation,
              'scraped_form': scraped_form},
             context_instance=RequestContext(request))
@@ -234,7 +234,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         embed_form.set_initial(request)
 
         return render_to_response(
-            'localtv/subsite/submit/embed_submit_video.html',
+            'localtv/submit_video/embed.html',
             {'sitelocation': sitelocation,
              'embed_form': embed_form},
             context_instance=RequestContext(request))
@@ -278,7 +278,7 @@ def embedrequest_submit_video(request, sitelocation=None):
 
     else:
         return render_to_response(
-            'localtv/subsite/submit/embed_submit_video.html',
+            'localtv/submit_video/embed.html',
             {'sitelocation': sitelocation,
              'embed_form': embed_form},
             context_instance=RequestContext(request))
@@ -298,7 +298,7 @@ def directlink_submit_video(request, sitelocation=None):
         direct_form.set_initial(request)
 
         return render_to_response(
-            'localtv/subsite/submit/direct_submit_video.html',
+            'localtv/submit_video/direct.html',
             {'sitelocation': sitelocation,
              'direct_form': direct_form},
             context_instance=RequestContext(request))
@@ -341,7 +341,7 @@ def directlink_submit_video(request, sitelocation=None):
 
     else:
         return render_to_response(
-            'localtv/subsite/submit/direct_submit_video.html',
+            'localtv/submit_video/direct.html',
             {'sitelocation': sitelocation,
              'direct_form': direct_form},
             context_instance=RequestContext(request))
@@ -358,5 +358,5 @@ def submit_thanks(request, sitelocation=None):
     else:
         context = {}
     return render_to_response(
-        'localtv/subsite/submit/thanks.html', context,
+        'localtv/submit_video/thanks.html', context,
         context_instance=RequestContext(request))

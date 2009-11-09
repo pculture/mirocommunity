@@ -18,7 +18,6 @@
 import urllib
 import datetime
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.http import Http404, HttpResponsePermanentRedirect

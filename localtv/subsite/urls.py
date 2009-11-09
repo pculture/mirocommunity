@@ -38,7 +38,7 @@ urlpatterns += patterns(
     (r'^accounts/', include('django.contrib.auth.urls')),
     (r'^openid/', include('localtv.openid.urls')),
     (r'^admin/', include('localtv.subsite.admin.urls')),
-    (r'^submit_video/', include('localtv.subsite.submit_video.urls')),
+    (r'^submit_video/', include('localtv.submit_video.urls')),
     (r'^listing/', include('localtv.subsite.listing.urls')),
     (r'^feeds/', include('localtv.subsite.feeds.urls')))
 
