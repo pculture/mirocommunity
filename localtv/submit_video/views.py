@@ -56,7 +56,7 @@ def submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/submit_video/submit.html',
             {'sitelocation': sitelocation,
-             'submit_form': submit_form},
+             'form': submit_form},
             context_instance=RequestContext(request))
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
