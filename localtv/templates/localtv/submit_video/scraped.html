@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <form action="{% url localtv_submit_scraped_video %}" method="post">
   <table>
-    {{ scraped_form.as_table }}
+    {{ form.as_table }}
     <tr>
       <td></td>
       <td><input type="image" src="{% versioned "/images/submit.gif" %}" value="submit" /></td>

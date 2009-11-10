@@ -46,12 +46,11 @@ class SubmitVideoBaseTestCase(BaseTestCase):
 class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
     abstract = True
     template_name = None
-    form_name = None
 
     def test_GET(self):
         """
         When the view is accessed via GET, it should render the
-        self.template_name template, and get passed a self.form_name variable
+        self.template_name template, and get passed a form variable
         via the context.
         XXX The 'scraped_form' form should contain the name,
         description, thumbnail, tags, and URL from the scraped video.
@@ -63,12 +62,11 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           self.template_name)
-        self.assertTrue(self.form_name in response.context[0])
+        self.assertTrue('form' in response.context[0])
 
-        submit_form = response.context[self.form_name]
+        submit_form = response.context['form']
         self.assertEquals(submit_form.initial['url'], self.POST_data['url'])
-        self.assertEquals(submit_form.initial['tags'], self.POST_data['tags'])
-        return submit_form
+        return response
 
     def test_POST_fail(self):
         """
@@ -82,9 +80,9 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           self.template_name)
-        self.assertTrue(self.form_name in response.context[0])
+        self.assertTrue('form' in response.context[0])
         self.assertTrue(
-            getattr(response.context[self.form_name], 'errors') is not None)
+            getattr(response.context['form'], 'errors') is not None)
 
     def test_POST_succeed(self):
         """
@@ -103,9 +101,9 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
 
         video = models.Video.objects.all()[0]
         self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
-        self.assertEquals(video.name, self.POST_data['name'])
-        self.assertEquals(video.description, self.POST_data['description'])
-        self.assertEquals(video.thumbnail_url, self.POST_data['thumbnail'])
+        self.assertEquals(video.name, self.video_data['name'])
+        self.assertEquals(video.description, self.video_data['description'])
+        self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
         self.assertEquals(set(video.tags.values_list('name', flat=True)),
                           set(('tag1', 'tag2')))
         return video
@@ -355,35 +353,44 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
         SecondStepSubmitBaseTestCase.setUp(self)
         self.url = reverse('localtv_submit_scraped_video')
         self.template_name = 'localtv/submit_video/scraped.html'
-        self.form_name = 'scraped_form'
+        self.video_data = {
+            'name': 'Fixing Otter',
+            'description': """<span><br />
+
+ In my first produced vlog, I talk a bit about breaking blip.tv, and fixing\
+ it.  The audio's pretty bad, sorry about that.<br /></span>""",
+            'thumbnail': 'http://a.images.blip.tv/'
+                          '11156136631.95334664852457-424.jpg'
+            }
         self.POST_data = {
             'url': 'http://blip.tv/file/10',
-            'name': 'name',
-            'description': 'description',
-            'thumbnail': 'http://www.getmiro.com/favicon.ico',
             'tags': 'tag1, tag2'
             }
         self.GET_data = {
             'url': self.POST_data['url'],
-            'tags': self.POST_data['tags']
             }
-
 
     def test_GET(self):
         """
-        In addition ot the SecondStepSubmitBaseTestCase.test_GET() assrtions,
-        the form should have the name, description, and thumbnail set from the
-        scraped data.
+        In addition to the SecondStepSubmitBaseTestCase.test_GET() assertions,
+        the context should have the scraped data.
         """
-        submit_form = SecondStepSubmitBaseTestCase.test_GET(self)
-        self.assertEquals(submit_form.initial['name'], 'Fixing Otter')
-        self.assertEquals(submit_form.initial['description'],
-                          "<span><br>\n\n In my first produced vlog, I talk a "
-                          "bit about breaking blip.tv, and fixing it.  The "
-                          "audio's pretty bad, sorry about that.<br></span>")
-        self.assertEquals(submit_form.initial['thumbnail'],
-                          'http://a.images.blip.tv/'
-                          '11156136631.95334664852457-424.jpg')
+        response = SecondStepSubmitBaseTestCase.test_GET(self)
+        data = response.context[0]['data']
+        self.assertEquals(data['title'], self.video_data['name'])
+        self.assertEquals(data['description'], """<span><br>
+
+ In my first produced vlog, I talk a bit about breaking blip.tv, and fixing\
+ it.  The audio's pretty bad, sorry about that.<br></span>""")
+        self.assertEquals(data['thumbnail_url'],
+                          self.video_data['thumbnail'])
+
+    def test_POST_fail(self):
+        """
+        There's no way for this POST to fail in the way this test case tests,
+        so we skip it.
+        """
+        pass
 
     def test_POST_succeed(self):
         """
@@ -411,8 +418,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         SecondStepSubmitBaseTestCase.setUp(self)
         self.url = reverse('localtv_submit_directlink_video')
         self.template_name = 'localtv/submit_video/direct.html'
-        self.form_name = 'direct_form'
-        self.POST_data = {
+        self.POST_data = self.video_data = {
             'url': ('http://blip.tv/file/get/'
                     'Miropcf-Miro20Introduction119.mp4'),
             'name': 'name',
@@ -423,7 +429,6 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
             }
         self.GET_data = {
             'url': self.POST_data['url'],
-            'tags': self.POST_data['tags']
             }
 
     def test_POST_succeed(self):
@@ -444,13 +449,11 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
         SecondStepSubmitBaseTestCase.setUp(self)
         self.url = reverse('localtv_submit_embedrequest_video')
         self.template_name = 'localtv/submit_video/embed.html'
-        self.form_name = 'embed_form'
-        self.POST_data = {
-            'url': 'http://www.pculture.org/',
+        self.POST_data = self.video_data = {
+            'url': 'http://www.getmiro.com/',
             'name': 'name',
             'description': 'description',
             'thumbnail': 'http://www.getmiro.com/favicon.ico',
-            'website_url': 'http://www.getmiro.com/',
             'embed': '<h1>hi!</h1>',
             'tags': 'tag1, tag2'
             }
@@ -466,7 +469,7 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
         embed_code set to what was POSTed.
         """
         video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
-        self.assertEquals(video.website_url, self.POST_data['website_url'])
+        self.assertEquals(video.website_url, self.video_data['url'])
         self.assertEquals(video.file_url, '')
-        self.assertEquals(video.embed_code, self.POST_data['embed'])
+        self.assertEquals(video.embed_code, self.video_data['embed'])
 

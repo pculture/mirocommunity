@@ -1,17 +1,17 @@
 # Copyright 2009 - Participatory Culture Foundation
-# 
+#
 # This file is part of Miro Community.
-# 
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -128,12 +128,12 @@ def submit_video(request, sitelocation=None):
                 return HttpResponseRedirect(
                     reverse('localtv_submit_embedrequest_video')
                     + '?' + get_params)
-            
+
         else:
             return render_to_response(
                 'localtv/submit_video/submit.html',
                 {'sitelocation': sitelocation,
-                 'submit_form': submit_form},
+                 'form': submit_form},
                 context_instance=RequestContext(request))
 
 
@@ -147,17 +147,13 @@ def scraped_submit_video(request, sitelocation=None):
 
         scraped_data = util.get_scraped_data(request.GET['url'])
 
-        scraped_form = forms.ScrapedSubmitVideoForm()
-        scraped_form.set_initial(request)
-        scraped_form.initial['name'] = scraped_data.get('title')
-        scraped_form.initial['description'] = scraped_data.get('description')
-        scraped_form.initial['thumbnail'] = scraped_data.get(
-            'thumbnail_url')
+        scraped_form = forms.ScrapedSubmitVideoForm(initial=request.GET)
 
         return render_to_response(
             'localtv/submit_video/scraped.html',
             {'sitelocation': sitelocation,
-             'scraped_form': scraped_form},
+             'data': scraped_data,
+             'form': scraped_form},
             context_instance=RequestContext(request))
 
     scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
@@ -175,15 +171,15 @@ def scraped_submit_video(request, sitelocation=None):
             user = None
 
         video = models.Video(
-            name=scraped_form.cleaned_data['name'],
+            name=scraped_data['title'],
             site=sitelocation.site,
-            description=sanitize(scraped_form.cleaned_data['description'],
+            description=sanitize(scraped_data['description'],
                                  extra_filters=['img']),
             file_url=file_url or '',
-            embed_code=scraped_data.get('embed') or '',
+            embed_code=scraped_data.get('embed', ''),
             flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
-            website_url=scraped_form.cleaned_data['url'],
-            thumbnail_url=request.POST.get('thumbnail', ''),
+            website_url=request.POST['url'],
+            thumbnail_url=scraped_data.get('thumbnail_url', ''),
             user=user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'),
@@ -198,13 +194,12 @@ def scraped_submit_video(request, sitelocation=None):
         video.save()
 
         if video.thumbnail_url:
-            video.save_thumbnail_from_file(
-                scraped_form.cleaned_data['thumbnail'])
+            video.save_thumbnail()
 
-        tags = util.get_or_create_tags(
-            scraped_form.cleaned_data.get('tags', []))
-        for tag in tags:
-            video.tags.add(tag)
+        if scraped_form.cleaned_data.get('tags'):
+            # can't do this earlier because the video needs a primary key
+            video.tags = scraped_form.cleaned_data['tags']
+            video.save()
 
         #redirect to a thank you page
         return HttpResponseRedirect(reverse('localtv_submit_thanks'))
@@ -213,7 +208,8 @@ def scraped_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/submit_video/scraped.html',
             {'sitelocation': sitelocation,
-             'scraped_form': scraped_form},
+             'data': scraped_data,
+             'form': scraped_form},
             context_instance=RequestContext(request))
 
 
@@ -225,13 +221,12 @@ def embedrequest_submit_video(request, sitelocation=None):
         if not (request.GET.get('url') or url_re.match(request.GET['url'])):
             return HttpResponseRedirect(reverse('localtv_submit_video'))
 
-        embed_form = forms.EmbedSubmitVideoForm()
-        embed_form.set_initial(request)
+        embed_form = forms.EmbedSubmitVideoForm(initial=request.GET)
 
         return render_to_response(
             'localtv/submit_video/embed.html',
             {'sitelocation': sitelocation,
-             'embed_form': embed_form},
+             'form': embed_form},
             context_instance=RequestContext(request))
 
     embed_form = forms.EmbedSubmitVideoForm(request.POST)
@@ -248,7 +243,7 @@ def embedrequest_submit_video(request, sitelocation=None):
             description=sanitize(embed_form.cleaned_data['description'],
                                  extra_filters=['img']),
             embed_code=embed_form.cleaned_data['embed'],
-            website_url=embed_form.cleaned_data.get('website_url', ''),
+            website_url=embed_form.cleaned_data['url'],
             thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
             when_submitted=datetime.datetime.now())
@@ -275,7 +270,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/submit_video/embed.html',
             {'sitelocation': sitelocation,
-             'embed_form': embed_form},
+             'form': embed_form},
             context_instance=RequestContext(request))
 
 
@@ -289,13 +284,12 @@ def directlink_submit_video(request, sitelocation=None):
         if not (request.GET.get('url') or url_re.match(request.GET['url'])):
             return HttpResponseRedirect(reverse('localtv_submit_video'))
 
-        direct_form = forms.DirectSubmitVideoForm()
-        direct_form.set_initial(request)
+        direct_form = forms.DirectSubmitVideoForm(initial=request.GET)
 
         return render_to_response(
             'localtv/submit_video/direct.html',
             {'sitelocation': sitelocation,
-             'direct_form': direct_form},
+             'form': direct_form},
             context_instance=RequestContext(request))
 
     direct_form = forms.DirectSubmitVideoForm(request.POST)
@@ -338,7 +332,7 @@ def directlink_submit_video(request, sitelocation=None):
         return render_to_response(
             'localtv/submit_video/direct.html',
             {'sitelocation': sitelocation,
-             'direct_form': direct_form},
+             'form': direct_form},
             context_instance=RequestContext(request))
 
 
