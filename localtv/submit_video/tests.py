@@ -276,37 +276,33 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
     def test_POST_succeed_scraped(self):
         """
         If the URL represents a site that VidScraper understands, the user
-        should be redirected to the scraped_submit_video view and include the
-        tags.
+        should be redirected to the scraped_submit_video view.
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
         c = Client()
         response = c.post(self.url, {
-                'url': 'http://blip.tv/file/10',
-                'tags': u'tag1, tag2, conservaci\xf3n'})
+                'url': 'http://blip.tv/file/10'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
                 urlencode({
-                        'url': 'http://blip.tv/file/10',
-                        'tags': u'tag1, tag2, conservaci\xf3n'.encode('utf8')
+                        'url': 'http://blip.tv/file/10'
                         })))
 
     def test_POST_succeed_directlink(self):
         """
         If the URL represents a video file, the user should be redirected to
-        the directlink_submit_video view and include the tags.
+        the directlink_submit_video.
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
         c = Client()
         response = c.post(self.url, {
                 'url': ('http://blip.tv/file/get/'
-                        'Miropcf-Miro20Introduction119.mp4'),
-                'tags': u'tag1, tag2'})
+                        'Miropcf-Miro20Introduction119.mp4')})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
@@ -314,7 +310,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_directlink_video'),
                 urlencode({'url': ('http://blip.tv/file/get/'
                                    'Miropcf-Miro20Introduction119.mp4'),
-                           'tags': 'tag1, tag2'})))
+                           })))
 
     def test_POST_succeed_embedrequest(self):
         """
@@ -325,15 +321,13 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, {
-                'url': 'http://pculture.org/',
-                'tags': 'tag1, tag2'})
+                'url': 'http://pculture.org/'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
-                urlencode({'url': 'http://pculture.org/',
-                           'tags': 'tag1, tag2'})))
+                urlencode({'url': 'http://pculture.org/'})))
 
     def test_POST_succeed_canonical(self):
         """
@@ -346,15 +340,13 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         c = Client()
         youtube_url = 'http://www.youtube.com/watch?v=AfsZzeNF8A4'
         response = c.post(self.url, {
-                'url': youtube_url + '&feature=player_embedded',
-                'tags': 'tag1, tag2'})
+                'url': youtube_url + '&feature=player_embedded'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
-                urlencode({'url': youtube_url,
-                           'tags': 'tag1, tag2'})))
+                urlencode({'url': youtube_url})))
 
 
 class ScrapedTestCase(SecondStepSubmitBaseTestCase):
