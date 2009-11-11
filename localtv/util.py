@@ -17,6 +17,7 @@
 
 import datetime
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponse
@@ -276,7 +277,16 @@ def mixed_replace_generator(request, content_generator, bound):
             yield ''.join((str(response), '\n--', bound))
     except Exception:
         from django.core.urlresolvers import get_resolver
-        error_view = get_resolver(None).resolve500()
+        if settings.DEBUG:
+            from django.views import debug
+            import sys
+            exc_info = sys.exc_info()
+            error_view = [debug.technical_500_response,
+                          {'exc_type': exc_info[0],
+                           'exc_value': exc_info[1],
+                           'tb': exc_info[2]}]
+        else:
+            error_view = get_resolver(None).resolve500()
         error_response = error_view[0](request,
                                        **error_view[1])
         yield ''.join((str(error_response), '\n--', bound))
