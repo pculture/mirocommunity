@@ -146,3 +146,26 @@ class PopularVideosFeed(BaseVideosFeed):
 def popular(request):
     feed = PopularVideosFeed(None, request).get_feed(None)
     return HttpResponse(feed.writeString('utf8'))
+
+class CategoryVideosFeed(BaseVideosFeed):
+    def get_object(self, bits):
+        return models.Category.objects.get(site=self.sitelocation.site,
+                                           slug=bits[0])
+
+    def link(self, category):
+        return category.get_absolute_url()
+
+    def items(self, category):
+        videos = category.video_set.filter(
+            status=models.VIDEO_STATUS_ACTIVE)
+        return videos[:LOCALTV_FEED_LENGTH]
+
+    def title(self, category):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Category: %s') % category.name)
+
+
+def category(request, category):
+    feed = CategoryVideosFeed(None, request).get_feed(category)
+    return HttpResponse(feed.writeString('utf8'))
+

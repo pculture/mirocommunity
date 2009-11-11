@@ -28,6 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div>{{ category.description|sanitize }}</div>
 
+  <a class="rss" href="{% url localtv_subsite_feeds_category category.slug %}">RSS</a>
 </div>
 {% endif %}
 <div id="category">
