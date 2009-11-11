@@ -915,15 +915,16 @@ class Watch(models.Model):
         right IP address.
         """
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
-        if ip == '127.0.0.1':
-            ip = request.META.get('HTTP_X_FORWARDED_FOR', ip)
 
-        if request.user.is_authenticated():
+        if hasattr(request, 'user') and request.user.is_authenticated():
             user = request.user
         else:
             user = None
 
-        Class(video=video, user=user, ip_address=ip).save()
+        try:
+            Class(video=video, user=user, ip_address=ip).save()
+        except Exception:
+            pass
 
 
 class VideoModerator(CommentModerator):
