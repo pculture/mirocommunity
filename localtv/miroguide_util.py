@@ -61,7 +61,7 @@ def get_first_video_enclosure(entry):
     best_enclosure = None
     for enclosure in enclosures:
         if has_video_type(enclosure) or \
-                filetypes.isAllowedFilename(enclosure.url):
+                filetypes.isAllowedFilename(enclosure['url']):
             if enclosure.get('isdefault'):
                 return enclosure
             elif best_enclosure is None:
@@ -102,8 +102,10 @@ def get_thumbnail_url(entry):
     if entry.get('link', '').find(u'youtube.com') != -1:
         if 'content' in entry:
             content = entry.content[0]['value']
-        else:
+        elif 'summary' in entry:
             content = entry.summary
+        else:
+            return None
         match = re.search(r'<img alt="" src="([^"]+)" />',
                           content)
         if match:
