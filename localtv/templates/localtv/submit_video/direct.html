@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/submit_video/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -18,16 +18,39 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load versioned %}
-{% block title %}Submit a Video{% endblock %}
-{% block content %}
-<form action="{% url localtv_submit_directlink_video %}" method="post">
-  <table>
-    {{ form.as_table }}
+{% block form_action %}{% url localtv_submit_directlink_video %}{% endblock %}
+{% block pre-table %}
+  {{ form.url }}
+{% endblock %}
+{% block table %}
     <tr>
-      <td></td>
-      <td><input type="image" src="{% versioned "/images/submit.gif" %}" value="submit" /></td>
+      <td>
+        {{ form.name.label_tag }}
+        {{ form.name }}
+      </td>
     </tr>
-  </table>
-</form>
+    <tr>
+      <td>
+        {{ form.embed.label_tag }}
+        {{ form.embed }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.thumbnail.label_tag }}
+        {{ form.thumbnail }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.description.label_tag }}
+        {{ form.description }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.tags.label_tag }}
+        {{ form.tags }}
+      </td>
+    </tr>
 {% endblock %}

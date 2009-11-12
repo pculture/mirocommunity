@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/submit_video/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -18,11 +18,8 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load versioned %}
-{% block title %}Submit a Video{% endblock %}
-{% block content %}
-<form action="{% url localtv_submit_video %}" method="post">
-
+{% block form_action %}{% url localtv_submit_video %}{% endblock %}
+{% block pre-table %}
   {% if was_duplicate %}
     <h1>That video has already been submitted!</h1>
     <div>
@@ -30,13 +27,31 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       You can submit another video if you like.
     </div>
   {% endif %}
-
-  <table>
-    {{ form.as_table }}
-    <tr>
-      <td></td>
-      <td><input type="image" src="{% versioned "/images/submit.gif" %}" value="submit" /></td>
-    </tr>
-  </table>
-</form>
-{% endblock content %}
+{% endblock %}
+{% block table %}
+  {% if form.url.errors %}
+  <tr class="error">
+    <td>{{ form.url.errors }}
+    </td>
+  </tr>
+  {% endif %}
+  <tr>
+    <td>{{ form.url }}</td>
+  </tr>
+{% endblock %}
+{% block post-table %}
+  <div>
+    <h2>Helpful Hints for Submitting:</h2>
+    <ul>
+      <li>
+        The URL can be from YouTube, Vimeo, or blip.tv.
+        <span class="url">http://www.youtube.com/watch?v=oHg5SJYRHA0</span>
+      </li>
+      <li>If there is a video with &lt;embed&gt; code available, just enter the URL of the page containing the video and you will be prompted for &lt;embed&gt; code on the next screen.</li>
+      <li>
+        The URL can also be a video file itself.
+        <span class="url">http://www.ted.com/clips.mov</span>
+      </li>
+    </ul>
+  </div>
+{% endblock %}

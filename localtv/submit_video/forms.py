@@ -45,10 +45,13 @@ class SubmitVideoForm(forms.Form):
 class SecondStepSubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True,
                          widget=forms.widgets.HiddenInput)
-    thumbnail = ImageURLField(required=False)
-    name = forms.CharField(max_length=250)
-    description = forms.CharField(widget=forms.widgets.Textarea)
-    tags = TagField(required=False)
+    name = forms.CharField(max_length=250,
+                           label="Video Name")
+    thumbnail = ImageURLField(required=False,
+                              label="Thumbnail URL (optional)")
+    description = forms.CharField(widget=forms.widgets.Textarea,
+                                  label="Video Description (optional)")
+    tags = TagField(required=False, label="Tags (optional)")
 
     def clean_description(self):
         return strip_tags(self.cleaned_data['description'])
@@ -56,10 +59,12 @@ class SecondStepSubmitVideoForm(forms.Form):
 class ScrapedSubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True,
                          widget=forms.widgets.HiddenInput)
-    tags = TagField(required=False)
+    tags = TagField(required=False, label="Tags (optional)")
 
 class EmbedSubmitVideoForm(SecondStepSubmitVideoForm):
-    embed = forms.CharField(widget=forms.Textarea)
+    embed = forms.CharField(widget=forms.Textarea,
+                            label="Video <embed> code")
 
 class DirectSubmitVideoForm(SecondStepSubmitVideoForm):
-    website_url = forms.URLField(required=False)
+    website_url = forms.URLField(required=False,
+                                 label="Original Video Page URL (optional)")
