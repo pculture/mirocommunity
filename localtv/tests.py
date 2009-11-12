@@ -3589,3 +3589,64 @@ Content-Type: text/html; charset=utf-8
                 'response1': response1.content,
                 'error_response': error_response.content
                 })
+
+# -----------------------------------------------------------------------------
+# Watch model tests
+# -----------------------------------------------------------------------------
+
+class WatchModelTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    def test_add(self):
+        """
+        Watch.add(request, video) should add a Watch object to the database for
+        the given video.
+        """
+        request = HttpRequest()
+        request.META['REMOTE_ADDR'] = '123.123.123.123'
+        request.user = User.objects.get(username='user')
+
+        video = models.Video.objects.get(pk=1)
+
+        models.Watch.add(request, video)
+
+        watch = models.Watch.objects.get()
+        self.assertEquals(watch.video, video)
+        self.assertTrue(watch.timestamp - datetime.datetime.now() <
+                        datetime.timedelta(seconds=1))
+        self.assertEquals(watch.user, request.user)
+        self.assertEquals(watch.ip_address, request.META['REMOTE_ADDR'])
+
+    def test_add_unauthenticated(self):
+        """
+        Unauthenticated requests should add a Watch object with user set to
+        None.
+        """
+        request = HttpRequest()
+        request.META['REMOTE_ADDR'] = '123.123.123.123'
+
+        video = models.Video.objects.get(pk=1)
+
+        models.Watch.add(request, video)
+
+        watch = models.Watch.objects.get()
+        self.assertEquals(watch.video, video)
+        self.assertTrue(watch.timestamp - datetime.datetime.now() <
+                        datetime.timedelta(seconds=1))
+        self.assertEquals(watch.user, None)
+        self.assertEquals(watch.ip_address, request.META['REMOTE_ADDR'])
+
+    def test_add_invalid_ip(self):
+        """
+        Requests with an invalid IP address should not raise an error.
+
+        Whether the watch is saved is up to the database's implementation of
+        the IPAddressField.
+        """
+        request = HttpRequest()
+        request.META['REMOTE_ADDR'] = 'unknown'
+
+        video = models.Video.objects.get(pk=1)
+
+        models.Watch.add(request, video)
