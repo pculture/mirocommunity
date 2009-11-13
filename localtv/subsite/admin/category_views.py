@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -43,14 +42,8 @@ def categories(request, sitelocation=None):
             add_category_form = forms.CategoryForm(request.POST, request.FILES,
                                                    instance=category)
             if add_category_form.is_valid():
-                try:
-                    add_category_form.save()
-                except IntegrityError:
-                    add_category_form._errors = \
-                        'There was an error adding this category.  Does it '\
-                        'already exist?'
-                else:
-                    return HttpResponseRedirect(request.path + '?successful')
+                add_category_form.save()
+                return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/subsite/admin/categories.html',
                                       {'formset': formset,

@@ -391,10 +391,22 @@ class CategoryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
 
-        site = Site.objects.get_current()
+        self.site = Site.objects.get_current()
         self.fields['parent'].queryset = models.Category.objects.filter(
-            site=site)
+            site=self.site)
 
+    def clean(self):
+        self.fields['site'] = forms.ModelChoiceField(Site.objects)
+        self.cleaned_data['site'] = self.site
+        try:
+            return forms.ModelForm.clean(self)
+        finally:
+            del self.fields['site']
+            del self.cleaned_data['site']
+
+    def unique_error_message(self, unique_check):
+        return 'Category with this %s already exists.' % (
+            unique_check[0],)
 
 class BaseCategoryFormSet(BaseModelFormSet):
 

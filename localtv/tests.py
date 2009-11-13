@@ -2440,6 +2440,54 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             getattr(response.context[0]['add_category_form'],
                     'errors') is not None)
 
+    def test_POST_add_failure_duplicate_slug(self):
+        """
+        A POST to the categories view with a POST['submit'] value of 'Add' and
+        a duplicate slug should rerender the template and include the error.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'name': 'Not Blogroll',
+            'slug': 'blogroll',
+            'description': 'Not the Blogroll description',
+            'logo': file(self._data_file('logo.png')),
+            'parent': '',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['add_category_form'],
+                    'errors') is not None)
+
+    def test_POST_add_failure_duplicate_name(self):
+        """
+        A POST to the categories view with a POST['submit'] value of 'Add' and
+        a duplicate name should rerender the template and include the error.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'name': 'Blogroll',
+            'slug': 'not-blogroll',
+            'description': 'Not the Blogroll description',
+            'logo': file(self._data_file('logo.png')),
+            'parent': '',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/subsite/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['add_category_form'],
+                    'errors') is not None)
+
     def test_POST_save_failure(self):
         """
         A POST to the categories view with a POST['submit'] value of 'Save' but
