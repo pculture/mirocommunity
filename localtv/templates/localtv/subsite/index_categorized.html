@@ -57,7 +57,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div class="featured_small_list">
     <div id="main_header" class="small">
-      <h2>Categories</h2>
+      <a href="{% url localtv_subsite_category_index %}"><h2>Categories</h2></a>
       <!-- <div class="floatright">
         <a href="{% url localtv_subsite_feeds_featured %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
@@ -83,7 +83,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div class="new_small_list">
     <div id="main_header" class="small">
-      <h2>New</h2>
+      <a href="{% url localtv_subsite_list_new %}"><h2>New</h2></a>
       <div class="floatright">
         {% url localtv_subsite_feeds_new as feeds_new %}
         <a href="{{ feeds_new }}" class="rss">RSS</a> |
@@ -100,7 +100,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div class="popular_small_list">
     <div id="main_header" class="small">
-      <h2>Popular</h2>
+      <a href="{% url localtv_subsite_list_popular %}"><h2>Popular</h2></a>
       <div class="floatright">
         {% url localtv_subsite_feeds_popular as feeds_popular %}
         <a href="{{ feeds_popular }}" class="rss">RSS</a> |

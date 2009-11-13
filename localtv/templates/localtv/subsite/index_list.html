@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
   <div id="main">
     <div id="main_header">   
-      <h2>Editor's Picks</h2>
+      <a href="{% url localtv_subsite_list_featured %}"><h2>Editor's Picks</h2></a>
       <div class="floatright">
         {% url localtv_subsite_feeds_featured as featured_rss%}
         <a href="{{ featured_rss }}" class="rss">RSS</a> |
@@ -42,7 +42,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endfor %}
   <br class="clear" /> 
   <div id="main_header">
-      <h2>Popular in the Last 24 Hours</h2>
+      <a href="{% url localtv_subsite_list_popular %}"><h2>Popular in the Last 24 Hours</h2></a>
       <div class="floatright">
         <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
@@ -69,7 +69,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
 
     <div id="sidebar_header">   
-      <h2>New Videos</h2>
+      <a href="{% url localtv_subsite_list_new %}"><h2>New Videos</h2></a>
               
       <div class="floatright">
         {% url localtv_subsite_feeds_new as new_rss%}
