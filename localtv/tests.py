@@ -1675,6 +1675,23 @@ class FeedAdministrationTestCase(BaseTestCase):
                         self.feed_url)
         self.assertEquals(response.context[2]['video_count'], 1)
 
+    def test_GET_without_video(self):
+        """
+        A GET request to the add_feed view should render the
+        'localtv/subsite/admin/add_feed.html' template.  The video_count should
+        check to see how many enclosures are in the feed.
+        """
+        feed_url = 'http://www.getmiro.com/blog/feed/' # no enclosures
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'feed_url': feed_url})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[2].name,
+                          'localtv/subsite/admin/add_feed.html')
+        self.assertTrue(response.context[2]['form'].instance.feed_url,
+                        feed_url)
+        self.assertEquals(response.context[2]['video_count'], 0)
+
     def test_GET_vimeo(self):
         """
         A GET request to the add_feed view should render the
