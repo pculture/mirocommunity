@@ -296,8 +296,8 @@ class HttpMixedReplaceResponse(HttpResponse):
 
     def __init__(self, request, generator):
         user_agent = request.META.get('HTTP_USER_AGENT')
-        if user_agent is None or 'Chrome' in user_agent:
-            # Chrome's mixed-replace support doesn't seem to work, so just take
+        if user_agent is None or 'Safari' in user_agent:
+            # Safari's mixed-replace support doesn't seem to work, so just take
             # the last thing from the generator
             response = list(generator)[-1]
             HttpResponse.__init__(self)

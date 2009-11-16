@@ -4074,9 +4074,9 @@ Content-Type: text/html; charset=utf-8
                 'response2': response2.content
                 })
 
-    def test_chrome(self):
+    def test_safari(self):
         """
-        If the user-agent is Chrome, just return the last response.  Chrome
+        If the user-agent is Safari, just return the last response.  Safari
         sometimes freaks out when handling this type of response.
         """
         response1 = HttpResponse('response1', content_type='text/plain')
@@ -4086,7 +4086,7 @@ Content-Type: text/html; charset=utf-8
             yield response2
 
         mixed_response = util.HttpMixedReplaceResponse(
-            self._request('Chrome'), gen())
+            self._request('Safari'), gen())
 
         self.assertEquals(mixed_response['Content-Type'],
                           response2['Content-Type'])
