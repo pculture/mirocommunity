@@ -20,6 +20,7 @@ from os import path
 import urllib
 import urlparse
 
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.forms.fields import url_re
@@ -199,7 +200,19 @@ def scraped_submit_video(request, sitelocation=None):
         if scraped_form.cleaned_data.get('tags'):
             # can't do this earlier because the video needs a primary key
             video.tags = scraped_form.cleaned_data['tags']
-            video.save()
+
+        if scraped_data.get('user'):
+            author, created = User.objects.get_or_create(
+                username=scraped_data.get('user'),
+                defaults={'first_name': scraped_data.get('user')})
+            if created:
+                author.set_unusable_password()
+                author.save()
+                models.Profile.objects.create(
+                    user=author,
+                    website=scraped_data.get('user_url'))
+            video.authors.add(author)
+        video.save()
 
         #redirect to a thank you page
         return HttpResponseRedirect(reverse('localtv_submit_thanks'))

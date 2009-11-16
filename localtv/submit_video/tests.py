@@ -411,6 +411,13 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
                           'allowscriptaccess="always" allowfullscreen="true">'
                           '</embed>')
 
+        self.assertEquals(video.authors.count(), 1)
+        author = video.authors.all()[0]
+        self.assertEquals(author.username, 'mhudack')
+        self.assertFalse(author.has_usable_password())
+        self.assertEquals(author.get_profile().website,
+                          'http://blog.blip.tv/')
+
 
 class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
 
