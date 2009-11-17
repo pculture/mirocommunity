@@ -184,8 +184,8 @@ def scraped_submit_video(request, sitelocation=None):
             user=user,
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'),
-            video_service_user=scraped_data.get('user'),
-            video_service_url=scraped_data.get('user_url'))
+            video_service_user=scraped_data.get('user', ''),
+            video_service_url=scraped_data.get('user_url', ''))
 
 
         if sitelocation.user_is_admin(request.user):
