@@ -25,6 +25,7 @@ from django.template import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models
+from localtv.subsite.admin import feeds
 from django.http import HttpResponse, HttpResponseBadRequest, \
     HttpResponseRedirect
 
@@ -62,6 +63,7 @@ def approve_reject(request, sitelocation=None):
             'localtv/subsite/admin/approve_reject_table.html',
             {'current_video': current_video,
              'page_obj': page,
+             'feed_secret': feeds.generate_secret(),
              'video_list': page.object_list},
             context_instance=RequestContext(request))
     else:

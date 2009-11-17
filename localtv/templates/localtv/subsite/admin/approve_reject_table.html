@@ -64,6 +64,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                 <a class="reject med_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject Page</span></a>
                 <a class="reject med_button" href="{% url localtv_admin_clear_all %}"><span>Clear Queue</span></a>
               </div>
+              <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
+              <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
             </div>
 
         <div id="admin_leftpane">
