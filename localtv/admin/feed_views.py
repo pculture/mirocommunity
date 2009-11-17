@@ -18,6 +18,7 @@
 import datetime
 import re
 
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
@@ -108,6 +109,18 @@ def add_feed_response(request, sitelocation=None):
 
             for key, value in form.cleaned_data.items():
                 setattr(feed, key, value)
+
+            if feed.video_service():
+                user, created = User.objects.get_or_create(
+                    username=feed.name,
+                    defaults={'email': ''})
+                if created:
+                    user.set_unusable_password()
+                    models.Profile.objects.create(
+                        user=user,
+                        website=defaults['webpage'])
+                    user.save()
+                feed.auto_authors.add(user)
             feed.save()
 
             return HttpResponseRedirect(reverse('localtv_admin_feed_add_done',

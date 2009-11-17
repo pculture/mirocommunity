@@ -1059,6 +1059,61 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEquals(video.file_url_mimetype, 'video/quicktime')
         self.assertEquals(video.file_url_length, 842)
 
+    def test_GET_creates_user(self):
+        """
+        When creating a new feed from a feed for a user on a video service, a
+        User object should be created with that username and should be set as
+        the auto-author for that feed.
+        """
+        url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
+               "?alt=rss&v=2&orderby=published")
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.post(self.url + "?feed_url=%s" % url,
+               {'feed_url': url,
+                'auto_approve': 'yes'})
+
+        feed = models.Feed.objects.get()
+        user = User.objects.get(username='mphtower')
+        self.assertEquals(feed.name, 'mphtower')
+
+        self.assertFalse(user.has_usable_password())
+        self.assertEquals(user.email, '')
+        self.assertEquals(user.get_profile().website,
+                          'http://www.youtube.com/profile_videos?'
+                          'user=mphtower')
+        self.assertEquals(list(feed.auto_authors.all()),
+                          [user])
+
+    def test_GET_reuses_existing_user(self):
+        """
+        When creating a feed from a feed for a user on a video servers, if a
+        User already exists with the given username, it should be used instead
+        of creating a new object.
+        """
+        user = User.objects.create_user('mphtower', 'mph@tower.com',
+                                        'password')
+        models.Profile.objects.create(user=user,
+                                      website='http://www.mphtower.com/')
+
+        url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
+               "?alt=rss&v=2&orderby=published")
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.post(self.url + "?feed_url=%s" % url,
+               {'feed_url': url,
+                'auto_approve': 'yes'})
+
+        user = User.objects.get(username='mphtower') # reload user
+        self.assertTrue(user.has_usable_password())
+        self.assertEquals(user.email, 'mph@tower.com')
+        self.assertEquals(user.get_profile().website,
+                          'http://www.mphtower.com/')
+
+        feed = models.Feed.objects.get()
+        self.assertEquals(list(feed.auto_authors.all()),
+                          [user])
+
     def test_GET_auto_approve(self):
         """
         A GET request to the feed_auto_approve view should set the auto_approve
