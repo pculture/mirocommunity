@@ -17,6 +17,7 @@
 
 import datetime
 
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -181,6 +182,17 @@ def approve(request, search_video, sitelocation=None):
         video.user = request.user
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
+
+    user, created = User.objects.get_or_create(
+        username=video.video_service_user,
+        defaults={'email': ''})
+    if created:
+        user.set_unusable_password()
+        models.Profile.objects.create(
+            user=user,
+            website=video.video_service_url)
+        user.save()
+    video.authors.add(user)
     video.save()
 
     remove_video_from_session(request)

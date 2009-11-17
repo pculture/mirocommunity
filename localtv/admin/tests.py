@@ -1268,6 +1268,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(v.embed_code, metasearch_video.embed_code)
         self.assertTrue(v.last_featured is None)
 
+        user = User.objects.get(username=v.video_service_user)
+        self.assertFalse(user.has_usable_password())
+        self.assertEquals(user.get_profile().website,
+                          v.video_service_url)
+        self.assertEquals(list(v.authors.all()), [user])
+
         response = c.get(self.url,
                          {'query': 'search string'})
         self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
