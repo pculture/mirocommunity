@@ -65,7 +65,7 @@ VIDEO_THUMB_SIZES = [
     (140, 110)]
 
 VIDEO_SERVICE_REGEXES = (
-    ('YouTube', r'http://gdata\.youtube\.com/feeds/base/'),
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
     ('YouTube', r'http://(www\.)?youtube\.com/'),
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
     ('Vimeo', r'http://(www\.)?vimeo\.com/'))
