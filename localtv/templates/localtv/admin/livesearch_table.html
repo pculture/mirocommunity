@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/admin/approve_reject_table.html" %}
+{% extends "localtv/admin/approve_reject_table.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -68,13 +68,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block pagination %}
   {% if page_obj and page_obj.has_other_pages %}
-   {% pagetabs page_obj "localtv/subsite/admin/livesearch_pagetabs.html" %}
+   {% pagetabs page_obj "localtv/admin/livesearch_pagetabs.html" %}
   {% endif %}
 {% endblock pagination %}
 
 {% block pagination2 %}
   {% if page_obj and page_obj.has_other_pages  %}
-   {% pagetabs page_obj "localtv/subsite/admin/livesearch_pagetabs.html" %}
+   {% pagetabs page_obj "localtv/admin/livesearch_pagetabs.html" %}
   {% endif %}
 {% endblock pagination2 %}
 

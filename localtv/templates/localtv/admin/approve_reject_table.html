@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/admin/base.html" %}
+{% extends "localtv/admin/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -71,7 +71,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			
               <div id="admin_videolisting_row">
                   {% block videolisting_rows %}
-                    {% include "localtv/subsite/admin/video_listing.html" %}
+                    {% include "localtv/admin/video_listing.html" %}
                   {% endblock %}
               </div>
             
@@ -82,7 +82,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <div id="admin_rightpane">
           {% block rightpane %}
             {% if current_video %}
-              {% include "localtv/subsite/admin/video_preview.html" %}
+              {% include "localtv/admin/video_preview.html" %}
             {% endif %}
           {% endblock rightpane %}
         </div>

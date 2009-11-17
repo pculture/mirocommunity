@@ -38,7 +38,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% editable_widget current_video "when_published" %}
     {% else %}
     {% with current_video as instance %}
-    {% include "localtv/subsite/display_templates/video_when_published.html" %}
+    {% include "localtv/inline_edit/video_when_published.html" %}
     {% endwith %}
     {% endif %}
 </span>
@@ -74,7 +74,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% editable_widget current_video "website_url" %}
       {% else %}
       {% with current_video as instance %}
-      {% include "localtv/subsite/display_templates/video_website_url.html" %}
+      {% include "localtv/inline_edit/video_website_url.html" %}
       {% endwith %}
       {% endif %}
     </li>
