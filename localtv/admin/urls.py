@@ -88,11 +88,6 @@ urlpatterns += patterns(
      'localtv_admin_bulk_edit'))
 
 urlpatterns += patterns(
-    '',
-    (r'^edit_attributes/',
-     include('localtv.admin.edit_attributes.urls')))
-
-urlpatterns += patterns(
     'localtv.admin.user_views',
     (r'^users/$', 'users',
      {}, 'localtv_admin_users'))

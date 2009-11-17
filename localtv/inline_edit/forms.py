@@ -19,7 +19,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from localtv import models
-from localtv.subsite.admin.forms import (TagField, TagAreaWidget,
+from localtv.admin.forms import (TagField, TagAreaWidget,
                                          BulkChecklistField)
 
 

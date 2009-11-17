@@ -22,7 +22,7 @@ import simplejson
 
 from localtv import models
 from localtv.decorators import get_sitelocation, require_site_admin
-from localtv.subsite.admin.edit_attributes import forms
+from localtv.inline_edit import forms
 
 @require_site_admin
 @get_sitelocation
@@ -35,7 +35,7 @@ def edit_auto_categories(request, id, sitelocation=None):
     edit_auto_categories_form = forms.FeedAutoCategoriesForm(request.POST,
                                                              instance=feed)
     display_template = template.loader.get_template(
-        'localtv/subsite/display_templates/feed_auto_categories.html')
+        'localtv/inline_edit/feed_auto_categories.html')
 
     if edit_auto_categories_form.is_valid():
         old_categories = list(feed.auto_categories.all())
@@ -74,7 +74,7 @@ def edit_auto_authors(request, id, sitelocation=None):
     edit_auto_authors_form = forms.FeedAutoAuthorsForm(request.POST,
                                                        instance=feed)
     display_template = template.loader.get_template(
-        'localtv/subsite/display_templates/feed_auto_authors.html')
+        'localtv/inline_edit/feed_auto_authors.html')
 
     if edit_auto_authors_form.is_valid():
         old_authors = list(feed.auto_authors.all())

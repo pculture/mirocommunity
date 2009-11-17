@@ -20,7 +20,7 @@ from django.conf.urls.defaults import patterns
 from localtv import models
 
 urlpatterns = patterns(
-    'localtv.subsite.admin.edit_attributes',
+    'localtv.inline_edit',
     (r'^feed/(?P<id>[0-9]+)/name/$', 'simple.edit_field',
      {'model': models.Feed, 'field': 'name'}, 'localtv_admin_feed_edit_name'),
     (r'^feed/(?P<id>[0-9]+)/auto_categories/$',
