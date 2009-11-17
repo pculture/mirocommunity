@@ -27,7 +27,7 @@ from django.template.context import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 from localtv.util import sort_header, MockQueryset
 
 try:
@@ -148,7 +148,7 @@ def bulk_edit(request, sitelocation=None):
     else:
         formset = forms.VideoFormSet(queryset=videos)
 
-    return render_to_response('localtv/subsite/admin/bulk_edit.html',
+    return render_to_response('localtv/admin/bulk_edit.html',
                               {'formset': formset,
                                'headers': headers,
                                'page': page,

@@ -18,7 +18,7 @@
 from django.conf.urls.defaults import patterns, include
 
 urlpatterns = patterns(
-    'localtv.subsite.admin.approve_reject_views',
+    'localtv.admin.approve_reject_views',
     (r'^approve_reject/$', 'approve_reject',
      {}, 'localtv_admin_approve_reject'),
     (r'^preview_video/$', 'preview_video',
@@ -41,12 +41,12 @@ urlpatterns = patterns(
 
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.sources_views',
+    'localtv.admin.sources_views',
     (r'^manage/$', 'manage_sources',
      {}, 'localtv_admin_manage_page'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.feed_views',
+    'localtv.admin.feed_views',
     (r'^manage/feed/add$', 'add_feed',
      {}, 'localtv_admin_feed_add'),
     (r'^manage/feed/add/(\d+)$', 'add_feed_done',
@@ -55,7 +55,7 @@ urlpatterns += patterns(
      {}, 'localtv_admin_feed_auto_approve'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.livesearch_views',
+    'localtv.admin.livesearch_views',
     (r'^manage/search/$', 'livesearch',
      {}, 'localtv_admin_search'),
     (r'^manage/search/add$', 'create_saved_search',
@@ -68,35 +68,35 @@ urlpatterns += patterns(
      {}, 'localtv_admin_search_video_display'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.edit_video_views',
+    'localtv.admin.edit_video_views',
     (r'^edit_video/$', 'edit_video',
      {}, 'localtv_admin_edit_video'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.design_views',
+    'localtv.admin.design_views',
     (r'^design/$', 'edit_design',
      {}, 'localtv_admin_edit_design'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.category_views',
+    'localtv.admin.category_views',
     (r'^categories/$', 'categories',
      {}, 'localtv_admin_categories'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.bulk_edit_views',
+    'localtv.admin.bulk_edit_views',
     (r'^bulk_edit/$', 'bulk_edit', {},
      'localtv_admin_bulk_edit'))
 
 urlpatterns += patterns(
     '',
     (r'^edit_attributes/',
-     include('localtv.subsite.admin.edit_attributes.urls')))
+     include('localtv.admin.edit_attributes.urls')))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.user_views',
+    'localtv.admin.user_views',
     (r'^users/$', 'users',
      {}, 'localtv_admin_users'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.comment_views',
+    'localtv.admin.comment_views',
     (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'))

@@ -73,7 +73,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET(self):
         """
         A GET request to the approve/reject view should render the
-        'localtv/subsite/admin/approve_reject_table.html' template.  The
+        'localtv/admin/approve_reject_table.html' template.  The
         context should include 'current_video' (the first Video object),
         'page_obj' (a Django Page object), and 'video_list' (a list of the
         Video objects on the current page).
@@ -82,7 +82,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/approve_reject_table.html')
+                          'localtv/admin/approve_reject_table.html')
         self.assertIsInstance(response.context['current_video'],
                               models.Video)
         self.assertIsInstance(response.context['page_obj'],
@@ -124,7 +124,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET_preview(self):
         """
         A GET request to the preview_video view should render the
-        'localtv/subsite/admin/video_preview.html' template and have a
+        'localtv/admin/video_preview.html' template and have a
         'current_video' in the context.  The current_video should be the video
         with the primary key passed in as GET['video_id'].
         """
@@ -138,7 +138,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url,
                          {'video_id': str(video.pk)})
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/video_preview.html')
+                          'localtv/admin/video_preview.html')
         self.assertEquals(response.context['current_video'],
                           video)
 
@@ -318,7 +318,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET_clear_all(self):
         """
         A GET request to the clear_all view should render the
-        'localtv/subsite/admin/clear_confirm.html' and have a 'videos' variable
+        'localtv/admin/clear_confirm.html' and have a 'videos' variable
         in the context which is a list of all the unapproved videos.
         """
         unapproved_videos = models.Video.objects.filter(
@@ -333,7 +333,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/clear_confirm.html')
+                          'localtv/admin/clear_confirm.html')
         self.assertEquals(list(response.context['videos']),
                           list(unapproved_videos))
 
@@ -345,7 +345,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_clear_all_failure(self):
         """
         A POST request to the clear_all view without POST['confirm'] = 'yes'
-        should render the 'localtv/subsite/admin/clear_confirm.html' template
+        should render the 'localtv/admin/clear_confirm.html' template
         and have a 'videos' variable in the context which is a list of all the
         unapproved videos.
         """
@@ -360,7 +360,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/clear_confirm.html')
+                          'localtv/admin/clear_confirm.html')
         self.assertEquals(list(response.context['videos']),
                           list(unapproved_videos))
 
@@ -415,7 +415,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         """
         A GET request to the manage_sources view should return a paged view of
         the sources (feeds and saved searches), sorted in alphabetical order.
-        It should render the 'localtv/subsite/admin/manage_sources.html'
+        It should render the 'localtv/admin/manage_sources.html'
         template.
 
         Variables in the context include:
@@ -435,7 +435,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/manage_sources.html')
+                          'localtv/admin/manage_sources.html')
         self.assertTrue('add_feed_form' in response.context[0])
         self.assertTrue('page' in response.context[0])
         self.assertTrue('headers' in response.context[0])
@@ -904,7 +904,7 @@ class FeedAdministrationTestCase(BaseTestCase):
     def test_GET(self):
         """
         A GET request to the add_feed view should render the
-        'localtv/subsite/admin/add_feed.html' template.  Context:
+        'localtv/admin/add_feed.html' template.  Context:
 
         * form: a SourceForm to allow setting auto categories/authors
         * video_count: the number of videos we think we can get out of the feed
@@ -914,7 +914,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
-                          'localtv/subsite/admin/add_feed.html')
+                          'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
         self.assertEquals(response.context[2]['video_count'], 1)
@@ -922,7 +922,7 @@ class FeedAdministrationTestCase(BaseTestCase):
     def test_GET_vimeo(self):
         """
         A GET request to the add_feed view should render the
-        'localtv/subsite/admin/add_feed.html' template if the URL is a Vimeo
+        'localtv/admin/add_feed.html' template if the URL is a Vimeo
         User RSS url.
         """
         url = 'http://www.vimeo.com/user1054395/videos/rss'
@@ -931,14 +931,14 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
-                          'localtv/subsite/admin/add_feed.html')
+                          'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
 
     def test_GET_vimeo_channel(self):
         """
         A GET request to the add_feed view should render the
-        'localtv/subsite/admin/add_feed.html' template if the URL is a Vimeo
+        'localtv/admin/add_feed.html' template if the URL is a Vimeo
         Channel RSS url.
         """
         url = 'http://vimeo.com/channels/sparkyawards/videos/rss'
@@ -947,7 +947,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
-                          'localtv/subsite/admin/add_feed.html')
+                          'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
 
@@ -963,7 +963,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                            'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/add_feed.html')
+                          'localtv/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
                         self.feed_url)
         self.assertFalse(response.context[0]['form'].is_valid())
@@ -1028,7 +1028,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         A GET request to the add_feed_done view should import videos from the
         given feed.  It should also render the
-        'localtv/subsite/admin/feed_done.html' template and have a 'feed'
+        'localtv/admin/feed_done.html' template and have a 'feed'
         variable in the context pointing to the Feed object.
         """
         c = Client()
@@ -1040,7 +1040,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
-                          'localtv/subsite/admin/feed_done.html')
+                          'localtv/admin/feed_done.html')
         feed = models.Feed.objects.get()
         self.assertEquals(response.context[2]['feed'], feed)
         self.assertEquals(feed.video_set.count(), 1)
@@ -1118,7 +1118,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET(self):
         """
         A GET request to the livesearch view should render the
-        'localtv/subsite/admin/livesearch_table.html' template.  Context:
+        'localtv/admin/livesearch_table.html' template.  Context:
 
         * current_video: a Video object for the video to display
         * page_obj: a Page object for the current page of results
@@ -1131,7 +1131,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/livesearch_table.html')
+                          'localtv/admin/livesearch_table.html')
         self.assertTrue('current_video' in response.context[0])
         self.assertTrue('page_obj' in response.context[0])
         self.assertTrue('query_string' in response.context[0])
@@ -1149,7 +1149,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'query': 'search string'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[2].name,
-                          'localtv/subsite/admin/livesearch_table.html')
+                          'localtv/admin/livesearch_table.html')
         self.assertIsInstance(response.context[2]['current_video'],
                               util.MetasearchVideo)
         self.assertEquals(response.context[2]['page_obj'].number, 1)
@@ -1253,7 +1253,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET_display(self):
         """
         A GET request to the display view should render the
-        'localtv/subsite/admin/video_preview.html' and include the
+        'localtv/admin/video_preview.html' and include the
         MetasearchVideo as 'current_video' in the context.
         """
         c = Client()
@@ -1267,7 +1267,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/video_preview.html')
+                          'localtv/admin/video_preview.html')
         self.assertEquals(response.context[0]['current_video'].id,
                           metasearch_video.id)
 
@@ -1376,7 +1376,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET(self):
         """
         A GET request to the users view should render the
-        'localtv/subsite/admin/users.html' template and include a formset for
+        'localtv/admin/users.html' template and include a formset for
         the users, an add_user_form, and the headers for the formset.
         """
         c = Client()
@@ -1384,7 +1384,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/users.html')
+                          'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_user_form' in response.context[0])
         self.assertTrue('headers' in response.context[0])
@@ -1400,7 +1400,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/users.html')
+                          'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
             getattr(response.context[0]['add_user_form'],
@@ -1417,7 +1417,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/users.html')
+                          'localtv/admin/users.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
         self.assertTrue('add_user_form' in response.context[0])
@@ -1655,7 +1655,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET(self):
         """
         A GET request to the categories view should render the
-        'localtv/subsite/admin/categories.html' template and include a formset
+        'localtv/admin/categories.html' template and include a formset
         for the categories and an add_category_form.
         """
         c = Client()
@@ -1663,7 +1663,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/categories.html')
+                          'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_category_form' in response.context[0])
 
@@ -1678,7 +1678,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/categories.html')
+                          'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
             getattr(response.context[0]['add_category_form'],
@@ -1694,7 +1694,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/categories.html')
+                          'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
         self.assertTrue('add_category_form' in response.context[0])
@@ -1890,7 +1890,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         """
         A GET request to the bulk_edit view should return a paged view of the
         videos, sorted in alphabetical order.  It should render the
-        'localtv/subsite/admin/bulk_edit.html' template.
+        'localtv/admin/bulk_edit.html' template.
 
         Context:
 
@@ -1906,7 +1906,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/bulk_edit.html')
+                          'localtv/admin/bulk_edit.html')
         self.assertEquals(response.context[0]['page'].number, 1)
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('headers' in response.context[0])
@@ -2293,7 +2293,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
     def test_GET(self):
         """
         A GET request to the edit_design view should render the
-        'localtv/subsite/admin/edit_design.html' template and include 4 forms:
+        'localtv/admin/edit_design.html' template and include 4 forms:
 
         * title_form
         * sidebar_form
@@ -2305,7 +2305,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/admin/edit_design.html')
+                          'localtv/admin/edit_design.html')
         self.assertTrue('title_form' in response.context[0])
         self.assertTrue('sidebar_form' in response.context[0])
         self.assertTrue('misc_form' in response.context[0])
@@ -2323,7 +2323,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/subsite/admin/edit_design.html')
+                          'localtv/admin/edit_design.html')
         self.assertFalse(POST_response.context['title_form'].is_valid())
 
     def test_POST_title_long_title(self):
@@ -2341,7 +2341,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/subsite/admin/edit_design.html')
+                          'localtv/admin/edit_design.html')
         self.assertFalse(POST_response.context['title_form'].is_valid())
 
     def test_POST_title_succeed(self):
@@ -2416,7 +2416,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/subsite/admin/edit_design.html')
+                          'localtv/admin/edit_design.html')
         self.assertFalse(POST_response.context['misc_form'].is_valid())
 
     def test_POST_misc_succeed(self):

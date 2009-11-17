@@ -20,7 +20,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 from localtv.decorators import get_sitelocation, require_site_admin
 
 def redirect():
@@ -28,7 +28,7 @@ def redirect():
 
 def render_edit_design(request, context):
         return render_to_response(
-            "localtv/subsite/admin/edit_design.html",
+            "localtv/admin/edit_design.html",
             context,
             context_instance=RequestContext(request))
 

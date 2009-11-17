@@ -23,7 +23,7 @@ from django.template import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.models import Category
 from localtv.util import MockQueryset
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 
 @require_site_admin
 @get_sitelocation
@@ -33,7 +33,7 @@ def categories(request, sitelocation=None):
 
     add_category_form = forms.CategoryForm()
     if request.method == 'GET':
-        return render_to_response('localtv/subsite/admin/categories.html',
+        return render_to_response('localtv/admin/categories.html',
                                   {'formset': formset,
                                    'add_category_form': add_category_form},
                                   context_instance=RequestContext(request))
@@ -52,7 +52,7 @@ def categories(request, sitelocation=None):
                 else:
                     return HttpResponseRedirect(request.path + '?successful')
 
-            return render_to_response('localtv/subsite/admin/categories.html',
+            return render_to_response('localtv/admin/categories.html',
                                       {'formset': formset,
                                        'add_category_form': add_category_form},
                                       context_instance=RequestContext(request))
@@ -64,7 +64,7 @@ def categories(request, sitelocation=None):
                 return HttpResponseRedirect(request.path + '?successful')
             else:
                 return render_to_response(
-                    'localtv/subsite/admin/categories.html',
+                    'localtv/admin/categories.html',
                     {'formset': formset,
                      'add_category_form': add_category_form},
                     context_instance=RequestContext(request))

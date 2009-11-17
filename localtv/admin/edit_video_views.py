@@ -23,7 +23,7 @@ from django.template import RequestContext
 
 from localtv import models
 from localtv.decorators import get_sitelocation, require_site_admin
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 
 @require_site_admin
 @get_sitelocation
@@ -35,7 +35,7 @@ def edit_video(request, sitelocation=None):
     if request.method == 'GET':
         edit_video_form = forms.EditVideoForm(instance=video)
         return render_to_response(
-            'localtv/subsite/admin/edit_video_form.html',
+            'localtv/admin/edit_video_form.html',
             {'edit_video_form': edit_video_form},
             context_instance=RequestContext(request))
     else:
@@ -48,13 +48,13 @@ def edit_video(request, sitelocation=None):
                 return HttpResponseRedirect(request.POST['redirect'])
 
             return render_to_response(
-                'localtv/subsite/admin/edit_video_form.html',
+                'localtv/admin/edit_video_form.html',
                 {'edit_video_form': edit_video_form,
                  'successful_edit': True},
                 context_instance=RequestContext(request))
 
         else:
             return render_to_response(
-                'localtv/subsite/admin/edit_video_form.html',
+                'localtv/admin/edit_video_form.html',
                 {'edit_video_form': edit_video_form},
                 context_instance=RequestContext(request))

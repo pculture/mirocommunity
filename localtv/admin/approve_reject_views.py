@@ -59,7 +59,7 @@ def approve_reject(request, sitelocation=None):
             current_video = page.object_list[0]
 
         return render_to_response(
-            'localtv/subsite/admin/approve_reject_table.html',
+            'localtv/admin/approve_reject_table.html',
             {'current_video': current_video,
              'page_obj': page,
              'video_list': page.object_list},
@@ -77,7 +77,7 @@ def preview_video(request, sitelocation=None):
         status=models.VIDEO_STATUS_UNAPPROVED,
         site=sitelocation.site)
     return render_to_response(
-        'localtv/subsite/admin/video_preview.html',
+        'localtv/admin/video_preview.html',
         {'current_video': current_video},
         context_instance=RequestContext(request))
 
@@ -193,6 +193,6 @@ def clear_all(request, sitelocation=None):
             video.save()
         return HttpResponseRedirect(reverse('localtv_admin_approve_reject'))
     else:
-        return render_to_response('localtv/subsite/admin/clear_confirm.html',
+        return render_to_response('localtv/admin/clear_confirm.html',
                                   {'videos': videos},
                                   context_instance=RequestContext(request))

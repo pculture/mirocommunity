@@ -112,7 +112,7 @@ def livesearch(request, sitelocation=None):
     if 'query' not in request.GET or 'debug' in request.GET:
         return livesearch_response(request, sitelocation)
     def gen():
-        yield render_to_response('localtv/subsite/admin/livesearch_wait.html',
+        yield render_to_response('localtv/admin/livesearch_wait.html',
                                  {'query_string': request.GET['query']},
                                  context_instance=RequestContext(request))
         yield livesearch_response(request, sitelocation)
@@ -155,7 +155,7 @@ def livesearch_response(request, sitelocation):
         current_video = page.object_list[0]
 
     return render_to_response(
-        'localtv/subsite/admin/livesearch_table.html',
+        'localtv/admin/livesearch_table.html',
         {'current_video': current_video,
          'page_obj': page,
          'video_list': page.object_list,
@@ -193,7 +193,7 @@ def approve(request, search_video, sitelocation=None):
 @get_search_video
 def display(request, search_video, sitelocation=None):
     return render_to_response(
-        'localtv/subsite/admin/video_preview.html',
+        'localtv/admin/video_preview.html',
         {'current_video': search_video},
         context_instance=RequestContext(request))
 

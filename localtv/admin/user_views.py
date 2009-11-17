@@ -22,7 +22,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 from localtv.util import sort_header
 
 @require_site_admin
@@ -53,7 +53,7 @@ def users(request, sitelocation=None):
         else:
             return HttpResponseRedirect(request.path)
 
-    return render_to_response('localtv/subsite/admin/users.html',
+    return render_to_response('localtv/admin/users.html',
                               {'formset': formset,
                                'add_user_form': add_user_form,
                                'headers': headers},

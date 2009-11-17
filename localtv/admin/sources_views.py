@@ -27,7 +27,7 @@ from django.template.context import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.util import sort_header, MockQueryset
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -172,7 +172,7 @@ def manage_sources(request, sitelocation=None):
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
 
-    return render_to_response('localtv/subsite/admin/manage_sources.html',
+    return render_to_response('localtv/admin/manage_sources.html',
                               {
             'add_feed_form': forms.AddFeedForm(),
             'page': page,

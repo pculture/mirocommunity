@@ -27,7 +27,7 @@ from django.template import RequestContext
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models, util
-from localtv.subsite.admin import forms
+from localtv.admin import forms
 
 from vidscraper import bulk_import
 
@@ -42,7 +42,7 @@ VIDEO_SERVICE_TITLES = (
 def add_feed(request, sitelocation=None):
     if request.method == 'GET':
         def gen():
-            yield render_to_response('localtv/subsite/admin/feed_wait.html',
+            yield render_to_response('localtv/admin/feed_wait.html',
                                      {
                     'message': 'Checking out this URL',
                     'feed_url': request.GET.get('feed_url')},
@@ -115,7 +115,7 @@ def add_feed_response(request, sitelocation=None):
 
     else:
         form = forms.SourceForm(instance=models.Feed(**defaults))
-    return render_to_response('localtv/subsite/admin/add_feed.html',
+    return render_to_response('localtv/admin/add_feed.html',
                               {'form': form,
                                'video_count': video_count},
                               context_instance=RequestContext(request))
@@ -133,7 +133,7 @@ def add_feed_done(request, feed_id, sitelocation):
             'message': 'Importing %i videos from' % (
                 request.session['video_count'],),
             'feed_url': request.session['parsed_feed']['feed']['link']}
-        yield render_to_response('localtv/subsite/admin/feed_wait.html',
+        yield render_to_response('localtv/admin/feed_wait.html',
                                  context,
                                  context_instance=RequestContext(request))
 
@@ -145,7 +145,7 @@ def add_feed_done(request, feed_id, sitelocation):
                 context['message'] = 'Imported %i of %i videos from' % (
                     last['index'] + 1, last['total'])
                 yield render_to_response(
-                    'localtv/subsite/admin/feed_wait.html',
+                    'localtv/admin/feed_wait.html',
                     context,
                     context_instance=RequestContext(request))
 
@@ -153,7 +153,7 @@ def add_feed_done(request, feed_id, sitelocation):
         del request.session['parsed_feed']
         del request.session['video_count']
 
-        yield render_to_response('localtv/subsite/admin/feed_done.html',
+        yield render_to_response('localtv/admin/feed_done.html',
                                  {'feed': feed},
                                  context_instance=RequestContext(request))
 
