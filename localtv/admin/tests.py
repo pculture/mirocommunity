@@ -13,10 +13,6 @@ from localtv.tests import BaseTestCase
 from localtv import models
 from localtv import util
 
-# -----------------------------------------------------------------------------
-# Approve/reject video tests
-# -----------------------------------------------------------------------------
-
 
 class AdministrationBaseTestCase(BaseTestCase):
 
@@ -63,6 +59,12 @@ class AdministrationBaseTestCase(BaseTestCase):
                     POST_data[form.add_prefix(name)] = data
         POST_data.update(kwargs)
         return POST_data
+
+
+# -----------------------------------------------------------------------------
+# Approve/reject video tests
+# -----------------------------------------------------------------------------
+
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
