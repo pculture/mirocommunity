@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import hashlib
 
 from django.conf import settings
 from django.core.cache import cache
@@ -68,6 +69,9 @@ def get_or_create_tags(tag_list):
 
 def get_scraped_data(url):
     cache_key = 'vidscraper_data-' + url
+    if len(cache_key) >= 250:
+        # too long, use the hash
+        cache_key = 'vidscraper_data-hash-' + hashlib.sha1(url).hexdigest()
     scraped_data = cache.get(cache_key)
 
     if not scraped_data:
