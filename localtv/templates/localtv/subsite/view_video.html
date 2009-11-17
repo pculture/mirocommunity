@@ -67,7 +67,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% editable_widget current_video "when_published" %}
     {% else %}
     {% with current_video as instance %}
-    {% include "localtv/subsite/display_templates/video_when_published.html" %}
+    {% include "localtv/inline_edit/video_when_published.html" %}
     {% endwith %}
     {% endif %}
     </div>
@@ -76,7 +76,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% editable_widget current_video "authors" %}
     {% else %}
       {% with current_video as instance %}
-      {% include "localtv/subsite/display_templates/video_authors.html" %}
+      {% include "localtv/inline_edit/video_authors.html" %}
       {% endwith %}
     {% endif %}
     </div>
@@ -117,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% editable_widget current_video "categories" %}
           {% else %}
             {% with current_video as instance %}
-            {% include "localtv/subsite/display_templates/video_categories.html" %}
+            {% include "localtv/inline_edit/video_categories.html" %}
             {% endwith %}
           {% endif %}
         </li>
@@ -126,7 +126,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% editable_widget current_video "tags" %}
           {% else %}
             {% with current_video as instance %}
-            {% include "localtv/subsite/display_templates/video_tags.html" %}
+            {% include "localtv/inline_edit/video_tags.html" %}
             {% endwith %}
           {% endif %}
         </li>

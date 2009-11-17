@@ -19,7 +19,7 @@ from django import template
 from django.core.urlresolvers import reverse
 
 from localtv import models
-from localtv.subsite.admin.edit_attributes import forms
+from localtv.inline_edit import forms
 
 WIDGET_DIRECTORY = {
     models.Feed: {
@@ -37,10 +37,12 @@ WIDGET_DIRECTORY = {
             'form': forms.VideoWhenPublishedForm},
         'authors': {
             'form': forms.VideoAuthorsForm,
-            'render_template': 'localtv/subsite/render_widget_checklist.html'},
+            'render_template':
+                'localtv/inline_edit/render_widget_checklist.html'},
         'categories': {
             'form': forms.VideoCategoriesForm,
-            'render_template': 'localtv/subsite/render_widget_checklist.html'},
+            'render_template':
+                'localtv/inline_edit/render_widget_checklist.html'},
         'tags': {
             'form': forms.VideoTagsForm},
         'description': {
@@ -61,7 +63,7 @@ def get_display_content(model_instance, field_name,
     display_template = template.loader.get_template(
         display_template_name or widget_data.get(
             'default_display_template') or
-        'localtv/subsite/display_templates/%s_%s.html' % (
+        'localtv/inline_edit/%s_%s.html' % (
             model_instance._meta.object_name.lower(),
             field_name))
     return display_template.render(
@@ -87,7 +89,7 @@ def editable_widget(model_instance, field_name, display_template_name=None):
     # render the wrapper template, with display template data intact
     render_template = template.loader.get_template(
         widget_data.get('render_template',
-                        'localtv/subsite/render_widget.html'))
+                        'localtv/inline_edit/render_widget.html'))
     
     post_url = reverse(
         widget_data.get('reversible_post_url',

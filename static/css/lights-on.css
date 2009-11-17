@@ -876,13 +876,35 @@ margin: 0px;
 padding: 20px;
 }
 
-#submit_box label {
+#submit_video label {
 font-weight: bold;
-padding: 0 17px 0 8px;
 }
 
-#submit_box #id_url,
-#submit_box #id_tags,
+#submit_video li{
+    padding: 10px;
+}
+
+#submit_video li span.url {
+    color: green;
+
+}
+
+#submit_video label, #submit_video input, #submit_video textarea, #close_submit_box {
+    float: left;
+    margin: 5px;
+}
+
+#submit_video input, #submit_video textarea {
+    clear: left;
+    border: 1px solid black;
+    margin-bottom: 15px;
+}
+
+#submit_video input[type=image] {
+    border: none;
+    margin-bottom: 5px;
+}
+
 .login input.openid,
 .large_field {
 margin: 2px 2px 0 0;
@@ -893,6 +915,7 @@ width: 250px;
 font-size: 11px;
 background: url(../images/large_field.gif) top left no-repeat;
 }
+
 
 .small_field{
 background:transparent url(../images/search_field.png) no-repeat left top;

@@ -18,7 +18,6 @@
 import urllib
 import datetime
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.http import Http404, HttpResponsePermanentRedirect
@@ -29,7 +28,7 @@ from django.views.generic.list_detail import object_list
 
 from localtv import models
 from localtv.decorators import get_sitelocation
-from localtv.subsite.admin import forms as admin_forms
+from localtv.admin import forms as admin_forms
 
 @get_sitelocation
 def subsite_index(request, sitelocation=None):

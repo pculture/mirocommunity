@@ -6,6 +6,7 @@ function replace_submit_video_and_setup_callbacks(result) {
         return;
     }
     $('#submit_box_content').html(result);
+    $('#close_submit_box span').click(close_submit_box);
     $('#submit_box_content form').ajaxForm(replace_submit_video_and_setup_callbacks);
 }
 
@@ -25,5 +26,4 @@ function close_submit_box() {
 
 function add_submit_callback() {
     $('#submit_button').click(start_submit_process);
-    $('#close_submit_box span').click(close_submit_box);
 }
