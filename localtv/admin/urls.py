@@ -97,7 +97,7 @@ urlpatterns += patterns(
     (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'))
 
 urlpatterns += patterns(
-    'localtv.subsite.admin.feeds',
+    'localtv.admin.feeds',
     (r'^feeds/(\S+)/unapproved', 'unapproved', {},
      'localtv_admin_feed_unapproved'),
     (r'^feeds/(\S+)/unapproved_user', 'unapproved_user', {},

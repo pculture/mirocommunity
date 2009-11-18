@@ -528,14 +528,14 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         # feed filter (ignores feeds that represent video service users)
         response = c.get(self.url, {'filter': 'feed'})
         page = response.context['page']
-        self.assertEquals(len(page.object_list), 6)
+        self.assertEquals(len(page.object_list), 4)
         for feed in page.object_list:
             self.assertTrue(feed.video_service() is None)
 
         # user filter (only includes feeds that represent video service users)
         response = c.get(self.url, {'filter': 'user'})
         page = response.context['page']
-        self.assertEquals(len(page.object_list), 4)
+        self.assertEquals(len(page.object_list), 6)
         for feed in page.object_list:
             self.assertTrue(feed.video_service() is not None)
 
