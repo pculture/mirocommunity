@@ -1,4 +1,4 @@
-# Django settings for localtv project.
+# Example settings for a Miro Community project
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -71,8 +71,8 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.g
-    "/var/www//localtv/src/localtv/localtv/override_templates/",
-    "/var/www//localtv/src/localtv/localtv/templates/",
+    "/var/www/localtv/src/localtv/localtv/override_templates/",
+    "/var/www/localtv/src/localtv/localtv/templates/",
     "/var/www/localtv/src/localtv/localtv/versioned_templates/",
 )
 
@@ -81,14 +81,17 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.admin',
     'django.contrib.comments',
     'south',
     'django_openidconsumer',
     'djpagetabs',
     'djvideo',
     'localtv',
-
+    'localtv.admin',
+    'localtv.comments',
+    'localtv.submit_video',
+    'localtv.inline_edit',
+    'localtv_openid',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -101,7 +104,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
-    'localtv.openid.OpenIdBackend',
+    'localtv.backend.SiteAdminBackend',
     )
 
 AUTH_PROFILE_MODULE = 'localtv.Profile'

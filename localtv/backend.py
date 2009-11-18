@@ -15,34 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib.auth.models import User
+from django.contrib.auth.backends import ModelBackend
 from localtv.models import SiteLocation
 
-class OpenIdBackend:
-
-    def authenticate(self, openid_user=None, username=None, password=None):
-        """
-        If we get an openid_userassume that the openid_user has already been
-        externally validated, and simply return the appropriate User,
-
-        Otherwise, we check the username and password against the django.auth
-        system.
-        """
-        if openid_user is not None:
-            return openid_user.user
-
-        try:
-            user = User.objects.get(username=username)
-            if user.check_password(password):
-                return user
-        except User.DoesNotExist:
-            return None
-
-    def get_user(self, user_id):
-        try:
-            return User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
+class SiteAdminBackend(ModelBackend):
 
     def get_group_permissions(self, user_obj):
         return []

@@ -74,26 +74,6 @@ class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
 
 
-class OpenIdUser(models.Model):
-    """
-    Custom openid user authentication model.  Presently does not match
-    up to Django's contrib.auth.models.User model, probably should be
-    adjusted to do so eventually.
-
-    Login and registration functionality provided in localtv.openid
-    and its submodules.
-
-    Fields:
-      - url: URL that this user is identified by
-      - user: the Django User object that this is a valid login for
-    """
-    user = models.OneToOneField('auth.User')
-    url = models.URLField(verify_exists=False, unique=True)
-
-    def __unicode__(self):
-        return "%s <%s>" % (self.user.username, self.user.email)
-
-
 class SiteLocation(models.Model):
     """
     An extension to the django.contrib.sites site model, providing
@@ -968,7 +948,6 @@ class VideoModerator(CommentModerator):
 moderator.register(Video, VideoModerator)
 
 
-admin.site.register(OpenIdUser)
 admin.site.register(SiteLocation)
 admin.site.register(Tag)
 admin.site.register(Feed)

@@ -36,7 +36,6 @@ urlpatterns += patterns(
     (r'^accounts/logout/$', 'django.contrib.auth.views.logout', {
             'next_page': '/'}),
     (r'^accounts/', include('django.contrib.auth.urls')),
-    (r'^openid/', include('localtv.openid.urls')),
     (r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     (r'^admin/', include('localtv.admin.urls')),
     (r'^submit_video/', include('localtv.submit_video.urls')),
