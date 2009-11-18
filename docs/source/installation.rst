@@ -176,7 +176,8 @@ LocalTv
 
 ::
 
-    git clone https://git.participatoryculture.org/localtv LocalTv
+    git clone http://git.participatoryculture.org/localtv LocalTv
+    git clone http://git.participatoryculture.org/localtv-openid LocalTv-OpenID
 
 
 VidScraper
@@ -184,7 +185,7 @@ VidScraper
 
 ::
 
-    git clone https://git.participatoryculture.org/vidscraper VidScraper
+    git clone http://git.participatoryculture.org/vidscraper VidScraper
 
 You'll also need to install simplejson::
 
@@ -196,7 +197,7 @@ Page Tabs
 
 ::
 
-    git clone https://git.participatoryculture.org/djpagetabs djpagetabs
+    git clone http://git.participatoryculture.org/djpagetabs djpagetabs
 
 
 
@@ -205,7 +206,7 @@ Video
 
 ::
 
-    git clone https://git.participatoryculture.org/djvideo djvideo
+    git clone http://git.participatoryculture.org/djvideo djvideo
 
 
 
@@ -245,6 +246,7 @@ As you can see, paths can be relative.  Modify your file to look like so::
     ../../../src/south
     ../../../src/DjangoOpenid
     ../../../src/LocalTv
+    ../../../src/LocalTv-OpenID
     ../../../src/VidScraper
     ../../../src/djpagetabs
     ../../../src/djvideo
@@ -311,19 +313,24 @@ so::
     )
 
 
-Append "django.contrib.admin", "south", "django_openidconsumer", "djpagetabs",
-and "localtv" to your INSTALLED_APPS::
+Append  "south", "django_openidconsumer", "djpagetabs",
+and the localtv apps to your INSTALLED_APPS::
 
     INSTALLED_APPS = (
         'django.contrib.auth',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
-        'django.contrib.sites',
         'django.contrib.admin',
+        'django.contrib.sites',
         'south',
         'django_openidconsumer',
         'djpagetabs',
         'localtv',
+        'localtv.admin',
+        'localtv.inline_edit',
+        'localtv.submit_video',
+        'localtv.comments',
+        'localtv_openid'
     )
 
 Set up the OpenID authentication::
@@ -331,7 +338,7 @@ Set up the OpenID authentication::
     LOGIN_REDIRECT_URL = '/'
 
     AUTHENTICATION_BACKENDS = (
-        'localtv.openid.OpenIdBackend',
+        'localtv_openid.OpenIdBackend',
         )
 
 
@@ -422,6 +429,7 @@ urls.py
     from django.conf.urls.defaults import patterns, include
 
     urlpatterns = patterns('',
+        (r'^openid/', include('localtv_openid.urls')),
         (r'', include('localtv.subsite.urls')),
     )
 
