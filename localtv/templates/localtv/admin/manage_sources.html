@@ -122,7 +122,11 @@ $(document).ready(function() {
 
 {% block columns %}
         <td><span class="overflow">
+          {% if form.instance.get_absolute_url %}
           <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
+          {% else %}
+          {{ form.instance }}
+          {% endif %}
           </span>
 
           <div class="actions">
