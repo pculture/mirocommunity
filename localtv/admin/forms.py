@@ -344,6 +344,11 @@ class EditMiscDesignForm(forms.Form):
         label="Custom CSS",
         help_text="Here you can append your own CSS to customize your site.",
         widget=forms.Textarea, required=False)
+    use_original_date = forms.BooleanField(
+        label="Use Original Date?",
+        help_text="If set, use the original date the video was posted.  "
+        "Otherwise, use the date the video was added to this site.",
+        required=False)
 
     @classmethod
     def create_from_sitelocation(cls, sitelocation):
@@ -355,6 +360,7 @@ class EditMiscDesignForm(forms.Form):
             sitelocation.display_submit_button
         self.initial['submission_requires_login'] = \
             sitelocation.submission_requires_login
+        self.initial['use_original_date'] = sitelocation.use_original_date
         return self
 
     def save_to_sitelocation(self, sitelocation):
@@ -373,6 +379,7 @@ class EditMiscDesignForm(forms.Form):
             self.cleaned_data['display_submit_button']
         sitelocation.submission_requires_login = \
             self.cleaned_data['submission_requires_login']
+        sitelocation.use_original_date = self.cleaned_data['use_original_date']
         sitelocation.save()
 
 

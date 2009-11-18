@@ -2499,6 +2499,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
                 'layout': 'categorized',
                 'display_submit_button': 'yes',
                 'submission_requires_login': 'yes',
+                'use_original_date': '',
                 'css': 'New Css'})
         POST_response = c.post(self.url, self.POST_data)
 
@@ -2514,6 +2515,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(site_location.css, 'New Css')
         self.assertTrue(site_location.display_submit_button)
         self.assertTrue(site_location.submission_requires_login)
+        self.assertFalse(site_location.use_original_date)
 
         logo_data = file(self._data_file('logo.png')).read()
         site_location.logo.open()

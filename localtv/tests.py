@@ -1086,6 +1086,88 @@ Content-Type: text/html; charset=utf-8
                 })
 
 # -----------------------------------------------------------------------------
+# Video model tests
+# -----------------------------------------------------------------------------
+
+class VideoModelTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    def test_when(self):
+        """
+        Video.when() returns the best available date for the video:
+
+        1) when_published (original publish date)
+        2) when_approved (when it was made visible on the site)
+        3) when_submitted (when it was submitted to the site)
+        """
+        v = models.Video.objects.get(pk=11)
+        self.assertEquals(v.when(), v.when_published)
+        v.when_published = None
+        self.assertEquals(v.when(), v.when_approved)
+        v.when_approved = None
+        self.assertEquals(v.when(), v.when_submitted)
+
+    def test_when_use_original_date_False(self):
+        """
+        When SiteLocation.use_original_date is False, Video.when() ignores the
+        when_published date.
+        """
+        self.site_location.use_original_date = False
+        self.site_location.save()
+        v = models.Video.objects.get(pk=11)
+        self.assertEquals(v.when(), v.when_approved)
+
+
+    def test_when_prefix(self):
+        """
+        Video.when_prefix() returns 'published' if the date is
+        when_published, otherwise it returns 'posted'..
+        """
+        v = models.Video.objects.get(pk=11)
+        self.assertEquals(v.when_prefix(), 'published')
+        v.when_published = None
+        self.assertEquals(v.when_prefix(), 'posted')
+
+    def test_when_prefix_use_original_date_False(self):
+        """
+        When SiteLocation.use_original_date is False, Video.when_prefix()
+        returns 'posted'.
+        """
+        self.site_location.use_original_date = False
+        self.site_location.save()
+        v = models.Video.objects.get(pk=11)
+        self.assertEquals(v.when_prefix(), 'posted')
+
+    def test_new(self):
+        """
+        Video.objects.new() should return a QuerySet ordered by the best
+        available date:
+
+        1) when_published
+        2) when_approved
+        3) when_submitted
+        """
+        self.assertEquals(list(models.Video.objects.new()),
+                          list(models.Video.objects.extra(select={'date': """
+COALESCE(localtv_video.when_published,localtv_video.when_approved,
+localtv_video.when_submitted)"""}).order_by('-date')))
+
+    def test_new_use_original_date_False(self):
+        """
+        When SiteLocation.use_original_date is False, Video.objects.new()
+        should ignore the when_published date.
+        """
+        self.site_location.use_original_date = False
+        self.site_location.save()
+        self.assertEquals(list(models.Video.objects.new(
+                    site=self.site_location.site)),
+                          list(models.Video.objects.extra(select={'date': """
+COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
+                                                          ).order_by('-date')))
+
+
+# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 

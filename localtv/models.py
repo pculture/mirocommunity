@@ -123,6 +123,12 @@ class SiteLocation(models.Model):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
 
+    # ordering options
+    use_original_date = models.BooleanField(
+        default=True,
+        help_text="If set, use the original date the video was posted.  "
+        "Otherwise, use the date the video was added to this site.")
+
     # comments options
     screen_all_comments = models.BooleanField(
         default=False,
@@ -565,9 +571,14 @@ class SavedSearch(Source):
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
+        published = 'localtv_video.when_published,'
+        if 'site' in kwargs:
+            if not SiteLocation.objects.get(
+                site=kwargs['site']).use_original_date:
+                published = ''
         videos = self.extra(select={'best_date': """
-COALESCE(localtv_video.when_published,localtv_video.when_approved,
-localtv_video.when_submitted)"""})
+COALESCE(%slocaltv_video.when_approved,
+localtv_video.when_submitted)""" % published})
         return videos.filter(**kwargs).order_by('-best_date')
 
     def popular_since(self, delta, sitelocation=None, **kwargs):
@@ -844,14 +855,18 @@ class Video(models.Model):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        return self.when_published or self.when_approved or self.when_submitted
+        if SiteLocation.objects.get(site=self.site).use_original_date and \
+                self.when_published:
+            return self.when_published
+        return self.when_approved or self.when_submitted
 
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-        if self.when_published:
+        if self.when_published and \
+                SiteLocation.objects.get(site=self.site).use_original_date:
             return 'published'
         else:
             return 'posted'
