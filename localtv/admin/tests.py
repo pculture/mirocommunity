@@ -13,6 +13,7 @@ from localtv.tests import BaseTestCase
 from localtv import models
 from localtv import util
 
+import vidscraper
 
 class AdministrationBaseTestCase(BaseTestCase):
 
@@ -1263,7 +1264,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         v = models.Video.objects.get()
         self.assertEquals(v.site, self.site_location.site)
         self.assertEquals(v.name, metasearch_video.name)
-        self.assertEquals(v.description, metasearch_video.description)
+        self.assertEquals(
+            v.description,
+            vidscraper.auto_scrape(v.website_url,
+                                   fields=['description'])['description'])
         self.assertEquals(v.file_url, metasearch_video.file_url)
         self.assertEquals(v.embed_code, metasearch_video.embed_code)
         self.assertTrue(v.last_featured is None)

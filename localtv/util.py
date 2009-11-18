@@ -129,12 +129,23 @@ class MetasearchVideo(object):
         self.id = id
 
     def generate_video_model(self, site, status=models.VIDEO_STATUS_ACTIVE):
-        if self.tags:
+        scraped_data = get_scraped_data(self.website_url)
+        self.name = scraped_data.get('title', self.name)
+        self.description = scraped_data.get('description', self.description)
+        self.file_url = scraped_data.get('file_url', self.file_url)
+        self.embed_code = scraped_data.get('embed_code', self.embed_code)
+        self.flash_enclosure_url = scraped_data.get('flash_enclosure_url',
+                                                    self.flash_enclosure_url)
+        self.website_url = scraped_data.get('link', self.website_url)
+
+        if scraped_data.get('tags'):
+            tags = get_or_create_tags(scraped_data['tags'])
+        elif self.tags:
             tags = get_or_create_tags([tag['name'] for tag in
                                        self.tags['objects']['all']])
         else:
             tags = []
-        
+
         video = models.Video(
             name=self.name,
             site=site,
