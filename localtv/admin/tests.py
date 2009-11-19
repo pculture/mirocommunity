@@ -2149,6 +2149,27 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
+    def test_POST_succeed_with_existing_successful(self):
+        """
+        A POST request to the bulk_edit view with a valid formset should save
+        the updated models and redirect to the same URL if 'successful' is
+        already in the GET arguments.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'page': 2})
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_response = c.post(self.url+"?page=2&successful", POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?page=2&successful' % (
+                        self.site_location.site.domain,
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
     def test_POST_delete(self):
         """
         A POST request to the manage sources view with a valid formset and a

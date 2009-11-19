@@ -138,11 +138,14 @@ def bulk_edit(request, sitelocation=None):
                                                   # edit form
             formset.can_delete = False
             formset.save()
-            path = request.get_full_path()
-            if '?' in path:
-                return HttpResponseRedirect(path + '&successful')
+            if 'successful' in request.GET:
+                return HttpResponseRedirect(request.get_full_path())
             else:
-                return HttpResponseRedirect(path + '?successful')
+                path = request.get_full_path()
+                if '?' in path:
+                    return HttpResponseRedirect(path + '&successful')
+                else:
+                    return HttpResponseRedirect(path + '?successful')
     else:
         formset = forms.VideoFormSet(queryset=page.object_list)
 
