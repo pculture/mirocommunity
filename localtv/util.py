@@ -214,6 +214,7 @@ class MetasearchVideo(object):
             video_service_user=self.video_service_user,
             video_service_url=self.video_service_url)
 
+        video.try_to_get_file_url_data()
         video.save()
 
         for tag in tags:

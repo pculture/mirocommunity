@@ -495,6 +495,8 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
                           'width="480" height="390" '
                           'allowscriptaccess="always" allowfullscreen="true">'
                           '</embed>')
+        self.assertEquals(video.file_url_length, 9236973)
+        self.assertEquals(video.file_url_mimetype, 'video/mp4')
 
         self.assertEquals(video.authors.count(), 1)
         author = video.authors.all()[0]
@@ -532,6 +534,8 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
         self.assertEquals(video.website_url, self.POST_data['website_url'])
         self.assertEquals(video.file_url, self.POST_data['url'])
+        self.assertEquals(video.file_url_length, 9436882)
+        self.assertEquals(video.file_url_mimetype, 'video/mp4')
         self.assertEquals(video.embed_code, '')
 
 

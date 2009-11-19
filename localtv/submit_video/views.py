@@ -187,6 +187,7 @@ def scraped_submit_video(request, sitelocation=None):
             video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
 
+        video.try_to_get_file_url_data()
         video.save()
 
         if video.thumbnail_url:
@@ -322,6 +323,7 @@ def directlink_submit_video(request, sitelocation=None):
             video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
 
+        video.try_to_get_file_url_data()
         video.save()
 
         if video.thumbnail_url:
