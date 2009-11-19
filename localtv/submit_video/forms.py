@@ -50,6 +50,7 @@ class SecondStepSubmitVideoForm(forms.Form):
     thumbnail = ImageURLField(required=False,
                               label="Thumbnail URL (optional)")
     description = forms.CharField(widget=forms.widgets.Textarea,
+                                  required=False,
                                   label="Video Description (optional)")
     tags = TagField(required=False, label="Tags (optional)")
 
