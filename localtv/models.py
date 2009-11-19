@@ -258,7 +258,7 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        from localtv import miroguide_util, util
+        from localtv import util
 
         if self.auto_approve:
             initial_video_status = VIDEO_STATUS_ACTIVE
@@ -288,12 +288,12 @@ class Feed(Source):
                 publish_date = datetime.datetime(*entry.updated_parsed[:7])
             else:
                 publish_date = None
-            thumbnail_url = miroguide_util.get_thumbnail_url(entry) or ''
+            thumbnail_url = util.get_thumbnail_url(entry) or ''
             if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
                 thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
                                                  thumbnail_url)
 
-            video_enclosure = miroguide_util.get_first_video_enclosure(entry)
+            video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure['url']
                 if not urlparse.urlparse(file_url)[0]:
