@@ -310,6 +310,25 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                                    'Miropcf-Miro20Introduction119.mp4'),
                            })))
 
+    def test_POST_succeed_directlink_HEAD(self):
+        """
+        If the URL represents a video file, but doesn't have a standard video
+        extension, a HEAD request should be made to figure out that the URL is
+        a video file.
+        """
+        GET_data = {'url': ('http://media.river-valley.tv/conferences/'
+                            'lgm2009/0302-Jean_Francois_Fortin_Tam-ogg.php')}
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        c = Client()
+        response = c.post(self.url, GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_directlink_video'),
+                urlencode(GET_data)))
+
     def test_POST_succeed_embedrequest(self):
         """
         If the URL isn't something we understand normally, the user should be

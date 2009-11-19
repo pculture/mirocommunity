@@ -16,9 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-from os import path
 import urllib
-import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -31,6 +29,7 @@ from django.template import RequestContext
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.submit_video import forms
+from localtv.submit_video.util import is_video_url
 from localtv.templatetags.filters import sanitize
 
 def _check_submit_permissions(request):
@@ -62,9 +61,6 @@ def submit_video(request, sitelocation=None):
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
         if submit_form.is_valid():
-            url_filename = path.split(
-                urlparse.urlsplit(
-                    submit_form.cleaned_data['url'])[2])[-1]
             if models.Video.objects.filter(
                     website_url=submit_form.cleaned_data['url'],
                     site=sitelocation.site).count():
@@ -121,7 +117,7 @@ def submit_video(request, sitelocation=None):
                         get_params)
 
             # otherwise if it looks like a video file
-            elif util.is_video_filename(url_filename):
+            elif is_video_url(submit_form.cleaned_data['url']):
                 return HttpResponseRedirect(
                     reverse('localtv_submit_directlink_video')
                     + '?' + get_params)
