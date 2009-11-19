@@ -94,8 +94,6 @@ def bulk_edit(request, sitelocation=None):
     except EmptyPage:
         page = video_paginator.page(video_paginator.num_pages)
 
-    videos = videos[page.start_index():page.end_index()]
-
     headers = [
         sort_header('name', 'Video Title', sort),
         sort_header('source', 'Source', sort),
@@ -104,7 +102,7 @@ def bulk_edit(request, sitelocation=None):
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,
-                                     queryset=videos)
+                                     queryset=page.object_list)
         if formset.is_valid():
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
@@ -146,7 +144,7 @@ def bulk_edit(request, sitelocation=None):
             else:
                 return HttpResponseRedirect(path + '?successful')
     else:
-        formset = forms.VideoFormSet(queryset=videos)
+        formset = forms.VideoFormSet(queryset=page.object_list)
 
     return render_to_response('localtv/admin/bulk_edit.html',
                               {'formset': formset,

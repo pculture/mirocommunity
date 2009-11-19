@@ -1976,6 +1976,12 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                           'localtv/admin/bulk_edit.html')
         self.assertEquals(response.context[0]['page'].number, 1)
         self.assertTrue('formset' in response.context[0])
+        self.assertEquals(
+            [form.instance for form in
+             response.context[0]['formset'].initial_forms],
+            list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE).order_by(
+                    'name')[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEquals(list(response.context[0]['categories']),
                           list(models.Category.objects.filter(
