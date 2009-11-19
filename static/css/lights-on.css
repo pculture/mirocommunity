@@ -1164,6 +1164,12 @@ height: 430px;
     display: none;
 }
 
+#video_wrapper embed + p.help {
+    margin: 5px;
+    display: block;
+    clear: both;
+}
+
 .pag {
 height: 45px;
 padding-top: 30px;
