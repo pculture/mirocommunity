@@ -1160,7 +1160,7 @@ height: 430px;
     padding-left: 2px;
 }
 
-#video_wrapper video + img {
+#video_wrapper video + p + img, #video_wrapper video + img {
     display: none;
 }
 
