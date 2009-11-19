@@ -21,6 +21,7 @@ import urllib
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.forms.fields import url_re
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
@@ -62,7 +63,8 @@ def submit_video(request, sitelocation=None):
         submit_form = forms.SubmitVideoForm(request.POST)
         if submit_form.is_valid():
             if models.Video.objects.filter(
-                    website_url=submit_form.cleaned_data['url'],
+                    Q(website_url=submit_form.cleaned_data['url']) |
+                    Q(file_url=submit_form.cleaned_data['url']),
                     site=sitelocation.site).count():
                 if sitelocation.user_is_admin(request.user):
                     # even if the video was rejected, an admin submitting it

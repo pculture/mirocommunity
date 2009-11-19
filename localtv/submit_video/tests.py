@@ -224,6 +224,29 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertEquals(response.context['video'], video)
 
+    def test_POST_fail_existing_video_file_url(self):
+        """
+        If the URL represents the file URL of an existing video, the form
+        should be rerendered.  A 'was_duplicate' variable bounc to True, and a
+        'video' variable bound to the Video object should be added to the
+        context.
+        """
+        video = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Participatory Culture',
+            status=models.VIDEO_STATUS_ACTIVE,
+            file_url='http://www.pculture.org/')
+
+        c = Client()
+        response = c.post(self.url,
+                          {'url': video.file_url})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/submit_video/submit.html')
+        self.assertTrue('form' in response.context[0])
+        self.assertTrue(response.context['was_duplicate'])
+        self.assertEquals(response.context['video'], video)
+
     def test_POST_fail_existing_video_unapproved(self):
         """
         If the URL represents an unapproved video on the site, the form should
