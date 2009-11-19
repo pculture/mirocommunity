@@ -62,28 +62,25 @@ def submit_video(request, sitelocation=None):
     else:
         submit_form = forms.SubmitVideoForm(request.POST)
         if submit_form.is_valid():
-            if models.Video.objects.filter(
-                    Q(website_url=submit_form.cleaned_data['url']) |
-                    Q(file_url=submit_form.cleaned_data['url']),
-                    site=sitelocation.site).count():
+            existing = models.Video.objects.filter(
+                Q(website_url=submit_form.cleaned_data['url']) |
+                Q(file_url=submit_form.cleaned_data['url']),
+                site=sitelocation.site)
+            if existing.count():
                 if sitelocation.user_is_admin(request.user):
                     # even if the video was rejected, an admin submitting it
                     # should make it approved
-                    for v in models.Video.objects.filter(
-                        website_url=submit_form.cleaned_data['url'],
-                        site=sitelocation.site).exclude(
+                    for v in existing.exclude(
                         status=models.VIDEO_STATUS_ACTIVE):
                         v.user = request.user
                         v.status = models.VIDEO_STATUS_ACTIVE
                         v.when_approved = datetime.datetime.now()
                         v.save()
-                        return HttpResponseRedirect(
-                            reverse('localtv_submit_thanks'))
+                    return HttpResponseRedirect(
+                        reverse('localtv_submit_thanks'))
                 else:
                     # pick the first approved video to point the user at
-                    videos = models.Video.objects.filter(
-                        website_url=submit_form.cleaned_data['url'],
-                        site=sitelocation.site,
+                    videos = existing.filter(
                         status=models.VIDEO_STATUS_ACTIVE)
                     if videos.count():
                         video = videos[0]

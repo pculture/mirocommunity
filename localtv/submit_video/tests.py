@@ -224,10 +224,32 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertEquals(response.context['video'], video)
 
+    def test_POST_fail_existing_video_approved_admin(self):
+        """
+        If the URL represents the website URL of an approved video on the site
+        and the user is an admin, the user should be redirected to the thanks
+        page.
+        """
+        video = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Participatory Culture',
+            status=models.VIDEO_STATUS_ACTIVE,
+            website_url='http://www.pculture.org/')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url,
+                          {'url': video.website_url})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks')))
+
     def test_POST_fail_existing_video_file_url(self):
         """
         If the URL represents the file URL of an existing video, the form
-        should be rerendered.  A 'was_duplicate' variable bounc to True, and a
+        should be rerendered.  A 'was_duplicate' variable bound to True, and a
         'video' variable bound to the Video object should be added to the
         context.
         """
@@ -246,6 +268,27 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue('form' in response.context[0])
         self.assertTrue(response.context['was_duplicate'])
         self.assertEquals(response.context['video'], video)
+
+    def test_POST_fail_existing_video_file_url_admin(self):
+        """
+        If the URL represents the file URL of an approved video on the site and
+        the user is an admin, the user should be redirected to the thanks page.
+        """
+        video = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Participatory Culture',
+            status=models.VIDEO_STATUS_ACTIVE,
+            file_url='http://www.pculture.org/')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url,
+                          {'url': video.file_url})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks')))
 
     def test_POST_fail_existing_video_unapproved(self):
         """
