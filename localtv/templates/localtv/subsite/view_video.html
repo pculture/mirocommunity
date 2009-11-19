@@ -84,7 +84,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% if current_video.embed_code %}
         {{ current_video.embed_code|wmode_transparent }}
         {% else %}
-        {% video current_video.file_url mime_type=current_video.file_url_mimetype %}
+        {% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430%}
         {% endif %}
         <img src="{% get_thumbnail_url current_video 534 430 %}" alt="Background thumbnail for {{ current_video.name }}" />
     </div>

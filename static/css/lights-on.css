@@ -1160,6 +1160,10 @@ height: 430px;
     padding-left: 2px;
 }
 
+#video_wrapper video + img {
+    display: none;
+}
+
 .pag {
 height: 45px;
 padding-top: 30px;
