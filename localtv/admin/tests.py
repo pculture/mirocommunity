@@ -2212,8 +2212,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_data['form-0-bulk'] = 'yes'
         POST_data['form-1-bulk'] = 'yes'
-        POST_data['form-21-categories'] = [1, 2]
-        POST_data['form-21-authors'] = [1, 2]
+        POST_data['form-22-categories'] = [1, 2]
+        POST_data['form-22-authors'] = [1, 2]
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
