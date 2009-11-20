@@ -24,6 +24,7 @@ from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.db.models import Q
+from django.views.decorators.vary import vary_on_headers
 from django.views.generic.list_detail import object_list
 
 from localtv import models
@@ -66,6 +67,7 @@ def about(request):
         {}, context_instance=RequestContext(request))
 
 
+@vary_on_headers('User-Agent')
 @get_sitelocation
 def view_video(request, video_id, slug=None, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id,
