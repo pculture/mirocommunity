@@ -708,9 +708,13 @@ class Video(models.Model):
 
         request = urllib2.Request(self.file_url)
         request.get_method = lambda: 'HEAD'
-        http_file = urllib2.urlopen(request)
-        self.file_url_length = http_file.headers['content-length']
-        self.file_url_mimetype = http_file.headers['content-type']
+        try:
+            http_file = urllib2.urlopen(request)
+        except urllib2.HTTPError:
+            pass
+        else:
+            self.file_url_length = http_file.headers['content-length']
+            self.file_url_mimetype = http_file.headers['content-type']
 
     def save_thumbnail(self):
         """
