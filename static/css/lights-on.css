@@ -1164,7 +1164,7 @@ height: 430px;
     display: none;
 }
 
-#video_wrapper embed + p.help {
+#video_wrapper object + p.help {
     margin: 5px;
     display: block;
     clear: both;
