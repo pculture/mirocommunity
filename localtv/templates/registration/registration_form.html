@@ -18,16 +18,9 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block title %}Sign in{% endblock %}
+{% block title %}Register{% endblock %}
 {% block head %}
-{% url localtv_openid_start as localtv_openid_start %}
 <style type="text/css">
-{% if localtv_openid_start %}input.openid {
-  background: url({{ logo }}) no-repeat; 
-  background-position: 0 50%;
-  padding-left: 16px;
-}
-{% endif %}
 .login{
 padding: 20px;
 }
@@ -66,38 +59,11 @@ label, label + input {
 {% endblock head %}
 {% block content %}
 <div class="login">
-<h1>Sign in with a Username/Password</h1>
-  <form action="{{ settings.LOGIN_URL }}" method="POST">
+<h1>Register for a New Account</h1>
+  <form action="{% url registration_register %}" method="POST">
     {{ form.as_p }}
-    <input type="hidden" name="next" value="{{ next }}">
-  <input type="submit" value="Log In"> or <a href="{% url registration_register %}">Sign up for an account</a>
+  <input type="submit" value="Register">
 </form>
-<br />
-<br />
-<hr />
-<br />
-<br />
-{% url localtv_openid_start as localtv_openid_start %}
-{% if localtv_openid_start %}
-<h1>Sign in with your OpenID</h1> 
-<form action="{{ localtv_openid_start }}" method="post">
-<p><input class="openid" type="text" name="openid_url"> <input type="submit" value="Sign in"></p>
-</form>
-<p>Don't have an openid?
-<a href="http://openid.net/get/">Get one!</a>
-</p>
-<br />
-<br />
-<hr />
-<br />
-<br />
-<h1 class="floatleft" style="padding-right: 14px;">Sign in with your Google Account</h1>
-
-<form action="{{ localtv_openid_start }}" method="post">
-  <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
-<input type="submit" value="Click Here">
-</form>
-{% endif %}
 </div>
  {% if request.is_ajax %}
  <input id="cancel_button" value="Cancel" type="submit" onclick="tb_remove();" />

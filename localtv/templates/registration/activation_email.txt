@@ -1,0 +1,6 @@
+Thank you for registering at {{ site.name }}. Your account is created and must be activated before you can use it.
+
+To activate the account click on the following link or copy-&-paste it in your browser:
+http://{{ site.domain }}{% url registration_activate activation key %}
+
+After activation you may login to {{ site.name }}.  Your activation link is valid for {{ expiration_days }} day{{expiration_days|pluralize }}; after that you will have to register again.
