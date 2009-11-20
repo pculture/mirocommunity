@@ -713,8 +713,8 @@ class Video(models.Model):
         except urllib2.HTTPError:
             pass
         else:
-            self.file_url_length = http_file.headers['content-length']
-            self.file_url_mimetype = http_file.headers['content-type']
+            self.file_url_length = http_file.headers.get('content-length')
+            self.file_url_mimetype = http_file.headers.get('content-type', '')
 
     def save_thumbnail(self):
         """
