@@ -710,7 +710,7 @@ class Video(models.Model):
         request.get_method = lambda: 'HEAD'
         try:
             http_file = urllib2.urlopen(request)
-        except urllib2.HTTPError:
+        except Exception:
             pass
         else:
             self.file_url_length = http_file.headers.get('content-length')
