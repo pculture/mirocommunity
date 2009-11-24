@@ -34,7 +34,6 @@ class Command(BaseCommand):
 
         repo_root = os.path.abspath(
             os.path.join(os.path.dirname(__file__), '../../..'))
-
         versioned_static_dir = os.path.join(repo_root, 'static', 'versioned',
                                             version)
         versioned_templates_dir = os.path.join(repo_root, 'localtv',
@@ -45,11 +44,11 @@ class Command(BaseCommand):
             versioned_templates_dir):
             raise CommandError('version %s is already frozen' % version)
 
-        os.mkdir(versioned_static_dir)
+        os.makedirs(versioned_static_dir)
 
         for static_path in ('css', 'images', 'js', 'swf'):
             shutil.copytree(
-                os.path.join(settings.MEDIA_ROOT, static_path),
+                os.path.join(repo_root, 'static', static_path),
                 os.path.join(versioned_static_dir, static_path))
 
         for template_dir in settings.TEMPLATE_DIRS[::-1]:
