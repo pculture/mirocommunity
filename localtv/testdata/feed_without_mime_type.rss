@@ -1,0 +1,47 @@
+<rss version="2.0"
+     xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule"
+     xmlns:media="http://search.yahoo.com/mrss/"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+     xmlns:blip="http://blip.tv/dtd/blip/1.0"
+     xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+     xmlns:amp="http://www.adobe.com/amp/1.0"
+     xmlns:dcterms="http://purl.org/dc/terms"
+     xmlns:gm="http://www.google.com/schemas/gm/1.1"
+     xmlns:mediaad="http://blip.tv/dtd/mediaad/1.0"
+     >
+  <channel>
+    <title>miropcf</title>
+    <link>http://miropcf.blip.tv</link>
+    <description>miropcf</description>
+    <itunes:block>no</itunes:block>
+    <generator>http://blip.tv</generator>
+    <lastBuildDate>Mon, 09 Feb 2009 19:42:57 +0000</lastBuildDate>
+    <pubDate>Mon, 09 Feb 2009 19:42:57 +0000</pubDate>
+    <item>
+      <guid isPermaLink="false">D9E50330-F6E1-11DD-A117-BB8AB007511B</guid>
+      <title>Miro 2.0 Introduction</title>
+      <link>http://blip.tv/file/1754930</link>
+      <description><![CDATA[
+
+
+><embed src="http://blip.tv/play/t2Hr0lQC" type="application/x-shockwave-flash" width="480" height="364" allowscriptaccess="always" allowfullscreen="true"></embed>
+
+<br />
+
+New and improved, Miro 2.0!
+
+]]></description>
+      <comments>http://blip.tv/file/1754930</comments>
+      <category>Default Category</category>
+      <pubDate>Mon, 09 Feb 2009 19:42:57 +0000</pubDate>
+      <enclosure length="12151514" type="" url="http://blip.tv/file/get/Miropcf-Miro20Introduction189.mp4"/>
+      <itunes:keywords></itunes:keywords>
+      <itunes:artwork>Miropcf-Miro20Introduction767.jpg</itunes:artwork>
+      <media:keywords></media:keywords>
+      <media:title>Miro 2.0 Introduction</media:title>
+      <media:thumbnail url="http://a.images.blip.tv/Miropcf-Miro20Introduction767.jpg"/>
+      <creativeCommons:license>http://creativecommons.org/licenses/publicdomain/</creativeCommons:license>
+    </item>
+  </channel>
+</rss>

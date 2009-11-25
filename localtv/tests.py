@@ -271,6 +271,18 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
+    def test_entries_enclosure_type_optional(self):
+        """
+        An enclosure without a MIME type, but with a file URL extension we
+        think is media, should be imported.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_without_mime_type.rss')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that
