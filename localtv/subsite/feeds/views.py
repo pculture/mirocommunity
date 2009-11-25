@@ -17,10 +17,10 @@
 
 import datetime
 
-from django.contrib.syndication.feeds import Feed
+from django.contrib.syndication.feeds import Feed, FeedDoesNotExist
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
 from django.utils.translation import ugettext as _
 
@@ -30,12 +30,21 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-class ThumbnailFeedGenerator(feedgenerator.DefaultFeed):
+class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
     def add_item_elements(self, handler, item):
-        feedgenerator.DefaultFeed.add_item_elements(self, handler, item)
+        feedgenerator.Atom1Feed.add_item_elements(self, handler, item)
         if 'thumbnail' in item:
-            handler.addQuickElement('thumbnail', item['thumbnail'])
+            handler.addQuickElement('icon', item['thumbnail'])
+        if 'website_url' in item:
+            handler.addQuickElement('link', attrs={
+                    'rel': 'via',
+                    'href': item['website_url']})
+        if 'embed_code' in item:
+            handler.startElement('content',
+                                 {'type': 'text/vnd.pcf.embed+html'})
+            handler.characters(item['embed_code'])
+            handler.endElement('content')
 
 
 class BaseVideosFeed(Feed):
@@ -49,20 +58,26 @@ class BaseVideosFeed(Feed):
             site=models.Site.objects.get_current())
 
     def item_pubdate(self, video):
-        return video.when_approved
+        return video.when_published or video.when_approved
 
     def item_link(self, video):
         return video.get_absolute_url()
 
     def item_extra_kwargs(self, item):
-        if not item.has_thumbnail:
-            return {}
-        return {
-            'thumbnail': 'http://%s%s' % (
-                self.sitelocation.site.domain,
-                default_storage.url(
-                    item.get_resized_thumb_storage_path(375, 295)))
-            }
+        kwargs = {}
+        if item.website_url:
+            kwargs['website_url'] = item.website_url
+        if item.has_thumbnail:
+            if item.thumbnail_url:
+                kwargs['thumbnail'] = item.thumbnail_url
+            else:
+                kwargs['thumbnail'] = 'http://%s%s' % (
+                    self.sitelocation.site.domain,
+                    default_storage.url(
+                        item.get_resized_thumb_storage_path(375, 295)))
+        if item.embed_code:
+            kwargs['embed_code'] = item.embed_code
+        return kwargs
 
     def item_enclosure_url(self, video):
         if video.file_url:
@@ -166,6 +181,9 @@ class CategoryVideosFeed(BaseVideosFeed):
 
 
 def category(request, category):
-    feed = CategoryVideosFeed(None, request).get_feed(category)
+    try:
+        feed = CategoryVideosFeed(None, request).get_feed(category)
+    except FeedDoesNotExist:
+        raise Http404
     return HttpResponse(feed.writeString('utf8'))
 

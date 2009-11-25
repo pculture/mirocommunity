@@ -283,6 +283,58 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
+    def test_entries_atom(self):
+        """
+        Atom feeds should be handled correctly,
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed.atom')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid, u'http://www.example.org/entries/1')
+        self.assertEquals(video.name, u'Atom 1.0')
+        self.assertEquals(video.when_published, datetime.datetime(2005, 7, 15,
+                                                                  12, 0, 0))
+        self.assertEquals(video.file_url,
+                          u'http://www.example.org/myvideo.ogg')
+        self.assertEquals(video.file_url_length, 1234)
+        self.assertEquals(video.file_url_mimetype, u'application/ogg')
+        self.assertEquals(video.website_url,
+                          u'http://www.example.org/entries/1')
+        self.assertEquals(video.description, u"""<h1>Show Notes</h1>
+<ul>
+<li>00:01:00 -- Introduction</li>
+<li>00:15:00 -- Talking about Atom 1.0</li>
+<li>00:30:00 -- Wrapping up</li>
+</ul>""")
+
+    def test_entries_atom_with_link_via(self):
+        """
+        Atom feeds with <link rel="via"> should use the via URL as the website
+        URL.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_link_via.atom')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.website_url,
+                          u'http://www.example.org/entries/1')
+
+    def test_entries_atom_with_content_embed(self):
+        """
+        Atom feeds with <content type="text/vnd.pcf.embed+html"> should have
+        that content set as the embed code.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_embed.atom')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.embed_code,
+                          '<embed src="http://www.example.org/?a=b&c=d">')
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that

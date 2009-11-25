@@ -275,6 +275,11 @@ class Feed(Source):
                 feed=self, guid=guid).count():
                 skip = True
             link = entry.get('link')
+            for possible_link in entry.links:
+                if possible_link.get('rel') == 'via':
+                    # original URL
+                    link = possible_link['href']
+                    break
             if (link is not None and Video.objects.filter(
                     website_url=link).count()):
                 skip = True
@@ -344,11 +349,20 @@ class Feed(Source):
                         "or embed_code") % entry['title']
                 continue
 
+            description = entry.get('summary', '')
+            for content in entry.content:
+                type = content.get('type', '')
+                if type == 'text/vnd.pcf.embed+html':
+                    # embed code from an MC feed
+                    embed_code = content.value
+                elif 'html' in type:
+                    description = content.value
+
             video = Video(
                 name=entry['title'],
                 guid=guid,
                 site=self.site,
-                description=sanitize(entry.get('summary', ''),
+                description=sanitize(description,
                                      extra_filters=['img']),
                 file_url=file_url or '',
                 file_url_length=file_url_length,
