@@ -300,16 +300,20 @@ class Feed(Source):
 
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
-                file_url = video_enclosure['url']
-                if not urlparse.urlparse(file_url)[0]:
-                    file_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                file_url)
-                try:
-                    file_url_length = int(video_enclosure.get('filesize') or
-                                          video_enclosure.get('length'))
-                except (ValueError, TypeError):
-                    file_url_length = None
-                file_url_mimetype = video_enclosure.get('type')
+                file_url = video_enclosure.get('url')
+                if not file_url:
+                    skip = True
+                else:
+                    if not urlparse.urlparse(file_url)[0]:
+                        file_url = urlparse.urljoin(parsed_feed.feed.link,
+                                                    file_url)
+                    try:
+                        file_url_length = int(
+                            video_enclosure.get('filesize') or
+                            video_enclosure.get('length'))
+                    except (ValueError, TypeError):
+                        file_url_length = None
+                    file_url_mimetype = video_enclosure.get('type')
 
             if link and not skip:
                 try:
@@ -350,7 +354,7 @@ class Feed(Source):
                 continue
 
             description = entry.get('summary', '')
-            for content in entry.content:
+            for content in entry.get('content', []):
                 type = content.get('type', '')
                 if type == 'text/vnd.pcf.embed+html':
                     # embed code from an MC feed
@@ -381,8 +385,9 @@ class Feed(Source):
             try:
                 video.save_thumbnail()
             except CannotOpenImageUrl:
-                print "Can't get the thumbnail for %s at %s" % (
-                    video.id, video.thumbnail_url)
+                if verbose:
+                    print "Can't get the thumbnail for %s at %s" % (
+                        video.id, video.thumbnail_url)
 
             if entry.get('tags'):
                 entry_tags = [

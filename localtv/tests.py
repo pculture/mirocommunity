@@ -335,6 +335,32 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.embed_code,
                           '<embed src="http://www.example.org/?a=b&c=d">')
 
+    def test_entries_atom_with_media(self):
+        """
+        Atom feeds that use Yahoo!'s Media RSS specification should also have
+        their content imported,
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_media.atom')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.file_url,
+                          u'http://www.example.org/myvideo.ogg')
+        self.assertEquals(video.file_url_mimetype, u'application/ogg')
+        self.assertEquals(video.thumbnail_url,
+                          'http://www.example.org/myvideo.jpg')
+
+    def test_entries_atom_with_invalid_media(self):
+        """
+        Atom feeds that incorrectly use Yahoo!'s Media RSS specification (and
+        don't specify a video another way) should be ignored.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_invalid_media.atom')
+        feed.update_items()
+        self.assertEquals(feed.video_set.count(), 0)
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that
