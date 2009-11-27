@@ -29,7 +29,6 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.forms.fields import slug_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 
@@ -396,11 +395,8 @@ class Feed(Source):
                         video.id, video.thumbnail_url)
 
             if entry.get('tags'):
-                entry_tags = [
-                    tag['term'] for tag in entry['tags']
-                    if len(tag['term']) <= 25
-                    and len(tag['term']) > 0
-                    and slug_re.match(tag['term'])]
+                entry_tags = set(
+                    tag['term'] for tag in entry['tags'])
                 if entry_tags:
                     tags = util.get_or_create_tags(entry_tags)
 

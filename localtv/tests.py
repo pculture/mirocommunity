@@ -235,6 +235,7 @@ class FeedModelTestCase(BaseTestCase):
         * file length
         * file MIME type
         * thumbnail
+        * tags
         """
         feed = models.Feed.objects.get(pk=1)
         feed.feed_url = self._data_file('feed.rss')
@@ -259,6 +260,8 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.when_published,
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
         self.assertEquals(video.video_service(), 'blip.tv')
+        self.assertEquals([tag.name for tag in video.tags.all()],
+                          ['Default Category'])
 
     def test_entries_link_optional(self):
         """
