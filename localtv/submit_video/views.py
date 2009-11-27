@@ -25,7 +25,7 @@ from django.db.models import Q
 from django.forms.fields import url_re
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.template import RequestContext, Context, loader
 
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
@@ -211,6 +211,17 @@ def scraped_submit_video(request, sitelocation=None):
             video.authors.add(author)
         video.save()
 
+        if sitelocation.email_on_new_video and \
+                video.status != models.VIDEO_STATUS_ACTIVE:
+            t = loader.get_template('localtv/submit_video/new_video_email.txt')
+            c = Context({'video': video})
+
+            message = t.render(c)
+            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
+                                                              video)
+
+            util.send_mail_admins(sitelocation, subject, message)
+
         #redirect to a thank you page
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                             args=[video.pk]))
@@ -273,6 +284,17 @@ def embedrequest_submit_video(request, sitelocation=None):
             embed_form.cleaned_data.get('tags', []))
         for tag in tags:
             video.tags.add(tag)
+
+        if sitelocation.email_on_new_video and \
+                video.status != models.VIDEO_STATUS_ACTIVE:
+            t = loader.get_template('localtv/submit_video/new_video_email.txt')
+            c = Context({'video': video})
+
+            message = t.render(c)
+            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
+                                                              video)
+
+            util.send_mail_admins(sitelocation, subject, message)
 
         #reembed to a thank you page
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
@@ -337,6 +359,17 @@ def directlink_submit_video(request, sitelocation=None):
             direct_form.cleaned_data.get('tags', []))
         for tag in tags:
             video.tags.add(tag)
+
+        if sitelocation.email_on_new_video and \
+                video.status != models.VIDEO_STATUS_ACTIVE:
+            t = loader.get_template('localtv/submit_video/new_video_email.txt')
+            c = Context({'video': video})
+
+            message = t.render(c)
+            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
+                                                              video)
+
+            util.send_mail_admins(sitelocation, subject, message)
 
         #redirect to a thank you page
         return HttpResponseRedirect(reverse('localtv_submit_thanks',

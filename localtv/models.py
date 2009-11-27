@@ -25,13 +25,10 @@ import StringIO
 
 from django.db import models
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.mail import send_mail
 from django.forms.fields import slug_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
@@ -142,6 +139,15 @@ class SiteLocation(models.Model):
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
+
+    # e-mail options
+    email_on_new_video = models.BooleanField(
+        default=False,
+        help_text="E-mail admins when a new video is submitted?")
+    email_review_status = models.BooleanField(
+        default=False,
+        help_text=("E-mail admins once/day if new videos are "
+                   "in the review queue?"))
 
     def __unicode__(self):
         return self.site.name
@@ -955,22 +961,19 @@ class VideoModerator(CommentModerator):
             return True
 
     def email(self, comment, video, request):
+        # we do the import in the function because otherwise there's a circular
+        # dependency
+        from localtv.util import send_mail_admins
+
         sitelocation = SiteLocation.objects.get(site=video.site)
         if sitelocation.comments_email_admins:
-            admin_list = sitelocation.admins.filter(
-                is_superuser=False).exclude(email=None).exclude(
-                email='').values_list('email', flat=True)
-            superuser_list = User.objects.filter(is_superuser=True).exclude(
-                email=None).exclude(email='').values_list('email', flat=True)
-            recipient_list = set(admin_list) | set(superuser_list)
             t = loader.get_template('comments/comment_notification_email.txt')
             c = Context({ 'comment': comment,
                           'content_object': video })
             subject = '[%s] New comment posted on "%s"' % (video.site.name,
                                                            video)
             message = t.render(c)
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
-                      recipient_list, fail_silently=True)
+            send_mail_admins(sitelocation, subject, message)
 
     def moderate(self, comment, video, request):
         sitelocation = SiteLocation.objects.get(site=video.site)

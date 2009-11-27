@@ -1,10 +1,14 @@
+import datetime
 from urllib import urlencode
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.core import mail
+from django.template import Context, loader
 from django.test.client import Client
 
 from localtv import models
+from localtv.submit_video.management.commands import review_status_email
 from localtv.tests import BaseTestCase
 
 # -----------------------------------------------------------------------------
@@ -108,7 +112,47 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
         self.assertEquals(set(video.tags.values_list('name', flat=True)),
                           set(('tag1', 'tag2')))
+        self.assertEquals(len(mail.outbox), 0)
         return video
+
+    def test_POST_succeed_email(self):
+        """
+        If the POST to the view succeeds and SiteLocation.email_on_new_video is
+        True, an e-mail should be sent to the site admins.
+        """
+        self.site_location.email_on_new_video = True
+        self.site_location.save()
+
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        video = models.Video.objects.all()[0]
+
+        self.assertEquals(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        for recipient in message.to:
+            u = User.objects.get(email=recipient)
+            self.assertTrue(self.site_location.user_is_admin(u))
+
+        self.assertEquals(message.subject,
+                          '[%s] New Video in Review Queue: %s' % (
+                video.site.name, video))
+
+        t = loader.get_template('localtv/submit_video/new_video_email.txt')
+        c = Context({'video': video})
+        self.assertEquals(message.body, t.render(c))
+
+    def test_POST_succeed_email_admin(self):
+        """
+        If the submitting user is an admin, no e-mail should be sent.
+        """
+        self.site_location.email_on_new_video = True
+        self.site_location.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.post(self.url, self.POST_data)
+        self.assertEquals(len(mail.outbox), 0)
 
     def test_POST_succeed_admin(self):
         """
@@ -578,3 +622,61 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(video.file_url, '')
         self.assertEquals(video.embed_code, self.video_data['embed'])
 
+
+class ReviewStatusEmailCommandTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.site_location.email_review_status = True
+        self.site_location.save()
+
+    def test_no_email(self):
+        """
+        If no videos are new in the previous day, no e-mail should be sent.
+        """
+        review_status_email.Command().handle_noargs()
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_email(self):
+        """
+        If there is a video submitted in the previous day, an e-mail should be
+        sent
+        """
+        queue_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+
+        new_video = queue_videos[0]
+        new_video.when_submitted = datetime.datetime.now() - \
+            datetime.timedelta(hours=23, minutes=59)
+        new_video.save()
+
+        review_status_email.Command().handle_noargs()
+        self.assertEquals(len(mail.outbox), 1)
+
+        message = mail.outbox[0]
+        self.assertEquals(message.subject,
+                          'Video Submissions for testserver')
+        t = loader.get_template('localtv/submit_video/review_status_email.txt')
+        c = Context({'queue_videos': queue_videos,
+                     'new_videos': queue_videos.filter(pk=new_video.pk),
+                     'site': self.site_location.site})
+        self.assertEquals(message.body, t.render(c))
+
+    def test_no_email_without_setting(self):
+        """
+        If the email_review_status setting is False, no e-mail should be sent.
+        """
+        self.site_location.email_review_status = False
+        self.site_location.save()
+
+        queue_videos = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)
+
+        new_video = queue_videos[0]
+        new_video.when_submitted = datetime.datetime.now()
+        new_video.save()
+
+        review_status_email.Command().handle_noargs()
+        self.assertEquals(len(mail.outbox), 0)

@@ -20,7 +20,9 @@ import hashlib
 import re
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.http import HttpResponse
 
 import vidscraper
@@ -153,6 +155,19 @@ def get_scraped_data(url):
 
     return scraped_data
 
+
+def send_mail_admins(sitelocation, subject, message, fail_silently=True):
+    """
+    Send an e-mail message to the admins for the given site.
+    """
+    admin_list = sitelocation.admins.filter(
+        is_superuser=False).exclude(email=None).exclude(
+        email='').values_list('email', flat=True)
+    superuser_list = User.objects.filter(is_superuser=True).exclude(
+        email=None).exclude(email='').values_list('email', flat=True)
+    recipient_list = set(admin_list) | set(superuser_list)
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+              recipient_list, fail_silently=fail_silently)
 
 ## ----------------
 ## Metasearch utils
