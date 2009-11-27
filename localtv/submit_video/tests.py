@@ -93,13 +93,15 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, self.POST_data)
+        video = models.Video.objects.all()[0]
+
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_submit_thanks')))
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
 
-        video = models.Video.objects.all()[0]
         self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
         self.assertEquals(video.name, self.video_data['name'])
         self.assertEquals(video.description, self.video_data['description'])
@@ -117,13 +119,15 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.post(self.url, self.POST_data)
+        video = models.Video.objects.all()[0]
+
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_submit_thanks')))
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
 
-        video = models.Video.objects.all()[0]
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
         self.assertEquals(video.user, User.objects.get(username='admin'))
 
@@ -150,42 +154,44 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
     def test_GET_thanks(self):
         """
         A GET request to the thanks view should render the
-        'localtv/submit_video/thanks.html' template.
+        'localtv/submit_video/thanks.html' template.  It should not include a
+        video in the context, even if one is specified in the URL.
         """
         c = Client()
         response = c.get(reverse('localtv_submit_thanks'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/submit_video/thanks.html')
+        self.assertFalse('video' in response.context[0])
+
+        response = c.get(reverse('localtv_submit_thanks', args=[1]))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/submit_video/thanks.html')
+        self.assertFalse('video' in response.context[0])
 
     def test_GET_thanks_admin(self):
         """
-        A GET request to the thanks view from an admin should include their
-        last video in the template.
+        A GET request to the thanks view from an admin should include the video
+        referenced in the URL.
         """
         user = User.objects.get(username='admin')
 
-        models.Video.objects.create(
+        video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
             status=models.VIDEO_STATUS_ACTIVE,
             website_url='http://www.pculture.org/',
             user=user)
 
-        video2 = models.Video.objects.create(
-            site=self.site_location.site,
-            name='Get Miro',
-            status=models.VIDEO_STATUS_ACTIVE,
-            website_url='http://www.getmiro.com/',
-            user=user)
-
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(reverse('localtv_submit_thanks'))
+        response = c.get(reverse('localtv_submit_thanks',
+                                 args=[video.pk]))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/submit_video/thanks.html')
-        self.assertEquals(response.context['video'], video2)
+        self.assertEquals(response.context['video'], video)
 
     def test_POST_fail_invalid_form(self):
         """
@@ -244,7 +250,8 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_submit_thanks')))
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
 
     def test_POST_fail_existing_video_file_url(self):
         """
@@ -288,7 +295,8 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_submit_thanks')))
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
 
     def test_POST_fail_existing_video_unapproved(self):
         """
@@ -332,7 +340,8 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_submit_thanks')))
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
 
         video = models.Video.objects.get(pk=video.pk)
         self.assertEquals(video.status,models.VIDEO_STATUS_ACTIVE)

@@ -77,7 +77,8 @@ def submit_video(request, sitelocation=None):
                         v.when_approved = datetime.datetime.now()
                         v.save()
                     return HttpResponseRedirect(
-                        reverse('localtv_submit_thanks'))
+                        reverse('localtv_submit_thanks',
+                                args=[existing[0].pk]))
                 else:
                     # pick the first approved video to point the user at
                     videos = existing.filter(
@@ -211,7 +212,8 @@ def scraped_submit_video(request, sitelocation=None):
         video.save()
 
         #redirect to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks'))
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                            args=[video.pk]))
 
     else:
         return render_to_response(
@@ -273,7 +275,8 @@ def embedrequest_submit_video(request, sitelocation=None):
             video.tags.add(tag)
 
         #reembed to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks'))
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                            args=[video.pk]))
 
     else:
         return render_to_response(
@@ -336,7 +339,8 @@ def directlink_submit_video(request, sitelocation=None):
             video.tags.add(tag)
 
         #redirect to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks'))
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                            args=[video.pk]))
 
     else:
         return render_to_response(
@@ -347,12 +351,10 @@ def directlink_submit_video(request, sitelocation=None):
 
 
 @get_sitelocation
-def submit_thanks(request, sitelocation=None):
-    if sitelocation.user_is_admin(request.user):
+def submit_thanks(request, video_id=None, sitelocation=None):
+    if sitelocation.user_is_admin(request.user) and video_id:
         context = {
-            'video': models.Video.objects.filter(site=sitelocation.site,
-                                                 user=request.user).order_by(
-                '-id')[0]
+            'video': models.Video.objects.get(pk=video_id)
             }
     else:
         context = {}

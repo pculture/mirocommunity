@@ -26,4 +26,5 @@ urlpatterns = patterns(
      {}, 'localtv_submit_embedrequest_video'),
     (r'^directlink/$', 'directlink_submit_video',
      {}, 'localtv_submit_directlink_video'),
-    (r'^thanks/$', 'submit_thanks', {}, 'localtv_submit_thanks'))
+    (r'^thanks/(?P<video_id>\d+)?$', 'submit_thanks', {},
+     'localtv_submit_thanks'))
