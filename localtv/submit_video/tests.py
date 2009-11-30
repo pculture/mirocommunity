@@ -465,6 +465,21 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_embedrequest_video'),
                 urlencode({'url': 'http://pculture.org/'})))
 
+    def test_POST_succeed_googlevideo(self):
+        """
+        The the URL represents a Google Video video, the user should be
+        redirect to the embedrequest_submit_video view.
+        """
+        url = 'http://video.google.com/videoplay?docid=-8547688006951024237'
+        c = Client()
+        response = c.post(self.url, {'url': url})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_embedrequest_video'),
+                urlencode({'url': url})))
+
     def test_POST_succeed_canonical(self):
         """
         If the URL is a scraped video but the URL we were given is not the

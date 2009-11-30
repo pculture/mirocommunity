@@ -117,7 +117,7 @@ def submit_video(request, sitelocation=None):
                         get_params)
 
             # otherwise if it looks like a video file
-            elif is_video_url(submit_form.cleaned_data['url']):
+            if is_video_url(submit_form.cleaned_data['url']):
                 return HttpResponseRedirect(
                     reverse('localtv_submit_directlink_video')
                     + '?' + get_params)
