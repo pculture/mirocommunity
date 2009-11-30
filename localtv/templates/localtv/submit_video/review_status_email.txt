@@ -1,0 +1,5 @@
+People have submitted {{ new_videos.count }} new video{{ new_videos.count|pluralize }} today and there are a total
+of {{ queue_videos.count }} video{{ queue_videos.count|pluralize }} waiting to be reviewed.
+
+You can see all videos in the review queue here:
+http://{{ site.domain }}{% url localtv_admin_approve_reject %}

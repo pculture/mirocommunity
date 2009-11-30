@@ -1,0 +1,7 @@
+New video in queue: {{ video.name }}
+Original Website: {{ video.website_url }}
+Description: {{ video.description|striptags|safe }}
+
+
+You can see all videos in the review queue here:
+http://{{ video.site.domain }}{% url localtv_admin_approve_reject %}
