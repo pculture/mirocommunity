@@ -36,7 +36,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </script>
   {% endif %}
   {% get_comment_form for current_video as comment_form %}
-  {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+  {% if user_is_admin %}
   {{ comment_form.media }}
   {% endif %}
 {% endblock %}
