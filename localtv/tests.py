@@ -325,19 +325,6 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.website_url,
                           u'http://www.example.org/entries/1')
 
-    def test_entries_atom_with_content_embed(self):
-        """
-        Atom feeds with <content type="text/vnd.pcf.embed+html"> should have
-        that content set as the embed code.
-        """
-        feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_embed.atom')
-        feed.update_items()
-        video = models.Video.objects.order_by('id')[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.embed_code,
-                          '<embed src="http://www.example.org/?a=b&c=d">')
-
     def test_entries_atom_with_media(self):
         """
         Atom feeds that use Yahoo!'s Media RSS specification should also have
@@ -353,6 +340,19 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.file_url_mimetype, u'application/ogg')
         self.assertEquals(video.thumbnail_url,
                           'http://www.example.org/myvideo.jpg')
+
+    def test_entries_atom_with_media_player(self):
+        """
+        Atom feeds that use Yahoo!'s Media RSS specification to include an
+        embeddable player (with <media:player> should have that code included,
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_media_player.atom')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.embed_code,
+                          '<embed src="http://www.example.org/?a=b&c=d">')
 
     def test_entries_atom_with_invalid_media(self):
         """

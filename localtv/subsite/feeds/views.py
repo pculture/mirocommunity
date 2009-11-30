@@ -32,6 +32,11 @@ LOCALTV_FEED_LENGTH = 30
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
+    def root_attributes(self):
+        attrs = feedgenerator.Atom1Feed.root_attributes(self)
+        attrs['xmlns:media'] = 'http://search.yahoo.com/mrss/'
+        return attrs
+
     def add_item_elements(self, handler, item):
         feedgenerator.Atom1Feed.add_item_elements(self, handler, item)
         if 'thumbnail' in item:
@@ -41,10 +46,10 @@ class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
                     'rel': 'via',
                     'href': item['website_url']})
         if 'embed_code' in item:
-            handler.startElement('content',
-                                 {'type': 'text/vnd.pcf.embed+html'})
+            handler.startElement('media:player',
+                                 {'url': item.get('website_url', '')})
             handler.characters(item['embed_code'])
-            handler.endElement('content')
+            handler.endElement('media:player')
 
 
 class BaseVideosFeed(Feed):

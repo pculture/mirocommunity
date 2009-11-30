@@ -22,6 +22,7 @@ import urllib2
 import urlparse
 import Image
 import StringIO
+from xml.sax.saxutils import unescape
 
 from django.db import models
 from django.contrib import admin
@@ -361,11 +362,12 @@ class Feed(Source):
             description = entry.get('summary', '')
             for content in entry.get('content', []):
                 type = content.get('type', '')
-                if type == 'text/vnd.pcf.embed+html':
-                    # embed code from an MC feed
-                    embed_code = content.value
-                elif 'html' in type:
+                if 'html' in type:
                     description = content.value
+                    break
+
+            if 'media_player' in entry:
+                embed_code = unescape(entry['media_player'])
 
             video = Video(
                 name=entry['title'],

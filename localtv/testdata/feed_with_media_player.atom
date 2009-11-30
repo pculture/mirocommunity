@@ -1,4 +1,5 @@
-<feed xmlns="http://www.w3.org/2005/Atom">
+\]<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:media="http://search.yahoo.com/mrss">
   <id>http://www.example.org/myfeed</id>
   <title>My Podcast Feed</title>
   <updated>2005-07-15T12:00:00Z</updated>
@@ -13,11 +14,13 @@
     <updated>2005-07-15T12:00:00Z</updated>
     <link href="http://www.example.org/entries/1" />
     <summary>An overview of Atom 1.0</summary>
-    <link rel="enclosure"
-          type="application/ogg"
-          title="Ogg"
-          href="http://www.example.org/myvideo.ogg"
-          length="1234" />
+    <media:group>
+      <media:content type="application/ogg" expression="full" medium="video" url="http://www.example.org/myvideo.ogg" />
+      <media:thumbnail url="http://www.example.org/myvideo.jpg" time="00:00:00.000" />
+    </media:group>
+    <media:player url="http://www.example.org/?a=b&c=d">
+    <![CDATA[<embed src="http://www.example.org/?a=b&c=d">]]>
+    </media:player>
     <content type="xhtml">
       <div xmlns="http://www.w3.org/1999/xhtml">
         <h1>Show Notes</h1>
@@ -27,9 +30,6 @@
           <li>00:30:00 -- Wrapping up</li>
         </ul>
       </div>
-    </content>
-    <content type="text/vnd.pcf.embed+html">
-    &lt;embed src="http://www.example.org/?a=b&amp;c=d">
     </content>
   </entry>
 </feed>
