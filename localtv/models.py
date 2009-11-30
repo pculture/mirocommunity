@@ -88,9 +88,9 @@ class SiteLocation(models.Model):
        said site.
      - footer_html: HTML that appears at the bottom of most user-facing pages.
        Can be whatever's most appropriate for the owners of said site.
-     - about_html: HTML to display on the subsite's about page
-     - tagline: displays below the subsite's title on most user-facing pages
-     - css: The intention here is to allow subsites to paste in their own CSS
+     - about_html: HTML to display on the s about page
+     - tagline: displays below the s title on most user-facing pages
+     - css: The intention here is to allow  to paste in their own CSS
        here from the admin.  Not used presently, though eventually it should
        be.
      - frontpage_style: The style of the frontpage.  Either one of:
@@ -182,7 +182,7 @@ class Tag(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('localtv_subsite_list_tag', [self.name])
+        return ('localtv_list_tag', [self.name])
     
 class Source(models.Model):
     """
@@ -206,7 +206,7 @@ class Feed(Source):
     """
     Feed to pull videos in from.
 
-    If the same feed is used on two different subsites, they will require two
+    If the same feed is used on two different , they will require two
     separate entries here.
 
     Fields:
@@ -246,7 +246,7 @@ class Feed(Source):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('localtv_subsite_list_feed', [self.pk])
+        return ('localtv_list_feed', [self.pk])
 
     def update_items(self, verbose=False, parsed_feed=None):
         """
@@ -506,7 +506,7 @@ class Category(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('localtv_subsite_category', [self.slug])
+        return ('localtv_category', [self.slug])
 
     @classmethod
     def in_order(klass, sitelocation):
@@ -555,7 +555,7 @@ class SavedSearch(Source):
        starting with a dash will be processed as negative query terms
      - when_created: date and time that this search was saved.
      - user: the person who saved this search (thus, likely an
-       adminsistrator of this subsite)
+       adminsistrator of this 
     """
     query_string = models.TextField()
     when_created = models.DateTimeField(auto_now_add=True)

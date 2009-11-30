@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -27,32 +27,32 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="main_header">   
       <h2>Editor's Picks</h2>
       <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_featured %}" class="rss">RSS</a> |
+        <a href="{% url localtv_feeds_featured %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
   
     {% for video in featured_videos %}
       {% if forloop.first %}
-        {% include "localtv/subsite/video_feature_frontpage.html" %}
+        {% include "localtv/video_feature_frontpage.html" %}
       {% else %}
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        {% include "localtv/video_listing_individual.html" %}
       {% endif %}
     {% endfor %}
   <br class="clear" />
   <div id="main_header">
       <h2>Popular in the Last 24 Hours</h2>
       <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_popular %}" class="rss">RSS</a> |
+        <a href="{% url localtv_feeds_popular %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
 
     {% for video in popular_videos %}
       {% if forloop.first %}
-        {% include "localtv/subsite/video_feature_frontpage.html" %}
+        {% include "localtv/video_feature_frontpage.html" %}
       {% else %}
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        {% include "localtv/video_listing_individual.html" %}
       {% endif %}
     {% endfor %}
 
@@ -68,12 +68,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <h2>New Videos</h2>
               
       <div class="floatright">
-        <a href="{% url localtv_subsite_feeds_new %}" class="rss">RSS</a> |
+        <a href="{% url localtv_feeds_new %}" class="rss">RSS</a> |
         <a href="#" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
     {% for video in new_videos %}
-      {% include "localtv/subsite/sidebar_video.html" %}
+      {% include "localtv/sidebar_video.html" %}
     {% endfor %}
   </div>
 

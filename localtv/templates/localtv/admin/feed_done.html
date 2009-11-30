@@ -26,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block bottom %}
 <p>
   {% if feed.auto_approve %}
-  <a href="{% url localtv_subsite_list_feed feed.pk %}">See these videos</a>
+  <a href="{% url localtv_list_feed feed.pk %}">See these videos</a>
   {% else %}
   <a href="{% url localtv_admin_approve_reject %}">Review these videos</a>
   {% endif %}

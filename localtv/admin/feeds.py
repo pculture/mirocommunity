@@ -22,7 +22,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.utils.translation import ugettext as _
 
-from localtv.subsite.feeds import views
+from localtv.feeds import views
 from localtv import models
 
 def generate_secret():

@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -25,17 +25,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <h2>{% trans "Browse teh localtvz" %}</h2>
   <ul>
     <li>
-      <a href="{% url localtv_subsite_list_new %}">
+      <a href="{% url localtv_list_new %}">
         {% trans "New videos" %}
       </a>
     </li>
     <li>
-      <a href="{% url localtv_subsite_list_popular %}">
+      <a href="{% url localtv_list_popular %}">
         {% trans "Popular videos" %}
       </a>
     </li>
     <li>
-      <a href="{% url localtv_subsite_list_featured %}">
+      <a href="{% url localtv_list_featured %}">
         {% trans "Featured videos" %}
       </a>
     </li>

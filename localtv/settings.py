@@ -59,13 +59,13 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'localtv.subsite.FixAJAXMiddleware',
+    'localtv.FixAJAXMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'localtv.subsite.urls'
+ROOT_URLCONF = 'localtv.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -99,7 +99,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
     "django.core.context_processors.media",
-    "localtv.subsite.context_processor")
+    "localtv.context_processor")
 
 LOGIN_REDIRECT_URL = '/'
 

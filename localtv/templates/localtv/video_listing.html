@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -34,7 +34,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endblock pagination %}
 
   {% for video in video_list %}
-    {% include "localtv/subsite/video_listing_individual.html" %}
+    {% include "localtv/video_listing_individual.html" %}
   {% endfor %}
 
   {% block pagination2 %}

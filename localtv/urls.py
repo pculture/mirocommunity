@@ -19,14 +19,14 @@ from django.conf.urls.defaults import patterns, include
 from django.conf import settings
 
 urlpatterns = patterns(
-    'localtv.subsite.views',
-    (r'^$', 'subsite_index', {}, 'localtv_subsite_index'),
+    'localtv.views',
+    (r'^$', 'index', {}, 'localtv_index'),
     (r'^about/$', 'about', {}, 'localtv_about'),
-    (r'^search/$', 'video_search', {}, 'localtv_subsite_search'),
-    (r'^category/$', 'category', {}, 'localtv_subsite_category_index'),
-    (r'^category/([-\w]+)$', 'category', {}, 'localtv_subsite_category'),
-    (r'^author/$', 'author', {}, 'localtv_subsite_author_index'),
-    (r'^author/(\d+)$', 'author', {}, 'localtv_subsite_author'),
+    (r'^search/$', 'video_search', {}, 'localtv_search'),
+    (r'^category/$', 'category', {}, 'localtv_category_index'),
+    (r'^category/([-\w]+)$', 'category', {}, 'localtv_category'),
+    (r'^author/$', 'author', {}, 'localtv_author_index'),
+    (r'^author/(\d+)$', 'author', {}, 'localtv_author'),
     (r'^comments/', include('django.contrib.comments.urls')),
     (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)$', 'view_video',
      {}, 'localtv_view_video'))
@@ -39,8 +39,8 @@ urlpatterns += patterns(
     (r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     (r'^admin/', include('localtv.admin.urls')),
     (r'^submit_video/', include('localtv.submit_video.urls')),
-    (r'^listing/', include('localtv.subsite.listing.urls')),
-    (r'^feeds/', include('localtv.subsite.feeds.urls')))
+    (r'^listing/', include('localtv.listing.urls')),
+    (r'^feeds/', include('localtv.feeds.urls')))
 
 if settings.DEBUG:
     # show the thumbnails/logo etc, without relying on Apache

@@ -53,8 +53,8 @@ class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
 
 class BaseVideosFeed(Feed):
-    title_template = "localtv/subsite/feed/title.html"
-    description_template = "localtv/subsite/feed/description.html"
+    title_template = "localtv/feed/title.html"
+    description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
 
     def __init__(self, *args, **kwargs):
@@ -107,7 +107,7 @@ class BaseVideosFeed(Feed):
 
 class NewVideosFeed(BaseVideosFeed):
     def link(self):
-        return reverse('localtv_subsite_list_new')
+        return reverse('localtv_list_new')
 
     def title(self):
         return "%s: %s" % (
@@ -127,7 +127,7 @@ def new(request):
         
 class FeaturedVideosFeed(BaseVideosFeed):
     def link(self):
-        return reverse('localtv_subsite_list_featured')
+        return reverse('localtv_list_featured')
 
     def title(self):
         return "%s: %s" % (
@@ -150,7 +150,7 @@ def featured(request):
         
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
-        return reverse('localtv_subsite_list_popular')
+        return reverse('localtv_list_popular')
 
     def items(self):
         videos = models.Video.objects.popular_since(

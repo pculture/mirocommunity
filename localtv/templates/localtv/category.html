@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div>{{ category.description|sanitize }}</div>
 
-  <a class="rss" href="{% url localtv_subsite_feeds_category category.slug %}">RSS</a>
+  <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
 </div>
 {% endif %}
 <div id="category">
@@ -60,7 +60,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <ul>
       {% for video in child.video_set.all|slice:":4" %}
       <li>
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        {% include "localtv/video_listing_individual.html" %}
       </li>
       {% endfor %}
     </ul>
@@ -75,7 +75,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <ul>
       {% for video in category.approved_set.all %}
       <li>
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        {% include "localtv/video_listing_individual.html" %}
       </li>
       {% endfor %}
     </ul>

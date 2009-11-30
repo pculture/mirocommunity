@@ -18,8 +18,8 @@
 from django.conf.urls.defaults import patterns, include
 
 urlpatterns = patterns(
-    'localtv.subsite.feeds.views',
-    (r'^new/$', 'new', {}, 'localtv_subsite_feeds_new'),
-    (r'^featured/$', 'featured', {}, 'localtv_subsite_feeds_featured'),
-    (r'^popular/$', 'popular', {}, 'localtv_subsite_feeds_popular'),
-    (r'^category/([\w-]+)$', 'category', {}, 'localtv_subsite_feeds_category'))
+    'localtv.feeds.views',
+    (r'^new/$', 'new', {}, 'localtv_feeds_new'),
+    (r'^featured/$', 'featured', {}, 'localtv_feeds_featured'),
+    (r'^popular/$', 'popular', {}, 'localtv_feeds_popular'),
+    (r'^category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'))

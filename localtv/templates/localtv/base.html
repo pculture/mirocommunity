@@ -85,12 +85,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
         <div id="logo">
-          {% url localtv_subsite_index as localtv_subsite_index %}
-          <a href="{{ localtv_subsite_index }}">
+          {% url localtv_index as localtv_index %}
+          <a href="{{ localtv_index }}">
             <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% versioned "/images/logo.gif" %}{% endif %}" />
           </a>
           <h1 style="text-decoration: none;">
-            <a href="{{ localtv_subsite_index }}">
+            <a href="{{ localtv_index }}">
               <span class="name">{{ sitelocation.site.name }}</span>
             </a>
             <span class="tagline">{{ sitelocation.tagline|safe }}</span>
@@ -99,36 +99,36 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% if user_is_admin %}
         <ul class="login">
           <li>
-            <a class="nick show_main med_button" href="{{ localtv_subsite_index }}"><span>View Main Site</span></a>
+            <a class="nick show_main med_button" href="{{ localtv_index }}"><span>View Main Site</span></a>
           </li>
         </ul>
         {% endif %}
 
         {% block nav %}
          <form id="search"
-              action="{% url localtv_subsite_search %}"
+              action="{% url localtv_search %}"
               method="get">
           <input name="query" type="text" id="search_field" />
           <input type="image" id="searchbutton" src="{% versioned "/images/search.png" %}" value="submit" />
         </form>
         <ul id="nav">
           <li class="home_page">
-            <a href="{{ localtv_subsite_index }}">
+            <a href="{{ localtv_index }}">
               <span>Home</span>
             </a>
           </li>
           <li class="featured">
-            <a href="{% url localtv_subsite_list_featured %}">
+            <a href="{% url localtv_list_featured %}">
               <span>Featured</span>
             </a>
           </li>
           <li class="new">
-            <a href="{% url localtv_subsite_list_new %}">
+            <a href="{% url localtv_list_new %}">
               <span>New Videos</span>
             </a>
           </li>
           <li class="popular">
-            <a href="{% url localtv_subsite_list_popular %}">
+            <a href="{% url localtv_list_popular %}">
               <span>Popular</span>
             </a>
           </li>

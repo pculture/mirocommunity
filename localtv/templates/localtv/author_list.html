@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="author_list">
   <ul>
   {% for author in authors %}
-    <li><a href="{% url localtv_subsite_author author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
+    <li><a href="{% url localtv_author author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
   {% endfor %}
   </ul>
 </div>

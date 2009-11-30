@@ -37,13 +37,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <span>
       {{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago
     {% if video.authors.count %}
-    by {% for user in video.authors.all %}<span class="author"><a href="{% url localtv_subsite_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}{% endfor %}
+    by {% for user in video.authors.all %}<span class="author"><a href="{% url localtv_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}{% endfor %}
     {% else %}
     {% if video.video_service %}
     by <span class="author">{% if video.feed %}<a href="{{ video.feed.webpage }}">{{ video.feed.name }}</a>{% else %}<a href="{{ video.video_service_url }}">{{ video.video_service_user }}</a>{% endif %}</span>
     {% else %}
     {% if video.user %}
-    by <span class="author"><a href="{% url localtv_subsite_author video.user.pk %}">{% if video.user.first_name %}{{ video.user.first_name }} {{ video.user.last_name }}{% else %}{{ video.user.username }}{% endif %}</a></span>
+    by <span class="author"><a href="{% url localtv_author video.user.pk %}">{% if video.user.first_name %}{{ video.user.first_name }} {{ video.user.last_name }}{% else %}{{ video.user.username }}{% endif %}</a></span>
     {% endif %}
     {% endif %}
     {% endif %}

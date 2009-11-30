@@ -396,10 +396,10 @@ class ViewTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'videos',
                                         'watched']
 
-    def test_subsite_index(self):
+    def test_index(self):
         """
-        The subsite_index view should render the
-        'localtv/subsite/index_STYLE.html' (STYLE being the frontpage_style for
+        The index view should render the
+        'localtv/index_STYLE.html' (STYLE being the frontpage_style for
         the sitelocation.  The context should include 10 featured videos, 10
         popular videos, 10 new views, and the base categories (those without
         parents).
@@ -410,10 +410,10 @@ class ViewTestCase(BaseTestCase):
             watched.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_index'))
+        response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/index_scrolling.html')
+                          'localtv/index_scrolling.html')
         self.assertEquals(list(response.context['featured_videos']),
                           list(models.Video.objects.filter(
                     status=models.VIDEO_STATUS_ACTIVE,
@@ -429,24 +429,24 @@ class ViewTestCase(BaseTestCase):
         for style in ('list', 'categorized'):
             self.site_location.frontpage_style = style
             self.site_location.save()
-            response = c.get(reverse('localtv_subsite_index'))
+            response = c.get(reverse('localtv_index'))
             self.assertStatusCodeEquals(response, 200)
             self.assertEquals(response.template[0].name,
-                              'localtv/subsite/index_%s.html' % style)
+                              'localtv/index_%s.html' % style)
 
     def test_about(self):
         """
-        The about view should render the 'localtv/subsite/about.html' template.
+        The about view should render the 'localtv/about.html' template.
         """
         c = Client()
         response = c.get(reverse('localtv_about'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/about.html')
+                          'localtv/about.html')
 
     def test_view_video(self):
         """
-        The view_video view should render the 'localtv/subsite/view_video.html'
+        The view_video view should render the 'localtv/view_video.html'
         template.  It should include the current video, and a QuerySet of other
         popular videos.
         """
@@ -461,7 +461,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/view_video.html')
+                          'localtv/view_video.html')
         self.assertEquals(response.context[0]['current_video'], video)
         self.assertEquals(list(response.context[0]['popular_videos']),
                           list(models.Video.objects.popular_since(
@@ -523,7 +523,7 @@ class ViewTestCase(BaseTestCase):
                          HTTP_HOST=self.site_location.site.domain,
                          HTTP_REFERER='http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_subsite_category',
+                reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['category'].pk, 1)
@@ -548,7 +548,7 @@ class ViewTestCase(BaseTestCase):
                          HTTP_HOST=self.site_location.site.domain,
                          HTTP_REFERER='http://%s%s' % (
                 self.site_location.site.domain,
-                reverse('localtv_subsite_category',
+                reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['category'].pk, 1)
@@ -562,15 +562,15 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should take a GET['query'] and search through the
         videos.  It should render the
-        'localtv/subsite/video_listing_search.html' template.
+        'localtv/video_listing_search.html' template.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'blend'}) # lots of Blender videos in the
                                              # test data
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_search.html')
+                          'localtv/video_listing_search.html')
         self.assertEquals(response.context['page'], 1)
         self.assertEquals(response.context['pages'], 4)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -583,13 +583,13 @@ class ViewTestCase(BaseTestCase):
     def test_video_search_no_query(self):
         """
         The video_search view should render the
-        'localtv/subsite/video_listing_search.html' template.
+        'localtv/video_listing_search.html' template.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'))
+        response = c.get(reverse('localtv_search'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_search.html')
+                          'localtv/video_listing_search.html')
 
     def test_video_search_pagination(self):
         """
@@ -597,7 +597,7 @@ class ViewTestCase(BaseTestCase):
         the next page of search results.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'blend',
                           'page': 2})
         self.assertStatusCodeEquals(response, 200)
@@ -619,7 +619,7 @@ class ViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'tag1'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page'], 1)
@@ -627,12 +627,12 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'tag2'})
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'tag2 tag1'})
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
@@ -646,7 +646,7 @@ class ViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'Miro'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page'], 1)
@@ -654,12 +654,12 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'Linux'})
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'Miro Linux'})
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
@@ -673,7 +673,7 @@ class ViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'user'}) # username
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page'], 1)
@@ -681,12 +681,12 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'firstname'}) # first name
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
 
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'lastname'}) # last name
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
@@ -700,7 +700,7 @@ class ViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'video_service_user'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page'], 1)
@@ -716,7 +716,7 @@ class ViewTestCase(BaseTestCase):
         # feed is miropcf
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': 'miropcf'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page'], 1)
@@ -729,7 +729,7 @@ class ViewTestCase(BaseTestCase):
         The video_search view should exclude terms that start with - (hyphen).
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_search'),
+        response = c.get(reverse('localtv_search'),
                          {'query': '-blender'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['pages'], 2)
@@ -743,21 +743,21 @@ class ViewTestCase(BaseTestCase):
     def test_category_index(self):
         """
         The category_index view should render the
-        'localtv/subsite/categories.html' template and include the root
+        'localtv/categories.html' template and include the root
         categories (those without parents).
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_category_index'))
+        response = c.get(reverse('localtv_category_index'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/categories.html')
+                          'localtv/categories.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Category.objects.filter(parent=None)))
 
     def test_category(self):
         """
-        The category view should render the 'localtv/subsite/category.html'
+        The category view should render the 'localtv/category.html'
         template, and include the appropriate category.
         """
         category = models.Category.objects.get(slug='miro')
@@ -765,35 +765,35 @@ class ViewTestCase(BaseTestCase):
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/category.html')
+                          'localtv/category.html')
         self.assertEquals(response.context['category'], category)
 
     def test_author_index(self):
         """
         The author_index view should render the
-        'localtv/subsite/author_list.html' template and include the authors in
+        'localtv/author_list.html' template and include the authors in
         the context.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_author_index'))
+        response = c.get(reverse('localtv_author_index'))
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/author_list.html')
+                          'localtv/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(list(response.context['authors']),
                           list(User.objects.all()))
 
     def test_author(self):
         """
-        The author view should render the 'localtv/subsite/author.html'
+        The author view should render the 'localtv/author.html'
         template and include the author and their videos.
         """
         author = User.objects.get(username='admin')
         c = Client()
-        response = c.get(reverse('localtv_subsite_author',
+        response = c.get(reverse('localtv_author',
                                  args=[author.pk]))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/author.html')
+                          'localtv/author.html')
         self.assertEquals(response.context['author'], author)
         self.assertEquals(len(response.context['video_list']), 2)
         self.assertEquals(list(response.context['video_list']),
@@ -813,26 +813,26 @@ class ListingViewTestCase(BaseTestCase):
 
     def test_index(self):
         """
-        The listing index view should render the 'localtv/subsite/browse.html'
+        The listing index view should render the 'localtv/browse.html'
         template.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_index'))
+        response = c.get(reverse('localtv_list_index'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/browse.html')
+                          'localtv/browse.html')
 
     def test_new_videos(self):
         """
         The new_videos view should render the
-        'localtv/subsite/video_listing_new.html' template and include the new
+        'localtv/video_listing_new.html' template and include the new
         videos.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_new'))
+        response = c.get(reverse('localtv_list_new'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_new.html')
+                          'localtv/video_listing_new.html')
         self.assertEquals(response.context['pages'], 2)
         self.assertEquals(len(response.context['page_obj'].object_list), 15)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -842,7 +842,7 @@ class ListingViewTestCase(BaseTestCase):
     def test_popular_videos(self):
         """
         The popular_videos view should render the
-        'localtv/subsite/video_listing_popular.html' template and include the
+        'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
         for w in models.Watch.objects.all():
@@ -850,10 +850,10 @@ class ListingViewTestCase(BaseTestCase):
             w.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_popular'))
+        response = c.get(reverse('localtv_list_popular'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_popular.html')
+                          'localtv/video_listing_popular.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -864,14 +864,14 @@ class ListingViewTestCase(BaseTestCase):
     def test_featured_videos(self):
         """
         The featured_videos view should render the
-        'localtv/subsite/video_listing_featured.html' template and include the
+        'localtv/video_listing_featured.html' template and include the
         featured videos.
         """
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_featured'))
+        response = c.get(reverse('localtv_list_featured'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_featured.html')
+                          'localtv/video_listing_featured.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -882,7 +882,7 @@ class ListingViewTestCase(BaseTestCase):
     def test_tag_videos(self):
         """
         The tag_videos view should render the
-        'localtv/subsite/video_listing_tag.html' template and include the
+        'localtv/video_listing_tag.html' template and include the
         tagged videos.
         """
         video = models.Video.objects.get(pk=20)
@@ -890,11 +890,11 @@ class ListingViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_tag',
+        response = c.get(reverse('localtv_list_tag',
                          args=['tag1']))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_tag.html')
+                          'localtv/video_listing_tag.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
@@ -903,17 +903,17 @@ class ListingViewTestCase(BaseTestCase):
     def test_feed_videos(self):
         """
         The feed_videos view should render the
-        'localtv/subsite/video_listing_feed.html' template and include the
+        'localtv/video_listing_feed.html' template and include the
         videos from the given feed.
         """
         feed = models.Feed.objects.get(pk=1)
 
         c = Client()
-        response = c.get(reverse('localtv_subsite_list_feed',
+        response = c.get(reverse('localtv_list_feed',
                                  args=[feed.pk]))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/subsite/video_listing_feed.html')
+                          'localtv/video_listing_feed.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),

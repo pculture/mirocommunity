@@ -32,7 +32,7 @@ from localtv.decorators import get_sitelocation
 from localtv.admin import forms as admin_forms
 
 @get_sitelocation
-def subsite_index(request, sitelocation=None):
+def index(request, sitelocation=None):
     featured_videos = models.Video.objects.filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE,
@@ -53,7 +53,7 @@ def subsite_index(request, sitelocation=None):
                                                 parent=None)
 
     return render_to_response(
-        'localtv/subsite/index_%s.html' % (sitelocation.frontpage_style,),
+        'localtv/index_%s.html' % (sitelocation.frontpage_style,),
         {'featured_videos': featured_videos,
          'popular_videos': popular_videos,
          'new_videos': new_videos,
@@ -63,7 +63,7 @@ def subsite_index(request, sitelocation=None):
 
 def about(request):
     return render_to_response(
-        'localtv/subsite/about.html',
+        'localtv/about.html',
         {}, context_instance=RequestContext(request))
 
 
@@ -126,7 +126,7 @@ def view_video(request, video_id, slug=None, sitelocation=None):
     models.Watch.add(request, video)
 
     return render_to_response(
-        'localtv/subsite/view_video.html',
+        'localtv/view_video.html',
         context,
         context_instance=RequestContext(request))
 
@@ -174,16 +174,16 @@ def video_search(request, sitelocation=None):
         return object_list(
             request=request, queryset=videos,
             paginate_by=5,
-            template_name='localtv/subsite/video_listing_search.html',
+            template_name='localtv/video_listing_search.html',
             allow_empty=True, template_object_name='video',
             extra_context={
-                'pagetabs_url': reverse('localtv_subsite_search'),
+                'pagetabs_url': reverse('localtv_search'),
                 'pagetabs_args': urllib.urlencode(
                     {'query': query_string.encode('utf8')})})
 
     else:
         return render_to_response(
-            'localtv/subsite/video_listing_search.html', {},
+            'localtv/video_listing_search.html', {},
             context_instance=RequestContext(request))
 
 
@@ -197,11 +197,11 @@ def category(request, slug=None, sitelocation=None):
         return object_list(
             request=request, queryset=categories,
             paginate_by=18,
-            template_name='localtv/subsite/categories.html',
+            template_name='localtv/categories.html',
             allow_empty=True, template_object_name='category')
     else:
         return render_to_response(
-            'localtv/subsite/category.html',
+            'localtv/category.html',
             {'category': get_object_or_404(models.Category, slug=slug,
                                            site=sitelocation.site)},
             context_instance=RequestContext(request))
@@ -211,7 +211,7 @@ def category(request, slug=None, sitelocation=None):
 def author(request, id=None, sitelocation=None):
     if id is None:
         return render_to_response(
-            'localtv/subsite/author_list.html',
+            'localtv/author_list.html',
             {'authors': User.objects.all()},
             context_instance=RequestContext(request))
     else:
@@ -222,7 +222,7 @@ def author(request, id=None, sitelocation=None):
             site=sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
         return render_to_response(
-            'localtv/subsite/author.html',
+            'localtv/author.html',
             {'author': author,
              'video_list': videos},
             context_instance=RequestContext(request))

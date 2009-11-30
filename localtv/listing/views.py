@@ -28,7 +28,7 @@ from localtv.decorators import get_sitelocation
 @get_sitelocation
 def index(request, sitelocation=None):
     return render_to_response(
-        'localtv/subsite/browse.html', {},
+        'localtv/browse.html', {},
         context_instance=RequestContext(request))
 
 
@@ -40,7 +40,7 @@ def new_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing_new.html',
+        template_name='localtv/video_listing_new.html',
         allow_empty=True, template_object_name='video')
 
 
@@ -52,7 +52,7 @@ def popular_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing_popular.html',
+        template_name='localtv/video_listing_popular.html',
         allow_empty=True, template_object_name='video')
 
 @get_sitelocation
@@ -66,7 +66,7 @@ def featured_videos(request, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing_featured.html',
+        template_name='localtv/video_listing_featured.html',
         allow_empty=True, template_object_name='video')
 
 @get_sitelocation
@@ -80,7 +80,7 @@ def tag_videos(request, tag, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing_tag.html',
+        template_name='localtv/video_listing_tag.html',
         allow_empty=True, template_object_name='video',
         extra_context={'tag': tag})
 
@@ -94,6 +94,6 @@ def feed_videos(request, feed_id, sitelocation=None):
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
-        template_name='localtv/subsite/video_listing_feed.html',
+        template_name='localtv/video_listing_feed.html',
         allow_empty=True, template_object_name='video',
         extra_context={'feed': feed})

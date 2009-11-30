@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -141,7 +141,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </li>
   {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
   {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>>{% endif %}
-  {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_subsite_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
+  {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
   {% endif %}
   {% comment %}
       <form id="add_tag">
@@ -212,7 +212,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <h2>Most Popular</h2>
 
       <div class="floatright">
-        {% url localtv_subsite_feeds_popular as popular_rss %}
+        {% url localtv_feeds_popular as popular_rss %}
         <a href="{{ popular_rss }}" class="rss">RSS</a> |
         <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ popular_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
@@ -220,7 +220,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
 
     {% for video in popular_videos|slice:":9" %}
-      {% include "localtv/subsite/sidebar_video.html" %}
+      {% include "localtv/sidebar_video.html" %}
     {% endfor %}
   </div>
 

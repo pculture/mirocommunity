@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <ul>
       {% for video in video_list %}
       <li>
-        {% include "localtv/subsite/video_listing_individual.html" %}
+        {% include "localtv/video_listing_individual.html" %}
       </li>
       {% endfor %}
     </ul>
