@@ -15,3 +15,54 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import urlparse
+
+from django.conf import settings
+from django.contrib.sites.models import Site
+
+from localtv import models
+
+class FixAJAXMiddleware:
+    """
+    Firefox doesn't handle redirects in XMLHttpRequests correctly (it doesn't
+    set X-Requested-With) so we fake it with a GET argument.
+    """
+    def process_request(self, request):
+        if 'from_ajax' in request.GET and not request.is_ajax():
+            request.META['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
+
+    def process_response(self, request, response):
+        if 300 <= response.status_code < 400 and request.is_ajax():
+            parts = list(urlparse.urlparse(response['Location']))
+            if parts[4]: # query
+                parts[4] = parts[4] + '&from_ajax'
+            else:
+                parts[4] = 'from_ajax'
+            response['Location'] = urlparse.urlunparse(parts)
+        return response
+
+def context_processor(request):
+    sitelocation = models.SiteLocation.objects.get(
+            site=Site.objects.get_current())
+
+    display_submit_button = sitelocation.display_submit_button
+    if display_submit_button:
+        if request.user.is_anonymous() and \
+                sitelocation.submission_requires_login:
+            display_submit_button = False
+    else:
+        if sitelocation.user_is_admin(request.user):
+            display_submit_button = True
+
+    return  {
+        'sitelocation': sitelocation,
+        'request': request,
+        'user_is_admin': sitelocation.user_is_admin(request.user),
+
+        'display_submit_button': display_submit_button,
+
+        'settings': settings,
+
+        'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
+        'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
+        'VIDEO_STATUS_REJECTED': models.VIDEO_STATUS_REJECTED}
