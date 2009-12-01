@@ -573,7 +573,8 @@ class AddFeedForm(forms.Form):
         )
 
     SERVICE_FEEDS = {
-        'youtube': 'http://www.youtube.com/rss/user/%s/videos.rss',
+        'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
+                    'uploads?alt=rss&v=2&orderby=published'),
         'blip': 'http://%s.blip.tv/rss',
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
         }
