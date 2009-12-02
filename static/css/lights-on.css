@@ -585,7 +585,7 @@ display: block;
 float: left;
 height: 80px;
 margin: 12px 0px 0px 0;
-
+overflow: hidden;
 }
 
 #logo img{
