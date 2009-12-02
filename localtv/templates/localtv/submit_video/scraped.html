@@ -19,6 +19,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
+{% block pre-table %}
+{{ form.url }}
+{% endblock %}
 {% block table %}
-    {{ form.as_table }}
+    <tr>
+      <td>
+      {{ form.tags.label_tag }}
+      {{ form.tags }}
+      </td>
+    </tr>
+    {% if not request.user %}
+    <tr>
+      <td>
+        {{ form.contact.errors }}
+        {{ form.contact.label_tag }}
+        {{ form.contact }}
+      </td>
+    </tr>
+    {% endif %}
 {% endblock %}

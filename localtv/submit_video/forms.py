@@ -53,6 +53,9 @@ class SecondStepSubmitVideoForm(forms.Form):
                                   required=False,
                                   label="Video Description (optional)")
     tags = TagField(required=False, label="Tags (optional)")
+    contact = forms.CharField(max_length=250,
+                              label='Contact Info',
+                              required=False)
 
     def clean_description(self):
         return strip_tags(self.cleaned_data['description'])
@@ -61,6 +64,9 @@ class ScrapedSubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True,
                          widget=forms.widgets.HiddenInput)
     tags = TagField(required=False, label="Tags (optional)")
+    contact = forms.CharField(max_length=250,
+                              label='Contact Info',
+                              required=False)
 
 class EmbedSubmitVideoForm(SecondStepSubmitVideoForm):
     embed = forms.CharField(widget=forms.Textarea,

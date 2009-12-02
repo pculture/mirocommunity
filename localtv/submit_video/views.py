@@ -181,7 +181,8 @@ def scraped_submit_video(request, sitelocation=None):
             when_submitted=datetime.datetime.now(),
             when_published=scraped_data.get('publish_date'),
             video_service_user=scraped_data.get('user', ''),
-            video_service_url=scraped_data.get('user_url', ''))
+            video_service_url=scraped_data.get('user_url', ''),
+            contact=scraped_form.cleaned_data.get('contact', ''))
 
 
         if sitelocation.user_is_admin(request.user):
@@ -268,7 +269,8 @@ def embedrequest_submit_video(request, sitelocation=None):
             website_url=embed_form.cleaned_data['url'],
             thumbnail_url=request.POST.get('thumbnail', ''),
             user=user,
-            when_submitted=datetime.datetime.now())
+            when_submitted=datetime.datetime.now(),
+            contact=embed_form.cleaned_data.get('contact', ''))
 
         if sitelocation.user_is_admin(request.user):
             video.when_approved = video.when_submitted
@@ -342,7 +344,8 @@ def directlink_submit_video(request, sitelocation=None):
             thumbnail_url=request.POST.get('thumbnail', ''),
             website_url=direct_form.cleaned_data.get('website_url', ''),
             user=user,
-            when_submitted=datetime.datetime.now())
+            when_submitted=datetime.datetime.now(),
+            contact=direct_form.cleaned_data.get('contact', ''))
 
         if sitelocation.user_is_admin(request.user):
             video.when_approved = video.when_submitted

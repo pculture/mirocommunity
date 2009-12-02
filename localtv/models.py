@@ -671,6 +671,8 @@ class Video(models.Model):
      - video_service_user: if not blank, the username of the user on the video
        service who owns this video.  We can figure out the service from the
        website_url.
+     - contact: a free-text field for anonymous users to specify some contact
+       info
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
@@ -703,6 +705,9 @@ class Video(models.Model):
                                           default='')
     video_service_url = models.URLField(verify_exists=False, blank=True,
                                         default='')
+    contact = models.CharField(max_length=250, blank=True,
+                               default='')
+
 
     objects = VideoManager()
 

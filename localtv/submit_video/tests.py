@@ -112,6 +112,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
         self.assertEquals(set(video.tags.values_list('name', flat=True)),
                           set(('tag1', 'tag2')))
+        self.assertEquals(video.contact, 'Foo <bar@example.com>')
         self.assertEquals(len(mail.outbox), 0)
         return video
 
@@ -517,7 +518,8 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
             }
         self.POST_data = {
             'url': 'http://blip.tv/file/10',
-            'tags': 'tag1, tag2'
+            'tags': 'tag1, tag2',
+            'contact': 'Foo <bar@example.com>',
             }
         self.GET_data = {
             'url': self.POST_data['url'],
@@ -587,7 +589,8 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
             'description': 'description',
             'thumbnail': 'http://www.getmiro.com/favicon.ico',
             'website_url': 'http://www.getmiro.com/',
-            'tags': 'tag1, tag2'
+            'tags': 'tag1, tag2',
+            'contact': 'Foo <bar@example.com>',
             }
         self.GET_data = {
             'url': self.POST_data['url'],
@@ -619,7 +622,8 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
             'description': 'description',
             'thumbnail': 'http://www.getmiro.com/favicon.ico',
             'embed': '<h1>hi!</h1>',
-            'tags': 'tag1, tag2'
+            'tags': 'tag1, tag2',
+            'contact': 'Foo <bar@example.com>',
             }
         self.GET_data = {
             'url': self.POST_data['url'],
