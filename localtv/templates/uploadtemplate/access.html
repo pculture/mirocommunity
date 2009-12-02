@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   <pre>
-    {{ data|safe }}
+    {{ data|escape }}
   </pre>
   <ul>
     <li><a href="?format=raw">download</a></li>
