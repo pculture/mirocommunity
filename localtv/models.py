@@ -509,19 +509,22 @@ class Category(models.Model):
         return ('localtv_category', [self.slug])
 
     @classmethod
-    def in_order(klass, sitelocation):
+    def in_order(klass, sitelocation, initial=None):
         objects = []
         def accumulate(categories):
             for category in categories:
                 objects.append(category)
                 if category.child_set.count():
                     accumulate(category.child_set.all())
-        accumulate(klass.objects.filter(site=sitelocation, parent=None))
+        if initial is None:
+            initial = klass.objects.filter(site=sitelocation, parent=None)
+        accumulate(initial)
         return objects
 
     def approved_set(self):
+        categories = [self] + self.in_order(self.site, self.child_set.all())
         return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
-                                 categories=self)
+                                 categories__in=categories)
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):

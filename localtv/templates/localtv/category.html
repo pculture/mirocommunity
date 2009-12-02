@@ -20,68 +20,48 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load filters %}
 {% block content %}
-{% if category.name %}
 <div id="category_sidebar">
-  {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+  {% if category.name %}
+  <div id="category_info">
+    {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
 
-  <h1>{{ category.name }}</h1>
+    <h1>{{ category.name }}</h1>
 
-  <div>{{ category.description|sanitize }}</div>
+    <div>{{ category.description|sanitize }}</div>
 
-  <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
-</div>
-{% endif %}
-<div id="category">
-
-  <div id="with-children">
-    <ul>
-      {% for child in category.child_set.all %}
-      {% if child.child_set.count %}
-      <li>
-        <a href="{{ child.get_absolute_url }}">
-          {% if child.logo %}
-          <img src="{{ child.logo.url }}">
-          {% endif %}
-        </a>
-        <a href="{{ child.get_absolute_url }}">
-          {{ child.name }}
-        </a>
-      </li>
-      {% endif %}
-      {% endfor %}
-    <ul>
+    <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
   </div>
-
-  <div id="no-children">
-    {% for child in category.child_set.all %}
-    
-    {% if not child.child_set.count %}
-    <h2><a href="{{ child.get_absolute_url }}" class="count">{{ child.name }} <span>{{ child.approved_set.count }} Videos &gt;&gt;</span></a></h2>
-    <ul>
-      {% for video in child.video_set.all|slice:":4" %}
+  {% endif %}
+  {% if category.child_set.count %}
+  <div id="subcategory_sidebar">
+    <ul class="cat_list">
+      {% for subcat in category.child_set.all %}
       <li>
-        {% include "localtv/video_listing_individual.html" %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    
-    {% endfor %}
-  </div>
- 
-   {% if category.approved_set.count %}
-  <div id="individual">
-    <h2>Individual {{ category.name }} Videos</h2>
-    <ul>
-      {% for video in category.approved_set.all %}
-      <li>
-        {% include "localtv/video_listing_individual.html" %}
+        <a class="top_cat_button" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
+        {% if subcat.child_set.count %}
+        <ul>
+        {% for subsubcat in subcat.child_set.all %}
+        <li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
+        {% endfor %}
+        </ul>
+        {% endif %}
       </li>
       {% endfor %}
     </ul>
   </div>
   {% endif %}
- 
+</div>
+<div id="category">
+
+  {% if category.approved_set.count %}
+  <ul>
+    {% for video in category.approved_set.all %}
+    <li>
+      {% include "localtv/video_listing_individual.html" %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 
 </div>
 {% endblock %}

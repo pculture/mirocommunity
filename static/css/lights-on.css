@@ -2031,15 +2031,16 @@ padding: 0 20px 10px 0px;
 float: left;
 }
 
-#category_sidebar {
+#category_info {
 margin-top: 27px;
 background: #f9f9f9 !important;
 border: 1px solid #eee !important;
 padding: 20px;
 }
 
-
-
+#subcategory_sidebar {
+    padding-top: 20px;
+}
 
 #category_sidebar h1 {
 margin: 0px 0 10px 0;
@@ -2056,24 +2057,6 @@ padding-top: 0 !important;
 #category h2 {
 padding-bottom: 15px;
 }
-
-
-
-
-
-#category_sidebar ul {
-clear: both;
-padding-left: 20px;
-text-align: left;
-}
-
-
-
-#category_sidebar ul a {
-display: block;
-padding: 3px 0;
-}
-
 
 .actions {
 padding: 0 0 15px;

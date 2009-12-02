@@ -31,7 +31,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% for category in category_list %}
     <dt>
       <a href="{{ category.get_absolute_url }}" class="med_button"><span>{{ category.name }}</span></a>
-      {% with category.video_set.count as count %}
+      {% with category.approved_set.count as count %}
       <span class="amount">({{ count }} Video{{count|pluralize }})</span>
       {% endwith %}
     </dt>
