@@ -50,7 +50,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                   {% endblock pagination %}
               </div>
 
-	{% block helpful %}<div class="helpful rounded">Videos here require moderator approval before appearing on the site.</div>{% endblock %}
+	{% block helpful %}<div class="helpful rounded">
+        Videos here require moderator approval before appearing on the site.
+        <div>
+          <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
+          <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
+          </div>
+        </div>
+        {% endblock %}
 
 
   <div id="admin_table">
@@ -59,13 +66,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
      <div class="top_bar">
          
        {% block admin_actions %}
-              <div class="admin_actions_all">
+           <div class="admin_actions_all">
                 <a class="approve med_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve Page</span></a>
                 <a class="reject med_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject Page</span></a>
                 <a class="reject med_button" href="{% url localtv_admin_clear_all %}"><span>Clear Queue</span></a>
               </div>
-              <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
-              <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
             </div>
        {% endblock %}
         <div id="admin_leftpane">
