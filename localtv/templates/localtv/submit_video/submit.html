@@ -29,14 +29,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
 {% endblock %}
 {% block table %}
-  {% if form.url.errors %}
-  <tr class="error">
-    <td>{{ form.url.errors }}
-    </td>
-  </tr>
-  {% endif %}
   <tr>
-    <td>{{ form.url }}</td>
+    <td>
+        {{ form.url.errors }}
+        {{ form.url.label_tag }}
+        {{ form.url }}
+    </td>
   </tr>
 {% endblock %}
 {% block post-table %}

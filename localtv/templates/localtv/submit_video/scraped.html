@@ -25,7 +25,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block table %}
     <tr>
       <td>
-      {{ form.tags.label_tag }}
+        Video: {{ data.title }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Description: {{ data.description }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+      {{ form.tags.errors }}
+      {{ form.tags.help_text|safe }}
       {{ form.tags }}
       </td>
     </tr>

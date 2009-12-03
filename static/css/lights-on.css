@@ -884,7 +884,7 @@ font-weight: bold;
     padding: 10px;
 }
 
-#submit_video li span.url {
+#submit_video span.url {
     color: green;
 
 }

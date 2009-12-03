@@ -52,7 +52,9 @@ class SecondStepSubmitVideoForm(forms.Form):
     description = forms.CharField(widget=forms.widgets.Textarea,
                                   required=False,
                                   label="Video Description (optional)")
-    tags = TagField(required=False, label="Tags (optional)")
+    tags = TagField(required=False, label="Tags (optional)",
+                    help_text=("You can also <span class='url'>optionally add "
+                               "tags</span> for the video (below)."))
     contact = forms.CharField(max_length=250,
                               label='Contact Info',
                               required=False)
@@ -63,10 +65,8 @@ class SecondStepSubmitVideoForm(forms.Form):
 class ScrapedSubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True,
                          widget=forms.widgets.HiddenInput)
-    tags = TagField(required=False, label="Tags (optional)")
-    contact = forms.CharField(max_length=250,
-                              label='Contact Info',
-                              required=False)
+    tags = SecondStepSubmitVideoForm.base_fields['tags']
+    contact = SecondStepSubmitVideoForm.base_fields['contact']
 
 class EmbedSubmitVideoForm(SecondStepSubmitVideoForm):
     embed = forms.CharField(widget=forms.Textarea,
