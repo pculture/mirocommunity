@@ -68,7 +68,6 @@ def bulk_edit(request, sitelocation=None):
         videos = videos.filter(
             Q(description__icontains=search_string) |
             Q(name__icontains=search_string) |
-            Q(tags__name__icontains=search_string) |
             Q(categories__name__icontains=search_string) |
             Q(user__username__icontains=search_string) |
             Q(user__first_name__icontains=search_string) |

@@ -22,7 +22,7 @@ from django import forms
 from django.core.files.base import ContentFile
 from django.utils.html import strip_tags
 
-from localtv.admin.forms import TagField
+from tagging.forms import TagField
 
 class ImageURLField(forms.URLField):
 

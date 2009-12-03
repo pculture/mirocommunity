@@ -615,7 +615,7 @@ class ViewTestCase(BaseTestCase):
         The video_search view should search the tags for videos.
         """
         video = models.Video.objects.get(pk=20)
-        video.tags = util.get_or_create_tags(['tag1', 'tag2'])
+        video.tags = 'tag1 tag2'
         video.save()
 
         c = Client()
@@ -886,7 +886,7 @@ class ListingViewTestCase(BaseTestCase):
         tagged videos.
         """
         video = models.Video.objects.get(pk=20)
-        video.tags = util.get_or_create_tags(['tag1'])
+        video.tags = 'tag1'
         video.save()
 
         c = Client()

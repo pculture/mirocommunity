@@ -35,6 +35,7 @@ from django.template.defaultfilters import slugify
 
 import feedparser
 import vidscraper
+import tagging
 
 from localtv.templatetags.filters import sanitize
 
@@ -165,25 +166,6 @@ class SiteLocation(models.Model):
 
         return bool(self.admins.filter(pk=user.pk).count())
 
-class Tag(models.Model):
-    """
-    Tags for videos.
-
-    Presently apply to all sitelocations.  Maybe eventually only certain tags
-    should apply to certain sitelocations?
-
-    Fields:
-      - name: name of this tag
-    """
-    name = models.CharField(max_length=255)
-
-    def __unicode__(self):
-        return self.name
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('localtv_list_tag', [self.name])
-    
 class Source(models.Model):
     """
     An abstract base class to represent things which are sources of multiple
@@ -398,12 +380,10 @@ class Feed(Source):
 
             if entry.get('tags'):
                 entry_tags = set(
-                    tag['term'] for tag in entry['tags'])
+                    tag['term'] for tag in entry['tags'] if tag.get('term'))
                 if entry_tags:
-                    tags = util.get_or_create_tags(entry_tags)
-
-                    for tag in tags:
-                        video.tags.add(tag)
+                    video.tags = util.get_or_create_tags(entry_tags)
+                    video.save()
 
             for category in self.auto_categories.all():
                 video.categories.add(category)
@@ -680,7 +660,6 @@ class Video(models.Model):
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
     description = models.TextField(blank=True)
-    tags = models.ManyToManyField(Tag, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
@@ -994,12 +973,12 @@ class VideoModerator(CommentModerator):
 
 moderator.register(Video, VideoModerator)
 
-
 admin.site.register(SiteLocation)
-admin.site.register(Tag)
 admin.site.register(Feed)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Profile)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)
+
+tagging.register(Video)

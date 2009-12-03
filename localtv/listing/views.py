@@ -71,8 +71,7 @@ def featured_videos(request, sitelocation=None):
 
 @get_sitelocation
 def tag_videos(request, tag, sitelocation=None):
-    tag = get_object_or_404(models.Tag, name=tag)
-    videos = tag.video_set.filter(
+    videos = models.Video.tagged.with_all(tag).filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     videos = videos.order_by(

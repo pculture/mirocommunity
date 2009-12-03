@@ -18,9 +18,10 @@
 from django import forms
 from django.contrib.auth.models import User
 
+from tagging.forms import TagField
+
 from localtv import models
-from localtv.admin.forms import (TagField, TagAreaWidget,
-                                         BulkChecklistField)
+from localtv.admin.forms import BulkChecklistField
 
 
 class FeedNameForm(forms.ModelForm):
@@ -84,7 +85,7 @@ class VideoCategoriesForm(forms.ModelForm):
             site=self.instance.site)
 
 class VideoTagsForm(forms.ModelForm):
-    tags = TagField(required=False, widget=TagAreaWidget)
+    tags = TagField(required=False, widget=forms.Textarea)
     class Meta:
         model = models.Video
         fields = ('tags',)

@@ -282,10 +282,8 @@ def embedrequest_submit_video(request, sitelocation=None):
             video.save_thumbnail_from_file(
                 embed_form.cleaned_data['thumbnail'])
 
-        tags = util.get_or_create_tags(
-            embed_form.cleaned_data.get('tags', []))
-        for tag in tags:
-            video.tags.add(tag)
+        video.tags = embed_form.cleaned_data.get('tags', '')
+        video.save()
 
         if sitelocation.email_on_new_video and \
                 video.status != models.VIDEO_STATUS_ACTIVE:
@@ -358,10 +356,8 @@ def directlink_submit_video(request, sitelocation=None):
             video.save_thumbnail_from_file(
                 direct_form.cleaned_data['thumbnail'])
 
-        tags = util.get_or_create_tags(
-            direct_form.cleaned_data.get('tags', []))
-        for tag in tags:
-            video.tags.add(tag)
+        video.tags = direct_form.cleaned_data.get('tags', [])
+        video.save()
 
         if sitelocation.email_on_new_video and \
                 video.status != models.VIDEO_STATUS_ACTIVE:

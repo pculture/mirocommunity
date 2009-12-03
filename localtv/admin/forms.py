@@ -27,39 +27,9 @@ from django.core.cache import cache
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
+from tagging.forms import TagField
+
 from localtv import models
-
-class TagWidgetMixin:
-    def render(self, name, value, attrs=None):
-        if isinstance(value, basestring):
-            return self.__class__.__bases__[-1].render(self, name, value,
-                                                       attrs)
-        if value is None:
-            value = []
-        return self.__class__.__bases__[-1].render(
-            self, name,
-            ', '.join(models.Tag.objects.filter(pk__in=value).values_list(
-                    'name', flat=True)),
-            attrs)
-
-class TagWidget(TagWidgetMixin, forms.TextInput):
-    pass
-
-class TagAreaWidget(TagWidgetMixin, forms.Textarea):
-    pass
-
-class TagField(forms.CharField):
-    widget = TagWidget
-
-    def clean(self, value):
-        if not value:
-            return []
-        names = [name.strip() for name in value.split(',')]
-        tags = []
-        for name in names:
-            tag, created = models.Tag.objects.get_or_create(name=name)
-            tags.append(tag)
-        return tags
 
 class EditVideoForm(forms.ModelForm):
     """
@@ -236,7 +206,7 @@ class BulkEditVideoForm(EditVideoForm):
             attrs={'class': 'large_field'}),
                                     required=False)
     tags = TagField(required=False,
-                    widget=TagAreaWidget)
+                    widget=forms.Textarea)
     categories = BulkChecklistField(models.Category.objects, required=False)
     authors = BulkChecklistField(User.objects, required=False)
     when_published = forms.DateTimeField(required=False,

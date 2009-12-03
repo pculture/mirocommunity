@@ -25,6 +25,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import HttpResponse
 
+import tagging
 import vidscraper
 
 from localtv import models
@@ -120,10 +121,9 @@ def get_thumbnail_url(entry):
 def get_or_create_tags(tag_list):
     tag_set = set()
     for tag_text in tag_list:
-        tags = models.Tag.objects.filter(name=tag_text)
+        tags = tagging.models.Tag.objects.filter(name=tag_text)
         if not tags:
-            tag = models.Tag(name=tag_text)
-            tag.save()
+            tag = tagging.models.Tag.objects.create(name=tag_text)
         elif tags.count() == 1:
             tag = tags[0]
         else:
@@ -133,8 +133,7 @@ def get_or_create_tags(tag_list):
                     break
 
         tag_set.add(tag)
-
-    return tag_set
+    return tagging.utils.edit_string_for_tags(list(tag_set))
 
 
 def get_scraped_data(url):
@@ -247,10 +246,8 @@ class MetasearchVideo(object):
 
         video.try_to_get_file_url_data()
         video.save()
-
-        for tag in tags:
-            video.tags.add(tag)
-
+        video.tags = tags
+        video.save()
         if video.thumbnail_url:
             video.save_thumbnail()
 

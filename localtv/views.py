@@ -27,6 +27,8 @@ from django.db.models import Q
 from django.views.decorators.vary import vary_on_headers
 from django.views.generic.list_detail import object_list
 
+import tagging
+
 from localtv import models
 from localtv.decorators import get_sitelocation
 from localtv.admin import forms as admin_forms
@@ -147,10 +149,15 @@ def video_search(request, sitelocation=None):
             site=sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
 
+        include_tags = tagging.utils.get_tag_list(list(include_terms))
+        exclude_tags = tagging.utils.get_tag_list(list(exclude_terms))
+        included_videos = models.Video.tagged.with_any(include_tags)
+        excluded_videos = models.Video.tagged.with_any(exclude_tags)
+
         for term in include_terms:
             videos = videos.filter(
                 Q(description__icontains=term) | Q(name__icontains=term) |
-                Q(tags__name__icontains=term) |
+                Q(pk__in=included_videos) |
                 Q(categories__name__icontains=term) |
                 Q(user__username__icontains=term) |
                 Q(user__first_name__icontains=term) |
@@ -161,7 +168,7 @@ def video_search(request, sitelocation=None):
         for term in stripped_exclude_terms:
             videos = videos.exclude(description__icontains=term)
             videos = videos.exclude(name__icontains=term)
-            videos = videos.exclude(tags__name__icontains=term)
+            videos = videos.exclude(pk__in=excluded_videos)
             videos = videos.exclude(categories__name__icontains=term)
             videos = videos.exclude(user__username__icontains=term)
             videos = videos.exclude(user__first_name__icontains=term)
