@@ -72,6 +72,19 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(form.initial['url'], self.POST_data['url'])
         return response
 
+    def test_GET_fail(self):
+        """
+        If the URL isn't present in the GET request, the view should redirect
+        back to the localtv_submit_video view.
+        """
+        c = Client()
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_video')))
+
     def test_POST_fail(self):
         """
         If the POST to the view fails (the form doesn't validate, the template

@@ -139,7 +139,7 @@ def submit_video(request, sitelocation=None):
 def scraped_submit_video(request, sitelocation=None):
     if request.method == "GET":
 
-        if not (request.GET.get('url') or url_re.match(request.GET['url'])):
+        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
             return HttpResponseRedirect(reverse('localtv_submit_video'))
 
         scraped_data = util.get_scraped_data(request.GET['url'])
@@ -241,7 +241,7 @@ def scraped_submit_video(request, sitelocation=None):
 def embedrequest_submit_video(request, sitelocation=None):
     if request.method == "GET":
 
-        if not (request.GET.get('url') or url_re.match(request.GET['url'])):
+        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
             return HttpResponseRedirect(reverse('localtv_submit_video'))
 
         embed_form = forms.EmbedSubmitVideoForm(initial=request.GET)
@@ -317,7 +317,7 @@ def embedrequest_submit_video(request, sitelocation=None):
 def directlink_submit_video(request, sitelocation=None):
     if request.method == "GET":
 
-        if not (request.GET.get('url') or url_re.match(request.GET['url'])):
+        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
             return HttpResponseRedirect(reverse('localtv_submit_video'))
 
         direct_form = forms.DirectSubmitVideoForm(initial=request.GET)
