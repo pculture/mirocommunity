@@ -289,9 +289,7 @@ class Feed(Source):
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
                 file_url = video_enclosure.get('url')
-                if not file_url:
-                    skip = True
-                else:
+                if file_url:
                     if not urlparse.urlparse(file_url)[0]:
                         file_url = urlparse.urljoin(parsed_feed.feed.link,
                                                     file_url)
@@ -308,7 +306,8 @@ class Feed(Source):
                     scraped_data = vidscraper.auto_scrape(
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date', 'thumbnail_url', 'link'])
+                                'publish_date', 'thumbnail_url', 'link',
+                                'file_url_is_flaky'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -348,7 +347,7 @@ class Feed(Source):
                     description = content.value
                     break
 
-            if 'media_player' in entry:
+            if entry.get('media_player'):
                 embed_code = unescape(entry['media_player'])
 
             video = Video(

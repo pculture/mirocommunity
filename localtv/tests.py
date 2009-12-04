@@ -290,6 +290,57 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
+    def test_entries_vimeo(self):
+        """
+        Vimeo RSS feeds should include the correct data.
+        """
+        models.vidscraper = self.vidscraper
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('vimeo.rss')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
+        self.assertEquals(video.name, u'Tishana - Pro-Choicers on Stupak')
+        self.assertEquals(video.description,
+                          '<p><a href="http://vimeo.com/7981161"></a></p><p>'
+                          'Tishana from SPARK Reproductive Justice talking '
+                          'about the right to choose after the National Day '
+                          'of Action Rally to Stop Stupak-Pitts, 12.2.2009\n'
+                          '</p><p>Cast: <a href="http://vimeo.com/user1751935"'
+                          ' style="color: #2786c2; text-decoration: none;">'
+                          'Latoya Peterson</a></p>')
+        self.assertEquals(video.website_url, 'http://vimeo.com/7981161')
+        self.assertEquals(video.embed_code,
+                          '<object width="425" height="344">'
+                          '<param name="allowfullscreen" value="true">'
+                          '<param name="allowscriptaccess" value="always">'
+                          '<param name="movie" value="http://vimeo.com/'
+                          'moogaloop.swf?show_byline=1&amp;fullscreen=1&amp;'
+                          'clip_id=7981161&amp;color=&amp;'
+                          'server=vimeo.com&amp;show_title=1&amp;'
+                          'show_portrait=0"><embed src="http://vimeo.com/'
+                          'moogaloop.swf?show_byline=1&amp;fullscreen=1&amp;'
+                          'clip_id=7981161&amp;color=&amp;'
+                          'server=vimeo.com&amp;show_title=1&amp;'
+                          'show_portrait=0" allowscriptaccess="always" '
+                          'height="344" width="425" allowfullscreen="true" '
+                          'type="application/x-shockwave-flash"></embed>'
+                          '</object>')
+        self.assertEquals(video.file_url, '')
+        self.assertTrue(video.has_thumbnail)
+        self.assertEquals(video.thumbnail_url,
+                          'http://ts.vimeo.com.s3.amazonaws.com/360/198/'
+                          '36019806_640.jpg')
+        self.assertEquals(video.when_published,
+                          datetime.datetime(2009, 12, 4, 8, 23, 47))
+        self.assertEquals(video.video_service(), 'Vimeo')
+        category = ['Pro-Choice', 'Stupak-Pitts']
+        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
+            category = [cat.lower() for cat in category]
+        self.assertEquals([tag.name for tag in video.tags.all()],
+                          category)
+
     def test_entries_atom(self):
         """
         Atom feeds should be handled correctly,
