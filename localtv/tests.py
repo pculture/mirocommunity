@@ -262,7 +262,7 @@ class FeedModelTestCase(BaseTestCase):
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
         self.assertEquals(video.video_service(), 'blip.tv')
         category = ['Default Category']
-        if settings.FORCE_LOWERCASE_TAGS:
+        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
             category = [category[0].lower()]
         self.assertEquals([tag.name for tag in video.tags.all()],
                           category)
