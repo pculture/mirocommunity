@@ -16,3 +16,4 @@ python-openid==2.2.4
 python-yadis==1.1.0
 simplejson==1.9.2
 wsgiref==0.1.2
+-e git+git://github.com/winhamwr/django-tagging.git#egg=django-tagging 
