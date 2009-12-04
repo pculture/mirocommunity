@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {{ form.tags }}
       </td>
     </tr>
-    {% if not request.user %}
+    {% if not request.user.is_authenticated %}
     <tr>
       <td>
         {{ form.contact.errors }}
