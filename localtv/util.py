@@ -23,6 +23,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db.models import get_model
 from django.http import HttpResponse
 
 import tagging
@@ -444,3 +445,7 @@ class MockQueryset(object):
         if isinstance(k, slice):
             return MockQueryset(self.objects[k])
         return self.objects[k]
+
+def get_profile_model():
+    app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
+    return get_model(app_label, model_name)

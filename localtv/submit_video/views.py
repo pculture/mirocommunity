@@ -206,7 +206,7 @@ def scraped_submit_video(request, sitelocation=None):
             if created:
                 author.set_unusable_password()
                 author.save()
-                models.Profile.objects.create(
+                util.get_profile_model().objects.create(
                     user=author,
                     website=scraped_data.get('user_url'))
             video.authors.add(author)

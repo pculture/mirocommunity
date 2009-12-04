@@ -278,7 +278,7 @@ class Feed(Source):
             embed_code = None
             flash_enclosure_url = None
             if 'updated_parsed' in entry:
-                publish_date = datetime.datetime(*entry.updated_parsed[:7])
+                publish_date = datetime.datetime(*entry.updated_parsed[:6])
             else:
                 publish_date = None
             thumbnail_url = util.get_thumbnail_url(entry) or ''

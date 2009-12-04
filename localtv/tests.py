@@ -24,8 +24,9 @@ import vidscraper
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.comments.forms import CommentForm
-from django.contrib.comments.models import Comment
+from django.contrib.comments import get_model, get_form, get_form_target
+Comment = get_model()
+CommentForm = get_form()
 
 from django.core import mail
 from django.core.urlresolvers import get_resolver, reverse
@@ -58,7 +59,7 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
-        for profile in models.Profile.objects.all():
+        for profile in util.get_profile_model().objects.all():
             if profile.logo:
                 profile.logo.delete()
         for category in models.Category.objects.all():
@@ -260,8 +261,11 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.when_published,
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
         self.assertEquals(video.video_service(), 'blip.tv')
+        category = ['Default Category']
+        if settings.FORCE_LOWERCASE_TAGS:
+            category = [category[0].lower()]
         self.assertEquals([tag.name for tag in video.tags.all()],
-                          ['Default Category'])
+                          category)
 
     def test_entries_link_optional(self):
         """
@@ -932,7 +936,7 @@ class CommentModerationTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self.video = models.Video.objects.get(pk=20)
-        self.url = reverse('comments-post-comment')
+        self.url = get_form_target()
         self.form = CommentForm(self.video,
                                 initial={
                 'name': 'postname',

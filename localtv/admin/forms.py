@@ -30,6 +30,9 @@ from django.utils.safestring import mark_safe
 from tagging.forms import TagField
 
 from localtv import models
+from localtv import util
+
+Profile = util.get_profile_model()
 
 class EditVideoForm(forms.ModelForm):
     """
@@ -457,8 +460,8 @@ class AuthorForm(forms.ModelForm):
                 self.fields['role'].initial = 'user'
             try:
                 profile = self.instance.get_profile()
-            except models.Profile.DoesNotExist:
-                profile = models.Profile.objects.create(
+            except Profile.DoesNotExist:
+                profile = Profile.objects.create(
                     user=self.instance)
             self.fields['description'].initial = profile.description
             self.fields['website'].initial = profile.website
@@ -501,8 +504,8 @@ class AuthorForm(forms.ModelForm):
                 or 'website' in self.cleaned_data:
             try:
                 profile = author.get_profile()
-            except models.Profile.DoesNotExist:
-                profile = models.Profile.objects.create(
+            except Profile.DoesNotExist:
+                profile = Profile.objects.create(
                     user=author)
             if self.cleaned_data.get('logo'):
                 logo = self.cleaned_data['logo']
