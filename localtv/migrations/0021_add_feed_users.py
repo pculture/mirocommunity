@@ -10,7 +10,6 @@ class Migration:
     def forwards(self, orm):
         "Write your forwards migration here"
         for feed in orm.Feed.objects.all():
-            print repr(feed.name), len(feed.name), feed.name.split(' ', 1)
             user, created = orm['auth.User'].objects.get_or_create(
                 username=feed.name[:30])
             if created:
@@ -21,6 +20,8 @@ class Migration:
                 orm.Profile.objects.create(user=user,
                                            website=feed.webpage)
             feed.auto_authors.add(user)
+            for video in feed.video_set.all():
+                video.authors.add(user)
     
     def backwards(self, orm):
         "Write your backwards migration here"
