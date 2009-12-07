@@ -78,12 +78,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endwith %}
       {% endif %}
     </li>
+  {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3> {{ current_video.submitter }}</li>{% endif %}
+  {% if current_video.search %}<li class="item"><h3>From search</h3> {{ current_video.search }}</li>{% endif %}
+  {% if current_video.feed %}<li class="item"><h3>From feed</h3> {{ current_video.feed }}</li>{% endif %}
   </ul>
 </div>
-<!--  <h3>{{ current_video|pprint }}</h3>-->
-  {% if currrent_video.submitter %}<h3>Submitted by {{ current_video.submitter }}</h3>{% endif %}
-  {% if current_video.search %}<h3>From search {{ current_video.search }}</h3>{% endif %}
-  {% if current_video.feed %}<h3>From feed {{ current_video.feed }}</h3>{% endif %}
   
   <div class="clear">&nbsp;</div>
 </div>
