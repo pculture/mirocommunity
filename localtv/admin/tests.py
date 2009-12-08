@@ -2042,6 +2042,47 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                                       key=lambda x:x.source_type())),
                           list(page.object_list))
 
+    def test_GET_filter_categories(self):
+        """
+        A GET request with a 'category' key in the GET request should filter
+        the results to only include videos from that category.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'category': '3'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    categories=3,
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    ).order_by('name')))
+
+    def test_GET_filter_authors(self):
+        """
+        A GET request with an 'author' key in the GET request should filter the
+        results to only include videos with that author.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'author': '3'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    authors=3,
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    ).order_by('name')))
+
+    def test_GET_filter_featured(self):
+        """
+        A GET request with an 'featured' key in the GET request should restrict
+        the results to only those videos that have been featured.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'featured': 'yes'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    ).exclude(last_featured=None).order_by('name')))
+
     def test_GET_search(self):
         """
         A GET request with a 'q' key in the GET request should search the

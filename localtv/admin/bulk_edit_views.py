@@ -63,6 +63,9 @@ def bulk_edit(request, sitelocation=None):
     if author != '':
         videos = videos.filter(authors__pk=author).distinct()
 
+    if 'featured' in request.GET:
+        videos = videos.exclude(last_featured=None)
+
     search_string = request.GET.get('q', '')
     if search_string != '':
         videos = videos.filter(
