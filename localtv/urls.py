@@ -46,4 +46,5 @@ if settings.DEBUG:
     # show the thumbnails/logo etc, without relying on Apache
     urlpatterns += patterns('',
                             (r'^localtv/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'localtv'}),
+                            (r'^uploadtemplate/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'uploadtemplate'}),
                             )

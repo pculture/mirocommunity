@@ -51,7 +51,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
     {% for video in popular_videos|slice:":10" %}
       {% if forloop.first %}
-        {% include "localtv/video_feature_list.html" %}
+        {% include "localtv/video_feature.html" %}
       {% else %}
         {% include "localtv/video_listing_individual.html" %}
       {% endif %}
