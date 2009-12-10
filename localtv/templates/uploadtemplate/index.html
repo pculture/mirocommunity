@@ -35,10 +35,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </li>
     </ul>
   </form>
+  {% if default %}
+  <h1>Current Theme: {{ default.name }}</h1>
+  {% endif %}
   <ul>
-    {% for template in templates %}
+    {% for theme in non_default_themes %}
     <li>
-      <a href="{% url uploadtemplate-access template %}">{{ template }}</a>
+      <a href="{{ theme.get_absolute_url }}">{{ theme }}</a>
     <li>
     {% endfor %}
   </ul>
