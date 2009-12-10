@@ -65,6 +65,10 @@ class BaseTestCase(TestCase):
         for category in models.Category.objects.all():
             if category.logo:
                 category.logo.delete()
+        if self.site_location.logo:
+            self.site_location.logo.delete()
+        if self.site_location.background:
+            self.site_location.background.delete()
 
     def _data_file(self, filename):
         """
