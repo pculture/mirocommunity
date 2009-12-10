@@ -94,10 +94,6 @@ class SiteLocation(models.Model):
      - css: The intention here is to allow  to paste in their own CSS
        here from the admin.  Not used presently, though eventually it should
        be.
-     - frontpage_style: The style of the frontpage.  Either one of:
-        * list
-        * scrolling
-        * categorized
      - display_submit_button: whether or not we should allow users to see that
        they can submit videos or not (doesn't affect whether or not they
        actually can though)
@@ -117,7 +113,6 @@ class SiteLocation(models.Model):
     about_html = models.TextField(blank=True)
     tagline = models.CharField(max_length=250, blank=True)
     css = models.TextField(blank=True)
-    frontpage_style = models.CharField(max_length=32, default="scrolling")
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
 

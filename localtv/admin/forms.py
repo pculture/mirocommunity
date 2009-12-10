@@ -299,14 +299,6 @@ class EditMiscDesignForm(forms.Form):
     #theme = forms.ChoiceField(label="Color Theme", choices=(
     #        ("day", "Day"),
     #        ("night", "Night")))
-    layout = forms.ChoiceField(
-        label="Front Page Layout", choices=(
-            ("scrolling", "Scrolling big features"),
-            ("list", "List style"),
-            ("categorized", "Categorized layout")),
-        help_text=(" (note: with the scrolling and categorized layouts, you "
-                   "will need to provide hi-quality images for each featured "
-                   "video)"))
     display_submit_button = forms.BooleanField(
         label="Display the 'submit a video' nav item",
         required=False)
@@ -327,8 +319,6 @@ class EditMiscDesignForm(forms.Form):
     def create_from_sitelocation(cls, sitelocation):
         self = cls()
         self.initial['css'] = sitelocation.css
-        self.initial['layout'] = \
-            sitelocation.frontpage_style
         self.initial['display_submit_button'] = \
             sitelocation.display_submit_button
         self.initial['submission_requires_login'] = \
@@ -347,7 +337,6 @@ class EditMiscDesignForm(forms.Form):
             sitelocation.background.save(background.name, background,
                                          save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
-        sitelocation.frontpage_style = self.cleaned_data['layout']
         sitelocation.display_submit_button = \
             self.cleaned_data['display_submit_button']
         sitelocation.submission_requires_login = \

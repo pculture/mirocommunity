@@ -453,11 +453,9 @@ class ViewTestCase(BaseTestCase):
 
     def test_index(self):
         """
-        The index view should render the
-        'localtv/index_STYLE.html' (STYLE being the frontpage_style for
-        the sitelocation.  The context should include 10 featured videos, 10
-        popular videos, 10 new views, and the base categories (those without
-        parents).
+        The index view should render the 'localtv/index.html'.  The context
+        should include 10 featured videos, 10 popular videos, 10 new views, and
+        the base categories (those without parents).
         """
         for watched in models.Watch.objects.all():
             watched.timestamp = datetime.datetime.now() # so that they're
@@ -468,7 +466,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/index_scrolling.html')
+                          'localtv/index.html')
         self.assertEquals(list(response.context['featured_videos']),
                           list(models.Video.objects.filter(
                     status=models.VIDEO_STATUS_ACTIVE,
@@ -480,14 +478,6 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['new_videos']),
                           list(models.Video.objects.new(
                     status=models.VIDEO_STATUS_ACTIVE)))
-
-        for style in ('list', 'categorized'):
-            self.site_location.frontpage_style = style
-            self.site_location.save()
-            response = c.get(reverse('localtv_index'))
-            self.assertStatusCodeEquals(response, 200)
-            self.assertEquals(response.template[0].name,
-                              'localtv/index_%s.html' % style)
 
     def test_about(self):
         """
