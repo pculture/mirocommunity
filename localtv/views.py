@@ -55,7 +55,7 @@ def index(request, sitelocation=None):
                                                 parent=None)
 
     return render_to_response(
-        'localtv/index_%s.html' % (sitelocation.frontpage_style,),
+        'localtv/index.html',
         {'featured_videos': featured_videos,
          'popular_videos': popular_videos,
          'new_videos': new_videos,
