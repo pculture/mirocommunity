@@ -30,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if default %}
   <h1>Current Theme</h1>
   <div id="default_theme" class="theme">
-  {% if default.thumbnail %}<img src="{{ thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
+  {% if default.thumbnail %}<img src="{{ default.thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
   <h2>{{ default.name }}</h2>
   <div class="description">{{ default.description }}</div>
   <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">download this theme</a>
@@ -51,7 +51,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <ul>
     {% for theme in non_default_themes %}
     <li class="theme">
-      {% if theme.thumbnail %}<img src="{{ thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
+      {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
       <h2>{{ theme.name }}</h2>
       <div class="description">{{ theme.description }}</div>
       <a href="{{ theme.get_absolute_url }}">activate</a>

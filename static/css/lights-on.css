@@ -1731,10 +1731,23 @@ body.uploadtemplate .theme {
     float: left;
     height: 300px;
     width: 400px;
+    padding: 20px;
+}
+
+body.uploadtemplate .theme img {
+    float: left;
+    width: 200px;
+    border: 1px solid black;
+    margin-right: 20px;
+}
+
+body.uploadtemplate .theme div.description {
+    clear: none !important;
 }
 
 body.uploadtemplate #default_theme {
     clear: left;
+    width: 600px;
 }
 
 #admin_feed_add,
