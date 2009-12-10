@@ -20,4 +20,4 @@ from localtv.decorators import require_site_admin
 from uploadtemplate import views
 
 index = require_site_admin(views.index)
-access = require_site_admin(views.access)
+set_default = require_site_admin(views.set_default)

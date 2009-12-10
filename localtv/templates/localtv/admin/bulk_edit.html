@@ -22,11 +22,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}bulkedit{% endblock body_class %}
 
 
-{% load i18n versioned pagetabs %}
+{% load i18n uploadtemplate_tags pagetabs %}
 
 {% block title %}{{ block.super }} - {% block subtitle %}{% trans "Admin - Bulk Edit" %}{% endblock %}{% endblock %}
 {% block head %}{{ block.super }}
-  <script type="text/javascript" src="{% versioned "/js/bulk_edit.js" %}"></script>
+  <script type="text/javascript" src="{% get_static_url "/js/bulk_edit.js" %}"></script>
 {% endblock %}
 {% block content %}
   {% block pre-labels %}

@@ -18,12 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load versioned %}
+{% load uploadtemplate_tags %}
 {% block body_id %}home_page{% endblock %}
 {% block body_class %}scrolling{% endblock %}
 
 {% block head %}
-      <script type="text/javascript" src="{% versioned "js/easySlider1.5.js" %}"></script>
+      <script type="text/javascript" src="{% get_static_url "js/easySlider1.5.js" %}"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$("#slider2").easySlider({

@@ -23,13 +23,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}incomingvids{% endblock body_class %}
 
 
-{% load pagetabs i18n versioned %}
+{% load pagetabs i18n uploadtemplate_tags %}
 
 {% block head %}
-  <script src="{% versioned "/js/admin_tables.js" %}"
+  <script src="{% get_static_url "/js/admin_tables.js" %}"
           type="text/javascript">
   </script>
-  <script src="{% versioned "/js/new_edit_form.js" %}"
+  <script src="{% get_static_url "/js/new_edit_form.js" %}"
           type="text/javascript">
   </script>
   

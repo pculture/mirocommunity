@@ -99,7 +99,8 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     'localtv.admin.upload_views',
     (r'^templates/$', 'index', {}, 'uploadtemplate-index'),
-    (r'^templates/(.+)$', 'access', {}, 'uploadtemplate-access'))
+    (r'^templates/set_default/(\d+)$', 'set_default', {},
+     'uploadtemplate-set_default'))
 
 urlpatterns += patterns(
     'localtv.admin.feeds',

@@ -18,7 +18,8 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load versioned %}
+{% load uploadtemplate_tags %}
+
 {% block title %}Submit a Video{% endblock %}
 {% block content %}
 <form action="{% block form_action %}{% endblock %}" method="post" id="submit_video">
@@ -32,7 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </p>
           {% endif %}
       </td>
-      <td><input type="image" src="{% versioned "/images/submit.gif" %}" value="Submit" /></td>
+      <td><input type="image" src="{% get_static_url "/images/submit.gif" %}" value="Submit" /></td>
     </tr>
   </table>
   {% block post-table %}{% endblock %}

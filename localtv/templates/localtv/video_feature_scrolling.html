@@ -17,14 +17,14 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load localtv_thumbnail i18n filters versioned %}
+{% load localtv_thumbnail i18n filters uploadtemplate_tags %}
 {% if video.has_thumbnail %}
 <a href="{{ video.get_absolute_url }}" class="image rounded" style="background: #fff url({% get_thumbnail_url video 375 295 %}) no-repeat;">
-   <img src="{% versioned "/images/play.png" %}" />
+   <img src="{% get_static_url "/images/play.png" %}" />
 </a> 
 {% else %}
-<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: url({% versioned "/images/default_big.jpg" %}) no-repeat center -50px;">
-  <img src="{% versioned "/images/play.png" %}" />
+<a href="{{ video.get_absolute_url }}" class="image rounded" style="background: url({% get_static_url "/images/default_big.jpg" %}) no-repeat center -50px;">
+  <img src="{% get_static_url "/images/play.png" %}" />
 </a>
 
 {% endif %}

@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load versioned %}
+{% load uploadtemplate_tags %}
 <html>
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -66,7 +66,7 @@ margin: 6% 0;
   <body>
   <center>
     {% block top %}
-    <p>Just a Moment<br /><br /><img src="{% versioned "/images/ajax-loader.gif" %}"/></p>
+    <p>Just a Moment<br /><br /><img src="{% get_static_url "/images/ajax-loader.gif" %}"/></p>
     {% endblock %}
   <div>
     {% block bottom %}
