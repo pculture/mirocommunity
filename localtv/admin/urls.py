@@ -99,6 +99,8 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     'localtv.admin.upload_views',
     (r'^themes/$', 'index', {}, 'uploadtemplate-index'),
+    (r'^themes/delete/(\d+)$', 'delete', {}, 'uploadtemplate-delete'),
+    (r'^themes/download/(\d+)$', 'download', {}, 'uploadtemplate-download'),
     (r'^themes/set_default/(\d+)$', 'set_default', {},
      'uploadtemplate-set_default'))
 

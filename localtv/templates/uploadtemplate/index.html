@@ -27,7 +27,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Admin - Upload Templates" %}{% endblock %}
 
 {% block content %}
+  {% if default %}
+  <h1>Current Theme</h1>
+  <div id="default_theme" class="theme">
+  {% if default.thumbnail %}<img src="{{ thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
+  <h2>{{ default.name }}</h2>
+  <div class="description">{{ default.description }}</div>
+  <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">download this theme</a>
+  </div>
+  {% endif %}
   <form method="post" action="" enctype="multipart/form-data">
+    <h1>Upload a Custom Theme</h1>
+    <p>Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
+    <p>Download/modify any existing theme and upload it as a ZIP file.</p>
     <ul>
       {{ form.as_ul }}
       <li>
@@ -35,14 +47,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </li>
     </ul>
   </form>
-  {% if default %}
-  <h1>Current Theme: {{ default.name }}</h1>
-  {% endif %}
+  <h1>Additional Themes</h1>
   <ul>
     {% for theme in non_default_themes %}
-    <li>
-      <a href="{{ theme.get_absolute_url }}">{{ theme }}</a>
-    <li>
+    <li class="theme">
+      {% if theme.thumbnail %}<img src="{{ thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
+      <h2>{{ theme.name }}</h2>
+      <div class="description">{{ theme.description }}</div>
+      <a href="{{ theme.get_absolute_url }}">activate</a>
+      <a href="{% url uploadtemplate-delete theme.pk %}">remove</a>
+      <a href="{% url uploadtemplate-download theme.pk %}">download</a>
+    </li>
     {% endfor %}
   </ul>
 {% endblock content %}
