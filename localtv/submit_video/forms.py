@@ -56,7 +56,7 @@ class SecondStepSubmitVideoForm(forms.Form):
                     help_text=("You can also <span class='url'>optionally add "
                                "tags</span> for the video (below)."))
     contact = forms.CharField(max_length=250,
-                              label='Contact Info',
+                              label='Name and E-mail (optional)',
                               required=False)
 
     def clean_description(self):
