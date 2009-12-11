@@ -351,6 +351,10 @@ class EditCommentsForm(forms.ModelForm):
         fields = ('screen_all_comments', 'comments_email_admins',
                   'comments_required_login')
 
+class EditEmailForm(forms.ModelForm):
+    class Meta:
+        model = models.SiteLocation
+        fields = ('email_on_new_video', 'email_review_status')
 
 class CategoryForm(forms.ModelForm):
     class Meta:

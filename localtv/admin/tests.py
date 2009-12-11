@@ -2433,6 +2433,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         * sidebar_form
         * misc_form
         * comment_form.
+        * email_form
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2444,6 +2445,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue('sidebar_form' in response.context[0])
         self.assertTrue('misc_form' in response.context[0])
         self.assertTrue('comment_form' in response.context[0])
+        self.assertTrue('email_form' in response.context[0])
 
     def test_POST_title_failure(self):
         """
@@ -2611,6 +2613,38 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(site_location.screen_all_comments)
         self.assertTrue(site_location.comments_email_admins)
         self.assertTrue(site_location.comments_required_login)
+
+
+    def test_POST_email_failure(self):
+        """
+        A POST request to the edit design view with an invalid email form
+        should rerender the template and include the email_form errors.
+        """
+        # TODO(pswartz) not sure how to make the email form fail
+        return
+
+    def test_POST_email_succeed(self):
+        """
+        A POST request to the edit_design view with a valid email form should
+        save the email data and redirect back to the edit design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data.update({
+                'email_on_new_video': 'yes',
+                'email_review_status': 'yes'})
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertTrue(site_location.email_on_new_video)
+        self.assertTrue(site_location.email_review_status)
 
 
     def test_POST_delete_background(self):

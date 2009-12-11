@@ -41,7 +41,8 @@ def edit_design(request, sitelocation=None):
             sitelocation),
                'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(
             sitelocation),
-               'comment_form': forms.EditCommentsForm(instance=sitelocation)}
+               'comment_form': forms.EditCommentsForm(instance=sitelocation),
+               'email_form': forms.EditEmailForm(instance=sitelocation)}
 
     if request.method == 'POST':
         errors = False
@@ -70,6 +71,13 @@ def edit_design(request, sitelocation=None):
         else:
             errors = True
             context['comment_form'] = comment_form
+        email_form = forms.EditEmailForm(request.POST,
+                                         instance=sitelocation)
+        if email_form.is_valid():
+            email_form.save()
+        else:
+            errors = True
+            context['email_form'] = email_form
 
         if 'delete_background' in request.POST:
             if sitelocation.background:
