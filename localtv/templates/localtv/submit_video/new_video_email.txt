@@ -1,8 +1,7 @@
 New video in queue: {{ video.name }}
+{% if video.user or video.contact %}Contact: {% if video.user %}{{ video.user.get_full_name }} <{{ video.user.email }}>{% else %}{{ video.contact }}{% endif %}{% endif %}
 Original Website: {{ video.website_url }}
 Description: {{ video.description|striptags|safe }}
-{% if video.user or video.contact %}Contact: {% if video.user %}{{ video.user.get_full_name }} <{{ video.user.email }}>{% else %}{{ video.contact }}{% endif %}{% endif %}
-
 
 
 You can see all videos in the review queue here:
