@@ -25,4 +25,9 @@ Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_a
 {% else %}
 Thanks for submitting a video, our moderators will review it soon.
 {% endif %}
+  {% if request.is_ajax %}
+  <p id="close_submit_box">
+    <span>Cancel</span>
+  </p>
+  {% endif %}
 {% endblock %}
