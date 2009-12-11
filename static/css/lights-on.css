@@ -878,17 +878,31 @@ margin: 0px;
 padding: 20px;
 }
 
+
+
 #submit_video label {
 font-weight: bold;
 }
 
+#submit_video ul{
+    padding: 10px 0 0 15px;
+list-style: circle;
+}
+
 #submit_video li{
-    padding: 10px;
+    padding: 0 0 10px;
+list-style: circle;
 }
 
 #submit_video span.url {
     color: green;
 
+}
+
+#id_url{
+width: 460px;
+font-size: 14px;
+padding: 4px;
 }
 
 #submit_video label, #submit_video input, #submit_video textarea, #close_submit_box {
@@ -1985,18 +1999,22 @@ background: url(../images/lil.png) no-repeat 0 0;
 
 .cat_list .top_cat_button {
 padding: 0px 20px 0 0;
-font-size: 14px;
+font-size: 13px;
 float: left;
 clear: both;
-margin-bottom: 20px;
+margin-bottom: 15px;
 text-decoration: none;
 background: url(../images/top_cat_cap.png) no-repeat right 0;
 }
 
 
 .cat_list .top_cat_button span {
-padding: 12px 18px 13px;
+padding: 8px 18px 13px;
+max-width: 211px;
 display: block;
+overflow: hidden;
+height: 17px;
+line-height: 2em;
 background: url(../images/top_cat.png) no-repeat 0 0;
 }
 
@@ -2085,6 +2103,25 @@ margin-top: 27px;
 background: #f9f9f9 !important;
 border: 1px solid #eee !important;
 padding: 20px;
+overflow: auto;
+}
+
+
+#category_info a.rss{
+float: right;
+color: #4190E4;
+
+background-position: right 0;
+}
+
+div#category{
+float: right;
+width: 600px !important;
+padding-top: 26px !important;
+}
+
+#category_sidebar{
+width: 312px !important;
 }
 
 #subcategory_sidebar {
@@ -2103,9 +2140,12 @@ padding: 20px;
 }
 
 #category_sidebar h1 {
-margin: 0px 0 10px 0;
+margin: 0px 0 0px 0;
 font-weight: bold;
 padding: 0;
+width: 100px;
+float: left !important;
+line-height: 1.3em;
 font-size: 13px;
 text-align: left;
 }
@@ -2925,6 +2965,8 @@ width: 290px;
 
 .cat_list a{
 float: left;
+color: #4190E4;
+
 }
 
 .cat_list dt a{
