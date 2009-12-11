@@ -34,10 +34,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
   {% if category.child_set.count %}
   <div id="subcategory_sidebar">
+    <div id="main_header" class="small">
+      <h2>Subcategories</h2>
+    </div>
     <ul class="cat_list">
       {% for subcat in category.child_set.all %}
       <li>
-        <a class="top_cat_button" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
+        <a class="top_cat_button" title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
         {% if subcat.child_set.count %}
         <ul>
         {% for subsubcat in subcat.child_set.all %}
