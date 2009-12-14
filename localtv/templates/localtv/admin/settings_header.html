@@ -17,10 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
- <ul id="admin_nav">
-    <li><a class="sub" href="{% url localtv_admin_approve_reject %}"><span>Videos</span></a></li>
-    <li><a class="design" href="{% url localtv_admin_edit_site_information %}"><span>Settings</span></a></li>
-    <li><a class="users" href="{% url localtv_admin_users %}"><span>Users</span></a></li>
-    <li><a class="comments" href="{% url comments-moderation-queue %}"><span>Comments</span></a></li>
- </ul>
-<br style="clear:both;" />
+<div id="admin_subnav">
+ <ul>
+    <li><a class="siteinfo" href="{% url localtv_admin_edit_site_information %}"><span>Site Information</span></a></li>
+    <li><a class="themes" href="{% url uploadtemplate-index %}"><span>Themes</span></a></li>
+    <li><a class="content" href="{% url localtv_admin_edit_content %}"><span>Content &amp; Comments</span></a></li>
+  </ul>
+</div>

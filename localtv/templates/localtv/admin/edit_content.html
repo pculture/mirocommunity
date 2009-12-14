@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% block body_class %}editdesign{% endblock body_class %}
+{% block body_class %}editcontent{% endblock body_class %}
 
 
 {% load i18n %}
@@ -27,30 +27,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Admin - Edit Design" %}{% endblock %}
 
 {% block content %}
+  {% include "localtv/admin/settings_header.html" %}
   <br class="clearboth" />
   <form method="POST" action="" enctype="multipart/form-data">
 
-  <table>
-  <tr>
-  <td width="20%">
-  <div class="info rounded">
-    <h2>Site Information</h2>
-
-    {{ title_form.as_p }}
-    <input type="submit" name="type_title" value="save">
-  </div>
-  
-  
-  <div class="about_me rounded">
-      <h2>Organization Information</h2>
-
-    {{ sidebar_form.as_p }}
-    <input type="submit" name="type_sidebar" value="save">
-
-  </div>
-	</td>
-		
-	<td>
   <div class="look rounded">
       <h2>Design Settings</h2>
       
@@ -76,9 +56,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {{ email_form.as_p }}
         <input type="submit" name="type_email" value="save">
     </div>
-</td>
-
-</tr>
-</table>
 </form>
 {% endblock content %}

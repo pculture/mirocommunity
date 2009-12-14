@@ -459,13 +459,13 @@ padding-top: 1px;
 #about_page .about a,
 #video_listing_popular .popular a,
 body.incomingvids a.sub,
-body.editdesign a.design,
-body.uploadtemplate a.themes,
-body.category_admin a.categories,
+body.incomingfeeds a.sub,
+body.bulkedit a.sub,
+body.category_admin a.sub,
+body.editsiteinfo a.design,
+body.editcontent a.design,
+body.uploadtemplate a.design,
 body.user_admin a.users,
-body.searches a.saved,
-body.incomingfeeds a.watched,
-body.bulkedit a.bulkedit,
 body.comments a.comments,
 body#categories_page li.categories a{
 background: url(../images/nav_right.png) right -69px no-repeat !important;
@@ -482,13 +482,13 @@ cursor: default;
 #about_page .about a span,
 #video_listing_popular .popular a span,
 body.incomingvids a.sub span,
-body.editdesign a.design span,
-body.uploadtemplate a.themes span,
-body.category_admin a.categories span,
+body.incomingfeeds a.sub span,
+body.bulkedit a.sub span,
+body.category_admin a.sub span,
+body.editsiteinfo a.design span,
+body.editcontent a.design span,
+body.uploadtemplate a.design span,
 body.user_admin a.users span,
-body.searches a.saved span,
-body.incomingfeeds a.watched span,
-body.bulkedit a.bulkedit span,
 body.comments a.comments span,
 body#categories_page li.categories a span{
 background-position: left -69px !important;
@@ -556,7 +556,49 @@ color: #aaa;
 background-position: left -69px;
 }
 
+#admin_subnav {
+    position: relative;
+    top: -1em;
+    clear: both;
+}
 
+#admin_subnav ul {
+    clear: both;
+    float: left;
+    padding-right: 10px;
+    background: #eee;
+    height: 2em;
+}
+
+#admin_subnav li {
+    float: left;
+    padding: 5px 0;
+    margin: 0 0 0 30px;
+    list-style: disc;
+}
+
+#admin_subnav li:first-child {
+    padding-left: 10px;
+    margin-left: 0;
+    list-style: none;
+}
+
+#admin_subnav li a {
+    color: blue !important;
+    background: none !important;
+}
+
+body.incomingvids #admin_subnav a.sub,
+body.incomingfeeds #admin_subnav a.watched,
+body.bulkedit #admin_subnav a.bulkedit,
+body.category_admin #admin_subnav a.categories,
+body.editsiteinfo #admin_subnav a.siteinfo,
+body.uploadtemplate #admin_subnav a.themes,
+body.editcontent #admin_subnav a.content
+{
+    font-weight: bold;
+    text-decoration: underline;
+}
 
 
 /*/////////////////////////////////////////////

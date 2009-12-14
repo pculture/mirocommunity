@@ -29,6 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <script type="text/javascript" src="{% get_static_url "/js/bulk_edit.js" %}"></script>
 {% endblock %}
 {% block content %}
+  {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
   {% block pre-labels %}
   {% endblock %}
 <div id="labels">

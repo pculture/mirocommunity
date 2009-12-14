@@ -2410,9 +2410,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 # -----------------------------------------------------------------------------
 
 
-class DesignAdministrationTestCase(AdministrationBaseTestCase):
+class EditSiteInformationAdministrationTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_edit_design')
+    url = reverse('localtv_admin_edit_site_information')
 
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
@@ -2421,31 +2421,25 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
             'tagline': self.site_location.tagline,
             'about': self.site_location.about_html,
             'sidebar': self.site_location.sidebar_html,
-            'footer': self.site_location.footer_html,
-            'css': self.site_location.css}
+            'footer': self.site_location.footer_html}
 
     def test_GET(self):
         """
-        A GET request to the edit_design view should render the
-        'localtv/admin/edit_design.html' template and include 4 forms:
+        A GET request to the edit_site_information view should render the
+        'localtv/admin/edit_site_information.html' template and include 2
+        forms:
 
         * title_form
         * sidebar_form
-        * misc_form
-        * comment_form.
-        * email_form
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/admin/edit_design.html')
+                          'localtv/admin/edit_site_information.html')
         self.assertTrue('title_form' in response.context[0])
         self.assertTrue('sidebar_form' in response.context[0])
-        self.assertTrue('misc_form' in response.context[0])
-        self.assertTrue('comment_form' in response.context[0])
-        self.assertTrue('email_form' in response.context[0])
 
     def test_POST_title_failure(self):
         """
@@ -2459,7 +2453,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/admin/edit_design.html')
+                          'localtv/admin/edit_site_information.html')
         self.assertFalse(POST_response.context['title_form'].is_valid())
 
     def test_POST_title_long_title(self):
@@ -2477,13 +2471,14 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/admin/edit_design.html')
+                          'localtv/admin/edit_site_information.html')
         self.assertFalse(POST_response.context['title_form'].is_valid())
 
     def test_POST_title_succeed(self):
         """
-        A POST request to the edit_design view with a valid title form should
-        save the title data and redirect back to the edit design view.
+        A POST request to the edit_site_information view with a valid title
+        form should save the title data and redirect back to the edit design
+        view.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2516,8 +2511,9 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_sidebar_succeed(self):
         """
-        A POST request to the edit_design view with a valid sidebar form should
-        save the sidebar data and redirect back to the edit design view.
+        A POST request to the edit_site_information view with a valid sidebar
+        form should save the sidebar data and redirect back to the edit design
+        view.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2538,6 +2534,34 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(site_location.footer_html, 'New Footer')
 
 
+class EditContentAdministrationTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_edit_content')
+
+    def setUp(self):
+        AdministrationBaseTestCase.setUp(self)
+        self.POST_data = {
+            'css': self.site_location.css}
+
+    def test_GET(self):
+        """
+        A GET request to the edit_content view should render the
+        'localtv/admin/edit_content.html' template and include 3 forms:
+
+        * misc_form
+        * comment_form.
+        * email_form
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/edit_content.html')
+        self.assertTrue('misc_form' in response.context[0])
+        self.assertTrue('comment_form' in response.context[0])
+        self.assertTrue('email_form' in response.context[0])
+
     def test_POST_misc_failure(self):
         """
         A POST request to the edit design view with an invalid misc form should
@@ -2548,7 +2572,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_misc_succeed(self):
         """
-        A POST request to the edit_design view with a valid misc form should
+        A POST request to the edit_content view with a valid misc form should
         save the misc data and redirect back to the edit design view.
         """
         c = Client()
@@ -2591,8 +2615,8 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_comment_succeed(self):
         """
-        A POST request to the edit_design view with a valid comment form should
-        save the comment data and redirect back to the edit design view.
+        A POST request to the edit_content view with a valid comment form
+        should save the comment data and redirect back to the edit design view.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2625,7 +2649,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_email_succeed(self):
         """
-        A POST request to the edit_design view with a valid email form should
+        A POST request to the edit_content view with a valid email form should
         save the email data and redirect back to the edit design view.
         """
         c = Client()
@@ -2649,7 +2673,7 @@ class DesignAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_delete_background(self):
         """
-        A POST request to the edit_design view with POST['delete_background']
+        A POST request to the edit_content view with POST['delete_background']
         should remove the background image and redirect back to the edit
         design view.
         """

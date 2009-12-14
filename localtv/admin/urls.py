@@ -74,8 +74,10 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.design_views',
-    (r'^design/$', 'edit_design',
-     {}, 'localtv_admin_edit_design'))
+    (r'^site_information/$', 'edit_site_information',
+     {}, 'localtv_admin_edit_site_information'),
+    (r'^content/$', 'edit_content',
+     {}, 'localtv_admin_edit_content'))
 
 urlpatterns += patterns(
     'localtv.admin.category_views',

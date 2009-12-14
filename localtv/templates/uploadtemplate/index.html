@@ -27,6 +27,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Admin - Upload Templates" %}{% endblock %}
 
 {% block content %}
+  {% include "localtv/admin/settings_header.html" %}
   {% if default %}
   <h1>Current Theme</h1>
   <div id="default_theme" class="theme">

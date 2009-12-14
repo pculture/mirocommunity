@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 {% block content %}
-
+{% include "localtv/admin/video_header.html" %}
 {% if page_obj.paginator.count %}<h2 class="page_title">Videos for Review</h2>
      <div class="pag">
                   {% block pagination %}

@@ -18,31 +18,18 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 
 from localtv.admin import forms
 from localtv.decorators import get_sitelocation, require_site_admin
 
-def redirect():
-    return HttpResponseRedirect(reverse('localtv_admin_edit_design'))
-
-def render_edit_design(request, context):
-        return render_to_response(
-            "localtv/admin/edit_design.html",
-            context,
-            context_instance=RequestContext(request))
-
 @require_site_admin
 @get_sitelocation
-def edit_design(request, sitelocation=None):
+def edit_site_information(request, sitelocation):
     context = {'title_form': forms.EditTitleForm.create_from_sitelocation(
             sitelocation),
                'sidebar_form': forms.EditSidebarForm.create_from_sitelocation(
-            sitelocation),
-               'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(
-            sitelocation),
-               'comment_form': forms.EditCommentsForm(instance=sitelocation),
-               'email_form': forms.EditEmailForm(instance=sitelocation)}
+            sitelocation)}
 
     if request.method == 'POST':
         errors = False
@@ -58,6 +45,26 @@ def edit_design(request, sitelocation=None):
         else:
             errors = True
             context['sidebar_form'] = sidebar_form
+
+        if not errors:
+            return HttpResponseRedirect(
+                reverse('localtv_admin_edit_site_information'))
+
+    return render_to_response(
+        "localtv/admin/edit_site_information.html",
+        context,
+        context_instance=RequestContext(request))
+
+@require_site_admin
+@get_sitelocation
+def edit_content(request, sitelocation=None):
+    context = {'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(
+            sitelocation),
+               'comment_form': forms.EditCommentsForm(instance=sitelocation),
+               'email_form': forms.EditEmailForm(instance=sitelocation)}
+
+    if request.method == 'POST':
+        errors = False
         misc_form = forms.EditMiscDesignForm(request.POST, request.FILES)
         if misc_form.is_valid():
             misc_form.save_to_sitelocation(sitelocation)
@@ -84,6 +91,9 @@ def edit_design(request, sitelocation=None):
                 sitelocation.background.delete()
 
         if not errors:
-            return redirect()
+            return HttpResponseRedirect(reverse('localtv_admin_edit_content'))
 
-    return render_edit_design(request, context)
+    return render_to_response(
+        "localtv/admin/edit_content.html",
+        context,
+        context_instance=RequestContext(request))
