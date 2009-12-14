@@ -68,6 +68,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <tbody>
     <tr>
       <td>
+        {{ form.username.errors }}
+        {{ form.username.label_tag }}
+        {{ form.username }}
+      </td>
+    </tr>
+    <tr>
+      <td>
         {{ form.email.errors }}
         {{ form.email.label_tag }}
         {{ form.email }}
