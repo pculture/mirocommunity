@@ -22,6 +22,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
 
+from tagging.models import Tag
+
 from localtv import models
 from localtv.decorators import get_sitelocation
 
@@ -70,7 +72,8 @@ def featured_videos(request, sitelocation=None):
         allow_empty=True, template_object_name='video')
 
 @get_sitelocation
-def tag_videos(request, tag, sitelocation=None):
+def tag_videos(request, tag_name, sitelocation=None):
+    tag = get_object_or_404(Tag, name=tag_name)
     videos = models.Video.tagged.with_all(tag).filter(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)

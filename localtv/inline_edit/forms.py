@@ -19,6 +19,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from tagging.forms import TagField
+from tagging.utils import edit_string_for_tags
 
 from localtv import models
 from localtv.admin.forms import BulkChecklistField
@@ -86,6 +87,15 @@ class VideoCategoriesForm(forms.ModelForm):
 
 class VideoTagsForm(forms.ModelForm):
     tags = TagField(required=False, widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+
+    def save(self, *args, **kwargs):
+        self.instance.tags = self.cleaned_data.get('tags')
+        return forms.ModelForm.save(self, *args, **kwargs)
+
     class Meta:
         model = models.Video
         fields = ('tags',)

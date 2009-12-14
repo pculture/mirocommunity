@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if instance.tags.count %}
   <ul>
     {% for tag in instance.tags.all %}
-    <li><a href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>
+    <li><a href="{% url localtv_list_tag tag.name %}">{{ tag.name }}</a></li>
     {% endfor %}
   </ul>
   {% endif %}
