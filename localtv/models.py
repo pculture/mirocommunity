@@ -284,8 +284,9 @@ class Feed(Source):
 
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
-                file_url = unescape(video_enclosure.get('url'))
+                file_url = video_enclosure.get('url')
                 if file_url:
+                    file_url = unescape(file_url)
                     if not urlparse.urlparse(file_url)[0]:
                         file_url = urlparse.urljoin(parsed_feed.feed.link,
                                                     file_url)
