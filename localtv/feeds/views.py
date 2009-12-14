@@ -17,12 +17,13 @@
 
 import datetime
 
-from django.contrib.syndication.feeds import Feed, FeedDoesNotExist
+from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
 from django.utils.translation import ugettext as _
+from django.utils.tzinfo import FixedOffset
 
 from localtv import models
 
@@ -63,7 +64,13 @@ class BaseVideosFeed(Feed):
             site=models.Site.objects.get_current())
 
     def item_pubdate(self, video):
-        return video.when_published or video.when_approved
+        return (video.when_published or video.when_approved).replace(
+            tzinfo=FixedOffset(0))
+
+    def item_guid(self, video):
+        if video.guid:
+            return video.guid
+        return add_domain(video.site.domain, video.get_absolute_url())
 
     def item_link(self, video):
         return video.get_absolute_url()

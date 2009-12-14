@@ -18,9 +18,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load i18n filters %}
-<div>
-  {{ obj.description|sanitize }}
-</div>
+<div class="miro-community-description">{{ obj.description|sanitize }}</div>
 
 {% if obj.website_url %}
   <p>

@@ -23,6 +23,7 @@ import urlparse
 import Image
 import StringIO
 from xml.sax.saxutils import unescape
+from BeautifulSoup import BeautifulSoup
 
 from django.db import models
 from django.contrib import admin
@@ -283,7 +284,7 @@ class Feed(Source):
 
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
-                file_url = video_enclosure.get('url')
+                file_url = unescape(video_enclosure.get('url'))
                 if file_url:
                     if not urlparse.urlparse(file_url)[0]:
                         file_url = urlparse.urljoin(parsed_feed.feed.link,
@@ -340,6 +341,13 @@ class Feed(Source):
                 type = content.get('type', '')
                 if 'html' in type:
                     description = content.value
+                    break
+
+            if description:
+                soup = BeautifulSoup(description)
+                for tag in soup.findAll(
+                    'div', {'class': "miro-community-description"}):
+                    description = tag.renderContents()
                     break
 
             if entry.get('media_player'):
