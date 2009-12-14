@@ -2010,9 +2010,7 @@ background: url(../images/top_cat_cap.png) no-repeat right 0;
 
 .cat_list .top_cat_button span {
 padding: 8px 18px 13px;
-max-width: 211px;
 display: block;
-overflow: hidden;
 height: 17px;
 line-height: 2em;
 background: url(../images/top_cat.png) no-repeat 0 0;
@@ -2130,7 +2128,7 @@ width: 312px !important;
 
 #subcategory_sidebar .cat_list a {
     font-size: 100%;
-    max-width: 180px;
+    max-width: 290px;
     max-height: 38px;
     overflow: hidden;
 }
