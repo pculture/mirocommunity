@@ -1,0 +1,33 @@
+{% extends "localtv/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+
+{% block title %}{% trans "Spam this comment" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Really mark this comment as spam?" %}</h1>
+  <blockquote>{{ comment|linebreaks }}</blockquote>
+  <form action="." method="post">
+    {% if next %}<input type="hidden" name="next" value="{{ next }}" id="next" />{% endif %}
+    <p class="submit">
+    <input type="submit" name="submit" value="{% trans "Spam" %}" /> or <a href="{{ comment.get_absolute_url }}">cancel</a>
+    </p>
+  </form>
+{% endblock %}
