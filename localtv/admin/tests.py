@@ -2605,6 +2605,34 @@ class EditContentAdministrationTestCase(AdministrationBaseTestCase):
         site_location.background.open()
         self.assertEquals(site_location.background.read(), logo_data)
 
+    def test_POST_logo_background_long_name(self):
+        """
+        If the logo or background images have a long name, they should be
+        chopped off at 25 characters.
+        """
+        name = 'x' * 200 + '.png'
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data.update({
+                'logo': File(file(self._data_file('logo.png')), name),
+                'background': File(file(self._data_file('logo.png')), name)
+                })
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        logo_data = file(self._data_file('logo.png')).read()
+        site_location.logo.open()
+        self.assertEquals(site_location.logo.read(), logo_data)
+        site_location.background.open()
+        self.assertEquals(site_location.background.read(), logo_data)
+
     def test_POST_comment_failure(self):
         """
         A POST request to the edit design view with an invalid comment form

@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import os.path
 import feedparser
 
 from django import forms
@@ -331,10 +332,20 @@ class EditMiscDesignForm(forms.Form):
             raise RuntimeError("cannot save invalid form")
         logo = self.cleaned_data.get('logo')
         if logo is not None:
-            sitelocation.logo.save(logo.name, logo, save=False)
+            if len(logo.name) > 70:
+                name, ext = os.path.splitext(logo.name)
+                name = name[:70] + ext
+            else:
+                name = logo.name
+            sitelocation.logo.save(name, logo, save=False)
         background = self.cleaned_data.get('background')
         if background is not None:
-            sitelocation.background.save(background.name, background,
+            if len(background.name) > 70:
+                name, ext = os.path.splitext(background.name)
+                name = name[:70] + ext
+            else:
+                name = background.name
+            sitelocation.background.save(name, background,
                                          save=False)
         sitelocation.css = self.cleaned_data.get('css', '')
         sitelocation.display_submit_button = \
