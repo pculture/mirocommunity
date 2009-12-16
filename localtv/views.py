@@ -235,3 +235,9 @@ def author(request, id=None, sitelocation=None):
             context_instance=RequestContext(request))
 
 
+@get_sitelocation
+def share_email(request, content_type_pk, object_id, sitelocation):
+    from email_share import views
+    return views.share_email(request, content_type_pk, object_id,
+                             {'site': sitelocation.site,
+                              'sitelocation': sitelocation})
