@@ -384,7 +384,7 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.guid,
                           u'http://www.onnetworks.com/5843 at '
                           'http://www.onnetworks.com')
-        self.assertEquals(video.name, u'The Dancer: Kenaudra')
+        self.assertEquals(video.name, u'"The Dancer & Kenaudra"')
         self.assertEquals(video.when_published,
                           datetime.datetime(2009, 1, 13, 6, 0))
         self.assertEquals(video.file_url,
