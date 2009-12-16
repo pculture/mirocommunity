@@ -355,7 +355,7 @@ class Feed(Source):
                 embed_code = unescape(entry['media_player'])
 
             video = Video(
-                name=entry['title'],
+                name=unescape(entry['title']),
                 guid=guid,
                 site=self.site,
                 description=sanitize(description,
