@@ -61,7 +61,11 @@ SITE_STATUSES = (
 VIDEO_THUMB_SIZES = [
     (534, 430), # behind a video
     (375, 295), # featured on frontpage
-    (140, 110)]
+    (140, 110),
+    (364, 271), # main thumb
+    (222, 169), # medium thumb
+    (88, 68),   # small thumb
+    ]
 
 VIDEO_SERVICE_REGEXES = (
     ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
