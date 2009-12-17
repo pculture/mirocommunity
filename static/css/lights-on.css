@@ -850,6 +850,11 @@ list-style: none;
 margin-left: 10px;
 }
 
+.login .forgot-password {
+    float: left;
+    clear: left;
+    padding-top: 5px;
+}
 
 /*/////////////////////////////////////////////
 
