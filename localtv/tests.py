@@ -300,6 +300,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         models.vidscraper = self.vidscraper
         feed = models.Feed.objects.get(pk=1)
+        feed.auto_authors = [User.objects.get(pk=1)]
         feed.feed_url = self._data_file('vimeo.rss')
         feed.update_items()
         video = models.Video.objects.order_by('id')[0]
@@ -344,6 +345,8 @@ class FeedModelTestCase(BaseTestCase):
             category = [cat.lower() for cat in category]
         self.assertEquals([tag.name for tag in video.tags.all()],
                           category)
+        self.assertEquals(list(video.authors.values_list('username')),
+                          [('Latoya Peterson',)])
 
     def test_entries_atom(self):
         """

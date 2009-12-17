@@ -27,6 +27,7 @@ from BeautifulSoup import BeautifulSoup
 
 from django.db import models
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
@@ -285,6 +286,7 @@ class Feed(Source):
             if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
                 thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
                                                  thumbnail_url)
+            authors = self.auto_authors.all()
 
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
@@ -308,7 +310,7 @@ class Feed(Source):
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
                                 'publish_date', 'thumbnail_url', 'link',
-                                'file_url_is_flaky'])
+                                'file_url_is_flaky', 'user', 'user_url'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -323,6 +325,18 @@ class Feed(Source):
                         if (Video.objects.filter(
                                 website_url=link).count()):
                             skip = True
+
+                    if scraped_data.get('user'):
+                        author, created = User.objects.get_or_create(
+                            username=scraped_data.get('user'),
+                            defaults={'first_name': scraped_data.get('user')})
+                        if created:
+                            author.set_unusable_password()
+                            author.save()
+                            util.get_profile_model().objects.create(
+                                user=author,
+                                website=scraped_data.get('user_url'))
+                        authors = [author]
 
                 except vidscraper.errors.Error, e:
                     if verbose:
@@ -390,13 +404,10 @@ class Feed(Source):
                     tag['term'] for tag in entry['tags'] if tag.get('term'))
                 if entry_tags:
                     video.tags = util.get_or_create_tags(entry_tags)
-                    video.save()
 
-            for category in self.auto_categories.all():
-                video.categories.add(category)
-
-            for author in self.auto_authors.all():
-                video.authors.add(author)
+            video.categories = self.auto_categories.all()
+            video.authors = authors
+            video.save()
 
             yield {'index': index,
                    'total': len(parsed_feed.entries),
