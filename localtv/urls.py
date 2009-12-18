@@ -42,7 +42,8 @@ urlpatterns += patterns(
     (r'^submit_video/', include('localtv.submit_video.urls')),
     (r'^listing/', include('localtv.listing.urls')),
     (r'^feeds/', include('localtv.feeds.urls')),
-    (r'^share/', include('email_share.urls')))
+    (r'^share/', include('email_share.urls')),
+    (r'^widgets/', include('localtv.widgets.urls')))
 
 if settings.DEBUG:
     # show the thumbnails/logo etc, without relying on Apache

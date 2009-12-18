@@ -1,0 +1,52 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load localtv_thumbnail filters %}
+{% spaceless %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="StyleSheet" type="text/css" href="css/reset.css" />
+    <link rel="StyleSheet" type="text/css" href="/css/lights-on.css" />
+  </head>
+  <body>
+    <div>
+      {% for video in objects %}
+      <div class="video">
+        <a href="{{ video.get_absolute_url }}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;">
+        <img src="/images/vid_overlay.png" alt="Thumbnail for {{ video.name }}"/></a>
+        <div class="title_desc">
+          <h3><a href="{{ video.get_absolute_url }}">
+            {% if video.name %}
+            {{ video.name }}
+            {% else %}
+            (no title)
+            {% endif %}
+          </a>
+          </h3>
+        </div>
+        <p>
+          <a href="#">{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago</a>
+        </p>
+      </div>
+
+      {% endfor %}
+    </div>
+  </body>
+</html>
+{% endspaceless %}

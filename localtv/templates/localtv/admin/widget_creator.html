@@ -1,0 +1,94 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% block body_class %}widgetcreator{% endblock body_class %}
+
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
+
+{% block head %}
+<script type="text/javascript">
+var embed_base = "{% filter escapejs %}{% include "localtv/widgets/embed.html" %}{% endfilter %}";
+
+function update_widget() {
+    display = $("#widget-display");
+    area = $("#widget-code");
+    width = $("input[name=width]").val();
+    height = parseInt($("input[name=height]").val());
+    count = $("input[name=count]").val();
+    title = $("input[name=title]").val();
+    type = $("select[name=type]").val();
+    embed = embed_base;
+    embed = embed.replace(/WIDTH/g, width);
+    embed = embed.replace(/HEIGHT/g, height);
+    embed = embed.replace(/COUNT/g, count);
+    embed = embed.replace(/TITLE/g, title);
+    embed = embed.replace(/TYPE/g, type);
+    area.val(embed);
+    display.html(embed);
+    $("#widget-base").height(height + 100);
+}
+
+$(document).ready(update_widget);
+</script>
+{% endblock %}
+{% block content %}
+  {% include "localtv/admin/settings_header.html" %}
+  <br class="clearboth" />
+
+  <div id="widget-base" class="look rounded">
+    <h2>Create a Widget to Display on Your Site</h2>
+
+    <div id="widget-settings">
+      <div>
+        <input name="width" value="400" />
+        <label for="width">Width (in px)</label>
+      </div>
+      <div>
+        <input name="height" value="400" />
+        <label for="height">Height (in px)</label>
+      </div>
+      <div>
+        <input name="count" value="3" />
+        <label for="count">Number of Videos</label>
+      </div>
+      <div>
+        <input name="title" value="Watch Videos from {{ sitelocation.site.name }}!" />
+        <label for="title">Title</label>
+      </div>
+      <div>
+        <label for="type">Show:</label>
+        <select name="type">
+          <option value="featured">Featured Videos</option>
+          <option value="new">New Videos</option>
+          <option value="popular">Popular Videos</option>
+        </select>
+      </div>
+      <button id="widget-submit" type="button" onclick="update_widget();">Update </button>
+      <br>
+      <textarea cols="40" rows="10" id="widget-code"></textarea>
+    </div>
+    <div id="widget-display">
+    </div>
+  </div>
+{% endblock content %}
