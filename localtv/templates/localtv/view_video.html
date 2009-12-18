@@ -39,6 +39,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if user_is_admin %}
   {{ comment_form.media }}
   {% endif %}
+  {% include "localtv/view_video_meta.html" %}
 {% endblock %}
 
 {% block content %}
