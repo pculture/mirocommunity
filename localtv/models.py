@@ -32,6 +32,7 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.forms.fields import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 
@@ -942,6 +943,8 @@ class Watch(models.Model):
         right IP address.
         """
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
+        if not ipv4_re.match(ip):
+            ip = '0.0.0.0'
 
         if hasattr(request, 'user') and request.user.is_authenticated():
             user = request.user

@@ -1406,10 +1406,8 @@ class WatchModelTestCase(BaseTestCase):
 
     def test_add_invalid_ip(self):
         """
-        Requests with an invalid IP address should not raise an error.
-
-        Whether the watch is saved is up to the database's implementation of
-        the IPAddressField.
+        Requests with an invalid IP address should not raise an error.  The IP
+        address should be saved as 0.0.0.0.
         """
         request = HttpRequest()
         request.META['REMOTE_ADDR'] = 'unknown'
@@ -1417,3 +1415,7 @@ class WatchModelTestCase(BaseTestCase):
         video = models.Video.objects.get(pk=1)
 
         models.Watch.add(request, video)
+
+        w = models.Watch.objects.get()
+        self.assertEquals(w.video, video)
+        self.assertEquals(w.ip_address, '0.0.0.0')
