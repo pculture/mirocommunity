@@ -19,6 +19,7 @@ from django.conf.urls.defaults import patterns
 
 urlpatterns = patterns(
     'localtv.widgets.views',
+    (r'^TYPE/$', 'new', {}, 'localtv_widget_default'),
     (r'^featured/$', 'featured', {}, 'localtv_widget_featured'),
     (r'^new/$', 'new', {}, 'localtv_widget_featured'),
     (r'^popular/$', 'popular', {}, 'localtv_widget_featured')

@@ -1,6 +1,6 @@
 {% spaceless %}<div class="miro-community-widget">
   <style type="text/css">.miro-community-widget{width:WIDTHpx;text-align: center;}.miro-community-widget iframe{border:none;}</style>
   <h2>TITLE</h2>
-  <iframe width="WIDTH" height="HEIGHT" src="http://localhost:8888/widgets/TYPE/?count=COUNT"></iframe>
+  <iframe width="WIDTH" height="HEIGHT" src="http://{{ sitelocation.site.domain }}{% url localtv_widget_default %}?count=COUNT"></iframe>
   <h3><a href="http://{{ sitelocation.site.domain }}/">http://{{ sitelocation.site.domain }}</a></h3>
 </div>{% endspaceless %}
