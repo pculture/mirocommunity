@@ -27,6 +27,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% block subtitle %}{% trans "Admin - Bulk Edit" %}{% endblock %}{% endblock %}
 {% block head %}{{ block.super }}
   <script type="text/javascript" src="{% get_static_url "/js/bulk_edit.js" %}"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+    if ($('table tr + tr.editing').length != {{ formset.initial_form_count }}) {
+        $("#submit_box_content").html("<span>We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href=''>Reload the page</a> to let it load fully.</span><span id='close_submit_box'><span>Close</span></span>");
+        $("#close_submit_box span").click(function(){$("#hover_wrap").hide();});
+        $("#hover_wrap").show();
+    }
+});
+  </script>
 {% endblock %}
 {% block content %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
