@@ -34,7 +34,7 @@ from vidscraper import bulk_import
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
-    re.compile(r"Vimeo / (.+)'s uploaded videos"),
+    re.compile(r"Vimeo / (.+)'s? uploaded videos"),
     re.compile(r'Vimeo / (.+)')
     )
 
@@ -66,7 +66,6 @@ def add_feed_response(request, sitelocation=None):
         add_form.cleaned_data['parsed_feed']
 
     title = parsed_feed.feed.title
-
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
         if match:
