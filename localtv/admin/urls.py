@@ -101,7 +101,8 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.comment_views',
-    (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'))
+    (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'),
+    (r'^comments/spamed/$', 'spam_done', {}, 'comments-spam-done'))
 
 urlpatterns += patterns(
     'localtv.admin.upload_views',
