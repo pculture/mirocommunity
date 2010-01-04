@@ -122,6 +122,8 @@ def get_thumbnail_url(entry):
 def get_or_create_tags(tag_list):
     tag_set = set()
     for tag_text in tag_list:
+        if isinstance(tag_text, basestring):
+            tag_text = tag_text[:50] # tags can only by 50 chars
         tags = tagging.models.Tag.objects.filter(name=tag_text)
         if not tags:
             tag = tagging.models.Tag.objects.create(name=tag_text)
