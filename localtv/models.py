@@ -557,8 +557,6 @@ class SavedSearch(Source):
      - query_string: a whitespace-separated list of words to search for.  Words
        starting with a dash will be processed as negative query terms
      - when_created: date and time that this search was saved.
-     - user: the person who saved this search (thus, likely an
-       adminsistrator of this 
     """
     query_string = models.TextField()
     when_created = models.DateTimeField(auto_now_add=True)
@@ -587,8 +585,10 @@ class SavedSearch(Source):
         for result in raw_results:
             video = result.generate_video_model(self.site,
                                                 initial_status)
+            video.search = self
             video.categories = self.auto_categories.all()
             video.authors = self.auto_authors.all()
+            video.save()
 
     def source_type(self):
         return 'Search'

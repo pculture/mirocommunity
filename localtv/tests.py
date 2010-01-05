@@ -1356,7 +1356,7 @@ localtv_video.when_submitted)"""}).order_by('-date')))
 COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
                                                           ).order_by('-date')))
 
-
+        
 # -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
@@ -1419,3 +1419,33 @@ class WatchModelTestCase(BaseTestCase):
         w = models.Watch.objects.get()
         self.assertEquals(w.video, video)
         self.assertEquals(w.ip_address, '0.0.0.0')
+
+
+# -----------------------------------------------------------------------------
+# SavedSearch model tests
+# -----------------------------------------------------------------------------
+
+class SavedSearchModelTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['savedsearches']
+
+    def test_update_items(self):
+        """
+        SavedSearch.update_items() should create new Video objects linked to
+        the search.
+        """
+        ss = models.SavedSearch.objects.get(pk=1)
+        self.assertEquals(ss.video_set.count(), 0)
+        ss.update_items()
+        self.assertEquals(ss.video_set.count(), 1)
+
+    def test_update_items_ignore_duplicates(self):
+        """
+        A search that includes the same video should should not add the video a
+        second time.
+        """
+        ss = models.SavedSearch.objects.get(pk=1)
+        ss.update_items()
+        self.assertEquals(ss.video_set.count(), 1)
+        ss.update_items()
+        self.assertEquals(ss.video_set.count(), 1)
