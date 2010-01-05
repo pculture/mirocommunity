@@ -370,7 +370,8 @@ class Feed(Source):
                     description = tag.renderContents()
                     break
 
-            if entry.get('media_player'):
+            if entry.get('media_player') and isinstance(
+                entry['media_player'], basestring):
                 embed_code = unescape(entry['media_player'])
 
             video = Video(
