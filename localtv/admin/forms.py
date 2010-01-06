@@ -25,6 +25,7 @@ from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core.cache import cache
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -444,6 +445,16 @@ class FlatPageForm(forms.ModelForm):
     class Meta:
         model = FlatPage
         fields = ['url', 'title', 'content']
+
+    def clean_url(self):
+        value = self.cleaned_data['url']
+        if not value.startswith('/'):
+            raise forms.ValidationError("URL must start with a '/' character")
+        if getattr(settings, 'APPEND_SLASH', False) and \
+                not value.endswith('/'):
+            # append the trailing slash
+            value = value + '/'
+        return value
 
 class BaseFlatPageFormSet(BaseModelFormSet):
 
