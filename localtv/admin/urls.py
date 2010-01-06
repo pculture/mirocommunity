@@ -113,6 +113,10 @@ urlpatterns += patterns(
      'uploadtemplate-set_default'))
 
 urlpatterns += patterns(
+    'localtv.admin.flatpages_views',
+    (r'^flatpages/$', 'index', {}, 'localtv_admin_flatpages'))
+
+urlpatterns += patterns(
     'localtv.admin.feeds',
     (r'^feeds/(\S+)/unapproved', 'unapproved', {},
      'localtv_admin_feed_unapproved'),

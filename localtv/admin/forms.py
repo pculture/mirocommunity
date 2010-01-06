@@ -23,6 +23,7 @@ from django import forms
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.contrib.auth.models import User
+from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.utils.html import conditional_escape
@@ -426,7 +427,36 @@ CategoryFormSet = modelformset_factory(models.Category,
                                        can_delete=True,
                                        extra=0)
 
+class FlatPageForm(forms.ModelForm):
+    url = forms.CharField(required=True,
+                          label='URL',
+                          max_length=100,
+                          help_text=("The URL for the page.  It must start "
+                                     "with a '/' character."))
+    content = forms.CharField(required=True,
+                              label='Content',
+                              widget=forms.Textarea,
+                              help_text=("This is everything you want to "
+                                         "appear on the page.  The header and "
+                                         "footer of your site will be "
+                                         "automatically included.  This can "
+                                         "contain HTML."))
+    class Meta:
+        model = FlatPage
+        fields = ['url', 'title', 'content']
 
+class BaseFlatPageFormSet(BaseModelFormSet):
+
+    def add_fields(self, form, i):
+        BaseModelFormSet.add_fields(self, form, i)
+        if i < self.initial_form_count():
+            form.fields['bulk'] = forms.BooleanField(required=False)
+
+FlatPageFormSet = modelformset_factory(FlatPage,
+                                       form=FlatPageForm,
+                                       formset=BaseFlatPageFormSet,
+                                       can_delete=True,
+                                       extra=0)
 class AuthorForm(forms.ModelForm):
     role = forms.ChoiceField(choices=(
             ('user', 'User'),

@@ -1,0 +1,89 @@
+{% extends "localtv/admin/bulk_edit.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% load i18n uploadtemplate_tags %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Pages" %}{% endblock %}
+{% block body_class %}flatpages{% endblock body_class %}
+{% block subheader %}{% include "localtv/admin/settings_header.html" %}{% endblock %}
+{% block pre-labels %}
+  <div id="label_sidebar">
+    <div id="add_page" class="rounded">
+      <h1>Add a Page</h1>
+      <form action="" method="POST" enctype="multipart/form-data">
+        {{ form.as_p }}
+        <input type="submit" value="Add" name="submit">
+      </form>
+    </div>
+  </div>
+{% endblock %}
+{% block pre-form %}
+  <div class="floatleft form_wrap rounded">
+    <select id="bulk_action_selector" class="behave">
+      <option value="edit">Edit</option>
+      <option value="delete">Delete</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+  </div>
+
+{% endblock %}
+{% block columns %}
+<td>
+  {{ form.instance.title }}
+  <div class="actions">
+    <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+  </div>
+</td>
+<td><a href="{{ form.instance.get_absolute_url }}">{{ form.instance.url }}</a></td>
+{% endblock %}
+{% block quick-edit-title %}Edit Page: {{ form.instance.url }}{% endblock %}
+{% block quick-edit-colspan %}1{% endblock %}
+{% block quick-edit %}
+{{ form.id }}
+{{ form.non_field_errors }}
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {{ form.url.errors }}
+        {{ form.url.label_tag }}
+        {{ form.url }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.title.errors }}
+        {{ form.title.label_tag }}
+        {{ form.title }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.content.errors }}
+        {{ form.content.label_tag }}
+        {{ form.content }}
+      </td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
+{% block quick-edit-additional-columns %}
+{% endblock %}

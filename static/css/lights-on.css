@@ -465,6 +465,7 @@ body.category_admin a.sub,
 body.editsiteinfo a.design,
 body.editcontent a.design,
 body.uploadtemplate a.design,
+body.flatpages a.design,
 body.user_admin a.users,
 body.comments a.comments,
 body#categories_page li.categories a{
@@ -488,6 +489,7 @@ body.category_admin a.sub span,
 body.editsiteinfo a.design span,
 body.editcontent a.design span,
 body.uploadtemplate a.design span,
+body.flatpages a.design span,
 body.user_admin a.users span,
 body.comments a.comments span,
 body#categories_page li.categories a span{
@@ -594,6 +596,7 @@ body.bulkedit #admin_subnav a.bulkedit,
 body.category_admin #admin_subnav a.categories,
 body.editsiteinfo #admin_subnav a.siteinfo,
 body.uploadtemplate #admin_subnav a.themes,
+body.flatpages #admin_subnav a.flatpages,
 body.editcontent #admin_subnav a.content
 {
     font-weight: bold;

@@ -501,7 +501,7 @@ text-align: center;
 
 #label_sidebar {
 border: 1px solid #ddd;
-
+clear: left;
     float: left;
     background: #f9f9f9;
     width: 343px;

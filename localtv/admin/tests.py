@@ -4,6 +4,7 @@ from django.core.files.base import File
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.contrib.flatpages.models import FlatPage
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
@@ -2724,4 +2725,210 @@ class EditContentAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(site_location.background, '')
 
 
+# -----------------------------------------------------------------------------
+# Flatpage administration tests
+# -----------------------------------------------------------------------------
 
+
+class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
+
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'flatpages']
+
+    url = reverse('localtv_admin_flatpages')
+
+    def test_GET(self):
+        """
+        A GET request to the flatpage view should render the
+        'localtv/admin/flatpages.html' template and include a formset
+        for the flatpages and a form to add a new page.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/flatpages.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue('form' in response.context[0])
+
+    def test_POST_add_failure(self):
+        """
+        A POST to the flatpages view with a POST['submit'] value of 'Add' but
+        a failing form should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(self.url,
+                          {'submit': 'Add'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/flatpages.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['form'],
+                    'errors') is not None)
+
+    def test_POST_save_failure(self):
+        """
+        A POST to the flatpages view with a POST['submit'] value of 'Save' but
+        a failing formset should rerender the template.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/flatpages.html')
+        self.assertTrue(
+            getattr(response.context[0]['formset'], 'errors') is not None)
+        self.assertTrue('form' in response.context[0])
+
+    def test_POST_add(self):
+        """
+        A POST to the flatpages view with a POST['submit'] of 'Add' and a
+        successful form should create a new category and redirect the user back
+        to the management page.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'title': 'new flatpage',
+            'url': 'flatpage/',
+            'content': 'flatpage content',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        new = FlatPage.objects.order_by('-id')[0]
+
+        self.assertEquals(list(new.sites.all()), [self.site_location.site])
+
+        for key, value in POST_data.items():
+            if key == 'submit':
+                pass
+            else:
+                self.assertEquals(getattr(new, key), value)
+
+    def test_POST_save_no_changes(self):
+        """
+        A POST to the flatpagess view with a POST['submit'] of 'Save' and a
+        successful formset should update the category data.  The default values
+        of the formset should not change the values of any of the Categorys.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        old_flatpages = FlatPage.objects.values()
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+
+        POST_response = c.post(self.url, self._POST_data_from_formset(
+                formset,
+                submit='Save'))
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        for old, new in zip(old_flatpages, FlatPage.objects.values()):
+            self.assertEquals(old, new)
+
+    def test_POST_save_changes(self):
+        """
+        A POST to the flatpages view with a POST['submit'] of 'Save' and a
+        successful formset should update the category data.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+
+        POST_data['form-0-title'] = 'New Title'
+        POST_data['form-0-url'] = 'newflatpage/'
+        POST_data['form-1-content'] = 'New Content'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(FlatPage.objects.count(), 5) # no one got added
+
+        new_url = FlatPage.objects.get(url='newflatpage/')
+        self.assertEquals(new_url.pk, 1)
+        self.assertEquals(new_url.title, 'New Title')
+
+        new_content = FlatPage.objects.get(url='flatpage1/')
+        self.assertEquals(new_content.content, 'New Content')
+
+    def test_POST_delete(self):
+        """
+        A POST to the flatpages view with a POST['submit'] of 'Save' and a
+        successful formset should update the flatpages data.  If form-*-DELETE
+        is present, that page should be removed.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        POST_data['form-0-DELETE'] = 'yes'
+        POST_data['form-1-DELETE'] = 'yes'
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # three flatpages got removed
+        self.assertEquals(FlatPage.objects.count(), 2)
+
+    def test_POST_bulk_delete(self):
+        """
+        A POST request to the flatpages view with a valid formset and a
+        POST['action'] of 'delete' should reject the videos with the bulk
+        option checked.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-2-bulk'] = 'yes'
+        POST_data['submit'] = 'Apply'
+        POST_data['action'] = 'delete'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+
+        # three flatpages got removed
+        self.assertEquals(FlatPage.objects.count(), 2)
