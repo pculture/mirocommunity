@@ -2256,6 +2256,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-1-bulk'] = 'yes'
         POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1, 2]
         POST_data['form-%i-authors' % (len(formset.forms) - 1)] = [1, 2]
+        POST_data['form-%i-tags' % (len(formset.forms) - 1)] = 'tag3, tag4'
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
@@ -2276,6 +2277,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             self.assertEquals(
                 set(video.authors.values_list('pk', flat=True)),
                 set([1, 2]))
+            self.assertEquals(set(video.tags.values_list('name', flat=True)),
+                                  set(['tag3', 'tag4']))
 
     def test_POST_bulk_delete(self):
         """

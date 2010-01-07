@@ -134,6 +134,8 @@ def bulk_edit(request, sitelocation=None):
                                 form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None
+                        elif key == 'tags':
+                            form.instance.tags = value
                         else:
                             form.cleaned_data[key] = value
             formset.forms = formset.initial_forms # get rid of the extra bulk
