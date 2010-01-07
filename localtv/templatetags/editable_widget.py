@@ -49,6 +49,8 @@ WIDGET_DIRECTORY = {
             'form': forms.VideoDescriptionField},
         'website_url': {
             'form': forms.VideoWebsiteUrlField},
+        'editors_comment': {
+            'form': forms.VideoEditorsComment},
         },
     }
 

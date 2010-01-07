@@ -17,6 +17,8 @@
 
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib import comments
+from django.contrib.contenttypes.models import ContentType
 
 from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
@@ -109,3 +111,57 @@ class VideoWebsiteUrlField(forms.ModelForm):
     class Meta:
         model = models.Video
         fields = ('website_url',)
+
+class VideoEditorsComment(forms.Form):
+    editors_comment = forms.CharField(required=False,
+                                      widget=forms.Textarea)
+
+    def __init__(self, data=None, instance=None):
+        forms.Form.__init__(self, data)
+        self.instance = instance
+        if self.instance:
+            self.content_type = ContentType.objects.get_for_model(
+                self.instance)
+            try:
+                flag = comments.models.CommentFlag.objects.get(
+                    flag='editors comment',
+                    comment__content_type=self.content_type,
+                    comment__object_pk=self.instance.pk)
+            except comments.models.CommentFlag.DoesNotExist:
+                self.comment = None
+            else:
+                self.comment = flag.comment
+                self.initial['editors_comment'] = self.comment.comment
+        else:
+            self.comment = None
+
+    def save(self, commit=True):
+        text = self.cleaned_data.get('editors_comment', '')
+        if self.comment:
+            if not text:
+                self.comment.delete()
+                return
+            self.comment.comment = self.cleaned_data['editors_comment']
+            if commit:
+                self.comment.save()
+            else:
+                self.save_m2m = lambda: None
+        else:
+            if not text:
+                return
+            self.comment = comments.get_model()(
+                comment=self.cleaned_data['editors_comment'],
+                content_type=self.content_type,
+                object_pk=self.instance.pk,
+                is_public=False)
+            def save_m2m():
+                comments.models.CommentFlag.objects.get_or_create(
+                    comment=self.comment,
+                    user=self.comment.user,
+                    flag='editors comment')
+            if commit:
+                self.comment.save()
+                save_m2m()
+            else:
+                self.save_m2m = save_m2m
+        return self.comment
