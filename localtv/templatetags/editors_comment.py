@@ -16,8 +16,9 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
-from django.contrib.comments.models import CommentFlag
+from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 
 register = template.Library()
 
@@ -31,14 +32,15 @@ class EditorsCommentNode(template.Node):
         obj = self.obj.resolve(context)
         content_type = ContentType.objects.get_for_model(obj)
         try:
-            flag = CommentFlag.objects.get(
-                flag='editors comment',
-                comment__content_type=content_type,
-                comment__object_pk=obj.pk)
-        except CommentFlag.DoesNotExist:
+            comment = comments.get_model().objects.get(
+                site=Site.objects.get_current(),
+                content_type=content_type,
+                object_pk=obj.pk,
+                flags__flag='editors comment')
+        except comments.get_model().DoesNotExist:
             pass
         else:
-            context[self.as_varname] = flag.comment
+            context[self.as_varname] = comment
         return ''
 
 @register.tag('get_editors_comment')

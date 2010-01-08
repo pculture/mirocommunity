@@ -123,14 +123,14 @@ class VideoEditorsComment(forms.Form):
             self.content_type = ContentType.objects.get_for_model(
                 self.instance)
             try:
-                flag = comments.models.CommentFlag.objects.get(
-                    flag='editors comment',
-                    comment__content_type=self.content_type,
-                    comment__object_pk=self.instance.pk)
-            except comments.models.CommentFlag.DoesNotExist:
+                self.comment = comments.get_model().objects.get(
+                    site=self.instance.site,
+                    content_type=self.content_type,
+                    object_pk=self.instance.pk,
+                    flags__flag='editors comment')
+            except comments.get_model().DoesNotExist:
                 self.comment = None
             else:
-                self.comment = flag.comment
                 self.initial['editors_comment'] = self.comment.comment
         else:
             self.comment = None
