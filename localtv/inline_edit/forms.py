@@ -126,7 +126,7 @@ class VideoEditorsComment(forms.Form):
                 self.comment = comments.get_model().objects.get(
                     site=self.instance.site,
                     content_type=self.content_type,
-                    object_pk=self.instance.pk,
+                    object_pk=unicode(self.instance.pk),
                     flags__flag='editors comment')
             except comments.get_model().DoesNotExist:
                 self.comment = None

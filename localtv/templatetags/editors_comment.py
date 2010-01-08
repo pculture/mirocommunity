@@ -35,7 +35,7 @@ class EditorsCommentNode(template.Node):
             comment = comments.get_model().objects.get(
                 site=Site.objects.get_current(),
                 content_type=content_type,
-                object_pk=obj.pk,
+                object_pk=unicode(obj.pk),
                 flags__flag='editors comment')
         except comments.get_model().DoesNotExist:
             pass
