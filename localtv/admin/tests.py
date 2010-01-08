@@ -2798,7 +2798,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = {
             'submit': 'Add',
             'title': 'new flatpage',
-            'url': 'flatpage/',
+            'url': '/flatpage/',
             'content': 'flatpage content',
             }
         response = c.post(self.url, POST_data)
@@ -2860,7 +2860,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
 
         POST_data['form-0-title'] = 'New Title'
-        POST_data['form-0-url'] = 'newflatpage/'
+        POST_data['form-0-url'] = '/newflatpage/'
         POST_data['form-1-content'] = 'New Content'
 
         POST_response = c.post(self.url, POST_data)
@@ -2872,11 +2872,11 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertEquals(FlatPage.objects.count(), 5) # no one got added
 
-        new_url = FlatPage.objects.get(url='newflatpage/')
+        new_url = FlatPage.objects.get(url='/newflatpage/')
         self.assertEquals(new_url.pk, 1)
         self.assertEquals(new_url.title, 'New Title')
 
-        new_content = FlatPage.objects.get(url='flatpage1/')
+        new_content = FlatPage.objects.get(url='/flatpage1/')
         self.assertEquals(new_content.content, 'New Content')
 
     def test_POST_delete(self):
