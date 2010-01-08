@@ -38,7 +38,7 @@ class EditorsCommentNode(template.Node):
                 object_pk=unicode(obj.pk),
                 flags__flag='editors comment')
         except comments.get_model().DoesNotExist:
-            pass
+            context[self.as_varname] = None
         else:
             context[self.as_varname] = comment
         return ''
