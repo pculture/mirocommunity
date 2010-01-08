@@ -131,8 +131,9 @@ class SiteLocation(models.Model):
 
     # comments options
     screen_all_comments = models.BooleanField(
+        verbose_name='Hold comments for moderation',
         default=False,
-        help_text="Screen all comments by default?")
+        help_text="Hold all comments for moderation by default?")
     comments_email_admins = models.BooleanField(
         default=False,
         verbose_name="E-mail Admins",

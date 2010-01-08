@@ -2414,41 +2414,37 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 # -----------------------------------------------------------------------------
 
 
-class EditSiteInformationAdministrationTestCase(AdministrationBaseTestCase):
+class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_edit_site_information')
+    url = reverse('localtv_admin_settings')
 
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
         self.POST_data = {
             'title': self.site_location.site.name,
             'tagline': self.site_location.tagline,
-            'about': self.site_location.about_html,
-            'sidebar': self.site_location.sidebar_html,
-            'footer': self.site_location.footer_html}
+            'about_html': self.site_location.about_html,
+            'sidebar_html': self.site_location.sidebar_html,
+            'footer_html': self.site_location.footer_html,
+            'css': self.site_location.css}
 
     def test_GET(self):
         """
-        A GET request to the edit_site_information view should render the
-        'localtv/admin/edit_site_information.html' template and include 2
-        forms:
-
-        * title_form
-        * sidebar_form
+        A GET request to the edit_settings view should render the
+        'localtv/admin/edit_settings.html' template and include a form.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
-                          'localtv/admin/edit_site_information.html')
-        self.assertTrue('title_form' in response.context[0])
-        self.assertTrue('sidebar_form' in response.context[0])
+                          'localtv/admin/edit_settings.html')
+        self.assertTrue('form' in response.context[0])
 
     def test_POST_title_failure(self):
         """
-        A POST request to the edit design view with an invalid title form
-        should rerender the template and include the title_form errors.
+        A POST request to the edit_settings view with an invalid form
+        should rerender the template and include the form errors.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2457,8 +2453,8 @@ class EditSiteInformationAdministrationTestCase(AdministrationBaseTestCase):
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/admin/edit_site_information.html')
-        self.assertFalse(POST_response.context['title_form'].is_valid())
+                          'localtv/admin/edit_settings.html')
+        self.assertFalse(POST_response.context['form'].is_valid())
 
     def test_POST_title_long_title(self):
         """
@@ -2467,29 +2463,40 @@ class EditSiteInformationAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        self.POST_data.update({
-                'title': 'New Title' * 10,
-                'tagline': 'New Tagline',
-                'about': 'New About'})
+        self.POST_data['title'] = 'New Title' * 10
+
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.template[0].name,
-                          'localtv/admin/edit_site_information.html')
-        self.assertFalse(POST_response.context['title_form'].is_valid())
+                          'localtv/admin/edit_settings.html')
+        self.assertFalse(POST_response.context['form'].is_valid())
 
-    def test_POST_title_succeed(self):
+    def test_POST_succeed(self):
         """
-        A POST request to the edit_site_information view with a valid title
-        form should save the title data and redirect back to the edit design
-        view.
+        A POST request to the edit_settings view with a valid form should save
+        the data and redirect back to the edit_settings view.
         """
         c = Client()
         c.login(username='admin', password='admin')
         self.POST_data.update({
                 'title': 'New Title',
                 'tagline': 'New Tagline',
-                'about': 'New About'})
+                'about_html': 'New About',
+                'sidebar_html': 'New Sidebar',
+                'footer_html': 'New Footer',
+                'logo': file(self._data_file('logo.png')),
+                'background': file(self._data_file('logo.png')),
+                'display_submit_button': 'yes',
+                'submission_requires_login': 'yes',
+                'use_original_date': '',
+                'css': 'New Css',
+                'screen_all_comments': 'yes',
+                'comments_email_admins': 'yes',
+                'comments_required_login': 'yes',
+                'email_on_new_video': 'yes',
+                'email_review_status': 'yes'})
+
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 302)
@@ -2503,105 +2510,17 @@ class EditSiteInformationAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(site_location.site.name, 'New Title')
         self.assertEquals(site_location.tagline, 'New Tagline')
         self.assertEquals(site_location.about_html, 'New About')
-
-
-    def test_POST_sidebar_failure(self):
-        """
-        A POST request to the edit design view with an invalid sidebar form
-        should rerender the template and include the sidebar_form errors.
-        """
-        # TODO(pswartz): not sure how to get the sidebar form to fail
-        return
-
-    def test_POST_sidebar_succeed(self):
-        """
-        A POST request to the edit_site_information view with a valid sidebar
-        form should save the sidebar data and redirect back to the edit design
-        view.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        self.POST_data.update({
-                'sidebar': 'New Sidebar',
-                'footer': 'New Footer'})
-        POST_response = c.post(self.url, self.POST_data)
-
-        self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
-                          'http://%s%s' % (
-                self.site_location.site.domain,
-                self.url))
-
-        site_location = models.SiteLocation.objects.get(
-            pk=self.site_location.pk)
         self.assertEquals(site_location.sidebar_html, 'New Sidebar')
         self.assertEquals(site_location.footer_html, 'New Footer')
-
-
-class EditContentAdministrationTestCase(AdministrationBaseTestCase):
-
-    url = reverse('localtv_admin_edit_content')
-
-    def setUp(self):
-        AdministrationBaseTestCase.setUp(self)
-        self.POST_data = {
-            'css': self.site_location.css}
-
-    def test_GET(self):
-        """
-        A GET request to the edit_content view should render the
-        'localtv/admin/edit_content.html' template and include 3 forms:
-
-        * misc_form
-        * comment_form.
-        * email_form
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url)
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
-                          'localtv/admin/edit_content.html')
-        self.assertTrue('misc_form' in response.context[0])
-        self.assertTrue('comment_form' in response.context[0])
-        self.assertTrue('email_form' in response.context[0])
-
-    def test_POST_misc_failure(self):
-        """
-        A POST request to the edit design view with an invalid misc form should
-        rerender the template and include the misc_form errors.
-        """
-        # TODO(pswartz): not sure how to get the misc form to fail
-        return
-
-    def test_POST_misc_succeed(self):
-        """
-        A POST request to the edit_content view with a valid misc form should
-        save the misc data and redirect back to the edit design view.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        self.POST_data.update({
-                'logo': file(self._data_file('logo.png')),
-                'background': file(self._data_file('logo.png')),
-                'display_submit_button': 'yes',
-                'submission_requires_login': 'yes',
-                'use_original_date': '',
-                'css': 'New Css'})
-        POST_response = c.post(self.url, self.POST_data)
-
-        self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
-                          'http://%s%s' % (
-                self.site_location.site.domain,
-                self.url))
-
-        site_location = models.SiteLocation.objects.get(
-            pk=self.site_location.pk)
         self.assertEquals(site_location.css, 'New Css')
         self.assertTrue(site_location.display_submit_button)
         self.assertTrue(site_location.submission_requires_login)
         self.assertFalse(site_location.use_original_date)
+        self.assertTrue(site_location.screen_all_comments)
+        self.assertTrue(site_location.comments_email_admins)
+        self.assertTrue(site_location.comments_required_login)
+        self.assertTrue(site_location.email_on_new_video)
+        self.assertTrue(site_location.email_review_status)
 
         logo_data = file(self._data_file('logo.png')).read()
         site_location.logo.open()
@@ -2636,72 +2555,6 @@ class EditContentAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(site_location.logo.read(), logo_data)
         site_location.background.open()
         self.assertEquals(site_location.background.read(), logo_data)
-
-    def test_POST_comment_failure(self):
-        """
-        A POST request to the edit design view with an invalid comment form
-        should rerender the template and include the comment_form errors.
-        """
-        # TODO(pswartz) not sure how to make the comments form fail
-        return
-
-    def test_POST_comment_succeed(self):
-        """
-        A POST request to the edit_content view with a valid comment form
-        should save the comment data and redirect back to the edit design view.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        self.POST_data.update({
-                'screen_all_comments': 'yes',
-                'comments_email_admins': 'yes',
-                'comments_required_login': 'yes'})
-        POST_response = c.post(self.url, self.POST_data)
-
-        self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
-                          'http://%s%s' % (
-                self.site_location.site.domain,
-                self.url))
-
-        site_location = models.SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertTrue(site_location.screen_all_comments)
-        self.assertTrue(site_location.comments_email_admins)
-        self.assertTrue(site_location.comments_required_login)
-
-
-    def test_POST_email_failure(self):
-        """
-        A POST request to the edit design view with an invalid email form
-        should rerender the template and include the email_form errors.
-        """
-        # TODO(pswartz) not sure how to make the email form fail
-        return
-
-    def test_POST_email_succeed(self):
-        """
-        A POST request to the edit_content view with a valid email form should
-        save the email data and redirect back to the edit design view.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        self.POST_data.update({
-                'email_on_new_video': 'yes',
-                'email_review_status': 'yes'})
-        POST_response = c.post(self.url, self.POST_data)
-
-        self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
-                          'http://%s%s' % (
-                self.site_location.site.domain,
-                self.url))
-
-        site_location = models.SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertTrue(site_location.email_on_new_video)
-        self.assertTrue(site_location.email_review_status)
-
 
     def test_POST_delete_background(self):
         """

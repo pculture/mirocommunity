@@ -243,65 +243,26 @@ VideoFormSet = modelformset_factory(models.Video,
                                     extra=1)
 
 
-class EditTitleForm(forms.Form):
+class EditSettingsForm(forms.ModelForm):
     """
     """
     title = forms.CharField(label="Site Title", max_length=50)
     tagline = forms.CharField(label="Site Tagline", required=False,
                               max_length=250)
-    about = forms.CharField(label="About Us Page (use html)",
-                            widget=forms.Textarea, required=False)
-
-    @classmethod
-    def create_from_sitelocation(cls, sitelocation):
-        self = cls()
-        self.initial['title'] = sitelocation.site.name
-        self.initial['tagline'] = sitelocation.tagline
-        self.initial['about'] = sitelocation.about_html
-        return self
-
-    def save_to_sitelocation(self, sitelocation):
-        if not self.is_valid():
-            raise RuntimeError("cannot save invalid form")
-        sitelocation.site.name = self.cleaned_data['title']
-        sitelocation.tagline = self.cleaned_data.get('tagline', '')
-        sitelocation.about_html = self.cleaned_data.get('about', '')
-        sitelocation.site.save()
-        sitelocation.save()
-
-
-class EditSidebarForm(forms.Form):
-    sidebar = forms.CharField(label="Sidebar Blurb (use html)",
-                            widget=forms.Textarea, required=False)
-    footer = forms.CharField(label="Footer Blurb (use html)",
-                             widget=forms.Textarea, required=False,
-                             help_text="In addition to any footer text you "
-                             "would like to add, we suggest using this space "
-                             "to paste in a Google Analytics tracking code, "
-                             "which will provide excellent statistics on "
-                             "usage of your site.")
-
-    @classmethod
-    def create_from_sitelocation(cls, sitelocation):
-        self = cls()
-        self.initial['sidebar'] = sitelocation.sidebar_html
-        self.initial['footer'] = sitelocation.footer_html
-        return self
-
-    def save_to_sitelocation(self, sitelocation):
-        if not self.is_valid():
-            raise RuntimeError("cannot save invalid form")
-        sitelocation.sidebar_html = self.cleaned_data.get('sidebar', '')
-        sitelocation.footer_html = self.cleaned_data.get('footer', '')
-        sitelocation.save()
-
-
-class EditMiscDesignForm(forms.Form):
+    about_html = forms.CharField(label="About Us Page (use html)",
+                                 widget=forms.Textarea, required=False)
+    sidebar_html = forms.CharField(label="Sidebar Blurb (use html)",
+                                   widget=forms.Textarea, required=False)
+    footer_html = forms.CharField(label="Footer Blurb (use html)",
+                                  widget=forms.Textarea, required=False,
+                                  help_text="In addition to any footer text "
+                                  "you would like to add, we suggest using "
+                                  "this space to paste in a Google Analytics "
+                                  "tracking code, which will provide "
+                                  "excellent statistics on usage of your "
+                                  "site.")
     logo = forms.ImageField(label="Logo Image", required=False)
     background = forms.ImageField(label="Background Image", required=False)
-    #theme = forms.ChoiceField(label="Color Theme", choices=(
-    #        ("day", "Day"),
-    #        ("night", "Night")))
     display_submit_button = forms.BooleanField(
         label="Display the 'submit a video' nav item",
         required=False)
@@ -318,56 +279,39 @@ class EditMiscDesignForm(forms.Form):
         "Otherwise, use the date the video was added to this site.",
         required=False)
 
-    @classmethod
-    def create_from_sitelocation(cls, sitelocation):
-        self = cls()
-        self.initial['css'] = sitelocation.css
-        self.initial['display_submit_button'] = \
-            sitelocation.display_submit_button
-        self.initial['submission_requires_login'] = \
-            sitelocation.submission_requires_login
-        self.initial['use_original_date'] = sitelocation.use_original_date
-        return self
+    class Meta:
+        model = models.SiteLocation
+        exclude = ['site', 'status', 'admins']
 
-    def save_to_sitelocation(self, sitelocation):
-        if not self.is_valid():
-            raise RuntimeError("cannot save invalid form")
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        if self.instance:
+            self.initial['title'] = self.instance.site.name
+
+    def clean_logo(self):
         logo = self.cleaned_data.get('logo')
-        if logo is not None:
-            if len(logo.name) > 70:
-                name, ext = os.path.splitext(logo.name)
-                name = name[:70] + ext
-            else:
-                name = logo.name
-            sitelocation.logo.save(name, logo, save=False)
+        if not logo:
+            return logo
+        if len(logo.name) > 60:
+            name, ext = os.path.splitext(logo.name)
+            logo.name = name[:60] + ext
+        return logo
+
+    def clean_background(self):
         background = self.cleaned_data.get('background')
-        if background is not None:
-            if len(background.name) > 70:
-                name, ext = os.path.splitext(background.name)
-                name = name[:70] + ext
-            else:
-                name = background.name
-            sitelocation.background.save(name, background,
-                                         save=False)
-        sitelocation.css = self.cleaned_data.get('css', '')
-        sitelocation.display_submit_button = \
-            self.cleaned_data['display_submit_button']
-        sitelocation.submission_requires_login = \
-            self.cleaned_data['submission_requires_login']
-        sitelocation.use_original_date = self.cleaned_data['use_original_date']
-        sitelocation.save()
+        if not background:
+            return background
+        if len(background.name) > 60:
+            name, ext = os.path.splitext(background.name)
+            background.name = name[:60] + ext
+        return background
 
-
-class EditCommentsForm(forms.ModelForm):
-    class Meta:
-        model = models.SiteLocation
-        fields = ('screen_all_comments', 'comments_email_admins',
-                  'comments_required_login')
-
-class EditEmailForm(forms.ModelForm):
-    class Meta:
-        model = models.SiteLocation
-        fields = ('email_on_new_video', 'email_review_status')
+    def save(self):
+        sl = forms.ModelForm.save(self)
+        sl.site.name = self.cleaned_data['title']
+        sl.site.save()
+        return sl
 
 class CategoryForm(forms.ModelForm):
     class Meta:

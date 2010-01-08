@@ -76,10 +76,8 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.design_views',
-    (r'^site_information/$', 'edit_site_information',
-     {}, 'localtv_admin_edit_site_information'),
-    (r'^content/$', 'edit_content',
-     {}, 'localtv_admin_edit_content'),
+    (r'^settings/$', 'edit_settings',
+     {}, 'localtv_admin_settings'),
     (r'create_widget/$', direct_to_template, {
             'template': 'localtv/admin/widget_creator.html'},
      'localtv_admin_widget_creator'))

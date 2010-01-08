@@ -25,75 +25,20 @@ from localtv.decorators import get_sitelocation, require_site_admin
 
 @require_site_admin
 @get_sitelocation
-def edit_site_information(request, sitelocation):
-    context = {'title_form': forms.EditTitleForm.create_from_sitelocation(
-            sitelocation),
-               'sidebar_form': forms.EditSidebarForm.create_from_sitelocation(
-            sitelocation)}
+def edit_settings(request, sitelocation):
+    form = forms.EditSettingsForm(instance=sitelocation)
 
     if request.method == 'POST':
-        errors = False
-        title_form = forms.EditTitleForm(request.POST)
-        if title_form.is_valid():
-            title_form.save_to_sitelocation(sitelocation)
-        else:
-            errors = True
-            context['title_form'] = title_form
-        sidebar_form = forms.EditSidebarForm(request.POST)
-        if sidebar_form.is_valid():
-                sidebar_form.save_to_sitelocation(sitelocation)
-        else:
-            errors = True
-            context['sidebar_form'] = sidebar_form
-
-        if not errors:
-            return HttpResponseRedirect(
-                reverse('localtv_admin_edit_site_information'))
-
-    return render_to_response(
-        "localtv/admin/edit_site_information.html",
-        context,
-        context_instance=RequestContext(request))
-
-@require_site_admin
-@get_sitelocation
-def edit_content(request, sitelocation=None):
-    context = {'misc_form': forms.EditMiscDesignForm.create_from_sitelocation(
-            sitelocation),
-               'comment_form': forms.EditCommentsForm(instance=sitelocation),
-               'email_form': forms.EditEmailForm(instance=sitelocation)}
-
-    if request.method == 'POST':
-        errors = False
-        misc_form = forms.EditMiscDesignForm(request.POST, request.FILES)
-        if misc_form.is_valid():
-            misc_form.save_to_sitelocation(sitelocation)
-        else:
-            errors = True
-            context['misc_form'] = misc_form
-        comment_form = forms.EditCommentsForm(request.POST,
-                                               instance=sitelocation)
-        if comment_form.is_valid():
-            comment_form.save()
-        else:
-            errors = True
-            context['comment_form'] = comment_form
-        email_form = forms.EditEmailForm(request.POST,
-                                         instance=sitelocation)
-        if email_form.is_valid():
-            email_form.save()
-        else:
-            errors = True
-            context['email_form'] = email_form
-
-        if 'delete_background' in request.POST:
-            if sitelocation.background:
+        form = forms.EditSettingsForm(request.POST, request.FILES,
+                                      instance=sitelocation)
+        if form.is_valid():
+            sitelocation = form.save()
+            if request.POST.get('delete_background'):
                 sitelocation.background.delete()
-
-        if not errors:
-            return HttpResponseRedirect(reverse('localtv_admin_edit_content'))
+            return HttpResponseRedirect(
+                reverse('localtv_admin_settings'))
 
     return render_to_response(
-        "localtv/admin/edit_content.html",
-        context,
+        "localtv/admin/edit_settings.html",
+        {'form': form},
         context_instance=RequestContext(request))

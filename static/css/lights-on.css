@@ -462,8 +462,7 @@ body.incomingvids a.sub,
 body.incomingfeeds a.sub,
 body.bulkedit a.sub,
 body.category_admin a.sub,
-body.editsiteinfo a.design,
-body.editcontent a.design,
+body.settings a.design,
 body.uploadtemplate a.design,
 body.flatpages a.design,
 body.user_admin a.users,
@@ -486,8 +485,7 @@ body.incomingvids a.sub span,
 body.incomingfeeds a.sub span,
 body.bulkedit a.sub span,
 body.category_admin a.sub span,
-body.editsiteinfo a.design span,
-body.editcontent a.design span,
+body.settings a.design span,
 body.uploadtemplate a.design span,
 body.flatpages a.design span,
 body.user_admin a.users span,
@@ -594,7 +592,7 @@ body.incomingvids #admin_subnav a.sub,
 body.incomingfeeds #admin_subnav a.watched,
 body.bulkedit #admin_subnav a.bulkedit,
 body.category_admin #admin_subnav a.categories,
-body.editsiteinfo #admin_subnav a.siteinfo,
+body.settings #admin_subnav a.settings,
 body.uploadtemplate #admin_subnav a.themes,
 body.flatpages #admin_subnav a.flatpages,
 body.editcontent #admin_subnav a.content
@@ -2025,7 +2023,7 @@ margin: 0 0 20px 0;
 clear: both;
 }
 
-#id_title, #id_tagline, #id_blurb, #id_css {
+#id_title, #id_tagline, #id_blurb, #id_css, #id_sidebar_html, #id_about_html {
 display: block;
 }
 
@@ -2590,6 +2588,33 @@ display: none;
 
 .help a {
     color: #4190E4;
+}
+
+body.settings label + span {
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 5px;
+    width: 400px;
+}
+
+body.settings .info {
+    height: 100%;
+}
+
+body.settings .info div.form_container, body.settings #submit_settings {
+    float: left;
+}
+
+body.settings .info div.form_container {
+    padding: 10px;
+}
+
+body.settings .info div.form_container + div.form_container + div.form_container {
+    clear: left;
+}
+
+body.settings input[type=submit] {
+    clear: both;
 }
 
 #admin .help {
