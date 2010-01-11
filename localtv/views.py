@@ -19,6 +19,7 @@ import urllib
 import datetime
 
 from django.contrib.auth.models import User
+from django.contrib import comments
 from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -54,12 +55,17 @@ def index(request, sitelocation=None):
     categories = models.Category.objects.filter(site=sitelocation.site,
                                                 parent=None)
 
+    recent_comments = comments.get_model().objects.filter(
+        site=sitelocation.site,
+        is_public=True).order_by('-submit_date')
+
     return render_to_response(
         'localtv/index.html',
         {'featured_videos': featured_videos,
          'popular_videos': popular_videos,
          'new_videos': new_videos,
-         'categories': categories},
+         'categories': categories,
+         'comments': recent_comments},
         context_instance=RequestContext(request))
 
 
