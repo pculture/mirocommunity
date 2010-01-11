@@ -101,7 +101,7 @@ class CategoryVideoListNode(BaseVideoListNode):
         else:
             try:
                 category = models.Category.objects.get(
-                    name=self.item,
+                    slug=self.item,
                     site=context['sitelocation'].site)
             except models.Category.DoesNotExist:
                 return models.Video.objects.none()
