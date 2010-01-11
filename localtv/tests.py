@@ -573,7 +573,7 @@ class ViewTestCase(BaseTestCase):
         video = models.Video.objects.get(pk=1)
 
         c = Client()
-        response = c.get(video.get_absolute_url())
+        response = c.get(video.get_absolute_url(), follow=True)
         self.assertStatusCodeEquals(response, 404)
 
         c.login(username='admin', password='admin')
