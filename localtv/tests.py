@@ -956,6 +956,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    watch__timestamp__gte=datetime.datetime.min,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
     def test_featured_videos(self):

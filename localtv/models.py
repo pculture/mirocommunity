@@ -621,10 +621,10 @@ localtv_video.when_submitted)""" % published})
         except OverflowError:
             earliest_time = datetime.datetime(1900, 1, 1)
 
-        videos = self.filter(
-            watch__timestamp__gte=earliest_time)
         if sitelocation is not None:
-            videos = videos.filter(site=sitelocation.site)
+            videos = self.filter(site=sitelocation.site)
+        else:
+            videos = self
         if kwargs:
             videos = videos.filter(**kwargs)
         videos = videos.extra(
@@ -633,7 +633,8 @@ localtv_video.when_submitted)""" % published})
 WHERE localtv_video.id = localtv_watch.video_id AND
 localtv_watch.timestamp > %s"""},
             select_params = (earliest_time,))
-        return videos.order_by('-watch__count').distinct()
+        return videos.order_by('-watch__count', '-when_published',
+                               '-when_approved').distinct()
 
 
 class Video(models.Model):

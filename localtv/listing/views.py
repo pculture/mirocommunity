@@ -48,9 +48,12 @@ def new_videos(request, sitelocation=None):
 
 @get_sitelocation
 def popular_videos(request, sitelocation=None):
+    period = datetime.timedelta(days=7)
     videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation,
-        status=models.VIDEO_STATUS_ACTIVE)
+        period, sitelocation,
+        watch__timestamp__gte=datetime.datetime.now() - period,
+        status=models.VIDEO_STATUS_ACTIVE,
+        )
     return object_list(
         request=request, queryset=videos,
         paginate_by=15,
