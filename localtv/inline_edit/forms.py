@@ -74,6 +74,11 @@ class VideoAuthorsForm(forms.ModelForm):
         model = models.Video
         fields = ('authors',)
 
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields['authors'].queryset = \
+            self.fields['authors'].queryset.order_by('username')
+
 class VideoCategoriesForm(forms.ModelForm):
     categories = BulkChecklistField(models.Category.objects,
                                     required=False)

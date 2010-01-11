@@ -1988,7 +1988,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                           list(models.Category.objects.filter(
                 site=self.site_location.site)))
         self.assertEquals(list(response.context[0]['users']),
-                          list(User.objects.all()))
+                          list(User.objects.order_by('username')))
 
 
     def test_GET_sorting(self):

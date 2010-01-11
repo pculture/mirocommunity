@@ -159,5 +159,5 @@ def bulk_edit(request, sitelocation=None):
                                'page': page,
                                'categories': models.Category.objects.filter(
                 site=sitelocation.site),
-                               'users': User.objects.all()},
+                               'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

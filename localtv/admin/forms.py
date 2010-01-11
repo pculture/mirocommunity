@@ -125,7 +125,7 @@ class SourceForm(forms.ModelForm):
     auto_categories = BulkChecklistField(required=False,
                                     queryset=models.Category.objects)
     auto_authors = BulkChecklistField(required=False,
-                                 queryset=User.objects)
+                                 queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
 
     class Meta:
@@ -140,6 +140,8 @@ class SourceForm(forms.ModelForm):
         self.fields['auto_categories'].queryset = \
             self.fields['auto_categories'].queryset.filter(
             site=site)
+        self.fields['auto_authors'].queryset = \
+            self.fields['auto_authors'].queryset.order_by('username')
 
         if self.instance.pk is not None:
             if isinstance(self.instance, models.Feed):
@@ -231,6 +233,8 @@ class BulkEditVideoForm(EditVideoForm):
         self.fields['categories'].queryset = \
             self.fields['categories'].queryset.filter(
             site=site)
+        self.fields['authors'].queryset = \
+            self.fields['authors'].queryset.order_by('username')
 
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):

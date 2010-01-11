@@ -182,7 +182,7 @@ def manage_sources(request, sitelocation=None):
             'source_filter': source_filter,
             'categories': models.Category.objects.filter(
                 site=sitelocation.site),
-            'users': User.objects.all(),
+            'users': User.objects.order_by('username'),
             'successful': 'successful' in request.GET,
             'formset': formset},
                               context_instance=RequestContext(request))
