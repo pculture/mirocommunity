@@ -16,4 +16,6 @@ python-openid==2.2.4
 python-yadis==1.1.0
 simplejson==1.9.2
 wsgiref==0.1.2
--e git+git://github.com/winhamwr/django-tagging.git#egg=django-tagging 
+-e git+git://github.com/winhamwr/django-tagging.git#egg=django-tagging
+-e svn+http://recaptcha.googlecode.com/svn/trunk/recaptcha-plugins/python@124#egg=recaptcha_client-dev
+-e svn+http://recaptcha-django.googlecode.com/svn/trunk@6#egg=recaptcha_django-0.1-py2.5-dev

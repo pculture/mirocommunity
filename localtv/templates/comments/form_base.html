@@ -25,6 +25,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if field.is_hidden %}
       {{ field }}
     {% else %}
+    {% ifequal field.name "captcha" %}
+    <input type="hidden" name="recaptcha_ip_field" value="{{ request.META.REMOTE_ADDR }}" />
+    {{ field }}
+    {% else %}
     {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}
       <p
         {% if field.errors %} class="error"{% endif %}
@@ -33,6 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
       </p>
     {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
+    {% endifequal %}
     {% endif %}
   {% endfor %}
   {% if request.user.is_authenticated %}

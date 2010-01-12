@@ -3,6 +3,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.comments import forms as comment_forms
 
+from recaptcha_django import ReCaptchaField
+
 try:
     from tinymce.widgets import TinyMCE as CommentWidget
 except ImportError:
@@ -13,3 +15,5 @@ class CommentForm(comment_forms.CommentForm):
                               max_length=comment_forms.COMMENT_MAX_LENGTH)
     email = forms.EmailField(label=_("Email address"),
                              required=False)
+
+    captcha = ReCaptchaField()
