@@ -54,6 +54,7 @@ def index(request, sitelocation=None):
 
     recent_comments = comments.get_model().objects.filter(
         site=sitelocation.site,
+        is_removed=False,
         is_public=True).order_by('-submit_date')
 
     return render_to_response(
