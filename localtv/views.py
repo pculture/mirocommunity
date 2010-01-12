@@ -52,9 +52,6 @@ def index(request, sitelocation=None):
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
 
-    categories = models.Category.objects.filter(site=sitelocation.site,
-                                                parent=None)
-
     recent_comments = comments.get_model().objects.filter(
         site=sitelocation.site,
         is_public=True).order_by('-submit_date')
@@ -64,7 +61,6 @@ def index(request, sitelocation=None):
         {'featured_videos': featured_videos,
          'popular_videos': popular_videos,
          'new_videos': new_videos,
-         'categories': categories,
          'comments': recent_comments},
         context_instance=RequestContext(request))
 

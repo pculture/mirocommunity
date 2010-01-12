@@ -58,6 +58,8 @@ def context_processor(request):
         'sitelocation': sitelocation,
         'request': request,
         'user_is_admin': sitelocation.user_is_admin(request.user),
+        'categories':  models.Category.objects.filter(site=sitelocation.site,
+                                                      parent=None),
 
         'display_submit_button': display_submit_button,
 
