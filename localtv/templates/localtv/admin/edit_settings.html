@@ -101,6 +101,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div class="form_container">
       <h2>Additional Settings</h2>
       <p>
+        {{ form.display_submit_button.label_tag }}
+        {{ form.display_submit_button }}
+        {{ form.display_submit_button.help_text }}
+      </p>
+      <p>
+        {{ form.submission_requires_login.label_tag }}
+        {{ form.submission_requires_login }}
+        {{ form.submission_requires_login.help_text }}
+      </p>
+      <p>
         {{ form.use_original_date.label_tag }}
         {{ form.use_original_date }}
         {{ form.use_original_date.help_text }}
