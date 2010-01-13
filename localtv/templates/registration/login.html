@@ -68,6 +68,9 @@ label, label + input {
 <div class="login">
 <h1>Sign in with a Username/Password</h1>
   <form action="{{ settings.LOGIN_URL }}" method="POST">
+    {% if form.non_field_errors %}
+    {{ form.non_field_errors }}
+    {% endif %}
     {% for field in form %}
     {{ field.errors }}
     <p>
