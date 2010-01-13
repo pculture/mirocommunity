@@ -26,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
     <h1>{{ category.name }}</h1>
 
-    <div>{{ category.description }}</div>
+    <div>{{ category.description|safe }}</div>
 
     <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
   </div>
