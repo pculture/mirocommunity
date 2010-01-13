@@ -31,6 +31,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 #labels form > table tr.editing td:first-child {
     display: table-cell;
 }
+#human-filter li {
+    padding-left: 10px;
+    float: left;
+}
+#human-filter li:first-child {
+    padding-left: 0;
+}
+#human-filter li a{
+    color: #4190E4;
+}
+#human-filter li.selected {
+    font-weight: bold;
+}
+#human-filter li.selected a {
+    color: grey;
+}
   </style>
 {% endblock %}
 {% block body_class %}user_admin{% endblock body_class %}
@@ -46,7 +62,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
   </div>
 {% endblock %}
-{% block pre-form %}{% endblock %}
+{% block pre-form %}
+  <ul id="human-filter">
+    <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}">Show "Human" Accounts</a></li>
+    <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}?show=all">Show All Accounts</a></li>
+  </ul>
+{% endblock %}
 {% block columns %}
 <td>
   {{ form.instance.username }}

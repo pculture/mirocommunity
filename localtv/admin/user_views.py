@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.db.models import Count
-from django.contrib.auth.models import User
+from django.db.models import Count, Q
+from django.conf import settings
+from django.contrib.auth.models import User, UNUSABLE_PASSWORD
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -36,6 +37,11 @@ def users(request, sitelocation=None):
          sort_header('authored_set__count', 'Videos', sort)
         ]
     users = User.objects.all().annotate(Count('authored_set')).order_by(sort)
+    if request.GET.get('show', None) != 'all':
+        filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))
+        if 'localtv_openid' in settings.INSTALLED_APPS:
+            filters = filters | ~Q(openiduser=None)
+        users = users.filter(filters)
     formset = forms.AuthorFormSet(queryset=users)
     add_user_form = forms.AuthorForm()
     if request.method == 'POST':
