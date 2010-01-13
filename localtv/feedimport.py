@@ -1,4 +1,4 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Copyright 2009-2010 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
 # 
@@ -14,6 +14,8 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
+from django.core.files.storage import default_storage
 
 from localtv import models
 def update_feeds(verbose=False):
@@ -37,3 +39,15 @@ def update_publish_date(verbose=False):
             if d:
                 v.when_published = d['publish_date']
                 v.save()
+
+def update_thumbnails(verbose=False):
+    for v in models.Video.objects.filter(has_thumbnail=True):
+        path = v.get_original_thumb_storage_path()
+        if not default_storage.exists(path):
+            try:
+                # resave the thumbnail
+                v.save_thumbnail()
+            except Exception:
+                import traceback
+                traceback.print_exc()
+                
