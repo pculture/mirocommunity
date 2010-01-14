@@ -136,6 +136,9 @@ def manage_sources(request, sitelocation=None):
             for form in formset.initial_forms:
                 if form.cleaned_data['bulk']:
                     if bulk_action == 'remove':
+                        if request.POST.get('keep'):
+                            form.instance.video_set.all().update(
+                                search=None, feed=None)
                         form.instance.delete()
                         continue
                     if bulk_edits:
@@ -162,6 +165,9 @@ def manage_sources(request, sitelocation=None):
                         if changed:
                             v.save()
             for form in formset.deleted_forms:
+                if request.POST.get('keep'):
+                    form.instance.video_set.all().update(search=None,
+                                                         feed=None)
                 form.instance.delete()
 
             path = request.get_full_path()

@@ -42,7 +42,19 @@ $(document).ready(function() {
             }
         });
         return false;
-    })});
+    });
+    $('form:last').submit(function() {
+        if (($('input[name$=bulk]:checked').length &&
+            $('#bulk_action_selector').val() == 'remove') |
+            $('input[name$=DELETE][value=checked]').length)
+        {
+            // deleting a source, so ask about deleting the videos
+            if (!confirm('Press OK to delete all videos from this source.')) {
+                $('form:last input[name=keep]').val('yes');
+            }
+        }
+    });
+});
   </script>
 {% endblock head %}
 
@@ -191,6 +203,7 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block massedit %}
+  <input type="hidden" name="keep" value="{{ request.POST.keep }}" />
   <div id="massedit" class="bulk_edit_panel" style="display: none;">
     {% with formset.forms|last as form %}
     <table class="rounded">

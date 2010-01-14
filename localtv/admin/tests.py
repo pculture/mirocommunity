@@ -677,6 +677,53 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(models.Video.objects.count(),
                           video_count - 10)
 
+    def test_POST_delete_keep_videos(self):
+        """
+        A POST request to the manage source view with a valid formset, a DELETE
+        value for a source and a 'keep' POST value, should remove the source
+        but keep the videos.
+        """
+        feed = models.Feed.objects.get(pk=3)
+        saved_search = models.SavedSearch.objects.get(pk=8)
+
+        for v in models.Video.objects.all()[:5]:
+            v.feed = feed
+            v.save()
+
+        for v in models.Video.objects.all()[5:10]:
+            v.search = saved_search
+            v.save()
+
+        video_count = models.Video.objects.count()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+        POST_data['form-0-DELETE'] = 'yes'
+        POST_data['form-1-DELETE'] = 'yes'
+        POST_data['keep'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(
+            models.Feed.objects.filter(pk=3).count(), # form 0
+            0)
+
+        self.assertEquals(
+            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+            0)
+
+        # make sure the 10 videos are still there
+        self.assertEquals(models.Video.objects.count(),
+                          video_count)
+
     def test_POST_bulk_edit(self):
         """
         A POST request to the manage_sources view with a valid formset and the
@@ -723,7 +770,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_delete(self):
         """
         A POST request to the manage_sources view with a valid formset and a
-        POST['bulk_action'] of 'remove' should remove the videos with the bulk
+        POST['bulk_action'] of 'remove' should remove the sources with the bulk
         option checked.
         """
         feed = models.Feed.objects.get(pk=3)
@@ -767,6 +814,55 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         # make sure the 10 videos got removed
         self.assertEquals(models.Video.objects.count(),
                           video_count - 10)
+
+    def test_POST_bulk_delete_keep_videos(self):
+        """
+        A POST request to the manage_sources view with a valid formset, a
+        POST['bulk_action'] of 'remove', and 'keep' in the POST data should
+        remove the source with the bulk option checked but leave the videos.
+        """
+        feed = models.Feed.objects.get(pk=3)
+        saved_search = models.SavedSearch.objects.get(pk=8)
+
+        for v in models.Video.objects.all()[:5]:
+            v.feed = feed
+            v.save()
+
+        for v in models.Video.objects.all()[5:10]:
+            v.search = saved_search
+            v.save()
+
+        video_count = models.Video.objects.count()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data['form-0-bulk'] = 'yes'
+        POST_data['form-1-bulk'] = 'yes'
+        POST_data['bulk_action'] = 'remove'
+        POST_data['keep'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(
+            models.Feed.objects.filter(pk=3).count(), # form 0
+            0)
+
+        self.assertEquals(
+            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+            0)
+
+        # make sure the 10 videos got removed
+        self.assertEquals(models.Video.objects.count(),
+                          video_count)
 
     def test_POST_switching_categories_authors(self):
         """
@@ -2214,7 +2310,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_delete(self):
         """
-        A POST request to the manage sources view with a valid formset and a
+        A POST request to the bulk_edit view with a valid formset and a
         DELETE value for a source should reject that video.`
         """
         c = Client()
