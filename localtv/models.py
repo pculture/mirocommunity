@@ -370,10 +370,14 @@ class Feed(Source):
                     'div', {'class': "miro-community-description"}):
                     description = tag.renderContents()
                     break
-
-            if entry.get('media_player') and isinstance(
-                entry['media_player'], basestring):
-                embed_code = unescape(entry['media_player'])
+            if entry.get('media_player'):
+                player = entry['media_player']
+                if isinstance(player, basestring):
+                    embed_code = unescape(player)
+                elif 'content' in player:
+                    embed_code = unescape(player['content'])
+                elif 'url' in player:
+                    embed_code = '<embed src="%(url)s">' % player
 
             video = Video(
                 name=unescape(entry['title']),
