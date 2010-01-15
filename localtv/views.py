@@ -72,7 +72,7 @@ def about(request):
         {}, context_instance=RequestContext(request))
 
 
-@vary_on_headers('User-Agent')
+@vary_on_headers('User-Agent', 'Referer')
 @get_sitelocation
 def view_video(request, video_id, slug=None, sitelocation=None):
     video = get_object_or_404(models.Video, pk=video_id,
