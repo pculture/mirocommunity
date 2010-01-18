@@ -297,8 +297,8 @@ class Feed(Source):
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
             skip = False
-            guid = entry.get('guid')
-            if guid is not None and Video.objects.filter(
+            guid = entry.get('guid', '')
+            if guid and Video.objects.filter(
                 feed=self, guid=guid).count():
                 skip = True
             link = entry.get('link')
@@ -796,8 +796,13 @@ class Video(models.Model):
         if not self.thumbnail_url:
             return
 
-        content_thumb = ContentFile(urllib.urlopen(self.thumbnail_url).read())
-        self.save_thumbnail_from_file(content_thumb)
+        try:
+            content_thumb = ContentFile(urllib.urlopen(
+                    self.thumbnail_url).read())
+        except IOError:
+            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
+        else:
+            self.save_thumbnail_from_file(content_thumb)
 
     def save_thumbnail_from_file(self, content_thumb):
         """
