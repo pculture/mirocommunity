@@ -48,11 +48,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             type="text/javascript">
     </script>
     <script type="text/javascript">
-        if (!$.browser.msie) {
-            $(document).ready( function(){
-  		$('.rounded').corners();
-	    });
-        }
+      $(document).ready( function(){
+      $("#nav li").mouseover(function(){this.addClass('sfhover');}).mouseout(function(){this.removeClass('sfhover');});
+      if (!$.browser.msie) {
+          $('.rounded').corners();
+      }
+      });
     </script>
     <script src="{% get_static_url "/js/extern/jquery.tb.min.js" %}"
             type="text/javascript">
@@ -60,20 +61,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <script src="{% get_static_url "/js/submit_video.js" %}"
             type="text/javascript">
     </script>
-    <script type="text/javascript">
-
-	/*
-	Clear default form value script- by JavaScriptKit.com
-	Featured on JavaScript Kit (http://javascriptkit.com)
-	Visit javascriptkit.com for 400+ free scripts!
-	*/
-
-	function clearText(thefield){
-	if (thefield.defaultValue==thefield.value)
-	thefield.value = ""
-	} 
-	</script>
-
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
     {% block head %}{% endblock head %}
   </head>
@@ -127,6 +114,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               <span>New Videos</span>
             </a>
           </li>
+          {% if categories %}
+          <li class="categories">
+            <a href="{% url localtv_category_index %}"><span>Categories</span></a>
+	    <ul>
+	      {% for category in categories %}
+	      <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
+	      {% endfor %}										
+	    </ul>
+	  </li>
+	  {% endif %}
           <li class="popular">
             <a href="{% url localtv_list_popular %}">
               <span>Popular</span>

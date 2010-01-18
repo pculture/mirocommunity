@@ -32,7 +32,7 @@ h2 {
 font-size: 18px;
 }
 
-a {
+a { 
 text-decoration: none;
 text-shadow: #eee 1px 1px 0px ;
 outline: none;
@@ -494,6 +494,49 @@ body#categories_page li.categories a span{
 background-position: left -69px !important;
 _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 }
+
+
+
+
+#nav ul { /* all lists */
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	line-height: 1;
+}
+
+
+
+#nav li ul { /* second-level lists */
+	position: absolute;
+	background: #fff;
+	width: 30em;
+margin-left: 5px;
+	left: -999em; 
+}
+
+#nav li:hover ul, #nav li.sfhover ul { /* lists nested under hovered list items */
+	left: auto;
+}
+
+
+#nav li ul li{
+padding: 0;
+margin: 0;
+width: 10em;
+}
+
+
+#nav li ul li a{
+background: 0;
+margin: 0 !important;
+line-height: 1.5em;
+padding: 5px 5px 5px 10px;
+
+}
+
+
+
 
 
 /*/////////////////////////////////////////////
