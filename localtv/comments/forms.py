@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from django.conf import settings
 from django.contrib.comments import forms as comment_forms
 
 from recaptcha_django import ReCaptchaField
@@ -15,5 +16,5 @@ class CommentForm(comment_forms.CommentForm):
                               max_length=comment_forms.COMMENT_MAX_LENGTH)
     email = forms.EmailField(label=_("Email address"),
                              required=False)
-
-    captcha = ReCaptchaField()
+    if not settings.DEBUG:
+        captcha = ReCaptchaField()

@@ -1050,7 +1050,7 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
         comment = Comment.objects.get()
         self.assertEquals(comment.content_object, self.video)
-        self.assertTrue(comment.is_public)
+        self.assertFalse(comment.is_public)
         self.assertEquals(comment.name, 'postname')
         self.assertEquals(comment.email, '')
         self.assertEquals(comment.url, '')
@@ -1060,6 +1060,9 @@ class CommentModerationTestCase(BaseTestCase):
         If SiteLocation.screen_all_comments is False, the comment should be
         saved and marked as public.
         """
+        self.site_location.screen_all_comments = False
+        self.site_location.save()
+
         c = Client()
         c.post(self.url, self.POST_data)
 
@@ -1075,9 +1078,6 @@ class CommentModerationTestCase(BaseTestCase):
         If SiteLocation.screen_all_comments is True, the comment should be
         moderated (not public).
         """
-        self.site_location.screen_all_comments = True
-        self.site_location.save()
-
         c = Client()
         c.post(self.url, self.POST_data)
 
@@ -1149,7 +1149,7 @@ class CommentModerationTestCase(BaseTestCase):
 
         comment = Comment.objects.get()
         self.assertEquals(comment.content_object, self.video)
-        self.assertTrue(comment.is_public)
+        self.assertFalse(comment.is_public)
         self.assertEquals(comment.name, 'postname')
         self.assertEquals(comment.email, 'post@email.com')
         self.assertEquals(comment.url, 'http://posturl.com/')
@@ -1172,7 +1172,7 @@ class CommentModerationTestCase(BaseTestCase):
 
         comment = Comment.objects.get()
         self.assertEquals(comment.content_object, self.video)
-        self.assertTrue(comment.is_public)
+        self.assertFalse(comment.is_public)
         self.assertEquals(comment.name, 'Firstname Lastname')
         self.assertEquals(comment.email, 'user@testserver.local')
         self.assertEquals(comment.url, 'http://posturl.com/')
