@@ -26,6 +26,7 @@ from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
 
 from django.db import models
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
@@ -78,6 +79,35 @@ VIDEO_SERVICE_REGEXES = (
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
 
+SITE_LOCATION_CACHE = {}
+
+class SiteLocationManager(models.Manager):
+    def get_current(self):
+        sid = settings.SITE_ID
+        try:
+            current_site_location = SITE_LOCATION_CACHE[sid]
+        except KeyError:
+            current_site_location = self.select_related().get(site__pk=sid)
+            SITE_LOCATION_CACHE[sid] = current_site_location
+        return current_site_location
+
+    def get(self, **kwargs):
+        if 'site' in kwargs:
+            site= kwargs.pop('site')
+            if not isinstance(site, (int, long, basestring)):
+                site = site.id
+            site = int(site)
+            try:
+                return SITE_LOCATION_CACHE[site]
+            except KeyError:
+                pass
+        site_location = models.Manager.get(self, **kwargs)
+        SITE_LOCATION_CACHE[site_location.site_id] = site_location
+        return site_location
+
+    def clear_cache(self):
+        global SITE_LOCATION_CACHE
+        SITE_LOCATION_CACHE = {}
 
 class SiteLocation(models.Model):
     """
@@ -153,6 +183,8 @@ class SiteLocation(models.Model):
         help_text=("E-mail admins once/day if new videos are "
                    "in the review queue?"))
 
+    objects = SiteLocationManager()
+
     def __unicode__(self):
         return self.site.name
 
@@ -168,6 +200,10 @@ class SiteLocation(models.Model):
             return True
 
         return bool(self.admins.filter(pk=user.pk).count())
+
+    def save(self, *args, **kwargs):
+        SITE_LOCATION_CACHE[self.pk] = self
+        return models.Model.save(self, *args, **kwargs)
 
 class Source(models.Model):
     """
@@ -895,7 +931,7 @@ class Video(models.Model):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteLocation.objects.get(site=self.site).use_original_date and \
+        if SiteLocation.objects.get(site=self.site_id).use_original_date and \
                 self.when_published:
             return self.when_published
         return self.when_approved or self.when_submitted
@@ -905,8 +941,9 @@ class Video(models.Model):
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
+
         if self.when_published and \
-                SiteLocation.objects.get(site=self.site).use_original_date:
+                SiteLocation.objects.get(site=self.site_id).use_original_date:
             return 'published'
         else:
             return 'posted'

@@ -18,7 +18,6 @@
 import urlparse
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 
 from localtv import models
 
@@ -42,8 +41,7 @@ class FixAJAXMiddleware:
         return response
 
 def context_processor(request):
-    sitelocation = models.SiteLocation.objects.get(
-            site=Site.objects.get_current())
+    sitelocation = models.SiteLocation.objects.get_current()
 
     display_submit_button = sitelocation.display_submit_button
     if display_submit_button:

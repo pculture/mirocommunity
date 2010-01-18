@@ -37,7 +37,7 @@ from localtv.admin import forms as admin_forms
 @get_sitelocation
 def index(request, sitelocation=None):
     featured_videos = models.Video.objects.filter(
-        site=sitelocation.site,
+        site=sitelocation.site_id,
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(

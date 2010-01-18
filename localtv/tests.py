@@ -53,8 +53,8 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        self.site_location = models.SiteLocation.objects.get(
-            site=settings.SITE_ID)
+        models.SiteLocation.objects.clear_cache()
+        self.site_location = models.SiteLocation.objects.get_current()
 
     def tearDown(self):
         TestCase.tearDown(self)
