@@ -29,6 +29,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <script type="text/javascript" src="/js/extern/jquery.dirtyform.js"></script>
   <script type="text/javascript">
       function setting_onunload(event) {
+          if ($("form.saving").length) {
+              return;
+          }
           if ($("form input.changed").length) {
               unload_text = 'Your settings have not been saved.';
               if ($.browser.msie) {
@@ -41,7 +44,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           }
       }
       $(document).ready(function() {
-          $("form").dirty_form();
+          $("form").dirty_form().submit(function() {$(this).addClass('saving');});
       });
   </script>
 {% endblock %}
