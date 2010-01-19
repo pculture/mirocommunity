@@ -2,6 +2,8 @@
 -e git+http://git.participatoryculture.org/djpagetabs#egg=djpagetabs-dev
 -e git+http://git.participatoryculture.org/djvideo#egg=djvideo-dev
 -e git+http://git.participatoryculture.org/vidscraper#egg=vidscraper-dev
+-e git+http://git.participatoryculture.org/django-email-share#egg=django-email-share-dev
+-e git+http://git.participatoryculture.org/django-uploadtemplate#egg=django-uploadtemplate-dev
 BeautifulSoup==3.0.7a
 Django==1.1.1
 django-tinymce==1.5
