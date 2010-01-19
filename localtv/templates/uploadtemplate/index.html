@@ -37,6 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">download this theme</a>
   </div>
   {% endif %}
+  {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
   <form method="post" action="" enctype="multipart/form-data">
     <h1>Upload a Custom Theme</h1>
     <p>Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
@@ -48,6 +49,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </li>
     </ul>
   </form>
+  {% endif %}
   <h1>Additional Themes</h1>
   <ul>
     {% for theme in non_default_themes %}
