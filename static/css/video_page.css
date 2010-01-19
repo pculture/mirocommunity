@@ -565,3 +565,9 @@ body.bulkedit td div.field {
 #massedit {
     display: none;
 }
+
+.rounded {
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    padding: 10px;
+}

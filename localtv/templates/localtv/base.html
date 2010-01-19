@@ -44,15 +44,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <script src="{% get_static_url "/js/extern/jquery.form.js" %}"
             type="text/javascript">
     </script>
-    <script src="{% get_static_url "/js/extern/jquery.corners.js" %}"
-            type="text/javascript">
-    </script>
     <script type="text/javascript">
       $(document).ready( function(){
       $("#nav li").mouseover(function(){this.addClass('sfhover');}).mouseout(function(){this.removeClass('sfhover');});
-      if (!$.browser.msie) {
-          $('.rounded').corners();
-      }
       });
     </script>
     <script src="{% get_static_url "/js/extern/jquery.tb.min.js" %}"
