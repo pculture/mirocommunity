@@ -412,7 +412,7 @@ class Feed(Source):
                     embed_code = unescape(player)
                 elif 'content' in player:
                     embed_code = unescape(player['content'])
-                elif 'url' in player:
+                elif 'url' in player and not embed_code:
                     embed_code = '<embed src="%(url)s">' % player
 
             video = Video(
