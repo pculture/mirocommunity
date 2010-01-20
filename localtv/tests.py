@@ -348,6 +348,71 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(list(video.authors.values_list('username')),
                           [('Latoya Peterson',)])
 
+    def test_entries_youtube(self):
+        """
+        Youtube RSS feeds should include the correct data.
+        """
+        models.vidscraper = self.vidscraper
+        feed = models.Feed.objects.get(pk=1)
+        feed.auto_authors = [User.objects.get(pk=1)]
+        feed.feed_url = self._data_file('youtube.rss')
+        feed.update_items()
+        video = models.Video.objects.order_by('id')[0]
+        self.assertEquals(video.feed, feed)
+        self.assertEquals(video.guid,
+                          u'tag:youtube.com,2008:video:BBwtzeZdoHQ')
+        self.assertEquals(video.name,
+                          'Dr. Janice Key Answers Questions about Preventing '
+                          'Teen Pregnancy')
+        self.assertEquals(video.description, """
+<a href="http://www.youtube.com/watch?v=BBwtzeZdoHQ&amp;feature=youtube_gdata"\
+></a>
+<a href="http://www.youtube.com/watch?v=BBwtzeZdoHQ&amp;feature=youtube_gdata"\
+ style="font-size: 15px; font-weight: bold;">Dr. Janice Key Answers Questions \
+about Preventing Teen Pregnancy</a>
+<br />
+<span>Dr. Janice Key, Professor of Adolescent Medicine at the Medical \
+University South Carolina, answers questions about teen pregnancy prevention.\
+</span>
+<span style="color: #666666; font-size: 11px;">From:</span>
+<a href="http://www.youtube.com/profile?user=RHRealityCheck">RHRealityCheck</a>
+<span style="color: #666666; font-size: 11px;">Views:</span>
+19\n    \n3
+<span style="color: #666666; font-size: 11px;">ratings</span>
+<span style="color: #666666; font-size: 11px;">Time:</span>
+<span style="color: #000000; font-size: 11px; font-weight: bold;">04:10</span>
+<span style="color: #666666; font-size: 11px;">More in</span>
+<a href="http://www.youtube.com/categories_portal?c=29">Nonprofits &amp; \
+Activism</a>""")
+        self.assertEquals(video.website_url,
+                          'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
+        self.assertEquals(video.embed_code,
+                          '<object width="425" height="344">'
+                          '<param name="movie" value="'
+                          'http://www.youtube.com/v/BBwtzeZdoHQ&amp;hl=en&amp;'
+                          'fs=1"><param name="allowFullScreen" value="true">'
+                          '<param name="allowscriptaccess" value="always">'
+                          '<embed src="http://www.youtube.com/v/BBwtzeZdoHQ'
+                          '&amp;hl=en&amp;fs=1" allowscriptaccess="always" '
+                          'height="344" width="425" allowfullscreen="true" '
+                          'type="application/x-shockwave-flash"></embed>'
+                          '</object>')
+        self.assertEquals(video.file_url, '')
+        self.assertTrue(video.has_thumbnail)
+        self.assertEquals(video.thumbnail_url,
+                          'http://img.youtube.com/vi/BBwtzeZdoHQ/hqdefault.jpg'
+                          )
+        self.assertEquals(video.when_published,
+                          datetime.datetime(2010, 1, 18, 19, 41, 21))
+        self.assertEquals(video.video_service(), 'YouTube')
+        category = ['Nonprofit']
+        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
+            category = [cat.lower() for cat in category]
+        self.assertEquals([tag.name for tag in video.tags.all()],
+                          category)
+        self.assertEquals(list(video.authors.values_list('username')),
+                          [('RHRealityCheck',)])
+
     def test_entries_atom(self):
         """
         Atom feeds should be handled correctly,

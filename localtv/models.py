@@ -316,6 +316,7 @@ class Feed(Source):
             file_url_mimetype = None
             embed_code = None
             flash_enclosure_url = None
+            tags = []
             if 'updated_parsed' in entry:
                 publish_date = datetime.datetime(*entry.updated_parsed[:6])
             else:
@@ -348,7 +349,8 @@ class Feed(Source):
                         link,
                         fields=['file_url', 'embed', 'flash_enclosure_url',
                                 'publish_date', 'thumbnail_url', 'link',
-                                'file_url_is_flaky', 'user', 'user_url'])
+                                'file_url_is_flaky', 'user', 'user_url',
+                                'tags'])
                     if not file_url:
                         if not scraped_data.get('file_url_is_flaky'):
                             file_url = scraped_data.get('file_url')
@@ -358,6 +360,7 @@ class Feed(Source):
                     publish_date = scraped_data.get('publish_date')
                     thumbnail_url = scraped_data.get('thumbnail_url',
                                                      thumbnail_url)
+                    tags = scraped_data.get('tags', [])
                     if scraped_data.get('link'):
                         link = scraped_data['link']
                         if (Video.objects.filter(
@@ -442,11 +445,13 @@ class Feed(Source):
                     print "Can't get the thumbnail for %s at %s" % (
                         video.id, video.thumbnail_url)
 
-            if entry.get('tags'):
-                entry_tags = set(
-                    tag['term'] for tag in entry['tags'] if tag.get('term'))
-                if entry_tags:
-                    video.tags = util.get_or_create_tags(entry_tags)
+            if entry.get('tags') or tags:
+                if not tags:
+                    tags = set(
+                        tag['term'] for tag in entry['tags']
+                        if tag.get('term'))
+                if tags:
+                    video.tags = util.get_or_create_tags(tags)
 
             video.categories = self.auto_categories.all()
             video.authors = authors
