@@ -26,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
        class="video hoverable unselected rounded {9px transparent}"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) no-repeat;"
+  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;"
      {% if video.metasearch_vid %}
        href="{% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
      {% else %}
