@@ -105,7 +105,7 @@ class CategoryVideoListNode(BaseVideoListNode):
                     site=context['sitelocation'].site)
             except models.Category.DoesNotExist:
                 return models.Video.objects.none()
-        return models.Video.objects.filter(
+        return models.Video.objects.new(
             site=context['sitelocation'].site,
             categories=category,
             status=models.VIDEO_STATUS_ACTIVE)
