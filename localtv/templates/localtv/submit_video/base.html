@@ -27,12 +27,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <table>
     {% block table %}{% endblock %}
     <tr>
-      <td>{% if request.is_ajax %}
-        <p id="close_submit_box">
-          <span>Cancel</span>
-          </p>
-          {% endif %}
-      </td>
       <td><input type="image" src="{% get_static_url "/images/submit.gif" %}" value="Submit" /></td>
     </tr>
   </table>

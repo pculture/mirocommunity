@@ -28,40 +28,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   padding-left: 16px;
 }
 {% endif %}
-.login{
-padding: 20px;
-}
-
-.login h1{
-margin: 0;
-padding: 0;
-font-size: 16px;
-clear: both;
-line-height: 1.3em;
-}
-
-
-.login form p{
-clear: both;
-padding: 20px;
-}
-
-#about_page #main p{
-padding-bottom: 10px;
-}
-
-
-body{
-font-family: Arial, Helvetica, sans-serif;
-}
-
-#cancel_button {
-    display: none;
-}
-
-label, label + input {
-    clear: left;
-}
 </style>
 {% endblock head %}
 {% block content %}
@@ -80,7 +46,9 @@ label, label + input {
     </p>
     {% endfor %}
     <input type="hidden" name="next" value="{{ next }}">
-  <input type="submit" value="Log In"> or <a href="{% url registration_register %}">Sign up for an account</a>
+    <p>
+      <input type="submit" value="Log In"> or <a href="{% url registration_register %}">Sign up for an account</a>
+    </p>
 </form>
 <br />
 <br />
@@ -91,11 +59,10 @@ label, label + input {
 {% if localtv_openid_start %}
 <h1>Sign in with your OpenID</h1> 
 <form action="{{ localtv_openid_start }}" method="post">
-<p><input class="openid" type="text" name="openid_url"> <input type="submit" value="Sign in"></p>
+<p><input class="openid" type="text" name="openid_url"></p>
+<p><input type="submit" value="Sign in"> Don't have an openid?
+<a href="http://openid.net/get/">Get one!</a></p>
 </form>
-<p>Don't have an openid?
-<a href="http://openid.net/get/">Get one!</a>
-</p>
 <br />
 <br />
 <hr />
@@ -105,11 +72,8 @@ label, label + input {
 
 <form action="{{ localtv_openid_start }}" method="post">
   <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
-<input type="submit" value="Click Here">
+    <p><input type="submit" value="Click Here"></p>
 </form>
 {% endif %}
 </div>
- {% if request.is_ajax %}
- <input id="cancel_button" value="Cancel" type="submit" onclick="tb_remove();" />
- {% endif %}
 {% endblock %}

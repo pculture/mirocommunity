@@ -883,15 +883,34 @@ margin-top: 2px;
 
 /////////////////////////////////////////////*/
 
+
 .login {
-float: right;
+/*float: right;*/
 margin-top: 30px;
+padding: 20px;
 }
 
-.login li {
-float: right;
-list-style: none;
-margin-left: 10px;
+.login h1 {
+margin: 0;
+padding: 0;
+font-size: 16px;
+clear: both;
+line-height: 1.3em;
+}
+
+.login label {
+    clear: left;
+    float: left;
+    margin-right: 10px;
+}
+.login input {
+    float: left;
+    margin-right: 5px;
+}
+
+.login form p {
+clear: both;
+padding: 20px;
 }
 
 .login .forgot-password {
@@ -948,10 +967,6 @@ background-position: left -63px;
 
 #hover_wrap {
 z-index: 10000;
-width: 600px;
-position: absolute;
-top: 20%;
-margin-left: 160px;
 display: none;
 border: 1px solid #222;
 background: #fff;
@@ -964,12 +979,23 @@ padding: 0 20px 0 0;
 line-height: 1.4em;
 }
 
-#submit_box {
-margin: 0px;
-padding: 20px;
+#hover_wrap .close {
+    background-image:url(../images/close.png);
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:30px;
+    width:30px;
 }
 
+#hover_wrap .close:hover {
+    background-position: 0 -40px;
+}
 
+#submit_video {
+    width: 600px;
+}
 
 #submit_video label {
 font-weight: bold;
@@ -2781,24 +2807,6 @@ button {
 cursor: pointer;
 }
 
-
-div.login {
-padding: 20px;
-}
-
-div.login h1 {
-margin: 0;
-padding: 0;
-font-size: 16px;
-clear: both;
-line-height: 1.3em;
-}
-
-
-div.login form p {
-clear: both;
-padding: 20px;
-}
 
 #about_page #main p {
 padding-bottom: 10px;
