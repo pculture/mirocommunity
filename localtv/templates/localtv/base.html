@@ -46,7 +46,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </script>
     <script type="text/javascript">
       $(document).ready( function(){
-      $("#nav li").mouseover(function(){this.addClass('sfhover');}).mouseout(function(){this.removeClass('sfhover');});
+          $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');});
       });
     </script>
     <script src="{% get_static_url "/js/extern/jquery.tb.min.js" %}"
