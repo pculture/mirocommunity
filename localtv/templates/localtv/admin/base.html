@@ -90,6 +90,20 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </div>
     </div>
       {% block footer_wrapper %}
+        <div id="footer">
+          <div class="local_footer">
+          {% block footer %}
+            {% autoescape off %}
+            {{ sitelocation.footer_html }}
+            {% endautoescape %}
+          {% endblock footer %}
+          </div>
+          <div>
+            <p class="powered"><span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
+            <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
+            </p>
+          </div>
+        </div>
       {% endblock footer_wrapper %}
     {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
