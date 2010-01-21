@@ -260,7 +260,7 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(video.file_url_mimetype, 'video/mp4')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
-                          'http://e.static.blip.tv/'
+                          'http://a.images.blip.tv/'
                           'Miropcf-DaveGlasscoSupportsMiro959.jpg')
         self.assertEquals(video.when_published,
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
