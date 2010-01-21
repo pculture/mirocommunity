@@ -17,6 +17,8 @@
 
 import datetime
 import os.path
+import shutil
+import tempfile
 from urllib import quote_plus
 
 import feedparser
@@ -56,19 +58,15 @@ class BaseTestCase(TestCase):
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
 
+        self.old_MEDIA_ROOT = settings.MEDIA_ROOT
+        self.tmpdir = tempfile.mkdtemp()
+        settings.MEDIA_ROOT = self.tmpdir
+
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
-        for profile in util.get_profile_model().objects.all():
-            if profile.logo:
-                profile.logo.delete()
-        for category in models.Category.objects.all():
-            if category.logo:
-                category.logo.delete()
-        if self.site_location.logo:
-            self.site_location.logo.delete()
-        if self.site_location.background:
-            self.site_location.background.delete()
+        settings.MEDIA_ROOT = self.old_MEDIA_ROOT
+        shutil.rmtree(self.tmpdir)
 
     def _data_file(self, filename):
         """
