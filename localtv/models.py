@@ -367,7 +367,7 @@ class Feed(Source):
                                 website_url=link).count()):
                             skip = True
 
-                    if scraped_data.get('user'):
+                    if not authors.count() and scraped_data.get('user'):
                         author, created = User.objects.get_or_create(
                             username=scraped_data.get('user'),
                             defaults={'first_name': scraped_data.get('user')})
@@ -628,12 +628,26 @@ class SavedSearch(Source):
         else:
             initial_status = VIDEO_STATUS_UNAPPROVED
 
+        authors = self.auto_authors.all()
+
         for result in raw_results:
             video = result.generate_video_model(self.site,
                                                 initial_status)
             video.search = self
             video.categories = self.auto_categories.all()
-            video.authors = self.auto_authors.all()
+            if authors.count():
+                video.authors = self.auto_authors.all()
+            else:
+                author, created = User.objects.get_or_create(
+                    username=video.video_service_user,
+                    defaults={'first_name': video.video_service_user})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    util.get_profile_model().objects.create(
+                        user=author,
+                        website=video.video_service_url)
+                video.authors = [author]
             video.save()
 
     def source_type(self):

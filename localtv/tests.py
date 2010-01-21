@@ -300,7 +300,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         models.vidscraper = self.vidscraper
         feed = models.Feed.objects.get(pk=1)
-        feed.auto_authors = [User.objects.get(pk=1)]
+        feed.auto_authors = []
         feed.feed_url = self._data_file('vimeo.rss')
         feed.update_items()
         video = models.Video.objects.order_by('id')[0]
@@ -345,8 +345,12 @@ class FeedModelTestCase(BaseTestCase):
             category = [cat.lower() for cat in category]
         self.assertEquals([tag.name for tag in video.tags.all()],
                           category)
+
+        # no automatic author, so it should be the user from the site
         self.assertEquals(list(video.authors.values_list('username')),
                           [('Latoya Peterson',)])
+        self.assertEquals(video.authors.get().get_profile().website,
+                          'http://vimeo.com/user1751935')
 
     def test_entries_youtube(self):
         """
@@ -354,7 +358,8 @@ class FeedModelTestCase(BaseTestCase):
         """
         models.vidscraper = self.vidscraper
         feed = models.Feed.objects.get(pk=1)
-        feed.auto_authors = [User.objects.get(pk=1)]
+        user = User.objects.get(pk=1)
+        feed.auto_authors = [user]
         feed.feed_url = self._data_file('youtube.rss')
         feed.update_items()
         video = models.Video.objects.order_by('id')[0]
@@ -410,8 +415,10 @@ Activism</a>""")
             category = [cat.lower() for cat in category]
         self.assertEquals([tag.name for tag in video.tags.all()],
                           category)
-        self.assertEquals(list(video.authors.values_list('username')),
-                          [('RHRealityCheck',)])
+
+        # auto author should be assigned
+        self.assertEquals(list(video.authors.all()),
+                          [user])
 
     def test_entries_atom(self):
         """
@@ -1515,3 +1522,30 @@ class SavedSearchModelTestCase(BaseTestCase):
         self.assertEquals(ss.video_set.count(), 1)
         ss.update_items()
         self.assertEquals(ss.video_set.count(), 1)
+
+    def test_attribution_auto(self):
+        """
+        If a SavedSearch has authors set, imported videos should be given that
+        authorship.
+        """
+        ss = models.SavedSearch.objects.get(pk=1)
+        ss.auto_authors = [User.objects.get(pk=1)]
+        ss.update_items()
+        video = ss.video_set.get()
+        self.assertEquals(list(ss.auto_authors.all()),
+                          list(video.authors.all()))
+
+    def test_attribution_default(self):
+        """
+        If a SavedSearch has no author, imported videos should have a User
+        based on the user on the original video service.
+        """
+        ss = models.SavedSearch.objects.get(pk=1)
+        ss.save()
+        ss.update_items()
+        video = ss.video_set.get()
+        user = User.objects.get(username='dpikop')
+        self.assertEquals(user.get_profile().website,
+                          'http://www.youtube.com/user/dpikop')
+        self.assertEquals(list(video.authors.all()), [user])
+
