@@ -566,6 +566,10 @@ body.bulkedit td div.field {
     display: none;
 }
 
+#content {
+    clear: left;
+}
+
 .rounded {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
