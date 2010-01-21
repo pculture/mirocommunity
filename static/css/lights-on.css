@@ -1881,6 +1881,18 @@ body.uploadtemplate #default_theme {
     width: 600px;
 }
 
+body.uploadtemplate .download_theme {
+    color: blue;
+}
+
+body.uploadtemplate .activate_theme {
+    color: green;
+}
+
+body.uploadtemplate .remove_theme {
+    color: red;
+}
+
 #admin_feed_add,
 #admin_search_sources,
 .form_wrap {
