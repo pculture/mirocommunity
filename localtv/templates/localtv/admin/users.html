@@ -22,33 +22,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n uploadtemplate_tags %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Users" %}{% endblock %}
-{% block head %}
-  {{ block.super }}
-  <style type="text/css">
-#labels form > table tr td:first-child, #labels form > table tr th.checkbox {
-    display: none;
-}
-#labels form > table tr.editing td:first-child {
-    display: table-cell;
-}
-#human-filter li {
-    padding-left: 10px;
-    float: left;
-}
-#human-filter li:first-child {
-    padding-left: 0;
-}
-#human-filter li a{
-    color: #4190E4;
-}
-#human-filter li.selected {
-    font-weight: bold;
-}
-#human-filter li.selected a {
-    color: grey;
-}
-  </style>
-{% endblock %}
 {% block body_class %}user_admin{% endblock body_class %}
 {% block subheader %}{% endblock %}
 {% block pre-labels %}

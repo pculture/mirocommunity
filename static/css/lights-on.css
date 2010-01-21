@@ -2340,8 +2340,38 @@ margin-bottom: 20px;
 
 body#admin.user_admin #labels form > table {
     width: auto;
+    padding: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+ }
+
+body#admin.user_admin #labels {
     float: left;
-    clear: right;
+}
+body#admin.user_admin #labels form > table tr td:first-child, #labels form > table tr th.checkbox {
+    display: none;
+}
+body#admin.user_admin #labels form > table tr.editing td:first-child {
+    display: table-cell;
+}
+body#admin.user_admin #human-filter {
+    padding-bottom: 20px;
+}
+body#admin.user_admin #human-filter li {
+    padding-left: 10px;
+    float: left;
+}
+body#admin.user_admin #human-filter li:first-child {
+    padding-left: 0;
+}
+body#admin.user_admin #human-filter li a{
+    color: #4190E4;
+}
+body#admin.user_admin #human-filter li.selected {
+    font-weight: bold;
+}
+body#admin.user_admin #human-filter li.selected a {
+    color: grey;
 }
 
 .floatnone{
