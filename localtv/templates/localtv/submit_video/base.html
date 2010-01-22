@@ -21,6 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load uploadtemplate_tags %}
 
 {% block title %}Submit a Video{% endblock %}
+{% block next_link %}{% endblock %}
 {% block content %}
 <form action="{% block form_action %}{% endblock %}" method="post" id="submit_video">
   {% block pre-table %}{% endblock %}

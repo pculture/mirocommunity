@@ -49,9 +49,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </head>
   {% endif %}
   <body id="{% block body_id %}video_page{% endblock body_id %}" class="{% block body_class %}{% endblock %}">
+    {% block next_link %}<a id="next" href="{{ request.path }}"></a>{% endblock %}
     {% if not request.is_ajax %}
     <p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
-
     <div id="wrapper" style="{% block wrapper-style-extra %}{% endblock %}">
       <div id="header">
         <div id="logo">
