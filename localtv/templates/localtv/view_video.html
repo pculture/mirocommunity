@@ -207,7 +207,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     {% endif %}
     {% if category %}
-    {% cache 3600 view_video_category_popular category %}
+    {% cache 3600 view_video_category_popular sitelocation category %}
     <div id="sidebar_header">
       <h2>{{ category.name }}</h2>
 
@@ -223,7 +223,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endfor %}
     {% endcache %}
     {% else %}
-    {% cache 3600 view_video_popular %}
+    {% cache 3600 view_video_popular sitelocation %}
     <div id="sidebar_header">
       <h2>Most Popular</h2>
 
