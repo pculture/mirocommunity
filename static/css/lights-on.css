@@ -2347,6 +2347,7 @@ body#admin.user_admin #labels form > table {
 
 body#admin.user_admin #labels {
     float: left;
+    width: 650px;
 }
 body#admin.user_admin #labels form > table tr td:first-child, #labels form > table tr th.checkbox {
     display: none;
