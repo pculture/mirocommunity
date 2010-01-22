@@ -1360,6 +1360,24 @@ line-height: 15px;
 display: none;
 }
 
+/* Load indicator */
+
+#load-indicator {
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: -30px;
+    z-index: 100;
+}
+
+#load-indicator img {
+    position: relative;
+    bottom: -4px;
+    margin: 0 auto;
+    padding: 4px;
+    background: url(../images/load-indicator-bg.png);
+}
+
 /*/////////////////////////////////////////////
 
 ~ Slider

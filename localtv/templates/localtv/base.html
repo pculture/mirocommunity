@@ -168,6 +168,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </div>
         </div>
       {% endblock footer_wrapper %}
+
+      <div id="load-indicator">
+        <img alt="Loading..." src="{% get_static_url "/images/load-indicator.gif" %}" />
+      </div>
     {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?

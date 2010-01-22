@@ -18,4 +18,14 @@ $(document).ready( function(){
                   replace_submit_video_and_setup_callbacks);
         }
     });
+}).ajaxStart(function() {
+    indicator = $("#load-indicator");
+    if (!indicator.length) {
+        return;
+    }
+    if ((!indicator.queue().length)) {
+	indicator.animate({bottom: 0}, 'fast');
+    }
+}).ajaxStop(function() {
+    $("#load-indicator").stop().css('bottom', '-30px');
 });
