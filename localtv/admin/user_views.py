@@ -55,9 +55,9 @@ def users(request, sitelocation=None):
                                           queryset=User.objects.all())
             if formset.is_valid():
                 formset.save()
-                return HttpResponseRedirect(request.path)
+                return HttpResponseRedirect(request.get_full_path())
         else:
-            return HttpResponseRedirect(request.path)
+            return HttpResponseRedirect(request.get_full_path())
 
     return render_to_response('localtv/admin/users.html',
                               {'formset': formset,
