@@ -137,13 +137,19 @@ def submit_video(request, sitelocation=None):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def scraped_submit_video(request, sitelocation=None):
+    if not (request.REQUEST.get('url') and \
+                url_re.match(request.REQUEST['url'])):
+        return HttpResponseRedirect(reverse('localtv_submit_video'))
+
+    scraped_data = util.get_scraped_data(request.REQUEST['url'])
+
+    url = scraped_data.get('link', request.REQUEST['url'])
+    existing =  models.Video.objects.filter(site=sitelocation.site,
+                                            website_url=url)
+    if existing.count():
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                                args=[existing[0].id]))
     if request.method == "GET":
-
-        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
-            return HttpResponseRedirect(reverse('localtv_submit_video'))
-
-        scraped_data = util.get_scraped_data(request.GET['url'])
-
         scraped_form = forms.ScrapedSubmitVideoForm(initial=request.GET)
 
         return render_to_response(
@@ -155,8 +161,6 @@ def scraped_submit_video(request, sitelocation=None):
 
     scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
     if scraped_form.is_valid():
-        scraped_data = util.get_scraped_data(request.POST['url'])
-
         if scraped_data.get('file_url_is_flaky'):
             file_url = None
         else:
@@ -239,11 +243,18 @@ def scraped_submit_video(request, sitelocation=None):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def embedrequest_submit_video(request, sitelocation=None):
+    if not (request.REQUEST.get('url') and \
+                url_re.match(request.REQUEST['url'])):
+        return HttpResponseRedirect(reverse('localtv_submit_video'))
+
+    url = request.REQUEST['url']
+    existing =  models.Video.objects.filter(site=sitelocation.site,
+                                            website_url=url)
+    if existing.count():
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                                args=[existing[0].id]))
+
     if request.method == "GET":
-
-        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
-            return HttpResponseRedirect(reverse('localtv_submit_video'))
-
         embed_form = forms.EmbedSubmitVideoForm(initial=request.GET)
 
         return render_to_response(
@@ -313,11 +324,17 @@ def embedrequest_submit_video(request, sitelocation=None):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def directlink_submit_video(request, sitelocation=None):
+    if not (request.REQUEST.get('url') and \
+                url_re.match(request.REQUEST['url'])):
+        return HttpResponseRedirect(reverse('localtv_submit_video'))
+
+    url = request.REQUEST['url']
+    existing =  models.Video.objects.filter(Q(website_url=url)|Q(file_url=url),
+                                            site=sitelocation.site)
+    if existing.count():
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                                args=[existing[0].id]))
     if request.method == "GET":
-
-        if not (request.GET.get('url') and url_re.match(request.GET['url'])):
-            return HttpResponseRedirect(reverse('localtv_submit_video'))
-
         direct_form = forms.DirectSubmitVideoForm(initial=request.GET)
 
         return render_to_response(

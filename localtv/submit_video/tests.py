@@ -85,6 +85,28 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 self.site_location.site.domain,
                 reverse('localtv_submit_video')))
 
+    def test_GET_existing(self):
+        """
+        If the URL represents an existing video, the user should be redirected
+        to the thanks page.
+        """
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        video = models.Video.objects.create(site=self.site_location.site,
+                                            name='test video',
+                                            website_url = self.GET_data['url'])
+        c = Client()
+        response = c.get(self.url, self.GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                website_url = self.GET_data['url']).count(), 1)
+
     def test_POST_fail(self):
         """
         If the POST to the view fails (the form doesn't validate, the template
@@ -100,6 +122,29 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertTrue('form' in response.context[0])
         self.assertTrue(
             getattr(response.context['form'], 'errors') is not None)
+
+    def test_POST_existing(self):
+        """
+        If the URL represents an existing video, the user should be redirected
+        to the thanks page.
+        """
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        video = models.Video.objects.create(site=self.site_location.site,
+                                            name='test video',
+                                            website_url = self.GET_data['url'])
+        c = Client()
+        response = c.post(self.url, self.GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                website_url = self.GET_data['url']).count(), 1)
+
 
     def test_POST_succeed(self):
         """
@@ -621,6 +666,47 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(video.file_url_length, 9436882)
         self.assertEquals(video.file_url_mimetype, 'video/mp4')
         self.assertEquals(video.embed_code, '')
+
+
+    def test_GET_existing_file_url(self):
+        """
+        If the URL represents an existing file URL, the user should be
+        redirected to the thanks page.
+        """
+        video = models.Video.objects.create(site=self.site_location.site,
+                                            name='test video',
+                                            file_url = self.GET_data['url'])
+        c = Client()
+        response = c.get(self.url, self.GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                file_url = self.GET_data['url']).count(), 1)
+
+    def test_POST_existing_file_url(self):
+        """
+        If the URL represents an existing file URL, the user should be
+        redirected to the thanks page.
+        """
+        video = models.Video.objects.create(site=self.site_location.site,
+                                            name='test video',
+                                            file_url = self.GET_data['url'])
+        c = Client()
+        response = c.post(self.url, self.GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                file_url = self.GET_data['url']).count(), 1)
 
 
 class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
