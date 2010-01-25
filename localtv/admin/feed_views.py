@@ -111,7 +111,7 @@ def add_feed_response(request, sitelocation=None):
 
             if feed.video_service():
                 user, created = User.objects.get_or_create(
-                    username=feed.name,
+                    username=feed.name[:30],
                     defaults={'email': ''})
                 if created:
                     user.set_unusable_password()
