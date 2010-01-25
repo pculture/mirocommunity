@@ -2374,7 +2374,7 @@ body#admin.user_admin #labels {
     float: left;
     width: 650px;
 }
-body#admin.user_admin #labels form > table tr td:first-child {
+body#admin.user_admin #labels form > table tr td:first-child, body#admin.user_admin #labels form > table tr th:first-child {
     display: none;
 }
 body#admin.user_admin #labels form > table tr.editing td:first-child {
@@ -2398,6 +2398,9 @@ body#admin.user_admin #human-filter li.selected {
 }
 body#admin.user_admin #human-filter li.selected a {
     color: grey;
+}
+body#admin.user_admin #label_sidebar {
+    margin-bottom: 20px;
 }
 
 .floatnone{
