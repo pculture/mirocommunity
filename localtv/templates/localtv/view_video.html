@@ -103,10 +103,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <a href="#" id="share_button" class="med_button">
         <span>Share Video<img src="{% get_static_url "/images/arrow_down.png" %}" alt="Down arrow" /></span>
       </a>
-
+      {% if current_vidoe.website_url %}
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
         <span>See video on its original page</span>
       </a>
+      {% endif %}
     </div>
 
     {% if user_is_admin %}
