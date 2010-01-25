@@ -108,6 +108,13 @@ button{
 border: none;
 }
 
+.contentWrap button {
+    border-style: outset;
+}
+.contentWrap button:active {
+    border-style: inset;
+}
+
 .clearboth {
 clear: both !important;
 }
