@@ -34,7 +34,8 @@ def edit_settings(request, sitelocation):
         if form.is_valid():
             sitelocation = form.save()
             if request.POST.get('delete_background'):
-                sitelocation.background.delete()
+                if sitelocation.background:
+                    sitelocation.background.delete()
             return HttpResponseRedirect(
                 reverse('localtv_admin_settings'))
 

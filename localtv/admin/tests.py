@@ -2676,6 +2676,27 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
             pk=self.site_location.pk)
         self.assertEquals(site_location.background, '')
 
+    def test_POST_delete_background_missing(self):
+        """
+        A POST request to the edit_content view with POST['delete_background']
+        but no background just redirect back to the edit
+        design view.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data['delete_background'] = 'yes'
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        site_location = models.SiteLocation.objects.get(
+            pk=self.site_location.pk)
+        self.assertEquals(site_location.background, '')
+
 
 # -----------------------------------------------------------------------------
 # Flatpage administration tests
