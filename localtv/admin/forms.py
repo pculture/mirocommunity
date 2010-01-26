@@ -27,6 +27,8 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.cache import cache
+from django.core.urlresolvers import resolve
+from django.http import Http404
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
@@ -402,6 +404,21 @@ class FlatPageForm(forms.ModelForm):
                 not value.endswith('/'):
             # append the trailing slash
             value = value + '/'
+        existing = FlatPage.objects.filter(
+            url = value,
+            sites=Site.objects.get_current())
+        if self.instance:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.count():
+            raise forms.ValidationError(
+                'Flatpage with that URL already exists.')
+        try:
+            resolve(value)
+        except Http404:
+            pass # good, the URL didn't resolve
+        else:
+            raise forms.ValidationError(
+                'View with that URL already exists.')
         return value
 
 class BaseFlatPageFormSet(BaseModelFormSet):

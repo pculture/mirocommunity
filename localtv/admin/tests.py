@@ -2788,6 +2788,50 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             else:
                 self.assertEquals(getattr(new, key), value)
 
+    def test_POST_add_existing_flatpage(self):
+        """
+        The admin should not be able to add a flatpage representing an existing
+        flatpage.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'title': 'flatpage',
+            'url': '/flatpage0/',
+            'content': 'flatpage content',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/flatpages.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['form'],
+                    'errors') is not None)
+
+    def test_POST_add_existing_view(self):
+        """
+        The admin should not be able to add a flatpage representing an existing
+        view.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'title': 'flatpage',
+            'url': self.url,
+            'content': 'flatpage content',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/flatpages.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['form'],
+                    'errors') is not None)
+
     def test_POST_save_no_changes(self):
         """
         A POST to the flatpagess view with a POST['submit'] of 'Save' and a
