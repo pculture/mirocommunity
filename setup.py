@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.9-pre'
+version = 'master'
 
 setup(name="Miro Community",
       version=version,
