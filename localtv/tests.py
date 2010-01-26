@@ -348,7 +348,7 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(list(video.authors.values_list('username')),
                           [('Latoya Peterson',)])
         self.assertEquals(video.authors.get().get_profile().website,
-                          'http://vimeo.com/user1751935')
+                          'http://www.vimeo.com/user1751935')
 
     def test_entries_youtube(self):
         """
