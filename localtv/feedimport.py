@@ -26,7 +26,7 @@ TWO_MONTHS = datetime.timedelta(days=62)
 
 def site_too_old():
     if User.objects.order_by('-last_login').values_list(
-        'last_login', flat=True)[0] + TWO_MONTHS < datetime.now():
+        'last_login', flat=True)[0] + TWO_MONTHS < datetime.datetime.now():
         return True
     else:
         return False
