@@ -10,7 +10,7 @@ function replace_submit_video_and_setup_callbacks(result) {
 }
 
 $(document).ready( function(){
-    $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories').css('cursor', 'default').click(function() {return false;});
+    $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories').click(function() {return false;}).children('a').css('cursor', 'default');
     $('.overlayLoad').overlay({
         target: '#hover_wrap',
         onBeforeLoad: function () {
