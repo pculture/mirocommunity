@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if instance.tags.count %}
   <ul>
     {% for tag in instance.tags.all %}
-    {% if tag.name %}<li><a href="{% url localtv_list_tag tag.name %}">{{ tag.name }}</a></li>{% endif %}
+    {% if tag.name %}<li><a href="{% url localtv_list_tag tag.name %}">{{ tag.name }}</a>{% if not forloop.last %},{% endif %}</li>{% endif %}
     {% endfor %}
   </ul>
   {% endif %}

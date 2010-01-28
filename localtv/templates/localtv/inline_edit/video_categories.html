@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if instance.categories.count %}
   <ul>
     {% for category in instance.categories.all %}
-    <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+    <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a>{% if not forloop.last %},{% endif %}</li>
     {% endfor %}
   </ul>
   {% endif %}
