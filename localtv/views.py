@@ -210,12 +210,14 @@ def category(request, slug=None, sitelocation=None):
             template_name='localtv/categories.html',
             allow_empty=True, template_object_name='category')
     else:
-        return render_to_response(
-            'localtv/category.html',
-            {'category': get_object_or_404(models.Category, slug=slug,
-                                           site=sitelocation.site)},
-            context_instance=RequestContext(request))
-
+        category = get_object_or_404(models.Category, slug=slug,
+                                     site=sitelocation.site)
+        return object_list(
+            request=request, queryset=category.approved_set.all(),
+            paginate_by=15,
+            template_name='localtv/category.html',
+            allow_empty=True, template_object_name='video',
+            extra_context={'category': category})
 
 @get_sitelocation
 def author(request, id=None, sitelocation=None):
@@ -231,12 +233,12 @@ def author(request, id=None, sitelocation=None):
             Q(authors=author) | Q(user=author),
             site=sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
-        return render_to_response(
-            'localtv/author.html',
-            {'author': author,
-             'video_list': videos},
-            context_instance=RequestContext(request))
-
+        return object_list(request=request, queryset=videos,
+                           paginate_by=15,
+                           template_name='localtv/author.html',
+                           allow_empty=True,
+                           template_object_name='video',
+                           extra_context={'author': author})
 
 @get_sitelocation
 def share_email(request, content_type_pk, object_id, sitelocation):
