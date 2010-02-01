@@ -172,7 +172,7 @@ def scraped_submit_video(request, sitelocation=None):
             user = None
 
         video = models.Video(
-            name=scraped_data['title'],
+            name=scraped_data.get('title', ''),
             site=sitelocation.site,
             description=sanitize(scraped_data.get('description', ''),
                                  extra_filters=['img']),
