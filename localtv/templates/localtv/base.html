@@ -74,7 +74,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
          <form id="search"
               action="{% url localtv_search %}"
               method="get">
-          <input name="query" type="text" id="search_field" />
+          <input name="q" type="text" id="search_field" value="{{ query }}"/>
           <input type="image" id="searchbutton" src="{% get_static_url "/images/search.png" %}" value="submit" />
         </form>
         <ul id="nav">

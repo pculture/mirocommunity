@@ -37,6 +37,8 @@ from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 from django.test.client import Client
 
+from haystack.query import SearchQuerySet
+
 from localtv import models
 from localtv import util
 
@@ -573,6 +575,14 @@ class ViewTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'videos',
                                         'watched']
 
+    def _rebuild_index(self):
+        """
+        Rebuilds the search index.
+        """
+        from haystack import site
+        index = site.get_index(models.Video)
+        index.reindex()
+
     def test_index(self):
         """
         The index view should render the 'localtv/index.html'.  The context
@@ -727,25 +737,43 @@ class ViewTestCase(BaseTestCase):
 
     def test_video_search(self):
         """
-        The video_search view should take a GET['query'] and search through the
+        The video_search view should take a GET['q'] and search through the
         videos.  It should render the
         'localtv/video_listing_search.html' template.
         """
+        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'blend'}) # lots of Blender videos in the
-                                             # test data
+                         {'q': 'blender'}) # lots of Blender videos in the test
+                                           # data
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 4)
-        self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.filter(
-                    Q(name__icontains="blend") |
-                    Q(description__icontains="blend") |
-                    Q(feed__name__icontains="blend"),
-                    status=models.VIDEO_STATUS_ACTIVE)[:5]))
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 2)
+        self.assertEquals(response.context['video_list'],
+                          [result.object for result in
+                           SearchQuerySet(site=self.site_location.site
+                                          ).filter(content='blender')[:10]])
+
+    def test_video_search_phrase(self):
+        """
+        Phrases in quotes should be searched for as a phrase.
+        """
+        self._rebuild_index()
+        c = Client()
+        response = c.get(reverse('localtv_search'),
+                         {'q': '"bits of blender"'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/video_listing_search.html')
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
+                          [result.object for result in
+                           SearchQuerySet(
+                    site=self.site_location.site
+                    ).filter(content='bits ofblender')])
 
     def test_video_search_no_query(self):
         """
@@ -765,17 +793,16 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'blend',
+                         {'q': 'blender',
                           'page': 2})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 2)
-        self.assertEquals(response.context['pages'], 4)
-        self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.filter(
-                    Q(name__icontains="blend") |
-                    Q(description__icontains="blend") |
-                    Q(feed__name__icontains="blend"),
-                    status=models.VIDEO_STATUS_ACTIVE)[5:10]))
+        self.assertEquals(response.context['page_obj'].number, 2)
+        self.assertEquals(response.context['paginator'].num_pages, 2)
+        self.assertEquals(response.context['video_list'],
+                          [result.object for result in
+                           SearchQuerySet(site=self.site_location.site
+                                          ).filter(content='blender')[10:20]])
+
 
     def test_video_search_includes_tags(self):
         """
@@ -785,23 +812,25 @@ class ViewTestCase(BaseTestCase):
         video.tags = 'tag1 tag2'
         video.save()
 
+        self._rebuild_index()
+
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'tag1'})
+                         {'q': 'tag1'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'tag2'})
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                          {'q': 'tag2'})
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'tag2 tag1'})
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                         {'q': 'tag2 tag1'})
+        self.assertEquals(response.context['video_list'],
                           [video])
 
     def test_video_search_includes_categories(self):
@@ -812,23 +841,25 @@ class ViewTestCase(BaseTestCase):
         video.categories = [1, 2] # Miro, Linux
         video.save()
 
+        self._rebuild_index()
+
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'Miro'})
+                         {'q': 'Miro'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'Linux'})
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                         {'q': 'Linux'})
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'Miro Linux'})
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                         {'q': 'Miro Linux'})
+        self.assertEquals(response.context['video_list'],
                           [video])
 
     def test_video_search_includes_user(self):
@@ -836,26 +867,31 @@ class ViewTestCase(BaseTestCase):
         The video_search view should search the user who submitted videos.
         """
         video = models.Video.objects.get(pk=20)
-        video.user = User.objects.get(username='user')
+        video.user = User.objects.get(username='superuser')
+        video.user.first_name = 'firstname'
+        video.user.last_name = 'lastname'
+        video.user.save()
         video.save()
+
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'user'}) # username
+                         {'q': 'superuser'}) # username
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'firstname'}) # first name
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                         {'q': 'firstname'}) # first name
+        self.assertEquals(response.context['video_list'],
                           [video])
 
         response = c.get(reverse('localtv_search'),
-                         {'query': 'lastname'}) # last name
-        self.assertEquals(list(response.context['page_obj'].object_list),
+                         {'q': 'lastname'}) # last name
+        self.assertEquals(response.context['video_list'],
                           [video])
 
     def test_video_search_includes_video_service_user(self):
@@ -866,13 +902,15 @@ class ViewTestCase(BaseTestCase):
         video.video_service_user = 'Video_service_user'
         video.save()
 
+        self._rebuild_index()
+
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'video_service_user'})
+                         {'q': 'video_service_user'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
                           [video])
 
     def test_video_search_includes_feed_name(self):
@@ -882,30 +920,32 @@ class ViewTestCase(BaseTestCase):
         video = models.Video.objects.get(pk=20)
         # feed is miropcf
 
+        self._rebuild_index()
+
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': 'miropcf'})
+                         {'q': 'miropcf'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page'], 1)
-        self.assertEquals(response.context['pages'], 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
                           [video])
 
     def test_video_search_exclude_terms(self):
         """
         The video_search view should exclude terms that start with - (hyphen).
         """
+        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'query': '-blender'})
+                         {'q': '-blender'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['pages'], 2)
-        self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.filter(
-                    status=models.VIDEO_STATUS_ACTIVE).exclude(
-                    name__icontains='blender').exclude(
-                    description__icontains='blender').exclude(
-                    feed__name__icontains='blender')[:5]))
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'],
+                          [result.object for result in
+                           SearchQuerySet(site=self.site_location.site
+                                          ).exclude(content='blender')])
 
     def test_category_index(self):
         """

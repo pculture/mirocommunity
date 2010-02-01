@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib
 import datetime
 
 from django.contrib.auth.models import User
 from django.contrib import comments
-from django.core.urlresolvers import reverse, resolve, Resolver404
+from django.core.paginator import Paginator, InvalidPage
+from django.core.urlresolvers import resolve, Resolver404
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -28,7 +28,7 @@ from django.db.models import Q
 from django.views.decorators.vary import vary_on_headers
 from django.views.generic.list_detail import object_list
 
-import tagging
+import haystack.forms
 
 from localtv import models
 from localtv.decorators import get_sitelocation
@@ -135,67 +135,37 @@ def view_video(request, video_id, slug=None, sitelocation=None):
         context,
         context_instance=RequestContext(request))
 
-
 @get_sitelocation
 def video_search(request, sitelocation=None):
-    query_string = request.GET.get('query', '')
+    query = ''
+    results = []
 
-    if query_string:
-        terms = set(query_string.split())
+    if request.GET.get('q'):
+        form = haystack.forms.ModelSearchForm(request.GET, load_all=True)
 
-        exclude_terms = set([
-                component for component in terms if component.startswith('-')])
-        include_terms = terms.difference(exclude_terms)
-        stripped_exclude_terms = [term.lstrip('-') for term in exclude_terms]
-
-        videos = models.Video.objects.filter(
-            site=sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE)
-
-        include_tags = tagging.utils.get_tag_list(list(include_terms))
-        exclude_tags = tagging.utils.get_tag_list(list(exclude_terms))
-        included_videos = models.Video.tagged.with_any(include_tags)
-        excluded_videos = models.Video.tagged.with_any(exclude_tags)
-
-        for term in include_terms:
-            videos = videos.filter(
-                Q(description__icontains=term) | Q(name__icontains=term) |
-                Q(pk__in=included_videos) |
-                Q(categories__name__icontains=term) |
-                Q(user__username__icontains=term) |
-                Q(user__first_name__icontains=term) |
-                Q(user__last_name__icontains=term) |
-                Q(video_service_user__icontains=term) |
-                Q(feed__name__icontains=term))
-
-        for term in stripped_exclude_terms:
-            videos = videos.exclude(description__icontains=term)
-            videos = videos.exclude(name__icontains=term)
-            videos = videos.exclude(pk__in=excluded_videos)
-            videos = videos.exclude(categories__name__icontains=term)
-            videos = videos.exclude(user__username__icontains=term)
-            videos = videos.exclude(user__first_name__icontains=term)
-            videos = videos.exclude(user__last_name__icontains=term)
-            videos = videos.exclude(video_service_user__icontains=term)
-            videos = videos.exclude(feed__name__icontains=term)
-
-        videos = videos.distinct()
-
-        return object_list(
-            request=request, queryset=videos,
-            paginate_by=5,
-            template_name='localtv/video_listing_search.html',
-            allow_empty=True, template_object_name='video',
-            extra_context={
-                'pagetabs_url': reverse('localtv_search'),
-                'pagetabs_args': urllib.urlencode(
-                    {'query': query_string.encode('utf8')})})
-
+        if form.is_valid():
+            query = form.cleaned_data['q']
+            results = form.search()
     else:
-        return render_to_response(
-            'localtv/video_listing_search.html', {},
-            context_instance=RequestContext(request))
+        form = haystack.forms.ModelSearchForm()
 
+    paginator = Paginator(results, 10)
+
+    try:
+        page = paginator.page(int(request.GET.get('page', 1)))
+    except InvalidPage:
+        raise Http404("No such page of results!")
+
+    context = { # mimic the object_list context
+        'form': form,
+        'page_obj': page,
+        'video_list': [result.object for result in page.object_list],
+        'paginator': paginator,
+        'query': query,
+    }
+
+    return render_to_response('localtv/video_listing_search.html', context,
+                              context_instance=RequestContext(request))
 
 @get_sitelocation
 def category(request, slug=None, sitelocation=None):
