@@ -97,7 +97,7 @@ class CategoryVideoListNode(BaseVideoListNode):
 
     def get_query_set(self, context):
         if isinstance(self.item, template.Variable):
-            category = self.item.render(context)
+            category = self.item.resolve(context)
         else:
             try:
                 category = models.Category.objects.get(
@@ -118,7 +118,7 @@ class TagVideoListNode(BaseVideoListNode):
 
     def get_query_set(self, context):
         if isinstance(self.item, template.Variable):
-            tag = self.item.render(context)
+            tag = self.item.resove(context)
         else:
             try:
                 tag = Tag.objects.get(name=self.item)
@@ -136,7 +136,7 @@ class UserVideoListNode(BaseVideoListNode):
 
     def get_query_set(self, context):
         if isinstance(self.item, template.Variable):
-            author = self.item.render(context)
+            author = self.item.resolve(context)
         else:
             try:
                 author = User.objects.get(username=self.item)
