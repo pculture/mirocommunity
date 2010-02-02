@@ -301,31 +301,46 @@ class Feed(Source):
             if guid and Video.objects.filter(
                 feed=self, guid=guid).count():
                 skip = True
-            link = entry.get('link')
+            link = entry.get('link', '')
             for possible_link in entry.links:
                 if possible_link.get('rel') == 'via':
                     # original URL
                     link = possible_link['href']
                     break
-            if (link is not None and Video.objects.filter(
+            if (link and Video.objects.filter(
                     website_url=link).count()):
                 skip = True
 
-            file_url = None
-            file_url_length = None
-            file_url_mimetype = None
-            embed_code = None
-            flash_enclosure_url = None
+            video_data = {
+                'name': unescape(entry['title']),
+                'guid': guid,
+                'site': self.site,
+                'description': '',
+                'file_url': '',
+                'file_url_length': None,
+                'file_url_mimetype': '',
+                'embed_code': '',
+                'flash_enclosure_url': '',
+                'when_submitted': datetime.datetime.now(),
+                'when_approved': (
+                    self.auto_approve and datetime.datetime.now() or None),
+                'status': initial_video_status,
+                'when_published': None,
+                'feed': self,
+                'website_url': link}
+
             tags = []
+            authors = self.auto_authors.all()
+
             if 'updated_parsed' in entry:
-                publish_date = datetime.datetime(*entry.updated_parsed[:6])
-            else:
-                publish_date = None
+                video_data['when_published'] = datetime.datetime(
+                    *entry.updated_parsed[:6])
+
             thumbnail_url = util.get_thumbnail_url(entry) or ''
             if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
                 thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
                                                  thumbnail_url)
-            authors = self.auto_authors.all()
+            video_data['thumbnail_url'] = thumbnail_url
 
             video_enclosure = util.get_first_video_enclosure(entry)
             if video_enclosure:
@@ -335,13 +350,18 @@ class Feed(Source):
                     if not urlparse.urlparse(file_url)[0]:
                         file_url = urlparse.urljoin(parsed_feed.feed.link,
                                                     file_url)
+                    video_data['file_url'] = file_url
+
                     try:
                         file_url_length = int(
                             video_enclosure.get('filesize') or
                             video_enclosure.get('length'))
                     except (ValueError, TypeError):
                         file_url_length = None
-                    file_url_mimetype = video_enclosure.get('type')
+                    video_data['file_url_length'] = file_url_length
+
+                    video_data['file_url_mimetype'] = video_enclosure.get(
+                        'type')
 
             if link and not skip:
                 try:
@@ -350,22 +370,30 @@ class Feed(Source):
                         fields=['file_url', 'embed', 'flash_enclosure_url',
                                 'publish_date', 'thumbnail_url', 'link',
                                 'file_url_is_flaky', 'user', 'user_url',
-                                'tags'])
-                    if not file_url:
+                                'tags', 'description'])
+                    if not video_data['file_url']:
                         if not scraped_data.get('file_url_is_flaky'):
-                            file_url = scraped_data.get('file_url')
-                    embed_code = scraped_data.get('embed')
-                    flash_enclosure_url = scraped_data.get(
+                            video_data['file_url'] = scraped_data.get(
+                                'file_url', '')
+                    video_data['embed_code'] = scraped_data.get('embed')
+                    video_data['flash_enclosure_url'] = scraped_data.get(
                         'flash_enclosure_url')
-                    publish_date = scraped_data.get('publish_date')
-                    thumbnail_url = scraped_data.get('thumbnail_url',
-                                                     thumbnail_url)
-                    tags = scraped_data.get('tags', [])
+                    video_data['when_published'] = scraped_data.get(
+                        'publish_date')
+                    video_data['description'] = scraped_data.get(
+                        'description', '')
+                    if scraped_data['thumbnail_url']:
+                        video_data['thumbnail_url'] = scraped_data.get(
+                            'thumbnail_url')
+
                     if scraped_data.get('link'):
-                        link = scraped_data['link']
                         if (Video.objects.filter(
-                                website_url=link).count()):
+                                website_url=scraped_data['link']).count()):
                             skip = True
+                        else:
+                            video_data['website_url'] = scraped_data['link']
+
+                    tags = scraped_data.get('tags', [])
 
                     if not authors.count() and scraped_data.get('user'):
                         author, created = User.objects.get_or_create(
@@ -389,54 +417,41 @@ class Feed(Source):
                 continue
 
 
-            if not (file_url or embed_code):
+            if not (video_data['file_url'] or video_data['embed_code']):
                 if verbose:
                     print (
                         "Skipping %s because it lacks file_url "
                         "or embed_code") % entry['title']
                 continue
 
-            description = entry.get('summary', '')
-            for content in entry.get('content', []):
-                type = content.get('type', '')
-                if 'html' in type:
-                    description = content.value
-                    break
+            if not video_data['description']:
+                description = entry.get('summary', '')
+                for content in entry.get('content', []):
+                    type = content.get('type', '')
+                    if 'html' in type:
+                        description = content.value
+                        break
+                video_data['description'] = description
 
-            if description:
-                soup = BeautifulSoup(description)
+            if video_data['description']:
+                soup = BeautifulSoup(video_data['description'])
                 for tag in soup.findAll(
                     'div', {'class': "miro-community-description"}):
-                    description = tag.renderContents()
+                    video_data['description'] = tag.renderContents()
                     break
+                video_data['description'] = sanitize(video_data['description'],
+                                                     extra_filters=['img'])
+
             if entry.get('media_player'):
                 player = entry['media_player']
                 if isinstance(player, basestring):
-                    embed_code = unescape(player)
+                    video_data['embed_code'] = unescape(player)
                 elif 'content' in player:
-                    embed_code = unescape(player['content'])
-                elif 'url' in player and not embed_code:
-                    embed_code = '<embed src="%(url)s">' % player
+                    video_data['embed_code'] = unescape(player['content'])
+                elif 'url' in player and not video_data['embed_code']:
+                    video_data['embed_code'] = '<embed src="%(url)s">' % player
 
-            video = Video(
-                name=unescape(entry['title']),
-                guid=guid,
-                site=self.site,
-                description=sanitize(description,
-                                     extra_filters=['img']),
-                file_url=file_url or '',
-                file_url_length=file_url_length,
-                file_url_mimetype=file_url_mimetype or '',
-                embed_code=embed_code or '',
-                flash_enclosure_url=flash_enclosure_url or '',
-                when_submitted=datetime.datetime.now(),
-                when_approved=datetime.datetime.now(),
-                when_published=publish_date,
-                status=initial_video_status,
-                feed=self,
-                website_url=link or '',
-                thumbnail_url=thumbnail_url or '')
-            video.save()
+            video = Video.objects.create(**video_data)
 
             try:
                 video.save_thumbnail()
