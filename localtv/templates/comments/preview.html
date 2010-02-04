@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 
 {% block title %}{% trans "Preview your comment" %}{% endblock %}
-
+{% block next_link %}{% if not form.errors %}{{ block.super }}{% endif %}{% endblock %}
 {% block content %}
   {% load comments %}
   <form action="{% comment_form_target %}" method="post">
