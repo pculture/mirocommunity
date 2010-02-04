@@ -14,7 +14,10 @@ function comment_load(response) {
         }
         wrap = $("#hover_wrap").overlay({api: true,
                                          onClose: comment_close});
-        wrap.getContent().find('form:eq(0)').ajaxForm(comment_load);
+        wrap.getContent().find('form:eq(0)').submit(function() {
+        if (typeof tinyMCE != 'undefined') {
+            tinyMCE.triggerSave();
+        }}).ajaxForm(comment_load);
         wrap.load();
     }
 }
@@ -29,5 +32,8 @@ function comment_close() {
     }
 }
 $(document).ready(function() {
-    $("h2.post-comment-title + form").ajaxForm(comment_load);
+    $("h2.post-comment-title + form").submit(function() {
+        if (typeof tinyMCE != 'undefined') {
+            tinyMCE.triggerSave();
+        }}).ajaxForm(comment_load);
 });
