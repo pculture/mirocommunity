@@ -26,10 +26,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {{ field }}
     {% else %}
     {% ifequal field.name "captcha" %}
+    {% if not user_is_admin %}
     {{ field.errors }}
     <input type="hidden" name="recaptcha_ip_field" value="{{ request.META.REMOTE_ADDR }}" />
     {% if not request.is_ajax %}
     {{ field }}
+    {% endif %}
     {% endif %}
     {% else %}
     {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}

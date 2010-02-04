@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import patterns, include
-from django.conf import settings
 
 urlpatterns = patterns(
     'localtv.views',
@@ -27,10 +26,14 @@ urlpatterns = patterns(
     (r'^category/([-\w]+)$', 'category', {}, 'localtv_category'),
     (r'^author/$', 'author', {}, 'localtv_author_index'),
     (r'^author/(\d+)$', 'author', {}, 'localtv_author'),
-    (r'^comments/', include('django.contrib.comments.urls')),
     (r'^share/(\d+)/(\d+)', 'share_email', {}, 'email-share'),
     (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
      {}, 'localtv_view_video'))
+
+urlpatterns += patterns(
+    'localtv.comments.views',
+    (r'^comments/post/$', 'post_comment', {}, 'comment-post-comment'),
+    (r'^comments/', include('django.contrib.comments.urls')))
 
 urlpatterns += patterns(
     '',
@@ -44,10 +47,3 @@ urlpatterns += patterns(
     (r'^feeds/', include('localtv.feeds.urls')),
     (r'^share/', include('email_share.urls')),
     (r'^widgets/', include('localtv.widgets.urls')))
-
-if settings.DEBUG:
-    # show the thumbnails/logo etc, without relying on Apache
-    urlpatterns += patterns('',
-                            (r'^localtv/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'localtv'}),
-                            (r'^uploadtemplate/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'uploadtemplate'}),
-                            )
