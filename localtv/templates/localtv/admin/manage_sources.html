@@ -181,6 +181,15 @@ $(document).ready(function() {
                 {% endif %}
               </tr>
               {% endfor %}
+              <tr>
+                <td>{{ form.thumbnail.label }}</td>
+                <td{% if not form.thumbnail.errors %} colspan="2"{% endif %}>{{ form.thumbnail }}</td>
+                {% if form.thumbnail.errors %}<td>{{ form.thumbnail.errors }}</td>{% endif %}
+              </tr>
+              <tr>
+                <td>{{ form.delete_thumbnail.label }}</td>
+                <td colspan="2">{{ form.delete_thumbnail }}</td>
+              </tr>
           </tbody></table>
 {% endblock %}
 

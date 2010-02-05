@@ -124,7 +124,7 @@ def manage_sources(request, sitelocation=None):
         raise Http404
 
     if request.method == 'POST':
-        formset = forms.SourceFormset(request.POST,
+        formset = forms.SourceFormset(request.POST, request.FILES,
                                       queryset=MockQueryset(page.object_list))
         if formset.is_valid():
             bulk_edits = formset.extra_forms[0].cleaned_data

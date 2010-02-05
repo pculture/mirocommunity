@@ -129,10 +129,13 @@ class SourceForm(forms.ModelForm):
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
+    thumbnail = forms.ImageField(required=False)
+    delete_thumbnail = forms.BooleanField(required=False)
 
     class Meta:
         model = models.Source
-        fields = ('auto_approve', 'auto_categories', 'auto_authors')
+        fields = ('auto_approve', 'auto_categories', 'auto_authors',
+                  'thumbnail', 'delete_thumbnail')
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -166,6 +169,15 @@ class SourceForm(forms.ModelForm):
                 self._extra_field_names = ['query_string']
             self.fields.update(extra_fields)
             self._meta.fields = self._meta.fields + tuple(extra_fields.keys())
+
+    def save(self, *args):
+        if self.cleaned_data['thumbnail']:
+            self.instance.save_thumbnail_from_file(
+                self.cleaned_data['thumbnail'])
+        if self.cleaned_data['delete_thumbnail']:
+            self.instance.delete_thumbnails()
+        return forms.ModelForm.save(self, *args)
+
 
     def _extra_fields(self):
         fields = [self[name] for name in self._extra_field_names]

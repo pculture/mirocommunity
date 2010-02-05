@@ -61,7 +61,7 @@ SITE_STATUSES = (
     (SITE_STATUS_DISABLED, 'Disabled'),
     (SITE_STATUS_ACTIVE, 'Active'))
 
-VIDEO_THUMB_SIZES = [
+THUMB_SIZES = [
     (534, 430), # behind a video
     (375, 295), # featured on frontpage
     (140, 110),
@@ -205,7 +205,123 @@ class SiteLocation(models.Model):
         SITE_LOCATION_CACHE[self.pk] = self
         return models.Model.save(self, *args, **kwargs)
 
-class Source(models.Model):
+
+class Thumbnailable(models.Model):
+    """
+    A type of Model that has thumbnails generated for it.
+    """
+    has_thumbnail = models.BooleanField(default=False)
+    thumbnail_extension = models.CharField(max_length=8, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def save_thumbnail_from_file(self, content_thumb):
+        """
+        Takes an image file-like object and stores it as the thumbnail for this
+        video item.
+        """
+        try:
+            pil_image = Image.open(content_thumb)
+        except IOError:
+            raise CannotOpenImageUrl(
+                'An image at the url %s could not be loaded' % (
+                    self.thumbnail_url))
+
+        self.thumbnail_extension = pil_image.format.lower()
+
+        # save an unresized version, overwriting if necessary
+        default_storage.delete(
+            self.get_original_thumb_storage_path())
+        default_storage.save(
+            self.get_original_thumb_storage_path(),
+            content_thumb)
+
+        if hasattr(content_thumb, 'temporary_file_path'):
+            # might have gotten moved by Django's storage system, so it might
+            # be invalid now.  to make sure we've got a valid file, we reopen
+            # under the new path
+            content_thumb.close()
+            content_thumb = default_storage.open(
+                self.get_original_thumb_storage_path())
+            pil_image = Image.open(content_thumb)
+
+        # save any resized versions
+        self.resize_thumbnail(pil_image)
+        self.has_thumbnail = True
+        self.save()
+
+    def resize_thumbnail(self, thumb=None):
+        """
+        Creates resized versions of the video's thumbnail image
+        """
+        if not thumb:
+            thumb = Image.open(
+                default_storage.open(self.get_original_thumb_storage_path()))
+        for width, height in THUMB_SIZES:
+            resized_image = thumb.copy()
+            if resized_image.size != (width, height):
+                # make the resized_image have one side the same as the
+                # thumbnail, and the other bigger so we can crop it
+                width_scale = float(resized_image.size[0]) / width
+                height_scale = float(resized_image.size[1]) / height
+                if width_scale < height_scale:
+                    new_height = int(resized_image.size[1] / width_scale)
+                    new_width = width
+                else:
+                    new_width = int(resized_image.size[0] / height_scale)
+                    new_height = height
+                resized_image = resized_image.resize((new_width, new_height),
+                                                     Image.ANTIALIAS)
+            if resized_image.size != (width, height):
+                x = y = 0
+                if resized_image.size[1] > height:
+                    y = int((height - resized_image.size[1]) / 2)
+                else:
+                    x = int((width - resized_image.size[0]) / 2)
+                new_image = Image.new('RGBA',
+                    (width, height), (0, 0, 0, 0))
+                new_image.paste(resized_image, (x, y))
+                resized_image = new_image
+            sio_img = StringIO.StringIO()
+            resized_image.save(sio_img, 'png')
+            sio_img.seek(0)
+            cf_image = ContentFile(sio_img.read())
+
+            # write file, deleting old thumb if it exists
+            default_storage.delete(
+                self.get_resized_thumb_storage_path(width, height))
+            default_storage.save(
+                self.get_resized_thumb_storage_path(width, height),
+                cf_image)
+
+    def get_original_thumb_storage_path(self):
+        """
+        Return the path for the original thumbnail, relative to the default
+        file storage system.
+        """
+        return 'localtv/%s_thumbs/%s/orig.%s' % (
+            self._meta.object_name.lower(),
+            self.id, self.thumbnail_extension)
+
+    def get_resized_thumb_storage_path(self, width, height):
+        """
+        Return the path for the a thumbnail of a resized width and height,
+        relative to the default file storage system.
+        """
+        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
+            self._meta.object_name.lower(),
+            self.id, width, height)
+
+    def delete_thumbnails(self):
+        self.has_thumbnail = False
+        default_storage.delete(self.get_original_thumb_storage_path())
+        for size in THUMB_SIZES:
+            default_storage.delete(self.get_resized_thumb_storage_path(*size))
+        self.thumbnail_extension = ''
+        self.save()
+
+class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
     videos.  Current subclasses are Feed and SavedSearch.
@@ -711,7 +827,7 @@ localtv_watch.timestamp > %s"""},
                                '-when_approved').distinct()
 
 
-class Video(models.Model):
+class Video(Thumbnailable):
     """
     Fields:
      - name: Name of this video
@@ -773,10 +889,8 @@ class Video(models.Model):
     embed_code = models.TextField(blank=True)
     flash_enclosure_url = models.URLField(verify_exists=False, blank=True)
     guid = models.CharField(max_length=250, blank=True)
-    has_thumbnail = models.BooleanField(default=False)
     thumbnail_url = models.URLField(
         verify_exists=False, blank=True, max_length=400)
-    thumbnail_extension = models.CharField(max_length=8, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
     video_service_user = models.CharField(max_length=250, blank=True,
@@ -837,101 +951,6 @@ class Video(models.Model):
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             self.save_thumbnail_from_file(content_thumb)
-
-    def save_thumbnail_from_file(self, content_thumb):
-        """
-        Takes an image file-like object and stores it as the thumbnail for this
-        video item.
-        """
-        try:
-            pil_image = Image.open(content_thumb)
-        except IOError:
-            raise CannotOpenImageUrl(
-                'An image at the url %s could not be loaded' % (
-                    self.thumbnail_url))
-
-        self.thumbnail_extension = pil_image.format.lower()
-
-        # save an unresized version, overwriting if necessary
-        default_storage.delete(
-            self.get_original_thumb_storage_path())
-        default_storage.save(
-            self.get_original_thumb_storage_path(),
-            content_thumb)
-
-        if hasattr(content_thumb, 'temporary_file_path'):
-            # might have gotten moved by Django's storage system, so it might
-            # be invalid now.  to make sure we've got a valid file, we reopen
-            # under the new path
-            content_thumb.close()
-            content_thumb = default_storage.open(
-                self.get_original_thumb_storage_path())
-            pil_image = Image.open(content_thumb)
-
-        # save any resized versions
-        self.resize_thumbnail(pil_image)
-        self.has_thumbnail = True
-        self.save()
-
-    def resize_thumbnail(self, thumb=None):
-        """
-        Creates resized versions of the video's thumbnail image
-        """
-        if not thumb:
-            thumb = Image.open(
-                default_storage.open(self.get_original_thumb_storage_path()))
-        for width, height in VIDEO_THUMB_SIZES:
-            resized_image = thumb.copy()
-            if resized_image.size != (width, height):
-                # make the resized_image have one side the same as the
-                # thumbnail, and the other bigger so we can crop it
-                width_scale = float(resized_image.size[0]) / width
-                height_scale = float(resized_image.size[1]) / height
-                if width_scale < height_scale:
-                    new_height = int(resized_image.size[1] / width_scale)
-                    new_width = width
-                else:
-                    new_width = int(resized_image.size[0] / height_scale)
-                    new_height = height
-                resized_image = resized_image.resize((new_width, new_height),
-                                                     Image.ANTIALIAS)
-            if resized_image.size != (width, height):
-                x = y = 0
-                if resized_image.size[1] > height:
-                    y = int((height - resized_image.size[1]) / 2)
-                else:
-                    x = int((width - resized_image.size[0]) / 2)
-                new_image = Image.new('RGBA',
-                    (width, height), (0, 0, 0, 0))
-                new_image.paste(resized_image, (x, y))
-                resized_image = new_image
-            sio_img = StringIO.StringIO()
-            resized_image.save(sio_img, 'png')
-            sio_img.seek(0)
-            cf_image = ContentFile(sio_img.read())
-
-            # write file, deleting old thumb if it exists
-            default_storage.delete(
-                self.get_resized_thumb_storage_path(width, height))
-            default_storage.save(
-                self.get_resized_thumb_storage_path(width, height),
-                cf_image)
-
-    def get_original_thumb_storage_path(self):
-        """
-        Return the path for the original thumbnail, relative to the default
-        file storage system.
-        """
-        return 'localtv/video_thumbs/%s/orig.%s' % (
-            self.id, self.thumbnail_extension)
-
-    def get_resized_thumb_storage_path(self, width, height):
-        """
-        Return the path for the a thumbnail of a resized width and height,
-        relative to the default file storage system.
-        """
-        return 'localtv/video_thumbs/%s/%sx%s.png' % (
-            self.id, width, height)
 
     def source_type(self):
         if self.search:

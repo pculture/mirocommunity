@@ -28,7 +28,12 @@ def get_thumbnail_url(video, width, height):
     if isinstance(video, MetasearchVideo):
         return video.thumbnail_url
 
-    path = video.get_resized_thumb_storage_path(width, height)
+    thumbnails = [source for source in [video, video.feed, video.search]
+                  if source is not None]
+    for thumbnail in thumbnails:
+        path = thumbnail.get_resized_thumb_storage_path(width, height)
+        if default_storage.exists(path):
+            break
 
     if not default_storage.exists(path):
         return '/images/default_vid.gif'

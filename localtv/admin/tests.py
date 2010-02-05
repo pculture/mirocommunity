@@ -70,7 +70,7 @@ class AdministrationBaseTestCase(BaseTestCase):
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['videos', 'feeds', 'savedsearches']
 
     url = reverse('localtv_admin_approve_reject')
 
@@ -582,11 +582,17 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
+        feed = models.Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
+        feed.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+
         POST_data.update({
                 'form-0-name': 'new name!',
                 'form-0-feed_url': 'http://pculture.org/',
                 'form-0-webpage': 'http://getmiro.com/',
-                'form-1-query_string': 'localtv'})
+                'form-0-delete_thumbnail': 'yes',
+                'form-1-query_string': 'localtv',
+                'form-1-thumbnail': File(
+                    file(self._data_file('logo.png')))})
 
         POST_response = c.post(self.url, POST_data,
                                follow=True)
@@ -598,15 +604,17 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data has been updated
-        feed = models.Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
+        feed = models.Feed.objects.get(pk=feed.pk)
         self.assertEquals(feed.name, POST_data['form-0-name'])
         self.assertEquals(feed.feed_url, POST_data['form-0-feed_url'])
         self.assertEquals(feed.webpage, POST_data['form-0-webpage'])
+        self.assertFalse(feed.has_thumbnail)
 
         search = models.SavedSearch.objects.get(
             pk=POST_data['form-1-id'].split('-')[1])
         self.assertEquals(search.query_string,
                           POST_data['form-1-query_string'])
+        self.assertTrue(search.has_thumbnail)
 
 
     def test_POST_succeed_with_page(self):
