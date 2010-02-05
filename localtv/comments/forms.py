@@ -19,8 +19,8 @@ class CommentForm(comment_forms.CommentForm):
     if not settings.DEBUG:
         captcha = ReCaptchaField()
 
-    def __init__(self, target_object, data=None):
-        comment_forms.CommentForm.__init__(self, target_object, data)
+    def __init__(self, target_object, data=None, initial=None):
+        comment_forms.CommentForm.__init__(self, target_object, data, initial)
         if not settings.DEBUG and data and 'user' in data:
             from localtv.models import SiteLocation # avoid circular import
             if SiteLocation.objects.get_current().user_is_admin(data['user']):
