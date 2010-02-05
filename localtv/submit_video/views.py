@@ -254,8 +254,15 @@ def embedrequest_submit_video(request, sitelocation=None):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
+    scraped_data = util.get_scraped_data(request.REQUEST['url'])
+    initial = {
+        'url': url,
+        'name': scraped_data.get('title', ''),
+        'description': scraped_data.get('description', ''),
+        'thumbnail_url': scraped_data.get('thumbnail_url', '')
+        }
     if request.method == "GET":
-        embed_form = forms.EmbedSubmitVideoForm(initial=request.GET)
+        embed_form = forms.EmbedSubmitVideoForm(initial=initial)
 
         return render_to_response(
             'localtv/submit_video/embed.html',
