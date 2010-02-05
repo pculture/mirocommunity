@@ -30,6 +30,7 @@ from django.contrib.comments import get_model, get_form, get_form_target
 Comment = get_model()
 CommentForm = get_form()
 
+from django.core.files import storage
 from django.core import mail
 from django.core.urlresolvers import get_resolver, reverse
 from django.db.models import Q
@@ -63,11 +64,15 @@ class BaseTestCase(TestCase):
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.tmpdir
+        models.Profile.__dict__['logo'].field.storage = \
+            storage.FileSystemStorage(self.tmpdir)
 
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
+        models.Profile.__dict__['logo'].field.storage = \
+            storage.default_storage
         shutil.rmtree(self.tmpdir)
 
     def _data_file(self, filename):
