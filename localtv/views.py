@@ -140,6 +140,12 @@ def video_search(request, sitelocation=None):
     query = ''
     results = []
 
+    if 'query' in request.GET and 'q' not in request.GET:
+        # old-style templates
+        GET = request.GET.copy()
+        GET['q'] = GET['query']
+        request.GET = GET
+
     if request.GET.get('q'):
         form = haystack.forms.ModelSearchForm(request.GET, load_all=True)
 
