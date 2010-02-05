@@ -377,7 +377,7 @@ class Feed(Source):
                                 'file_url', '')
                     video_data['embed_code'] = scraped_data.get('embed')
                     video_data['flash_enclosure_url'] = scraped_data.get(
-                        'flash_enclosure_url')
+                        'flash_enclosure_url', '')
                     video_data['when_published'] = scraped_data.get(
                         'publish_date')
                     video_data['description'] = scraped_data.get(
