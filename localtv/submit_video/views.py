@@ -188,6 +188,11 @@ def scraped_submit_video(request, sitelocation=None):
             video_service_url=scraped_data.get('user_url', ''),
             contact=scraped_form.cleaned_data.get('contact', ''))
 
+        if video.embed_code and not scraped_data.get('is_embedable', True):
+            video.embed_code += '\
+<br/><span class="embed-warning">\
+Warning: Embedding disabled by request.</span>'
+
 
         if sitelocation.user_is_admin(request.user):
             video.when_approved = video.when_submitted
