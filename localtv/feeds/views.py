@@ -16,20 +16,38 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import urllib
 
+from django.contrib.auth.models import User
 from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
+
+import haystack.forms
+from tagging.models import Tag
 
 from localtv import models
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
+
+def feed_view(klass):
+    def wrapper(request, *args):
+        if len(args) == 0:
+            args = [None]
+        try:
+            feed = klass(None, request).get_feed(*args)
+        except FeedDoesNotExist:
+            raise Http404
+        else:
+            return HttpResponse(feed.writeString('utf8'))
+    return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
@@ -126,12 +144,7 @@ class NewVideosFeed(BaseVideosFeed):
             status=models.VIDEO_STATUS_ACTIVE)
         return videos[:LOCALTV_FEED_LENGTH]
 
-            
-def new(request):
-    feed = NewVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf8'))
 
-        
 class FeaturedVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_featured')
@@ -150,11 +163,6 @@ class FeaturedVideosFeed(BaseVideosFeed):
         return videos[:LOCALTV_FEED_LENGTH]
 
 
-def featured(request):
-    feed = FeaturedVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf8'))
-
-        
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_popular')
@@ -169,10 +177,6 @@ class PopularVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('Popular Videos'))
 
-
-def popular(request):
-    feed = PopularVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf8'))
 
 class CategoryVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
@@ -191,11 +195,66 @@ class CategoryVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('Category: %s') % category.name)
 
+class AuthorVideosFeed(BaseVideosFeed):
+    def get_object(self, bits):
+        return User.objects.get(pk=bits[0])
 
-def category(request, category):
-    try:
-        feed = CategoryVideosFeed(None, request).get_feed(category)
-    except FeedDoesNotExist:
-        raise Http404
-    return HttpResponse(feed.writeString('utf8'))
+    def link(self, author):
+        return reverse('localtv_author', args=[author.pk])
 
+    def items(self, author):
+        videos = models.Video.objects.filter(
+            Q(authors=author) | Q(user=author),
+            site=self.sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE).distinct()
+        return videos[:LOCALTV_FEED_LENGTH]
+
+    def title(self, author):
+        return "%s: %s" % (
+            self.sitelocation.site.name,
+            _('Author: %s') % author.get_full_name())
+
+class TagVideosFeed(BaseVideosFeed):
+    def get_object(self, bits):
+        return Tag.objects.get(name=bits[0])
+
+    def link(self, tag):
+        return reverse('localtv_list_tag', args=[tag.name])
+
+    def items(self, tag):
+        videos = models.Video.tagged.with_all(tag).filter(
+            site=self.sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE)
+        return videos[:LOCALTV_FEED_LENGTH]
+
+    def title(self, tag):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Tag: %s') % tag.name)
+
+class SearchVideosFeed(BaseVideosFeed):
+    def get_object(self, bits):
+        return bits[0]
+
+    def link(self, search):
+        return reverse('localtv_search') + '?' + urllib.urlencode(
+            {'q': search})
+
+    def items(self, search):
+        form = haystack.forms.ModelSearchForm({'q': search}, load_all=True)
+        if not form.is_valid():
+            raise FeedDoesNotExist(search)
+        results = form.search()
+        return [result.object for result in results[:LOCALTV_FEED_LENGTH]]
+
+    def title(self, search):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Search: %s') % search)
+
+
+new = feed_view(NewVideosFeed)
+featured = feed_view(FeaturedVideosFeed)
+popular = feed_view(PopularVideosFeed)
+category = feed_view(CategoryVideosFeed)
+author = feed_view(AuthorVideosFeed)
+tag = feed_view(TagVideosFeed)
+search = feed_view(SearchVideosFeed)

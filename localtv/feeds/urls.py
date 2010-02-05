@@ -22,4 +22,8 @@ urlpatterns = patterns(
     (r'^new/$', 'new', {}, 'localtv_feeds_new'),
     (r'^featured/$', 'featured', {}, 'localtv_feeds_featured'),
     (r'^popular/$', 'popular', {}, 'localtv_feeds_popular'),
-    (r'^category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'))
+    (r'^category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'),
+    (r'^author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
+    (r'^tag/([\w-]+)$', 'tag', {}, 'localtv_feeds_tag'),
+    (r'^search/(.+)$', 'search', {}, 'localtv_feeds_search'),
+    )
