@@ -101,7 +101,12 @@ button.spam_link{
 color: #4190e4 !important;
 background: url(../images/small_icons.png) left -117px no-repeat;
 }
-
+.embed-warning {
+color:red;
+display:block;
+font-weight:bold;
+margin-bottom:12px;
+}
 
 
 button{

@@ -189,9 +189,8 @@ def scraped_submit_video(request, sitelocation=None):
             contact=scraped_form.cleaned_data.get('contact', ''))
 
         if video.embed_code and not scraped_data.get('is_embedable', True):
-            video.embed_code += '\
-<br/><span class="embed-warning">\
-Warning: Embedding disabled by request.</span>'
+            video.embed_code = '<span class="embed-warning">\
+Warning: Embedding disabled by request.</span>' + video.embed_code
 
 
         if sitelocation.user_is_admin(request.user):
