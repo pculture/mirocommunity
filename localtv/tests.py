@@ -30,6 +30,7 @@ from django.contrib.comments import get_model, get_form, get_form_target
 Comment = get_model()
 CommentForm = get_form()
 
+from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
 from django.core.urlresolvers import get_resolver, reverse
@@ -1450,7 +1451,23 @@ localtv_video.when_submitted)"""}).order_by('-date')))
 COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
                                                           ).order_by('-date')))
 
-        
+    def test_thumbnail_deleted(self):
+        """
+        If a Video has a thumbnail, deleting the Video should remove the
+        thumbnail.
+        """
+        v = models.Video.objects.get(pk=11)
+        v.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+
+        paths = [v.get_original_thumb_storage_path()]
+        for size in models.THUMB_SIZES:
+            paths.append(v.get_resized_thumb_storage_path(*size))
+
+        v.delete()
+        for path in paths:
+            self.assertFalse(storage.default_storage.exists(path),
+                             '%s was not deleted' % path)
+
 # -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------

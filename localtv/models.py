@@ -321,6 +321,10 @@ class Thumbnailable(models.Model):
         self.thumbnail_extension = ''
         self.save()
 
+    def delete(self, *args, **kwargs):
+        self.delete_thumbnails()
+        super(Thumbnailable, self).delete(*args, **kwargs)
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
