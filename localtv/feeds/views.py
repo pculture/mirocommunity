@@ -244,7 +244,8 @@ class SearchVideosFeed(BaseVideosFeed):
         if not form.is_valid():
             raise FeedDoesNotExist(search)
         results = form.search()
-        return [result.object for result in results[:LOCALTV_FEED_LENGTH]]
+        return [result.object for result in results[:LOCALTV_FEED_LENGTH]
+                if result]
 
     def title(self, search):
         return "%s: %s" % (
