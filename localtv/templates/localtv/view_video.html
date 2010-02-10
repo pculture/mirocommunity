@@ -35,7 +35,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             src="{% get_static_url "/js/edit_form.js" %}">
     </script>
   {% endif %}
-  <script src="{% get_static_url "/js/comment.js" %}" type="text/javascript"></script>
   {% get_comment_form for current_video as comment_form %}
   {% if comment_form.fields.captcha %}<script type="text/javascript"
           src="http://api.recaptcha.net/js/recaptcha_ajax.js"></script>{% endif %}
