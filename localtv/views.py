@@ -165,7 +165,7 @@ def video_search(request, sitelocation=None):
     context = { # mimic the object_list context
         'form': form,
         'page_obj': page,
-        'video_list': [result.object for result in page.object_list],
+        'video_list': [result.object for result in page.object_list if result],
         'paginator': paginator,
         'query': query,
     }
