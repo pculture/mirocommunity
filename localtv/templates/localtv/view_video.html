@@ -121,7 +121,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
     <div id="tags">
       <ul class="meta_listing">
-        <li class="item">
+        {% if user_is_admin or current_video.categories.count %}<li class="item">
           {% if user_is_admin %}
           {% editable_widget current_video "categories" %}
           {% else %}
@@ -129,16 +129,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             {% include "localtv/inline_edit/video_categories.html" %}
             {% endwith %}
           {% endif %}
-        </li>
-        <li class="item">
+        </li>{% endif %}
+        {% if user_is_admin or current_video.tags.count %}<li class="item">
           {% if user_is_admin %}
           {% editable_widget current_video "tags" %}
           {% else %}
-            {% with current_video as instance %}
+          {% with current_video as instance %}
             {% include "localtv/inline_edit/video_tags.html" %}
             {% endwith %}
           {% endif %}
-        </li>
+        </li>{% endif %}
         {% if user_is_admin %}
   <li class="item">
     {% editable_widget current_video "website_url" %}
