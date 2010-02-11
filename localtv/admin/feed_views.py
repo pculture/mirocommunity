@@ -16,9 +16,11 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import hashlib
 import re
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
@@ -149,8 +151,16 @@ def add_feed_done(request, feed_id, sitelocation):
                                  context,
                                  context_instance=RequestContext(request))
 
-        parsed_feed = bulk_import.bulk_import(feed.feed_url,
-                                              request.session['parsed_feed'])
+        cache_key = 'localtv-admin-feed-import:%s' % feed.feed_url
+        if len(cache_key) >= 250:
+            cache_key = 'localtv-admin-feed-import-hash:%s' % (
+                hashlib.sha1(feed.feed_url).hexdigest(),)
+
+        parsed_feed = cache.get(cache_key)
+        if not parsed_feed:
+            parsed_feed = bulk_import.bulk_import(
+                feed.feed_url, request.session['parsed_feed'])
+            cache.set(cache_key, parsed_feed)
 
         for last in feed._update_items_generator(parsed_feed=parsed_feed):
             if last['index'] + 1 != last['total']: # last video
