@@ -680,18 +680,13 @@ class ViewTestCase(BaseTestCase):
         video.save()
 
         c = Client()
-        response = c.get(video.get_absolute_url(),
-                         HTTP_HOST=self.site_location.site.domain,
-                         HTTP_REFERER='http://%s%s' % (
-                self.site_location.site.domain,
-                reverse('localtv_category',
-                        args=['miro'])))
+        response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['category'].pk, 1)
+        self.assertEquals(response.context['category'].pk, 2)
         self.assertEquals(list(response.context[0]['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
-                    categories__pk=1,
+                    categories__pk=2,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
     def test_view_video_category_referer(self):
