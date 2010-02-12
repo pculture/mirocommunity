@@ -31,11 +31,11 @@ def get_thumbnail_url(video, width, height):
     thumbnails = [source for source in [video, video.feed, video.search]
                   if source is not None]
     for thumbnail in thumbnails:
-        path = thumbnail.get_resized_thumb_storage_path(width, height)
-        if default_storage.exists(path):
+        if thumbnail.has_thumbnail:
             break
 
-    if not default_storage.exists(path):
+    if not thumbnail.has_thumbnail:
         return '/images/default_vid.gif'
 
-    return "%s?%i" % (default_storage.url(path), default_storage.size(path))
+    return default_storage.url(
+        thumbnail.get_resized_thumb_storage_path(width, height))
