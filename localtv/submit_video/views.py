@@ -258,7 +258,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
-    scraped_data = util.get_scraped_data(request.REQUEST['url'])
+    scraped_data = util.get_scraped_data(request.REQUEST['url']) or {}
     initial = {
         'url': url,
         'name': scraped_data.get('title', ''),
