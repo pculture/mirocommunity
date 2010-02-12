@@ -115,6 +115,11 @@ def view_video(request, video_id, slug=None, sitelocation=None):
                                 site=sitelocation.site)
                         except models.Category.DoesNotExist:
                             pass
+                        else:
+                            if not video.categories.filter(
+                                pk=category_obj.pk).count():
+                                category_obj = None
+
         if category_obj is None:
             category_obj = video.categories.all()[0]
 
