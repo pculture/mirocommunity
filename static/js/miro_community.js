@@ -4,8 +4,10 @@ function replace_submit_video_and_setup_callbacks(result) {
     if (page.filter('#next').length) {
         location.href = page.filter('#next').attr('href');
         return;
-    };
-    $("#hover_wrap .contentWrap").html(page);
+    }
+    w = $(window);
+    width = $("#hover_wrap .contentWrap").html(page).outerWidth();
+    $("#hover_wrap").css('left', w.scrollLeft() + Math.max((w.width() -  width) / 2, 0));
     $('#hover_wrap form:eq(0)').ajaxForm(replace_submit_video_and_setup_callbacks);
 }
 
