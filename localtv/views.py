@@ -173,7 +173,6 @@ def video_search(request, sitelocation=None):
         'page_obj': page,
         'video_list': [result.object for result in page.object_list if result],
         'paginator': paginator,
-        'pagetabs_args': urllib.urlencode({'q': query}),
         'query': query,
     }
 

@@ -926,6 +926,19 @@ class ViewTestCase(BaseTestCase):
                            SearchQuerySet(site=self.site_location.site
                                           ).exclude(content='blender')])
 
+    def test_video_search_unicode(self):
+        """
+        The video_search view should handle Unicode strings.
+        """
+        self._rebuild_index()
+        c = Client()
+        response = c.get(reverse('localtv_search'),
+                         {'q': u'espa\xf1a'})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
+        self.assertEquals(response.context['video_list'], [])
+
     def test_category_index(self):
         """
         The category_index view should render the
