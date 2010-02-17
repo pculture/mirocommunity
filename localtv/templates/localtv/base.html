@@ -45,7 +45,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             type="text/javascript">
     </script>
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
-    {% block head %}{% endblock head %}
+    {% block head %}
+    <meta name="description" content="{{ sitelocation.about_html|striptags }}">
+    {% endblock head %}
   </head>
   {% endif %}
   <body id="{% block body_id %}video_page{% endblock body_id %}" class="{% block body_class %}{% endblock %}">
