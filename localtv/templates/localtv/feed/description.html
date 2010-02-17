@@ -17,14 +17,22 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters %}
-<div class="miro-community-description">{{ obj.description|sanitize }}</div>
-
-{% if obj.website_url %}
-  <p>
-    <b>{% trans "Original link" %}:</b>
-    <a href="{{ obj.website_url }}">{{ obj.website_url }}</a>
-  </p>
-{% endif %}
-  
-
+{% load i18n filters localtv_thumbnail %}
+<table>
+  <tr>
+    <td width="230" valign="top">
+      <a href="{{ obj.get_absolute_url }}">
+        <img src="{% get_thumbnail_url obj 222 169 %}">
+      </a>
+    </td>
+    <td width="300" valign="top">
+      <div class="miro-community-description">{{ obj.description|sanitize }}</div>
+    </td>
+    <td width="250" valign="top">
+      <div>{% if obj.authors.count %}<b>By:</b> {% for author in obj.authors.all %}<a href="{% url localtv_author author.pk %}">{% if author.firstname %}{{ author.get_full_name }}{% else %}{{ author.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      <div>{% if obj.categories.count %}<b>Categories:</b> {% for cat in obj.categories.all %}<a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      <div>{% if obj.tags.count %}<b>Tags:</b> {% for tag in obj.tags.all %}<a href="{% url localtv_list_tag tag.name %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      {% if obj.website_url %}<div><b>{% trans "Original link" %}:</b><a href="{{ obj.website_url }}">{{ obj.website_url }}</a></div>{% endif %}
+    </td>
+  </tr>
+</table>
