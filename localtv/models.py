@@ -74,7 +74,8 @@ VIDEO_SERVICE_REGEXES = (
     ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
     ('YouTube', r'http://(www\.)?youtube\.com/'),
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
-    ('Vimeo', r'http://(www\.)?vimeo\.com/'))
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'),
+    ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass

@@ -565,6 +565,9 @@ class AddFeedForm(forms.Form):
         (re.compile(
                 r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
          'vimeo'),
+        (re.compile(
+                r'^(http://)?(www\.)?dailymotion\.com/(?P<name>\w+)'),
+         'dailymotion'),
         )
 
     SERVICE_FEEDS = {
@@ -572,6 +575,7 @@ class AddFeedForm(forms.Form):
                     'uploads?alt=rss&v=2&orderby=published'),
         'blip': 'http://%s.blip.tv/rss',
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
+        'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
         }
 
     feed_url = forms.URLField(required=True,
