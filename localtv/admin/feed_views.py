@@ -15,8 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 import datetime
-import hashlib
+import os
 import re
 
 from django.contrib.auth.models import User
@@ -29,7 +33,7 @@ from django.template import RequestContext
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
-from localtv import models, util
+from localtv import models, tasks, util
 from localtv.admin import forms
 
 from vidscraper import bulk_import
@@ -64,8 +68,7 @@ def add_feed_response(request, sitelocation=None):
             add_form['feed_url'].errors.as_text())
 
     feed_url = add_form.cleaned_data['feed_url']
-    parsed_feed = request.session['parsed_feed'] = \
-        add_form.cleaned_data['parsed_feed']
+    parsed_feed = add_form.cleaned_data['parsed_feed']
 
     title = parsed_feed.feed.title
     for regexp in VIDEO_SERVICE_TITLES:
@@ -86,15 +89,10 @@ def add_feed_response(request, sitelocation=None):
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
-    video_count = request.session['video_count'] = bulk_import.video_count(
-        feed_url, parsed_feed)
+    video_count = bulk_import.video_count(feed_url, parsed_feed)
 
     if request.method == 'POST':
         if 'cancel' in request.POST:
-            # clean up the session
-            del request.session['parsed_feed']
-            del request.session['video_count']
-
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
         form = forms.SourceForm(request.POST, instance=models.Feed(**defaults))
@@ -138,48 +136,28 @@ def add_feed_response(request, sitelocation=None):
 @require_site_admin
 @get_sitelocation
 def add_feed_done(request, feed_id, sitelocation):
-    feed = get_object_or_404(
-        models.Feed,
-        pk=feed_id)
+    feed = models.Feed.objects.get(pk=feed_id)
+    if 'task_id' in request.GET:
+        task_id = request.GET['task_id']
+    else:
+        result = tasks.bulk_import.delay(
+            os.environ['DJANGO_SETTINGS_MODULE'],
+            feed_id)
+        task_id = result.task_id
 
-    def gen():
-        context = {
-            'message': 'Importing %i videos from' % (
-                request.session['video_count'],),
-            'feed_url': request.session['parsed_feed']['feed']['link']}
-        yield render_to_response('localtv/admin/feed_wait.html',
-                                 context,
-                                 context_instance=RequestContext(request))
-
-        cache_key = 'localtv-admin-feed-import:%s' % feed.feed_url
-        if len(cache_key) >= 250:
-            cache_key = 'localtv-admin-feed-import-hash:%s' % (
-                hashlib.sha1(feed.feed_url).hexdigest(),)
-
-        parsed_feed = cache.get(cache_key)
-        if not parsed_feed:
-            parsed_feed = bulk_import.bulk_import(
-                feed.feed_url, request.session['parsed_feed'])
-            cache.set(cache_key, parsed_feed)
-
-        for last in feed._update_items_generator(parsed_feed=parsed_feed):
-            if last['index'] + 1 != last['total']: # last video
-                context['message'] = 'Imported %i of %i videos from' % (
-                    last['index'] + 1, last['total'])
-                yield render_to_response(
-                    'localtv/admin/feed_wait.html',
-                    context,
-                    context_instance=RequestContext(request))
-
-        # clean up the session
-        del request.session['parsed_feed']
-        del request.session['video_count']
-
-        yield render_to_response('localtv/admin/feed_done.html',
-                                 {'feed': feed},
-                                 context_instance=RequestContext(request))
-
-    return util.HttpMixedReplaceResponse(request, gen())
+    cache_key = 'celery-task-meta-%s' % task_id
+    result = cache.get(cache_key)
+    if result is not None:
+        result = pickle.loads(str(result))
+        return render_to_response('localtv/admin/feed_done.html',
+                                  {'feed': feed,
+                                   'result': result},
+                                  context_instance=RequestContext(request))
+    else:
+        return render_to_response('localtv/admin/feed_wait.html',
+                                  {'feed': feed,
+                                   'task_id': task_id},
+                                  context_instance=RequestContext(request))
 
 
 @referrer_redirect

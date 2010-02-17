@@ -1134,10 +1134,11 @@ class FeedAdministrationTestCase(BaseTestCase):
 
     def test_GET_done(self):
         """
-        A GET request to the add_feed_done view should import videos from the
-        given feed.  It should also render the
-        'localtv/admin/feed_done.html' template and have a 'feed'
-        variable in the context pointing to the Feed object.
+        A GET request to the add_feed_done view should start importing the
+        videos from the feed by starting a Celery task.  It should also render
+        the 'localtv/admin/feed_wait.html' template and have a 'feed' variable
+        in the context pointing to the Feed object and a 'task_id' variable
+        with the Celery task ID..
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -1147,23 +1148,11 @@ class FeedAdministrationTestCase(BaseTestCase):
 
         response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[2].name,
-                          'localtv/admin/feed_done.html')
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/feed_wait.html')
         feed = models.Feed.objects.get()
-        self.assertEquals(response.context[2]['feed'], feed)
-        self.assertEquals(feed.video_set.count(), 1)
-
-        video = feed.video_set.all()[0]
-        self.assertEquals(video.status,
-                          models.VIDEO_STATUS_ACTIVE)
-        self.assertEquals(video.thumbnail_url,
-                          ('http://participatoryculture.org/feeds_test/'
-                           'mike_tv_drawing_cropped.jpg'))
-        self.assertEquals(video.file_url,
-                          ('http://participatoryculture.org/feeds_test/'
-                           'py1.mov'))
-        self.assertEquals(video.file_url_mimetype, 'video/quicktime')
-        self.assertEquals(video.file_url_length, 842)
+        self.assertEquals(response.context[0]['feed'], feed)
+        self.assertTrue('task_id' in response.context[0])
 
     def test_GET_creates_user(self):
         """
