@@ -1,4 +1,5 @@
 import subprocess
+import logging
 from celery.decorators import task
 from django.core.mail import mail_admins
 
@@ -16,6 +17,7 @@ def check_call(args):
     while stdout[-1] != '':
         stdout.append(process.stdout.read())
     if return_code: # some problem with the code
+        logging.info('Error running bulk import:\n%s' % ''.join(stdout))
         mail_admins('Error running bulk_import: %s' % (' '.join(args)),
                     ''.join(stdout))
         raise RuntimeError('error during bulk import')
