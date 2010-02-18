@@ -390,14 +390,20 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, parsed_feed=None):
+    def update_items(self, verbose=False, parsed_feed=None,
+                     clear_rejected=False):
         """
         Fetch and import new videos from this feed.
+
+        If clear_rejected is True, rejected videos that are part of this
+        feed will be deleted and re-imported.
         """
-        for i in self._update_items_generator(verbose, parsed_feed):
+        for i in self._update_items_generator(verbose, parsed_feed,
+                                              clear_rejected):
             pass
 
-    def _update_items_generator(self, verbose=False, parsed_feed=None):
+    def _update_items_generator(self, verbose=False, parsed_feed=None,
+                                clear_rejected=False):
         """
         Fetch and import new videos from this field.  After each imported
         video, we yield a dictionary:
@@ -428,9 +434,15 @@ class Feed(Source):
                     # original URL
                     link = possible_link['href']
                     break
-            if (link and Video.objects.filter(
-                    website_url=link).count()):
-                skip = True
+            if link:
+                if clear_rejected:
+                    for video in Video.objects.filter(
+                        status=VIDEO_STATUS_REJECTED,
+                        website_url=link):
+                        video.delete()
+                if Video.objects.filter(
+                    website_url=link).count():
+                    skip = True
 
             video_data = {
                 'name': unescape(entry['title']),
