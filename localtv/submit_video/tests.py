@@ -536,7 +536,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
                 self.site_location.site.domain,
-                reverse('localtv_submit_embedrequest_video'),
+                reverse('localtv_submit_scraped_video'),
                 urlencode({'url': url})))
 
     def test_POST_succeed_canonical(self):
