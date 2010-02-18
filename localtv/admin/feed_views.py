@@ -20,8 +20,9 @@ try:
 except ImportError:
     import pickle
 import datetime
-import os
 import re
+import sys
+import os
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -30,6 +31,8 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
+
+from importlib import import_module
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
@@ -141,10 +144,17 @@ def add_feed_done(request, feed_id, sitelocation):
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
     else:
-        result = tasks.bulk_import.delay(
-            os.environ['DJANGO_SETTINGS_MODULE'],
-            feed_id)
-        task_id = result.task_id
+        mod = import_module(os.environ['DJANGO_SETTINGS_MODULE'])
+        manage_py = os.path.join(
+            os.path.dirname(mod.__file__),
+            'manage.py')
+        result = tasks.check_call.delay((
+            sys.executable,
+            manage_py,
+            'bulk_import',
+            feed_id))
+        return HttpResponseRedirect('%s?task_id=%s' % (
+                request.path, result.task_id))
 
     cache_key = 'celery-task-meta-%s' % task_id
     result = cache.get(cache_key)
