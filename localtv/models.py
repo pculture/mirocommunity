@@ -554,7 +554,7 @@ class Feed(Source):
                 if verbose:
                     print (
                         "Skipping %s because it lacks file_url "
-                        "or embed_code") % entry['title']
+                        "or embed_code") % entry['title'].encode('utf8')
                 continue
 
             if not video_data['description']:
