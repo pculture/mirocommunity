@@ -17,6 +17,11 @@ class Command(BaseCommand):
             raise CommandError('Feed with pk %s does not exist' % args[0])
 
         bulk_feed = bulk_import(feed.feed_url)
-        feed.update_items(verbose=(options['verbosity']>1),
-                          parsed_feed=bulk_feed, clear_rejected=True)
+        try:
+            verbose = (int(options['verbosity']) > 1)
+        except ValueError:
+            verbose = False
+
+        feed.update_items(verbose=verbose, parsed_feed=bulk_feed,
+                          clear_rejected=True)
         print feed.video_set.count()
