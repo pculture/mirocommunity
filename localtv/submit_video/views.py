@@ -52,7 +52,8 @@ def submit_video(request, sitelocation=None):
     if not (sitelocation.display_submit_button or
             sitelocation.user_is_admin(request.user)):
         raise Http404
-    if request.method == "GET":
+    url = request.POST.get('url') or request.GET.get('url')
+    if request.method == "GET" and not url:
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
             'localtv/submit_video/submit.html',
@@ -60,7 +61,7 @@ def submit_video(request, sitelocation=None):
              'form': submit_form},
             context_instance=RequestContext(request))
     else:
-        submit_form = forms.SubmitVideoForm(request.POST)
+        submit_form = forms.SubmitVideoForm({'url': url or ''})
         if submit_form.is_valid():
             existing = models.Video.objects.filter(
                 Q(website_url=submit_form.cleaned_data['url']) |
@@ -100,12 +101,11 @@ def submit_video(request, sitelocation=None):
 
             get_dict = {'url': submit_form.cleaned_data['url']}
             get_params = urllib.urlencode(get_dict)
-
             if scraped_data:
                 if 'link' in scraped_data and \
                         scraped_data['link'] != get_dict['url']:
-                    request.POST = dict(request.POST)
-                    request.POST['url'] = scraped_data['link'].encode('utf8')
+                    request.POST = {
+                        'url': scraped_data['link'].encode('utf8')}
                     # rerun the view, but with the canonical URL
                     return submit_video(request)
 

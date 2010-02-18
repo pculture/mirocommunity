@@ -449,6 +449,23 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.get(pk=video.pk)
         self.assertEquals(video.status,models.VIDEO_STATUS_ACTIVE)
 
+    def test_GET_bookmarklet(self):
+        """
+        A GET request with a 'url' option should also submit the form.
+        """
+        GET_data = {'url': ('http://media.river-valley.tv/conferences/'
+                            'lgm2009/0302-Jean_Francois_Fortin_Tam-ogg.php')}
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        c = Client()
+        response = c.get(self.url, GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_directlink_video'),
+                urlencode(GET_data)))
+
     def test_POST_succeed_scraped(self):
         """
         If the URL represents a site that VidScraper understands, the user
