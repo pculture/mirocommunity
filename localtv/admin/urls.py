@@ -18,8 +18,11 @@
 from django.conf.urls.defaults import patterns, include
 from django.views.generic.simple import direct_to_template
 
-
 urlpatterns = patterns(
+    'localtv.admin.views',
+    (r'^$', 'index', {}, 'localtv_admin_index'))
+
+urlpatterns += patterns(
     'localtv.admin.approve_reject_views',
     (r'^approve_reject/$', 'approve_reject',
      {}, 'localtv_admin_approve_reject'),
