@@ -566,7 +566,7 @@ class AddFeedForm(forms.Form):
                 r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
          'vimeo'),
         (re.compile(
-                r'^(http://)?(www\.)?dailymotion\.com/(?P<name>\w+)'),
+                r'^(http://)?(www\.)?dailymotion\.com/(\w+/)*(?P<name>\w+)/1'),
          'dailymotion'),
         )
 
