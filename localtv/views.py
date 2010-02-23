@@ -16,24 +16,18 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import urllib
-
-from django.contrib.auth.models import User
 from django.contrib import comments
-from django.core.paginator import Paginator, InvalidPage
 from django.core.urlresolvers import resolve, Resolver404
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.db.models import Q
 from django.views.decorators.vary import vary_on_headers
-from django.views.generic.list_detail import object_list
 
-import haystack.forms
 
 from localtv import models
 from localtv.decorators import get_sitelocation
 from localtv.admin import forms as admin_forms
+from localtv.listing import views as listing_views
 
 @get_sitelocation
 def index(request, sitelocation=None):
@@ -108,7 +102,7 @@ def view_video(request, video_id, slug=None, sitelocation=None):
                 except Resolver404:
                     pass
                 else:
-                    if view == category:
+                    if view == listing_views.category:
                         try:
                             category_obj = models.Category.objects.get(
                                 slug=args[0],
@@ -140,87 +134,6 @@ def view_video(request, video_id, slug=None, sitelocation=None):
         'localtv/view_video.html',
         context,
         context_instance=RequestContext(request))
-
-@get_sitelocation
-def video_search(request, sitelocation=None):
-    query = ''
-    results = []
-
-    if 'query' in request.GET and 'q' not in request.GET:
-        # old-style templates
-        GET = request.GET.copy()
-        GET['q'] = GET['query']
-        request.GET = GET
-
-    if request.GET.get('q'):
-        form = haystack.forms.ModelSearchForm(request.GET, load_all=True)
-
-        if form.is_valid():
-            query = form.cleaned_data['q']
-            results = form.search()
-    else:
-        form = haystack.forms.ModelSearchForm()
-
-    paginator = Paginator(results, 10)
-
-    try:
-        page = paginator.page(int(request.GET.get('page', 1)))
-    except InvalidPage:
-        raise Http404("No such page of results!")
-
-    context = { # mimic the object_list context
-        'form': form,
-        'page_obj': page,
-        'video_list': [result.object for result in page.object_list if result],
-        'paginator': paginator,
-        'query': query,
-    }
-
-    return render_to_response('localtv/video_listing_search.html', context,
-                              context_instance=RequestContext(request))
-
-@get_sitelocation
-def category(request, slug=None, sitelocation=None):
-    if slug is None:
-        categories = models.Category.objects.filter(
-            site=sitelocation.site,
-            parent=None)
-
-        return object_list(
-            request=request, queryset=categories,
-            paginate_by=18,
-            template_name='localtv/categories.html',
-            allow_empty=True, template_object_name='category')
-    else:
-        category = get_object_or_404(models.Category, slug=slug,
-                                     site=sitelocation.site)
-        return object_list(
-            request=request, queryset=category.approved_set.all(),
-            paginate_by=15,
-            template_name='localtv/category.html',
-            allow_empty=True, template_object_name='video',
-            extra_context={'category': category})
-
-@get_sitelocation
-def author(request, id=None, sitelocation=None):
-    if id is None:
-        return render_to_response(
-            'localtv/author_list.html',
-            {'authors': User.objects.all()},
-            context_instance=RequestContext(request))
-    else:
-        author = get_object_or_404(User,
-                                   pk=id)
-        videos = models.Video.objects.filter(
-            Q(authors=author) | Q(user=author),
-            site=sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
-        return object_list(request=request, queryset=videos,
-                           paginate_by=15,
-                           template_name='localtv/author.html',
-                           allow_empty=True,
-                           template_object_name='video',
-                           extra_context={'author': author})
 
 @get_sitelocation
 def share_email(request, content_type_pk, object_id, sitelocation):

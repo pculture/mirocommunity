@@ -21,14 +21,17 @@ urlpatterns = patterns(
     'localtv.views',
     (r'^$', 'index', {}, 'localtv_index'),
     (r'^about/$', 'about', {}, 'localtv_about'),
+    (r'^share/(\d+)/(\d+)', 'share_email', {}, 'email-share'),
+    (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
+     {}, 'localtv_view_video'))
+
+urlpatterns += patterns(
+    'localtv.listing.views',
     (r'^search/$', 'video_search', {}, 'localtv_search'),
     (r'^category/$', 'category', {}, 'localtv_category_index'),
     (r'^category/([-\w]+)$', 'category', {}, 'localtv_category'),
     (r'^author/$', 'author', {}, 'localtv_author_index'),
-    (r'^author/(\d+)$', 'author', {}, 'localtv_author'),
-    (r'^share/(\d+)/(\d+)', 'share_email', {}, 'email-share'),
-    (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
-     {}, 'localtv_view_video'))
+    (r'^author/(\d+)$', 'author', {}, 'localtv_author'))
 
 urlpatterns += patterns(
     'localtv.comments.views',
