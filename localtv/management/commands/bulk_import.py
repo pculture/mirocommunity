@@ -27,6 +27,6 @@ class Command(BaseCommand):
                                               clear_rejected=True):
             if not models.Feed.objects.filter(pk=feed.pk).count():
                 # someone deleted the feed, quit
-                print 0
+                print 0,
                 return
-        print feed.video_set.count()
+        print feed.video_set.count(),
