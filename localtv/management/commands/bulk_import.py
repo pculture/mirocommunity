@@ -22,6 +22,11 @@ class Command(BaseCommand):
         except ValueError:
             verbose = False
 
-        feed.update_items(verbose=verbose, parsed_feed=bulk_feed,
-                          clear_rejected=True)
+        for i in feed._update_items_generator(verbose=verbose,
+                                              parsed_feed=bulk_feed,
+                                              clear_rejected=True):
+            if not models.Feed.objects.filter(pk=feed.pk).count():
+                # someone deleted the feed, quit
+                print 0
+                return
         print feed.video_set.count()
