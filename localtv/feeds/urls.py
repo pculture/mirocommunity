@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns
 
 urlpatterns = patterns(
     'localtv.feeds.views',
@@ -25,7 +24,6 @@ urlpatterns = patterns(
     (r'^popular/$', 'popular', {}, 'localtv_feeds_popular'),
     (r'^category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'),
     (r'^author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
-    (re.compile(r'^tag/(.+)$',
-                re.DOTALL), 'tag', {}, 'localtv_feeds_tag'),
+    (r'^tag/(.+)$', 'tag', {}, 'localtv_feeds_tag'),
     (r'^search/(.+)$', 'search', {}, 'localtv_feeds_search'),
     )
