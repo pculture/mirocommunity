@@ -24,6 +24,7 @@ import re
 import sys
 import os
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -144,15 +145,15 @@ def add_feed_done(request, feed_id, sitelocation):
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
     else:
-        mod = import_module(os.environ['DJANGO_SETTINGS_MODULE'])
+        mod = import_module(settings.SETTINGS_MODULE)
         manage_py = os.path.join(
             os.path.dirname(mod.__file__),
             'manage.py')
         result = tasks.check_call.delay((
-            sys.executable,
-            manage_py,
-            'bulk_import',
-            feed_id))
+                getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
+                manage_py,
+                'bulk_import',
+                feed_id))
         return HttpResponseRedirect('%s?task_id=%s' % (
                 request.path, result.task_id))
 
