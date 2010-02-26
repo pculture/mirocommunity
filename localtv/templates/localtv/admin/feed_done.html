@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block top %}
   {% ifequal result.status 'SUCCESS' %}
-  <p>Finishing importing {{ result.result }} videos from <strong style="font-size: 24px">{{ feed.name }}</strong>
+  <p>Finishing importing {{ feed.video_set.count }} videos from <strong style="font-size: 24px">{{ feed.name }}</strong>
   {% else %}
   <p>Sorry, there was an error importing from <strong style="font-size: 24px">{{ feed.name }}</strong>
   {% endifequal %}
