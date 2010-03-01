@@ -23,6 +23,7 @@ from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
+from django.utils.encoding import force_unicode
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
@@ -104,9 +105,9 @@ def manage_sources(request, sitelocation=None):
         if orm_sort[0] == '-':
             reverse = True
             orm_sort = orm_sort[1:]
-        feeds_list = [(getattr(feed, orm_sort), feed)
+        feeds_list = [(force_unicode(getattr(feed, orm_sort)), feed)
                       for feed in feeds]
-        searches_list = [(getattr(search, orm_sort), search)
+        searches_list = [(force_unicode(getattr(search, orm_sort)), search)
                          for search in searches]
         queryset = [l[1] for l in sorted(feeds_list + searches_list,
                                          reverse=reverse)]
