@@ -825,7 +825,7 @@ localtv_video.when_submitted)""" % published})
         @type sitelocation: L{SiteLocation}
         """
         cache_key = 'videomanager.popular_since:%s:%i' % (
-            hash(delta), sitelocation.site.pk)
+            hash(delta), sitelocation.site.domain)
         for k in sorted(kwargs.keys()):
             v = kwargs[k]
             if '__timestamp__' in k:
