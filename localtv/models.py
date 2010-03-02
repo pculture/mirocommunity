@@ -824,6 +824,8 @@ localtv_video.when_submitted)""" % published})
         @type delta: L{datetime.timedelta)
         @type sitelocation: L{SiteLocation}
         """
+        from localtv import util
+
         cache_key = 'videomanager.popular_since:%s:%s' % (
             hash(delta), sitelocation.site.domain)
         for k in sorted(kwargs.keys()):
@@ -855,9 +857,9 @@ localtv_watch.timestamp > %s"""},
             if 'extra_where' in kwargs:
                 where = kwargs.pop('extra_where')
                 videos = videos.extra(where=where)
-            result = videos.order_by('-watchcount', '-when_published',
-                                          '-when_approved').distinct()
-            len(result) # make sure it's full
+            videos = list(videos.order_by('-watchcount', '-when_published',
+                                          '-when_approved').distinct())
+            result = util.MockQueryset(videos)
             cache.cache.set(cache_key, result)
         return result
     
