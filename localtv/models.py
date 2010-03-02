@@ -824,7 +824,7 @@ localtv_video.when_submitted)""" % published})
         @type delta: L{datetime.timedelta)
         @type sitelocation: L{SiteLocation}
         """
-        cache_key = 'videomanager.popular_since:%s:%i' % (
+        cache_key = 'videomanager.popular_since:%s:%s' % (
             hash(delta), sitelocation.site.domain)
         for k in sorted(kwargs.keys()):
             v = kwargs[k]
