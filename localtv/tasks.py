@@ -10,17 +10,21 @@ def check_call(args):
         args,
         executable=args[0],
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+        stderr=subprocess.PIPE)
 
     return_code = process.wait()
-    stdout = [process.stdout.read()]
-    while stdout[-1] != '':
-        stdout.append(process.stdout.read())
     if return_code: # some problem with the code
-        logging.info('Error running bulk import:\n%s' % ''.join(stdout))
+        stderr = [process.stderr.read()]
+        while stderr[-1] != '':
+            stderr.append(process.stderr.read())
+
+        logging.info('Error running bulk import:\n%s' % ''.join(stderr))
         mail_admins('Error running bulk_import: %s' % (' '.join(args)),
-                    ''.join(stdout))
+                    ''.join(stderr))
         raise RuntimeError('error during bulk import')
     else: # imported the feed correctly
+        stdout = [process.stdout.read()]
+        while stdout[-1] != '':
+            stdout.append(process.stdout.read())
         return ''.join(stdout)
 

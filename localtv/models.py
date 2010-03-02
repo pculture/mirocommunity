@@ -428,7 +428,7 @@ class Feed(Source):
             guid = entry.get('guid', '')
             if guid and Video.objects.filter(
                 feed=self, guid=guid).count():
-                skip = True
+                skip = 'duplicate guid'
             link = entry.get('link', '')
             for possible_link in entry.links:
                 if possible_link.get('rel') == 'via':
@@ -443,7 +443,7 @@ class Feed(Source):
                         video.delete()
                 if Video.objects.filter(
                     website_url=link).count():
-                    skip = True
+                    skip = 'duplicate link'
 
             video_data = {
                 'name': unescape(entry['title']),
@@ -523,7 +523,7 @@ class Feed(Source):
                     if scraped_data.get('link'):
                         if (Video.objects.filter(
                                 website_url=scraped_data['link']).count()):
-                            skip = True
+                            skip = 'duplicate link (vidscraper)'
                         else:
                             video_data['website_url'] = scraped_data['link']
 
@@ -545,17 +545,17 @@ class Feed(Source):
                     if verbose:
                         print "Vidscraper error: %s" % e
 
+            if not skip:
+                if not (video_data['file_url'] or video_data['embed_code']):
+                    skip = 'invalid'
+
             if skip:
                 if verbose:
-                    print "Skipping %s" % entry['title']
-                continue
-
-
-            if not (video_data['file_url'] or video_data['embed_code']):
-                if verbose:
-                    print (
-                        "Skipping %s because it lacks file_url "
-                        "or embed_code") % entry['title'].encode('utf8')
+                    print "Skipping %s: %s" % (entry['title'], skip)
+                yield {'index': index,
+                       'total': len(parsed_feed.entries),
+                       'video': None,
+                       'skip': skip}
                 continue
 
             if not video_data['description']:

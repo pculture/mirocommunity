@@ -34,6 +34,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from importlib import import_module
+import simplejson
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
@@ -161,9 +162,13 @@ def add_feed_done(request, feed_id, sitelocation):
     result = cache.get(cache_key)
     if result is not None:
         result = pickle.loads(str(result))
+        context = {'feed': feed,
+                   'result': result}
+        if result['status'] != 'FAILURE':
+            json = simplejson.loads(result['result'])
+            context.update(json)
         return render_to_response('localtv/admin/feed_done.html',
-                                  {'feed': feed,
-                                   'result': result},
+                                  context,
                                   context_instance=RequestContext(request))
     else:
         return render_to_response('localtv/admin/feed_wait.html',

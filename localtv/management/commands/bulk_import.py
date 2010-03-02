@@ -1,3 +1,5 @@
+import simplejson, sys
+
 from django.core.management.base import BaseCommand, CommandError
 from vidscraper.bulk_import import bulk_import
 
@@ -22,11 +24,21 @@ class Command(BaseCommand):
         except ValueError:
             verbose = False
 
+        stats = {
+            'total': 0,
+            'imported': 0,
+            'skipped': 0
+            }
         for i in feed._update_items_generator(verbose=verbose,
                                               parsed_feed=bulk_feed,
                                               clear_rejected=True):
             if not models.Feed.objects.filter(pk=feed.pk).count():
                 # someone deleted the feed, quit
-                print 0,
+                print simplejson.dumps(stats),
                 return
-        print feed.video_set.count(),
+            stats['total'] += 1
+            if i['video'] is not None:
+                stats['imported'] += 1
+            else:
+                stats['skipped'] += 1
+        print simplejson.dumps(stats),
