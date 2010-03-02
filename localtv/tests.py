@@ -590,6 +590,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    self.site_location,
                     status=models.VIDEO_STATUS_ACTIVE)))
         self.assertEquals(list(response.context['new_videos']),
                           list(models.Video.objects.new(
@@ -627,6 +628,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context[0]['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    self.site_location,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
     def test_view_video_admins_see_rejected(self):
@@ -686,6 +688,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context[0]['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    self.site_location,
                     categories__pk=2,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
@@ -711,6 +714,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context[0]['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    self.site_location,
                     categories__pk=1,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
@@ -1058,6 +1062,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
+                    self.site_location,
                     watch__timestamp__gte=datetime.datetime.min,
                     status=models.VIDEO_STATUS_ACTIVE)))
 

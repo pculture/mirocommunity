@@ -31,6 +31,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.forms.fields import ipv4_re
@@ -815,7 +816,7 @@ COALESCE(%slocaltv_video.when_approved,
 localtv_video.when_submitted)""" % published})
         return videos.filter(**kwargs).order_by('-best_date')
 
-    def popular_since(self, delta, sitelocation=None, **kwargs):
+    def popular_since(self, delta, sitelocation, **kwargs):
         """
         Returns a QuerySet of the most popular videos in the previous C{delta)
         time.
@@ -823,26 +824,43 @@ localtv_video.when_submitted)""" % published})
         @type delta: L{datetime.timedelta)
         @type sitelocation: L{SiteLocation}
         """
-        try:
-            earliest_time = datetime.datetime.now() - delta
-        except OverflowError:
-            earliest_time = datetime.datetime(1900, 1, 1)
+        cache_key = 'videomanager.popular_since:%s:%i' % (
+            hash(delta), sitelocation.site.pk)
+        for k in sorted(kwargs.keys()):
+            v = kwargs[k]
+            if '__timestamp__' in k:
+                now = datetime.datetime.now().replace(microsecond=0)
+                v = v.replace(microsecond=0)
+                v = hash(now - v)
+            cache_key += ':%s-%s' % (k, v)
+        result = cache.cache.get(cache_key)
+        if result is None:
+            try:
+                earliest_time = datetime.datetime.now() - delta
+            except OverflowError:
+                earliest_time = datetime.datetime(1900, 1, 1)
 
-        if sitelocation is not None:
-            videos = self.filter(site=sitelocation.site)
-        else:
-            videos = self
-        if kwargs:
-            videos = videos.filter(**kwargs)
-        videos = videos.extra(
-            select={'watch__count':
-                        """SELECT COUNT(*) FROM localtv_watch
+            if sitelocation is not None:
+                videos = self.filter(site=sitelocation.site)
+            else:
+                videos = self
+            if kwargs:
+                videos = videos.filter(**kwargs)
+            videos = videos.extra(
+                select={'watchcount':
+                            """SELECT COUNT(*) FROM localtv_watch
 WHERE localtv_video.id = localtv_watch.video_id AND
 localtv_watch.timestamp > %s"""},
-            select_params = (earliest_time,))
-        return videos.order_by('-watch__count', '-when_published',
-                               '-when_approved').distinct()
-
+                select_params = (earliest_time,))
+            if 'extra_where' in kwargs:
+                where = kwargs.pop('extra_where')
+                videos = videos.extra(where=where)
+            result = videos.order_by('-watchcount', '-when_published',
+                                          '-when_approved').distinct()
+            len(result) # make sure it's full
+            cache.cache.set(cache_key, result)
+        return result
+    
 
 class Video(Thumbnailable):
     """
