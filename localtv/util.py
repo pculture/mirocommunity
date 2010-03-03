@@ -25,6 +25,7 @@ from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model
 from django.http import HttpResponse
+from django.utils.encoding import force_unicode
 
 import tagging
 import vidscraper
@@ -134,7 +135,7 @@ def get_or_create_tags(tag_list):
                 if tag.name == tag:
                     # MySQL doesn't do case-sensitive equals on strings
                     break
-
+        tag.name = force_unicode(tag.name)
         tag_set.add(tag)
     return tagging.utils.edit_string_for_tags(list(tag_set))
 
