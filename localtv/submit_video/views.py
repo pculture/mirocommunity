@@ -149,8 +149,11 @@ def scraped_submit_video(request, sitelocation=None):
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
+    initial = dict(request.GET.items())
+    if request.user.is_authenticated():
+        initial['contact'] = request.user.email
     if request.method == "GET":
-        scraped_form = forms.ScrapedSubmitVideoForm(initial=request.GET)
+        scraped_form = forms.ScrapedSubmitVideoForm(initial=initial)
 
         return render_to_response(
             'localtv/submit_video/scraped.html',
@@ -265,6 +268,8 @@ def embedrequest_submit_video(request, sitelocation=None):
         'description': scraped_data.get('description', ''),
         'thumbnail_url': scraped_data.get('thumbnail_url', '')
         }
+    if request.user.is_authenticated():
+        initial['contact'] = request.user.email
     if request.method == "GET":
         embed_form = forms.EmbedSubmitVideoForm(initial=initial)
 
@@ -345,8 +350,11 @@ def directlink_submit_video(request, sitelocation=None):
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
+    initial = dict(request.GET.items())
+    if request.user.is_authenticated():
+        initial['contact'] = request.user.email
     if request.method == "GET":
-        direct_form = forms.DirectSubmitVideoForm(initial=request.GET)
+        direct_form = forms.DirectSubmitVideoForm(initial=initial)
 
         return render_to_response(
             'localtv/submit_video/direct.html',
