@@ -860,9 +860,13 @@ localtv_watch.timestamp > %s"""},
             videos = list(videos.order_by('-watchcount', '-when_published',
                                           '-when_approved').distinct())
             result = util.MockQueryset(videos)
-            cache.cache.set(cache_key, result)
+            cache.cache.set(cache_key, result,
+                            timeout=getattr(settings,
+                                            'LOCALTV_POPULAR_QUERY_TIMEOUT',
+                                            120 * 60 * 60 # 120 minutes
+                                            ))
         return result
-    
+
 
 class Video(Thumbnailable):
     """
