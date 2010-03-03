@@ -329,6 +329,7 @@ class EditSettingsForm(forms.ModelForm):
         sl = forms.ModelForm.save(self)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
+        models.SiteLocation.objects.clear_cache()
         return sl
 
 class CategoryForm(forms.ModelForm):
