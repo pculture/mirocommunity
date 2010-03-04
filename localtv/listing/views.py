@@ -158,7 +158,7 @@ def video_search(request, sitelocation=None, count=10, sort=None):
     else:
         form = haystack.forms.ModelSearchForm()
     if not pks:
-        queryset = models.Video.objects.empty()
+        queryset = models.Video.objects.none()
     elif sort == 'latest':
         queryset = models.Video.objects.new(
             site=sitelocation.site,
