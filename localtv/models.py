@@ -508,7 +508,7 @@ class Feed(Source):
                     if not video_data['file_url']:
                         if not scraped_data.get('file_url_is_flaky'):
                             video_data['file_url'] = scraped_data.get(
-                                'file_url', '')
+                                'file_url') or ''
                     video_data['embed_code'] = scraped_data.get('embed')
                     video_data['flash_enclosure_url'] = scraped_data.get(
                         'flash_enclosure_url', '')
