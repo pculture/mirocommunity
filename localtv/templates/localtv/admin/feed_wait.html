@@ -17,12 +17,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% block error %}
-  <meta http-equiv='refresh' content='20;{{ request.path }}?task_id={{ task_id }}'>
-{% endblock %}
+
 {% block bottom %}
-<p style="font-size: 18px;">{% if feed.video_set.count %}Imported {{ feed.video_set.count }} videos{% else %}Importing videos{% endif %} from
-<br/> <br/><strong style="font-size: 24px;">{{ feed.feed_url }}</strong>
-<br/><br/>This page will reload periodically with updates on the import status.
+<p style="font-size: 18px;">{{ message }}
+<br/> <br/><strong style="font-size: 24px;">{{ feed_url }}</strong>
 </p>
 {% endblock %}

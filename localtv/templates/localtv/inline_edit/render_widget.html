@@ -17,14 +17,20 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+
 <div class="editable">
-  {% autoescape off %}
-    <div class="display_data">{{ display_content }}</div>
-  {% endautoescape %}
+  <div class="display_data">
+    {% autoescape off %}{{ display_content }}{% endautoescape %}
+  </div>
   <div class="post_url">{{ post_url }}</div>
-  <div class="input_field">{% block input_field %}
-    <ul>
-      {{ form.as_ul }}
-    </ul>
-  {% endblock %}</div>
+  <div class="simple_overlay">
+    <h2>Editing</h2>
+    <div class="input_field">
+      {% block input_field %}
+      <ul>
+        {{ form.as_ul }}
+      </ul>
+      {% endblock %}
+    </div>
+  </div>
 </div>

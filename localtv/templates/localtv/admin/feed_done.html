@@ -21,15 +21,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block error %}
 {% endblock %}
 {% block top %}
-  {% ifequal result.status 'SUCCESS' %}
-  <p>Imported {{ imported }} videos from <strong style="font-size: 24px">{{ feed.name }}</strong> ({{ total }} videos found{% if skipped %}, {{ skipped }} skipped{% endif %})
-  {% else %}
-  <p>Sorry, there was an error importing from <strong style="font-size: 24px">{{ feed.name }}</strong>
-  {% endifequal %}
+  <p>Finishing importing {{ feed.video_set.count }} videos from <strong style="font-size: 24px">{{ feed.name }}</strong>
 {% endblock %}
 {% block bottom %}
 <p>
-  {% ifequal result.status 'SUCCESS' %}
   {% if feed.auto_approve %}
   <a href="{% url localtv_list_feed feed.pk %}">See these videos</a>
   {% else %}
@@ -37,9 +32,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
   or
   <a href="{% url localtv_admin_manage_page %}">go back to Manage Sources</a>.
-  {% else %}
-  Our developers have been notified.<br/>
-  <a href="{% url localtv_admin_manage_page %}">go back to Manage Sources</a>.
-  {% endifequal %}
 </p>
 {% endblock %}

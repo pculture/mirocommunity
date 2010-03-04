@@ -1,18 +1,16 @@
-function showEdit(obj, show) {
-    parentObj = $(obj).parents('tr');
-    if (show) {
-        other = parentObj.next();
-    } else {
-        other = parentObj.prev();
-        // reset the form fields
-        parentObj.find('input[type=text], input[type=file], textarea').each(function() {
-            this.value = this.defaultValue;
-        });
-        parentObj.find('input[type=checkbox], input[type=radio]').each(function() {
-            this.checked = this.defaultChecked;
-        });
-    }
-    parentObj.hide(); other.show();
+function resetOverlay() {
+    overlay = this.getOverlay();
+    overlay.find('input[type=text], input[type=file], textarea').each(function() {
+        this.value = this.defaultValue;
+    });
+    overlay.find('input[type=checkbox], input[type=radio]').each(function() {
+        this.checked = this.defaultChecked;
+    });
+}
+function showEdit(obj) {
+    overlay = $(obj).parents('tr').find('.simple_overlay');
+    overlay.overlay({api: true,
+                     onClose: resetOverlay}).load();
     return false;
 }
 
@@ -33,7 +31,8 @@ function bulkAction() {
     action = $("#bulk_action_selector").val();
     if (action == 'edit') {
         // show the bulk edit window
-       $("#massedit").show();
+        $("#massedit").overlay({api: true,
+                                onClose: resetOverlay}).load();
     } else if (action) {
         $("#bulk_action").val(action);
         bulkSubmit();
@@ -54,4 +53,6 @@ $(document).ready(function() {
         $("#hover_wrap .contentWrap").html("We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href='" + location.href + "'>Reload the page</a> to let it load fully.").overlay({target: '#hover_wrap', api: true}).load();
         $("#hover_wrap .contentWrap a").click(function() { location.href = location.href;});
     }
+    $('.simple_overlay.errors').overlay({api: true,
+                                         onClose: resetOverlay}).load();
 });

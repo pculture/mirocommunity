@@ -27,11 +27,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Confirm Clear" %}{% endblock %}{% endblock %}
 
 {% block content %}
-  <div style="width: 500px;">
-    Are you sure you want to reject {{ videos.count }} videos?
+    <h1>Are you sure you want to reject {{ videos.count }} videos?</h1>
+    <br class="clear" />
     <form method="POST" action="">
-      <button class="med_button" name="confirm" value="yes"><span>Clear Queue</span></button>
-      <a class="med_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
+      <button class="approve_button" name="confirm" value="yes"><span>Yes, Clear Queue</span></button>
+      <a class="reject_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
     </form>
-  </div>
 {% endblock content %}

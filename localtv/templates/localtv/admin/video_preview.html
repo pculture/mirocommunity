@@ -19,17 +19,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load video i18n filters editable_widget %}
 
+
+<h2 class="preview_heading">Click Videos to Preview Here</h2>
+
+<div class="preview_inner">
+
 <div class="vid_title">
   {% if not current_video.metasearch_vid %}
   {% editable_widget current_video "name" %}
   {% else %}
-  <h2>
+  <h3>
     {% if current_video.name %}
     {{ current_video.name }}
     {% else %}
     {% trans "(no title)" %}
     {% endif %}
-  </h2>
+  </h3>
   {% endif %}
 </div>
 
@@ -85,4 +90,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 </div>
   
   <div class="clear">&nbsp;</div>
+  </div>
 </div>

@@ -17,8 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% if not sitelocation %}<span class="edit_link"><span>Edit</span></span>{% endif %}
+
 <div class="floatleft">
-  <h3>Website</h3>
-  <ul><li>{{ instance.website_url|urlize }}</li></ul>
+  <h3>Website{% if not sitelocation %}
+<a href="#" class="edit_link"><span>Edit</span></a>
+{% endif %}</h3>
+  <span class="url">{{ instance.website_url|urlize }}</span>
 </div>

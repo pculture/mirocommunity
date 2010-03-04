@@ -25,21 +25,111 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}user_admin{% endblock body_class %}
 {% block subheader %}{% endblock %}
 {% block pre-labels %}
+  
+  <h2>Users</h2>
+  
   <div id="label_sidebar">
-    <div id="add_user" class="rounded">
-      <h1>Add a User</h1>
+    
+    
+    <a href="#" rel="#add_user" class="add"><span>Add User</span></a>
+    
+    <div id="add_user" class="simple_overlay displaynone rounded">
+      <h2>Add a User</h2>
       <form action="" method="POST" enctype="multipart/form-data">
-        {{ add_user_form.as_p }}
-        <input type="submit" value="Add" name="submit">
-      </form>
+       
+        
+  <div class="input_field">   
+    	<ul>
+     <li>
+      <label>Username</label>
+      {{ add_user_form.username }}
+      <span class="form_help">{{ add_user_form.username.help_text }}</span>
+     </li>
+      <li>
+      <label>First Name</label>
+      {{ add_user_form.first_name }}
+      <span class="form_help">{{ add_user_form.first_name.help_text }}</span>
+     </li> 
+      <li>
+      <label>Last Name</label>
+      {{ add_user_form.last_name }}
+      <span class="form_help">{{ add_user_form.last_name.help_text }}</span>
+     </li>
+      <li>     
+      <label>Email Address</label>
+      {{ add_user_form.email }}
+      <span class="form_help">{{ add_user_form.email.help_text }}</span>
+      </li>
+      
+      <li>   
+      <label>Role</label>
+      {{ add_user_form.role }}
+      <span class="form_help">{{ add_user_form.role.help_text }}</span>
+      </li>  
+           
+
+      <li>   
+      <label>Photo</label>
+      {{ add_user_form.logo }}
+      <span class="form_help">{{ add_user_form.logo.help_text }}</span>
+      </li>  
+      
+      <li>   
+      <label>Description</label>
+      {{ add_user_form.description }}
+      <span class="form_help">{{ add_user_form.description.help_text }}</span>
+      </li>  
+
+    	<li>   
+      <label>Password</label>
+      {{ add_user_form.password_f }}
+      <span class="form_help">{{ add_user_form.password_f.help_text }}</span>
+      </li>  
+
+			<li>   
+      <label>Confirm Password</label>
+      {{ add_user_form.password_f2 }}
+      <span class="form_help">{{ add_user_form.password_f2.help_text }}</span>
+      </li>  
+
+			<li>   
+      <label>Website</label>
+      {{ add_user_form.website }}
+      <span class="form_help">{{ add_user_form.website.help_text }}</span>
+      </li>  
+
+     </ul>     
+ 
+   </div>
+   
+
+   
+   
+        
+        
+        <button type="submit" value="Add" name="submit" class="approve_button"><span>Add User</span></button>      </form>
     </div>
   </div>
 {% endblock %}
 {% block pre-form %}
-  <ul id="human-filter">
+  <ul class="only_show">
+  	<label>Only Show</label>
+    <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}?show=all">All</a></li>
+
     <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}">Show "Human" Accounts</a></li>
-    <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}?show=all">Show All Accounts</a></li>
   </ul>
+  
+  
+      <div class="bulkedit_controls">
+    <select id="bulk_action_selector" class="behave">
+      <option selected="selected" value="">Bulk Actions</option>
+      <option value="edit">Edit</option>
+      <option value="remove" class="delete_icon">Remove</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+  </div>
+
+  
 {% endblock %}
 {% block columns %}
 <td>
@@ -52,51 +142,68 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <td>{% ifequal form.role.field.initial "admin" %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endifequal %}</td>
 <td>{% if form.instance.authored_set__count %}<a href="{% url localtv_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>
 {% endblock %}
+
+
 {% block quick-edit-title %}Edit User: {{ form.instance.username }}{% endblock %}
 {% block quick-edit-colspan %}2{% endblock %}
 {% block quick-edit %}
+
+
 {{ form.username.as_hidden }}
 {{ form.non_field_errors }}
-<table>
-  <tbody>
-    <tr>
-      <td>
+
+
+		<div class="input_field">
+
+			<ul>
+			
+				<li>
         {{ form.username.errors }}
         {{ form.username.label_tag }}
         {{ form.username }}
-      </td>
-    </tr>
-    <tr>
-      <td>
+      <span class="form_help">{{ form.username.help_text }}</span>
+        
+        
+    </li>
+        <li>
         {{ form.email.errors }}
         {{ form.email.label_tag }}
         {{ form.email }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.website.errors }}
+              <span class="form_help">{{ form.email.help_text }}</span>
+
+   </li>
+   
+    <li>
+         {{ form.website.errors }}
         {{ form.website.label_tag }}
         {{ form.website }}
-      </td>
-    </tr>
-    <tr>
-      <td>
+              <span class="form_help">{{ form.website.help_text }}</span>
+
+     </li>
+        <li>
         {{ form.logo.errors }}
         {{ form.logo.label_tag }}
         {{ form.logo }}
-      </td>
-    </tr>
-    <tr>
-      <td class="checklist" width="250" colspan="3">
+              <span class="form_help">{{ form.logo.help_text }}</span>
+
+    </li>
+    <li>
         {{ form.description.errors }}
         {{ form.description.label_tag }}
         {{ form.description }}
-      </td>
-    </tr>
-  </tbody>
-</table>
+              <span class="form_help">{{ form.description.help_text }}</span>
+
+			</li>
+			</ul>
+			
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+			
+		</div>
+
 {% endblock %}
+
+
+
 {% block quick-edit-additional-columns %}
 <td style="padding-right: 20px;" colspan="2">
   <table class="larger_labels">
