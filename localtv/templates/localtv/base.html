@@ -18,7 +18,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load uploadtemplate_tags %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   {% if not request.is_ajax %}
   <head>
@@ -37,7 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     }{% endif %}
     </style>
     {% endif %}
-    <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js"></script>
+    <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js" type="text/javascript"></script>
     <script src="{% get_static_url "/js/extern/jquery.form.js" %}"
             type="text/javascript">
     </script>
@@ -77,7 +77,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               action="{% url localtv_search %}"
               method="get">
           <input name="q" type="text" id="search_field" value="{{ query }}"/>
-          <input type="image" id="searchbutton" src="{% get_static_url "/images/search.png" %}" value="submit" />
+          <input type="image" id="searchbutton" src="{% get_static_url "/images/search.png" %}" alt="Search" />
         </form>
         <ul id="nav">
           <li class="home_page">

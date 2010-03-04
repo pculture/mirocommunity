@@ -83,7 +83,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endwith %}
     {% endif %}
     </div>
-    <div id="video_wrapper">
+    <div class="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|wmode_transparent }}
         {% else %}
@@ -144,7 +144,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% editable_widget current_video "website_url" %}
   </li>
   {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
-  {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>>{% endif %}
+  {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>{% endif %}
   {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
   {% endif %}
   {% comment %}

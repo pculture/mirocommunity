@@ -24,7 +24,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   <div id="main">
-    <div id="main_header">   
+    <div class="main_header">   
       <a href="{% url localtv_list_featured %}"><h2>Editor's Picks</h2></a>
       <div class="floatright">
         {% url localtv_feeds_featured as featured_rss%}
@@ -41,7 +41,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endif %}
     {% endfor %}
   <br class="clear" /> 
-  <div id="main_header">
+  <div class="main_header">
       <a href="{% url localtv_list_popular %}"><h2>Popular in the Last 24 Hours</h2></a>
       <div class="floatright">
         <a href="{% url localtv_feeds_popular %}" class="rss">RSS</a> |
