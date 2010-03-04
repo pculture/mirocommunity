@@ -214,7 +214,7 @@ class FeedModelTestCase(BaseTestCase):
 
     def test_ignore_duplicate_guid(self):
         """
-        If the GUID already exists for this feed, the newer item should be
+        If the GUID already exists for this item, the newer item should be
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
@@ -225,7 +225,7 @@ class FeedModelTestCase(BaseTestCase):
 
     def test_ignore_duplicate_link(self):
         """
-        If the GUID already exists for this feed, the newer item should be
+        If the link already exists for this item, the newer item should be
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
