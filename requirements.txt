@@ -4,12 +4,12 @@
 -e git+http://git.participatoryculture.org/vidscraper#egg=vidscraper-dev
 -e git+http://git.participatoryculture.org/django-email-share#egg=django-email-share-dev
 -e git+http://git.participatoryculture.org/django-uploadtemplate#egg=django-uploadtemplate-dev
-BeautifulSoup==3.0.7a
+BeautifulSoup
 Django==1.1.1
 django-tinymce==1.5
 http://effbot.org/downloads/Imaging-1.1.6.tar.gz
 South==0.6.2
--e svn+http://feedparser.googlecode.com/svn/trunk/feedparser@295#egg=feedparser-dev
+-e svn+http://feedparser.googlecode.com/svn/trunk/feedparser#egg=feedparser-dev
 flup>=1.0.2
 lxml==2.1.5
 nose==0.11.1
@@ -23,3 +23,4 @@ wsgiref==0.1.2
 -e svn+http://recaptcha-django.googlecode.com/svn/trunk@6#egg=recaptcha_django-0.1-py2.5-dev
 django-haystack>=1.0.1
 celery==1.0.0
+-e hg+https://bitbucket.org/paulswartz/django-storages/#egg=django-storages
