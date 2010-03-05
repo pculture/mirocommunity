@@ -132,7 +132,7 @@ $(document).ready(function() {
 
   
     <ul class="only_show">
-    	<label>Only Show:</label>
+      <li><label>Only Show:</label></li>
       <li{% if not request.GET.filter %} class="selected"{% endif %}><a href="{% url localtv_admin_manage_page %}">All</a></li>
       <li{% ifequal request.GET.filter "user" %} class="selected"{% endifequal %}><a href="?filter=user">Video Site Users</a></li>
       <li{% ifequal request.GET.filter "search" %} class="selected"{% endifequal %}><a href="?filter=search">Video Site Searches</a></li>
@@ -177,7 +177,7 @@ $(document).ready(function() {
           {% else %}
           {% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
           {% endif %}
-        <td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" width="100px"><a class="on" href="{{ auto_approve_url }}">On</span> <a class="off" href="{{ auto_approve_url }}?disable=true">Off</span></td>
+        <td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" style="width: 100px;"><a class="on" href="{{ auto_approve_url }}?disable=true">On</a> <a class="off" href="{{ auto_approve_url }}">Off</a></td>
 {% endblock %}
 
 {% block quick-edit-title %}Quick Edit{% endblock %}
@@ -191,7 +191,7 @@ $(document).ready(function() {
                 <td>
                   {{ field.label }}
                 </td>
-                <td {% if not field.errors %}colspan="2"{% endif %}>
+                <td {% if form.errors and not field.errors %}colspan="2"{% endif %}>
                   {{ field }}
                 </td>
                 {% if field.errors %}
@@ -199,24 +199,26 @@ $(document).ready(function() {
                 {% endif %}
               </tr>
               {% endfor %}
-          </tbody></table>
-{% endblock %}
-
-{% block quick-edit-additional-columns %}
-        <td class="checklist" width="250">
-          {{ form.auto_categories.errors }}
-          <label class="padding">Categories</label>
-          {{ form.auto_categories }}
-        </td>
-        <td class="checklist" width="250" colspan="2">
-          {{ form.auto_authors.errors }}
-          <label class="padding">Users</label>
-          {{ form.auto_authors }}
-        </td>
-        <td class="last" width="100px">
-          {{ form.auto_approve.errors }}
-            {{ form.auto_approve }}
-        </td>
+              <tr>
+                <td>{{ form.auto_categories.label }}</td>
+                <td {% if form.errors and not form.auto_categories.errors %}colspan="2"{% endif %}>
+                  {{ form.auto_categories }}
+                </td>
+                {% if form.auto_categories.errors %}
+                <td>{{ form.auto_categories.errors }}</td>
+                {% endif %}
+              </tr>
+              <tr>
+                <td>{{ form.auto_authors.label }}</td>
+                <td {% if form.errors and not form.auto_authors.errors %}colspan="2"{% endif %}>
+                  {{ form.auto_authors }}
+                </td>
+                {% if form.auto_authors.errors %}
+                <td>{{ form.auto_authors.errors }}</td>
+                {% endif %}
+              </tr>
+            </tbody>
+          </table>
 {% endblock %}
 
 {% block massedit %}
