@@ -19,47 +19,63 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% block body_class %}uploadtemplate{% endblock body_class %}
+{% block body_class %}themes{% endblock body_class %}
 
 
-{% load i18n %}
+{% load i18n %} 
 
 {% block title %}{{ block.super }} - {% trans "Admin - Upload Templates" %}{% endblock %}
 
 {% block content %}
   {% include "localtv/admin/settings_header.html" %}
+
+
   {% if default %}
-  <h1>Current Theme</h1>
+  
+          <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
+
+  
+  <h2>Current Theme</h2>
+
   <div id="default_theme" class="theme">
+  
+  <span id="check_bubble"></span>
   {% if default.thumbnail %}<img src="{{ default.thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
-  <h2>{{ default.name }}</h2>
+ 
+  <h3>{{ default.name }}</h3>
   <div class="description">{{ default.description }}</div>
-  <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">download this theme</a>
+  <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
   </div>
   {% endif %}
   {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
-  <form method="post" action="" enctype="multipart/form-data">
-    <h1>Upload a Custom Theme</h1>
-    <p>Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
-    <p>Download/modify any existing theme and upload it as a ZIP file.</p>
-    <ul>
-      {{ form.as_ul }}
-      <li>
-        <input type="submit" value="Upload" />
-      </li>
-    </ul>
-  </form>
+   
+   
+
+
+
+	<div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
+			 			 
+	  <form method="post" action="" enctype="multipart/form-data">
+	    <h2>Upload a Custom Theme</h2>
+	    <p class="clear">Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
+	    <p>Download/modify any existing theme and upload it as a ZIP file.</p>
+	      <div class="upload_form">{{ form.as_p }}</div>
+	        <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
+	  </form>
+  
+  </div>
+  
   {% endif %}
-  <h1>Additional Themes</h1>
+  <h2>Additional Themes</h2>
   <ul>
     {% for theme in non_default_themes %}
     <li class="theme">
       {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
-      <h2>{{ theme.name }}</h2>
+      <h3>{{ theme.name }}</h3>
       <div class="description">{{ theme.description }}</div>
-      <a class="activate_theme" href="{{ theme.get_absolute_url }}">activate</a>
-      <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">remove</a>
-      <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">download</a>
+      <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
+      <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
+      <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
     </li>
     {% endfor %}
   </ul>

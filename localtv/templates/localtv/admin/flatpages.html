@@ -25,7 +25,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}flatpages{% endblock body_class %}
 {% block subheader %}{% include "localtv/admin/settings_header.html" %}{% endblock %}
 {% block pre-labels %}
-  <div id="label_sidebar">
+
+<a href="#" class="add" rel="#label_sidebar"><span>Add Page</span></a>
+
+<h2>Pages</h2>
+
+  <div id="label_sidebar" class="simple_overlay displaynone">
     <div id="add_page" class="rounded">
       <h1>Add a Page</h1>
       <form action="" method="POST" enctype="multipart/form-data">
@@ -34,9 +39,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </form>
     </div>
   </div>
+  
+  
 {% endblock %}
+
+
 {% block pre-form %}
-  <div class="floatleft form_wrap rounded">
+  <div class="bulkedit_controls">
     <select id="bulk_action_selector" class="behave">
       <option value="edit">Edit</option>
       <option value="delete">Delete</option>
@@ -45,6 +54,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </div>
 
 {% endblock %}
+
+
+
 {% block columns %}
 <td>
   {{ form.instance.title }}

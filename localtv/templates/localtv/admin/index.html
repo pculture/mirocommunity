@@ -1,0 +1,37 @@
+{% extends "localtv/admin/base.html" %}
+{% block content %}
+
+<div class="stats">
+	<div class="total">Total Videos: {{ total_count }}</div>
+	<div class="unreviewed">Unreviewed Videos: {{ unreviewed_count }}</div>
+	<div class="length">Comments Waiting Approval: {{ comment_count }}</div> 
+</div>
+
+<h2>Welcome!</h2> 
+   <p class="clear">Get started by adding sources, or managing your exsisting sources.</p> 
+<br /> 
+<br /> 
+ 
+	<h2>Videos</h2> 
+  
+  <h3 class="clear">Add Videos</h3> 
+  <p>Got to the Videos tab and click the Submit Video tab to add your video site.  <a href="#">Start!</a> 
+</p> 
+ 
+  
+  <h3>Add Sources to Automatically Add Videos for You</h3> 
+  <p>Got to the Add Sources page under the Videos tab and add a feed that you like, or search the web for a topic and save your search as a feed.  <a href="#">Start!</a> 
+</p> 
+  
+  <h3>Add Users</h3> 
+  <p>Got to the Users page and add a user to help you manage your video site.  <a href="#">Start!</a> 
+</p> 
+ 
+<br class="clear" /> 
+<br /> 
+	<h2 class="clear">Customize</h2> 
+  <h3 class="clear">Change Settings</h3> 
+  <p>You can customize your sites appearance by navigating to the Settings tab.  <a href="#">Start!</a> 
+</p> 
+
+ {% endblock %}

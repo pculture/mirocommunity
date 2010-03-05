@@ -23,6 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}settings" onbeforeunload="return setting_onunload();{% endblock body_class %}
 
 
+
 {% load i18n %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Edit Settings" %}{% endblock %}
@@ -51,103 +52,107 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block content %}
 {% include "localtv/admin/settings_header.html" %}
-<br class="clearboth" />
-<form method="POST" action="" enctype="multipart/form-data">
-  <div class="info rounded">
-    <div>
+<form method="POST" action="" enctype="multipart/form-data" class="floatleft">
+    
+    
+        <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+
     <h2>Design and Content</h2>
+
     <div class="form_container">
       <p>
-        {{ form.title.errors }}
+        <span class="form_error">{{ form.title.errors }}</span>
         {{ form.title.label_tag }}
         {{ form.title }}
       </p>
       <p>
-        {{ form.tagline.errors }}
+        <span class="form_error">{{ form.tagline.errors }}</span>
         {{ form.tagline.label_tag }}
         {{ form.tagline }}
       </p>
       <p>
-        {{ form.logo.errors }}
+        <span class="form_error">{{ form.logo.errors }}</span>
         {{ form.logo.label_tag }}
         {{ form.logo }}
       </p>
       <p>
-        {{ form.background.errors }}
+        <span class="form_error">{{ form.background.errors }}</span>
         {{ form.background.label_tag }}
         {{ form.background }}
         <input type="submit" name="delete_background" value="delete background">
       </p>
       <p>
-        {{ form.css.errors }}
+        <span class="form_error">{{ form.css.errors }}</span>
         {{ form.css.label_tag }}
         {{ form.css }}
       </p>
     </div>
     <div class="form_container">
       <p>
-        {{ form.about_html.errors }}
+        <span class="form_error">{{ form.about_html.errors }}</span>
         {{ form.about_html.label_tag }}
         {{ form.about_html }}
       </p>
       <p>
-        {{ form.sidebar_html.errors }}
+        <span class="form_error">{{ form.sidebar_html.errors }}</span>
         {{ form.sidebar_html.label_tag }}
         {{ form.sidebar_html }}
       </p>
-      <p>
-        {{ form.footer_html.errors }}
-        {{ form.footer_html.label_tag }}
-        <span>{{ form.footer_html.help_text }}</span>
+      <p class="footer_blurb">
+        <span class="form_error">{{ form.footer_html.errors }}</span>
+        <div class="form_text">
+        	{{ form.footer_html.label_tag }}
+        	<span class="form_help">{{ form.footer_html.help_text }}</span>
+        </div>
         {{ form.footer_html }}
       </p>
     </div>
-    <div class="form_container">
+    <div class="form_container additional">
       <h2>Additional Settings</h2>
       <p>
+
+        {{ form.display_submit_button }}      
+
         {{ form.display_submit_button.label_tag }}
-        {{ form.display_submit_button }}
-        {{ form.display_submit_button.help_text }}
+
+        <span class="form_help">{{ form.display_submit_button.help_text }}</span>
       </p>
       <p>
-        {{ form.submission_requires_login.label_tag }}
         {{ form.submission_requires_login }}
-        {{ form.submission_requires_login.help_text }}
+        {{ form.submission_requires_login.label_tag }}
+        <span class="form_help">{{ form.submission_requires_login.help_text }}</span>
       </p>
-      <p>
+      <p>        
+      	{{ form.use_original_date }}
         {{ form.use_original_date.label_tag }}
-        {{ form.use_original_date }}
-        {{ form.use_original_date.help_text }}
+      <span class="form_help">  {{ form.use_original_date.help_text }}</span>
       </p>
-      <p>
+      <p>        
+     		{{ form.screen_all_comments }}
         {{ form.screen_all_comments.label_tag }}
-        {{ form.screen_all_comments }}
-        {{ form.screen_all_comments.help_text }}
+      <span class="form_help">  {{ form.screen_all_comments.help_text }}</span>
       </p>
       <p>
-        {{ form.comments_required_login.label_tag }}
         {{ form.comments_required_login }}
-        {{ form.comments_required_login.help_text }}
+        {{ form.comments_required_login.label_tag }}
+       <span class="form_help"> {{ form.comments_required_login.help_text }}</span>
       </p>
       <p>
-        {{ form.comments_email_admins.label_tag }}
         {{ form.comments_email_admins }}
-        {{ form.comments_email_admins.help_text }}
+        {{ form.comments_email_admins.label_tag }}
+       <span class="form_help"> {{ form.comments_email_admins.help_text }}</span>
       </p>
       <p>
-        {{ form.email_on_new_video.label_tag }}
         {{ form.email_on_new_video }}
-        {{ form.email_on_new_video.help_text }}
+        {{ form.email_on_new_video.label_tag }}
+       <span class="form_help"> {{ form.email_on_new_video.help_text }}</span>
       </p>
       <p>
-        {{ form.email_review_status.label_tag }}
         {{ form.email_review_status }}
-        {{ form.email_review_status.help_text }}
+        {{ form.email_review_status.label_tag }}
+       <span class="form_help"> {{ form.email_review_status.help_text }}</span>
       </p>
     </div>
-    <input id="submit_settings" type="submit" value="save all changes">
     <br class="clearboth">
-  </div>
-  </div>
 </form>
 {% endblock content %}

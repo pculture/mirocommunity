@@ -20,20 +20,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n localtv_thumbnail filters uploadtemplate_tags %}
 
 <div {% ifequal video current_video %}
-       class="video hoverable selected rounded {9px transparent}"
+       class="video hoverable selected"
      {% endifequal %}
      {% ifnotequal video current_video %}
-       class="video hoverable unselected rounded {9px transparent}"
+       class="video hoverable unselected"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;"
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;"
      {% if video.metasearch_vid %}
        href="{% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
      {% else %}
        href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
      {% endif %}>
     <span>
-      <img alt="{{ video.name }} thumbnail" src="{% get_static_url "/images/vid_overlay.png" %}" />
     </span>
   </a>
    
@@ -57,16 +56,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% autoescape off %}
       <div class="desc">{{ video.description|sanitize|truncatewords_html:50 }}</div>
     {% endautoescape %}
- 
+   </div>
+   
+   
     {% if video.when_submitted %}
     <p class="submitted"><strong>Submitted</strong> {{ video.when_submitted|simpletimesince }} ago</p>
     {% endif %}
     {% if video.when %} 
     <p class="published"><strong>{% if video.when_published %}Posted{% else %}Submitted{% endif %}</strong> {{ video.when|simpletimesince }} ago</p>
     {% endif %}
-  </div>
+
+   
   
-  <div class="approve_reject rounded">
+  <div class="approve_reject">
       <a class="feature med_button"
          {% if video.metasearch_vid %}
            href="{% url localtv_admin_search_video_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}&feature=true"

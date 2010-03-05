@@ -26,13 +26,24 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block admin_actions %}{% endblock %}
 {% block content %}
 
-<h2 class="marginbottom">Search Video Sites</h2>
 
-<div class="helpful rounded">Use this page to search videos from video sharing sites.</div>
+{% if is_saved_search %}
+    <span href="#" class="floatright"><span>This search is saved</span></span>
+  {% else %}
+  {% if query_string %}
+    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="add">
+      <span>Save as a Source</span></a>
+  {% endif %}
+  {% endif %}
+
+
+
+<h2 class="marginbottom">Searched Video Sites for "{% if query_string %}{{ query_string }}{% endif %}"</h2>
+
   
-  <div id="saved_searches" class="search_sites form_wrap rounded">
+  <div id="saved_searches" class="search_sites rounded">
   <form method="GET" action="{% url localtv_admin_search %}">
-    
+    <label>Try another search</label>
     <button class="med_button"><span>Search Video Sites</span></button>
   <div class="fields">
 
@@ -54,15 +65,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     
     
   </form>
-  {% if is_saved_search %}
-    <i class="floatright">This search is saved</i>
-  {% else %}
-  {% if query_string %}
-    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="med_button allsites">
-      <span>Save "{{ query_string }}" as Source</span></a>
-  {% endif %}
-  {% endif %}
-	</div>
+  	</div>
   {{ block.super }}
 {% endblock %}
 

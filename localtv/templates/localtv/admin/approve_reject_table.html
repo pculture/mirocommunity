@@ -40,15 +40,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 {% block content %}
+
 {% include "localtv/admin/video_header.html" %}
-{% if page_obj.paginator.count %}<h2 class="page_title">Videos for Review</h2>
-     <div class="pag">
-                  {% block pagination %}
-                    {% if page_obj and page_obj.has_other_pages  %}
-                      {% pagetabs page_obj %}
-                    {% endif %}
-                  {% endblock pagination %}
-              </div>
+
+         
+       {% block admin_actions %}
+                <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve Page</span></a>
+                <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject Page</span></a>
+                <a class="plain_button" href="{% url localtv_admin_clear_all %}"><span>Clear Queue</span></a>
+       {% endblock %}
+
+<h2 class="page_title">Videos for Review</h2>
+
+
+{% if page_obj.paginator.count %}
+
+ 
 
 	{% block helpful %}<div class="helpful rounded">
         Videos here require moderator approval before appearing on the site.
@@ -60,19 +67,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endblock %}
 
 
+<div id="labels">
+
+    <div class="pag">
+                  {% block pagination %}
+                    {% if page_obj and page_obj.has_other_pages  %}
+                      {% pagetabs page_obj %}
+                    {% endif %}
+                  {% endblock pagination %}
+              </div>
   <div id="admin_table">
                {% block leftpane %}
 
-     <div class="top_bar">
-         
-       {% block admin_actions %}
-           <div class="admin_actions_all">
-                <a class="approve med_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve Page</span></a>
-                <a class="reject med_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject Page</span></a>
-                <a class="reject med_button" href="{% url localtv_admin_clear_all %}"><span>Clear Queue</span></a>
-              </div>
-            </div>
-       {% endblock %}
+
+       
+                   </div>
+
+       
         <div id="admin_leftpane">
 
 			
@@ -93,8 +104,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             {% endif %}
           {% endblock rightpane %}
         </div>
-  </div>
 {% else %}
   <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{% url localtv_admin_manage_page %}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
+  
+  </div>
 {% endif %}
 {% endblock content %}

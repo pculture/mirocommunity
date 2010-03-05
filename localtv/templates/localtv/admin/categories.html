@@ -33,19 +33,61 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   {% include "localtv/admin/video_header.html" %}
-  <div id="label_sidebar" class="rounded">
-    <h1>Add a Category</h1>
+ 
+ 
+ <a href="#" class="add" rel="#label_sidebar"><span>Add Category</span></a>
+ 
+ 
+  <div id="label_sidebar" class="simple_overlay displaynone">
+  <div class="close"></div>
+    <h2>Add a Category</h2>
+    
+   	<div class="input_field">
+
     <form action="" method="POST">
-      {{ add_category_form.as_p }}
-      <input type="submit" value="Add" name="submit">
+   
+  
+  	<ul>
+     <li>
+      <label>Category Name</label>
+      {{ add_category_form.name }}
+      <span class="form_help">{{ add_category_form.name.help_text }}</span>
+     </li>
+      <li>
+      <label>Category Slug</label>
+      {{ add_category_form.slug }}
+      <span class="form_help">{{ add_category_form.slug.help_text }}</span>
+     </li> 
+      <li>
+      <label>Thumbnail/Logo</label>
+      {{ add_category_form.logo }}
+      <span class="form_help">{{ add_category_form.logo.help_text }}</span>
+     </li>
+      <li>     
+      <label>Description</label>
+      {{ add_category_form.description }}
+      <span class="form_help">{{ add_category_form.description.help_text }}</span>
+      </li>
+      <li>       
+      <label>Category Parent</label>
+      {{ add_category_form.parent }}
+      <span class="form_help">{{ add_category_form.parent.help_text }}</span>
+      </li>       
+     </ul>     
+ 
+      </div>
+      <button type="submit" value="Add" class="approve_button" name="submit"><span>Add Category</span></button>
     </form>
   </div>
+
+    <h2>Current Categories</h2>
+
 
   <div id="labels">
     <form action="" method="POST" enctype="multipart/form-data">
       {{ formset.management_form }}
       {{ formset.non_form_errors }}
-      <div class="actions">
+      <div class="bulkedit_controls">
       	<select name="action">
         	<option value="">Bulk Actions</option>
         	<option value="delete">Delete</option>
@@ -72,7 +114,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </div>
           
         </td>
-        <td valign="middle">{{ form.instance.description|sanitize }}</td>
+        
+        <div>        <td valign="middle">{{ form.instance.description|sanitize }}</td>
         <td valign="middle">{{ form.instance.slug }}</td>
         {% with form.instance.video_set.count as count %}
         <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
@@ -82,7 +125,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <td colspan="6">
           {{ form.non_field_errors }}
           {{ form.name.errors }}
-          <h3>{{ form.name }}</h3>
+          <h2>{{ form.name }}</h2>
           {{ form.id }}
           <table style="width: 100%; margin-bottom: 0">
             <tr>
@@ -111,8 +154,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               </td>
             </tr>
           </table>
-          <button class="med_button marginbottom behave" type="button" onclick="return showEdit(this, false);"><span>Cancel</span></button>
-          <button class="med_button marginbottom behave" type="submit" name="submit" value="Save"><span>Update Category</span></button>
+          <button class="reject_button marginbottom behave" type="button" onclick="return showEdit(this, false);"><span>Cancel</span></button>
+          <button class="approve_button marginbottom behave" type="submit" name="submit" value="Save"><span>Update Category</span></button>
         </td>
       </tr>
       {% endfor %}

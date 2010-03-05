@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% trans "Admin - Manage Sources" %}{% endblock %}
 
-{% block body_class %}incomingfeeds{% endblock body_class %}
+{% block body_class %}managesources{% endblock body_class %}
 
 {% block head %}
   {{ block.super }}
@@ -59,14 +59,24 @@ $(document).ready(function() {
 {% endblock head %}
 
 {% block pre-labels %}
-<h2 class="page_title marginbottom">Manage Your Video Sources</h2>
+
+<a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
+
+
+<a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
+
+
+<h2>Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
 
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
 
-<div id="admin_feed_add" class="rounded">
+
+
+
+<div id="admin_feed_add" class="simple_overlay displaynone">
   <form method="get" action="{% url localtv_admin_feed_add %}">
     <strong>Add Sources of Video</strong>
     {{ add_feed_form.feed_url }}
@@ -75,7 +85,7 @@ $(document).ready(function() {
   <p>Sources let you automatically import video onto your site from video hosting accounts (ie YouTube users) or RSS. Just paste in a video URL or RSS feed.</p>
 </div>
 
-<div id="admin_search_sources" class="rounded">
+<div id="admin_search_sources" class="simple_overlay displaynone">
   <form method="get" action="{% url localtv_admin_search %}">
     <strong>Search Video Sites</strong>
     <input class="livesearch_feed_url" name="query" />
@@ -93,18 +103,14 @@ $(document).ready(function() {
 </div>
 {% endblock %}
 {% block pre-form %}
-      <div class="floatleft form_wrap rounded">
-    <select id="bulk_action_selector" class="behave">
-      <option selected="selected" value="">Bulk Actions</option>
-      <option value="edit">Edit</option>
-      <option value="remove" class="delete_icon">Remove</option>
-    </select>
-    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
-  </div>
+  
 
-  <form action="" method="get">
+  <form action="" method="get" class="search_sources">
 
-    <div class="floatright form_wrap rounded">
+    <h2>Search Sources</h2>
+
+    <label>Search Sources</label>
+    
     <select class="behave" name="category">
       <option {% if not request.GET.category %}selected="selected"{% endif %} value="">Show All Categories</option>
       {% for category in categories %}
@@ -119,16 +125,28 @@ $(document).ready(function() {
     </select>
     <input type="text" class="small_field" name="q" value="{{ search_string }}" />
     <button class="med_button floatright"><span>Search</span></button>
-  </div>
   </form>
 
-  <div class="only_show">
-    <h3>Only Show:</h3>
-    <ul>
-      <li><a href="?filter=user">Video Site Users</a></li>
-      <li><a href="?filter=search">Video Site Searches</a></li>
-      <li><a href="?filter=feed">RSS Feeds</a></li>
+
+
+
+  
+    <ul class="only_show">
+    	<label>Only Show:</label>
+      <li{% if not request.GET.filter %} class="selected"{% endif %}><a href="{% url localtv_admin_manage_page %}">All</a></li>
+      <li{% ifequal request.GET.filter "user" %} class="selected"{% endifequal %}><a href="?filter=user">Video Site Users</a></li>
+      <li{% ifequal request.GET.filter "search" %} class="selected"{% endifequal %}><a href="?filter=search">Video Site Searches</a></li>
+      <li{% ifequal request.GET.filter "feed" %} class="selected"{% endifequal %}><a href="?filter=feed">RSS Feeds</a></li>
     </ul>
+  
+  
+      <div class="bulkedit_controls">
+    <select id="bulk_action_selector" class="behave">
+      <option selected="selected" value="">Bulk Actions</option>
+      <option value="edit">Edit</option>
+      <option value="remove" class="delete_icon">Remove</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
   </div>
 {% endblock %}
 
@@ -181,15 +199,6 @@ $(document).ready(function() {
                 {% endif %}
               </tr>
               {% endfor %}
-              <tr>
-                <td>{{ form.thumbnail.label }}</td>
-                <td{% if not form.thumbnail.errors %} colspan="2"{% endif %}>{{ form.thumbnail }}</td>
-                {% if form.thumbnail.errors %}<td>{{ form.thumbnail.errors }}</td>{% endif %}
-              </tr>
-              <tr>
-                <td>{{ form.delete_thumbnail.label }}</td>
-                <td colspan="2">{{ form.delete_thumbnail }}</td>
-              </tr>
           </tbody></table>
 {% endblock %}
 
@@ -212,29 +221,40 @@ $(document).ready(function() {
 
 {% block massedit %}
   <input type="hidden" name="keep" value="{{ request.POST.keep }}" />
-  <div id="massedit" class="bulk_edit_panel" style="display: none;">
+  <div id="massedit" class="bulk_edit_panel simple_overlay" style="display: none;">
     {% with formset.forms|last as form %}
-    <table class="rounded">
-      <tr class="editing">      
-        <td>
-          <h3>Bulk Edit <a href="{{ request.get_full_path }}">(cancel)</a></h3>
-          <span class="bulkedit_auto" style="float:left; padding: 8px 0 0 15px;">(affects all checked sources)</span>
-          <button class="med_button marginbottom behave clear margintop"><span>Bulk Update</span></button>
-        </td>
-        <td class="checklist" width="250">
+
+
+		
+      <button class="approve_button"><span>Bulk Update</span></button>
+          <h2>Bulk Edit</h2>
+    
+
+          <span class="bulkedit_auto">(affects all checked sources)</span>
+
+    	<div class="input_field">
+    
+    
+    		<ul>
+          <li class="auto_approve">
+        	<label class="padding">Auto-Approve</label>
+          {{ form.auto_approve }}
+      		</li>
+      		
+          <li class="categories_edit">
           <label class="padding">Categories</label>
           {{ form.auto_categories }}
-        </td>
-        <td class="checklist" width="250">
+       		</li>
+       		
+          <li class="users_edit">
           <label class="padding">Users</label>
           {{ form.auto_authors }}
-        </td>
-        <td class="last" width="100px">
-          <label class="padding">Auto-Approve</label>
-          {{ form.auto_approve }}
-        </td>
-      </tr>
-    </table>
+   				</li>
+   				
+       </ul>
+       
+       </div>
+       
     {% endwith %}
   </div>
   {% endblock %}
