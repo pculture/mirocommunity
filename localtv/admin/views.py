@@ -31,10 +31,10 @@ def index(request, sitelocation=None):
         'localtv/admin/index.html',
         {'total_count': models.Video.objects.filter(
                 site=sitelocation.site,
-                status=models.VIDEO_STATUS_ACTIVE),
+                status=models.VIDEO_STATUS_ACTIVE).count(),
          'unreviewed_count': models.Video.objects.filter(
                 site=sitelocation.site,
                 status=models.VIDEO_STATUS_UNAPPROVED).count(),
          'comment_count': comments.get_model().objects.filter(
-                is_public=False, is_removed=False).count},
+                is_public=False, is_removed=False).count()},
         context_instance=RequestContext(request))
