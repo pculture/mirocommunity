@@ -122,7 +122,7 @@ def view_video(request, video_id, slug=None, sitelocation=None):
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE,
-            categories__pk=category_obj.pk).distinct()
+            categories__pk=category_obj.pk)
     else:
         context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
