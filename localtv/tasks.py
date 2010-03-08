@@ -18,10 +18,8 @@ def check_call(args):
         while stderr[-1] != '':
             stderr.append(process.stderr.read())
 
-        logging.info('Error running bulk import:\n%s' % ''.join(stderr))
-        mail_admins('Error running bulk_import: %s' % (' '.join(args)),
-                    ''.join(stderr))
-        raise RuntimeError('error during bulk import')
+        raise RuntimeError('Error during: %s\n\nTraceback:\n%s' % (
+                ' '.join(args), ''.join(stderr)))
     else: # imported the feed correctly
         stdout = [process.stdout.read()]
         while stdout[-1] != '':
