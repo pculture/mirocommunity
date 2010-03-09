@@ -125,6 +125,8 @@ def get_or_create_tags(tag_list):
     for tag_text in tag_list:
         if isinstance(tag_text, basestring):
             tag_text = tag_text[:50] # tags can only by 50 chars
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag_text = tag_text.lower()
         tags = tagging.models.Tag.objects.filter(name=tag_text)
         if not tags:
             tag = tagging.models.Tag.objects.create(name=tag_text)
