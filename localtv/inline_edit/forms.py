@@ -158,6 +158,7 @@ class VideoEditorsComment(forms.Form):
                 comment=self.cleaned_data['editors_comment'],
                 content_type=self.content_type,
                 object_pk=self.instance.pk,
+                is_removed=True, # don't put it in the queue
                 is_public=False)
             def save_m2m():
                 comments.models.CommentFlag.objects.get_or_create(
