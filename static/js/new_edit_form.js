@@ -42,7 +42,7 @@ $(document).ready(function() {
     $.easing.drop = function (x, t, b, c, d) {
         return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;
     };
-        
+     $.tools.overlay.conf.expose = '#789';
     // create custom overlay effect for jQuery Overlay
     $.tools.overlay.addEffect("drop",
                               // loading animation

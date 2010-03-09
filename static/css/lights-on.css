@@ -324,22 +324,12 @@ color:#4190E4;
 text-decoration: underline;
 }
 
-.editable .input_field > ul {
-    float: none !important;
-}
-
 .vid_title .done{
 float: right;
 margin-top: 7px;
 line-height: 1.1em;
 }
 
-.date .editable .done{
-float: right;
-margin-top: 7px;
-line-height: 1.1em;
-color: black;
-}
 
 .date {
 float: right;
@@ -2076,17 +2066,6 @@ padding: 0 5px;
 line-height: 1.7em;
 }
 
-/* #edit_video_wrapper .editable.thumbnail {*/
-/* background: none; */
-/* height: inherit; */
-/* float: left; */
-/* width: 300px; */
-/* padding: 6px 20px; */
-/* text-decoration: underline; */
-/*
-}
-*/
-
 #admin #video_wrapper {
     text-align: center;
     height: auto;
@@ -2101,19 +2080,6 @@ height: 350px;
 
 #admin .description {
     clear: both;
-}
-
-#edit_video_wrapper .editable.thumbnail input {
-margin-right: 10px;
-}
-
-
-#edit_video_wrapper .editable.thumbnail span {
-margin: 0 0 0 15px;
-}
-
-.save, .cancel {
-text-decoration: none;
 }
 
 .info, .about_me, .look {
@@ -2193,57 +2159,6 @@ background-position: right -82px;
 
 .cat_list .top_cat_button:active span {
 background-position: left -82px;
-}
-
-
-.editable:hover {
-/*
-background: #fffbd8;
-cursor: text;
-*/
-}
-
-.editable.open{
-}
-
-.editable.open input{
-
-}
-
-.editable.open:hover{
-background: none;
-}
-
-
-
-.editable .input_field, .editable .post_url {
-display: none;
-}
-
-.editable .input_field > ul > li > label {
-    display: none;
-}
-
-.editable .input_field ul ul {
-    display: block !important;
-    height: 100px;
-    overflow: auto;
-}
-
-.editable .input_field ul ul li {
-    display: block !important;
-}
-
-.vid_title .editable input{
-width: 100% !important;
-padding: 2px;
-margin-left: -6px;
-margin-top: -4px;
-font-family: Arial, Helvetica, sans-serif;
-font-size: 18px !important;
-}
-
-.vid_title .editable .med_button.cancel{
 }
 
 .admin_actions_all {

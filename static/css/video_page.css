@@ -549,11 +549,6 @@ line-height: 1.3em
     width: 320px;
 }
 
-#id_slug, #id_name{
-width: 300px;
-}
-
-
 body.bulkedit td div.value {
     cursor: pointer;
 }
