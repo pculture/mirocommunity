@@ -88,7 +88,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% if current_video.embed_code %}
         {{ current_video.embed_code|wmode_transparent }}
         {% else %}
-        {% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430%}
+        {% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 %}
         {% if current_video.file_url_mimetype|is_ogg_media %}
         <p class="help">
           This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
