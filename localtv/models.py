@@ -586,6 +586,8 @@ class Feed(Source):
                     video_data['embed_code'] = '<embed src="%(url)s">' % player
 
             video = Video.objects.create(**video_data)
+            if verbose:
+                    print 'Made video %i: %s' % (video.pk, video.name)
 
             try:
                 video.save_thumbnail()
