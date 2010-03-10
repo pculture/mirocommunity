@@ -859,7 +859,8 @@ localtv_watch.timestamp > %s"""},
             if 'extra_where' in kwargs:
                 where = kwargs.pop('extra_where')
                 videos = videos.extra(where=where)
-            videos = videos.select_related().distinct()
+            videos = videos.select_related('feed', 'search', 'user', 'authors',
+                                           'tags', 'categories')
             videos = list(videos.order_by('-watchcount', '-when_published',
                                           '-when_approved').distinct())
             result = util.MockQueryset(videos)
