@@ -1238,7 +1238,7 @@ padding-top: 1px;
 display: none;
 }
 
-#video_wrapper {
+.video_wrapper {
 text-align: center;
 height: 430px;
 margin: 17px 0 35px;
@@ -1251,12 +1251,12 @@ position: relative;
 
 }
 
-#video_wrapper embed, #video_wrapper object {
+.video_wrapper embed, .video_wrapper object {
 width: 100%;
 height: 430px;
 }
 
-#video_wrapper img {
+.video_wrapper img {
     height: 430px;
     width: 534px;
     position: absolute;
@@ -1266,11 +1266,11 @@ height: 430px;
     padding-left: 2px;
 }
 
-#video_wrapper video + p + img, #video_wrapper video + img {
+.video_wrapper video + p + img, .video_wrapper video + img {
     display: none;
 }
 
-#video_wrapper object + p.help {
+.video_wrapper object + p.help {
     margin: 5px;
     display: block;
     clear: both;
