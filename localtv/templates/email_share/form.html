@@ -4,7 +4,7 @@ See LICENSE for details.
 {% endcomment %}
 {% load i18n %}
 
-<form id="share_form" action="" method="POST">
+<form id="share_form" action="{{ request.path }}" method="POST">
   <ul>
   {{ form.as_ul }}
   </ul>
