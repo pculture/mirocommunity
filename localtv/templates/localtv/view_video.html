@@ -28,10 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block head %}
   {% if edit_video_form %}
-    <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/inline_edit.css" %}" />
-    <script src="{% get_static_url "/js/new_edit_form.js" %}"
-            type="text/javascript">
-    </script>
+  {% include "localtv/inline_edit/header.html" %}
     <script type="text/javascript"
             src="{% get_static_url "/js/edit_form.js" %}">
     </script>

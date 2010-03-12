@@ -19,12 +19,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load i18n uploadtemplate_tags filters %}
+{% load i18n filters %}
 
 {% block head %}
   {{ block.super }}
-  <script type="text/javascript" src="{% get_static_url "/js/urlify.js" %}"></script>
-  <script type="text/javascript" src="{% get_static_url "/js/bulk_edit.js" %}">
+  <script type="text/javascript" src="/js/admin/urlify.js"></script>
+  <script type="text/javascript" src="/js/admin/bulk_edit.js">
   </script>
 {% endblock %}
 {% block title %}{{ block.super }} - {% trans "Admin - Categories" %}{% endblock %}

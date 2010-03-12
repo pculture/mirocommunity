@@ -18,8 +18,6 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load uploadtemplate_tags %}
-
 {% block body_class %}settings" onbeforeunload="return setting_onunload();{% endblock body_class %}
 
 
@@ -28,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% trans "Admin - Edit Settings" %}{% endblock %}
 {% block head %}
-  <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.dirtyform.js" %}"></script>
+  <script type="text/javascript" src="/js/admin/jquery.dirtyform.js"></script>
   <script type="text/javascript">
       function setting_onunload(event) {
           if ($("form.saving").length) {

@@ -23,14 +23,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}incomingvids{% endblock body_class %}
 
 
-{% load pagetabs i18n uploadtemplate_tags %}
+{% load pagetabs i18n %}
 
 {% block head %}
-  <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/inline_edit.css" %}" />
-  <script src="{% get_static_url "/js/admin_tables.js" %}"
-          type="text/javascript">
-  </script>
-  <script src="{% get_static_url "/js/new_edit_form.js" %}"
+  {% include "localtv/inline_edit/header.html" %}
+  <script src="/js/admin/admin_tables.js"
           type="text/javascript">
   </script>
   

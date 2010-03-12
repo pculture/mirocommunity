@@ -1349,44 +1349,64 @@ clear: both;
     margin: -80px 0 0 -270px !important;
 }
 
-#hover_wrap{
-border: 1px solid #aaa;
-position: absolute;
-z-index: 456789876;
-display: none;
-padding: 20px;
-width: 600px !important;
-background: #fff !important;
--moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
--webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-float: none !important;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-overflow: inherit !important;
+/* use a semi-transparent image for the overlay */
+#overlay {
+	background:#efefef;
+	width: 600px;
+    color:#efefef;
+    height:400px;
+    padding: 10px;
+    display: none;
+    border: 1px solid #225d84;
+
+    /* CSS3 styling for latest browsers */
+    -moz-box-shadow:0 0 30px 5px #3476a1;
+    -webkit-box-shadow: 0 0 90px #000;
 }
 
+/* container for external content. uses vertical scrollbar, if needed */
+div.contentWrap {
+    height:400px;
+    background: #fff;
+    overflow-y:auto;
+    color: #000;
+}
 
-#hover_wrap form#submit_video{
+.close{
+	background:url(../images/close.png) no-repeat;
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:32px;
+    width:31px;
+	}
+
+.close:hover{
+  background:url(../images/close.png) 0 -40px no-repeat;
+
+
+#overlay form#submit_video{
 background: #fff;
 padding: 0px;
 }
 
 
-#hover_wrap form#submit_video h2{
+#overlay form#submit_video h2{
 background: #fff;
 padding: 0px;
 clear: both;
 }
 
 
-#hover_wrap form#submit_video ul{
+#overlay form#submit_video ul{
 margin: 0;
 padding: 0px 0 0 18px;
 clear: both;
 }
 
 
-#hover_wrap form#submit_video ul li{
+#overlay form#submit_video ul li{
 margin: 0;
 padding: 0px 0 10px 0px;
 clear: both;
@@ -1394,18 +1414,18 @@ clear: both;
 
 
 
-#hover_wrap form#submit_video input#id_url{
+#overlay form#submit_video input#id_url{
 width: 516px;
 }
 
 
-#hover_wrap form#submit_video input{
+#overlay form#submit_video input{
 float: right;
 }
 
 
 
-#hover_wrap form#submit_video label{
+#overlay form#submit_video label{
 line-height: 1.5em;
 font-size: 18px;
 padding-right: 20px;

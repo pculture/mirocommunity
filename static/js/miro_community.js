@@ -1,23 +1,26 @@
-// maybe not the most elegantly named function.
-function replace_submit_video_and_setup_callbacks(result) {
+function setup_submit_callbacks(wrap, result) {
     page = $(result);
     if (page.filter('#next').length) {
         location.href = page.filter('#next').attr('href');
         return;
     }
-    w = $(window);
-    width = $("#hover_wrap .contentWrap").html(page).outerWidth();
-    $("#hover_wrap").css('left', w.scrollLeft() + Math.max((w.width() -  width) / 2, 0));
-    $('#hover_wrap form:eq(0)').ajaxForm(replace_submit_video_and_setup_callbacks);
+    function callback(result){setup_submit_callbacks(wrap, result);}
+    form = wrap.getContent().find('.contentWrap').html(result).find('form:eq(0)');
+    form.ajaxForm(callback).find('button').click(function(){form.ajaxSubmit(callback);});
 }
 
 $(document).ready( function(){
     $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories a:eq(0)').click(function() {return false;}).css('cursor', 'default');
-    $('.overlayLoad').overlay({
-        target: '#hover_wrap',
-        onBeforeLoad: function () {
-            $.get(this.getTrigger().attr('href'),
-                  replace_submit_video_and_setup_callbacks);
+    $('a[rel^=#]').overlay({
+        expose: '#499ad9',
+        effect: 'apple',
+
+        onBeforeLoad: function() {
+            if (this.getTrigger().attr("href") != "#") {
+                wrap = this;
+                $.get(this.getTrigger().attr("href"),
+                      function(result){setup_submit_callbacks(wrap, result);});
+            }
         }
     });
 }).ajaxStart(function() {

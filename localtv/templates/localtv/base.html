@@ -112,7 +112,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </li>
           {% if sitelocation.display_submit_button %}
           <li class="submit">
-            <a class="overlayLoad" href="{% url localtv_submit_video %}">
+            <a rel="#overlay" href="{% url localtv_submit_video %}">
               <span>Submit A Video</span>
             </a>
           </li>
@@ -128,10 +128,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <a class="nick show_admin med_button" href="{% url localtv_admin_approve_reject %}"><span>View Admin</span></a>
       {% endif %}
 
-      </div>
-
-      <div id="hover_wrap" class="rounded {5px transparent}">
-        <div class="contentWrap"></div>
       </div>
       <div id="content">
       {% endif %}
@@ -164,12 +160,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% if request.user.is_authenticated %}
             <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
           {% else %}
-            <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" class="overlayLoad" title="Please Sign In">Login</a>
+            <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" rel="#overlay" title="Please Sign In">Login</a>
           {% endif %}
         </p>
           </div>
         </div>
-      {% endblock footer_wrapper %}
+
+
+{% endblock footer_wrapper %}
+
+<!-- overlayed element -->
+<div class="overlay" id="overlay">
+  <!-- the external content is loaded inside this tag -->
+  <div class="contentWrap"></div>
+</div>
+
 
       <div id="load-indicator">
         <img alt="Loading..." src="{% get_static_url "/images/load-indicator.gif" %}" />

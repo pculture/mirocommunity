@@ -16,17 +16,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-
-{% load uploadtemplate_tags %}
 <!DOCTYPE html>
 <html>
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/admin.css" %}" />
+    <link rel="StyleSheet" type="text/css" href="/css/admin.css" />
 <!--[if lt IE 8]>
-   <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/msie7.css" %}" />
+   <link rel="StyleSheet" type="text/css" href="/css/msie7.css" />
 <![endif]-->
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
@@ -37,13 +35,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </style>
     {% endif %}
     <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js"></script>
-    <script src="{% get_static_url "/js/extern/jquery.form.js" %}"
+    <script src="/js/extern/jquery.form.js"
             type="text/javascript">
     </script>
-    <script src="{% get_static_url "/js/admin.js" %}"
-            type="text/javascript">
-    </script>
-    <script src="{% get_static_url "/js/miro_community.js" %}"
+    <script src="/js/miro_community.js"
             type="text/javascript">
     </script>
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
@@ -59,7 +54,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <div id="logo">
           {% url localtv_index as localtv_index %}
           <a href="{{ localtv_index }}">
-            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url "/images/logo.gif" %}{% endif %}" />
+            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
           </a>
           <h1 style="text-decoration: none;">
             <a href="{{ localtv_index }}">
@@ -77,10 +72,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endif %}
 
       {% block nav %}{% include "localtv/admin/header.html" %}{% endblock %}
-      </div>
-
-      <div id="hover_wrap" class="rounded {5px transparent}">
-        <div class="contentWrap"></div>
       </div>
 
       <div id="content">
@@ -107,7 +98,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </div>
         </div>
       {% endblock footer_wrapper %}
-    {% if settings.GOOGLE_ANALYTICS_UA %}
+	<!-- overlayed element --> 
+<div class="overlay" id="overlay"> 
+	<!-- the external content is loaded inside this tag --> 
+	<div class="contentWrap"></div> 
+</div>
+
+      {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?
   "https://ssl." : "http://www.");
