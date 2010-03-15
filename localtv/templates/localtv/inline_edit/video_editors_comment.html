@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% if editors_comment %}
 <p class="description editors_notes">
   <span class="written_by">{{ editors_comment.user }} writes:</span>
-  {{ editors_comment.comment }}
+  {{ editors_comment.comment|safe }}
 </p>
 {% endif %}
 {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
