@@ -92,6 +92,16 @@ INSTALLED_APPS = (
     'localtv.submit_video',
     'localtv.inline_edit',
     'localtv_openid',
+    'registration',
+    'tagging',
+    'uploadtemplate',
+    'haystack',
+    'email_share',
+    'debug_toolbar',
+    'celery'
+    #'django_bitly', # if you're using the Blue theme
+    #'syncr.twitter',
+    #'tweetlove',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -105,10 +115,18 @@ LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
     'localtv.backend.SiteAdminBackend',
+    # 'localtv_openid.OpenIdBackend', # if you want OpenId logins
     )
 
 AUTH_PROFILE_MODULE = 'localtv.Profile'
+COMMENTS_APP = 'localtv.comments'
 
+FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
+FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
+
+CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+
+# vidscraper keys
 from vidscraper.metasearch.sites import vimeo
 vimeo.VIMEO_API_KEY = None
 vimeo.VIMEO_API_SECRET = None
@@ -116,8 +134,17 @@ vimeo.VIMEO_API_SECRET = None
 from vidscraper.sites import ustream
 ustream.USTREAM_API_KEY = None
 
-FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
-FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
+# django-registration
+ACCOUNT_ACTIVATION_DAYS = 7
 
-CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+# django-tagging
+FORCE_LOWERCASE_TAGS = True
 
+# celery
+BROKER_HOST = 'localhost'
+BROKER_PORT = 5672
+BROKER_USER = 'z3p'
+BROKER_PASSWORD = 'testing'
+BROKER_VHOST = '/'
+CELERY_BACKEND = 'cache' # this MUST be set, otherwise the import page won't be
+                         # able to figure out if the task has ended
