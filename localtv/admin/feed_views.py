@@ -23,11 +23,13 @@ import datetime
 import re
 import sys
 import os
+import urllib2
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.core.files.base import ContentFile
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
@@ -114,6 +116,12 @@ def add_feed_response(request, sitelocation=None):
 
             for key, value in form.cleaned_data.items():
                 setattr(feed, key, value)
+
+            thumbnail_url = util.get_thumbnail_url(parsed_feed.feed)
+            if thumbnail_url:
+                thumbnail_file = ContentFile(
+                    urllib2.urlopen(thumbnail_url).read())
+                feed.save_thumbnail_from_file(thumbnail_file)
 
             if feed.video_service():
                 user, created = User.objects.get_or_create(

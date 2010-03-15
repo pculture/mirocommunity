@@ -85,6 +85,10 @@ def get_thumbnail_url(entry):
         if 'blip_thumbnail_src' in d and d.blip_thumbnail_src:
             return (u'http://a.images.blip.tv/%s' % (
                 d['blip_thumbnail_src'])).encode('utf-8')
+        if 'itunes_image' in d:
+            return d.itunes_image['href']
+        if 'image' in d:
+            return d.image['href']
         raise KeyError
     video_enclosure = get_first_video_enclosure(entry)
     if video_enclosure is not None:
