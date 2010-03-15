@@ -60,6 +60,69 @@ font-weight: bold;
 
 //////////////////////////////////////*/
 
+
+.simple_overlay h2{
+font-size: 18px !important;
+width: 100%;
+padding-bottom: 13px;
+border-bottom: 1px solid #ddd;
+}
+
+.simple_overlay .approve_button{
+margin: 25px 0 0;
+}
+
+.input_field{
+list-style: none;
+}
+
+
+.input_field ul{
+margin: 0;
+padding: 0;
+}
+
+
+.input_field ul li{
+list-style: none;
+margin: 0;
+padding: 0;
+clear: both;
+float: left;
+width: 100%;
+}
+
+
+.input_field span.done{
+float: right;
+line-height: 2em;
+margin-top: 20px;
+}
+
+
+.input_field ul li label{
+float: left;
+width: 110px;
+line-height: 2.6em;
+}
+
+
+.input_field ul li input,
+.input_field ul li textarea{
+float: left;
+border: 1px solid #ccc;
+width: 471px;
+font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+padding: 8px;
+font-size: 12px;
+line-height: 1.4em;
+}
+
+
+.post_url{
+display: none;
+}
+
 .autoapprove.disabled .on{
 display: none;
 }
@@ -73,6 +136,21 @@ display: none;
 
 .clear{
 clear: both;
+}
+
+.close{
+height: 32px;
+width: 32px;
+cursor: pointer;
+position: absolute;
+right: -13px;
+top: -13px;
+background: url(../images/admin_sprites.png) -44px -38px no-repeat;
+}
+
+
+.close:active{
+background: url(../images/admin_sprites.png) -78px -38px no-repeat;
 }
 
 
@@ -1101,7 +1179,7 @@ float: left;
 }
 
 
-#labels table{
+#labels > form > table{
 width: 760px;
  border-collapse: collapse !important;
 border-top: 1px solid #999;
@@ -1118,7 +1196,7 @@ background: #fff;
 
 }
 
-#labels table td{
+#labels > form > table td{
 padding: 10px 0;
 
 }
@@ -1344,10 +1422,29 @@ clear: both;
 ~ Modals
 
 //////////////////////////////////////*/
-
-.editable .simple_overlay {
-    margin: -80px 0 0 -270px !important;
+.simple_overlay{
+display: none;
+padding: 20px;
+width: 600px !important;
+margin: -80px 0 0 -270px !important;
+background: #fff !important;
+-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+float: none !important;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+overflow: inherit !important;
 }
+
+.simple_overlay *{
+overflow: inherit !important;
+-moz-box-shadow: none;
+-webkit-box-shadow: none;
+text-shadow: none;
+}
+
+
 
 /* use a semi-transparent image for the overlay */
 #overlay {
