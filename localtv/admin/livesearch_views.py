@@ -180,8 +180,11 @@ def approve(request, search_video, sitelocation=None):
         video.search = existing_saved_search[0]
     else:
         video.user = request.user
+
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
+    elif request.GET.get('queue'):
+        video.status = models.VIDEO_STATUS_UNAPPROVED
 
     user, created = User.objects.get_or_create(
         username=video.video_service_user,
