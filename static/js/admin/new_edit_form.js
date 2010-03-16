@@ -67,7 +67,7 @@ $(document).ready(function() {
                                   });
                               }
                              );
-    $(".editable .edit_link").live('click', inline_edit_open)
+    $(".editable .edit_link").live('click', inline_edit_open);
     $(".editable .input_field").each(
         function() {insert_and_activate_action_buttons($(this));});
 });
