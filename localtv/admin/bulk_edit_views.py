@@ -100,7 +100,8 @@ def bulk_edit(request, sitelocation=None):
         sort_header('name', 'Video Title', sort),
         sort_header('source', 'Source', sort),
         {'label': 'Categories'},
-        sort_header('when_published', 'Date Posted', sort)]
+        sort_header('when_published', 'Date Published', sort),
+        sort_header('when_submitted', 'Date Imported', sort)]
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,
