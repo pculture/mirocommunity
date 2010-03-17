@@ -734,7 +734,7 @@ class ViewTestCase(BaseTestCase):
                           'localtv/video_listing_search.html')
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
                            SearchQuerySet(site=self.site_location.site
                                           ).filter(content='blender')[:10]])
@@ -752,7 +752,7 @@ class ViewTestCase(BaseTestCase):
                           'localtv/video_listing_search.html')
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
                            SearchQuerySet(
                     site=self.site_location.site
@@ -781,7 +781,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 2)
         self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
                            SearchQuerySet(site=self.site_location.site
                                           ).filter(content='blender')[10:20]])
@@ -803,17 +803,17 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                           {'q': 'tag2'})
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'tag2 tag1'})
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_categories(self):
@@ -832,17 +832,17 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'Linux'})
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'Miro Linux'})
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_user(self):
@@ -864,17 +864,17 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'firstname'}) # first name
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'lastname'}) # last name
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_video_service_user(self):
@@ -893,7 +893,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_feed_name(self):
@@ -911,7 +911,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [video])
 
     def test_video_search_exclude_terms(self):
@@ -925,7 +925,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'],
+        self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
                            SearchQuerySet(site=self.site_location.site
                                           ).exclude(content='blender')])
@@ -941,7 +941,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['page_obj'].number, 1)
         self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(response.context['video_list'], [])
+        self.assertEquals(list(response.context['video_list']), [])
 
     def test_category_index(self):
         """
