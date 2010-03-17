@@ -970,7 +970,7 @@ class Video(Thumbnailable):
         if not self.file_url:
             return
 
-        request = urllib2.Request(self.file_url)
+        request = urllib2.Request(util.quote_unicode_url(self.file_url))
         request.get_method = lambda: 'HEAD'
         try:
             http_file = urllib2.urlopen(request)
@@ -990,7 +990,7 @@ class Video(Thumbnailable):
 
         try:
             content_thumb = ContentFile(urllib.urlopen(
-                    self.thumbnail_url).read())
+                    util.quote_unicode_url(self.thumbnail_url)).read())
         except IOError:
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:

@@ -24,12 +24,15 @@ from django.utils.html import strip_tags
 
 from tagging.forms import TagField
 
+from localtv.util import quote_unicode_url
+
 class ImageURLField(forms.URLField):
 
     def clean(self, value):
         value = forms.URLField.clean(self, value)
         if not self.required and value in ['', None]:
             return value
+        value = quote_unicode_url(value)
         content_thumb = ContentFile(urllib.urlopen(value).read())
         try:
             Image.open(content_thumb)
