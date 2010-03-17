@@ -745,8 +745,8 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['form-15-auto_categories'] = [1, 2]
         POST_data['form-15-auto_authors'] = [1, 2]
         POST_data['form-15-auto_approve'] = 'yes'
@@ -801,8 +801,8 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'remove'
 
         POST_response = c.post(self.url, POST_data)
@@ -849,8 +849,8 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'remove'
         POST_data['keep'] = 'yes'
 
@@ -919,7 +919,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         for i in range(2):
-            POST_data['form-%i-bulk'% i] = 'yes'
+            POST_data['form-%i-BULK'% i] = 'yes'
         POST_data['form-15-auto_categories'] = [category2.pk]
         POST_data['form-15-auto_authors'] = [user2.pk]
 
@@ -2013,9 +2013,9 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
-        POST_data['form-2-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
+        POST_data['form-2-BULK'] = 'yes'
         POST_data['submit'] = 'Apply'
         POST_data['action'] = 'delete'
 
@@ -2345,8 +2345,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1, 2]
         POST_data['form-%i-authors' % (len(formset.forms) - 1)] = [1, 2]
         POST_data['form-%i-tags' % (len(formset.forms) - 1)] = 'tag3, tag4'
@@ -2385,8 +2385,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'delete'
 
         POST_response = c.post(self.url, POST_data)
@@ -2416,8 +2416,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'unapprove'
 
         POST_response = c.post(self.url, POST_data)
@@ -2447,8 +2447,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'feature'
 
         POST_response = c.post(self.url, POST_data)
@@ -2482,8 +2482,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
         POST_data['bulk_action'] = 'unfeature'
 
         POST_response = c.post(self.url, POST_data)
@@ -2930,9 +2930,9 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        POST_data['form-0-bulk'] = 'yes'
-        POST_data['form-1-bulk'] = 'yes'
-        POST_data['form-2-bulk'] = 'yes'
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
+        POST_data['form-2-BULK'] = 'yes'
         POST_data['submit'] = 'Apply'
         POST_data['action'] = 'delete'
 

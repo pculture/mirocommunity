@@ -121,7 +121,7 @@ def bulk_edit(request, sitelocation=None):
                 bulk_edits['action'] = bulk_action
             if bulk_edits:
                 for form in formset.initial_forms:
-                    if not form.cleaned_data['bulk']:
+                    if not form.cleaned_data['BULK']:
                         continue
                     for key, value in bulk_edits.items():
                         if key == 'action': # do something to the video

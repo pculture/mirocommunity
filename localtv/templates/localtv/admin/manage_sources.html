@@ -57,23 +57,12 @@ $(document).ready(function() {
 {% endblock head %}
 
 {% block pre-labels %}
-
 <a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
-
-
 <a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
-
-
 <h2>Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
-
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
-
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
-
-
-
-
 <div id="admin_feed_add" class="simple_overlay displaynone">
   <form method="get" action="{% url localtv_admin_feed_add %}">
     <strong>Add Sources of Video</strong>
@@ -100,162 +89,124 @@ $(document).ready(function() {
   </p>
 </div>
 {% endblock %}
-{% block pre-form %}
-  
 
-  <form action="" method="get" class="search_sources">
-
-    <h2>Search Sources</h2>
-
-    <label>Search Sources</label>
-    
-    <select class="behave" name="category">
-      <option {% if not request.GET.category %}selected="selected"{% endif %} value="">Show All Categories</option>
-      {% for category in categories %}
-      <option {% ifequal category.pk|stringformat:"s" request.GET.category %}selected="selected"{% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
-      {% endfor %}
-    </select>
-    <select class="behave" name="author">
-      <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Users</option>
-      {% for user in users %}
-      <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
-      {% endfor %}
-    </select>
-    <input type="text" class="small_field" name="q" value="{{ search_string }}" />
-    <button class="med_button floatright"><span>Search</span></button>
-  </form>
-
-
-
-
-  
-    <ul class="only_show">
-      <li><label>Only Show:</label></li>
-      <li{% if not request.GET.filter %} class="selected"{% endif %}><a href="{% url localtv_admin_manage_page %}">All</a></li>
-      <li{% ifequal request.GET.filter "user" %} class="selected"{% endifequal %}><a href="?filter=user">Video Site Users</a></li>
-      <li{% ifequal request.GET.filter "search" %} class="selected"{% endifequal %}><a href="?filter=search">Video Site Searches</a></li>
-      <li{% ifequal request.GET.filter "feed" %} class="selected"{% endifequal %}><a href="?filter=feed">RSS Feeds</a></li>
-    </ul>
-  
-  
-      <div class="bulkedit_controls">
-    <select id="bulk_action_selector" class="behave">
-      <option selected="selected" value="">Bulk Actions</option>
-      <option value="edit">Edit</option>
-      <option value="remove" class="delete_icon">Remove</option>
-    </select>
-    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
-  </div>
+{% block labels %}
+<form action="" method="get" class="search_sources">
+  <h2>Search Sources</h2>
+  <label>Search Sources</label>
+  <select class="behave" name="category">
+    <option {% if not request.GET.category %}selected="selected"{% endif %} value="">Show All Categories</option>
+    {% for category in categories %}
+    <option {% ifequal category.pk|stringformat:"s" request.GET.category %}selected="selected"{% endifequal %}value="{{ category.pk }}">{{ category.name }}</option>
+    {% endfor %}
+  </select>
+  <select class="behave" name="author">
+    <option {% if not request.GET.user %}selected="selected"{% endif %} value="">Show All Users</option>
+    {% for user in users %}
+    <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
+    {% endfor %}
+  </select>
+  <input type="text" class="small_field" name="q" value="{{ search_string }}" />
+  <button class="med_button floatright"><span>Search</span></button>
+</form>
+<ul class="only_show">
+  <li><label>Only Show:</label></li>
+  <li{% if not request.GET.filter %} class="selected"{% endif %}><a href="{% url localtv_admin_manage_page %}">All</a></li>
+  <li{% ifequal request.GET.filter "user" %} class="selected"{% endifequal %}><a href="?filter=user">Video Site Users</a></li>
+  <li{% ifequal request.GET.filter "search" %} class="selected"{% endifequal %}><a href="?filter=search">Video Site Searches</a></li>
+  <li{% ifequal request.GET.filter "feed" %} class="selected"{% endifequal %}><a href="?filter=feed">RSS Feeds</a></li>
+</ul>
+<div class="bulkedit_controls">
+  <select id="bulk_action_selector" class="behave">
+    <option selected="selected" value="">Bulk Actions</option>
+    <option value="edit">Edit</option>
+    <option value="remove" class="delete_icon">Remove</option>
+  </select>
+  <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+</div>
 {% endblock %}
 
 {% block columns %}
-        <td><span class="overflow">
-          {% if form.instance.get_absolute_url %}
-          <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
-          {% else %}
-          {{ form.instance }}
-          {% endif %}
-          </span>
-
-          <div class="actions">
-            <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> {{ form.DELETE.as_hidden }} <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
-          </div>
-        </td>
-        <td>
-          {% for category in form.instance.auto_categories.all %}
-          {{ category.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-        </td>
-        <td><span class="overflow">{% for user in form.instance.auto_authors.all %}
-          {% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if not forloop.last %}, {% endif %}
-          {% endfor %}</span></td>
-        <td>{{ form.instance.source_type }}</td>
-          {% if form.instance.query_string %}
-          {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
-          {% else %}
-          {% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
-          {% endif %}
-        <td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" style="width: 100px;"><a class="on" href="{{ auto_approve_url }}?disable=true">On</a> <a class="off" href="{{ auto_approve_url }}">Off</a></td>
+<td><span class="overflow">
+  {% if form.instance.get_absolute_url %}
+  <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
+  {% else %}
+  {{ form.instance }}
+  {% endif %}
+</span>
+ 
+<div class="actions">
+  <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> {{ form.DELETE.as_hidden }} <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+</div>
+</td>
+<td>
+  {% for category in form.instance.auto_categories.all %}
+  {{ category.name }}{% if not forloop.last %}, {% endif %}
+  {% endfor %}
+</td>
+<td>
+  <span class="overflow">
+    {% for user in form.instance.auto_authors.all %}
+      {% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+      {% if not forloop.last %}, {% endif %}
+    {% endfor %}
+  </span>
+</td>
+<td>{{ form.instance.source_type }}</td>
+{% if form.instance.query_string %}
+{% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
+{% else %}
+{% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
+{% endif %}
+<td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" style="width: 100px;"><a class="on" href="{{ auto_approve_url }}?disable=true">On</a> <a class="off" href="{{ auto_approve_url }}">Off</a></td>
 {% endblock %}
 
-{% block quick-edit-title %}Quick Edit{% endblock %}
-{% block quick-edit-colspan %}2{% endblock %}
-{% block quick-edit %}
-          {{ form.non_field_errors }}
-          <table>
-            <tbody>
-              {% for field in form.extra_fields %}
-              <tr>
-                <td>
-                  {{ field.label }}
-                </td>
-                <td {% if form.errors and not field.errors %}colspan="2"{% endif %}>
-                  {{ field }}
-                </td>
-                {% if field.errors %}
-                <td>{{ field.errors }}</td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-              <tr>
-                <td>{{ form.auto_categories.label }}</td>
-                <td {% if form.errors and not form.auto_categories.errors %}colspan="2"{% endif %}>
-                  {{ form.auto_categories }}
-                </td>
-                {% if form.auto_categories.errors %}
-                <td>{{ form.auto_categories.errors }}</td>
-                {% endif %}
-              </tr>
-              <tr>
-                <td>{{ form.auto_authors.label }}</td>
-                <td {% if form.errors and not form.auto_authors.errors %}colspan="2"{% endif %}>
-                  {{ form.auto_authors }}
-                </td>
-                {% if form.auto_authors.errors %}
-                <td>{{ form.auto_authors.errors }}</td>
-                {% endif %}
-              </tr>
-            </tbody>
-          </table>
+{% block quick-edit-fields %}
+<ul>
+  {% for field in form.extra_fields %}
+  <li>
+    {{ field.label_tag }}
+    {{ field.errors }}
+    {{ field }}
+  </li>
+  {% endfor %}
+  <li>
+    {{ form.auto_categories.label_tag }}
+    {{ form.auto_categories.errors }}
+    {{ form.auto_categories }}
+  </li>
+  <li>
+    {{ form.auto_authors.label_tag }}
+    {{ form.auto_authors.errors }}
+    {{ form.auto_authors }}
+  </li>
+</ul>
 {% endblock %}
 
 {% block massedit %}
   <input type="hidden" name="keep" value="{{ request.POST.keep }}" />
   <div id="massedit" class="bulk_edit_panel simple_overlay" style="display: none;">
     {% with formset.forms|last as form %}
-
-
-		
-      <button class="approve_button"><span>Bulk Update</span></button>
-          <h2>Bulk Edit</h2>
-    
-
-          <span class="bulkedit_auto">(affects all checked sources)</span>
-
-    	<div class="input_field">
-    
-    
-    		<ul>
-          <li class="auto_approve">
-        	<label class="padding">Auto-Approve</label>
+    <button class="approve_button"><span>Bulk Update</span></button>
+    <h2>Bulk Edit</h2>
+    <span class="bulkedit_auto">(affects all checked sources)</span>
+    <div class="input_field">
+      <ul>
+        <li class="auto_approve">
+          <label class="padding">Auto-Approve</label>
           {{ form.auto_approve }}
-      		</li>
-      		
-          <li class="categories_edit">
+        </li>
+        <li class="categories_edit">
           <label class="padding">Categories</label>
           {{ form.auto_categories }}
-       		</li>
-       		
-          <li class="users_edit">
+        </li>
+        <li class="users_edit">
           <label class="padding">Users</label>
           {{ form.auto_authors }}
-   				</li>
-   				
-       </ul>
-       
-       </div>
-       
+        </li>
+      </ul>
+    </div>
     {% endwith %}
   </div>
-  {% endblock %}
+{% endblock %}
 

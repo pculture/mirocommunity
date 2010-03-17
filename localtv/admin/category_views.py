@@ -29,7 +29,12 @@ from localtv.admin import forms
 def categories(request, sitelocation=None):
     categories = MockQueryset(Category.in_order(sitelocation.site))
     formset = forms.CategoryFormSet(queryset=categories)
-
+    headers = [
+        {'label': 'Category'},
+        {'label': 'Description'},
+        {'label': 'Slug'},
+         {'label': 'Videos'}
+        ]
     add_category_form = forms.CategoryForm()
     if request.method == 'POST':
         submit_value = request.POST.getlist('submit')
@@ -58,7 +63,7 @@ def categories(request, sitelocation=None):
                 action = request.POST['action']
                 if action == 'delete':
                     for data in  formset.cleaned_data:
-                        if data['bulk']:
+                        if data['BULK']:
                             category = data['id']
                             for child in category.child_set.all():
                                 # reset children to no parent
@@ -69,6 +74,7 @@ def categories(request, sitelocation=None):
 
     return render_to_response('localtv/admin/categories.html',
                               {'formset': formset,
+                               'headers': headers,
                                'add_category_form': add_category_form},
                               context_instance=RequestContext(request))
 

@@ -75,6 +75,6 @@ def index(request, sitelocation=None):
             action = request.POST['action']
             if action == 'delete':
                 for data in  formset.cleaned_data:
-                    if data['bulk']:
+                    if data['BULK']:
                         data['id'].delete()
             return HttpResponseRedirect(request.path + '?successful')

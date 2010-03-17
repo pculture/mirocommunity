@@ -24,111 +24,45 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}user_admin{% endblock body_class %}
 {% block subheader %}{% endblock %}
 {% block pre-labels %}
-  
   <h2>Users</h2>
-  
   <div id="label_sidebar">
-    
-    
     <a href="#" rel="#add_user" class="add"><span>Add User</span></a>
-    
     <div id="add_user" class="simple_overlay displaynone rounded">
       <h2>Add a User</h2>
       <form action="" method="POST" enctype="multipart/form-data">
-       
-        
-  <div class="input_field">   
-    	<ul>
-     <li>
-      <label>Username</label>
-      {{ add_user_form.username }}
-      <span class="form_help">{{ add_user_form.username.help_text }}</span>
-     </li>
-      <li>
-      <label>First Name</label>
-      {{ add_user_form.first_name }}
-      <span class="form_help">{{ add_user_form.first_name.help_text }}</span>
-     </li> 
-      <li>
-      <label>Last Name</label>
-      {{ add_user_form.last_name }}
-      <span class="form_help">{{ add_user_form.last_name.help_text }}</span>
-     </li>
-      <li>     
-      <label>Email Address</label>
-      {{ add_user_form.email }}
-      <span class="form_help">{{ add_user_form.email.help_text }}</span>
-      </li>
-      
-      <li>   
-      <label>Role</label>
-      {{ add_user_form.role }}
-      <span class="form_help">{{ add_user_form.role.help_text }}</span>
-      </li>  
-           
-
-      <li>   
-      <label>Photo</label>
-      {{ add_user_form.logo }}
-      <span class="form_help">{{ add_user_form.logo.help_text }}</span>
-      </li>  
-      
-      <li>   
-      <label>Description</label>
-      {{ add_user_form.description }}
-      <span class="form_help">{{ add_user_form.description.help_text }}</span>
-      </li>  
-
-    	<li>   
-      <label>Password</label>
-      {{ add_user_form.password_f }}
-      <span class="form_help">{{ add_user_form.password_f.help_text }}</span>
-      </li>  
-
-			<li>   
-      <label>Confirm Password</label>
-      {{ add_user_form.password_f2 }}
-      <span class="form_help">{{ add_user_form.password_f2.help_text }}</span>
-      </li>  
-
-			<li>   
-      <label>Website</label>
-      {{ add_user_form.website }}
-      <span class="form_help">{{ add_user_form.website.help_text }}</span>
-      </li>  
-
-     </ul>     
- 
-   </div>
-   
-
-   
-   
-        
-        
-        <button type="submit" value="Add" name="submit" class="approve_button"><span>Add User</span></button>      </form>
+        <div class="input_field">
+          <ul>
+            {% for field in add_user_form %}
+            <li>
+              {{ field.label_tag }}
+              {{ field.errors }}
+              {{ field }}
+              {% if field.help_text %}
+              <span class="form_help">{{ field.help_text }}</span>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <button type="submit" value="Add" name="submit" class="approve_button"><span>Add User</span></button>
+      </form>
     </div>
   </div>
 {% endblock %}
-{% block pre-form %}
-  <ul class="only_show">
-  	<label>Only Show</label>
-    <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}?show=all">All</a></li>
-
-    <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}">Show "Human" Accounts</a></li>
-  </ul>
-  
-  
-      <div class="bulkedit_controls">
-    <select id="bulk_action_selector" class="behave">
-      <option selected="selected" value="">Bulk Actions</option>
-      <option value="edit">Edit</option>
-      <option value="remove" class="delete_icon">Remove</option>
-    </select>
-    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
-  </div>
-
-  
+{% block labels %}
+<ul class="only_show">
+  <label>Only Show</label>
+  <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}?show=all">All</a></li>
+  <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_admin_users %}">Show "Human" Accounts</a></li>
+</ul>
+<div class="bulkedit_controls">
+  <select id="bulk_action_selector" class="behave">
+    <option selected="selected" value="">Bulk Actions</option>
+    <option value="edit">Edit</option>
+    <option value="remove" class="delete_icon">Remove</option>
+  </select>
+  <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+</div>
 {% endblock %}
 {% block columns %}
 <td>
@@ -141,108 +75,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <td>{% ifequal form.role.field.initial "admin" %}{% if form.instance.is_superuser %}Superuser{% else %}Admin{% endif %}{% else %}User{% endifequal %}</td>
 <td>{% if form.instance.authored_set__count %}<a href="{% url localtv_author form.instance.pk %}">{{ form.instance.authored_set__count }}</a>{% else %}0{% endif %}</td>
 {% endblock %}
-
-
-{% block quick-edit-title %}Edit User: {{ form.instance.username }}{% endblock %}
-{% block quick-edit-colspan %}2{% endblock %}
-{% block quick-edit %}
-
-
-{{ form.username.as_hidden }}
-{{ form.non_field_errors }}
-
-
-		<div class="input_field">
-
-			<ul>
-			
-				<li>
-        {{ form.username.errors }}
-        {{ form.username.label_tag }}
-        {{ form.username }}
-      <span class="form_help">{{ form.username.help_text }}</span>
-        
-        
-    </li>
-        <li>
-        {{ form.email.errors }}
-        {{ form.email.label_tag }}
-        {{ form.email }}
-              <span class="form_help">{{ form.email.help_text }}</span>
-
-   </li>
-   
-    <li>
-         {{ form.website.errors }}
-        {{ form.website.label_tag }}
-        {{ form.website }}
-              <span class="form_help">{{ form.website.help_text }}</span>
-
-     </li>
-        <li>
-        {{ form.logo.errors }}
-        {{ form.logo.label_tag }}
-        {{ form.logo }}
-              <span class="form_help">{{ form.logo.help_text }}</span>
-
-    </li>
-    <li>
-        {{ form.description.errors }}
-        {{ form.description.label_tag }}
-        {{ form.description }}
-              <span class="form_help">{{ form.description.help_text }}</span>
-
-			</li>
-			</ul>
-			
-    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
-			
-		</div>
-
-{% endblock %}
-
-
-
-{% block quick-edit-additional-columns %}
-<td style="padding-right: 20px;" colspan="2">
-  <table class="larger_labels">
-    <tbody>
-      <tr>
-        <td>
-          {{ form.role.errors }}
-          {{ form.role.label_tag }}
-          {{ form.role }}
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          {{ form.first_name.errors }}
-          {{ form.first_name.label_tag  }}
-          {{ form.first_name }}
-        </td>
-      </tr>
-      <tr>
-        <td>
-          {{ form.last_name.errors }}
-          {{ form.last_name.label_tag }}
-          {{ form.last_name }}
-        </td>
-      </tr>
-      <tr>
-        <td>
-          {{ form.password_f.errors }}
-          {{ form.password_f.label_tag }}
-          {{ form.password_f }}
-        </td>
-      </tr>
-      <tr>
-        <td>
-          {{ form.password_f2.errors }}
-          {{ form.password_f2.label_tag }}
-          {{ form.password_f2 }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</td>
+{% block quick-edit-fields %}
+<ul>
+  {% for field in form.visible_fields %}
+  {% ifnotequal field.name field.name|upper %}
+  <li>
+    {{ field.errors }}
+    {{ field.label_tag }}
+    {{ field }}
+    {% if field.help_text %}
+    <span class="form_help">{{ field.help_text }}</span>
+    {% endif %}
+  </li>
+  {% endifnotequal %}
+  {% endfor %}
+</ul>
 {% endblock %}

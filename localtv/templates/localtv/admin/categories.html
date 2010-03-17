@@ -1,4 +1,4 @@
-{% extends "localtv/admin/base.html" %}
+{% extends "localtv/admin/bulk_edit.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -24,154 +24,85 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block head %}
   {{ block.super }}
   <script type="text/javascript" src="/js/admin/urlify.js"></script>
-  <script type="text/javascript" src="/js/admin/bulk_edit.js">
   </script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          document.getElementById("id_slug").onchange = function() { this._changed = true; };
+          document.getElementById("id_name").onkeyup = function() {
+              var e = document.getElementById("id_slug");
+              if (!e._changed) { e.value = URLify(document.getElementById("id_name").value, 50); }
+          }
+      });
+</script>
 {% endblock %}
 {% block title %}{{ block.super }} - {% trans "Admin - Categories" %}{% endblock %}
 
 {% block body_class %}category_admin{% endblock body_class %}
 
-{% block content %}
-  {% include "localtv/admin/video_header.html" %}
- 
- 
- <a href="#" class="add" rel="#label_sidebar"><span>Add Category</span></a>
- 
- 
-  <div id="label_sidebar" class="simple_overlay displaynone">
+{% block pre-labels %}
+<a href="#" class="add" rel="#label_sidebar"><span>Add Category</span></a>
+<div id="label_sidebar" class="simple_overlay displaynone">
   <div class="close"></div>
-    <h2>Add a Category</h2>
-    
-   	<div class="input_field">
-
+  <h2>Add a Category</h2>
+  <div class="input_field">
     <form action="" method="POST">
-   
-  
-  	<ul>
-     <li>
-      <label>Category Name</label>
-      {{ add_category_form.name }}
-      <span class="form_help">{{ add_category_form.name.help_text }}</span>
-     </li>
-      <li>
-      <label>Category Slug</label>
-      {{ add_category_form.slug }}
-      <span class="form_help">{{ add_category_form.slug.help_text }}</span>
-     </li> 
-      <li>
-      <label>Thumbnail/Logo</label>
-      {{ add_category_form.logo }}
-      <span class="form_help">{{ add_category_form.logo.help_text }}</span>
-     </li>
-      <li>     
-      <label>Description</label>
-      {{ add_category_form.description }}
-      <span class="form_help">{{ add_category_form.description.help_text }}</span>
-      </li>
-      <li>       
-      <label>Category Parent</label>
-      {{ add_category_form.parent }}
-      <span class="form_help">{{ add_category_form.parent.help_text }}</span>
-      </li>       
-     </ul>     
- 
-      </div>
-      <button type="submit" value="Add" class="approve_button" name="submit"><span>Add Category</span></button>
-    </form>
+      <ul>
+        {% for field in add_category_form %}
+        <li>
+          {{ field.label_tag }}
+          {{ field.errors }}
+          {{ field }}
+          {% if field.help_text %}
+          <span class="form_help">{{ field.help_text }}</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <button type="submit" value="Add" class="approve_button" name="submit"><span>Add Category</span></button>
+  </form>
+</div>
+{% endblock %}
+
+{% block labels %}
+<div class="bulkedit_controls">
+  <select name="action">
+    <option value="">Bulk Actions</option>
+    <option value="delete">Delete</option>
+  </select>
+  <input type="submit" value="Apply" name="submit"/>
+</div>
+{% endblock %}
+
+{% block massedit %}{% endblock %}
+
+{% block columns %}
+<td valign="middle">
+  {{ form.instance.dashes }}{{ form.instance.name }}
+  <div class="actions">
+    <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
   </div>
+</td>
+<td valign="middle">{{ form.instance.description|sanitize }}</td>
+<td valign="middle">{{ form.instance.slug }}</td>
+{% with form.instance.video_set.count as count %}
+<td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
+{% endwith %}
+{% endblock %}
 
-    <h2>Current Categories</h2>
-
-
-  <div id="labels">
-    <form action="" method="POST" enctype="multipart/form-data">
-      {{ formset.management_form }}
-      {{ formset.non_form_errors }}
-      <div class="bulkedit_controls">
-      	<select name="action">
-        	<option value="">Bulk Actions</option>
-        	<option value="delete">Delete</option>
-      	</select>
-      	<input type="submit" value="Apply" name="submit"/>
-      </div>
-      <table class="rounded editable" cellpadding="0" cellspacing="0">
-      <thead>
-        <tr>
-          <th valign="middle" class="checkbox"><input type="checkbox" id="toggle_all"/></td>
-          <th valign="middle"><span>Name</span></th>
-          <th valign="middle"><span>Description</span></th>
-          <th><span>Slug</span></th>
-          <th><span>Videos</span></th>
-        </tr>
-      </thead>
-      {% for form in formset.forms %}
-      <tr valign="middle" class="{% cycle "grey" "white" %}" {% if form.errors %}style="display: none;"{% endif %}>
-        <td valign="middle" class="checkbox">{{ form.bulk }}</td>
-        <td valign="middle">
-          {{ form.instance.dashes }}{{ form.instance.name }}
-          <div class="actions">
-            <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
-          </div>
-          
-        </td>
-        
-        <div>        <td valign="middle">{{ form.instance.description|sanitize }}</td>
-        <td valign="middle">{{ form.instance.slug }}</td>
-        {% with form.instance.video_set.count as count %}
-        <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
-        {% endwith %}
-      </tr>
-      <tr class="editing" {% if not form.errors %}style="display: none;"{% endif %}
-        <td colspan="6">
-          {{ form.non_field_errors }}
-          {{ form.name.errors }}
-          <h2>{{ form.name }}</h2>
-          {{ form.id }}
-          <table style="width: 100%; margin-bottom: 0">
-            <tr>
-              <td>
-                {{ form.logo.errors }}
-                {{ form.logo.label }}
-                {{ form.logo }}
-              </td>
-              <td rowspan="4">
-                {{ form.description.label }}
-                {{ form.description }}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                {{ form.parent.errors }}
-                {{ form.parent.label }}
-                {{ form.parent }}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                {{ form.slug.errors }}
-                {{ form.slug.label }}
-                {{ form.slug }}
-              </td>
-            </tr>
-          </table>
-          <button class="reject_button marginbottom behave" type="button" onclick="return showEdit(this, false);"><span>Cancel</span></button>
-          <button class="approve_button marginbottom behave" type="submit" name="submit" value="Save"><span>Update Category</span></button>
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-    </form>
-  </div>
-
-<script type="text/javascript">
-
-    document.getElementById("id_slug").onchange = function() { this._changed = true; };
-
-    document.getElementById("id_name").onkeyup = function() {
-        var e = document.getElementById("id_slug");
-        if (!e._changed) { e.value = URLify(document.getElementById("id_name").value, 50); }
-    }
-
-</script>
-
-{% endblock content %}
+{% block quick-edit-fields %}
+<ul>
+  {% for field in form.visible_fields %}
+  {% ifnotequal field.name field.name|upper %}
+  <li>
+    {{ field.errors }}
+    {{ field.label_tag }}
+    {{ field }}
+    {% if field.help_text %}
+    <span class="form_help">{{ field.help_text }}</span>
+    {% endif %}
+  </li>
+  {% endifnotequal %}
+  {% endfor %}
+</ul>
+{% endblock %}

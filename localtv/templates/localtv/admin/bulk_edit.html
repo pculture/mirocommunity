@@ -30,16 +30,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block content %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-  {% block pre-labels %}
-  {% endblock %}
+  {% block pre-labels %}{% endblock %}
 <div id="labels">
-  {% block pre-form %}
-  
-
-
+  {% block labels %}
   <form action="" method="get" class="search_sources">
-
-<label>Search Videos</label>
+    <label>Search Videos</label>
     <select class="behave" name="category">
       <option {% if not request.GET.category %}selected="selected"{% endif %}  value="">Show All Categories</option>
       {% for category in categories %}
@@ -58,7 +53,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <button class="med_button floatright"><span>Search</span></button>
   </form>
 
-  
+
   <div class="bulkedit_controls">
     <select id="bulk_action_selector" class="behave">
       <option value="edit">Edit</option>
@@ -69,86 +64,71 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </select>
     <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
   </div>
-
-
   {% endblock %}
 
   <form method="post" action="{{ request.get_full_path }}" enctype="multipart/form-data">
     {% block massedit %}
     {% ifnotequal formset.initial_form_count formset.total_form_count %}
+    <div id="massedit" class="simple_overlay bulk_edit rounded">
+      <h2>Bulk Edit (this will edit all selected videos)</h2>
+      {% with formset.forms|last as form %}
+      <div class="input_field">
+        <ul>
+          <li class="title_edit">
+            <label>Title</label>
+            {{ form.name }}
+          </li>
+          <li class="thumb_edit">
+            <label>Thumb URL</label>
+            {{ form.thumbnail_url }}
+            <div class="upload_dialog">or <a href="#" onclick="$(this).next().show(); return false;">Upload</a> a New Thumbnail
+            <span style="display: none;">{{ form.thumbnail }}</span>
+            </div>
+          </li>
+          <li class="date_edit">
+            <label>Date</label>
+            {{ form.when_published }}
+          </li>
+          <li class="description_edit">
+            <label class="floatnone">Description</label>
+            {{ form.description }}
+          </li>
+          <li class="tags_edit">
+            <label class="floatnone">Tags</label>
+            {{ form.tags }}
+          </li>
+          <li class="categories_edit">
+            <label class="padding">Categories</label>
+            {{ form.categories }}
+          </li>
+          <li class="users_edit">
+            <label class="padding">Users</label>
+            {{ form.authors }}
+          </li>
+        </ul>
+      </div>
+      <button class="approve_button marginbottom behave"><span>Update Video</span></button>
+      {% endwith %}
+    </div>
+    {% endifnotequal %}
+    {% endblock %}
 
-
-
-  <div id="massedit" class="simple_overlay bulk_edit rounded">
-    <h2>Bulk Edit (this will edit all selected videos)</h2> 
-    {% with formset.forms|last as form %}
-	<div class="input_field">
- 				
- 				<ul>
- 					<li class="title_edit">
-	          <label>Title</label>
-	          {{ form.name }}
-					</li>
-
- 					<li class="thumb_edit">
-	          <label>Thumb URL</label>
-	          {{ form.thumbnail_url }}
-	          <div class="upload_dialog">or <a href="#" onclick="$(this).next().show(); return false;">Upload</a> a New Thumbnail
-	            <span style="display: none;">{{ form.thumbnail }}</span>
-	          </div>
-					</li>
-
- 					<li class="date_edit">
-	          <label>Date</label>
-	          {{ form.when_published }}
-					</li>
-
- 					<li class="description_edit">
-	          <label class="floatnone">Description</label>
-	          {{ form.description }}
-					</li>
-
- 					<li class="tags_edit">
-	          <label class="floatnone">Tags</label>
-	          {{ form.tags }}
-					</li>
-
- 
- 					<li class="categories_edit">
-	          <label class="padding">Categories</label>
-	          {{ form.categories }}
-					</li>
-
- 					<li class="users_edit">
-	          <label class="padding">Users</label>
-  	        {{ form.authors }}
-					</li>
-					</ul>
-</div>
-    <button class="approve_button marginbottom behave"><span>Update Video</span></button>
-    {% endwith %}
-  </div>
-
-
-
-  {% endifnotequal %}
-  {% endblock %}
-
-  {% if page %}
+    {% if page %}
     <div class="pag">
-    {% pagetabs page %}
+      {% pagetabs page %}
     </div>
     {% endif %}
+
     <table class="rounded">
-    <thead>
-      <tr>
-        <th class="checkbox">
-          {{ formset.management_form }}
-          <input type="hidden" id="bulk_action" name="bulk_action" value="" />
-          <input type="checkbox" id="toggle_all"/>
-        </th>
-        {% for header in headers %}
-        <th>
+      <thead>
+        <tr>
+          <th class="checkbox">
+            {{ formset.management_form }}
+            <input type="hidden" id="bulk_action" name="bulk_action" value="" />
+            <input type="checkbox" id="toggle_all"/>
+          </th>
+          {% for header in headers %}
+          <th>
             {% if header.sort %}
             <a class="{% if forloop.last %}last {% endif %}{{ header.class }}" href="{{ header.link }}">
               {{ header.label }}
@@ -156,150 +136,118 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             {% else %}
             <span>{{ header.label }}</span>
             {% endif %}
-        </th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% if formset.non_form_errors %}
-      <tr>
-        <td colspan="4">{{ formset.non_form_errors }}</td>
-      </tr>
-      {% endif %}
-      {% for form in formset.initial_forms %}
-      <tr class="{% cycle "" "grey" %}" {% if form.errors %}style="display: none;"{% endif %}>
-        <td>
-          {{ form.bulk }}
-          
-          
-          <div class="simple_overlay bulk_edit editing{% if form.errors %} errors{% endif %}">
-            {{ form.id }}
-            {{ form.non_field_errors }}
-							
-							
-							
-          
-							
-							<h2>Editing</h2>
-
-            {% block quick-edit %}
-         
-         
-         	<div class="input_field">
-
-         		
- 				<ul>
- 					<li class="title_edit">
- 				     
- 				     <label>Title</label>
- 				      {% block quick-edit-title %}<span>{{ form.name.errors }}</span>{{ form.name }}{% endblock %}
-					</li>
- 				
- 					<li class="title_edit">
-                  <label>Video URL</label>
-                  {{ form.file_url.errors }}
-                  {{ form.file_url }}
-          </li>
-
- 					<li class="thumb_edit">
-                  {{ form.thumbnail_url.errors }}
-                  {{ form.thumbnail.errors }}
-                  <label>Thumb URL</label>
-                  {{ form.thumbnail_url.errors }}{{ form.thumbnail.errors }}
-                  {{  form.thumbnail_url }}
-                  <div style="float: right; width: 286px;">
-                    or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
-                    <span style="display: none;">{{ form.thumbnail }}</span>
-                  </div>
-               </li>
-
- 					<li class="date_edit">
-                                 {{ form.when_published.errors }}
-                  <label>Date</label>
-                  {{ form.when_published.errors }}
-                  {{ form.when_published }}
-					</li>
-
- 					<li class="description_edit">
- 						      {{ form.description.errors }}
-                  <label class="floatnone">Description</label>
-                  {{ form.description.errors }}
-                  {{ form.description }}
-             	</li>
-
- 					<li class="tags_edit">
-
-                               {{ form.embed_code.errors }}
-                  <label class="floatnone">Embed Code</label>
-                  {{ form.embed_code }}
-                  {{ form.tags.errors }}
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if formset.non_form_errors %}
+        <tr>
+          <td colspan="{{ headers|length|add:"1" }}">{{ formset.non_form_errors }}</td>
+        </tr>
+        {% endif %}
+        {% for form in formset.initial_forms %}
+        <tr class="{% cycle "" "grey" %}">
+          <td>
+            {{ form.BULK }}
+            <div class="simple_overlay bulk_edit editing{% if form.errors %} errors{% endif %}">
+              {% for field in form.hidden_fields %}
+              {{ field.errors }}
+              {{ field }}
+              {% endfor %}
+              {{ form.non_field_errors }}
+              <h2>Editing</h2>
+              {% block quick-edit %}
+              <div class="input_field">
+                {% block quick-edit-fields %}
+                <ul>
+                  <li class="title_edit">
+                    <label>Title</label>
+                    {{ form.name.errors }}
+                    {{ form.name }}
                   </li>
-                   					<li class="tags_edit">
-
-                  
-                  <label class="floatnone">Tags</label>
-                  {{ form.tags.errors }}
-                  {{ form.tags }}
-               	</li>
-
- 
- 					<li class="categories_edit">
-                                 {{ form.categories.errors }}
-                  <label class="padding">Categories</label>
-                  {{ form.categories.errors }}
-                  {{ form.categories }}
-            	</li>
-
- 					<li class="users_edit">   
-               
-               
-                  {{ form.authors.errors }}
-                  <label class="padding">Users</label>
-                  {{ form.authors.errors }}
-                  {{ form.authors }}
-              				</li>
-					</ul>
-              
-              
-              
+                  <li class="title_edit">
+                    <label>Video URL</label>
+                    {{ form.file_url.errors }}
+                    {{ form.file_url }}
+                  </li>
+                  <li class="thumb_edit">
+                    <label>Thumb URL</label>
+                    {{ form.thumbnail_url.errors }}{{ form.thumbnail.errors }}
+                    {{  form.thumbnail_url }}
+                    <div style="float: right; width: 286px;">
+                      or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
+                      <span style="display: none;">{{ form.thumbnail }}</span>
+                    </div>
+                  </li>
+                  <li class="date_edit">
+                    <label>Date</label>
+                    {{ form.when_published.errors }}
+                    {{ form.when_published }}
+                  </li>
+                  <li class="description_edit">
+                    <label class="floatnone">Description</label>
+                    {{ form.description.errors }}
+                    {{ form.description }}
+                  </li>
+                  <li class="tags_edit">
+                    <label class="floatnone">Embed Code</label>
+                    {{ form.embed_code }}
+                    {{ form.tags.errors }}
+                  </li>
+                  <li class="tags_edit">
+                    <label class="floatnone">Tags</label>
+                    {{ form.tags.errors }}
+                    {{ form.tags }}
+                  </li>
+                  <li class="categories_edit">
+                    <label class="padding">Categories</label>
+                    {{ form.categories.errors }}
+                    {{ form.categories }}
+                  </li>
+                  <li class="users_edit">
+                    <label class="padding">Users</label>
+                    {{ form.authors.errors }}
+                    {{ form.authors }}
+                  </li>
+                </ul>
+                {% endblock %}
               </div>
-              							 <button type="submit" class="approve_button" name="submit" value="Save"><span>Update</span></button>
-
-              
-               {% endblock %}
-          </div>
-        </td>
-        {% block columns %}
-        <td>
-          <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
-          <div class="actions">
-            <a href="#" onclick="return showEdit(this);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
-          </div>
-        </td>
-        <td>
-          {% if form.instance.video_service %}
-          {{ form.instance.video_service }} User
-          <strong>{% if form.instance.feed %}{{ form.instance.feed.name }}{% else %}{{ form.instance.video_service_user }}{% endif %}</strong>
-          {% else %}
-          {% if form.instance.search %}
-          Saved Search: <strong>{{ form.instance.search.query_string }}</strong>
-          {% endif %}
-          {% endif %}
-        </td>
-        <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
-        <td width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
-        <td class="last" width="19%">{% if form.instance.when_submitted %}<span class="pub_date">{{ form.instance.when_submitted|date:"M, d Y" }}</span>{% endif %} </td>
-        {% endblock %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% if page %}
-  <div class="pag bottom">
-    {% pagetabs page %}
-  </div>
-  {% endif %}
-</form>
+              <button type="submit" class="approve_button" name="submit" value="Save"><span>Update</span></button>
+              {% endblock %}
+            </div>
+          </td>
+          {% block columns %}
+          <td>
+            <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
+            <div class="actions">
+              <a href="#" onclick="return showEdit(this);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+            </div>
+          </td>
+          <td>
+            {% if form.instance.video_service %}
+            {{ form.instance.video_service }} User
+            <strong>{% if form.instance.feed %}{{ form.instance.feed.name }}{% else %}{{ form.instance.video_service_user }}{% endif %}</strong>
+            {% else %}
+            {% if form.instance.search %}
+            Saved Search: <strong>{{ form.instance.search.query_string }}</strong>
+            {% endif %}
+            {% endif %}
+          </td>
+          <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
+          <td class="last" width="19%">{% if form.instance.when_submitted %}<span class="pub_date">{{ form.instance.when_submitted|date:"M, d Y" }}</span>{% endif %} </td>
+          {% endblock %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if page %}
+    <div class="pag bottom">
+      {% pagetabs page %}
+    </div>
+    {% endif %}
+  </form>
 </div>
 {% endblock content %}
 

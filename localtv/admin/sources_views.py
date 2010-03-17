@@ -135,7 +135,7 @@ def manage_sources(request, sitelocation=None):
                     del bulk_edits[key]
             bulk_action = request.POST.get('bulk_action', '')
             for form in formset.initial_forms:
-                if form.cleaned_data['bulk']:
+                if form.cleaned_data['BULK']:
                     if bulk_action == 'remove':
                         if request.POST.get('keep'):
                             form.instance.video_set.all().update(

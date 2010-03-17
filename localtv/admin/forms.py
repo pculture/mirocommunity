@@ -204,7 +204,7 @@ class BaseSourceFormSet(BaseModelFormSet):
         self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
                                               initial=initial)
         if initial:
-            form.fields['bulk'] = forms.BooleanField(required=False)
+            form.fields['BULK'] = forms.BooleanField(required=False)
         BaseFormSet.add_fields(self, form, index)
 
 
@@ -216,7 +216,7 @@ SourceFormset = modelformset_factory(models.Source,
 
 
 class BulkEditVideoForm(EditVideoForm):
-    bulk = forms.BooleanField(required=False)
+    BULK = forms.BooleanField(required=False)
     name = forms.CharField(
         required=False)
     file_url = forms.CharField(widget=forms.TextInput(
@@ -382,7 +382,7 @@ class BaseCategoryFormSet(BaseModelFormSet):
     def add_fields(self, form, i):
         BaseModelFormSet.add_fields(self, form, i)
         if i < self.initial_form_count():
-            form.fields['bulk'] = forms.BooleanField(required=False)
+            form.fields['BULK'] = forms.BooleanField(required=False)
 
 
 CategoryFormSet = modelformset_factory(models.Category,
@@ -439,7 +439,7 @@ class BaseFlatPageFormSet(BaseModelFormSet):
     def add_fields(self, form, i):
         BaseModelFormSet.add_fields(self, form, i)
         if i < self.initial_form_count():
-            form.fields['bulk'] = forms.BooleanField(required=False)
+            form.fields['BULK'] = forms.BooleanField(required=False)
 
 FlatPageFormSet = modelformset_factory(FlatPage,
                                        form=FlatPageForm,
@@ -451,7 +451,8 @@ class AuthorForm(forms.ModelForm):
             ('user', 'User'),
             ('admin', 'Admin')),
                              required=False)
-    logo = forms.ImageField(required=False)
+    logo = forms.ImageField(required=False,
+                            label='Photo')
     description = forms.CharField(
         widget=forms.Textarea,
         required=False)
