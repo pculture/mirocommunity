@@ -580,7 +580,7 @@ class Feed(Source):
                 player = entry['media_player']
                 if isinstance(player, basestring):
                     video_data['embed_code'] = unescape(player)
-                elif 'content' in player:
+                elif player.get('content'):
                     video_data['embed_code'] = unescape(player['content'])
                 elif 'url' in player and not video_data['embed_code']:
                     video_data['embed_code'] = '<embed src="%(url)s">' % player
