@@ -38,6 +38,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           src="http://api.recaptcha.net/js/recaptcha_ajax.js"></script>{% endif %}
   {% if user_is_admin %}
   {{ comment_form.media }}
+  {% else %}
+  <script type="text/javascript">
+      tinyMCE = {init: function(){}};
+  </script>
   {% endif %}
   {% include "localtv/view_video_meta.html" %}
 {% endblock %}
