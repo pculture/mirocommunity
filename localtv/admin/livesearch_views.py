@@ -28,6 +28,8 @@ from vidscraper import metasearch
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
 from localtv import models, util
+from localtv.admin.util import MetasearchVideo, metasearch_from_querystring, \
+    strip_existing_metasearchvideos
 
 
 ## ----------
@@ -127,13 +129,13 @@ def livesearch_response(request, sitelocation):
     if query_string:
         results = cache.get(query_subkey)
         if results is None:
-            raw_results = util.metasearch_from_querystring(
+            raw_results = metasearch_from_querystring(
                 query_string, order_by)
             sorted_raw_results = metasearch.intersperse_results(raw_results)
             results = [
-                util.MetasearchVideo.create_from_vidscraper_dict(raw_result)
+                MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
-            results = util.strip_existing_metasearchvideos(
+            results = strip_existing_metasearchvideos(
                 results, sitelocation.site)
             cache.add(query_subkey, results)
 

@@ -43,6 +43,7 @@ import vidscraper
 import tagging
 
 from localtv.templatetags.filters import sanitize
+from localtv import util
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
@@ -413,8 +414,6 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        from localtv import util
-
         if self.auto_approve:
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
@@ -762,15 +761,15 @@ class SavedSearch(Source):
         return self.query_string
 
     def update_items(self, verbose=False):
-        from localtv import util
+        from localtv.admin import util as admin_util
         raw_results = vidscraper.metasearch.intersperse_results(
-            util.metasearch_from_querystring(
+            admin_util.metasearch_from_querystring(
                 self.query_string))
 
-        raw_results = [util.MetasearchVideo.create_from_vidscraper_dict(
+        raw_results = [admin_util.MetasearchVideo.create_from_vidscraper_dict(
                 result) for result in raw_results]
 
-        raw_results = util.strip_existing_metasearchvideos(
+        raw_results = admin_util.strip_existing_metasearchvideos(
             [result for result in raw_results if result is not None],
             self.site)
 

@@ -18,7 +18,7 @@
 from django import template
 from django.core.files.storage import default_storage
 
-from localtv.util import MetasearchVideo
+from localtv.admin.util import MetasearchVideo
 
 register = template.Library()
 

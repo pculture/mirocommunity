@@ -10,6 +10,7 @@ from django.test.client import Client
 from django.utils.encoding import force_unicode
 
 from localtv.admin import forms as admin_forms
+from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models
 from localtv import util
@@ -1303,7 +1304,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(response.template[2].name,
                           'localtv/admin/livesearch_table.html')
         self.assertIsInstance(response.context[2]['current_video'],
-                              util.MetasearchVideo)
+                              MetasearchVideo)
         self.assertEquals(response.context[2]['page_obj'].number, 1)
         self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
         self.assertEquals(response.context[2]['query_string'], 'search string')
