@@ -1148,12 +1148,11 @@ class FeedAdministrationTestCase(BaseTestCase):
                 'auto_approve': 'yes'})
 
         response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
-                          'localtv/admin/feed_wait.html')
-        feed = models.Feed.objects.get()
-        self.assertEquals(response.context[0]['feed'], feed)
-        self.assertTrue('task_id' in response.context[0])
+        self.assertStatusCodeEquals(response, 302)
+        self.assertTrue(response['Location'].startswith(
+                'http://%s%s?task_id=' % (
+                    self.site_location.site.domain,
+                    reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
         """
