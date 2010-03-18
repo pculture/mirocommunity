@@ -1,6 +1,5 @@
 function inline_edit_open() {
     editable = $(this).parents('.editable');
-    console.log(editable.find('.input_field'));
     editable.find('.input_field').each(
                 function() {insert_and_activate_action_buttons($(this));});
     editable.children('.simple_overlay').overlay({api: true}).load();
