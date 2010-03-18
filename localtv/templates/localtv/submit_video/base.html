@@ -23,6 +23,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}Submit a Video{% endblock %}
 {% block next_link %}{% endblock %}
 {% block content %}
+<div class="content">
+<div class="inner_content">
+    
 <form action="{% block form_action %}{% endblock %}" method="post" id="submit_video">
   {% block pre-table %}{% endblock %}
   <table>
@@ -33,4 +36,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </table>
   {% block post-table %}{% endblock %}
 </form>
+</div></div>
 {% endblock content %}

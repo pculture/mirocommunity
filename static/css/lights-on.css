@@ -67,6 +67,10 @@ em {
 
 /////////////////////////////////////////////*/
 
+.inner_content {
+	margin: 30px 0;
+}
+
 .edit_link{
 background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
@@ -510,11 +514,12 @@ _background: url(../images/nav_left.gif) left -69px no-repeat !important;
 
 
 #nav li ul { /* second-level lists */
-	position: absolute;
 	background: #fff;
-	width: 30em;
-margin-left: 5px;
-	left: -999em; 
+	margin-left: 5px;
+	position: absolute;
+	left: -999em; /* Hide using position */
+	width: 45em;
+	z-index: 999;
 }
 
 #nav li:hover ul, #nav li.sfhover ul { /* lists nested under hovered list items */
@@ -523,17 +528,36 @@ margin-left: 5px;
 
 
 #nav li ul li{
-padding: 0;
-margin: 0;
-width: 10em;
+	border: 1px solid #d7d7d7;
+	height: 28px;
+	padding: 0;
+	position: relative;
+	margin: 0;
+	width: 178px;
 }
-
-
+#nav li ul li div.bg {
+	background: url('../images/subnav_bg.png') no-repeat;
+	height: 28px;
+	left: auto;
+	position: absolute;
+	right: -1px;
+	top: 0;
+	width: 20px;
+	z-index: 90;
+}
+#nav li ul li div.text {
+	height: 18px;
+	overflow: hidden;
+	width: 165px;
+	z-index: 80;
+}
 #nav li ul li a{
 background: 0;
 margin: 0 !important;
 line-height: 1.5em;
-padding: 5px 5px 5px 10px;
+padding: 5px 10px;
+overflow: hidden;
+width: 160px;
 
 }
 
@@ -888,8 +912,9 @@ margin-top: 2px;
 
 .login {
 /*float: right;*/
-margin-top: 30px;
+margin: 0 auto;
 padding: 20px;
+width: 400px;
 }
 
 .login h1 {
