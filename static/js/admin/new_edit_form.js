@@ -1,5 +1,9 @@
 function inline_edit_open() {
-    $(this).parents('.editable').children('.simple_overlay').overlay({api: true}).load();
+    editable = $(this).parents('.editable');
+    console.log(editable.find('.input_field'));
+    editable.find('.input_field').each(
+                function() {insert_and_activate_action_buttons($(this));});
+    editable.children('.simple_overlay').overlay({api: true}).load();
     return false;
 }
 
@@ -68,6 +72,4 @@ $(document).ready(function() {
                               }
                              );
     $(".editable .edit_link").live('click', inline_edit_open);
-    $(".editable .input_field").each(
-        function() {insert_and_activate_action_buttons($(this));});
 });
