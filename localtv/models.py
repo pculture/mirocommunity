@@ -34,6 +34,7 @@ from django.contrib.sites.models import Site
 from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.signals import request_finished
 from django.forms.fields import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
@@ -111,6 +112,7 @@ class SiteLocationManager(models.Manager):
     def clear_cache(self):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
+
 
 class SiteLocation(models.Model):
     """
@@ -1149,3 +1151,7 @@ admin.site.register(SavedSearch)
 admin.site.register(Watch)
 
 tagging.register(Video)
+
+def finished(sender, **kwargs):
+    SiteLocation.objects.clear_cache()
+request_finished.connect(finished)
