@@ -22,7 +22,7 @@ import simplejson
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.inline_edit import forms
 from localtv.models import Video
-from localtv.templatetags.editable_widget import get_display_content
+from localtv.templatetags.editable_widget import editable_widget
 
 @require_site_admin
 @get_sitelocation
@@ -41,15 +41,13 @@ def editors_comment(request, id, sitelocation=None):
             comment.user = request.user
             comment.save()
             edit_form.save_m2m()
-
-        return HttpResponse(
-            simplejson.dumps(
-                {'post_status': 'SUCCESS',
-                 'display_html': get_display_content(obj, 'editors_comment'),
-                 'input_html': edit_form.as_ul()}))
+        status = 'SUCCESS'
     else:
-        return HttpResponse(
-            simplejson.dumps(
-                {'post_status': 'FAIL',
-                 'display_html': get_display_content(obj, 'editors_comment'),
-                 'input_html': edit_form.as_ul()}))
+        status = 'FAIL'
+
+    return HttpResponse(
+        simplejson.dumps(
+            {'post_status': status,
+             'widget': editable_widget(obj, 'editors_comment',
+                                       form=edit_form)}))
+

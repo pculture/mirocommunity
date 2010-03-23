@@ -19,9 +19,9 @@ function insert_and_activate_action_buttons(obj) {
 
 function inline_save() {
     var editable_wrapper = $(this).parents('.editable');
-    var input_wrapper = editable_wrapper.find('.input_field');
-    var inputs = input_wrapper.find(':input');
-    var display_wrapper = editable_wrapper.children('.display_data');
+    var inputs = editable_wrapper.find('.input_field :input');
+
+    editable_wrapper.children('.simple_overlay').overlay({api: true}).close();
 
     var post_data = inputs.serialize();
     var post_url = editable_wrapper.children('.post_url').text();
@@ -29,14 +29,10 @@ function inline_save() {
     jQuery.post(
         post_url, post_data,
         function(data) {
-            if (data['post_status'] == 'SUCCESS') {
-                input_wrapper.children('ul').html(data['input_html']);
-                display_wrapper.html(data['display_html']);
-                insert_and_activate_action_buttons(input_wrapper);
-                editable_wrapper.children('.simple_overlay').overlay({api: true}).close();
-            } else if (data['post_status'] == 'FAIL') {
-                input_wrapper.html(data['input_html']);
-                insert_and_activate_action_buttons(input_wrapper);
+            widget = $(data.widget);
+            editable_wrapper.replaceWith(widget);
+            if (data.post_status == 'FAIL') {
+                inline_edit_open.call(widget.find('a.edit_link'));
             }}, 'json');
 }
 

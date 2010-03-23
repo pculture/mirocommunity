@@ -73,14 +73,16 @@ def get_display_content(model_instance, field_name,
             {'instance': model_instance}))
 
 @register.simple_tag
-def editable_widget(model_instance, field_name, display_template_name=None):
+def editable_widget(model_instance, field_name, display_template_name=None,
+                    form=None):
     try:
         widget_data = WIDGET_DIRECTORY[model_instance.__class__][field_name]
     except KeyError:
         return ''# maybe raise an error here instead saying "no such model or
                  # field could be found"?
 
-    form = widget_data['form'](instance=model_instance)
+    if form is None:
+        form = widget_data['form'](instance=model_instance)
 
     # render the display template
     
