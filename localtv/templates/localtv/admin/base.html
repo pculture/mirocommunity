@@ -26,14 +26,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <!--[if lt IE 8]>
    <link rel="StyleSheet" type="text/css" href="/css/msie7.css" />
 <![endif]-->
-    {% if sitelocation.css or sitelocation.background %}
-    <style type="text/css">
-    {{ sitelocation.css|safe }}
-    {% if sitelocation.background %}body {
-       background: url("{{ sitelocation.background.url }}");
-    }{% endif %}
-    </style>
-    {% endif %}
     <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js"></script>
     <script src="/js/extern/jquery.form.js"
             type="text/javascript">
