@@ -67,10 +67,6 @@ em {
 
 /////////////////////////////////////////////*/
 
-.inner_content {
-	margin: 30px 0;
-}
-
 .edit_link{
 background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
@@ -903,48 +899,6 @@ float: left;
 margin-top: 2px;
 }
 
-/*/////////////////////////////////////////////
-
-~ Login
-
-/////////////////////////////////////////////*/
-
-
-.login {
-/*float: right;*/
-margin: 0 auto;
-padding: 20px;
-width: 400px;
-}
-
-.login h1 {
-margin: 0;
-padding: 0;
-font-size: 16px;
-clear: both;
-line-height: 1.3em;
-}
-
-.login label {
-    clear: left;
-    float: left;
-    margin-right: 10px;
-}
-.login input {
-    float: left;
-    margin-right: 5px;
-}
-
-.login form p {
-clear: both;
-padding: 20px;
-}
-
-.login .forgot-password {
-    float: left;
-    clear: left;
-    padding-top: 5px;
-}
 
 /*/////////////////////////////////////////////
 
@@ -991,50 +945,6 @@ color: #aaa;
 background-position: left -63px;
 }
 
-#submit_video {
-    width: 600px;
-}
-
-#submit_video label {
-font-weight: bold;
-}
-
-#submit_video ul{
-    padding: 10px 0 0 15px;
-list-style: circle;
-}
-
-#submit_video li{
-    padding: 0 0 10px;
-list-style: circle;
-}
-
-#submit_video span.url {
-    color: green;
-
-}
-
-#id_url{
-width: 460px;
-font-size: 14px;
-padding: 4px;
-}
-
-#submit_video label, #submit_video input, #submit_video textarea, #close_submit_box {
-    float: left;
-    margin: 5px;
-}
-
-#submit_video input, #submit_video textarea {
-    clear: left;
-    border: 1px solid black;
-    margin-bottom: 15px;
-}
-
-#submit_video input[type=image] {
-    border: none;
-    margin-bottom: 5px;
-}
 
 .login input.openid,
 .large_field {
@@ -3379,46 +3289,3 @@ margin-top: 90px !important;
 #widget-settings button {
     margin: 10px 10px 10px 0;
 }
-
-/*////////////////////////////////////////////
-
-~ Modal Window
-
-////////////////////////////////////////////*/
-
-
-/* use a semi-transparent image for the overlay */
-#overlay {
-	background:#efefef;
-	width: 600px;
-    color:#efefef;
-    height:400px;
-    padding: 10px;
-    display: none;
-    border: 1px solid #225d84;
-
-    /* CSS3 styling for latest browsers */
-    -moz-box-shadow:0 0 30px 5px #3476a1;
-    -webkit-box-shadow: 0 0 90px #000;
-}
-
-/* container for external content. uses vertical scrollbar, if needed */
-div.contentWrap {
-    height:400px;
-    background: #fff;
-    overflow-y:auto;
-    color: #000;
-}
-
-.close{
-	background:url(../images/close.png) no-repeat;
-    position:absolute;
-    right:-15px;
-    top:-15px;
-    cursor:pointer;
-    height:32px;
-    width:31px;
-	}
-
-.close:hover{
-  background:url(../images/close.png) 0 -40px no-repeat;
