@@ -98,11 +98,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% if categories %}
           <li class="categories">
             <a href="{% url localtv_category_index %}"><span>Categories</span></a>
-	    <ul>
-	      {% for category in categories %}
-	      <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
-	      {% endfor %}										
-	    </ul>
+	        <ul>
+	            {% for category in categories %}
+	            <li>
+	               <a href="{{ category.get_absolute_url }}">
+	                   <div class="bg"></div>
+	                   <div class="text">{{ category }}</div>
+	               </a>
+	            </li>
+	            
+	            {% if forloop.last %}
+	                {% if not categories|length|divisibleby:"3" %}
+	                    {% if not categories|length|divisibleby:"2" %}
+	                        <li>&nbsp;</li>
+	                        <li>&nbsp;</li>
+	                    {% else %}
+	                        <li>&nbsp;</li>
+	                    {% endif %}
+	                {% endif %}
+	            {% endif %}
+	            {% endfor %}
+	            <il style="float: none; clear: both;"></il>									
+	        </ul>
 	  </li>
 	  {% endif %}
           <li class="popular">
