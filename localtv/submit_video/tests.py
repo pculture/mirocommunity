@@ -575,6 +575,22 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_scraped_video'),
                 urlencode({'url': youtube_url})))
 
+    def test_POST_succeed_pound(self):
+        """
+        If the URL has a # in it, it should be stripped but the submission
+        should continue normally..
+        """
+        # TODO(pswartz) this should probably be mocked, instead of actually
+        # hitting the network
+        url = 'http://www.msnbc.msn.com/id/21134540/vp/35294347'
+        c = Client()
+        response = c.post(self.url, {'url': url + '#28863649'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_embedrequest_video'),
+                urlencode({'url': url})))
 
 class ScrapedTestCase(SecondStepSubmitBaseTestCase):
 

@@ -17,6 +17,7 @@
 
 import datetime
 import urllib
+import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -52,7 +53,7 @@ def submit_video(request, sitelocation=None):
     if not (sitelocation.display_submit_button or
             sitelocation.user_is_admin(request.user)):
         raise Http404
-    url = request.POST.get('url') or request.GET.get('url')
+    url = request.POST.get('url') or request.GET.get('url', '')
     if request.method == "GET" and not url:
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
@@ -61,6 +62,7 @@ def submit_video(request, sitelocation=None):
              'form': submit_form},
             context_instance=RequestContext(request))
     else:
+        url = urlparse.urldefrag(url)[0]
         submit_form = forms.SubmitVideoForm({'url': url or ''})
         if submit_form.is_valid():
             existing = models.Video.objects.filter(
