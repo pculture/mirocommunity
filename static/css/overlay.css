@@ -41,6 +41,7 @@ div.contentWrap {
 
 .close:hover{
   background:url(../images/close.png) 0 -40px no-repeat;
+}
 
 .inner_content {
     margin: 30px 0;
