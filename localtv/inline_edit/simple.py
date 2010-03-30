@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-import simplejson
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.templatetags.editable_widget import WIDGET_DIRECTORY, \
@@ -34,17 +33,14 @@ def edit_field(request, id, sitelocation=None, model=None, field=None):
         site=sitelocation.site)
 
     edit_form = WIDGET_DIRECTORY[model][field]['form'](request.POST,
+                                                       request.FILES,
                                                        instance=obj)
 
     if edit_form.is_valid():
         edit_form.save()
-        status = 'SUCCESS'
+        Response = HttpResponse
     else:
-        status = 'FAIL'
+        Response = HttpResponseForbidden
 
     widget = editable_widget(obj, field, form=edit_form)
-
-    return HttpResponse(
-        simplejson.dumps(
-            {'post_status': status,
-             'widget': widget}))
+    return Response(widget, content_type='text/html')

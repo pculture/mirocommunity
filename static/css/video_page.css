@@ -213,10 +213,6 @@ margin: 21px;
     font-weight: bold;
 }
 
-#edit_video_wrapper form {
-    display: none;
-}
-
 .category_edit, .author_edit {
     display: none;
 }

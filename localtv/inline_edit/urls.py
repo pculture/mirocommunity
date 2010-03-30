@@ -43,4 +43,7 @@ urlpatterns = patterns(
      {'model': models.Video, 'field': 'website_url'},
      'localtv_admin_video_edit_website_url'),
     (r'^video/(?P<id>[0-9]+)/editors_comment/$', 'video_views.editors_comment',
-     {}, 'localtv_admin_video_edit_editors_comment'))
+     {}, 'localtv_admin_video_edit_editors_comment'),
+    (r'^video/(?P<id>[0-9]+)/thumbnail/$', 'simple.edit_field',
+     {'model': models.Video, 'field': 'thumbnail'},
+     'localtv_admin_video_edit_thumbnail'))

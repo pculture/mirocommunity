@@ -96,3 +96,72 @@ background: url(../images/admin_sprites.png) -44px -38px no-repeat;
 .editable .close:active{
 background: url(../images/admin_sprites.png) -78px -38px no-repeat;
 }
+
+/*////////////////////////////////////////////
+
+~ Thumbnail Changer
+
+////////////////////////////////////////////*/
+
+.simple_overlay .thumbnail_changer {
+  padding-top: 20px;
+  width: 600px;
+}
+
+.simple_overlay .thumbnail_changer .thumbnail{
+height: 30px;
+color: #000;
+font-size: 11px;
+text-align: center;
+float: left;
+width: 222px;
+border: 1px solid #CCC;
+padding: 170px 5px 0;
+position: relative;
+text-decoration: none;
+}
+
+
+.simple_overlay .thumbnail_changer .thumbnail span{
+display: block;
+color: #777;
+font-size: 10px;
+font-weight: normal !important;
+text-align: center;
+margin: 1em 0;
+}
+
+
+.simple_overlay .thumbnail_changer .form {
+width: 330px;
+float: left;
+color: #000;
+clear: none;
+text-align: left !important;
+margin: 0 0 0 10px;
+padding-left: 15px;
+}
+
+
+.simple_overlay .thumbnail_changer .form p{
+width: 330px;
+float: right;
+color: #000;
+clear: none;
+text-align: left !important;
+margin: 0 0 0 35px;
+height: 6em;
+}
+
+
+
+.simple_overlay .thumbnail_changer .form p label{
+width: 100px;
+font-weight: bold;
+float: left;
+color: #000;
+display: block;
+line-height: 2em;
+text-align: left !important;
+width: 330px;
+}

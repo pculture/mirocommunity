@@ -24,7 +24,7 @@ from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
 
 from localtv import models
-from localtv.admin.forms import BulkChecklistField
+from localtv.admin.forms import EditVideoForm, BulkChecklistField
 
 
 class FeedNameForm(forms.ModelForm):
@@ -171,3 +171,6 @@ class VideoEditorsComment(forms.Form):
             else:
                 self.save_m2m = save_m2m
         return self.comment
+
+class VideoThumbnailForm(EditVideoForm):
+    pass

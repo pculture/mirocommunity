@@ -27,11 +27,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block head %}
-  {% if edit_video_form %}
+  {% if user_is_admin %}
   {% include "localtv/inline_edit/header.html" %}
-    <script type="text/javascript"
-            src="{% get_static_url "/js/edit_form.js" %}">
-    </script>
   {% endif %}
   {% get_comment_form for current_video as comment_form %}
   {% if comment_form.fields.captcha %}<script type="text/javascript"

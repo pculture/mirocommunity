@@ -17,22 +17,18 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load editable_widget %}
 <div id="edit_video_wrapper" class="rounded">
-  <form method="post" action="{% url localtv_admin_edit_video %}" enctype="multipart/form-data">
-    {{ edit_video_form.as_p }}
-    <input type="hidden" name="video_id" value="{{ current_video.pk }}" />
-    <input type="hidden" name="redirect" value="{{ current_video.get_absolute_url }}" />
-  </form>
   {% ifnotequal current_video.status VIDEO_STATUS_REJECTED %}
-  <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button"><span>Reject this video</span></a></p>
+  <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button reject_video"><span>Reject this video</span></a></p>
   {%else %}
-  <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button"><span>Approve this video</span></a></p>
+  <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button approve_video"><span>Approve this video</span></a></p>
   {% endifnotequal %}
   {% if current_video.last_featured %}
-  <p><a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Unfeature this video</span></a></p>
+  <p><a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button unfeature_video"><span>Unfeature this video</span></a></p>
   {% else %}
-  <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button"><span>Feature this video</span></a></p>
+  <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button feature_video"><span>Feature this video</span></a></p>
   {% endif %}
-  <p class="med_button"><span class="thumbnail editable">Upload a new thumbnail</span></p>
+  {% editable_widget current_video "thumbnail" %}
   <br clear="all"/>
 </div>

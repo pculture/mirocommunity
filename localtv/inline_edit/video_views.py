@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-import simplejson
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.inline_edit import forms
@@ -41,13 +40,11 @@ def editors_comment(request, id, sitelocation=None):
             comment.user = request.user
             comment.save()
             edit_form.save_m2m()
-        status = 'SUCCESS'
+        Response = HttpResponse
     else:
-        status = 'FAIL'
+        Response = HttpResponseForbidden
 
-    return HttpResponse(
-        simplejson.dumps(
-            {'post_status': status,
-             'widget': editable_widget(obj, 'editors_comment',
-                                       form=edit_form)}))
+    return Response(
+        editable_widget(obj, 'editors_comment',
+                        form=edit_form))
 

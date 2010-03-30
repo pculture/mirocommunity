@@ -1,11 +1,3 @@
-function inline_edit_open() {
-    editable = $(this).parents('.editable');
-    editable.find('.input_field').each(
-                function() {insert_and_activate_action_buttons($(this));});
-    editable.children('.simple_overlay').overlay({api: true}).load();
-    return false;
-}
-
 function insert_and_activate_action_buttons(obj) {
     if (!obj.children('.done').length) {
         if (obj.find('.checklist').length) {
@@ -13,27 +5,31 @@ function insert_and_activate_action_buttons(obj) {
         } else {
             obj.append('<span class="done">Done</span>');
         }
-        obj.children('.done').click(inline_save);
+        obj.children('.done').click(function() {obj.submit();});
     }
 }
 
-function inline_save() {
-    var editable_wrapper = $(this).parents('.editable');
-    var inputs = editable_wrapper.find('.input_field :input');
-
-    editable_wrapper.children('.simple_overlay').overlay({api: true}).close();
-
-    var post_data = inputs.serialize();
-    var post_url = editable_wrapper.children('.post_url').text();
-
-    jQuery.post(
-        post_url, post_data,
-        function(data) {
-            widget = $(data.widget);
-            editable_wrapper.replaceWith(widget);
-            if (data.post_status == 'FAIL') {
+function inline_edit_open() {
+    editable = $(this).parents('.editable');
+    editable.find('.input_field').each(
+        function() {insert_and_activate_action_buttons($(this));}).ajaxForm({
+            dataType: 'html',
+            forceSync: true,
+            beforeSubmit: function(data) {
+                editable.children('.simple_overlay').overlay({api: true}).close();
+            },
+            success: function(data, statusText) {
+                widget = $(data);
+                editable.replaceWith(widget);
+            },
+            error: function(xhr, status, error) {
+                widget = $(xhr.responseText);
+                editable.replaceWith(widget);
                 inline_edit_open.call(widget.find('a.edit_link'));
-            }}, 'json');
+            }
+        });
+    editable.children('.simple_overlay').overlay({api: true}).load();
+    return false;
 }
 
 $(document).ready(function() {

@@ -80,12 +80,10 @@ def view_video(request, video_id, slug=None, sitelocation=None):
     if slug is not None and request.path != video.get_absolute_url():
         return HttpResponsePermanentRedirect(video.get_absolute_url())
 
-    edit_video_form = None
-    if sitelocation.user_is_admin(request.user):
-        edit_video_form = admin_forms.EditVideoForm(instance=video)
-
     context = {'current_video': video,
-               'edit_video_form': edit_video_form}
+               # set edit_video_form to True if the user is an admin for
+               # backwards-compatibility
+               'edit_video_form': sitelocation.user_is_admin(request.user)}
 
     if video.categories.count():
         category_obj = None

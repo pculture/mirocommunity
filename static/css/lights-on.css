@@ -906,7 +906,8 @@ margin-top: 2px;
 
 /////////////////////////////////////////////*/
 
-.med_button {
+.med_button,
+#edit_video_wrapper .display_data {
 line-height: 25px;
 padding-right: 6px;
 display: block;
@@ -919,7 +920,9 @@ background: url(../images/med_right.png) right top no-repeat;
 _background: url(../images/med_right.gif) right top no-repeat;
 }
 
-.med_button > span {
+.med_button > span,
+#edit_video_wrapper .display_data a {
+color: #333;
 line-height: 24px;
 display: block;
 padding: 0 8px 1px 14px ;
@@ -927,21 +930,26 @@ background: url(../images/med_left.png) no-repeat;
 _background: url(../images/med_left.gif) no-repeat;
 }
 
-.med_button:hover {
+.med_button:hover,
+#edit_video_wrapper .display_data:hover {
 background-position: right -31px;
 color: #888;
 }
 
-.med_button:hover span {
+.med_button:hover span,
+#edit_video_wrapper .display_data:hover a {
 background-position: left -31px;
+color: #888;
 }
 
-.med_button:active {
+.med_button:active,
+#edit_video_wrapper .display_data:active {
 background-position: right -63px;
 color: #aaa;
 }
 
-.med_button:active > span {
+.med_button:active > span,
+#edit_video_wrapper .display_data:active a  {
 background-position: left -63px;
 }
 
@@ -1969,7 +1977,8 @@ padding: 10px 0 10px 10px;
 margin-top: 20px;
 }
 
-#edit_video_wrapper p {
+#edit_video_wrapper p,
+#edit_video_wrapper .display_data {
 float: left;
 padding-right: 6px;
 }

@@ -55,6 +55,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
   {% endif %}
 </div>
+<div id="thumbnail">
+  {% editable_widget current_video "thumbnail" %}
+</div>
 
  {% if not current_video.metasearch_vid %}
  {% editable_widget current_video "description" %}

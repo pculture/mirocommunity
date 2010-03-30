@@ -51,6 +51,10 @@ WIDGET_DIRECTORY = {
             'form': forms.VideoWebsiteUrlField},
         'editors_comment': {
             'form': forms.VideoEditorsComment},
+        'thumbnail': {
+            'form': forms.VideoThumbnailForm,
+            'render_template':
+                'localtv/inline_edit/render_widget_thumbnail.html'},
         },
     }
 
