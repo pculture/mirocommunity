@@ -23,10 +23,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {{ form.url }}
 {% endblock %}
 {% block table %}
-    {% if user_is_admin and not data.title or not data.description %}
+    {% if user_is_admin %}
+    {% if not data.title or not data.description %}
     <tr>
       <td class="warning">Warning: not all information was received from the video service.  You may need to add the information manually once the video is added.</td>
     </tr>
+    {% endif %}
     {% endif %}
     <tr>
       <td>
