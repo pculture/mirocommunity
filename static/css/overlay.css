@@ -43,10 +43,6 @@ div.contentWrap {
   background:url(../images/close.png) 0 -40px no-repeat;
 }
 
-.inner_content {
-    margin: 30px 0;
-}
-
 /*////////////////////////////////////////////
 
 ~ Submit a Video
@@ -101,6 +97,10 @@ padding: 4px;
 #submit_video input[type=image] {
     border: none;
     margin-bottom: 5px;
+}
+
+#submit_video .inner_content {
+    margin: 30px 0;
 }
 
 /*/////////////////////////////////////////////
