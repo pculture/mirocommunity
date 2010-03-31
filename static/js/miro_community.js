@@ -23,6 +23,27 @@ $(document).ready( function(){
             }
         }
     });
+    $("#login form input").live('focus', function() {
+        if ($(this).val() == $(this)[0].defaultValue) {
+            $(this).val("");
+        }
+    }).live('blur', function() {
+        if ($(this).val() === "") {
+            $(this).val($(this)[0].defaultValue);
+        }
+    });
+    $("#login .tabs li a").live('click', function() {
+        This = $(this);
+        Parent = This.parent();
+        Class = This.attr("class");
+        if (Class !== "") {
+            $("#login .tabs_content > div:visible").hide(500);
+            $("#login .tabs_content > div#"+Class).show(500);
+            $("#login .tabs li.active").removeClass("active");
+            Parent.addClass("active");
+        }
+        return false;
+    });
 }).ajaxStart(function() {
     indicator = $("#load-indicator");
     if (!indicator.length) {

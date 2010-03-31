@@ -104,6 +104,111 @@ padding: 4px;
 ~ Login
 
 /////////////////////////////////////////////*/
+#login {
+	border-left: 1px solid #c3c7cf;
+	border-right: 1px solid #c3c7cf;
+	border-bottom: 1px solid #c3c7cf;
+	margin: 12px auto;
+	width: 470px;
+}
+#login .tabs {
+	height: 37px;
+}
+#login .tabs li {
+	height: 37px;
+	float: left;
+	width: 117px;
+}
+#login .tabs {background: url('../images/login_tabs_bg.jpg') repeat-x 0 0;}
+#login .tabs li a {
+	color: #000000;
+	display: block;
+	height: 14px;
+	padding: 13px 15px 10px;
+	text-decoration: none;
+}
+#login .tabs li a:hover {text-decoration: underline;}
+#login .tabs li.active {
+	background: url('../images/login_tabs_bg.jpg') repeat-x bottom center;
+	border-right: 1px solid #c3c7cf;
+}
+#login .tabs li.active.oi {
+	border-right: none;
+	border-left: 1px solid #c3c7cf;
+	width: 118px;
+}
+#login .tabs li.active.go {
+	border-right: none;
+	border-left: 1px solid #c3c7cf;
+	width: 103px;
+}
+#login .tabs li.active.fb, #login .tabs li.active.tw {
+	border-left: 1px solid #c3c7cf;
+}
+#login .tabs li.active a {color: #484848;}
+#login .tabs li.fb a {
+	background: url('../images/login_tabs_icons.png') no-repeat 10px 11px;
+	padding-left: 30px;
+}
+#login .tabs li.tw a {
+	background: url('../images/login_tabs_icons.png') no-repeat 10px -32px;
+	padding-left: 30px;
+}
+#login .tabs li.oi a {
+	background: url('../images/login_tabs_icons.png') no-repeat 10px -75px;
+	padding-left: 30px;
+}
+#login .tabs li.go a {
+	background: url('../images/login_tabs_icons.png') no-repeat 10px -116px;
+	padding-left: 30px;
+}
+
+#login .tabs_content .left {
+	padding: 27px 26px 27px 18px;
+	width: 188px;
+}
+#login .tabs_content .right {
+	border-left: 1px solid #c3c7cf;
+	padding: 27px 26px 27px 18px;
+	width: 188px;
+}
+#login .tabs_content .inactive {display: none;}
+#login .tabs_content h4 {
+	margin-bottom: 19px;
+	font-size: 14px;
+	font-weight: bold;
+}
+#login .tabs_content form p {margin-bottom: 19px;}
+#login .tabs_content form label input {
+	background: url('../images/login_form_input_bg.jpg') repeat-x 0 0;
+	border: 1px solid #bfbfbf;
+	color: #a3a3a3;
+	padding: 5px 11px;
+	width: 165px;
+}
+#login .tabs_content form label input.active {color: #333333;}
+#login .tabs_content form input.button {
+	background: url('../images/login_form_button_bg.jpg') repeat-x 0 0;
+	border: 1px solid #b6b6b6;
+	color: #333333;
+	float: right;
+	height: 26px;
+	font-weight: bold;
+	padding: 0 8px;
+	text-transform: uppercase;
+}
+#login .tabs_content form input.button:hover {text-decoration: underline;}
+#login .tabs_content form a.forgot {
+	color: #333333;
+	display: block;
+	float: left;
+	font-size: 11px;
+	margin-top: 8px;
+	max-width: 115px;
+	text-decoration: underline;
+}
+#login .tabs_content form a.forgot.oi {margin-top: 3px;}
+#login .tabs_content form a.forgot:hover {color: #000000;}
 
 
 .login {
