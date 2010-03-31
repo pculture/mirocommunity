@@ -53,8 +53,10 @@ def submit_lock(func):
     def wrapper(request, *args, **kwargs):
         if request.method != 'POST':
             return func(request, *args, **kwargs)
-        cache_key = 'submit_lock.%s.%s' % (request.path,
-                                     request.POST['url'])
+        cache_key = 'submit_lock.%s.%s.%s' % (
+            kwargs['sitelocation'].site.domain,
+            request.path,
+            request.POST['url'])
         while True:
             stored = cache.cache.add(cache_key, 'locked', 5)
             if stored:
