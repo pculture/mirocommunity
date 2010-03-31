@@ -116,6 +116,7 @@ padding: 4px;
 	width: 500px;
 }
 #login .tabs {
+        font-size: 12px;
 	height: 37px;
         list-style: none;
         margin-bottom: 0px;
@@ -183,7 +184,7 @@ padding: 4px;
 }
 #login .tabs_content .inactive {display: none;}
 #login .tabs_content h4 {
-	margin-bottom: 19px;
+        margin: 0 0 19px;
 	font-size: 14px;
 	font-weight: bold;
 }
