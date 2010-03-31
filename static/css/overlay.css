@@ -113,10 +113,13 @@ padding: 4px;
 	border-right: 1px solid #c3c7cf;
 	border-bottom: 1px solid #c3c7cf;
 	margin: 12px auto;
-	width: 470px;
+	width: 500px;
 }
 #login .tabs {
 	height: 37px;
+        list-style: none;
+        margin-bottom: 0px;
+        padding: 0px;
 }
 #login .tabs li {
 	height: 37px;
@@ -168,10 +171,12 @@ padding: 4px;
 }
 
 #login .tabs_content .left {
+        float: left;
 	padding: 27px 26px 27px 18px;
 	width: 188px;
 }
 #login .tabs_content .right {
+        float: left;
 	border-left: 1px solid #c3c7cf;
 	padding: 27px 26px 27px 18px;
 	width: 188px;
@@ -213,40 +218,3 @@ padding: 4px;
 }
 #login .tabs_content form a.forgot.oi {margin-top: 3px;}
 #login .tabs_content form a.forgot:hover {color: #000000;}
-
-
-.login {
-/*float: right;*/
-margin: 0 auto;
-padding: 20px;
-width: 400px;
-}
-
-.login h1 {
-margin: 0;
-padding: 0;
-font-size: 16px;
-clear: both;
-line-height: 1.3em;
-}
-
-.login label {
-    clear: left;
-    float: left;
-    margin-right: 10px;
-}
-.login input {
-    float: left;
-    margin-right: 5px;
-}
-
-.login form p {
-clear: both;
-padding: 20px;
-}
-
-.login .forgot-password {
-    float: left;
-    clear: left;
-    padding-top: 5px;
-}
