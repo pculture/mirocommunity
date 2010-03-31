@@ -16,12 +16,14 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import time
 import urllib
 import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
+from django.core import cache
 from django.db.models import Q
 from django.forms.fields import url_re
 from django.http import HttpResponseRedirect, Http404
@@ -45,6 +47,25 @@ def _check_submit_permissions(request):
             return user.is_authenticated() and user.is_active
         else:
             return sitelocation.user_is_admin(user)
+
+
+def submit_lock(func):
+    def wrapper(request, *args, **kwargs):
+        if request.method != 'POST':
+            return func(request, *args, **kwargs)
+        cache_key = 'submit_lock.%s.%s' % (request.path,
+                                     request.POST['url'])
+        while True:
+            stored = cache.cache.add(cache_key, 'locked', 5)
+            if stored:
+                # got the lock
+                break
+            time.sleep(0.25)
+        response = func(request, *args, **kwargs)
+        # release the lock
+        cache.cache.delete(cache_key)
+        return response
+    return wrapper
 
 
 @request_passes_test(_check_submit_permissions)
@@ -135,7 +156,7 @@ def submit_video(request, sitelocation=None):
                  'form': submit_form},
                 context_instance=RequestContext(request))
 
-
+@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def scraped_submit_video(request, sitelocation=None):
@@ -249,6 +270,7 @@ Warning: Embedding disabled by request.</span>' + video.embed_code
             context_instance=RequestContext(request))
 
 
+@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def embedrequest_submit_video(request, sitelocation=None):
@@ -337,8 +359,7 @@ def embedrequest_submit_video(request, sitelocation=None):
             context_instance=RequestContext(request))
 
 
-
-
+@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 def directlink_submit_video(request, sitelocation=None):
