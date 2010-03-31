@@ -58,6 +58,10 @@ div.contentWrap {
     width: 600px;
 }
 
+#submit_video h2 {
+    float: none;
+    font-size: 18px;
+}
 #submit_video label {
 font-weight: bold;
 }
