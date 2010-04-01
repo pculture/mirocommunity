@@ -21,11 +21,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}Thanks for submitting a video{% endblock %}
 {% block next_link %}{% endblock %}
 {% block content %}
-<div class="inner_content">
     {% if video %}
     Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.
     {% else %}
     Thanks for submitting a video, our moderators will review it soon.
     {% endif %}
-</div>
 {% endblock %}

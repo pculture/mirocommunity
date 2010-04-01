@@ -52,6 +52,18 @@ div.contentWrap {
 
 #submit_video {
     width: 600px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+#overlay #submit_video {
+    width: auto;
+    padding: 0;
+}
+
+#submit_video > table, #submit_video > div {
+    width: 520px;
+    padding: 5px;
 }
 
 #submit_video h2 {
@@ -78,12 +90,15 @@ list-style: circle;
 }
 
 #submit_video #id_url{
-width: 460px;
+border: 1px solid;
+padding: 10px;
+width: 528px;
 font-size: 14px;
-padding: 4px;
+margin: 10px 0 0 10px;
+
 }
 
-#submit_video label, #submit_video input, #submit_video textarea, #close_submit_box {
+#submit_video label, #submit_video input, #submit_video textarea, #submit_video > div {
     float: left;
     margin: 5px;
 }
@@ -101,6 +116,22 @@ padding: 4px;
 
 #submit_video .inner_content {
     margin: 30px 0;
+}
+
+#submit_video td label {
+	display: block;
+	font-weight: bold;
+}
+#submit_video td input, #submit_video td textarea {margin-top: 5px;}
+
+#submit_video ul.errorlist {
+    padding: 0;
+    margin: 0;
+}
+
+#submit_video ul.errorlist li {
+    list-style: circle;
+    margin: 0 0 0 20px;
 }
 
 /*/////////////////////////////////////////////
