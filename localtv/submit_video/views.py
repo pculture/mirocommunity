@@ -158,9 +158,9 @@ def submit_video(request, sitelocation=None):
                  'form': submit_form},
                 context_instance=RequestContext(request))
 
-@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
+@submit_lock
 def scraped_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
@@ -272,9 +272,9 @@ Warning: Embedding disabled by request.</span>' + video.embed_code
             context_instance=RequestContext(request))
 
 
-@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
+@submit_lock
 def embedrequest_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
@@ -361,9 +361,9 @@ def embedrequest_submit_video(request, sitelocation=None):
             context_instance=RequestContext(request))
 
 
-@submit_lock
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
+@submit_lock
 def directlink_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
