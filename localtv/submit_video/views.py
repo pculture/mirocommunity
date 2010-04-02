@@ -94,13 +94,6 @@ def submit_video(request, sitelocation=None):
                 site=sitelocation.site)
             existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
             if existing.count():
-                for v in existing.filter(status=models.VIDEO_STATUS_REJECTED):
-                    if request.user.is_authenticated():
-                        v.user = request.user
-                    else:
-                        v.user = None
-                    v.status = models.VIDEO_STATUS_UNAPPROVED
-                    v.save()
                 if sitelocation.user_is_admin(request.user):
                     # even if the video was rejected, an admin submitting it
                     # should make it approved
