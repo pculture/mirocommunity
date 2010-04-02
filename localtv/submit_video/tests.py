@@ -145,6 +145,29 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 site=self.site_location.site,
                 website_url = self.GET_data['url']).count(), 1)
 
+    def test_POST_existing_rejected(self):
+        """
+        If the URL represents an existing but rejected video, the video should
+        be put into the review queue.
+        """
+        video = models.Video.objects.create(
+            site=self.site_location.site,
+            status=models.VIDEO_STATUS_REJECTED,
+            name='test video',
+            website_url = self.GET_data['url'])
+        c = Client()
+        response = c.post(self.url, self.GET_data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                website_url = self.GET_data['url']).count(), 1)
+        video = models.Video.objects.get(pk=video.pk)
+        self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
 
     def test_POST_succeed(self):
         """
@@ -332,6 +355,31 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue('form' in response.context[0])
         self.assertTrue(response.context['was_duplicate'])
         self.assertEquals(response.context['video'], video)
+
+    def test_POST_existing_rejected(self):
+        """
+        If the URL represents an existing but rejected video, the video should
+        be put into the review queue.
+        """
+        video = models.Video.objects.create(
+            site=self.site_location.site,
+            status=models.VIDEO_STATUS_REJECTED,
+            name='test video',
+            website_url = 'http://www.pculture.org/')
+        c = Client()
+        response = c.post(self.url, {'url': video.website_url})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/submit_video/submit.html')
+        self.assertTrue('form' in response.context[0])
+        self.assertTrue(response.context['was_duplicate'])
+        self.assertTrue(response.context['video'] is None)
+
+        self.assertEquals(models.Video.objects.filter(
+                site=self.site_location.site,
+                website_url = video.website_url).count(), 1)
+        video = models.Video.objects.get(pk=video.pk)
+        self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
 
     def test_POST_fail_existing_video_approved_admin(self):
         """
