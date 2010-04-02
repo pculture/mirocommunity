@@ -92,6 +92,7 @@ def submit_video(request, sitelocation=None):
                 Q(website_url=submit_form.cleaned_data['url']) |
                 Q(file_url=submit_form.cleaned_data['url']),
                 site=sitelocation.site)
+            existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
             if existing.count():
                 for v in existing.filter(status=models.VIDEO_STATUS_REJECTED):
                     if request.user.is_authenticated():
@@ -178,9 +179,8 @@ def scraped_submit_video(request, sitelocation=None):
     url = scraped_data.get('link', request.REQUEST['url'])
     existing =  models.Video.objects.filter(site=sitelocation.site,
                                             website_url=url)
+    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
-        existing.filter(status=models.VIDEO_STATUS_REJECTED).update(
-            status=models.VIDEO_STATUS_UNAPPROVED)
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
@@ -292,9 +292,8 @@ def embedrequest_submit_video(request, sitelocation=None):
     url = request.REQUEST['url']
     existing =  models.Video.objects.filter(site=sitelocation.site,
                                             website_url=url)
+    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
-        existing.filter(status=models.VIDEO_STATUS_REJECTED).update(
-            status=models.VIDEO_STATUS_UNAPPROVED)
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
@@ -383,9 +382,8 @@ def directlink_submit_video(request, sitelocation=None):
     url = request.REQUEST['url']
     existing =  models.Video.objects.filter(Q(website_url=url)|Q(file_url=url),
                                             site=sitelocation.site)
+    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
-        existing.filter(status=models.VIDEO_STATUS_REJECTED).update(
-            status=models.VIDEO_STATUS_UNAPPROVED)
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())

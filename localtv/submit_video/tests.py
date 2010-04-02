@@ -147,8 +147,8 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
 
     def test_POST_existing_rejected(self):
         """
-        If the URL represents an existing but rejected video, the video should
-        be put into the review queue.
+        If the URL represents an existing but rejected video, the rejected
+        video should be deleted to allow a resubmission..
         """
         video = models.Video.objects.create(
             site=self.site_location.site,
@@ -156,18 +156,24 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
             name='test video',
             website_url = self.GET_data['url'])
         c = Client()
-        response = c.post(self.url, self.GET_data)
+        response = c.post(self.url, self.POST_data)
+        self.assertEquals(models.Video.objects.filter(pk=video.pk).count(), 0)
+        video = models.Video.objects.get()
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
-        self.assertEquals(models.Video.objects.filter(
-                site=self.site_location.site,
-                website_url = self.GET_data['url']).count(), 1)
-        video = models.Video.objects.get(pk=video.pk)
+
         self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
+        self.assertEquals(video.name, self.video_data['name'])
+        self.assertEquals(video.description, self.video_data['description'])
+        self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
+        self.assertEquals(set(video.tags.values_list('name', flat=True)),
+                          set(('tag1', 'tag2')))
+        self.assertEquals(video.contact, 'Foo <bar@example.com>')
+        self.assertEquals(len(mail.outbox), 0)
 
     def test_POST_succeed(self):
         """
@@ -366,20 +372,17 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
             status=models.VIDEO_STATUS_REJECTED,
             name='test video',
             website_url = 'http://www.pculture.org/')
-        c = Client()
-        response = c.post(self.url, {'url': video.website_url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
-                          'localtv/submit_video/submit.html')
-        self.assertTrue('form' in response.context[0])
-        self.assertTrue(response.context['was_duplicate'])
-        self.assertTrue(response.context['video'] is None)
 
-        self.assertEquals(models.Video.objects.filter(
-                site=self.site_location.site,
-                website_url = video.website_url).count(), 1)
-        video = models.Video.objects.get(pk=video.pk)
-        self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
+        c = Client()
+        response = c.post(self.url,
+                          {'url': video.website_url})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          "http://%s%s?%s" %(
+                self.site_location.site.domain,
+                reverse('localtv_submit_embedrequest_video'),
+                urlencode({'url': video.website_url})))
+        self.assertEquals(models.Video.objects.count(), 0)
 
     def test_POST_fail_existing_video_approved_admin(self):
         """
