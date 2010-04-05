@@ -23,10 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block name %}{% trans "Admin - Search Video Sites" %}{% endblock %}
 {% block body_class %}searches{% endblock body_class %}
-{% block admin_actions %}{% endblock %}
-{% block content %}
-
-
+{% block admin_actions %}
 {% if is_saved_search %}
     <span href="#" class="floatright"><span>This search is saved</span></span>
   {% else %}
