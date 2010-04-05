@@ -48,19 +48,12 @@ def categories(request, sitelocation=None):
                     add_category_form.save()
                     return HttpResponseRedirect(request.path + '?successful')
 
-            elif submit_value[0] == 'Save':
+            else:
                 formset = forms.CategoryFormSet(request.POST, request.FILES,
                                                 queryset=categories)
                 if formset.is_valid():
                     formset.save()
-                    return HttpResponseRedirect(request.path + '?successful')
-
-            elif submit_value[0] == 'Apply':
-                formset = forms.CategoryFormSet(request.POST, request.FILES,
-                                                queryset=categories)
-                if formset.is_valid():
-                    formset.save()
-                action = request.POST['action']
+                action = request.POST.get('bulk_action')
                 if action == 'delete':
                     for data in  formset.cleaned_data:
                         if data['BULK']:

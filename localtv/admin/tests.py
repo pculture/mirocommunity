@@ -2005,7 +2005,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_delete(self):
         """
         A POST request to the categories view with a valid formset and a
-        POST['action'] of 'delete' should reject the videos with the bulk
+        POST['bulk_action'] of 'delete' should reject the videos with the bulk
         option checked.
         """
         c = Client()
@@ -2018,7 +2018,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-1-BULK'] = 'yes'
         POST_data['form-2-BULK'] = 'yes'
         POST_data['submit'] = 'Apply'
-        POST_data['action'] = 'delete'
+        POST_data['bulk_action'] = 'delete'
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
@@ -2377,7 +2377,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_delete(self):
         """
         A POST request to the bulk_edit view with a valid formset and a
-        POST['action'] of 'delete' should reject the videos with the bulk
+        POST['bulk_action'] of 'delete' should reject the videos with the bulk
         option checked.
         """
         c = Client()
@@ -2408,8 +2408,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_unapprove(self):
         """
         A POST request to the bulk_edit view with a valid formset and a
-        POST['action'] of 'unapprove' should unapprove the videos with the bulk
-        option checked.
+        POST['bulk_action'] of 'unapprove' should unapprove the videos with the
+        bulk option checked.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2439,8 +2439,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_feature(self):
         """
         A POST request to the bulk_edit view with a valid formset and a
-        POST['action'] of 'feature' should feature the videos with the bulk
-        option checked.
+        POST['bulk_action'] of 'feature' should feature the videos with the
+        bulk option checked.
         """
         c = Client()
         c.login(username='admin', password='admin')
@@ -2470,8 +2470,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_unfeature(self):
         """
         A POST request to the bulk_edit view with a valid formset and a
-        POST['action'] of 'feature' should feature the videos with the bulk
-        option checked.
+        POST['bulk_action'] of 'feature' should feature the videos with the
+        bulk option checked.
         """
         for v in models.Video.objects.all():
             v.last_featured = datetime.datetime.now()
@@ -2922,7 +2922,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
     def test_POST_bulk_delete(self):
         """
         A POST request to the flatpages view with a valid formset and a
-        POST['action'] of 'delete' should reject the videos with the bulk
+        POST['bulk_action'] of 'delete' should reject the videos with the bulk
         option checked.
         """
         c = Client()
@@ -2935,7 +2935,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-1-BULK'] = 'yes'
         POST_data['form-2-BULK'] = 'yes'
         POST_data['submit'] = 'Apply'
-        POST_data['action'] = 'delete'
+        POST_data['bulk_action'] = 'delete'
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)

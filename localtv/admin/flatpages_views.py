@@ -40,7 +40,7 @@ def index(request, sitelocation=None):
                                    'headers': headers},
                                   context_instance=RequestContext(request))
     else:
-        if request.POST['submit'] == 'Add':
+        if request.POST.get('submit') == 'Add':
             form = forms.FlatPageForm(request.POST)
 
             if form.is_valid():
@@ -53,11 +53,16 @@ def index(request, sitelocation=None):
                                        'form': form,
                                        'headers': headers},
                                       context_instance=RequestContext(request))
-        elif request.POST['submit'] == 'Save':
+        else:
             formset = forms.FlatPageFormSet(request.POST,
                                             queryset=flatpages)
             if formset.is_valid():
                 formset.save()
+                action = request.POST.get('bulk_action')
+                if action == 'delete':
+                    for data in  formset.cleaned_data:
+                        if data['BULK']:
+                            data['id'].delete()
                 return HttpResponseRedirect(request.path + '?successful')
             else:
                 return render_to_response(
@@ -66,15 +71,3 @@ def index(request, sitelocation=None):
                      'form': form,
                      'headers': headers},
                     context_instance=RequestContext(request))
-
-        elif request.POST['submit'] == 'Apply':
-            formset = forms.FlatPageFormSet(request.POST,
-                                            queryset=flatpages)
-            if formset.is_valid():
-                formset.save()
-            action = request.POST['action']
-            if action == 'delete':
-                for data in  formset.cleaned_data:
-                    if data['BULK']:
-                        data['id'].delete()
-            return HttpResponseRedirect(request.path + '?successful')

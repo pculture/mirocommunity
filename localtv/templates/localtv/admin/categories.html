@@ -66,11 +66,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block labels %}
 <div class="bulkedit_controls">
-  <select name="action">
+  <select name="action" id="bulk_action_selector">
     <option value="">Bulk Actions</option>
     <option value="delete">Delete</option>
   </select>
-  <input type="submit" value="Apply" name="submit"/>
+  <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
 </div>
 {% endblock %}
 
