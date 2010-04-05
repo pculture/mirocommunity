@@ -20,7 +20,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% if not sitelocation %}
 {% endif %}
 <div class="floatleft">
-  <h4>Tags <a href="#" id="add_tag" class="edit_link"><span>Edit</span></a></h4>
+  <h4>Tags{% if not sitelocation %}<a href="#" id="add_tag" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
   {% if instance.tags.count %}
   <ul>
     {% for tag in instance.tags.all %}
