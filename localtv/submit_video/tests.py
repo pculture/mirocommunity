@@ -617,8 +617,9 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         youtube_url = 'http://www.youtube.com/watch?v=AfsZzeNF8A4'
-        response = c.post(self.url, {
-                'url': youtube_url + '&feature=player_embedded'})
+        long_url = ('http://www.youtube.com/watch?gl=US&v=AfsZzeNF8A4'
+                    '&feature=player_embedded')
+        response = c.post(self.url, {'url': long_url})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
