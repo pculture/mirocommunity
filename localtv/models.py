@@ -1155,3 +1155,11 @@ tagging.register(Video)
 def finished(sender, **kwargs):
     SiteLocation.objects.clear_cache()
 request_finished.connect(finished)
+
+def tag_unicode(self):
+    # hack to make sure that Unicode data gets returned for all tags
+    if isinstance(self.name, str):
+        self.name = self.name.decode('utf8')
+    return self.name
+
+tagging.models.Tag.__unicode__ = tag_unicode
