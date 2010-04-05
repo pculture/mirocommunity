@@ -1507,7 +1507,6 @@ clear: both;
 display: none;
 padding: 20px;
 width: 600px !important;
-position: fixed !important;
 margin: 0 !important;
 top: auto;
 left: auto;
@@ -1521,8 +1520,8 @@ float: none !important;
 overflow: inherit !important;
 z-index: 9999;
 }
-.bulk_edit.simple_overlay {
-position: absolute !important;
+#admin_rightpane .simple_overlay {
+position: fixed !important;
 }
 .simple_overlay *{
 overflow: inherit !important;
