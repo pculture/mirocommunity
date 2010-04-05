@@ -51,9 +51,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </a>
           <h1 style="text-decoration: none;">
             <a href="{{ localtv_index }}">
-              <span class="name">{{ sitelocation.site.name }}</span>
+              {{ sitelocation.site.name }}
             </a>
             <span class="tagline">{{ sitelocation.tagline|safe }}</span>
+			<br class="clear" />
           </h1>
         </div>
         {% if user_is_admin %}
@@ -71,7 +72,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endif %}
         {% block content %}
         {% endblock content %}
-
+        <br class="clear">
       {% if not request.is_ajax %}
       </div>
     </div>

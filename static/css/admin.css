@@ -60,6 +60,13 @@ font-weight: bold;
 
 //////////////////////////////////////*/
 
+.edit_link {color: #333333;}
+.edit_link:hover {color: #000000;;}
+
+.cat_left, .auth_right {
+	float: left;
+	width: 290px;
+}
 
 .simple_overlay h2{
 font-size: 18px !important;
@@ -90,6 +97,43 @@ padding: 0;
 clear: both;
 float: left;
 width: 100%;
+}
+
+.input_field .padding {
+	display: block;
+	margin-top: 10px;
+}
+
+.input_field ul li.scrollable {
+	clear: none;
+	height: 400px;
+	float: left;
+	margin-top: 15px;
+	overflow: auto !important;
+	width: 290px;
+}
+.input_field ul li.scrollable.right {
+	border-left: 1px solid #cccccc;
+	float: right;
+	padding-left: 10px;
+}
+.input_field ul li.scrollable > label {font-weight: bold;}
+.input_field ul li.scrollable > ul {
+	height: 270px;
+	overflow: visible !important;
+}
+.input_field ul li.scrollable ul li {
+	float: none;
+}
+.input_field ul li.scrollable ul li label {
+	width: 270px;
+}
+.input_field ul li.scrollable ul li label input {
+	margin: 6px 0 0 0;
+	width: 20px;
+}
+.input_field ul li.scrollable ul li label span {
+	line-height: 1em;
 }
 
 
@@ -438,16 +482,34 @@ float: left;
 
 #header #logo h1{
 float: left;
+height: 35px;
 margin: 0 !important;
 font-size: 13px;
 line-height: 2.4em;
 margin: 0;
 }
-
-#header #logo a{
+#header #logo a {
+	margin: 12px;
+	float: left;
+	display: block;	
+}
+#header #logo h1 a{
+padding: 0 12px;
+margin: 12px 0 0 0;
+height: 1em;
+line-height: 1em;
 float: left;
-margin: 12px;
 display: block;
+width: 100%;
+}
+#header #logo span {
+	display: block;
+	float: left;
+	font-size: 0.9em;
+	font-weight: normal;
+	height: 1em;
+	line-height: 1em;
+	padding: 3px 12px 0;
 }
 
 
@@ -558,11 +620,11 @@ border-bottom: 1px solid #ddd;
 
 
 #admin_subnav {
-position: absolute;
-left: -1px;
-top: -2.5em;
+position: relative;
+left: -25px;
+top: -44px;
 padding: 0;
-margin: -1px 0 0;
+margin: -10px 0;
 z-index: 4567;
 }
 
@@ -695,13 +757,14 @@ background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important
 
 #content{
 border: 1px solid #dfdfdf;
-position: absolute;
 background: #fff;
 left: 13em;
 top: 8em;
 padding: 2em;
-width: 755px;
-margin: 2em 0 0em 0;
+width: 80%;
+max-width: 975px;
+min-width: 755px;
+margin: 4.5em 30px 0em 13em;
 min-height: 22em;
 }
 
@@ -791,13 +854,15 @@ line-height: 1.6em;
 }
 
 
-
+#admin_table {
+	position: relative;
+}
 #admin_leftpane{
 clear: both;
 float: left;
 border-top: 3px solid #777;
 background: #f8f8f8;
-width: 480px !important;
+width: 500px !important;
 }
 
 
@@ -810,9 +875,13 @@ padding: 0 !important;
 
 #admin_rightpane{
 background: #eee;
-float: left;
-width: 280px;
 border-top: 3px solid #777;
+float: right;
+right: 0;
+left: auto;
+position: absolute;
+min-width: 255px;
+max-width: 475px;
 }
 
 
@@ -824,7 +893,7 @@ clear: both;
 
 #admin_rightpane .date{
 font-size: 10px;
-margin-bottom: 10px;
+margin: 10px 0;
 display: block;
 }
 
@@ -848,13 +917,15 @@ margin: 0 0 5px;
 h2.preview_heading{
 font-size: 12px;
 background: #ddd;
-width: 280px;
+width: 100%;
 padding: 8px 0;
 color: #888 !important;
 text-align: center;
 
 }
-
+#admin_rightpane .vid_title {
+	height: 1.5em;
+}
 #admin_rightpane .description{
 font-size: 11px;
 float: left;
@@ -866,11 +937,15 @@ line-height: 1.4em;
 clear: both;
 }
 
+#admin_rightpane {color: #5c5c5c;}
+#admin_rightpane h4, #admin_rightpane h3 {color: #000000;}
+#admin_rightpane a {color: #5c5c5c;}
 
 #admin_rightpane ul.meta_listing{
 margin: 0;
 padding: 0;
 clear: both;
+width: 100%;
 }
 
 #admin_rightpane ul.meta_listing li{ 
@@ -880,7 +955,11 @@ float: left;
 padding: 0;
 list-style: none;
 }
-
+#admin_rightpane ul.meta_listing li.item {
+	border-top: 1px solid #cfc5c5;
+	margin-top: 10px;
+	width: 100%;
+}
 #admin_rightpane ul.meta_listing li h3{
 margin: 0;
 padding: 0;
@@ -900,10 +979,10 @@ height: 200px;
 
 
 #admin_videolisting_row{
-width: 480px;
-border-top: 1px solid #ddd; 
-
-overflow: auto;
+	width: auto !important;
+	min-width: 500px !important;
+	border-top: 1px solid #ddd; 
+	overflow: auto;
 }
 
 #admin_videolisting_row .video{
@@ -964,7 +1043,7 @@ display: block;
 margin-bottom: 10px;
 color: #777;
 font-size: 11px;
-line-height: 1.5em;
+line-height: 1.1em;
 overflow: hidden;
 }
 
@@ -1165,7 +1244,9 @@ clear: both;
 
 #labels{
 float: left;
-width: 760px;
+width: 100%;
+
+min-width: 760px;
 background: #f0f0f0;
 border: 1px solid #ddd;
     -moz-border-radius: 5px;
@@ -1426,7 +1507,10 @@ clear: both;
 display: none;
 padding: 20px;
 width: 600px !important;
-margin: -80px 0 0 -270px !important;
+position: fixed !important;
+margin: 0 !important;
+top: auto;
+left: auto;
 background: #fff !important;
 -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
@@ -1435,8 +1519,11 @@ float: none !important;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
 overflow: inherit !important;
+z-index: 9999;
 }
-
+.bulk_edit.simple_overlay {
+position: absolute !important;
+}
 .simple_overlay *{
 overflow: inherit !important;
 -moz-box-shadow: none;

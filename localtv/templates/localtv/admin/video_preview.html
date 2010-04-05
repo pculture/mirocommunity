@@ -38,7 +38,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
 </div>
 
-<span class="date">
+<div class="date">
     {% if not current_video.metasearch_vid %}
     {% editable_widget current_video "when_published" %}
     {% else %}
@@ -46,7 +46,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% include "localtv/inline_edit/video_when_published.html" %}
     {% endwith %}
     {% endif %}
-</span>
+</div>
 
 <div id="video_wrapper">
   {% if current_video.embed_code %}
@@ -89,6 +89,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3> {{ current_video.submitter }}</li>{% endif %}
   {% if current_video.search %}<li class="item"><h3>From search</h3> {{ current_video.search }}</li>{% endif %}
   {% if current_video.feed %}<li class="item"><h3>From feed</h3> {{ current_video.feed }}</li>{% endif %}
+	<li style="float: none; clear: both;"></li>
   </ul>
 </div>
   

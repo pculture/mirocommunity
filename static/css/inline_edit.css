@@ -165,3 +165,38 @@ line-height: 2em;
 text-align: left !important;
 width: 330px;
 }
+
+.input_field ul li.scrollable {
+	clear: none;
+	height: 400px;
+	float: left;
+	margin-top: 15px;
+	overflow: auto !important;
+	width: 290px !important;
+}
+.input_field ul li.scrollable.right {
+	border-left: 1px solid #cccccc;
+	float: right;
+	padding-left: 10px;
+}
+.input_field ul li.scrollable > label {font-weight: bold;}
+.input_field ul li.scrollable > ul {
+	height: 270px;
+	overflow: visible !important;
+	overflow-x: hidden;
+	padding: 0 !important;
+	width: 100% !important;
+}
+.input_field ul li.scrollable ul li {
+	float: none;
+}
+.input_field ul li.scrollable ul li label {
+	width: 270px;
+}
+.input_field ul li.scrollable ul li label input {
+	margin: 6px 0 0 0;
+	width: 20px;
+}
+.input_field ul li.scrollable ul li label span {
+	line-height: 1em;
+}

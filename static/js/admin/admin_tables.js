@@ -26,6 +26,7 @@ function load_video(eventdata) {
                 if (typeof edit_widgets_setup === 'function') {
                     edit_widgets_setup();
                 }
+                $("#admin_rightpane .simple_overlay").overlay({absolute: true});
                 var selected = $('div.selected');
                 selected.removeClass('selected');
                 selected.addClass('unselected');
@@ -43,10 +44,12 @@ function load_click_callbacks() {
     $('div.video .approve_reject .feature').click(
         run_and_disappear);
     $('div.video').click(load_video);
+    $("#admin_rightpane .simple_overlay").overlay({absolute: true});
 }
 
 function scroll_admin() {
     admin_table = document.getElementById('admin_table');
+	admin_table_offset = $("#admin_table").offset();
     admin_leftpane = document.getElementById('admin_leftpane');
     admin_rightpane = document.getElementById('admin_rightpane');
     if (admin_rightpane.clientHeight > window.innerHeight) {
@@ -54,17 +57,26 @@ function scroll_admin() {
     } else {
         diff = 0;
     }
-    if (admin_table.offsetTop + diff > window.scrollY) {
-        admin_rightpane.style.top = (admin_table.offsetTop - window.scrollY) + 'px';
+    if (admin_table_offset.top + diff > window.scrollY) {
+        admin_rightpane.style.top = (admin_table_offset.top - window.scrollY) + 'px';
     } else {
         admin_rightpane.style.top = (-diff) + 'px';
     }
-    admin_rightpane.style.right = admin_table.offsetLeft + 'px';
     admin_leftpane.style.width = (admin_table.clientWidth - 590) + 'px';
     admin_rightpane.style.display = "block";
     if (admin_leftpane.clientHeight < admin_rightpane.clientHeight) {
         admin_leftpane.style.height = admin_rightpane.clientHeight + 'px';
     }
+
+	admin_videolisting_row = $("#admin_videolisting_row");
+	admin_videolisting_row_offset = admin_videolisting_row.offset();
+	$("#admin_rightpane").css({
+		right: "auto",
+		left: (admin_videolisting_row_offset.left + admin_videolisting_row.width())+"px",
+		position: "fixed",
+		width: ($("#content").width()-500)+"px"
+	});
+	
 }
 
 if ('attachEvent' in window) {

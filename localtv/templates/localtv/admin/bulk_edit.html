@@ -26,6 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% block subtitle %}{% trans "Admin - Bulk Edit" %}{% endblock %}{% endblock %}
 {% block head %}{{ block.super }}
+  <script type="text/javascript" src="/js/admin/inline_edit.js"></script>
   <script type="text/javascript" src="/js/admin/bulk_edit.js"></script>
 {% endblock %}
 {% block content %}
@@ -97,11 +98,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <label class="floatnone">Tags</label>
             {{ form.tags }}
           </li>
-          <li class="categories_edit">
+          <li class="categories_edit scrollable">
             <label class="padding">Categories</label>
             {{ form.categories }}
           </li>
-          <li class="users_edit">
+          <li class="users_edit scrollable right">
             <label class="padding">Users</label>
             {{ form.authors }}
           </li>
@@ -200,12 +201,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                     {{ form.tags.errors }}
                     {{ form.tags }}
                   </li>
-                  <li class="categories_edit">
+                  <li class="categories_edit scrollable">
                     <label class="padding">Categories</label>
                     {{ form.categories.errors }}
                     {{ form.categories }}
                   </li>
-                  <li class="users_edit">
+                  <li class="users_edit scrollable right">
                     <label class="padding">Users</label>
                     {{ form.authors.errors }}
                     {{ form.authors }}

@@ -170,16 +170,17 @@ $(document).ready(function() {
     {{ field }}
   </li>
   {% endfor %}
-  <li>
+  <li class="scrollable">
     {{ form.auto_categories.label_tag }}
     {{ form.auto_categories.errors }}
     {{ form.auto_categories }}
   </li>
-  <li>
+  <li class="scrollable right">
     {{ form.auto_authors.label_tag }}
     {{ form.auto_authors.errors }}
     {{ form.auto_authors }}
   </li>
+  <li class="clear"></li>
 </ul>
 {% endblock %}
 

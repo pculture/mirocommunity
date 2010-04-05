@@ -54,16 +54,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 </div>
-       <div class="cat_left">
-          {{ form.auto_categories.errors }}
-          <label class="padding">Categories</label>
-          {{ form.auto_categories }}
-      </div>
-      <div class="auth_right">
-          {{ form.auto_authors.errors }}
-          <label class="padding">Users</label>
-          {{ form.auto_authors }}
- </div>
+
+<div class="input_field">
+	<ul>
+		<li class="scrollable">
+			{{ form.auto_categories.errors }}
+			<label class="padding">Categories</label>
+			{{ form.auto_categories }}
+		</li>
+		<li class="scrollable right">
+			{{ form.auto_authors.errors }}
+			<label class="padding">Users</label>
+			{{ form.auto_authors }}
+		</li>
+		<li style="float: none; clear:both;"></li>
+	</ul>
+</div>
   </form>
 
 {% endblock content %}

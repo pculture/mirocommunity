@@ -73,35 +73,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                       {% pagetabs page_obj %}
                     {% endif %}
                   {% endblock pagination %}
-              </div>
-  <div id="admin_table">
-               {% block leftpane %}
-
-
-       
-                   </div>
-
-       
-        <div id="admin_leftpane">
-
-			
-              <div id="admin_videolisting_row">
-                  {% block videolisting_rows %}
-                    {% include "localtv/admin/video_listing.html" %}
-                  {% endblock %}
-              </div>
-            
-          
-              
-          {% endblock leftpane %}
-        </div>
+    </div>
+    <br class="clear" />
+    <div id="admin_table">
+        {% block leftpane %}
+            <div id="admin_leftpane">
+                <div id="admin_videolisting_row">
+                    {% block videolisting_rows %}
+                        {% include "localtv/admin/video_listing.html" %}
+                    {% endblock %}
+                </div>
+            </div>
+        {% endblock leftpane %}
         <div id="admin_rightpane">
           {% block rightpane %}
             {% if current_video %}
               {% include "localtv/admin/video_preview.html" %}
             {% endif %}
           {% endblock rightpane %}
-        </div>
+          <br class="clear" />
+    </div>
 {% else %}
   <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{% url localtv_admin_manage_page %}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
   
