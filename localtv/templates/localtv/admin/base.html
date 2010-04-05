@@ -86,8 +86,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% endblock footer %}
           </div>
           <div>
-            <p class="powered"><span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
-            <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
+            <p class="powered">
+              <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
             </p>
           </div>
         </div>
