@@ -1131,6 +1131,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         feed = models.Feed.objects.get()
         self.assertEquals(feed.name, 'Valid Feed with Relative Links')
         self.assertEquals(feed.feed_url, self.feed_url)
+        self.assertEquals(feed.status, models.FEED_STATUS_UNAPPROVED)
         self.assertTrue(feed.auto_approve)
 
     def test_GET_done(self):

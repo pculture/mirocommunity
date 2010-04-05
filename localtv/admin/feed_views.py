@@ -92,7 +92,7 @@ def add_feed_response(request, sitelocation=None):
         'description': parsed_feed.feed.get('summary', ''),
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
-        'status': models.FEED_STATUS_ACTIVE,
+        'status': models.FEED_STATUS_UNAPPROVED,
         'user': request.user,
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
@@ -151,7 +151,7 @@ def add_feed_response(request, sitelocation=None):
 @require_site_admin
 @get_sitelocation
 def add_feed_done(request, feed_id, sitelocation):
-    feed = models.Feed.objects.get(pk=feed_id)
+    feed = get_object_or_404(models.Feed, pk=feed_id)
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
     else:
