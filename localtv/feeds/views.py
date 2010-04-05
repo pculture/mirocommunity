@@ -83,8 +83,6 @@ class BaseVideosFeed(Feed):
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get(
             site=models.Site.objects.get_current())
-        self.author_name = self.sitelocation.site.name
-        self.author_link = 'http://%s/' % self.sitelocation.site.domain
 
     def item_pubdate(self, video):
         return (video.when_published or video.when_approved).replace(
