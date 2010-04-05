@@ -25,6 +25,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
+from django.utils.encoding import iri_to_uri
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
 
@@ -46,7 +47,8 @@ def feed_view(klass):
         except FeedDoesNotExist:
             raise Http404
         else:
-            return HttpResponse(feed.writeString('utf8'))
+            return HttpResponse(feed.writeString('utf8'),
+                                mimetype='application/atom+xml')
     return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
@@ -59,7 +61,8 @@ class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
     def add_item_elements(self, handler, item):
         feedgenerator.Atom1Feed.add_item_elements(self, handler, item)
         if 'thumbnail' in item:
-            handler.addQuickElement('icon', item['thumbnail'])
+            handler.addQuickElement('media:thumbnail',
+                                    attrs={'url': item['thumbnail']})
         if 'website_url' in item:
             handler.addQuickElement('link', attrs={
                     'rel': 'via',
@@ -80,6 +83,8 @@ class BaseVideosFeed(Feed):
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get(
             site=models.Site.objects.get_current())
+        self.author_name = self.sitelocation.site.name
+        self.author_link = 'http://%s/' % self.sitelocation.site.domain
 
     def item_pubdate(self, video):
         return (video.when_published or video.when_approved).replace(
@@ -96,10 +101,10 @@ class BaseVideosFeed(Feed):
     def item_extra_kwargs(self, item):
         kwargs = {}
         if item.website_url:
-            kwargs['website_url'] = item.website_url
+            kwargs['website_url'] = iri_to_uri(item.website_url)
         if item.has_thumbnail:
             if item.thumbnail_url:
-                kwargs['thumbnail'] = item.thumbnail_url
+                kwargs['thumbnail'] = iri_to_uri(item.thumbnail_url)
             else:
                 kwargs['thumbnail'] = 'http://%s%s' % (
                     self.sitelocation.site.domain,
