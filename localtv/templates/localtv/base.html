@@ -110,7 +110,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	            
 	            {% if forloop.last %}
 	                {% if not categories|length|divisibleby:"3" %}
-	                    {% if not categories|length|divisibleby:"2" %}
+	                    {% if not categories|length|add:"1"|divisibleby:"3" %}
 	                        <li>&nbsp;</li>
 	                        <li>&nbsp;</li>
 	                    {% else %}
