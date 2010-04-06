@@ -78,13 +78,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
       {% block footer_wrapper %}
         <div id="footer">
-          <div class="local_footer">
-          {% block footer %}
-            {% autoescape off %}
-            {{ sitelocation.footer_html }}
-            {% endautoescape %}
-          {% endblock footer %}
-          </div>
           <div>
             <p class="powered">
               <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
