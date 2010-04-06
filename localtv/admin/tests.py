@@ -13,7 +13,6 @@ from localtv.admin import forms as admin_forms
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models
-from localtv import util
 
 import vidscraper
 
@@ -2340,15 +2339,20 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         extra form filled out should update any source with the bulk option
         checked.
         """
+        # give the first video a category
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_ACTIVE).order_by('name')[0]
+        video.categories =[models.Category.objects.get(pk=2)]
+        video.save()
+
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
-
         POST_data['form-0-BULK'] = 'yes'
         POST_data['form-1-BULK'] = 'yes'
-        POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1, 2]
+        POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1]
         POST_data['form-%i-authors' % (len(formset.forms) - 1)] = [1, 2]
         POST_data['form-%i-tags' % (len(formset.forms) - 1)] = 'tag3, tag4'
 
@@ -2364,10 +2368,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         video2 = models.Video.objects.get(
             pk=POST_data['form-1-id'])
 
+        self.assertEquals(
+            set(video1.categories.values_list('pk', flat=True)),
+            set([1, 2]))
+        self.assertEquals(
+            set(video2.categories.values_list('pk', flat=True)),
+            set([1]))
+
         for video in video1, video2:
-            self.assertEquals(
-                set(video.categories.values_list('pk', flat=True)),
-                set([1, 2]))
             self.assertEquals(
                 set(video.authors.values_list('pk', flat=True)),
                 set([1, 2]))

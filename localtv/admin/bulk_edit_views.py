@@ -137,6 +137,11 @@ def bulk_edit(request, sitelocation=None):
                                 form.instance.last_featured = None
                         elif key == 'tags':
                             form.instance.tags = value
+                        elif key == 'categories':
+                            # categories append, not replace
+                            form.cleaned_data[key] = (
+                                list(form.cleaned_data[key]) +
+                                list(value))
                         else:
                             form.cleaned_data[key] = value
             formset.forms = formset.initial_forms # get rid of the extra bulk
