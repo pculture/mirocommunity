@@ -20,10 +20,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% get_editors_comment for instance as editors_comment %}
 {% if editors_comment %}
-<p class="description editors_notes">
+<div class="description editors_notes">
   <span class="written_by">{{ editors_comment.user }} writes:</span>
   {{ editors_comment.comment|safe }}
-</p>
+</div>
 {% endif %}
 {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
 <a href="#" class="edit_link">{% if editors_comment %}Edit{% else %}Add Editors Comment{% endif %} </a>
