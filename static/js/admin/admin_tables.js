@@ -77,6 +77,10 @@ function scroll_admin() {
 		width: ($("#content").width()-500)+"px"
 	});
 	
+	$("#admin_rightpane object, #admin_rightpane embed").css({
+		width: ($("#content").width()-540)+"px"
+	});
+	
 }
 
 if ('attachEvent' in window) {
