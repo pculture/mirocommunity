@@ -31,6 +31,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <input type="hidden" name="recaptcha_ip_field" value="{{ request.META.REMOTE_ADDR }}" />
     {% if not request.is_ajax %}
     {{ field }}
+    {% else %}
+    <div id="recaptcha_ajax_field"></div>
     {% endif %}
     {% endif %}
     {% else %}

@@ -2729,6 +2729,16 @@ ul#comments li div{
 
 }
 
+#comment_form h2.errorlist {
+    color: red;
+    font-size: 120%;
+}
+
+#comment_form ul.errorlist {
+    color: red;
+    float: left;
+}
+
 #admin ul.pagetabs {
 
 }

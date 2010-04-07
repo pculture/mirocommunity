@@ -250,3 +250,8 @@ margin: 10px 0 0 10px;
 }
 #login .tabs_content form a.forgot.oi {margin-top: 3px;}
 #login .tabs_content form a.forgot:hover {color: #000000;}
+
+#overlay .comment_posted {
+    float: none;
+    text-align: center;
+}
