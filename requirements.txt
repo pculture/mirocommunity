@@ -6,7 +6,6 @@
 -e git+http://git.participatoryculture.org/django-uploadtemplate#egg=django-uploadtemplate-dev
 BeautifulSoup
 Django==1.1.1
-django-tinymce==1.5
 http://effbot.org/downloads/Imaging-1.1.6.tar.gz
 South==0.6.2
 -e svn+http://feedparser.googlecode.com/svn/trunk/feedparser#egg=feedparser-dev
