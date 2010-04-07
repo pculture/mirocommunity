@@ -527,6 +527,16 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed.update_items()
         self.assertEquals(feed.video_set.count(), 0)
 
+    def test_entries_atom_with_long_item(self):
+        """
+        Feeds with long file URLs (>200 characters) should have them shortened
+        so they fit in the database.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.feed_url = self._data_file('feed_with_long_item.atom')
+        feed.update_items()
+        self.assertEquals(feed.video_set.count(), 1)
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that

@@ -39,6 +39,7 @@ from django.forms.fields import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 
+import bitly
 import feedparser
 import vidscraper
 import tagging
@@ -82,6 +83,21 @@ VIDEO_SERVICE_REGEXES = (
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
+
+
+class BitLyWrappingURLField(models.URLField):
+    def get_db_prep_value(self, value):
+        if not settings.BITLY_LOGIN:
+            return value
+        if len(value) <= self.max_length: # short enough to save
+            return value
+        api = bitly.Api(login=settings.BITLY_LOGIN,
+                        apikey=settings.BITLY_API_KEY)
+        try:
+            return unicode(api.shorten(value))
+        except bitly.BitlyError:
+            return unicode(value)[:self.max_length]
+
 
 SITE_LOCATION_CACHE = {}
 
@@ -921,7 +937,7 @@ class Video(Thumbnailable):
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
-    file_url = models.URLField(verify_exists=False, blank=True)
+    file_url = BitLyWrappingURLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
@@ -931,9 +947,10 @@ class Video(Thumbnailable):
     status = models.IntegerField(
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = models.URLField(verify_exists=False, blank=True)
+    website_url = BitLyWrappingURLField(verify_exists=False, blank=True)
     embed_code = models.TextField(blank=True)
-    flash_enclosure_url = models.URLField(verify_exists=False, blank=True)
+    flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
+                                                blank=True)
     guid = models.CharField(max_length=250, blank=True)
     thumbnail_url = models.URLField(
         verify_exists=False, blank=True, max_length=400)
