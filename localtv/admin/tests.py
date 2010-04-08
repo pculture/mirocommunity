@@ -2382,6 +2382,53 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             self.assertEquals(set(video.tags.values_list('name', flat=True)),
                                   set(['tag3', 'tag4']))
 
+    def test_POST_bulk_edit_no_authors(self):
+        """
+        A POST request to the bulk_edit view with a valid formset and the
+        extra form filled out should update any source with the bulk option
+        checked.
+        """
+        # give the first video a category
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_ACTIVE).order_by('name')[0]
+        video.categories =[models.Category.objects.get(pk=2)]
+        video.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+        POST_data['form-0-BULK'] = 'yes'
+        POST_data['form-1-BULK'] = 'yes'
+        POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1]
+        POST_data['form-%i-tags' % (len(formset.forms) - 1)] = 'tag3, tag4'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s?successful' % (
+                self.site_location.site.domain,
+                self.url))
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+
+        self.assertEquals(
+            set(video1.categories.values_list('pk', flat=True)),
+            set([1, 2]))
+        self.assertEquals(
+            set(video2.categories.values_list('pk', flat=True)),
+            set([1]))
+
+        for video in video1, video2:
+            self.assertEquals(
+                set(video.authors.values_list('pk', flat=True)), set())
+            self.assertEquals(set(video.tags.values_list('name', flat=True)),
+                                  set(['tag3', 'tag4']))
+
     def test_POST_bulk_delete(self):
         """
         A POST request to the bulk_edit view with a valid formset and a
