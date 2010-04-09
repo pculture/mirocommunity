@@ -19,11 +19,11 @@ from django.conf.urls.defaults import patterns
 
 urlpatterns = patterns(
     'localtv.feeds.views',
-    (r'^new/$', 'new', {}, 'localtv_feeds_new'),
-    (r'^featured/$', 'featured', {}, 'localtv_feeds_featured'),
-    (r'^popular/$', 'popular', {}, 'localtv_feeds_popular'),
-    (r'^category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'),
-    (r'^author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
-    (r'^tag/(.+)$', 'tag', {}, 'localtv_feeds_tag'),
-    (r'^search/(.+)$', 'search', {}, 'localtv_feeds_search'),
+    (r'^(json/)?new/$', 'new', {}, 'localtv_feeds_new'),
+    (r'^(json/)?featured/$', 'featured', {}, 'localtv_feeds_featured'),
+    (r'^(json/)?popular/$', 'popular', {}, 'localtv_feeds_popular'),
+    (r'^(json/)?category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'),
+    (r'^(json/)?author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
+    (r'^(json/)?tag/(.+)$', 'tag', {}, 'localtv_feeds_tag'),
+    (r'^(json/)?search/(.+)$', 'search', {}, 'localtv_feeds_search'),
     )

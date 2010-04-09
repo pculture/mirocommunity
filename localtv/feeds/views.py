@@ -31,8 +31,10 @@ from django.utils.tzinfo import FixedOffset
 
 import haystack.forms
 from tagging.models import Tag
+import simplejson
 
 from localtv import models
+from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
@@ -42,13 +44,26 @@ def feed_view(klass):
     def wrapper(request, *args):
         if len(args) == 0:
             args = [None]
+        if args[0] == 'json/': # JSON feed
+            json = True
+        else:
+            json = False
+        args = args[1:]
         try:
-            feed = klass(None, request).get_feed(*args)
+            feed = klass(None, request, json=json).get_feed(*args)
         except FeedDoesNotExist:
             raise Http404
         else:
-            return HttpResponse(feed.writeString('utf8'),
-                                mimetype='application/atom+xml')
+            mime_type = feed.mime_type
+            if json and request.GET.get('jsoncallback'):
+                output = '%s(%s);' % (
+                    request.GET['jsoncallback'],
+                    feed.writeString('utf8'))
+                mime_type = 'text/javascript'
+            else:
+                output = feed.writeString('utf8')
+            return HttpResponse(output,
+                                mimetype=mime_type)
     return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
@@ -73,6 +88,51 @@ class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
             handler.characters(item['embed_code'])
             handler.endElement('media:player')
 
+class JSONGenerator(feedgenerator.SyndicationFeed):
+    mime_type = 'application/json'
+    def write(self, outfile, encoding):
+        json = {}
+        self.add_root_elements(json)
+        self.write_items(json)
+        simplejson.dump(json, outfile, encoding=encoding)
+
+    def add_root_elements(self, json):
+        json['title'] = self.feed['title']
+        json['link'] = self.feed['link']
+        json['id'] = self.feed['id']
+        json['updated'] = unicode(self.latest_post_date())
+
+    def write_items(self, json):
+        json['items'] = []
+        for item in self.items:
+            self.add_item_elements(json['items'], item)
+
+    def add_item_elements(self, json_items, item):
+        json_item = {}
+        json_item['title'] = item['title']
+        json_item['link'] = item['link']
+        json_item['when'] = item['when']
+        if item.get('pubdate'):
+            json_item['pubdate'] = unicode(item['pubdate'])
+        if item.get('description'):
+            json_item['description'] = item['description']
+        if item.get('enclosure'):
+            enclosure = item['enclosure']
+            json_item['enclosure'] = {
+                'link': enclosure.url,
+                'length': enclosure.length,
+                'type': enclosure.mime_type}
+        if item['categories']:
+            json_item['categories'] = item['categories']
+        if 'thumbnail' in item:
+            json_item['thumbnail'] = item['thumbnail']
+        if 'website_url' in item:
+            json_item['website_url'] = item['website_url']
+        if 'embed_code' in item:
+            json_item['embed_code'] = item['embed_code']
+
+        json_items.append(json_item)
+
 
 class BaseVideosFeed(Feed):
     title_template = "localtv/feed/title.html"
@@ -80,6 +140,9 @@ class BaseVideosFeed(Feed):
     feed_type = ThumbnailFeedGenerator
 
     def __init__(self, *args, **kwargs):
+        if 'json' in kwargs:
+            if kwargs.pop('json'):
+                self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get(
             site=models.Site.objects.get_current())
@@ -97,7 +160,11 @@ class BaseVideosFeed(Feed):
         return video.get_absolute_url()
 
     def item_extra_kwargs(self, item):
-        kwargs = {}
+        kwargs = {
+            'when': '%s %s ago' % (
+                item.when_prefix(),
+                simpletimesince(item.when()))
+            }
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
         if item.has_thumbnail:

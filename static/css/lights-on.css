@@ -3288,23 +3288,3 @@ margin-top: 90px !important;
 	padding: 0 0 3px 120px;
 	background: url(../images/featurebuttondemo.png) no-repeat 0 0;
 }
-
-#widget-base {
-    min-height: 450px;
-}
-
-#widget-display, #widget-settings {
-    float: left;
-}
-
-#widget-settings {
-    padding-right: 100px;
-}
-
-/*#widget-settings label, #widget-settings input {
-    float: right;
-}*/
-
-#widget-settings button {
-    margin: 10px 10px 10px 0;
-}

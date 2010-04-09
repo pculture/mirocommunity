@@ -27,26 +27,27 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="/css/widget.css">
+<script src="/js/widget.js"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/widgets/embed.html" %}{% endfilter %}";
 
 function update_widget() {
     display = $("#widget-display");
-    area = $("#widget-code");
-    width = $("input[name=width]").val();
-    height = parseInt($("input[name=height]").val());
+    area = $("#widget-code textarea");
     count = $("input[name=count]").val();
-    title = $("input[name=title]").val();
-    type = $("select[name=type]").val();
+    source = $("select[name=source]").val();
     embed = embed_base;
-    embed = embed.replace(/WIDTH/g, width);
-    embed = embed.replace(/HEIGHT/g, height);
     embed = embed.replace(/COUNT/g, count);
-    embed = embed.replace(/TITLE/g, title);
-    embed = embed.replace(/TYPE/g, type);
+    embed = embed.replace(/SOURCE/g, source);
     area.val(embed);
-    display.html(embed);
-    $("#widget-base").height(height + 100);
+    $('#widget-example ul').empty();
+    example_widget = new MiroCommunity.Widget({domain: '{{ sitelocation.site.domain }}',
+                                               source: source,
+                                               count: count
+                                              });
+    example_widget.id = 'widget-example';
+    example_widget.load();
 }
 
 $(document).ready(update_widget);
@@ -56,39 +57,56 @@ $(document).ready(update_widget);
   {% include "localtv/admin/settings_header.html" %}
   <br class="clearboth" />
 
-  <div id="widget-base" class="look rounded">
-    <h2>Create a Widget to Display on Your Site</h2>
-
-    <div id="widget-settings">
-      <div>
-        <input name="width" value="400" />
-        <label for="width">Width (in px)</label>
+  <div id="widget-base">
+    <h1>Create a Widget to Display on Your Site</h1>
+    <div>
+      <div id="widget-settings">
+        <h2>Pick Your Options</h2>
+        <div>
+          <label for="count">Number of Videos:</label>
+          <input name="count" value="4" />
+        </div>
+        {% comment %}
+        <div>
+          <label for="thumb_size">Thumbnail Size:</label>
+          <select name="thumb_size">
+            <option value="small">Small</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        {% endcomment %}
+        <div>
+          <label for="source">Video Source:</label>
+          <select name="source">
+            <option value="new/">New</option>
+            <option value="popular/">Popular</option>
+            <option value="featured/">Featured</option>
+          </select>
+        </div>
+        {% comment %}
+        <div>
+          <label for="titles">Show Title:</label>
+          <input type="checkbox" selected="selected" name="titles">
+        </div>
+        <div>
+          <label for="titles">Show Description:</label>
+          <input type="checkbox" selected="selected" name="titles">
+        </div>
+        {% endcomment %}
+        <button id="widget-submit" type="button" onclick="update_widget();">Update</button>
       </div>
-      <div>
-        <input name="height" value="400" />
-        <label for="height">Height (in px)</label>
+      <div id="widget-code">
+        <h2>Widget Code</h2>
+        <textarea cols="40" rows="10"></textarea>
       </div>
-      <div>
-        <input name="count" value="3" />
-        <label for="count">Number of Videos</label>
-      </div>
-      <div>
-        <input name="title" value="Watch Videos from {{ sitelocation.site.name }}!" />
-        <label for="title">Title</label>
-      </div>
-      <div>
-        <label for="type">Show:</label>
-        <select name="type">
-          <option value="featured">Featured Videos</option>
-          <option value="new">New Videos</option>
-          <option value="popular">Popular Videos</option>
-        </select>
-      </div>
-      <button id="widget-submit" type="button" onclick="update_widget();">Update </button>
-      <br>
-      <textarea cols="40" rows="10" id="widget-code"></textarea>
     </div>
     <div id="widget-display">
+      <h2>Preview</h2>
+      <div id="widget-example" class="mc-widget">
+        <h2>Watch Videos From Miro Community</h2>
+        <ul></ul>
+        <a class="mc-from" href="http://{{ sitelocation.site.domaim }}/">{{ sitelocation.site.domain }}</a>
+      </div>
     </div>
   </div>
 {% endblock content %}
