@@ -135,7 +135,9 @@ def view_video(request, video_id, slug=None, sitelocation=None):
 
 @get_sitelocation
 def share_email(request, content_type_pk, object_id, sitelocation):
-    from email_share import views
+    from email_share import views, forms
     return views.share_email(request, content_type_pk, object_id,
                              {'site': sitelocation.site,
-                              'sitelocation': sitelocation})
+                              'sitelocation': sitelocation},
+                             form_class = forms.ShareMultipleEmailForm
+                             )
