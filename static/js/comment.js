@@ -1,11 +1,12 @@
 function comment_form_callback(response) {
     parsed = $("<div/>").html(response);
     if (parsed.find('#next').attr('href') == location.pathname) {
+        $('#comment_form').clearForm();
         location.href = location.href + '#comments';
-        location.reload()
+        location.reload();
         return;
     }
-    form = parsed.find('form')
+    form = parsed.find('form');
     if (form.length) {
         // problems with the form submission
         $("#comment_form").replaceWith(form);
