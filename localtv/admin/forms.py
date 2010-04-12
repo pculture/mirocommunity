@@ -612,7 +612,8 @@ class AddFeedForm(forms.Form):
                 # can't cache exceptions
                 del parsed['bozo_exception']
             cache.set(key, parsed)
-        if not (parsed.feed and parsed.entries and parsed.feed.get('title')):
+        if not parsed.feed or not (parsed.entries or
+                                   parsed.feed.get('title')):
             raise forms.ValidationError('It does not appear that %s is an '
                                         'RSS/Atom feed URL.' % value)
 
