@@ -30,17 +30,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <h2>Pages</h2>
 
-  <div id="label_sidebar" class="simple_overlay displaynone">
-    <div id="add_page" class="rounded">
+  <div id="label_sidebar" class="simple_overlay displaynone rounded">
+    <div id="add_page">
       <h1>Add a Page</h1>
       <form action="" method="POST" enctype="multipart/form-data">
-        {{ form.as_p }}
-        <input type="submit" value="Add" name="submit">
+        <div class="input_field">
+          <ul>
+            {% for field in form %}
+            <li>
+              {{ field.label_tag }}
+              {{ field.errors }}
+              {{ field }}
+              {% if field.help_text %}
+              <span class="form_help">{{ field.help_text }}</span>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          <input type="submit" value="Add" name="submit">
+        </div>
       </form>
     </div>
   </div>
-  
-  
 {% endblock %}
 
 
@@ -66,35 +77,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 </td>
 <td><a href="{{ form.instance.get_absolute_url }}">{{ form.instance.url }}</a></td>
 {% endblock %}
-{% block quick-edit-title %}Edit Page: {{ form.instance.url }}{% endblock %}
-{% block quick-edit-colspan %}1{% endblock %}
-{% block quick-edit %}
-{{ form.non_field_errors }}
-<table>
-  <tbody>
-    <tr>
-      <td>
-        {{ form.url.errors }}
-        {{ form.url.label_tag }}
-        {{ form.url }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.title.errors }}
-        {{ form.title.label_tag }}
-        {{ form.title }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.content.errors }}
-        {{ form.content.label_tag }}
-        {{ form.content }}
-      </td>
-    </tr>
-  </tbody>
-</table>
-{% endblock %}
-{% block quick-edit-additional-columns %}
+{% block quick-edit-fields %}
+<ul>
+  <li>
+    {{ form.url.errors }}
+    {{ form.url.label_tag }}
+    {{ form.url }}
+  </li>
+  <li>
+    {{ form.title.errors }}
+    {{ form.title.label_tag }}
+    {{ form.title }}
+  </li>
+  <li>
+    {{ form.content.errors }}
+    {{ form.content.label_tag }}
+    {{ form.content }}
+  </li>
+</ul>
 {% endblock %}
