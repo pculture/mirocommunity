@@ -24,59 +24,59 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 {% url localtv_openid_start as localtv_openid_start %}{# see if openid is enabled #}
 <div id="login">
-    <ul class="tabs">
-        <li class="active"><a href="#" class="login_tab_user">Login/Sign Up</a></li>
-        {# <li class="fb"><a href="#" class="login_tab_two">Facebook</a></li>#}
-        {#<li class="tw"><a href="#" class="login_tab_three">Twitter</a></li>#}
-        {% if localtv_openid_start %}<li class="oi"><a href="#" class="login_tab_openid">OpenID</a></li>
-        <li class="go"><a href="#" class="login_tab_google">Google</a></li>{% endif %}
-    </ul>
-    <div class="tabs_content">
-        <div id="login_tab_user">
-            <div class="left">
-                <h4>Log in</h4>
-                <form action="{{ settings.LOGIN_URL }}" method="POST">
-                    {% if form.non_field_errors %}
-                    {{ form.non_field_errors }}
-                    {% endif %}
-                    {% for field in form %}
-                    {{ field.errors }}
-                    <p>
-                      <label>{{ field }}</label>
-                    </p>
-                    {% endfor %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                    <p>
-                        <a href="{% url auth_password_reset %}" class="forgot">Forgot?</a>
-                        <input type="submit" value="Log In" class="button" />
-                        <div class="clear"></div>
-                    </p>
-                </form>
-            </div>
-            <div class="right">
-                <h4>Sign up</h4>
-                <form action="/accounts/register/" method="POST">
-                    <p>
-                        <label><input id="id_username" value="Username" type="text" class="required" name="username" maxlength="30" /></label>
-                    </p>
-                    <p>
-                        <label><input id="id_email" value="Email" type="text" class="required" name="email" maxlength="75" /></label>
-                    </p>
-                    <p>
-                        <label><input id="id_password1" value="Password" type="password" class="required" name="password1" /></label>
-                    </p>
-                    <p>
-                        <label><input id="id_password2" value="Password (again)" type="password" class="required" name="password2" /></label>
-                    </p>
-                    <p>
-                        <input type="submit" value="Sign Up" class="button" />
-                        <div class="clear"></div>
-                    </p>
-                </form>
-            </div>
-            <div class="clear"></div>
-        </div>
-        {% comment %}
+  <ul class="tabs">
+    <li class="active"><a href="#" class="login_tab_user">Login/Sign Up</a></li>
+    {# <li class="fb"><a href="#" class="login_tab_two">Facebook</a></li>#}
+    {#<li class="tw"><a href="#" class="login_tab_three">Twitter</a></li>#}
+    {% if localtv_openid_start %}<li class="oi"><a href="#" class="login_tab_openid">OpenID</a></li>
+    <li class="go"><a href="#" class="login_tab_google">Google</a></li>{% endif %}
+  </ul>
+  <div class="tabs_content">
+    <div id="login_tab_user">
+      <div class="left">
+        <h4>Log in</h4>
+        <form action="{{ settings.LOGIN_URL }}" method="POST">
+          {% if form.non_field_errors %}
+          {{ form.non_field_errors }}
+          {% endif %}
+          {% for field in form %}
+          {{ field.errors }}
+          <p>
+            <label>{{ field }}</label>
+          </p>
+          {% endfor %}
+          <input type="hidden" name="next" value="{{ next }}" />
+          <p>
+            <a href="{% url auth_password_reset %}" class="forgot">Forgot?</a>
+            <input type="submit" value="Log In" class="button" />
+            <span class="clear"></span>
+          </p>
+        </form>
+      </div>
+      <div class="right">
+        <h4>Sign up</h4>
+        <form action="/accounts/register/" method="POST">
+          <p>
+            <label><input id="id_username" value="Username" type="text" class="required" name="username" maxlength="30" /></label>
+          </p>
+          <p>
+            <label><input id="id_email" value="Email" type="text" class="required" name="email" maxlength="75" /></label>
+          </p>
+          <p>
+            <label><input id="id_password1" value="Password" type="password" class="required" name="password1" /></label>
+          </p>
+          <p>
+            <label><input id="id_password2" value="Password (again)" type="password" class="required" name="password2" /></label>
+          </p>
+          <p>
+            <input type="submit" value="Sign Up" class="button" />
+            <span class="clear"></span>
+          </p>
+        </form>
+      </div>
+      <div class="clear"></div>
+    </div>
+    {% comment %}
         <div id="login_tab_two" class="inactive">
             <div class="left">
               {% facebook_button %}
@@ -89,36 +89,35 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             </div>
             <div class="clear"></div>
         </div>
-        {% endcomment %}
-        {% if localtv_openid_start %}
-        <div id="login_tab_openid" class="inactive">
-            <div class="left">
-              <h4>Sign in with your OpenID</h4>
-                <form action="{{ localtv_openid_start }}" method="post">
-                <p>
-                    <label><input class="openid" type="text" name="openid_url" value="Sign in with OpenID" /></label>
-                </p>
-                <p>
-                    <a href="http://openid.net/get/" class="forgot oi" target="_blank">Don't have an openid? Get One!</a>
-                    <input type="submit" value="Sign In" class="button" />
-                    <div class="clear"></div>
-                </p>
-                </form>
-            </div>
-            <div class="clear"></div>
-        </div>
-        <div id="login_tab_google" class="inactive">
-          <div class="left">
-            <h4>Sign in with your Google Account</h4>
-            <form action="{{ localtv_openid_start }}" method="post">
-              <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id">
-                <p><input type="submit" value="Sign in" class="button"></p>
-              </form>
-            </div>
-            <div class="clear"></div>
-          </div>
-        </div>
-        {% endif %}
+    {% endcomment %}
+    {% if localtv_openid_start %}
+    <div id="login_tab_openid" class="inactive">
+      <div class="left">
+        <h4>Sign in with your OpenID</h4>
+        <form action="{{ localtv_openid_start }}" method="post">
+          <p>
+            <label><input class="openid" type="text" name="openid_url" value="Sign in with OpenID" /></label>
+          </p>
+          <p>
+            <a href="http://openid.net/get/" class="forgot oi" target="_blank">Don't have an openid? Get One!</a>
+            <input type="submit" value="Sign In" class="button" />
+            <span class="clear"></span>
+          </p>
+        </form>
+      </div>
+      <div class="clear"></div>
     </div>
+    <div id="login_tab_google" class="inactive">
+      <div class="left">
+        <h4>Sign in with your Google Account</h4>
+        <form action="{{ localtv_openid_start }}" method="post">
+          <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id" />
+          <p><input type="submit" value="Sign in" class="button" /></p>
+        </form>
+      </div>
+      <div class="clear"></div>
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
