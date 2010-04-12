@@ -55,20 +55,6 @@ VIDEO_SERVICE_TITLES = (
 @require_site_admin
 @get_sitelocation
 def add_feed(request, sitelocation=None):
-    if request.method == 'GET':
-        def gen():
-            yield render_to_response('localtv/admin/feed_wait.html',
-                                     {
-                    'message': 'Checking out this URL',
-                    'feed_url': request.GET.get('feed_url')},
-                                     context_instance=RequestContext(request))
-            yield add_feed_response(request, sitelocation)
-        return util.HttpMixedReplaceResponse(request, gen())
-    else:
-        return add_feed_response(request, sitelocation)
-
-
-def add_feed_response(request, sitelocation=None):
     add_form = forms.AddFeedForm(request.GET)
 
     if not add_form.is_valid():

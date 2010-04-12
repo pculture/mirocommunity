@@ -112,17 +112,6 @@ def get_search_video(view_func):
 @require_site_admin
 @get_sitelocation
 def livesearch(request, sitelocation=None):
-    if 'query' not in request.GET or 'debug' in request.GET:
-        return livesearch_response(request, sitelocation)
-    def gen():
-        yield render_to_response('localtv/admin/livesearch_wait.html',
-                                 {'query_string': request.GET['query']},
-                                 context_instance=RequestContext(request))
-        yield livesearch_response(request, sitelocation)
-    return util.HttpMixedReplaceResponse(request, gen())
-
-
-def livesearch_response(request, sitelocation):
     query_string, order_by, query_subkey = get_query_components(request)
 
     results = []
