@@ -134,6 +134,30 @@ margin: 10px 0 0 10px;
     margin: 0 0 0 20px;
 }
 
+#submit_video .thumbnail {
+    float: left;
+    height: 169px;
+    position: relative;
+    text-decoration: none;
+    width: 222px;
+    border: 1px solid #CCC;
+    padding: 5px;
+}
+
+#submit_video .scraped_details {
+    float: left;
+    margin-left: 15px;
+    width: 255px;
+}
+
+#submit_video .posted_by {
+    font-weight: normal;
+    padding-right: 8px;
+}
+
+#submit_video .posted_at {
+    color: #B64B3D;
+}
 /*/////////////////////////////////////////////
 
 ~ Login

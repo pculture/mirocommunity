@@ -18,6 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load i18n uploadtemplate_tags filters %}
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
 {% block pre-table %}
 {{ form.url }}
@@ -32,12 +33,27 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
     <tr>
       <td>
-        <b>Video:</b> {{ data.title }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <b>Description:</b> {{ data.description }}
+        <a href="{{ data.link }}" class="thumbnail">
+          {% if data.thumbnail_url %}<img src="{{ data.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{% get_static_url "/images/default.jpg" %}" />{% endif %}
+        </a>
+        <div class="scraped_details">
+          {% if data.title %}
+          <h2><a href="{{ data.link }}" title="{{ data.title }}">{{ data.title }}</a></h2>
+          {% else %}
+          <h2><a href="{{ data.link }}">{% trans "(no title)" %}</a></h2>
+          {% endif %}
+          <span class="credits">
+            {% if data.user %}
+            <span class="posted_by">
+              By <a href="{{ data.user_url }}">{{ data.user }}</a>
+            </span>
+            {% endif %}
+            {% if data.publish_date %}
+            <span class="posted_at">Published {{ data.publish_date|simpletimesince }} ago</span>
+            {% endif %}
+          </span>
+          <div class="description">{{ data.description|sanitize }}</div>
+        </div>
       </td>
     </tr>
     <tr>
