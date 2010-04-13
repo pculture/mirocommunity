@@ -99,6 +99,11 @@ float: left;
 width: 100%;
 }
 
+.input_field ul.errorlist li {
+    float: none;
+    clear: none;
+}
+
 .input_field .padding {
 	display: block;
 	margin-top: 10px;
