@@ -1,6 +1,8 @@
 function comment_form_callback(response) {
     parsed = $("<div/>").html(response);
-    if (parsed.find('#next').attr('href') == location.pathname) {
+    next = parsed.find('#next').attr('href');
+    if ((next == location.pathname) ||
+        (next == location.href)) {
         $('#comment_form').clearForm();
         location.href = location.href + '#comments';
         location.reload();
