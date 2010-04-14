@@ -98,9 +98,10 @@ class VideoTagsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        for tag in self.instance.tags:
+        tags = list(self.instance.tags)
+        for tag in tags:
             tag.name = force_unicode(tag.name)
-        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+        self.initial['tags'] = edit_string_for_tags(tags)
 
     def save(self, *args, **kwargs):
         self.instance.tags = self.cleaned_data.get('tags')
