@@ -35,6 +35,7 @@ from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.signals import request_finished
+import django.dispatch
 from django.forms.fields import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
@@ -245,6 +246,7 @@ class Thumbnailable(models.Model):
         try:
             pil_image = Image.open(content_thumb)
         except IOError:
+            raise
             raise CannotOpenImageUrl(
                 'An image at the url %s could not be loaded' % (
                     self.thumbnail_url))
@@ -1180,3 +1182,18 @@ def tag_unicode(self):
     return self.name
 
 tagging.models.Tag.__unicode__ = tag_unicode
+ 
+submit_finished = django.dispatch.Signal()
+
+def send_new_video_email(sender, **kwargs):
+    sitelocation = SiteLocation.objects.get(site=sender.site)
+    if sitelocation.email_on_new_video and \
+            sender.status != VIDEO_STATUS_ACTIVE:
+        t = loader.get_template('localtv/submit_video/new_video_email.txt')
+        c = Context({'video': sender})
+
+        message = t.render(c)
+        subject = '[%s] New Video in Review Queue: %s' % (sender.site.name,
+                                                          sender)
+        util.send_mail_admins(sitelocation, subject, message)
+submit_finished.connect(send_new_video_email)

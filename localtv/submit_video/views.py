@@ -34,7 +34,6 @@ from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
 from localtv.submit_video import forms
 from localtv.submit_video.util import is_video_url
-from localtv.templatetags.filters import sanitize
 
 def _check_submit_permissions(request):
     sitelocation = models.SiteLocation.objects.get(
@@ -159,6 +158,20 @@ def submit_video(request, sitelocation=None):
                  'form': submit_form},
                 context_instance=RequestContext(request))
 
+
+def _submit_finish(form, *args, **kwargs):
+    if form.is_valid():
+        video = form.save()
+        models.submit_finished.send(sender=video)
+
+        #redirect to a thank you page
+        return HttpResponseRedirect(reverse('localtv_submit_thanks',
+                                            args=[video.pk]))
+
+    else:
+        return render_to_response(*args, **kwargs)
+
+
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 @submit_lock
@@ -177,8 +190,6 @@ def scraped_submit_video(request, sitelocation=None):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
-    if request.user.is_authenticated():
-        initial['contact'] = request.user.email
     if request.method == "GET":
         scraped_form = forms.ScrapedSubmitVideoForm(initial=initial)
 
@@ -189,84 +200,11 @@ def scraped_submit_video(request, sitelocation=None):
              'form': scraped_form},
             context_instance=RequestContext(request))
 
-    scraped_form = forms.ScrapedSubmitVideoForm(request.POST)
-    if scraped_form.is_valid():
-        if scraped_data.get('file_url_is_flaky'):
-            file_url = None
-        else:
-            file_url = scraped_data.get('file_url', '')
-
-        if request.user.is_authenticated():
-            user = request.user
-        else:
-            user = None
-
-        video = models.Video(
-            name=scraped_data.get('title', ''),
-            site=sitelocation.site,
-            description=sanitize(scraped_data.get('description', ''),
-                                 extra_filters=['img']),
-            file_url=file_url or '',
-            embed_code=scraped_data.get('embed', ''),
-            flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
-            website_url=request.POST['url'],
-            thumbnail_url=scraped_data.get('thumbnail_url', ''),
-            user=user,
-            when_submitted=datetime.datetime.now(),
-            when_published=scraped_data.get('publish_date'),
-            video_service_user=scraped_data.get('user', ''),
-            video_service_url=scraped_data.get('user_url', ''),
-            contact=scraped_form.cleaned_data.get('contact', ''))
-
-        if video.embed_code and not scraped_data.get('is_embedable', True):
-            video.embed_code = '<span class="embed-warning">\
-Warning: Embedding disabled by request.</span>' + video.embed_code
-
-
-        if sitelocation.user_is_admin(request.user):
-            video.when_approved = video.when_submitted
-            video.status = models.VIDEO_STATUS_ACTIVE
-
-        video.try_to_get_file_url_data()
-        video.save()
-
-        if video.thumbnail_url:
-            video.save_thumbnail()
-
-        if scraped_form.cleaned_data.get('tags'):
-            # can't do this earlier because the video needs a primary key
-            video.tags = scraped_form.cleaned_data['tags']
-
-        if scraped_data.get('user'):
-            author, created = User.objects.get_or_create(
-                username=scraped_data.get('user'),
-                defaults={'first_name': scraped_data.get('user')})
-            if created:
-                author.set_unusable_password()
-                author.save()
-                util.get_profile_model().objects.create(
-                    user=author,
-                    website=scraped_data.get('user_url'))
-            video.authors.add(author)
-        video.save()
-
-        if sitelocation.email_on_new_video and \
-                video.status != models.VIDEO_STATUS_ACTIVE:
-            t = loader.get_template('localtv/submit_video/new_video_email.txt')
-            c = Context({'video': video})
-
-            message = t.render(c)
-            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
-                                                              video)
-
-            util.send_mail_admins(sitelocation, subject, message)
-
-        #redirect to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                            args=[video.pk]))
-
-    else:
-        return render_to_response(
+    scraped_form = forms.ScrapedSubmitVideoForm(request.POST,
+                                                sitelocation=sitelocation,
+                                                user=request.user,
+                                                scraped_data=scraped_data)
+    return _submit_finish(scraped_form,
             'localtv/submit_video/scraped.html',
             {'sitelocation': sitelocation,
              'data': scraped_data,
@@ -297,8 +235,6 @@ def embedrequest_submit_video(request, sitelocation=None):
         'description': scraped_data.get('description', ''),
         'thumbnail_url': scraped_data.get('thumbnail_url', '')
         }
-    if request.user.is_authenticated():
-        initial['contact'] = request.user.email
     if request.method == "GET":
         embed_form = forms.EmbedSubmitVideoForm(initial=initial)
 
@@ -308,60 +244,15 @@ def embedrequest_submit_video(request, sitelocation=None):
              'form': embed_form},
             context_instance=RequestContext(request))
 
-    embed_form = forms.EmbedSubmitVideoForm(request.POST)
-    if embed_form.is_valid():
+    embed_form = forms.EmbedSubmitVideoForm(request.POST,
+                                            sitelocation=sitelocation,
+                                            user=request.user)
 
-        if request.user.is_authenticated():
-            user = request.user
-        else:
-            user = None
-
-        video = models.Video(
-            name=embed_form.cleaned_data['name'],
-            site=sitelocation.site,
-            description=sanitize(embed_form.cleaned_data['description'],
-                                 extra_filters=['img']),
-            embed_code=embed_form.cleaned_data['embed'],
-            website_url=embed_form.cleaned_data['url'],
-            thumbnail_url=request.POST.get('thumbnail', ''),
-            user=user,
-            when_submitted=datetime.datetime.now(),
-            contact=embed_form.cleaned_data.get('contact', ''))
-
-        if sitelocation.user_is_admin(request.user):
-            video.when_approved = video.when_submitted
-            video.status = models.VIDEO_STATUS_ACTIVE
-
-        video.save()
-
-        if video.thumbnail_url:
-            video.save_thumbnail_from_file(
-                embed_form.cleaned_data['thumbnail'])
-
-        video.tags = embed_form.cleaned_data.get('tags', '')
-        video.save()
-
-        if sitelocation.email_on_new_video and \
-                video.status != models.VIDEO_STATUS_ACTIVE:
-            t = loader.get_template('localtv/submit_video/new_video_email.txt')
-            c = Context({'video': video})
-
-            message = t.render(c)
-            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
-                                                              video)
-
-            util.send_mail_admins(sitelocation, subject, message)
-
-        #reembed to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                            args=[video.pk]))
-
-    else:
-        return render_to_response(
-            'localtv/submit_video/embed.html',
-            {'sitelocation': sitelocation,
-             'form': embed_form},
-            context_instance=RequestContext(request))
+    return _submit_finish(embed_form,
+                          'localtv/submit_video/embed.html',
+                          {'sitelocation': sitelocation,
+                           'form': embed_form},
+                          context_instance=RequestContext(request))
 
 
 @request_passes_test(_check_submit_permissions)
@@ -380,8 +271,6 @@ def directlink_submit_video(request, sitelocation=None):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
-    if request.user.is_authenticated():
-        initial['contact'] = request.user.email
     if request.method == "GET":
         direct_form = forms.DirectSubmitVideoForm(initial=initial)
 
@@ -391,60 +280,15 @@ def directlink_submit_video(request, sitelocation=None):
              'form': direct_form},
             context_instance=RequestContext(request))
 
-    direct_form = forms.DirectSubmitVideoForm(request.POST)
-    if direct_form.is_valid():
-        if request.user.is_authenticated():
-            user = request.user
-        else:
-            user = None
+    direct_form = forms.DirectSubmitVideoForm(request.POST,
+                                              sitelocation=sitelocation,
+                                              user=request.user)
 
-        video = models.Video(
-            name=direct_form.cleaned_data['name'],
-            site=sitelocation.site,
-            description=sanitize(direct_form.cleaned_data['description'],
-                                 extra_filters=['img']),
-            file_url=direct_form.cleaned_data['url'],
-            thumbnail_url=request.POST.get('thumbnail', ''),
-            website_url=direct_form.cleaned_data.get('website_url', ''),
-            user=user,
-            when_submitted=datetime.datetime.now(),
-            contact=direct_form.cleaned_data.get('contact', ''))
-
-        if sitelocation.user_is_admin(request.user):
-            video.when_approved = video.when_submitted
-            video.status = models.VIDEO_STATUS_ACTIVE
-
-        video.try_to_get_file_url_data()
-        video.save()
-
-        if video.thumbnail_url:
-            video.save_thumbnail_from_file(
-                direct_form.cleaned_data['thumbnail'])
-
-        video.tags = direct_form.cleaned_data.get('tags', [])
-        video.save()
-
-        if sitelocation.email_on_new_video and \
-                video.status != models.VIDEO_STATUS_ACTIVE:
-            t = loader.get_template('localtv/submit_video/new_video_email.txt')
-            c = Context({'video': video})
-
-            message = t.render(c)
-            subject = '[%s] New Video in Review Queue: %s' % (video.site.name,
-                                                              video)
-
-            util.send_mail_admins(sitelocation, subject, message)
-
-        #redirect to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                            args=[video.pk]))
-
-    else:
-        return render_to_response(
-            'localtv/submit_video/direct.html',
-            {'sitelocation': sitelocation,
-             'form': direct_form},
-            context_instance=RequestContext(request))
+    return _submit_finish(direct_form,
+                          'localtv/submit_video/direct.html',
+                          {'sitelocation': sitelocation,
+                           'form': direct_form},
+                          context_instance=RequestContext(request))
 
 
 @get_sitelocation

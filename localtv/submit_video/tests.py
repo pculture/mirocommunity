@@ -703,7 +703,7 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
                           'http://blip.tv/file/get/'
                           '11156136631.95334664852457.mp4')
         self.assertEquals(video.embed_code,
-                          '<embed src="http://blip.tv/play/g_5Qgm8C" '
+                          '<embed src="http://blip.tv/play/hbF4gm8C" '
                           'type="application/x-shockwave-flash" '
                           'width="480" height="390" '
                           'allowscriptaccess="always" allowfullscreen="true">'
