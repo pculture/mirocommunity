@@ -19,6 +19,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
+from django.utils.encoding import force_unicode
 
 from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
@@ -97,6 +98,8 @@ class VideoTagsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        for tag in self.instance.tags:
+            tag.name = force_unicode(tag.name)
         self.initial['tags'] = edit_string_for_tags(self.instance.tags)
 
     def save(self, *args, **kwargs):
