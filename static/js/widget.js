@@ -43,10 +43,14 @@ if (typeof MiroCommunity === 'undefined') {
             },
             addStyle: function() {
             head = document.getElementsByTagName('head')[0];
-                if (!MiroCommunity.Widget._addedStyles) {
+                if (!MiroCommunity.Widget._addedStyles && this.opts.stylesheet !== '') {
                     link = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = 'http://' + this.opts.domain + '/css/widget.css';
+                    if (this.opts.stylesheet) {
+                        link.href = this.opts.stylesheet;
+                    } else {
+                        link.href = 'http://' + this.opts.domain + '/css/widget.css';
+                    }
                     head.appendChild(link);
                     MiroCommunity.Widget._addedStyles = true;
                 }
