@@ -200,8 +200,31 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(set(video.tags.values_list('name', flat=True)),
                           set(('tag1', 'tag2')))
         self.assertEquals(video.contact, 'Foo <bar@example.com>')
+        self.assertEquals(video.notes, "here's a note!")
         self.assertEquals(len(mail.outbox), 0)
         return video
+
+    def test_POST_succeed_thumbnail_file(self):
+        """
+        If the user uploads a thumbnail, we should use that and not the
+        thumbnail URL.
+        """
+        c = Client()
+        POST_data = self.POST_data.copy()
+        POST_data['thumbnail_file'] = file(self._data_file('logo.png'))
+
+        response = c.post(self.url, POST_data)
+        video = models.Video.objects.all()[0]
+
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_submit_thanks',
+                        args=[video.pk])))
+        self.assertTrue(video.has_thumbnail)
+        self.assertEquals(video.thumbnail_url, '')
+        self.assertEquals(video.thumbnail_extension, 'png')
 
     def test_POST_succeed_email(self):
         """
@@ -663,6 +686,7 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
             'url': 'http://blip.tv/file/10',
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',
+            'notes': "here's a note!"
             }
         self.GET_data = {
             'url': self.POST_data['url'],
@@ -718,6 +742,12 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(author.get_profile().website,
                           'http://blog.blip.tv/')
 
+    def test_POST_succeed_thumbnail_file(self):
+        """
+        We don't have a thumbnail upload for this form, so we skip the test.
+        """
+        pass
+
 
 class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
 
@@ -734,6 +764,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
             'website_url': 'http://www.getmiro.com/',
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',
+            'notes': "here's a note!"
             }
         self.GET_data = {
             'url': self.POST_data['url'],
@@ -808,6 +839,7 @@ class EmbedRequestTestCase(SecondStepSubmitBaseTestCase):
             'embed': '<h1>hi!</h1>',
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',
+            'notes': "here's a note!"
             }
         self.GET_data = {
             'url': self.POST_data['url'],

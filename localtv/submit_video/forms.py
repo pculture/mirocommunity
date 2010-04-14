@@ -56,13 +56,13 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
     contact = forms.CharField(max_length=250,
                               label='E-mail (optional)',
                               required=False)
-    note = forms.CharField(widget=forms.Textarea,
+    notes = forms.CharField(widget=forms.Textarea,
                            label='Notes (optional)',
                            required=False)
 
     class Meta:
         model = models.Video
-        fields = ['tags', 'contact']
+        fields = ['tags', 'contact', 'notes']
 
     def __init__(self, *args, **kwargs):
         self.sitelocation = kwargs.pop('sitelocation', None)
@@ -101,6 +101,8 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
 class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
     name = forms.CharField(max_length=250,
                            label="Video Name")
+    thumbnail_file = forms.ImageField(required=False,
+                                     label="Thumbnail File (optional)")
     thumbnail = ImageURLField(required=False,
                               label="Thumbnail URL (optional)")
     description = forms.CharField(widget=forms.widgets.Textarea,
@@ -121,7 +123,11 @@ class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
         video = SecondStepSubmitVideoForm.save(self, **kwargs)
         old_m2m = self.save_m2m
         def save_m2m():
-            if self.cleaned_data['thumbnail']:
+            if self.cleaned_data['thumbnail_file']:
+                self.instance.thumbnail_url = ''
+                self.instance.save_thumbnail_from_file(
+                    self.cleaned_data['thumbnail_file'])
+            elif self.cleaned_data['thumbnail']:
                 self.instance.thumbnail_url = self.data['thumbnail']
                 self.instance.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail'])

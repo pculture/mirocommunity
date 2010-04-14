@@ -233,7 +233,7 @@ def embedrequest_submit_video(request, sitelocation=None):
         'url': url,
         'name': scraped_data.get('title', ''),
         'description': scraped_data.get('description', ''),
-        'thumbnail_url': scraped_data.get('thumbnail_url', '')
+        'thumbnail': scraped_data.get('thumbnail_url', '')
         }
     if request.method == "GET":
         embed_form = forms.EmbedSubmitVideoForm(initial=initial)
@@ -244,7 +244,7 @@ def embedrequest_submit_video(request, sitelocation=None):
              'form': embed_form},
             context_instance=RequestContext(request))
 
-    embed_form = forms.EmbedSubmitVideoForm(request.POST,
+    embed_form = forms.EmbedSubmitVideoForm(request.POST, request.FILES,
                                             sitelocation=sitelocation,
                                             user=request.user)
 
@@ -280,7 +280,7 @@ def directlink_submit_video(request, sitelocation=None):
              'form': direct_form},
             context_instance=RequestContext(request))
 
-    direct_form = forms.DirectSubmitVideoForm(request.POST,
+    direct_form = forms.DirectSubmitVideoForm(request.POST, request.FILES,
                                               sitelocation=sitelocation,
                                               user=request.user)
 

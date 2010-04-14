@@ -23,26 +23,38 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block table %}
     <tr>
       <td>
-          {{ form.name.label_tag }}
-          {{ form.name }}
+        {{ form.name.errors }}
+        {{ form.name.label_tag }}
+        {{ form.name }}
       </td>
     </tr>
     <tr>
       <td>
-          {{ form.embed.label_tag }}
-          {{ form.embed }}
+        {{ form.embed.errors }}
+        {{ form.embed.label_tag }}
+        {{ form.embed }}
       </td>
     </tr>
     <tr>
       <td>
-          {{ form.thumbnail.label_tag }}
-          {{ form.thumbnail }}
+        {{ form.thumbnail_file.errors }}
+        {{ form.thumbnail_file.label_tag }}
+        {{ form.thumbnail_file }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="floatleft">or</div>
+        {{ form.thumbnail.errors }}
+        {{ form.thumbnail.label_tag }}
+        {{ form.thumbnail }}
       </td>
       </tr>
       <tr>
         <td>
-          {{ form.description.label_tag }}
-          {{ form.description }}
+        {{ form.description.errors }}
+        {{ form.description.label_tag }}
+        {{ form.description }}
         </td>
       </tr>
       <tr>
@@ -57,6 +69,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {{ form.contact.errors }}
         {{ form.contact.label_tag }}
         {{ form.contact }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.notes.label_tag }}
+        {{ form.notes }}
       </td>
     </tr>
     {% endif %}

@@ -932,6 +932,7 @@ class Video(Thumbnailable):
        website_url.
      - contact: a free-text field for anonymous users to specify some contact
        info
+     - notes: a free-text field to add notes about the video
     """
     name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
@@ -964,6 +965,7 @@ class Video(Thumbnailable):
                                         default='')
     contact = models.CharField(max_length=250, blank=True,
                                default='')
+    notes = models.TextField(blank=True)
 
 
     objects = VideoManager()
