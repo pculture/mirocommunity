@@ -1197,4 +1197,4 @@ def send_new_video_email(sender, **kwargs):
         subject = '[%s] New Video in Review Queue: %s' % (sender.site.name,
                                                           sender)
         util.send_mail_admins(sitelocation, subject, message)
-submit_finished.connect(send_new_video_email)
+submit_finished.connect(send_new_video_email, weak=False)
