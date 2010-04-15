@@ -1,4 +1,4 @@
- {% extends "localtv/submit_video/base.html" %}
+ {% extends "localtv/submit_video/second.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -20,10 +20,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n uploadtemplate_tags filters %}
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
-{% block pre-table %}
-{{ form.url }}
-{% endblock %}
-{% block table %}
+{% block form %}
     {% if user_is_admin %}
     {% if not data.title or not data.description %}
     <tr>
@@ -56,26 +53,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </div>
       </td>
     </tr>
-    <tr>
-      <td>
-      {{ form.tags.errors }}
-      <label for="id_tags">{{ form.tags.help_text|safe }}</label>
-      {{ form.tags }}
-      </td>
-    </tr>
-    {% if not request.user.is_authenticated %}
-    <tr>
-      <td>
-        {{ form.contact.errors }}
-        {{ form.contact.label_tag }}
-        {{ form.contact }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.notes.label_tag }}
-        {{ form.notes }}
-      </td>
-    </tr>
-    {% endif %}
 {% endblock %}
