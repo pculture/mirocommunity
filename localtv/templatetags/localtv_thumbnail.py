@@ -22,20 +22,56 @@ from localtv.admin.util import MetasearchVideo
 
 register = template.Library()
 
+class ThumbnailNode(template.Node):
+    def __init__(self, video, size, as_varname=None):
+        self.video = video
+        self.size = size
+        self.as_varname = as_varname
 
-@register.simple_tag
-def get_thumbnail_url(video, width, height):
-    if isinstance(video, MetasearchVideo):
-        return video.thumbnail_url
+    def render(self, context):
+        video = self.video.resolve(context)
+        thumbnail_url = self.get_thumbnail_url(video)
+        if self.as_varname is not None:
+            context[self.as_varname] = thumbnail_url
+            return ''
+        else:
+            return thumbnail_url
 
-    thumbnails = [source for source in [video, video.feed, video.search]
+    def get_thumbnail_url(self, video):
+        if isinstance(video, MetasearchVideo):
+            return video.thumbnail_url
+
+        thumbnails = [source for source in [video, video.feed, video.search]
                   if source is not None]
-    for thumbnail in thumbnails:
-        if thumbnail.has_thumbnail:
-            break
+        for thumbnail in thumbnails:
+            if thumbnail.has_thumbnail:
+                break
 
-    if not thumbnail.has_thumbnail:
-        return '/images/default_vid.gif'
+        if not thumbnail.has_thumbnail:
+            return '/images/default_vid.gif'
 
-    return default_storage.url(
-        thumbnail.get_resized_thumb_storage_path(width, height))
+        return default_storage.url(
+            thumbnail.get_resized_thumb_storage_path(*self.size))
+
+@register.tag('get_thumbnail_url')
+def get_thumbnail_url(parser, token):
+    tokens = token.split_contents()
+    if len(tokens) not in (4, 6):
+        raise template.TemplateSyntaxError(
+            '%r tag requires 4 or 6 arguments' % (tokens[0],))
+    try:
+        width = int(tokens[2])
+        height = int(tokens[3])
+    except ValueError:
+        raise template.TemplateSyntaxError(
+            'Third and forth arguments in %r tag must be integers' % (
+                tokens[0],))
+    video = template.Variable(tokens[1])
+    if len(tokens) == 6: # get_thumbnail_url video width height as variable
+        if tokens[4] != 'as':
+            raise template.TemplateSyntaxError(
+                "Fifth argument in %r tag must be 'as'" % tokens[0])
+        return ThumbnailNode(video, (width, height), tokens[5])
+    else:
+        return ThumbnailNode(video, (width, height))
+
