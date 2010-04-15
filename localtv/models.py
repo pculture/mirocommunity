@@ -208,8 +208,7 @@ class SiteLocation(models.Model):
     objects = SiteLocationManager()
 
     def __unicode__(self):
-        return self.site.name
-
+        return '%s (%s)' % (self.site.name, self.site.domain)
 
     def user_is_admin(self, user):
         """
