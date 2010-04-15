@@ -246,7 +246,6 @@ class Thumbnailable(models.Model):
         try:
             pil_image = Image.open(content_thumb)
         except IOError:
-            raise
             raise CannotOpenImageUrl(
                 'An image at the url %s could not be loaded' % (
                     self.thumbnail_url))
