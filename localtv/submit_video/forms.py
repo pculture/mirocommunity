@@ -25,7 +25,8 @@ from django.core.files.base import ContentFile
 from tagging.forms import TagField
 
 from localtv import models
-from localtv.util import quote_unicode_url, get_profile_model
+from localtv.util import (quote_unicode_url, get_profile_model,
+                          get_or_create_tags)
 from localtv.templatetags.filters import sanitize
 
 class ImageURLField(forms.URLField):
@@ -142,6 +143,10 @@ class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
 class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
     def __init__(self, *args, **kwargs):
         self.scraped_data = kwargs.pop('scraped_data', {})
+        if self.scraped_data.get('tags'):
+            kwargs.setdefault('initial', {})['tags'] = \
+                get_or_create_tags(self.scraped_data['tags'])
+        print self.scraped_data, kwargs
         SecondStepSubmitVideoForm.__init__(self, *args, **kwargs)
 
     def save(self, **kwargs):

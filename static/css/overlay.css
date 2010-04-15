@@ -147,7 +147,7 @@ margin: 10px 0 0 10px;
 #submit_video .scraped_details {
     float: left;
     margin-left: 15px;
-    width: 255px;
+    width: 245px;
 }
 
 #submit_video .posted_by {
@@ -157,6 +157,10 @@ margin: 10px 0 0 10px;
 
 #submit_video .posted_at {
     color: #B64B3D;
+}
+
+#submit_video div.tags, #submit_video div.description {
+    padding-top: 5px;
 }
 /*/////////////////////////////////////////////
 

@@ -49,6 +49,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <span class="posted_at">Published {{ data.publish_date|simpletimesince }} ago</span>
             {% endif %}
           </span>
+          {% if data.tags %}
+          <div class="tags">
+            Tags: {% for tag in data.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </div>
+          {% endif %}
           <div class="description">{{ data.description|sanitize }}</div>
         </div>
       </td>

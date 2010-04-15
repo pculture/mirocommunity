@@ -191,7 +191,8 @@ def scraped_submit_video(request, sitelocation=None):
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
     if request.method == "GET":
-        scraped_form = forms.ScrapedSubmitVideoForm(initial=initial)
+        scraped_form = forms.ScrapedSubmitVideoForm(initial=initial,
+                                                    scraped_data=scraped_data)
 
         return render_to_response(
             'localtv/submit_video/scraped.html',
