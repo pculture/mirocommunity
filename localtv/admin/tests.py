@@ -1021,11 +1021,46 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[2].name,
+        self.assertEquals(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
         self.assertEquals(response.context[2]['video_count'], 1)
+
+    def test_GET_fail_existing(self):
+        """
+        A GET request to the add_feed view should fail if the feed already
+        exists.
+        """
+        models.Feed.objects.create(
+            site=self.site_location.site,
+            last_updated=datetime.datetime.now(),
+            status=models.FEED_STATUS_UNAPPROVED,
+            feed_url=self.feed_url)
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'feed_url': self.feed_url})
+        self.assertStatusCodeEquals(response, 400) # bad request
+
+    def test_GET_fail_existing_youtube(self):
+        """
+        We accept a few different kinds of YouTube URLs.  We should make sure
+        we only have one feed per base URL.
+        """
+        url1 = ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
+                'alt=rss&v=2&orderby=published')
+        url2 = 'http://www.youtube.com/rss/user/CLPPrj/videos.rss'
+        models.Feed.objects.create(
+            site=self.site_location.site,
+            last_updated=datetime.datetime.now(),
+            status=models.FEED_STATUS_UNAPPROVED,
+            feed_url=url1)
+        c = Client()
+        c.login(username='admin', password='admin')
+        for url in url1, url2:
+            response = c.get(self.url, {'feed_url': url})
+            self.assertEquals(response.status_code, 400,
+                              '%r not stopped as a duplicate' % url)
 
     def test_GET_vimeo(self):
         """
@@ -1038,7 +1073,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[2].name,
+        self.assertEquals(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1054,7 +1089,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[2].name,
+        self.assertEquals(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1300,7 +1335,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url,
                          {'query': 'search string'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[2].name,
+        self.assertEquals(response.template[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertIsInstance(response.context[2]['current_video'],
                               MetasearchVideo)

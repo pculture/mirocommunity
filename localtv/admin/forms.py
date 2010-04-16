@@ -561,7 +561,8 @@ class AddFeedForm(forms.Form):
                 r'^(http://)?(www\.)?youtube\.com/profile(_videos)?'
                 r'\?(\w+=\w+&)*user=(?P<name>\w+)'),
          'youtube'),
-        (re.compile(r'^(http://)?(www\.)?youtube\.com/(user/)?(?P<name>\w+)$'),
+        (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
+                    r'(?P<name>\w+)'),
          'youtube'),
         (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
         (re.compile(
@@ -599,8 +600,7 @@ class AddFeedForm(forms.Form):
 
         site = Site.objects.get_current()
         if models.Feed.objects.filter(feed_url=value,
-                                      site=site,
-                                      status=models.FEED_STATUS_ACTIVE):
+                                      site=site):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
 
