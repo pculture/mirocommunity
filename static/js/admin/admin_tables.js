@@ -32,6 +32,7 @@ function load_video(eventdata) {
                 selected.addClass('unselected');
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
+                scroll_admin();
                 }});
     return false;
 }
