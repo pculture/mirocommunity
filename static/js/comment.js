@@ -1,10 +1,11 @@
 function comment_form_callback(response) {
     parsed = $("<div/>").html(response);
-    next = parsed.find('#next').attr('href');
-    if ((next == location.pathname) ||
-        (next == location.href)) {
+    next_link = parsed.find('#next').attr('href');
+    full_path = location.protocol + '//' + location.host + location.pathname;
+    if ((next_link == location.pathname) ||
+        (next_link == full_path)) {
         $('#comment_form').clearForm();
-        location.href = location.href + '#comments';
+        location.href = full_path + '#comments';
         location.reload();
         return;
     }
