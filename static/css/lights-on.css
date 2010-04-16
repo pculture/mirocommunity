@@ -1197,7 +1197,6 @@ position: relative;
 .video_wrapper embed, .video_wrapper object {
 width: 100%;
 height: 430px;
-background: white;
 }
 
 .video_wrapper img {
