@@ -300,20 +300,18 @@ class Thumbnailable(models.Model):
                     y = int((height - resized_image.size[1]) / 2)
                 else:
                     x = int((width - resized_image.size[0]) / 2)
-                new_image = Image.new('RGB',
-                    (width, height), (0, 0, 0))
+                new_image = Image.new('RGBA',
+                    (width, height), (0, 0, 0, 0))
                 new_image.paste(resized_image, (x, y))
                 resized_image = new_image
             sio_img = StringIO.StringIO()
-            resized_image.save(sio_img, 'jpeg', quality=50, optimize=True)
+            resized_image.save(sio_img, 'png')
             sio_img.seek(0)
             cf_image = ContentFile(sio_img.read())
 
             # write file, deleting old thumb if it exists
-            for extension in '.png', '.jpeg':
-                default_storage.delete(
-                    self.get_resized_thumb_storage_path(width, height,
-                                                        extension))
+            default_storage.delete(
+                self.get_resized_thumb_storage_path(width, height))
             default_storage.save(
                 self.get_resized_thumb_storage_path(width, height),
                 cf_image)
@@ -327,16 +325,14 @@ class Thumbnailable(models.Model):
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
-    def get_resized_thumb_storage_path(self, width, height, extension=None):
+    def get_resized_thumb_storage_path(self, width, height):
         """
         Return the path for the a thumbnail of a resized width and height,
         relative to the default file storage system.
         """
-        if extension is None:
-            extension = '.jpeg'
-        return 'localtv/%s_thumbs/%s/%sx%s%s' % (
+        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
             self._meta.object_name.lower(),
-            self.id, width, height, extension)
+            self.id, width, height)
 
     def delete_thumbnails(self):
         self.has_thumbnail = False
