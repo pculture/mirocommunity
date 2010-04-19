@@ -44,9 +44,9 @@ function bulkAction() {
 $(document).ready(function() {
     $("#toggle_all").click(function() {
         if (this.checked) {
-            $('td:first-child input[type=checkbox]:not(:checked)').click();
+            $('td:first-child > input[type=checkbox]:not(:checked)').click();
         } else {
-            $('td:first-child input[type=checkbox]:checked').click();
+            $('td:first-child > input[type=checkbox]:checked').click();
         }
     });
     if ($("form input[name$=-id]").length != parseInt($("#id_form-INITIAL_FORMS").val(), 10)) {
