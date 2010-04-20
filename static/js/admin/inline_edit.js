@@ -11,6 +11,7 @@ function insert_and_activate_action_buttons(obj) {
 
 function inline_edit_open() {
     editable = $(this).parents('.editable');
+    var use_absolute = false;
     editable.find('.input_field').each(
         function() {insert_and_activate_action_buttons($(this));}).ajaxForm({
             dataType: 'html',
@@ -21,14 +22,18 @@ function inline_edit_open() {
             success: function(data, statusText) {
                 widget = $(data);
                 editable.replaceWith(widget);
+                widget.children('.simple_overlay').overlay({absolute: use_absolute, api: true});
             },
             error: function(xhr, status, error) {
                 widget = $(xhr.responseText);
                 editable.replaceWith(widget);
+                widget.children('.simple_overlay').overlay({absolute: use_absolute, api:true});
                 inline_edit_open.call(widget.find('a.edit_link'));
             }
         });
-    editable.children('.simple_overlay').overlay({api: true}).load();
+    api = editable.children('.simple_overlay').overlay({api: true});
+    use_absolute = api.getConf().absolute;
+    api.load();
     return false;
 }
 
