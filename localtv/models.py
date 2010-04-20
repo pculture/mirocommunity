@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import httplib
 import re
 import urllib
 import urllib2
@@ -1014,6 +1015,10 @@ class Video(Thumbnailable):
                     util.quote_unicode_url(self.thumbnail_url)).read())
         except IOError:
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
+        except httplib.InvalidURL:
+            # if the URL isn't valid, erase it and move on
+            self.thumbnail_url = ''
+            self.save()
         else:
             self.save_thumbnail_from_file(content_thumb)
 
