@@ -146,7 +146,6 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
         if self.scraped_data.get('tags'):
             kwargs.setdefault('initial', {})['tags'] = \
                 get_or_create_tags(self.scraped_data['tags'])
-        print self.scraped_data, kwargs
         SecondStepSubmitVideoForm.__init__(self, *args, **kwargs)
 
     def save(self, **kwargs):

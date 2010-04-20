@@ -90,7 +90,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3> {{ current_video.submitter }}</li>{% endif %}
   {% if current_video.search %}<li class="item"><h3>From search</h3> {{ current_video.search }}</li>{% endif %}
   {% if current_video.feed %}<li class="item"><h3>From feed</h3> {{ current_video.feed }}</li>{% endif %}
-  {% if current_video.contact %}<li class="item"><h3>Contact</h3> {{ current_video.contact }}</li>{% endif %}
+  {% if current_video.contact or current_video.user %}<li class="item"><h3>Contact</h3>
+      {% if current_video.user.email %}
+      {{ current_video.user.email }}
+      {% else %}
+      {% if current_video.user %}
+      {{ current_video.user.username }}
+      {% else %}
+      {{ current_video.contact }}
+      {% endif %}
+      {% endif %}
+      </li>{% endif %}
   {% if current_video.notes %}<li class="item"><h3>Notes</h3> {{ current_video.notes }}</li>{% endif %}
 	<li style="float: none; clear: both;"></li>
   </ul>
