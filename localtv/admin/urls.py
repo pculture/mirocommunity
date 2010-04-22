@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import patterns, include
-from django.views.generic.simple import direct_to_template
+from django.conf.urls.defaults import patterns
 
 urlpatterns = patterns(
     'localtv.admin.views',
@@ -80,10 +79,7 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     'localtv.admin.design_views',
     (r'^settings/$', 'edit_settings',
-     {}, 'localtv_admin_settings'),
-    (r'create_widget/$', direct_to_template, {
-            'template': 'localtv/admin/widget_creator.html'},
-     'localtv_admin_widget_creator'))
+     {}, 'localtv_admin_settings'))
 
 urlpatterns += patterns(
     'localtv.admin.category_views',
