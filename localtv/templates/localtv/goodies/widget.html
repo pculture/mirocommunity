@@ -1,4 +1,4 @@
-{% extends "localtv/admin/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -54,11 +54,8 @@ $(document).ready(update_widget);
 </script>
 {% endblock %}
 {% block content %}
-  {% include "localtv/admin/settings_header.html" %}
-  <br class="clearboth" />
-
   <div id="widget-base">
-    <h1>Create a Widget to Display on Your Site</h1>
+    <h2>Create a Widget to Display on Your Site</h2>
     <div>
       <div id="widget-settings">
         <h2>Pick Your Options</h2>

@@ -1784,30 +1784,3 @@ margin: 16px 0 0;
 #admin.comments th, #admin.comments td{
 padding: 5px;
 }
-
-#widget-base h2 {
-    margin-top: 10px;
-}
-#widget-settings, #widget-display {
-    float: left;
-}
-
-#widget-settings {
-    padding-right: 40px;
-}
-#widget-code h2 {
-    float: none;
-}
-#widget-code textarea {
-    float: left;
-}
-#widget-display {
-    width: 100%;
-    border-top: 2px solid grey;
-    margin-top: 40px;
-}
-
-#widget-example {
-    margin: 30px auto;
-    width: 300px;
-}

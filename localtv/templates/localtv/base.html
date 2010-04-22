@@ -160,6 +160,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
       {% block footer_wrapper %}
         <div id="footer">
+          {% if footer_html %}
           <div class="local_footer">
           {% block footer %}
             
@@ -170,17 +171,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             
           {% endblock footer %}
           </div>
-          
+          {% endif %}
           <div>
-          
-			<p class="powered"><span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
-
+            
+            <div class="powered">
+              <span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
+              <ul id="footer_links">
+                <li><a href="{% url localtv_index %}">Home</a></li>
+                <li><a href="{% url localtv_goodies %}">Goodies</a></li>
+                <li>
           {% if request.user.is_authenticated %}
             <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
           {% else %}
             <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" rel="#overlay" title="Please Sign In">Login</a>
           {% endif %}
-        </p>
+                </li>
+              </ul>
           </div>
         </div>
 

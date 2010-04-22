@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import patterns, include
-from email_share.forms import ShareMultipleEmailForm
 
 urlpatterns = patterns(
     'localtv.views',
@@ -49,5 +48,6 @@ urlpatterns += patterns(
     (r'^submit_video/', include('localtv.submit_video.urls')),
     (r'^listing/', include('localtv.listing.urls')),
     (r'^feeds/', include('localtv.feeds.urls')),
+    (r'^goodies/', include('localtv.goodies.urls')),
     (r'^share/', include('email_share.urls')),
     (r'^widgets/', include('localtv.widgets.urls')))

@@ -1,0 +1,9 @@
+{% extends "localtv/base.html" %}
+{% block title %}Goodies{% endblock %}
+{% block content %}
+  <h2>Goodies</h2>
+  <ul>
+  <li><a href="{% url localtv_goodies_widget %}">Video Widget</a></li>
+  </li><a href="{% url localtv_goodies_bookmarklet %}">Bookmarklet</a></li>
+  </ul>
+{% endblock %}
