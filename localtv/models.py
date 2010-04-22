@@ -1,3 +1,4 @@
+
 # Copyright 2009 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
@@ -1018,6 +1019,7 @@ class Video(Thumbnailable):
         except httplib.InvalidURL:
             # if the URL isn't valid, erase it and move on
             self.thumbnail_url = ''
+            self.has_thumbnail = False
             self.save()
         else:
             self.save_thumbnail_from_file(content_thumb)
