@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list %}
+{% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags %}
 
 {% block body_id %}view_video{% endblock %}
 
@@ -208,9 +208,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endautoescape %}
     </div>
     {% endif %}
+    <div class="sidebar_header">
+      <h2>Share This Video</h2>
+    </div>
+    <div id="share_links">
+      <a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">Post to Facebook</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script>
+      <a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">Email to Friends</a>
+      {% if current_video.file_url %}<a href="{{ current_video.file_url }}" class="download">Download Video File</a>{% endif %}
+    </div>
     {% if category %}
     {% cache 3600 view_video_category_new sitelocation category %}
-    <div id="sidebar_header">
+    <div class="sidebar_header">
       <h2>{{ category.name }}</h2>
 
       <div class="floatright">
@@ -226,7 +234,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endcache %}
     {% else %}
     {% cache 3600 view_video_new sitelocation %}
-    <div id="sidebar_header">
+    <div class="sidebar_header">
       <h2>New Videos</h2>
 
       <div class="floatright">

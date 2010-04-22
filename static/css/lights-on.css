@@ -808,7 +808,7 @@ float: right;
 _overflow: hidden;
 }
 
-#sidebar_header h2 {
+#sidebar_header h2, .sidebar_header h2 {
 font-size: 12px;
 padding-left: 14px;
 float: left;
@@ -816,7 +816,7 @@ font-weight: bold;
 }
 
 
-#sidebar_header {
+#sidebar_header, .sidebar_header {
 font-size: 12px;
 line-height: 36px;
 height: 36px;
@@ -827,12 +827,44 @@ margin: 20px 0;
 }
 
 
-#sidebar_header a {
+#sidebar_header a, .sidebar_header a {
 padding-left: 10px;
 color: #444;
 text-decoration: none;
 }
 
+#share_links {
+    padding-left: 10px;
+    padding-bottom: 10px;
+    min-height: 2em;
+}
+
+#share_links a {
+    float: left;
+    width: 150px;
+    font-size: 12px;
+    display: block;
+    font-weight: bold;
+    padding-left: 20px;
+    padding-bottom: 10px;
+    color: #4190E4;
+    text-decoration: none;
+}
+#share_links a.facebook{
+    padding-left: 0;
+}
+
+#share_links a.twitter{
+	background: url(../images/tiny_icons.png) 0px 0px no-repeat;
+	}
+
+#share_links a.email{
+background: url(../images/tiny_icons.png) 0px -49px no-repeat;
+}
+
+#share_links a.download{
+background: url(../images/tiny_icons.png) 0px -73px no-repeat;
+}
 
 /*/////////////////////////////////////////////
 
