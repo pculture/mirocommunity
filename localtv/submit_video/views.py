@@ -57,7 +57,7 @@ def submit_lock(func):
             request.path,
             request.POST['url'])
         while True:
-            stored = cache.cache.add(cache_key, 'locked', 5)
+            stored = cache.cache.add(cache_key, 'locked', 20)
             if stored:
                 # got the lock
                 break
