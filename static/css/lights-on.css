@@ -852,6 +852,7 @@ text-decoration: none;
 }
 #share_links a.facebook{
     padding-left: 0;
+    padding-right: 20px;
 }
 
 #share_links a.twitter{
