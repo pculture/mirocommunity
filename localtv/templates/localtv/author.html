@@ -18,28 +18,32 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load filters %}
+{% load filters pagetabs %}
 {% block content %}
-<div id="category_sidebar">
-  {% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% endif %}
+<div id="author_sidebar">
+  <div id="author_info">
+    {% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% endif %}
+    <h1>{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</h1>
+    <a class="rss" href="{% url localtv_feeds_author author.pk %}">RSS</a>
+    {% if author.get_profile.website %}<div id="link"><a href="{{ author.get_profile.website }}">{{ author.get_profile.website }}</a></div>{% endif %}
+    <div>{{ author.get_profile.description|sanitize }}</div>
 
-  <h1>{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</h1>
-  {% if author.get_profile.website %}<div id="link"><a href="{{ author.get_profile.website }}">{{ author.get_profile.website }}</a></div>{% endif %}
-  <div>{{ author.get_profile.description|sanitize }}</div>
-
+  </div>
+</div>
+<div class="pag">
+  {% if page_obj.has_other_pages %}
+  <b>Pages</b>
+  {% pagetabs page_obj %}
+  {% endif %}
 </div>
 
-<div id="category">
-
-  <div id="individual">
-    <ul>
-      {% for video in video_list %}
-      <li>
-        {% include "localtv/video_listing_individual.html" %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-
+<div id="author_videos">
+  <ul>
+    {% for video in video_list %}
+    <li>
+      {% include "localtv/video_listing_individual.html" %}
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 {% endblock %}
