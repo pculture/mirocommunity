@@ -2151,6 +2151,25 @@ padding: 0 20px 10px 0px;
 float: left;
 }
 
+#author_info {
+margin-top: 27px;
+background: #f9f9f9 !important;
+border: 1px solid #eee !important;
+padding: 20px;
+overflow: auto;
+}
+
+div#category{
+float: right;
+width: 600px !important;
+padding-top: 26px !important;
+}
+
+#category_sidebar{
+width: 312px !important;
+}
+
+
 #category_info {
 margin-top: 27px;
 background: #f9f9f9 !important;
@@ -2160,7 +2179,7 @@ overflow: auto;
 }
 
 
-#category_info a.rss{
+#category_info a.rss, #author_info a.rss {
 float: right;
 color: #4190E4;
 
