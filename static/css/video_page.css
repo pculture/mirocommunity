@@ -424,17 +424,6 @@ margin: 0;
 width: 484px !important;
 }
 
-#category_sidebar {
-    float: left;
-    width: 20%;
-    margin-right: 20px;
-}
-
-#category_info {
-    background: #eee;
-    text-align: center;
-}
-
 #category_sidebar h1 {
     float: none;
 }
@@ -442,11 +431,6 @@ width: 484px !important;
 #category_sidebar img {
     max-width: 100%;
     padding-bottom: 10px;
-}
-
-#category {
-    width: 70%;
-    float: left;
 }
 
 #category a.count {
@@ -457,11 +441,6 @@ width: 484px !important;
 
 #category a.count:hover {
 text-decoration: underline;
-}
-
-
-#category > div {
-
 }
 
 #category h2{
