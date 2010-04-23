@@ -18,6 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load pagetabs %}
 {% block content %}
 <div id="category_sidebar">
   {% if category.name %}
@@ -25,45 +26,49 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
 
     <h1>{{ category.name }}</h1>
+    <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
 
     <div>{{ category.description|safe }}</div>
 
-    <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
-  </div>
-  {% endif %}
-  {% if category.child_set.count %}
-  <div id="subcategory_sidebar">
-    <div id="main_header" class="small">
-      <h2>Subcategories</h2>
-    </div>
-    <ul class="cat_list">
-      {% for subcat in category.child_set.all %}
-      <li>
-        <a class="top_cat_button" title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
-        {% if subcat.child_set.count %}
-        <ul>
-        {% for subsubcat in subcat.child_set.all %}
-        <li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
   </div>
   {% endif %}
 </div>
+{% if category.child_set.count %}
+<div id="subcategory_sidebar">
+  <div id="main_header" class="small">
+    <h2>Subcategories</h2>
+  </div>
+  <ul class="cat_list">
+    {% for subcat in category.child_set.all %}
+    <li>
+      <a class="top_cat_button" title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
+      {% if subcat.child_set.count %}
+      <ul>
+        {% for subsubcat in subcat.child_set.all %}
+        <li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
 <div id="category">
+{% if page_obj.has_other_pages %}
+<div class="pag">
+  <b>Pages</b>
+  {% pagetabs page_obj %}
+</div>
+{% endif %}
 
-  {% if category.approved_set.count %}
   <ul>
-    {% for video in category.approved_set.all %}
+    {% for video in video_list %}
     <li>
       {% include "localtv/video_listing_individual.html" %}
     </li>
     {% endfor %}
   </ul>
-  {% endif %}
 
 </div>
 {% endblock %}

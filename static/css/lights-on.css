@@ -2151,33 +2151,13 @@ padding: 0 20px 10px 0px;
 float: left;
 }
 
-#author_info {
+#author_info, #category_info {
 margin-top: 27px;
 background: #f9f9f9 !important;
 border: 1px solid #eee !important;
 padding: 20px;
 overflow: auto;
 }
-
-div#category{
-float: right;
-width: 600px !important;
-padding-top: 26px !important;
-}
-
-#category_sidebar{
-width: 312px !important;
-}
-
-
-#category_info {
-margin-top: 27px;
-background: #f9f9f9 !important;
-border: 1px solid #eee !important;
-padding: 20px;
-overflow: auto;
-}
-
 
 #category_info a.rss, #author_info a.rss {
 float: right;
@@ -2192,12 +2172,10 @@ width: 600px !important;
 padding-top: 26px !important;
 }
 
-#category_sidebar{
+#subcategory_sidebar{
 width: 312px !important;
-}
-
-#subcategory_sidebar {
-    padding-top: 20px;
+padding-top: 20px;
+float: left;
 }
 
 #subcategory_sidebar .cat_list a {
@@ -2222,20 +2200,19 @@ font-size: 13px;
 text-align: left;
 }
 
-#category {
-padding-top: 0 !important;
-}
-
 #category h2 {
 padding-bottom: 15px;
 }
 
+#category
 .actions {
 padding: 0 0 15px;
 float: right;
 }
 
-
+#category .pag {
+    padding-top: 0;
+}
 .actions select {
 margin-right: 8px;
 }
