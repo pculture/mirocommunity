@@ -345,3 +345,10 @@ input#id_sender_email, input#id_recipient_email{
 float: left;
 width: 454px;
 }
+
+#share_thanks h1 {
+float: left;
+font-size: 200%;
+font-weight: bold;
+margin: 10px;
+}
