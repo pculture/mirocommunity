@@ -740,7 +740,7 @@ class Category(models.Model):
     def approved_set(self):
         categories = [self] + self.in_order(self.site, self.child_set.all())
         return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
-                                 categories__in=categories)
+                                 categories__in=categories).distinct()
     approved_set = property(approved_set)
 
 class CategoryAdmin(admin.ModelAdmin):
