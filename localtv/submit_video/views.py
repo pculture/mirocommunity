@@ -125,6 +125,8 @@ def submit_video(request, sitelocation=None):
                 submit_form.cleaned_data['url'])
 
             get_dict = {'url': submit_form.cleaned_data['url']}
+            if 'bookmarklet' in request.GET:
+                get_dict['bookmarklet'] = '1'
             get_params = urllib.urlencode(get_dict)
             if scraped_data:
                 if 'link' in scraped_data and \
