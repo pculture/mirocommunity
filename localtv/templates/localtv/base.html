@@ -20,6 +20,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load uploadtemplate_tags %}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+  {% block top %}{% endblock %}
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
