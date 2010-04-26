@@ -36,8 +36,9 @@ if (typeof MiroCommunity === 'undefined') {
             },
             render: function () {
                 this.addStyle();
-                document.write('<div id="' + this.id + '" class="mc-widget">');
-                document.write('<h2>Watch Videos from Miro Community</h2><ul class="mc-loading"><li><span/></li></ul>');
+                document.write('<div id="' + this.id + '" class="mc-widget"><h2>');
+                document.write(this.opts.title ? this.opts.title : 'Watch Videos from Miro Community');
+                document.write('</h2><ul class="mc-loading"><li><span/></li></ul>');
                 document.write('<a class="mc-from" href="http://' + this.opts.domain + '/">' + this.opts.domain + '</a></div>');
                 this.load();
             },

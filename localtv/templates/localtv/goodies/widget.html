@@ -30,17 +30,20 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <link rel="stylesheet" href="/css/widget.css">
 <script src="/js/widget.js"></script>
 <script type="text/javascript">
-var embed_base = "{% filter escapejs %}{% include "localtv/widgets/embed.html" %}{% endfilter %}";
+var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
 
 function update_widget() {
     display = $("#widget-display");
     area = $("#widget-code textarea");
+    title = $("input[name=title]").val();
     count = $("input[name=count]").val();
     source = $("select[name=source]").val();
     embed = embed_base;
+    embed = embed.replace(/TITLE/g, title);
     embed = embed.replace(/COUNT/g, count);
     embed = embed.replace(/SOURCE/g, source);
     area.val(embed);
+    $('#widget-example h2').text(title);
     $('#widget-example ul').empty();
     example_widget = new MiroCommunity.Widget({domain: '{{ sitelocation.site.domain }}',
                                                source: source,
@@ -59,6 +62,10 @@ $(document).ready(update_widget);
     <div>
       <div id="widget-settings">
         <h2>Pick Your Options</h2>
+        <div>
+          <label for="count">Title</label>
+          <input name="title" value="Watch Videos on {{ sitelocation.site.name }}" />
+        </div>
         <div>
           <label for="count">Number of Videos:</label>
           <input name="count" value="4" />
