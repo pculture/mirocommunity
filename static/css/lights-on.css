@@ -1225,7 +1225,6 @@ display: none;
 
 .video_wrapper {
 text-align: center;
-height: 430px;
 margin: 17px 0 35px;
 clear: both;
 width: 534px;
@@ -1234,22 +1233,6 @@ float: left;
 z-index: 0;
 position: relative;
 
-}
-
-.video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
-width: 100%;
-height: 430px;
-margin: 0 auto;
-}
-
-.video_wrapper img {
-    height: 430px;
-    width: 534px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: -1;
-    padding-left: 2px;
 }
 
 .video_wrapper video + p + img, .video_wrapper video + img {

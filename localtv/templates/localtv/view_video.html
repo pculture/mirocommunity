@@ -41,6 +41,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.form.js" %}"></script>
   <script type="text/javascript" src="{% get_static_url "/js/comment.js" %}"></script>
   {% include "localtv/view_video_meta.html" %}
+  {% if current_video.video_service %}<style>
+  .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
+width: 100%;
+height: 430px;
+margin: 0 auto;
+}</style>{% endif %}
 {% endblock %}
 
 {% block content %}
