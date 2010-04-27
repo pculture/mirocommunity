@@ -53,17 +53,17 @@ def categories(request, sitelocation=None):
                                                 queryset=categories)
                 if formset.is_valid():
                     formset.save()
-                action = request.POST.get('bulk_action')
-                if action == 'delete':
-                    for data in  formset.cleaned_data:
-                        if data['BULK']:
-                            category = data['id']
-                            for child in category.child_set.all():
-                                # reset children to no parent
-                                child.parent = None
-                                child.save()
-                            data['id'].delete()
-                return HttpResponseRedirect(request.path + '?successful')
+                    action = request.POST.get('bulk_action')
+                    if action == 'delete':
+                        for data in  formset.cleaned_data:
+                            if data['BULK']:
+                                category = data['id']
+                                for child in category.child_set.all():
+                                    # reset children to no parent
+                                    child.parent = None
+                                    child.save()
+                                data['id'].delete()
+                    return HttpResponseRedirect(request.path + '?successful')
 
     return render_to_response('localtv/admin/categories.html',
                               {'formset': formset,
