@@ -28,8 +28,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if video.embed_code %}
   {{ video.embed_code|wmode_transparent }}
   {% else %}
-  {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 %}
+  {% get_thumbnail_url video 534 430 as video_thumbnail %}
+  {% video video.file_url mime_type=video.file_url_mimetype autoplay=0 poster=video_thumbnail %}
   {% endif %}
-  <img src="{% get_thumbnail_url video 534 430 %}" />
 </div>
 <br />
