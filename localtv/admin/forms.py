@@ -361,16 +361,32 @@ class BaseCategoryFormSet(BaseModelFormSet):
 
     def clean(self):
         BaseModelFormSet.clean(self)
+        if not self.is_valid():
+            return
         deleted_ids = set()
+        ids_to_data = {}
         parents = {}
         # first pass: get the deleted items and map parents to items
         for i, data in enumerate(self.cleaned_data):
+            ids_to_data[data['id']] = data
             if data.get('DELETE'):
                 deleted_ids.add(data['id'])
             if data.get('parent'):
                 parents.setdefault(data['parent'], set()).add(i)
 
-        # second pass: set children of deleted items to None:
+        # second pass: check for cycles
+        for data in self.cleaned_data:
+            category = data
+            s = set([category['id'].pk])
+            while category['parent']:
+                if category['parent'].pk in s:
+                    raise forms.ValidationError(
+                        'Detected a cycle in Category %s' % (
+                            data['name']))
+                category = ids_to_data[category['parent']]
+                s.add(category['id'].pk)
+
+        # third pass: set children of deleted items to None:
         for parent in deleted_ids:
             if parent not in parents:
                 continue

@@ -1887,7 +1887,63 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url)
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        POST_data['form-0-name'] = ''
+
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/categories.html')
+        self.assertTrue(
+            getattr(response.context[0]['formset'], 'errors') is not None)
+        self.assertTrue('add_category_form' in response.context[0])
+
+    def test_POST_save_failure_short_cycle(self):
+        """
+        If a change to the categories sets the parent of a category to itself,
+        the save should fail.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        POST_data['form-0-parent'] = POST_data['form-0-id']
+
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/categories.html')
+        self.assertTrue(
+            getattr(response.context[0]['formset'], 'errors') is not None)
+        self.assertTrue('add_category_form' in response.context[0])
+
+    def test_POST_save_failure_long_cycle(self):
+        """
+        If a change to the categories creates a longer cycle, the save should
+        fail.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url)
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        POST_data['form-0-parent'] = POST_data['form-1-id']
+        POST_data['form-1-parent'] = POST_data['form-2-id']
+        POST_data['form-1-parent'] = POST_data['form-0-id']
+
+        response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/admin/categories.html')
