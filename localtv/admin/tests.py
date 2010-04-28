@@ -738,6 +738,12 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         extra form filled out should update any source with the bulk option
         checked.
         """
+        # give the feed a category
+        for source in (models.Feed.objects.get(pk=3), # form 0
+                       models.SavedSearch.objects.get(pk=8)): # form 1
+            source.auto_categories =[models.Category.objects.get(pk=2)]
+            source.save()
+
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
@@ -746,7 +752,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_data['form-0-BULK'] = 'yes'
         POST_data['form-1-BULK'] = 'yes'
-        POST_data['form-15-auto_categories'] = [1, 2]
+        POST_data['form-15-auto_categories'] = [1]
         POST_data['form-15-auto_authors'] = [1, 2]
         POST_data['form-15-auto_approve'] = 'yes'
 
