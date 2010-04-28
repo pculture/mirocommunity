@@ -27,7 +27,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <!--[if lt IE 8]>
    <link rel="StyleSheet" type="text/css" href="/css/msie7.css" />
 <![endif]-->
-<!--[if IE]><style>#admin .internet_explorer {display: block;margin: 13px;}</style><![endif]-->
     <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js"></script>
     <script src="/js/extern/jquery.form.js"
             type="text/javascript">
@@ -42,10 +41,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <body id="{% block body_id %}admin{% endblock body_id %}" class="{% block body_class %}{% endblock %}">
     {% if not request.is_ajax %}
     <p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
-    <p class="internet_explorer">
+    <!--[if IE]><p class="internet_explorer">
       Administrative content is not optimized for the Internet Explorer.
       We recommend upgrading to a <a href="http://www.firefox.com/">better browser</a> if you are experiencing problems.
-    </p>
+    </p><![endif]-->
 
     <div id="wrapper" style="{% block wrapper-style-extra %}width: 85%; min-width: 960px;{% endblock %}">
       <div id="header">
