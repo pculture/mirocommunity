@@ -144,7 +144,13 @@ def manage_sources(request, sitelocation=None):
                         continue
                     if bulk_edits:
                         for key, value in bulk_edits.items():
-                            form.cleaned_data[key] = value
+                            if key == 'auto_categories':
+                                # categories append, not replace
+                                form.cleaned_data[key] = (
+                                    list(form.cleaned_data[key]) +
+                                    list(value))
+                            else:
+                                form.cleaned_data[key] = value
 
                 # if the categories or authors changed, update unchanged videos
                 # to the new values
