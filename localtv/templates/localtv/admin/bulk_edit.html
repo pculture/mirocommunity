@@ -35,7 +35,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="labels">
   {% block labels %}
   <form action="" method="get" class="search_sources">
-    <label>Search Videos</label>
     <select class="behave" name="category">
       <option {% if not request.GET.category %}selected="selected"{% endif %}  value="">Show All Categories</option>
       {% for category in categories %}
@@ -51,7 +50,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <label for="id_featured">Show only featured</label>
     <input type="checkbox" id="id_featured" name="featured" {% if request.GET.featured %}checked="checked"{% endif %}/>
     <input type="text" class="small_field" name="q" value="{{ search_string }}" />
-    <button class="med_button floatright"><span>Search</span></button>
+    <button class="med_button"><span>Search</span></button>
   </form>
 
 
