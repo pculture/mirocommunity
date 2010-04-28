@@ -537,6 +537,9 @@ float: left;
 margin: 13px;
 }
 
+#admin .internet_explorer {
+    display: none;
+}
 
 
 /*//////////////////////////////////////
