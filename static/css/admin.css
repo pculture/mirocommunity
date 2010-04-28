@@ -1047,6 +1047,7 @@ display: block;
 
 #admin_videolisting_row .video .desc{
 margin-bottom: 10px;
+height:5.5em;
 color: #777;
 font-size: 11px;
 line-height: 1.1em;
