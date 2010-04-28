@@ -2263,16 +2263,61 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_filter_featured(self):
         """
-        A GET request with an 'featured' key in the GET request should restrict
-        the results to only those videos that have been featured.
+        A GET request with a GET['filter'] of 'featured' should restrict the
+        results to only those videos that have been featured.
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url, {'featured': 'yes'})
+        response = c.get(self.url, {'filter': 'featured'})
         self.assertEquals(list(response.context['page'].object_list),
                           list(models.Video.objects.filter(
                     status=models.VIDEO_STATUS_ACTIVE,
                     ).exclude(last_featured=None).order_by('name')))
+
+    def test_GET_filter_no_attribution(self):
+        """
+        A GET request with a GET['filter'] of 'no-attribution' should restrict
+        the results to only those videos that have do not have an authors
+        assigned.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'filter': 'no-attribution'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    authors=None).order_by('name')))
+
+    def test_GET_filter_no_category(self):
+        """
+        A GET request with a GET['filter'] of 'no-category' should restrict the
+        results to only those videos that do not have a category assigned.
+        """
+        # the first page of videos all don't have categories, so we give them
+        # some so that there's something to filter
+        for video in models.Video.objects.order_by('name')[:20]:
+            video.categories = [1]
+            video.save()
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'filter': 'no-category'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_ACTIVE,
+                    categories=None).order_by('name')))
+
+    def test_GET_filter_rejected(self):
+        """
+        A GET request with a GET['filter'] of 'rejected' should restrict the
+        results to only those videos that have been rejected.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url, {'filter': 'rejected'})
+        self.assertEquals(list(response.context['page'].object_list),
+                          list(models.Video.objects.filter(
+                    status=models.VIDEO_STATUS_REJECTED).order_by('name')))
 
     def test_GET_search(self):
         """

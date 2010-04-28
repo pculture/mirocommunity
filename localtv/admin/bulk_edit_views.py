@@ -45,6 +45,19 @@ def bulk_edit(request, sitelocation=None):
         status=models.VIDEO_STATUS_ACTIVE,
         site=sitelocation.site)
 
+    if 'filter' in request.GET:
+        filter_type = request.GET['filter']
+        if filter_type == 'featured':
+            videos = videos.exclude(last_featured=None)
+        elif filter_type == 'rejected':
+            videos = models.Video.objects.filter(
+                status=models.VIDEO_STATUS_REJECTED,
+                site=sitelocation.site)
+        elif filter_type == 'no-attribution':
+            videos = videos.filter(authors=None)
+        elif filter_type == 'no-category':
+            videos = videos.filter(categories=None)
+
     category = request.GET.get('category', '')
     try:
         category = int(category)
@@ -62,9 +75,6 @@ def bulk_edit(request, sitelocation=None):
 
     if author != '':
         videos = videos.filter(authors__pk=author).distinct()
-
-    if 'featured' in request.GET:
-        videos = videos.exclude(last_featured=None)
 
     search_string = request.GET.get('q', '')
     if search_string != '':
@@ -128,6 +138,9 @@ def bulk_edit(request, sitelocation=None):
                             if value == 'delete':
                                 form.instance.status = \
                                     models.VIDEO_STATUS_REJECTED
+                            elif value == 'approve':
+                                form.instance.status = \
+                                    models.VIDEO_STATUS_ACTIVE
                             elif value == 'unapprove':
                                 form.instance.status = \
                                     models.VIDEO_STATUS_UNAPPROVED
