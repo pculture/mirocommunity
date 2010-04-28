@@ -92,8 +92,6 @@ $(document).ready(function() {
 
 {% block labels %}
 <form action="" method="get" class="search_sources">
-  <h2>Search Sources</h2>
-  <label>Search Sources</label>
   <select class="behave" name="category">
     <option {% if not request.GET.category %}selected="selected"{% endif %} value="">Show All Categories</option>
     {% for category in categories %}
@@ -107,7 +105,7 @@ $(document).ready(function() {
     {% endfor %}
   </select>
   <input type="text" class="small_field" name="q" value="{{ search_string }}" />
-  <button class="med_button floatright"><span>Search</span></button>
+  <button class="med_button"><span>Search</span></button>
 </form>
 <ul class="only_show">
   <li><label>Only Show:</label></li>
