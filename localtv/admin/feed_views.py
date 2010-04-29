@@ -162,6 +162,9 @@ def add_feed_done(request, feed_id, sitelocation):
         if result['status'] != 'FAILURE':
             json = simplejson.loads(result['result'])
             context.update(json)
+        else:
+            feed.status = models.FEED_STATUS_ACTIVE
+            feed.save()
         return render_to_response('localtv/admin/feed_done.html',
                                   context,
                                   context_instance=RequestContext(request))
