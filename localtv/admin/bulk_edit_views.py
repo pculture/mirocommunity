@@ -175,6 +175,7 @@ def bulk_edit(request, sitelocation=None):
     return render_to_response('localtv/admin/bulk_edit.html',
                               {'formset': formset,
                                'headers': headers,
+                               'search_string': search_string,
                                'page': page,
                                'categories': models.Category.objects.filter(
                 site=sitelocation.site),
