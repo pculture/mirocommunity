@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import traceback
 
 from django.core.files.storage import default_storage
 from django.contrib.auth.models import User
@@ -36,14 +37,20 @@ def update_feeds(verbose=False):
     if site_too_old():
         return
     for feed in models.Feed.objects.filter(status=models.FEED_STATUS_ACTIVE):
-        feed.update_items()
+        try:
+            feed.update_items()
+        except:
+            traceback.print_exc()
 
 
 def update_saved_searches(verbose=False):
     if site_too_old():
         return
     for saved_search in models.SavedSearch.objects.all():
-        saved_search.update_items()
+        try:
+            saved_search.update_items()
+        except:
+            traceback.print_exc()
 
 
 def update_publish_date(verbose=False):
