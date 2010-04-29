@@ -5,3 +5,7 @@
 #video_wrapper {
     clear: none;
 }
+
+#home_page .med_button.clear {
+    clear: none;
+}
