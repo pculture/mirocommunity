@@ -63,17 +63,20 @@ $(document).ready(function() {
         $('input[placeholder]').each(function() {
             that = $(this);
             function setPlaceholder() {
-                return that.val(that.attr('placeholder')).addClass('placeholder');
-            }
+                if (!that.val()) {
+                    that.addClass('placeholder');
+                    return that.val(that.attr('placeholder'));
+                } else {
+                    return that;
+                }
+            };
             setPlaceholder().focus(function() {
                 if (that.hasClass('placeholder')) {
                     that.val('').removeClass('placeholder');
                 }
-            }).blur(function() {
-                if (!that.val()) {
-                    setPlaceholder();
-                }
-            });
+            }).blur(setPlaceholder);
+        }).parents('form').submit(function() {
+            $(this).children('input.placeholder').val('');
         });
     }
 });
