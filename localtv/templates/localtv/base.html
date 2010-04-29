@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <style type="text/css">
     {{ sitelocation.css|safe }}
     {% if sitelocation.background %}body {
-       background: url("{{ sitelocation.background.url }}");
+       background: url("{{ sitelocation.background.url }}") !important;
     }{% endif %}
     </style>
     {% endif %}
