@@ -104,7 +104,7 @@ $(document).ready(function() {
     <option {% ifequal user.pk|stringformat:"s" request.GET.author %}selected="selected"{% endifequal %} value="{{ user.pk }}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</option>
     {% endfor %}
   </select>
-  <input type="text" class="small_field" name="q" value="{{ search_string }}" />
+  <input type="text" class="small_field" name="q" value="{{ search_string }}" placeholder="Search Sources"/>
   <button class="med_button"><span>Search</span></button>
 </form>
 <ul class="only_show">

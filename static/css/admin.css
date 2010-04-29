@@ -458,6 +458,10 @@ padding: 0 0 0 18px;
 background: url(../images/small_icons.png) 0 -32px no-repeat;
 }
 
+input.placeholder {
+    color: #aaa;
+}
+
 /*//////////////////////////////////////
 
 ~ Header

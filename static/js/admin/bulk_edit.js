@@ -53,6 +53,27 @@ $(document).ready(function() {
         $("#hover_wrap .contentWrap").html("We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href='" + location.href + "'>Reload the page</a> to let it load fully.").overlay({target: '#hover_wrap', api: true}).load();
         $("#hover_wrap .contentWrap a").click(function() { location.href = location.href;});
     }
-    $('.simple_overlay.errors').overlay({api: true,
-                                         onClose: resetOverlay}).load();
+    errors = $('.simple_overlay.errors');
+    if (errors.length) {
+        errors.overlay({api: true,
+                        onClose: resetOverlay}).load();
+    }
+    if (!('placeholder' in document.createElement('input'))) {
+        // browser doesn't support the HTML5 placeholder attribute
+        $('input[placeholder]').each(function() {
+            that = $(this);
+            function setPlaceholder() {
+                return that.val(that.attr('placeholder')).addClass('placeholder');
+            }
+            setPlaceholder().focus(function() {
+                if (that.hasClass('placeholder')) {
+                    that.val('').removeClass('placeholder');
+                }
+            }).blur(function() {
+                if (!that.val()) {
+                    setPlaceholder();
+                }
+            });
+        });
+    }
 });
