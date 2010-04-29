@@ -41,12 +41,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block pre-labels %}
 <a href="#" class="add" rel="#label_sidebar"><span>Add Category</span></a>
-<div id="label_sidebar" class="simple_overlay displaynone">
+<div id="label_sidebar" class="simple_overlay displaynone {% if add_category_form.errors %}errors{% endif %}">
   <div class="close"></div>
   <h2>Add a Category</h2>
   <div class="input_field">
     <form action="" method="POST" enctype="multipart/form-data">
       <ul>
+        {% if add_category_form.non_field_errors %}
+        <li>
+          {{ add_category_form.non_field_errors }}
+        </li
+        {% endif %}
         {% for field in add_category_form %}
         <li>
           {{ field.label_tag }}
