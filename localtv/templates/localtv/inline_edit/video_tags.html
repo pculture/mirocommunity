@@ -26,11 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% for tag in instance.tags.all %}
     {% if tag.name %}
     {% url localtv_list_tag tag.name as tag_url %}
-    <li>
-      {% if tag_url %}<a href="{% url localtv_list_tag tag.name %}">{% endif %}
-      {{ tag.name }}
-      {% if tag_url %}</a>{% endif %}
-    </li>
+    <li>{% if tag_url %}<a href="{% url localtv_list_tag tag.name %}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %}</li>
     {% endif %}
     {% endfor %}
   </ul>
