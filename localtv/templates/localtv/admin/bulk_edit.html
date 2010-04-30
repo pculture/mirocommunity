@@ -48,11 +48,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endfor %}
     </select>
     <select class="behave" name="filter">
-      <option {% if not request.GET.filter %}selected="selected"{% endif %} value="">Additional Filters</option>
-      <option {% ifequal request.GET.filter "featured" %}selected="selected"{% endifequal %} value="featured">Featured</option>
-      <option {% ifequal request.GET.filter "rejected" %}selected="selected"{% endifequal %} value="rejected">Rejected</option>
-      <option {% ifequal request.GET.filter "no-attribution" %}selected="selected"{% endifequal %} value="no-attribution">No Attribution</option>
-      <option {% ifequal request.GET.filter "no-category" %}selected="selected"{% endifequal %} value="no-category">No Category</option>
+      <option {% if not request.GET.filter %}selected="selected"{% endif %} value="">Current Videos</option>
+      <option {% ifequal request.GET.filter "featured" %}selected="selected"{% endifequal %} value="featured">Featured Videos</option>
+      <option {% ifequal request.GET.filter "rejected" %}selected="selected"{% endifequal %} value="rejected">Rejected Videos</option>
+      <option {% ifequal request.GET.filter "no-attribution" %}selected="selected"{% endifequal %} value="no-attribution">Videos without Attribution</option>
+      <option {% ifequal request.GET.filter "no-category" %}selected="selected"{% endifequal %} value="no-category">Videos without Category</option>
     </select>
     <input type="text" class="small_field" name="q" value="{{ search_string }}" placeholder="Search Videos"/>
     <button class="med_button"><span>Search</span></button>
