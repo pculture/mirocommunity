@@ -377,14 +377,20 @@ class BaseCategoryFormSet(BaseModelFormSet):
         # second pass: check for cycles
         for data in self.cleaned_data:
             category = data
-            s = set([category['id'].pk])
+            s = set([category['id']])
             while category['parent']:
-                if category['parent'].pk in s:
-                    raise forms.ValidationError(
-                        'Detected a cycle in Category %s' % (
-                            data['name']))
+                if category['parent'] in s:
+                    if len(s) == 1: # parent set to itself
+                        error = ("A category can't be it's own parent. "
+                                  "Please change the parent category")
+                    else:
+                        error = ("Some categories have conflicting parents.  "
+                                 "Please change one or more of the parent "
+                                 "categories")
+                    names = ', '.join([category.name for category in s])
+                    raise forms.ValidationError('%s: %s' % (error, names))
                 category = ids_to_data[category['parent']]
-                s.add(category['id'].pk)
+                s.add(category['id'])
 
         # third pass: set children of deleted items to None:
         for parent in deleted_ids:
