@@ -300,10 +300,17 @@ div.floatright {
 color: #ddd;
 }
 
-.vid_title_wrapper {
+.vid_title_wrapper, .vid_title_wrapper {
 float: left;
 width: 350px;
 margin-bottom: 10px;
+}
+
+.vid_title_wrapper h2, h2.vid_title {
+    overflow: hidden;
+    white-space: no-wrap;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis; /* Opera */
 }
 
 .vid_title h2 {
@@ -313,6 +320,7 @@ padding-top: 0;
 
 h2.vid_title {
 float: left;
+max-width: 360px;
 }
 
 .vid_title a {
