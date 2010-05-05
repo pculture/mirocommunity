@@ -15,7 +15,7 @@
   <div>
     <div class="form_container">
 
-      <form action="{{ request.path }}" method="POST">
+      <form action="{{ request.path }}" method="POST" enctype="multipart/form-encoding">
         {% block form %}
         {% for field in form %}
         <div class="form_box">
