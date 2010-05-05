@@ -299,6 +299,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                         args=[video.pk])))
 
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertEquals(video.when_approved, video.when_submitted)
         self.assertEquals(video.user, User.objects.get(username='admin'))
 
 
