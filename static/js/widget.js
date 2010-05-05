@@ -82,10 +82,16 @@ if (typeof MiroCommunity === 'undefined') {
                     li = MiroCommunity.createElement('li', {className: 'mc-video'});
                     link = MiroCommunity.createElement('a', {href: item.link});
                     thumb = MiroCommunity.createElement('span', {className: 'mc-thumbnail'});
+                    var thumbnail = null;
+                    if (item.thumbnail) {
+                        thumbnail = item.thumbnail;
+                    } else {
+                        thumbnail = 'http://' + this.opts.domain + '/images/default_vid.gif';
+                    }
                     thumb.appendChild(MiroCommunity.createElement('img', {
                         width: 120,
                         height: 90,
-                        src: item.thumbnail}));
+                        src: thumbnail}));
                     thumb.appendChild(MiroCommunity.createSpan('', 'mc-play'));
                     link.appendChild(thumb);
                     link.appendChild(MiroCommunity.createSpan(item.title, 'mc-title'));
