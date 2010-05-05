@@ -917,6 +917,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         t = loader.get_template('localtv/submit_video/review_status_email.txt')
         c = Context({'queue_videos': queue_videos,
                      'new_videos': queue_videos.filter(pk=new_video.pk),
+                     'time_period': 'today',
                      'site': self.site_location.site})
         self.assertEquals(message.body, t.render(c))
 
