@@ -82,11 +82,14 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         if self.user.is_authenticated():
             video.user = self.user
         if self.sitelocation.user_is_admin(self.user):
-            video.when_approved = video.when_submitted
             video.status = models.VIDEO_STATUS_ACTIVE
         old_m2m = self.save_m2m
         def save_m2m():
             video = self.instance
+            if video.status == models.VIDEO_STATUS_ACTIVE:
+                # when_submitted isn't set until after the save
+                video.when_approved = video.when_submitted
+                video.save()
             if video.thumbnail_url and not video.has_thumbnail:
                 video.save_thumbnail()
             if self.cleaned_data.get('tags'):
