@@ -171,10 +171,13 @@ class BaseVideosFeed(Feed):
             if item.thumbnail_url:
                 kwargs['thumbnail'] = iri_to_uri(item.thumbnail_url)
             else:
-                kwargs['thumbnail'] = 'http://%s%s' % (
-                    self.sitelocation.site.domain,
-                    default_storage.url(
-                        item.get_resized_thumb_storage_path(375, 295)))
+                default_url = default_storage.url(
+                    item.get_resized_thumb_storage_path(375, 295))
+                if not (default_url.startswith('http://') or
+                        default_url.startswith('https://')):
+                    default_url = 'http://%s%s' % (
+                    self.sitelocation.site.domain, default_url)
+                kwargs['thumbnail'] = default_url
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs
