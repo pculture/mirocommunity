@@ -1,0 +1,10 @@
+{% extends "localtv/user_profile/edit.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block form %}
+  <div class="form_box">
+  {{ form.notifications.errors }}
+  {{ form.notifications }}
+  </div>
+{% endblock %}

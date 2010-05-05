@@ -1,0 +1,7 @@
+Your video "{{ current_video.name }}" was approved!
+
+You can see it at:
+http://{{ current_video.site.domain }}{{ current_video.get_absolute_url }}
+
+Thanks,
+The {{ current_video.site.name }} Staff

@@ -17,10 +17,12 @@
 
 import datetime
 
+from django.conf import settings
+from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.template import RequestContext, Context, loader
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
@@ -29,6 +31,7 @@ from localtv.admin import feeds
 from django.http import HttpResponse, HttpResponseBadRequest, \
     HttpResponseRedirect
 
+from notification import models as notification
 
 ## --------------------
 ## Video approve/reject
@@ -99,6 +102,21 @@ def approve_video(request, sitelocation=None):
         current_video.last_featured = datetime.datetime.now()
 
     current_video.save()
+
+    if current_video.user and current_video.user.email:
+        video_approved = notification.NoticeType.objects.get(
+            label="video_approved")
+        if notification.should_send(current_video.user, video_approved, "1"):
+            subject = '[%s] "%s" was approved!' % (
+                current_video.site.name,
+                current_video)
+            t = loader.get_template(
+                'localtv/submit_video/approval_notification_email.txt')
+            c = Context({'current_video': current_video})
+            message = t.render(c)
+            EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
+                         [current_video.user.email]).send(fail_silently=True)
+
     return HttpResponse('SUCCESS')
 
 

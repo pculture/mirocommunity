@@ -31,6 +31,7 @@ from localtv import models, util
 from localtv.admin.util import MetasearchVideo, metasearch_from_querystring, \
     strip_existing_metasearchvideos
 
+Profile = util.get_profile_model()
 
 ## ----------
 ## Utils
@@ -182,7 +183,7 @@ def approve(request, search_video, sitelocation=None):
         defaults={'email': ''})
     if created:
         user.set_unusable_password()
-        models.Profile.objects.create(
+        Profile.objects.create(
             user=user,
             website=video.video_service_url)
         user.save()

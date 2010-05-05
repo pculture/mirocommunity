@@ -45,6 +45,8 @@ from localtv.admin import forms
 
 from vidscraper import bulk_import
 
+Profile = util.get_profile_model()
+
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
     re.compile(r"Vimeo / (.+)'s? uploaded videos"),
@@ -116,7 +118,7 @@ def add_feed(request, sitelocation=None):
                     defaults={'email': ''})
                 if created:
                     user.set_unusable_password()
-                    models.Profile.objects.create(
+                    Profile.objects.create(
                         user=user,
                         website=defaults['webpage'])
                     user.save()

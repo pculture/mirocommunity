@@ -2,6 +2,7 @@ import datetime
 
 from django.core.files.base import File
 from django.core.paginator import Page
+from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
@@ -12,9 +13,12 @@ from django.utils.encoding import force_unicode
 from localtv.admin import forms as admin_forms
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
-from localtv import models
+from localtv import models, util
 
 import vidscraper
+from notification import models as notification
+
+Profile = util.get_profile_model()
 
 class AdministrationBaseTestCase(BaseTestCase):
 
@@ -169,6 +173,34 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is None)
+
+    def test_GET_approve_email(self):
+        """
+        If the video is approved, and the submitter has the 'video_approved'
+        notification on, they should receive an e-mail notifying them of it.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video.user = User.objects.get(username='user')
+        video.save()
+
+        notice_type = notification.NoticeType.objects.get(
+            label='video_approved')
+        setting = notification.get_notification_setting(video.user,
+                                                        notice_type,
+                                                        "1")
+        setting.send = True
+        setting.save()
+
+        url = reverse('localtv_admin_approve_video')
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        c.get(url, {'video_id': str(video.pk)})
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          [video.user.email])
 
     def test_GET_approve_with_feature(self):
         """
@@ -1229,7 +1261,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         user = User.objects.create_user('mphtower', 'mph@tower.com',
                                         'password')
-        models.Profile.objects.create(user=user,
+        Profile.objects.create(user=user,
                                       website='http://www.mphtower.com/')
 
         url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
@@ -1728,13 +1760,13 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         user = User.objects.get(username='user')
         # set some profile data, to make sure we're not erasing it
-        models.Profile.objects.create(
+        Profile.objects.create(
             user=user,
             logo=File(file(self._data_file('logo.png'))),
             description='Some description about the user')
 
         old_users = User.objects.values()
-        old_profiles = models.Profile.objects.values()
+        old_profiles = Profile.objects.values()
 
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
@@ -1750,7 +1782,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         for old, new in zip(old_users, User.objects.values()):
             self.assertEquals(old, new)
-        for old, new in zip(old_profiles, models.Profile.objects.values()):
+        for old, new in zip(old_profiles, Profile.objects.values()):
             self.assertEquals(old, new)
 
     def test_POST_save_changes(self):
@@ -2783,10 +2815,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'use_original_date': '',
                 'css': 'New Css',
                 'screen_all_comments': 'yes',
-                'comments_email_admins': 'yes',
-                'comments_required_login': 'yes',
-                'email_on_new_video': 'yes',
-                'email_review_status': 'yes'})
+                'comments_required_login': 'yes'})
 
         POST_response = c.post(self.url, self.POST_data)
 
@@ -2808,10 +2837,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(site_location.submission_requires_login)
         self.assertFalse(site_location.use_original_date)
         self.assertTrue(site_location.screen_all_comments)
-        self.assertTrue(site_location.comments_email_admins)
         self.assertTrue(site_location.comments_required_login)
-        self.assertTrue(site_location.email_on_new_video)
-        self.assertTrue(site_location.email_review_status)
 
         logo_data = file(self._data_file('logo.png')).read()
         site_location.logo.open()
