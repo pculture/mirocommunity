@@ -44,6 +44,10 @@ from haystack.query import SearchQuerySet
 from localtv import models
 from localtv import util
 
+from notification import models as notification
+
+Profile = util.get_profile_model()
+
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
 
@@ -65,14 +69,14 @@ class BaseTestCase(TestCase):
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.tmpdir
-        models.Profile.__dict__['logo'].field.storage = \
+        Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
 
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
-        models.Profile.__dict__['logo'].field.storage = \
+        Profile.__dict__['logo'].field.storage = \
             storage.default_storage
         shutil.rmtree(self.tmpdir)
 
@@ -1195,6 +1199,15 @@ class CommentModerationTestCase(BaseTestCase):
         If SiteLocation.screen_all_comments is True, the comment should be
         moderated (not public).
         """
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_comment')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
+
         c = Client()
         c.post(self.url, self.POST_data)
 
@@ -1204,15 +1217,16 @@ class CommentModerationTestCase(BaseTestCase):
         self.assertEquals(comment.name, 'postname')
         self.assertEquals(comment.email, 'post@email.com')
         self.assertEquals(comment.url, 'http://posturl.com/')
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
 
     def test_screen_all_comments_True_admin(self):
         """
         Even if SiteLocation,screen_all_comments is True, comments from logged
         in admins should not be screened.
         """
-        self.site_location.screen_all_comments = True
-        self.site_location.save()
-
         c = Client()
         c.login(username='admin', password='admin')
         c.post(self.url, self.POST_data)
@@ -1231,8 +1245,8 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_comments_email_admins_False(self):
         """
-        If SiteLocation.comments_email_admins is False, no e-mail should be
-        sent when a comment is made.
+        If no admin is subscribed to the 'admin_new_comment' notification, no
+        e-mail should be sent when a comment is made.
         """
         c = Client()
         c.post(self.url, self.POST_data)
@@ -1241,11 +1255,17 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_comments_email_admins_True(self):
         """
-        If SiteLocation.comments_email_admins is True, an e-mail should be
-        sent when a comment is made to each admin/superuser.
+        If any admins are subscribed to the 'admin_new_comment' notification,
+        an e-mail should be sent when a comment is made to each.
         """
-        self.site_location.comments_email_admins = True
-        self.site_location.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_comment')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
 
         c = Client()
         c.post(self.url, self.POST_data)
@@ -1293,6 +1313,63 @@ class CommentModerationTestCase(BaseTestCase):
         self.assertEquals(comment.name, 'Firstname Lastname')
         self.assertEquals(comment.email, 'user@testserver.local')
         self.assertEquals(comment.url, 'http://posturl.com/')
+
+    def test_comments_email_submitter(self):
+        """
+        If the submitter of a video has the 'video_comment' notificiation
+        enabled, an e-mail with the comment should be sent to them.
+        """
+        video = models.Video.objects.get(pk=43) # has a user
+        form = CommentForm(video,
+                           initial={
+                'name': 'postname',
+                'email': 'post@email.com',
+                'url': 'http://posturl.com/'})
+        POST_data = form.initial
+        POST_data['comment'] = 'comment string'
+
+        # the default is to receive comment e-mails
+
+        self.site_location.screen_all_comments = False
+        self.site_location.save()
+
+        c = Client()
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          [video.user.email])
+
+    def test_comments_email_submitter_once(self):
+        """
+        If the submitter of a video is an admin and has both the
+        'video_comment' and 'admin_new_comment' notifications, they should only
+        receive one e-mail.
+        """
+        admin = User.objects.get(username='admin')
+
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_comment')
+        setting = notification.get_notification_setting(admin, notice_type,
+                                                        "1")
+        setting.send = True
+        setting.save()
+
+        self.video.user = admin
+        self.video.save()
+
+        # the default is to receive comment e-mails
+
+        self.site_location.screen_all_comments = False
+        self.site_location.save()
+
+        c = Client()
+        c.post(self.url, self.POST_data)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          [admin.email])
 
 # -----------------------------------------------------------------------------
 # Video model tests

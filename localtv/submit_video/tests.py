@@ -11,6 +11,8 @@ from localtv import models
 from localtv.submit_video.management.commands import review_status_email
 from localtv.tests import BaseTestCase
 
+from notification import models as notification
+
 # -----------------------------------------------------------------------------
 # Video submit tests
 # -----------------------------------------------------------------------------
@@ -228,11 +230,18 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
 
     def test_POST_succeed_email(self):
         """
-        If the POST to the view succeeds and SiteLocation.email_on_new_video is
-        True, an e-mail should be sent to the site admins.
+        If the POST to the view succeeds and admins are subscribed to the
+        'admin_new_submission' notice, an e-mail should be sent to the site
+        admins.
         """
-        self.site_location.email_on_new_video = True
-        self.site_location.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_submission')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
 
         c = Client()
         c.post(self.url, self.POST_data)
@@ -257,8 +266,14 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         """
         If the submitting user is an admin, no e-mail should be sent.
         """
-        self.site_location.email_on_new_video = True
-        self.site_location.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_submission')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -864,8 +879,14 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
-        self.site_location.email_review_status = True
-        self.site_location.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_queue_daily')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
 
     def test_no_email(self):
         """
@@ -901,10 +922,16 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
 
     def test_no_email_without_setting(self):
         """
-        If the email_review_status setting is False, no e-mail should be sent.
+        If no admins are subscribed, no e-mail should be sent.
         """
-        self.site_location.email_review_status = False
-        self.site_location.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_queue_daily')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = False
+            setting.save()
 
         queue_videos = models.Video.objects.filter(
             status=models.VIDEO_STATUS_UNAPPROVED)

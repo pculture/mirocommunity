@@ -91,6 +91,7 @@ INSTALLED_APPS = (
     'localtv.comments',
     'localtv.submit_video',
     'localtv.inline_edit',
+    'localtv.user_profile',
     'localtv_openid',
     'registration',
     'tagging',
@@ -118,7 +119,7 @@ AUTHENTICATION_BACKENDS = (
     # 'localtv_openid.OpenIdBackend', # if you want OpenId logins
     )
 
-AUTH_PROFILE_MODULE = 'localtv.Profile'
+AUTH_PROFILE_MODULE = 'user_profile.Profile'
 COMMENTS_APP = 'localtv.comments'
 
 FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'

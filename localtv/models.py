@@ -36,6 +36,7 @@ from django.contrib.sites.models import Site
 from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 import django.dispatch
 from django.forms.fields import ipv4_re
@@ -45,6 +46,7 @@ from django.template.defaultfilters import slugify
 import bitly
 import feedparser
 import vidscraper
+from notification import models as notification
 import tagging
 
 from localtv.templatetags.filters import sanitize
@@ -188,24 +190,10 @@ class SiteLocation(models.Model):
         verbose_name='Hold comments for moderation',
         default=True,
         help_text="Hold all comments for moderation by default?")
-    comments_email_admins = models.BooleanField(
-        default=False,
-        verbose_name="E-mail Admins",
-        help_text=("If True, admins will get an e-mail when a "
-                   "comment is posted."))
     comments_required_login = models.BooleanField(
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
-
-    # e-mail options
-    email_on_new_video = models.BooleanField(
-        default=False,
-        help_text="E-mail admins when a new video is submitted?")
-    email_review_status = models.BooleanField(
-        default=False,
-        help_text=("E-mail admins once/day if new videos are "
-                   "in the review queue?"))
 
     objects = SiteLocationManager()
 
@@ -747,21 +735,6 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
-class Profile(models.Model):
-    """
-    Some extra data that we store about users.  Gets linked to a User object
-    through the Django authentication system.
-    """
-    user = models.ForeignKey('auth.User')
-    logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
-                             verbose_name='Image')
-    description = models.TextField(blank=True, default='')
-    website = models.URLField(blank=True, default='')
-
-    def __unicode__(self):
-        return unicode(self.user)
-
-
 class SavedSearch(Source):
     """
     A set of keywords to regularly pull in new videos from.
@@ -1143,17 +1116,33 @@ class VideoModerator(CommentModerator):
     def email(self, comment, video, request):
         # we do the import in the function because otherwise there's a circular
         # dependency
-        from localtv.util import send_mail_admins
+        from localtv.util import send_notice
 
         sitelocation = SiteLocation.objects.get(site=video.site)
-        if sitelocation.comments_email_admins:
-            t = loader.get_template('comments/comment_notification_email.txt')
-            c = Context({ 'comment': comment,
-                          'content_object': video })
-            subject = '[%s] New comment posted on "%s"' % (video.site.name,
-                                                           video)
-            message = t.render(c)
-            send_mail_admins(sitelocation, subject, message)
+        t = loader.get_template('comments/comment_notification_email.txt')
+        c = Context({ 'comment': comment,
+                      'content_object': video,
+                      'user_is_admin': True})
+        subject = '[%s] New comment posted on "%s"' % (video.site.name,
+                                                       video)
+        message = t.render(c)
+        send_notice('admin_new_comment', subject, message,
+                    sitelocation=sitelocation)
+
+        if video.user and video.user.email:
+            video_comment = notification.NoticeType.objects.get(
+                label="video_comment")
+            admin_new_comment = notification.NoticeType.objects.get(
+                label="admin_new_comment")
+            if notification.should_send(video.user, video_comment, "1") and \
+               not notification.should_send(video.user,
+                                            admin_new_comment, "1"):
+               c = Context({ 'comment': comment,
+                             'content_object': video,
+                             'user_is_admin': False})
+               message = t.render(c)
+               EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
+                            [video.user.email]).send(fail_silently=True)
 
     def moderate(self, comment, video, request):
         sitelocation = SiteLocation.objects.get(site=video.site)
@@ -1171,7 +1160,6 @@ moderator.register(Video, VideoModerator)
 admin.site.register(SiteLocation)
 admin.site.register(Feed)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Profile)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SavedSearch)
 admin.site.register(Watch)
@@ -1189,18 +1177,58 @@ def tag_unicode(self):
     return self.name
 
 tagging.models.Tag.__unicode__ = tag_unicode
- 
+
 submit_finished = django.dispatch.Signal()
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
-    if sitelocation.email_on_new_video and \
-            sender.status != VIDEO_STATUS_ACTIVE:
-        t = loader.get_template('localtv/submit_video/new_video_email.txt')
-        c = Context({'video': sender})
-
-        message = t.render(c)
-        subject = '[%s] New Video in Review Queue: %s' % (sender.site.name,
+    if sender.status == VIDEO_STATUS_ACTIVE:
+        # don't send the e-mail for new videos
+        return
+    t = loader.get_template('localtv/submit_video/new_video_email.txt')
+    c = Context({'video': sender})
+    message = t.render(c)
+    subject = '[%s] New Video in Review Queue: %s' % (sender.site.name,
                                                           sender)
-        util.send_mail_admins(sitelocation, subject, message)
+    util.send_notice('admin_new_submission',
+                     subject, message,
+                     sitelocation=sitelocation)
+
 submit_finished.connect(send_new_video_email, weak=False)
+
+
+def create_email_notices(app, created_models, verbosity, **kwargs):
+    notification.create_notice_type('video_comment',
+                                    'New comment on your video',
+                                    'Someone commented on your video',
+                                    default=2,
+                                    verbosity=verbosity)
+    notification.create_notice_type('video_approved',
+                                    'Your video was approved',
+                                    'An admin approved your video',
+                                    default=2,
+                                    verbosity=verbosity)
+    notification.create_notice_type('admin_new_comment',
+                                    'New comment',
+                                    'A comment was submitted to the site',
+                                    default=1,
+                                    verbosity=verbosity)
+    notification.create_notice_type('admin_new_submission',
+                                    'New Submission',
+                                    'A new video was submitted',
+                                    default=1,
+                                    verbosity=verbosity)
+    notification.create_notice_type('admin_queue_weekly',
+                                        'Weekly Queue Update',
+                                    'A weekly e-mail of the queue status',
+                                    default=1,
+                                    verbosity=verbosity)
+    notification.create_notice_type('admin_queue_daily',
+                                    'Daily Queue Update',
+                                    'A daily e-mail of the queue status',
+                                    default=1,
+                                    verbosity=verbosity)
+
+models.signals.post_syncdb.connect(create_email_notices,
+                                   sender=notification)
+

@@ -17,7 +17,6 @@
 
 import datetime
 
-from django.contrib.sites.models import Site
 from django.core.management.base import NoArgsCommand
 from django.template import Context, loader
 
@@ -27,24 +26,23 @@ from localtv import util
 class Command(NoArgsCommand):
 
     def handle_noargs(self, **kwargs):
-        site = Site.objects.get_current()
-        sitelocation = models.SiteLocation.objects.get(site=site)
-        if not sitelocation.email_review_status:
-            return
+        sitelocation = models.SiteLocation.objects.get_current()
 
         previous_day = datetime.datetime.now() - datetime.timedelta(hours=24)
 
         queue_videos = models.Video.objects.filter(
-            site=site,
+            site=sitelocation.site,
             status=models.VIDEO_STATUS_UNAPPROVED)
         new_videos = queue_videos.filter(when_submitted__gte=previous_day,
                                          feed=None, search=None)
         if new_videos.count():
-            subject = 'Video Submissions for %s' % site.name
+            subject = 'Video Submissions for %s' % sitelocation.site.name
             t = loader.get_template(
                 'localtv/submit_video/review_status_email.txt')
             c = Context({'new_videos': new_videos,
                          'queue_videos': queue_videos,
-                         'site': site})
+                         'site': sitelocation.site})
             message = t.render(c)
-            util.send_mail_admins(sitelocation, subject, message)
+            util.send_notice('admin_queue_daily',
+                             subject, message,
+                             sitelocation=sitelocation)

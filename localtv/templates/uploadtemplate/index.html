@@ -30,10 +30,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% include "localtv/admin/settings_header.html" %}
 
 
+  {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
+  <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
+  <div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
+    <form method="post" action="" enctype="multipart/form-data">
+      <h2>Upload a Custom Theme</h2>
+      <p class="clear">Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
+      <p>Download/modify any existing theme and upload it as a ZIP file.</p>
+      <div class="upload_form">{{ form.as_p }}</div>
+      <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
+    </form>
+  </div>
+  {% endif %}
+
   {% if default %}
   
-          <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
-
   
   <h2>Current Theme</h2>
 
@@ -46,25 +57,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="description">{{ default.description }}</div>
   <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
   </div>
-  {% endif %}
-  {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
-   
-   
-
-
-
-	<div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
-			 			 
-	  <form method="post" action="" enctype="multipart/form-data">
-	    <h2>Upload a Custom Theme</h2>
-	    <p class="clear">Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
-	    <p>Download/modify any existing theme and upload it as a ZIP file.</p>
-	      <div class="upload_form">{{ form.as_p }}</div>
-	        <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
-	  </form>
-  
-  </div>
-  
   {% endif %}
   <h2>Additional Themes</h2>
   <ul>

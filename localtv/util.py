@@ -24,12 +24,12 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.mail import EmailMessage
-from django.db.models import get_model
-from django.http import HttpResponse
+from django.db.models import get_model, Q
 from django.utils.encoding import force_unicode
 
 import tagging
 import vidscraper
+from notification import models as notification
 
 VIDEO_EXTENSIONS = [
     '.mov', '.wmv', '.mp4', '.m4v', '.ogg', '.ogv', '.anx',
@@ -162,17 +162,15 @@ def get_scraped_data(url):
 
     return scraped_data
 
-
-def send_mail_admins(sitelocation, subject, message, fail_silently=True):
-    """
-    Send an e-mail message to the admins for the given site.
-    """
-    admin_list = sitelocation.admins.filter(
-        is_superuser=False).exclude(email=None).exclude(
-        email='').values_list('email', flat=True)
-    superuser_list = User.objects.filter(is_superuser=True).exclude(
-        email=None).exclude(email='').values_list('email', flat=True)
-    recipient_list = set(admin_list) | set(superuser_list)
+def send_notice(notice_label, subject, message, fail_silently=True,
+                sitelocation=None):
+    notice_type = notification.NoticeType.objects.get(label=notice_label)
+    recipient_list = notification.NoticeSetting.objects.filter(
+        notice_type=notice_type,
+        medium="1",
+        send=True).exclude(user__email='').filter(
+        Q(user__in=sitelocation.admins.all()) |
+        Q(user__is_superuser=True)).values_list('user__email', flat=True)
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  bcc=recipient_list).send(fail_silently=fail_silently)
 
@@ -227,7 +225,11 @@ class MockQueryset(object):
 
 def get_profile_model():
     app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
-    return get_model(app_label, model_name)
+    Profile = get_model(app_label, model_name)
+    if Profile is None:
+        raise RuntimeError("could not find a Profile model at %r" %
+                           settings.AUTH_PROFILE_MODULE)
+    return Profile
 
 
 SAFE_URL_CHARACTERS = string.ascii_letters + string.punctuation
