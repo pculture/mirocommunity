@@ -339,9 +339,8 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
                           '</object>')
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
-        self.assertEquals(video.thumbnail_url,
-                          'http://ts.vimeo.com.s3.amazonaws.com/360/198/'
-                          '36019806_640.jpg')
+        self.assertTrue(video.thumbnail_url.endswith('/360/198/'
+                                                     '36019806_640.jpg'))
         self.assertEquals(video.when_published,
                           datetime.datetime(2009, 12, 4, 8, 23, 47))
         self.assertEquals(video.video_service(), 'Vimeo')

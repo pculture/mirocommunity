@@ -50,7 +50,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if request.user.is_authenticated %}
   <input type="hidden" name="name" value="{{ request.user.username }}" />
   <input type="hidden" name="email" value="{{ request.user.email }}" />
-  <input type="hidden" name="url" value="{{ request.user.openiduser.url }}" />
+  <input type="hidden" name="url" value="{{ request.user.get_profile.website }}" />
   {% else %}
   <p{% if form.name.errors %} class="error"{% endif %}>
     {{ form.name.errors }}
