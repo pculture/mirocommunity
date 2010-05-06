@@ -148,6 +148,8 @@ class BaseVideosFeed(Feed):
             site=models.Site.objects.get_current())
 
     def item_pubdate(self, video):
+        if video.status != models.VIDEO_STATUS_ACTIVE:
+            return None
         return (video.when_published or video.when_approved).replace(
             tzinfo=FixedOffset(0))
 
