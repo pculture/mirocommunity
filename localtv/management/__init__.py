@@ -15,3 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Creates the default SiteLocation object.
+"""
+
+from django.db.models import signals
+from django.contrib.sites.models import Site
+
+from localtv.models import SiteLocation
+from localtv import models as localtv_app
+
+def create_default_sitelocation(app, created_models, verbosity, **kwargs):
+    if SiteLocation in created_models:
+        if verbosity >= 2:
+            print "Creating example.com SiteLocation object"
+        SiteLocation.objects.create(
+            site=Site.objects.get_current())
+    SiteLocation.objects.clear_cache()
+
+signals.post_syncdb.connect(create_default_sitelocation, sender=localtv_app)
+
