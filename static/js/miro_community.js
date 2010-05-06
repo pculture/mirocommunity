@@ -44,6 +44,30 @@ $(document).ready( function(){
         }
         return false;
     });
+    if (!('placeholder' in document.createElement('input'))) {
+        // browser doesn't support the HTML5 placeholder attribute
+        $('input[placeholder]').each(function() {
+            var that = $(this);
+            if (!this.defaultValue) {
+                that.addClass('placeholder');
+            }
+            function setPlaceholder() {
+                if (!that.val()) {
+                    that.addClass('placeholder');
+                    return that.val(that.attr('placeholder'));
+                } else {
+                    return that;
+                }
+            };
+            setPlaceholder().focus(function() {
+                if (that.hasClass('placeholder')) {
+                    that.val('').removeClass('placeholder');
+                }
+            }).blur(setPlaceholder);
+        }).parents('form').submit(function() {
+            $(this).children('input.placeholder').val('');
+        });
+    }
 }).ajaxStart(function() {
     indicator = $("#load-indicator");
     if (!indicator.length) {

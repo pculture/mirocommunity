@@ -39,12 +39,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% if form.non_field_errors %}
           {{ form.non_field_errors }}
           {% endif %}
-          {% for field in form %}
-          {{ field.errors }}
           <p>
-            <label>{{ field }}</label>
+            {{ form.username.errors }}
+            <label><input id="id_username" placeholder="Username" value="{{ form.data.username }}" type="text" name="username" maxlength="30" /></label>
           </p>
-          {% endfor %}
+          <p>
+            {{ form.password.errors }}
+            <label><input type="password" placeholder="Password" value="{{ form.data.password }}" name="password" id="id_password" /></label>
+          </p>
           <input type="hidden" name="next" value="{{ next }}" />
           <p>
             <a href="{% url auth_password_reset %}" class="forgot">Forgot?</a>
@@ -57,16 +59,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <h4>Sign up</h4>
         <form action="/accounts/register/" method="POST">
           <p>
-            <label><input id="id_username" value="Username" type="text" class="required" name="username" maxlength="30" /></label>
+            <label><input id="id_username" placeholder="Username" type="text" class="required" name="username" maxlength="30" /></label>
           </p>
           <p>
-            <label><input id="id_email" value="Email" type="text" class="required" name="email" maxlength="75" /></label>
+            <label><input id="id_email" placeholder="Email" type="text" class="required" name="email" maxlength="75" /></label>
           </p>
           <p>
-            <label><input id="id_password1" value="Password" type="password" class="required" name="password1" /></label>
+            <label><input id="id_password1" placeholder="Password" type="password" class="required" name="password1" /></label>
           </p>
           <p>
-            <label><input id="id_password2" value="Password (again)" type="password" class="required" name="password2" /></label>
+            <label><input id="id_password2" placeholder="Password (again)" type="password" class="required" name="password2" /></label>
           </p>
           <p>
             <input type="submit" value="Sign Up" class="button" />
