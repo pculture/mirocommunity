@@ -923,7 +923,9 @@ class Video(Thumbnailable):
     status = models.IntegerField(
         choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = BitLyWrappingURLField(verify_exists=False, blank=True)
+    website_url = BitLyWrappingURLField(verbose_name='Website URL',
+                                        verify_exists=False,
+                                        blank=True)
     embed_code = models.TextField(blank=True)
     flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
                                                 blank=True)

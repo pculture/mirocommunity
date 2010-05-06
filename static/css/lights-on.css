@@ -72,6 +72,8 @@ background: url(../images/small_icons.png) left 0px no-repeat;
 padding-left: 18px;
 font-size: 11px;
 cursor: pointer;
+color: #4190E4 !important;
+font-weight: normal;
 }
 
 .edit_link:hover{
@@ -972,7 +974,7 @@ _background: url(../images/med_right.gif) right top no-repeat;
 
 .med_button > span,
 #edit_video_wrapper .display_data a {
-color: #333;
+color: #333 !important;
 line-height: 24px;
 display: block;
 padding: 0 8px 1px 14px ;

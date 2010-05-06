@@ -61,6 +61,7 @@ class VideoNameForm(forms.ModelForm):
 
 class VideoWhenPublishedForm(forms.ModelForm):
     when_published = forms.DateTimeField(
+        label="When Published",
         required=False,
         help_text='Format: yyyy-mm-dd hh:mm:ss')
 
