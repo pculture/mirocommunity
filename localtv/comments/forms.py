@@ -7,14 +7,14 @@ from django.contrib.comments import forms as comment_forms
 try:
     from recaptcha_django import ReCaptchaField
 except ImportError:
-    RecaptchaField = None
+    ReCaptchaField = None
 
 class CommentForm(comment_forms.CommentForm):
     comment = forms.CharField(label=_("Comment"), widget=forms.Textarea,
                               max_length=comment_forms.COMMENT_MAX_LENGTH)
     email = forms.EmailField(label=_("Email address"),
                              required=False)
-    if RecaptchaField and not settings.DEBUG and \
+    if ReCaptchaField and not settings.DEBUG and \
             settings.RECAPTCHA_PRIVATE_KEY:
         captcha = ReCaptchaField()
 
