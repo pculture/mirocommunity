@@ -1,3 +1,35 @@
+if (!('placeholder' in document.createElement('input'))) {
+    var has_placeholder = false;
+    // browser doesn't support the HTML5 placeholder attribute
+    function placeholder_fallback() {
+        $('input[placeholder]').each(function() {
+            var that = $(this);
+            if (!this.defaultValue) {
+                that.addClass('placeholder');
+            }
+            function setPlaceholder() {
+                if (!that.val()) {
+                    that.addClass('placeholder');
+                    return that.val(that.attr('placeholder'));
+                } else {
+                    return that;
+                }
+            };
+            setPlaceholder().focus(function() {
+                if (that.hasClass('placeholder')) {
+                    that.val('').removeClass('placeholder');
+                }
+            }).blur(setPlaceholder);
+        });
+    }
+    $("form").live('submit', function() {
+        $(this).find('input.placeholder').val('');
+    });
+} else {
+    var has_placeholder = true;
+    function placeholder_fallback() {}
+}
+
 function setup_submit_callbacks(wrap, result) {
     page = $(result);
     if (page.filter('#next').length) {
@@ -6,9 +38,13 @@ function setup_submit_callbacks(wrap, result) {
     }
     function callback(result){setup_submit_callbacks(wrap, result);}
     form = wrap.getContent().find('.contentWrap').html(result).find('form:eq(0)');
-    form.ajaxForm(callback).find('button').click(function(){form.ajaxSubmit(callback);});
+    placeholder_fallback();
+    form.ajaxForm({
+        success: callback,
+        beforeSerialize: function() {
+            if (!has_placeholder) {form.find('input.placeholder').val('');}
+        }}).find('button').click(function(){form.ajaxSubmit(callback);});
 }
-
 $(document).ready( function(){
     $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories a:eq(0)').click(function() {return false;}).css('cursor', 'default');
     $('a[rel^=#]').overlay({
@@ -44,30 +80,7 @@ $(document).ready( function(){
         }
         return false;
     });
-    if (!('placeholder' in document.createElement('input'))) {
-        // browser doesn't support the HTML5 placeholder attribute
-        $('input[placeholder]').each(function() {
-            var that = $(this);
-            if (!this.defaultValue) {
-                that.addClass('placeholder');
-            }
-            function setPlaceholder() {
-                if (!that.val()) {
-                    that.addClass('placeholder');
-                    return that.val(that.attr('placeholder'));
-                } else {
-                    return that;
-                }
-            };
-            setPlaceholder().focus(function() {
-                if (that.hasClass('placeholder')) {
-                    that.val('').removeClass('placeholder');
-                }
-            }).blur(setPlaceholder);
-        }).parents('form').submit(function() {
-            $(this).children('input.placeholder').val('');
-        });
-    }
+    placeholder_fallback();
 }).ajaxStart(function() {
     indicator = $("#load-indicator");
     if (!indicator.length) {
