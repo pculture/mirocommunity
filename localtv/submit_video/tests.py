@@ -159,7 +159,6 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
             website_url = self.GET_data['url'])
         c = Client()
         response = c.post(self.url, self.POST_data)
-        self.assertEquals(models.Video.objects.filter(pk=video.pk).count(), 0)
         video = models.Video.objects.get()
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],

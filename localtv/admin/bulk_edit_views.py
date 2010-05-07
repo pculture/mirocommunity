@@ -91,13 +91,18 @@ def bulk_edit(request, sitelocation=None):
     sort = request.GET.get('sort', 'name')
     if sort.endswith('source'):
         reverse = sort.startswith('-')
+        videos = videos.extra(select={
+                'name_lower':'LOWER(localtv_video.name)'})
         videos = MockQueryset(
-            sorted(videos.order_by(sort.replace('source', 'name')),
+            sorted(videos.order_by(sort.replace('source', 'name_lower')),
                    reverse=reverse,
                    key=methodcaller('source_type')))
+    elif sort.endswith('name'):
+        videos = videos.extra(select={
+                'name_lower':'LOWER(localtv_video.name)'}).order_by(
+            sort.replace('name', 'name_lower'))
     else:
         videos = videos.order_by(sort)
-
     video_paginator = Paginator(videos, 50)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
