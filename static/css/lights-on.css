@@ -2152,11 +2152,20 @@ padding: 20px;
 overflow: auto;
 }
 
+#author_info h1, #category_info h1 {
+    font-size: 200%;
+}
 #category_info a.rss, #author_info a.rss {
 float: right;
 color: #4190E4;
 
 background-position: right 0;
+}
+
+#author_info img {
+    float: left;
+    margin-right: 20px;
+    width: 200px;
 }
 
 div#category{
