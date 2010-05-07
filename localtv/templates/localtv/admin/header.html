@@ -18,8 +18,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
  <ul id="admin_nav">
+    {% if request.user.is_authenticated %}<li><a class="profile" href="{% url localtv_user_profile %}"><span>Your Profile</span></a></li>{% endif %}
+    <li><a class="goodies" href="{% url localtv_goodies %}"><span>Goodies</span></a></li>
+    {% if user_is_admin %}<li><a class="admin" href="{% url localtv_admin_index %}"><span>Administration</span></a></li>
     <li><a class="sub" href="{% url localtv_admin_approve_reject %}"><span>Videos</span></a></li>
     <li><a class="design" href="{% url localtv_admin_settings %}"><span>Settings</span></a></li>
     <li><a class="users" href="{% url localtv_admin_users %}"><span>Users</span></a></li>
-    <li><a class="comments" href="{% url comments-moderation-queue %}"><span>Comments</span></a></li>
+    <li><a class="comments" href="{% url comments-moderation-queue %}"><span>Comments</span></a></li>{% endif %}
+    <li id="footer">
+      {% if request.user.is_authenticated %}
+      <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>
+      {% else %}
+      <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" rel="#overlay" title="Please Sign In"><span>Login</span></a>
+      {% endif %}
+    </li>
  </ul>

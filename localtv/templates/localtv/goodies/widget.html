@@ -1,4 +1,4 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/admin/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -19,13 +19,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% block body_class %}widgetcreator{% endblock body_class %}
+{% block body_id %}goodies{% endblock body_id %}
+{% block body_class %}widgetcreater{% endblock body_class %}
 
 
 {% load i18n %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
-
 {% block head %}
 <link rel="stylesheet" href="/css/widget.css">
 <script src="/js/widget.js"></script>
@@ -57,8 +57,8 @@ $(document).ready(update_widget);
 </script>
 {% endblock %}
 {% block content %}
+  {% include "localtv/goodies/header.html" %}
   <div id="widget-base">
-    <h2>Create a Widget to Display on Your Site</h2>
     <div>
       <div id="widget-settings">
         <h2>Pick Your Options</h2>
