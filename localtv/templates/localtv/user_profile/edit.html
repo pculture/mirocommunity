@@ -1,21 +1,19 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/admin/base.html" %}
 
 {% load uploadtemplate_tags %}
 {% block title %}User Profile {% endblock %}
 {% block body_id %}user_profile{% endblock %}
+{% block body_class %}user_profile" onbeforeunload="return setting_onunload();{% endblock %}
+{% block head %}
+ {{ block.super }}
+ {% include "localtv/admin/dirty_form.html" %}
+ {% endblock %}
 {% block content %}
-<div class="tabs">
-  <ul class="tabNavigation">
-    {% url localtv_user_profile as localtv_user_profile %}
-    {% url localtv_user_notifications as localtv_user_notifications %}
-    <li{% ifequal request.path localtv_user_profile %} class="selected"{% endifequal %}><a href="{{ localtv_user_profile }}">Bio</a></li>
-    <li{% ifequal request.path localtv_user_notifications %} class="selected"{% endifequal %}><a href="{{ localtv_user_notifications }}">Notifications</a></li>
-    <li><a href="{% url localtv_author request.user.pk %}">View Profile</a></li>
-  </ul>
-  <div>
-    <div class="form_container">
-
-      <form action="{{ request.path }}" method="POST" enctype="multipart/form-data">
+  {% include "localtv/user_profile/header.html" %}
+  <form action="{{ request.path }}" method="POST" enctype="multipart/form-data">
+    <div>
+      <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+      <div class="form_container">
         {% block form %}
         {% for field in form %}
         <div class="form_box">
@@ -25,10 +23,7 @@
         </div>
         {% endfor %}
         {% endblock %}
-        <input type="image" src="{% get_static_url "/images/submit_green.gif" %}" />
-      </form>
-
+      </div>
     </div>
-  </div>
-</div>
+  </form>
 {% endblock %}

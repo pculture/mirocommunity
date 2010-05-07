@@ -1,7 +1,7 @@
 {% extends "localtv/user_profile/edit.html" %}
 
 {% block title %}Notifications{% endblock %}
-
+{% block body_class %}notifications" onbeforeunload="return setting_onunload();{% endblock %}
 {% block form %}
   <div class="form_box">
   {{ form.notifications.errors }}

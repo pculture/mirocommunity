@@ -1,0 +1,21 @@
+<script type="text/javascript" src="/js/admin/jquery.dirtyform.js"></script>
+<script type="text/javascript">
+function setting_onunload(event) {
+    if ($("form.saving").length) {
+        return;
+    }
+    if ($("form input.changed").length) {
+        unload_text = 'Your settings have not been saved.';
+        if ($.browser.msie) {
+            window.event.returnValue = event.returnValue = unload_text;
+        } else if ($.browser.safari) {
+            return 'Are you sure you want to navigate away from this page?\n\n' + unload_text;
+        } else {
+            return unload_text;
+        }
+    }
+}
+$(document).ready(function() {
+    $("form").dirty_form().submit(function() {$(this).addClass('saving');});
+});
+</script>
