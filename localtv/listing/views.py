@@ -169,7 +169,7 @@ def video_search(request, sitelocation=None, count=10, sort=None):
                 site=sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=pks).order_by()
-        order = ['-localtv_video.id = %i' % pk for pk in pks]
+        order = ['-localtv_video.id = %i' % int(pk) for pk in pks]
         queryset = queryset.extra(order_by=order)
     return object_list(
         request=request, queryset=queryset,

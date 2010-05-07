@@ -23,8 +23,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="author_sidebar">
   <div id="author_info">
     {% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% endif %}
-    <h1>{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
     <a class="rss" href="{% url localtv_feeds_author author.pk %}">RSS</a>
+    <h1>{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
     {% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
     {% if author.get_profile.website %}<div id="link"><a href="{{ author.get_profile.website }}">{{ author.get_profile.website }}</a></div>{% endif %}
     <div>{{ author.get_profile.description|sanitize }}</div>
