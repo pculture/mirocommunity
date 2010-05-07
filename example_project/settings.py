@@ -31,11 +31,11 @@ SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/var/www/localtv/project/'
+MEDIA_ROOT = 'media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -63,17 +63,16 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-)
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
+    )
 
-ROOT_URLCONF = 'localtv.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.g
-    "/var/www/localtv/src/localtv/localtv/override_templates/",
-    "/var/www/localtv/src/localtv/localtv/templates/",
-    "/var/www/localtv/src/localtv/localtv/versioned_templates/",
+    "../src/miro-community/localtv/templates/",
 )
 
 INSTALLED_APPS = (
@@ -82,8 +81,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.comments',
-    'south',
-    'django_openidconsumer',
+    'django.contrib.flatpages',
+    #'south',
     'djpagetabs',
     'djvideo',
     'localtv',
@@ -92,23 +91,23 @@ INSTALLED_APPS = (
     'localtv.submit_video',
     'localtv.inline_edit',
     'localtv.user_profile',
-    'localtv_openid',
     'registration',
     'tagging',
     'uploadtemplate',
     'haystack',
     'email_share',
-    'debug_toolbar',
-    'celery'
-    #'django_bitly', # if you're using the Blue theme
-    #'syncr.twitter',
-    #'tweetlove',
+    'celery',
+    'notification'
+
+    # Uncomment these if you want OpenID login support
+    #'django_openidconsumer',
+    #'localtv_openid',
+
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.auth",
     "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
     "django.core.context_processors.media",
     "localtv.context_processor")
 
@@ -125,7 +124,7 @@ COMMENTS_APP = 'localtv.comments'
 FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
 FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
 
-CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+CACHE_BACKEND = 'locmem://'
 
 # vidscraper keys
 from vidscraper.metasearch.sites import vimeo
@@ -134,6 +133,14 @@ vimeo.VIMEO_API_SECRET = None
 
 from vidscraper.sites import ustream
 ustream.USTREAM_API_KEY = None
+
+# bit.ly keys
+BITLY_LOGIN = None
+BITLY_API_KEY = None
+
+# recaptcha keys
+RECAPTCHA_PUBLIC_KEY = None
+RECAPTCHA_PRIVATE_KEY = None
 
 # django-registration
 ACCOUNT_ACTIVATION_DAYS = 7
@@ -144,8 +151,13 @@ FORCE_LOWERCASE_TAGS = True
 # celery
 BROKER_HOST = 'localhost'
 BROKER_PORT = 5672
-BROKER_USER = 'z3p'
+BROKER_USER = 'celery'
 BROKER_PASSWORD = 'testing'
 BROKER_VHOST = '/'
 CELERY_BACKEND = 'cache' # this MUST be set, otherwise the import page won't be
                          # able to figure out if the task has ended
+
+# haystack search
+HAYSTACK_SITECONF = 'example_project.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'whoosh'
+HAYSTACK_WHOOSH_PATH = 'whoosh_index'
