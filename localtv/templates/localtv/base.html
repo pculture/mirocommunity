@@ -178,7 +178,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               <span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
               <ul id="footer_links">
                 <li><a href="{% url localtv_index %}">Home</a></li>
-                <li><a href="{% url localtv_goodies %}">Goodies</a></li>
+                <li><a href="{% url localtv_goodies_widget %}">Goodies</a></li>
                 <li>
           {% if request.user.is_authenticated %}
             <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout {{ request.user.username }}</a>

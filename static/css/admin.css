@@ -1811,6 +1811,7 @@ padding: 5px;
 #user_profile .form_container {
     width: 430px;
     padding: 0 40px;
+    margin-top: -90px;
     }
 
 #user_profile .form_box {

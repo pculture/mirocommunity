@@ -13,6 +13,7 @@
   <form action="{{ request.path }}" method="POST" enctype="multipart/form-data">
     <div>
       <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+      {% block profile_button %}<a class="plain_button" href="{% url localtv_author request.user.pk %}"><span>View Profile</span></a>{% endblock %}
       <div class="form_container">
         {% block form %}
         {% for field in form %}
