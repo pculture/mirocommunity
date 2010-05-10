@@ -27,7 +27,6 @@ if (!('placeholder' in document.createElement('input'))) {
     });
 } else {
     var has_placeholder = true;
-    function placeholder_fallback() {}
 }
 
 function setup_submit_callbacks(wrap, result) {
@@ -38,7 +37,7 @@ function setup_submit_callbacks(wrap, result) {
     }
     function callback(result){setup_submit_callbacks(wrap, result);}
     form = wrap.getContent().find('.contentWrap').html(result).find('form:eq(0)');
-    placeholder_fallback();
+    if (!has_placeholder) placeholder_fallback();
     form.ajaxForm({
         success: callback,
         beforeSerialize: function() {
@@ -47,6 +46,7 @@ function setup_submit_callbacks(wrap, result) {
 }
 $(document).ready( function(){
     $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories a:eq(0)').click(function() {return false;}).css('cursor', 'default');
+    if (!has_placeholder) placeholder_fallback();
     $('a[rel^=#]').overlay({
         expose: '#499ad9',
         effect: 'apple',
