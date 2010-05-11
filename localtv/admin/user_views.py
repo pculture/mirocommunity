@@ -45,19 +45,18 @@ def users(request, sitelocation=None):
     formset = forms.AuthorFormSet(queryset=users)
     add_user_form = forms.AuthorForm()
     if request.method == 'POST':
-        if request.POST['submit'] == 'Add':
+        submit = request.POST.get('submit')
+        if submit == 'Add':
             add_user_form = forms.AuthorForm(request.POST, request.FILES)
             if add_user_form.is_valid():
                 add_user_form.save()
                 return HttpResponseRedirect(request.path)
-        elif request.POST['submit'] == 'Save':
+        else:
             formset = forms.AuthorFormSet(request.POST, request.FILES,
                                           queryset=User.objects.all())
             if formset.is_valid():
                 formset.save()
                 return HttpResponseRedirect(request.get_full_path())
-        else:
-            return HttpResponseRedirect(request.get_full_path())
 
     return render_to_response('localtv/admin/users.html',
                               {'formset': formset,
