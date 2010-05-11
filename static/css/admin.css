@@ -99,6 +99,23 @@ float: left;
 width: 100%;
 }
 
+.input_field ul li ul {
+    margin-top: 3px;
+    float: left;
+    clear: none;
+}
+
+.input_field ul li ul li{
+    float: left;
+    clear: none;
+    width: auto;
+}
+
+.input_field ul li ul input {
+    width: auto;
+    margin:0.7em 5px;
+}
+
 .input_field ul.errorlist li {
     float: none;
     clear: none;

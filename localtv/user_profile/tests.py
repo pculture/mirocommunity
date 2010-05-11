@@ -6,11 +6,13 @@ Replace these with more appropriate tests for your application.
 """
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.client import Client
+from django.core.urlresolvers import reverse
 
 from notification import models as notification
 
+from localtv.tests import BaseTestCase
 from localtv.user_profile import forms
-
 from localtv import util
 
 Profile = util.get_profile_model()
@@ -40,33 +42,116 @@ class ProfileFormTestCase(TestCase):
             'location': 'Where I am',
             'website': 'http://www.google.com'
             }
-        form = forms.ProfileForm(data, instance=self.profile)
+        form = forms.ProfileForm(data, instance=self.user)
         self.assertTrue(form.is_valid())
         instance = form.save()
-        self.assertEquals(instance.user.username, 'newusername')
-        self.assertEquals(instance.user.first_name, 'First')
-        self.assertEquals(instance.user.last_name, 'Last')
-        self.assertEquals(instance.user.email, 'test@foo.bar.com')
-        self.assertEquals(instance.description, 'New Description')
-        self.assertEquals(instance.location, 'Where I am')
-        self.assertEquals(instance.website, 'http://www.google.com/')
+        self.assertEquals(instance.username, 'newusername')
+        self.assertEquals(instance.first_name, 'First')
+        self.assertEquals(instance.last_name, 'Last')
+        self.assertEquals(instance.email, 'test@foo.bar.com')
+        self.assertEquals(instance.get_profile().description,
+                          'New Description')
+        self.assertEquals(instance.get_profile().location, 'Where I am')
+        self.assertEquals(instance.get_profile().website,
+                          'http://www.google.com/')
 
     def test_save_no_changes(self):
         """
         A blank form should have all the data to simply resave and not cause
         any changes.
         """
-        blank_form = forms.ProfileForm(instance=self.profile)
-        form = forms.ProfileForm(blank_form.initial, instance=self.profile)
+        blank_form = forms.ProfileForm(instance=self.user)
+        initial = blank_form.initial.copy()
+        for name, field in blank_form.fields.items():
+            if field.initial:
+                initial[name] = field.initial
+        form = forms.ProfileForm(initial, instance=self.user)
         self.assertTrue(form.is_valid(), form.errors)
         instance = form.save()
-        self.assertEquals(instance.user.username, self.user.username)
-        self.assertEquals(instance.user.first_name, self.user.first_name)
-        self.assertEquals(instance.user.last_name, self.user.last_name)
-        self.assertEquals(instance.user.email, self.user.email)
-        self.assertEquals(instance.description, self.profile.description)
-        self.assertEquals(instance.location, self.profile.location)
-        self.assertEquals(instance.website, self.profile.website)
+        self.assertEquals(instance.username, self.user.username)
+        self.assertEquals(instance.first_name, self.user.first_name)
+        self.assertEquals(instance.last_name, self.user.last_name)
+        self.assertEquals(instance.email, self.user.email)
+        self.assertEquals(instance.get_profile().description,
+                          self.profile.description)
+        self.assertEquals(instance.get_profile().location,
+                          self.profile.location)
+        self.assertEquals(instance.get_profile().website,
+                          self.profile.website)
+
+
+class ProfileViewTestCase(BaseTestCase):
+
+    fixtures = ['site', 'users']
+    url = reverse('localtv_user_profile')
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.user = User.objects.get(username='user')
+        self.profile = Profile.objects.create(
+            user=self.user,
+            description='Description',
+            location='Location',
+            website='http://www.pculture.org/')
+
+    def test_GET(self):
+        """
+        A GET request to the user profile view should render the
+        'localtv/user_profile/edit.html' template and include a form for
+        editing the profile.
+        """
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/user_profile/edit.html')
+        self.assertTrue('form' in response.context[0])
+
+    def test_POST_failure(self):
+        """
+        A POST request to the user profile view with an invalid form should
+        cause the page to be rerendered and include the form errors.
+        """
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(self.url, {})
+        self.assertStatusCodeEquals(response, 200)
+        self.assertTrue(response.context['form'].is_bound)
+        self.assertFalse(response.context['form'].is_valid())
+
+    def test_POST_success(self):
+        """
+        Filling the ProfileForm with data should cause the Profile to be
+        updated.
+        """
+        data = {
+            'username': 'newusername',
+            'name': 'First Last',
+            'email': 'test@foo.bar.com',
+            'description': 'New Description',
+            'location': 'Where I am',
+            'website': 'http://www.google.com'
+            }
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(self.url, data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        user = User.objects.get(pk=self.user.pk)
+        self.assertEquals(user.username, 'newusername')
+        self.assertEquals(user.first_name, 'First')
+        self.assertEquals(user.last_name, 'Last')
+        self.assertEquals(user.email, 'test@foo.bar.com')
+        self.assertEquals(user.get_profile().description,
+                          'New Description')
+        self.assertEquals(user.get_profile().location, 'Where I am')
+        self.assertEquals(user.get_profile().website,
+                          'http://www.google.com/')
 
 class NotificationsFormTestCase(TestCase):
 

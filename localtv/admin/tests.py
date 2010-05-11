@@ -1669,12 +1669,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = {
             'submit': 'Add',
             'username': 'new',
-            'first_name': 'New',
-            'last_name': 'User',
             'email': 'new@testserver.local',
             'role': 'user',
-            'description': 'A New User',
-            'logo': file(self._data_file('logo.png'))
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
@@ -1684,19 +1680,12 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                 self.url))
 
         new = User.objects.order_by('-id')[0]
-        profile = new.get_profile()
         for key, value in POST_data.items():
             if key == 'submit':
                 pass
             elif key == 'role':
                 new_site_location = models.SiteLocation.objects.get()
                 self.assertFalse(new_site_location.user_is_admin(new))
-            elif key == 'logo':
-                profile.logo.open()
-                value.seek(0)
-                self.assertEquals(profile.logo.read(), value.read())
-            elif key == 'description':
-                self.assertEquals(profile.description, value)
             else:
                 self.assertEquals(getattr(new, key), value)
 
@@ -1714,12 +1703,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = {
             'submit': 'Add',
             'username': 'new',
-            'first_name': 'New',
-            'last_name': 'User',
             'email': 'new@testserver.local',
             'role': 'admin',
-            'description': 'A New User',
-            'logo': file(self._data_file('logo.png')),
             'password_f': 'new_password',
             'password_f2': 'new_password'
             }
@@ -1731,19 +1716,12 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                 self.url))
 
         new = User.objects.order_by('-id')[0]
-        profile = new.get_profile()
         for key, value in POST_data.items():
             if key in ('submit', 'password_f', 'password_f2'):
                 pass
             elif key == 'role':
                 new_site_location = models.SiteLocation.objects.get()
                 self.assertTrue(new_site_location.user_is_admin(new))
-            elif key == 'logo':
-                profile.logo.open()
-                value.seek(0)
-                self.assertEquals(profile.logo.read(), value.read())
-            elif key == 'description':
-                self.assertEquals(profile.description, value)
             else:
                 self.assertEquals(getattr(new, key), value)
 
@@ -1801,8 +1779,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         # form-0 is admin (3)
         # form-1 is superuser (2)
         # form-2 is user (1)
-        POST_data['form-0-first_name'] = 'New First'
-        POST_data['form-0-last_name'] = 'New Last'
+        POST_data['form-0-name'] = 'NewFirst NewLast'
         POST_data['form-0-role'] = 'user'
         POST_data['form-1-logo'] = file(self._data_file('logo.png'))
         POST_data['form-1-description'] = 'Superuser Description'
@@ -1836,8 +1813,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         old_admin = User.objects.get(username='admin')
         self.assertEquals(old_admin.pk, 3)
-        self.assertEquals(old_admin.first_name, 'New First')
-        self.assertEquals(old_admin.last_name, 'New Last')
+        self.assertEquals(old_admin.first_name, 'NewFirst')
+        self.assertEquals(old_admin.last_name, 'NewLast')
         self.assertFalse(self.site_location.user_is_admin(old_admin))
         self.assertTrue(old_admin.check_password('admin'))
 

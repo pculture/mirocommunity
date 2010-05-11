@@ -36,6 +36,8 @@ from tagging.forms import TagField
 
 from localtv import models
 from localtv import util
+from localtv.user_profile import forms as user_profile_forms
+
 
 Profile = util.get_profile_model()
 
@@ -468,17 +470,13 @@ FlatPageFormSet = modelformset_factory(FlatPage,
                                        formset=BaseFlatPageFormSet,
                                        can_delete=True,
                                        extra=0)
-class AuthorForm(forms.ModelForm):
+
+class AuthorForm(user_profile_forms.ProfileForm):
     role = forms.ChoiceField(choices=(
             ('user', 'User'),
             ('admin', 'Admin')),
+                             widget=forms.RadioSelect,
                              required=False)
-    logo = forms.ImageField(required=False,
-                            label='Photo')
-    description = forms.CharField(
-        widget=forms.Textarea,
-        required=False)
-    website = forms.URLField(required=False)
     password_f = forms.CharField(
         widget=forms.PasswordInput,
         required=False,
@@ -492,32 +490,21 @@ class AuthorForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'role',
+        fields = ['username', 'name', 'email', 'role', 'location', 'website',
                   'logo', 'description', 'password_f', 'password_f2']
 
     def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-        site = Site.objects.get_current()
-        self.sitelocation = models.SiteLocation.objects.get(site=site)
+        user_profile_forms.ProfileForm.__init__(self, *args, **kwargs)
+        self.sitelocation = models.SiteLocation.objects.get_current()
         if self.instance.pk:
             if self.sitelocation.user_is_admin(self.instance):
                 self.fields['role'].initial = 'admin'
             else:
                 self.fields['role'].initial = 'user'
-            try:
-                profile = self.instance.get_profile()
-            except Profile.DoesNotExist:
-                profile = Profile.objects.create(
-                    user=self.instance)
-            self.fields['description'].initial = profile.description
-            self.fields['website'].initial = profile.website
-
-    def clean_username(self):
-        value = self.cleaned_data.get('username')
-        if not self.instance.pk and \
-                User.objects.filter(username=value).count():
-            raise forms.ValidationError('That username already exists.')
-        return value
+        else:
+            for field_name in ['name', 'logo', 'location',
+                               'description', 'website']:
+                del self.fields[field_name]
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
@@ -540,27 +527,12 @@ class AuthorForm(forms.ModelForm):
 
     def save(self, **kwargs):
         is_new = not self.instance.pk
-        author = forms.ModelForm.save(self, **kwargs)
+        author = user_profile_forms.ProfileForm.save(self, **kwargs)
         if self.cleaned_data.get('password_f'):
             author.set_password(self.cleaned_data['password_f'])
         elif is_new:
             author.set_unusable_password()
         author.save()
-        if 'logo' in self.cleaned_data or 'description' in self.cleaned_data \
-                or 'website' in self.cleaned_data:
-            try:
-                profile = author.get_profile()
-            except Profile.DoesNotExist:
-                profile = Profile.objects.create(
-                    user=author)
-            if self.cleaned_data.get('logo'):
-                logo = self.cleaned_data['logo']
-                profile.logo = logo
-            if 'description' in self.cleaned_data:
-                profile.description = self.cleaned_data['description']
-            if 'website' in self.cleaned_data:
-                profile.website = self.cleaned_data['website']
-            profile.save()
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':
                 if not author.is_superuser:
