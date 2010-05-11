@@ -41,9 +41,14 @@ def create_default_sitelocation(app, created_models, verbosity, **kwargs):
     if SiteLocation in created_models:
         if verbosity >= 2:
             print "Creating example.com SiteLocation object"
-        SiteLocation.objects.create(
-            site=Site.objects.get_current())
-    SiteLocation.objects.clear_cache()
+        try:
+            SiteLocation.objects.create(
+                site=Site.objects.get_current())
+        except Site.DoesNotExist:
+            if verbosity >= 2:
+                print 'Did not create a SiteLocation, no default Site'
+        else:
+            SiteLocation.objects.clear_cache()
 
 signals.post_syncdb.connect(create_default_sitelocation, sender=localtv_app)
 
