@@ -1047,6 +1047,12 @@ _background: url(../images/med_left.gif) no-repeat;
 
 #submit_box #id_description {
     width: 100%;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 12px;
+min-height: 100px;
+line-height: 1.6em;
+margin: 0 0 0 -9px ;
+padding-left:  8px;
 }
 
 .hoverable {
@@ -2219,339 +2225,8 @@ float: right;
 margin-right: 8px;
 }
 
-#labels {
-}
-
-#labels table {
-width: 56%;
-border: 1px solid #ddd;
-float: right;
-clear: right;
-margin-bottom: 265px;
-}
-
-#labels table a {
-display: block;
-font-weight: bold;
-color: #4190e4 !important;
-}
-
-#labels table table a {
-color: #4190e4 !important;
-display: inline;
-}
-
-#labels table .pub {
-float: left;
-color: #999;
-}
-
-#labels table .pub_date {
-float: right;
-color: #555;
-}
-
-#labels table a:hover {
-text-decoration: underline;
-}
-
-body#admin.bulkedit #labels table, body#admin.incomingfeeds #labels table, body#admin.user_admin #labels table {
-float: none !important;
-clear: both;
-width: 100%;
-margin-bottom: 20px;
-}
-
-body#admin.user_admin #labels form > table {
-    width: auto;
-    padding: 0;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
- }
-
-body#admin.user_admin #labels {
-    float: left;
-    width: 650px;
-}
-body#admin.user_admin #labels form > table tr td:first-child, body#admin.user_admin #labels form > table tr th:first-child {
-    display: none;
-}
-body#admin.user_admin #labels form > table tr.editing td:first-child {
-    display: table-cell;
-}
-body#admin.user_admin #human-filter {
-    padding-bottom: 20px;
-}
-body#admin.user_admin #human-filter li {
-    padding-left: 10px;
-    float: left;
-}
-body#admin.user_admin #human-filter li:first-child {
-    padding-left: 0;
-}
-body#admin.user_admin #human-filter li a{
-    color: #4190E4;
-}
-body#admin.user_admin #human-filter li.selected {
-    font-weight: bold;
-}
-body#admin.user_admin #human-filter li.selected a {
-    color: grey;
-}
-body#admin.user_admin #label_sidebar {
-    margin-bottom: 20px;
-}
-
-.floatnone{
-float: none !important;
-
-}
-
-#labels table thead {
-background: url(../images/table_bg.gif) top left repeat-x;
-}
-
-#labels table thead td {
-font-weight: bold;
-padding: 5px;
-}
-
-#labels table.editable td + td:hover:after {
-    content: "";
-}
-
-#labels table.editable tr.category_edit td + td:hover:after {
-    content: "";
-}
-
-#labels table table{
-border: 0;
-}
-
-#labels table td{
-padding: 8px 14px 8px 12px !important;
-line-height: 1.4em;
-font-size: 11px;
-border-bottom: 1px solid #ddd;
-border-right: 1px solid #eee;
-}
-
-#labels table td td label {
-display: block;
-float: left;
-width: 70px;
-line-height: 2.6em;
-}
-
-#labels table td td textarea {
-font-size: 11px;
-padding: 5px;
-margin-bottom: 16px;
-border: 1px solid #ddd;
-width: 85%;
-min-height: 80px;
-}
-
-#labels table tbody td.last {
-border-right: none;
-}
-
-#labels table tr.last td {
-border-bottom: none;
-}
-
-#labels table tr.grey {
-background: #f9f9f9;
-}
-
-#labels table th.last {
-border-right: none;
-}
-
-#labels table tr.editing{
-background: #ebffe0;
-width: 100%;
-}
-
-#labels table tr.editing td{
-padding: 0px;
-}
-
-#labels table tr.editing td.last{
-padding: 0px 0 0 12px;
-}
-
-#labels table tr.editing h3 {
-    font-size: 17px;
-    padding: 15px 0 0 15px;
-}
-
-#labels table tr.editing h3 input {
-    font-size: 17px;
-    width: 50%;
-}
-
-#labels table tr.editing h3 a{
-font-size: 12px;
-color: #999;
-display: inline;
-text-decoration: underline;
-}
-
-#labels table tr.editing .video_service, #labels table tr.editing .video_count {
-    padding: 15px;
-}
-
-#labels table tbody tr:hover{
-background: #ebffe0;
-}
-
-#labels table tr:hover .actions, ul#comments li:hover .actions{
-display: block;
-padding: 8px 7px 9px 13px !important;
-position: absolute;
-border-left: 1px solid #ddd;
-border-right: 1px solid #ddd;
-border-bottom: 1px solid #ddd;
-background: #ebffe0;
-margin-top: 8px;
-margin-left: -13px;
-}
-
-
-table .actions, ul#comments .actions{
-display: none;
-}
-
-table .actions a, ul#comments .actions button{
-display: inline !important;
-color: #000;
-padding: 0 13px 0 19px;
-font-weight: bold;
-background: url(../images/small_icons.png) left -1px no-repeat;
-}
-
-table .actions a.delete_icon, ul#comments .actions button.delete_icon{
-background: url(../images/small_icons.png) left -32px no-repeat;
-}
-
-table .actions a.view_icon{
-background: url(../images/small_icons.png) left -61px no-repeat;
-}
-
-ul#comments .actions button.span_icon{
-background: url(../images/small_icons.png) left -61px no-repeat;
-}
-
-.overflow{
-height: 1.4em;
-overflow: hidden;
-display: block;
-}
-
-#labels table th {
-font-weight: bold;
-border-bottom: 1px solid #ccc !important;
-line-height: 2em;
-border-right: 1px solid #eee;
-padding: 0 !important;
-}
-
-#labels table th a, #labels table th span {
-padding: 5px 15px 4px 13px !important;
-display: block;
-margin-right: 13px;
-}
-
-#labels table th a {
-background: url(../images/arrows.gif) right -63px no-repeat;
-}
-
-#labels table th a:hover {
-background: url(../images/arrows.gif) right 15px no-repeat;
-}
-
-#labels table th a.sortdown{
-background: url(../images/arrows.gif) right 15px no-repeat;
-}
-
-#labels table th a.sortdown:hover{
-background: url(../images/arrows.gif) right -24px no-repeat;
-}
-
-#labels table th a.sortup{
-background: url(../images/arrows.gif) right -24px no-repeat;
-}
-
-#labels table th a.sortup:hover{
-background: url(../images/arrows.gif) right 15px no-repeat;
-}
-
-#labels table td.checkbox, #labels table th.checkbox {
-padding: 0px 0 0px 13px !important;
-line-height: 2.6em;
-border-right: none;
-vertical-align:middle !important;
-}
-
-#labels table td.checkbox input {
-margin-top: 7px;
-}
-
-#labels table tr.editing td td  {
-border: 0 !important;
-padding: 3px 0 4px 20px !important;
-}
-
-
 .padding{
 padding: 0 15px !important;
-}
-
-
-.checklist label.padding{
-display: block;
-padding-top: 10px !important;
-}
-
-.checklist ul{
-border: 1px solid #eee;
-margin: 8px 16px 15px 16px;
-padding: 0px;
-background: #fff;
-height: 420px;
-overflow: auto;
-}
-
-.checklist li{
-padding: 10px;
-border-bottom: 1px solid #eee;
-}
-
-.checklist li span{
-padding: 0 8px;
-
-}
-
-.byline .checklist ul, #tags .checklist ul {
-border: 1px solid #eee;
-margin: 8px 16px 15px 0;
-padding: 0px;
-background: #fff;
-height: 420px;
-overflow: auto;
-width: 200px !important;
-}
-
-.byline .checklist ul{
-position: absolute;
-z-index: 1;
-}
-
-.byline .checklist ul li, #tags .checklist ul li{
-clear: both !important;
-display: block !important;
-width: 165px !important;
 }
 
 .local_footer {
@@ -3386,25 +3061,6 @@ width: 540px;
 display: block;
 }
 
-
-#tags ul.meta_listing li.item textarea{
-width: 377px;
-padding: 3px;
-font-family: Arial, Helvetica, sans-serif;
-font-size: 11px;
-margin: -4px;
-border: 1px solid #aaa;
-}
-
-
-#tags li ul{
-    font-weight: bold;
-    padding-left: 3px;
-    color: #666;
-    width: 370px;
-}
-
-
 #tags .floatleft {
 clear: left;
 margin: 0 !important;
@@ -3422,7 +3078,6 @@ font-weight: bold;
 float: right;
 }
 
-
 .action + .editable, .action + div.description {
     clear: both;
     line-height: 18px;
@@ -3430,37 +3085,9 @@ float: right;
     margin-bottom: 25px;
 }
 
-.action + .editable > span{
-padding: 0 0 0 18px !important;
-float: none;
-margin-top: 10px;
-/*display: inline;*/
-/*background: url(../images/small_icons.png) left 1px no-repeat;*/
-color: #333;
-line-height: 1.5;
-}
-
-.action + .editable .done {
-float: right;
-margin: 10px 0 15px 0;
-}
-
 p.submit{
 margin-top: 10px;
 }
-
-
-#id_description {
-width: 536px;
-font-family: Arial, Helvetica, sans-serif;
-font-size: 12px;
-min-height: 100px;
-line-height: 1.6em;
-margin: 0 0 0 -9px ;
-padding-left:  8px;
-}
-
-
 
 ul#comments form p label{
 display: none;
