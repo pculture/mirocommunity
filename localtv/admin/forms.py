@@ -381,8 +381,8 @@ class BaseCategoryFormSet(BaseModelFormSet):
             while category['parent']:
                 if category['parent'] in s:
                     if len(s) == 1: # parent set to itself
-                        error = ("A category can't be it's own parent. "
-                                  "Please change the parent category")
+                        error = ("A category cannot be it's own parent. "
+                                 "Please change the parent category")
                     else:
                         error = ("Some categories have conflicting parents.  "
                                  "Please change one or more of the parent "
