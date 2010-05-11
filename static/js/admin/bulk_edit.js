@@ -50,8 +50,8 @@ $(document).ready(function() {
         }
     });
     if ($("form input[name$=-id]").length != parseInt($("#id_form-INITIAL_FORMS").val(), 10)) {
-        $("#hover_wrap .contentWrap").html("We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href='" + location.href + "'>Reload the page</a> to let it load fully.").overlay({target: '#hover_wrap', api: true}).load();
-        $("#hover_wrap .contentWrap a").click(function() { location.href = location.href;});
+        $("#overlay .contentWrap").html("<div id='load_error'>We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href='" + location.href + "'>Reload the page</a> to let it load fully.</div>").overlay({target: '#overlay', close: '#doesnotexist', closeOnClick: false, closeOnEsc: false, api: true}).load();
+        $("#overlay .contentWrap a").click(function() { location.href = location.href;});
     }
     errors = $('.simple_overlay.errors');
     if (errors.length) {

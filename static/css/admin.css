@@ -1539,7 +1539,6 @@ overflow: inherit !important;
 text-shadow: none;
 }
 
-
 /*//////////////////////////////////////
 
 ~ Adding Feed
@@ -1764,8 +1763,9 @@ min-width: 110px;
 line-height: 2.6em;
 }
 
-
-
+#load_error {
+    margin: 20px 30px;
+}
 
 #admin.bulkedit .search_sources select.behave{
 width: 150px;
