@@ -7,26 +7,36 @@ from notification import models as notification
 Profile = util.get_profile_model()
 
 class ProfileForm(forms.ModelForm):
-    name = forms.CharField(max_length=61)
-    username = forms.CharField(max_length=30)
-    email = forms.EmailField()
+    name = forms.CharField(max_length=61, required=False)
+    location = forms.CharField(max_length=200, required=False)
+    website = forms.URLField(required=False)
+    logo = forms.ImageField(required=False,
+                            label='Photo')
+    description = forms.CharField(
+        widget=forms.Textarea,
+        required=False)
 
     class Meta:
-        model = Profile
+        model = User
         fields = ['name', 'username', 'email', 'location', 'website', 'logo',
                   'description']
 
     def __init__(self, *args, **kwargs):
-        instance = kwargs.get('instance')
-        if instance is not None:
-            initial = kwargs.setdefault('initial', {})
-            initial.setdefault('username', instance.user.username)
-            initial.setdefault('name', u'%s %s' % (instance.user.first_name,
-                                                   instance.user.last_name))
-            initial.setdefault('email', instance.user.email)
         forms.ModelForm.__init__(self, *args, **kwargs)
+        if self.instance.pk: # existing user:
+            self.fields['name'].initial = self.instance.get_full_name()
+            try:
+                profile = self.instance.get_profile()
+            except Profile.DoesNotExist:
+                pass # we'll do it later
+            else:
+                for field_name in ('location', 'website', 'description'):
+                    self.fields[field_name].initial = getattr(profile,
+                                                              field_name)
 
     def clean_name(self):
+        if not self.cleaned_data['name']:
+            return None
         parts = self.cleaned_data['name'].split()
         first, parts = [parts[0]], parts[1:]
         while len(' '.join(parts)) > 30:
@@ -34,32 +44,42 @@ class ProfileForm(forms.ModelForm):
             parts = parts[1:]
         if len(' '.join(first)) > 30:
             raise forms.ValidationError(
-                'First or last name must be less than 30 characters.')
+                'First and last name must be less than 30 characters.')
         return ' '.join(first), ' '.join(parts)
 
     def clean_username(self):
         username = self.cleaned_data['username']
-        if username == self.instance.user.username: # no change
+        if username == self.instance.username: # no change
             return username
         if User.objects.filter(username=username).count():
             raise forms.ValidationError('That username is already taken.')
         return username
 
     def save(self, **kwargs):
-        (self.instance.user.first_name,
-         self.instance.user.last_name) = self.cleaned_data['name']
-        self.instance.user.username = self.cleaned_data['username']
-        self.instance.user.email = self.cleaned_data['email']
+        (self.instance.first_name,
+         self.instance.last_name) = self.cleaned_data.get('name', ('', ''))
         instance = forms.ModelForm.save(self, **kwargs)
 
-        if hasattr(self, 'save_m2m'): # not committed
-            old_save_m2m = self.save_m2m
-            def save_m2m(self):
-                instance.user.save()
-                old_save_m2m()
-            self.save_m2m = save_m2m
+        def save_m2m():
+            try:
+                profile = instance.get_profile()
+            except Profile.DoesNotExist:
+                profile = Profile.objects.create(
+                    user=instance)
+            for field_name in self.Meta.fields[-4:]:
+                value = self.cleaned_data.get(field_name)
+                if value:
+                    setattr(profile, field_name, value)
+            profile.save()
+
+        if hasattr(self, 'save_m2m'):
+            old_m2m = self.save_m2m
+            def _():
+                save_m2m()
+                old_m2m()
+            self.save_m2m = _
         else:
-            instance.user.save()
+            save_m2m()
 
         return instance
 

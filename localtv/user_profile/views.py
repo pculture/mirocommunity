@@ -12,12 +12,12 @@ from localtv.user_profile import forms
 def profile(request, sitelocation=None):
     if request.method == 'POST':
         form = forms.ProfileForm(request.POST, request.FILES,
-                                 instance=request.user.get_profile())
+                                 instance=request.user)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(request.path)
     else:
-        form = forms.ProfileForm(instance=request.user.get_profile())
+        form = forms.ProfileForm(instance=request.user)
 
     return render_to_response('localtv/user_profile/edit.html',
                               {'form': form},
