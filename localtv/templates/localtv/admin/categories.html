@@ -97,7 +97,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <td valign="middle">{{ form.instance.description|sanitize }}</td>
 <td valign="middle">{{ form.instance.slug }}</td>
 {% with form.instance.video_set.count as count %}
-<td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ category.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
+<td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ form.instance.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}
 {% endblock %}
 
