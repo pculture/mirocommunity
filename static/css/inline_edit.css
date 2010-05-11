@@ -50,7 +50,7 @@ line-height: 2.6em;
 .editable .input_field ul li textarea{
 float: left;
 border: 1px solid #ccc;
-width: 471px;
+width: 584px;
 font-family: "Lucida Grande", Verdana, Arial, sans-serif;
 padding: 8px;
 font-size: 12px;
@@ -173,7 +173,7 @@ width: 330px;
 	height: 400px;
 	float: left;
 	overflow: auto !important;
-	width: 290px !important;
+	width: 594px !important;
 }
 .input_field ul li.scrollable.right {
 	border-left: 1px solid #cccccc;
@@ -192,7 +192,7 @@ width: 330px;
 	float: none;
 }
 .input_field ul li.scrollable ul li label {
-	width: 270px;
+	width: 550px;
 }
 .input_field ul li.scrollable ul li label input {
 	margin: 6px 0 0 0;
