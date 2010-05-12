@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.utils.encoding import force_unicode
 
 from localtv import models, util
 from notification import models as notification
@@ -49,7 +50,7 @@ class ProfileForm(forms.ModelForm):
 
     def clean_username(self):
         username = self.cleaned_data['username']
-        if username == self.instance.username: # no change
+        if username == force_unicode(self.instance.username): # no change
             return username
         if User.objects.filter(username=username).count():
             raise forms.ValidationError('That username is already taken.')

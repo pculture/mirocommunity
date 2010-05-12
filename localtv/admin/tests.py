@@ -1795,7 +1795,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                 self.site_location.site.domain,
                 self.url))
 
-        self.assertEquals(User.objects.count(), 3) # no one got added
+        self.assertEquals(User.objects.count(), 4) # no one got added
 
         new_admin = User.objects.get(username='new_admin')
         self.assertEquals(new_admin.pk, 1)
@@ -1845,7 +1845,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                 self.site_location.site.domain,
                 self.url))
 
-        self.assertEquals(User.objects.count(), 2) # one user got removed
+        self.assertEquals(User.objects.count(), 3) # one user got removed
 
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
