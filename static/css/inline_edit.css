@@ -175,6 +175,13 @@ width: 330px;
 	overflow: auto !important;
 	width: 594px !important;
 }
+
+@media all and (max-height: 700px) {
+    .input_field ul li.scrollable {
+        height: 200px;
+    }
+}
+
 .input_field ul li.scrollable.right {
 	border-left: 1px solid #cccccc;
 	float: right;
