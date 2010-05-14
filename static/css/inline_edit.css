@@ -32,11 +32,34 @@ width: 100%;
 }
 
 
-.editable .input_field span.done{
+.editable .input_field .done{
 float: right;
-line-height: 2em;
-margin-top: 20px;
+text-decoration: none;
+color: #fff;
+margin-top: 15px;
+margin-left: 10px;
+background: url(../images/admin_sprites.png) right -185px no-repeat;
+padding-right: 14px;
+border: 0;
+cursor: pointer;
 }
+.editable .input_field .done span {
+padding: 7px 0px 7px 35px;
+float: right;
+text-shadow: 0 1px 1px rgba(0,0,0,1);
+background: url(../images/admin_sprites.png) left -151px no-repeat;
+
+}
+
+.editable .input_field .done:hover{
+curosor: pointer !important;
+background: url(../images/admin_sprites.png) right -262px no-repeat;
+}
+
+.editable .input_field .done:hover span{
+background: url(../images/admin_sprites.png) left -228px no-repeat;
+}
+
 
 
 .editable .input_field ul li label{
