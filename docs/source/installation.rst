@@ -27,8 +27,8 @@ is really just used for setting up virtualenv environments).
 See http://pypi.python.org/pypi/virtualenv for more details.
 
 
-Installing Django, LocalTv and dependencies
-===========================================
+Installing Miro Community
+=========================
 
 Building the virtual environment
 --------------------------------
@@ -60,8 +60,6 @@ The general structure looks like this:
 
 * *bin/*: binaries and executables
 
-* *include/*: links to python binaries & etc
-
 * *lib/*: python modules, both stdlib, those installed with
   setuptools, and those not in development
 
@@ -73,366 +71,34 @@ virtualenv environment to add these following directories:
 * *djangoproject/*: subdirectories with django settings and root
   urls for different sites should live in here
 
-* *htdocs/*: A directory for most of your static media
+Pip
+---
 
-  - *static/*: Usually site-specific static media.  (Good to make a git repository for this location or whatever)
+The easiest way to install Miro Community is with Pip (Pip Installs Packages):
 
-    * *images/*: images for the look and feel of this particular site
+    easy_install -Uaz pip
 
-    *  *js/*: javascript for the look and feel of this
-       particular site
+requirements.txt
+----------------
 
-    * *css/*: css for the look and feel of this particular
-      site
+Once Pip is installed, it's easy to install Miro Community and its dependencies:
 
-    * *templates/*: templates, such as base.html, to define
-      the base look of your site, as well as a place to override
-      app-specific templates on a site level
+    pip install -r http://git.participatoryculture.org/localtv/plain/requirements.txt
 
-  - *admin/*: symlink the directory to django's static admin
-    resources here.  Not totally necessary but it makes things a bit
-    easier.
-
-  - *site_media/*: the site_media directory for django.  Django
-    apps install stuff here, so it will most likely be dynamically
-    populated
-
-* *var/*: kinda like system /var
-
-  - *pid/*: put your pidfiles for django & etc here
-
-  - *var/log/*: django logfiles & etc go here
-
-  - *var/db/*: A nice place to put your sqlite database, if that is
-    what you are using
-
-
-Django
-------
-
-Presently LocalTv works with Django 1.1.  While in the virtualenv
-environment you can type the following::
-
-    easy_install -UaZ Django==1.1
-
-This should do everything you need for django, including putting it in
-the virtualenv python path.
-
-Dependencies
-------------
-
-Installing dependencies will be a little bit tricker.  In general, it
-is recommended that you do these svn/git checkouts in the *src/*
-directory described in [[recommended additional directories]].
-
-::
-
-    cd src/
-
-You are welcome to use a different directory structure, but you will
-need to figure out how to modify ``easy_install.pth`` for your needs on
-your own.
-
-DjangoOpenId
-------------
-
-Problem is that it has some outdated crap in it.  We might need to
-fork it with git::
-
-    svn co http://django-openid.googlecode.com/svn/branches/openid-2.0+auth DjangoOpenid
-
-This also needs several dependencies which are easily installed::
-
-    easy_install -UaZ elementtree
-    easy_install -UaZ python-urljr
-    easy_install -UaZ python-yadis
-    easy_install -UaZ python-openid
-
-
-South
----------------
-
-::
-
-    hg clone http://bitbucket.org/andrewgodwin/south/
-    cd south
-    hg update -C stableish
-    cd ..
-
-
-lxml
-----
-
-If you're running a recent version of Debian or Ubuntu, the following
-should be sufficient::
-
-    sudo apt-get install python-lxml
-
-Otherwise, consult the [[http://codespeak.net/lxml/installation.html][lxml install docs]].
-
-
-LocalTv
--------
-
-::
-
-    git clone http://git.participatoryculture.org/localtv LocalTv
-    git clone http://git.participatoryculture.org/localtv-openid LocalTv-OpenID
-
-
-VidScraper
-----------
-
-::
-
-    git clone http://git.participatoryculture.org/vidscraper VidScraper
-
-You'll also need to install simplejson::
-
-    easy_install -UaZ simplejson
-
-
-Page Tabs
----------
-
-::
-
-    git clone http://git.participatoryculture.org/djpagetabs djpagetabs
-
-
-
-Video
------
-
-::
-
-    git clone http://git.participatoryculture.org/djvideo djvideo
-
-
-
-BeautifulSoup
--------------
-
-::
-
-    easy_install -UaZ BeautifulSoup
-
-
-Modifying easy_install.pth
---------------------------
-
-From the base of your virtualenv environment, open the file at::
-
-    editor ./lib/python2.*/site-packages/easy-install.pth
-
-Where python2.* is the python version used in your virtualenv.
-
-Your ``easy-install.pth`` probably looks something like::
-
-    import sys; sys.__plen = len(sys.path)
-    ./setuptools-0.6c8-py2.5.egg
-    ./Django-1.0.2_final-py2.5.egg
-    import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
-
-The first and last lines in this file should be preserved as-is.  The
-lines between that are directories that add to your ``PYTHONPATH`` when in
-the virtualenv environment.
-
-As you can see, paths can be relative.  Modify your file to look like so::
-
-    import sys; sys.__plen = len(sys.path)
-    ./setuptools-0.6c8-py2.5.egg
-    ./Django-1.1-py2.5.egg
-    ../../../src/south
-    ../../../src/DjangoOpenid
-    ../../../src/LocalTv
-    ../../../src/LocalTv-OpenID
-    ../../../src/VidScraper
-    ../../../src/djpagetabs
-    ../../../src/djvideo
-    ../../../djangoproject
-    import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
-
-Now you should be able to import python modules out of the added directories.
-
-
-Setting up the django projects
-==============================
-
-We are going to need to make multiple projects, one for the 'main
-site' and one for each community subsite.
-
-
-"mainsite" django project
--------------------------
-
-Change to your djangoproject directory, as created earlier in
-[[recommended additional directories]]::
-
-    cd djangoproject/
-
-Assuming we installed Django as described earlier, and that we have
-activated our virtualenv environment, we should have the command
-``django-admin.py`` in our ``PATH``.  (It should be hosted in the bin/
-directory of our virtualenv environment.)  We'll use that to make the
-basis of our mainsite project::
-
-    django-admin.py startproject mainsite_project
-
-(Note that you don't necessarily have to append _project to all of
-your django projects, but I do so to avoid naming conflicts)
-
-settings.py
------------
-
-(There's an example settings.py in LocalTv/localtv/settings.py)
-
-Edit your ``mainsite_project/settings.py``.  Fill out the usual stuff,
-including:
-
-* the database configuration
-* the MEDIA_ROOT, MEDIA_URL, ADMIN_MEDIA_PREFIX variables
-
-Change ROOT_URLCONF to be::
-
-    ROOT_URLCONF = 'mainsite_project.urls'
-
-Add the path to your site-level templates, like so::
-
-    TEMPLATE_DIRS = (
-        "/path/to/virtualenv/htdocs/static/templates/",
-    )
-
-If you want to use the OpenId template versions that are bundled with
-LocalTv, also add an entry for the override_templates directory, like
-so::
-
-    TEMPLATE_DIRS = (
-        "/path/to/virtualenv/htdocs/static/templates/",
-        "/path/to/virtualenv/src/LocalTv/localtv/override_templates/",
-    )
-
-
-Append  "south", "django_openidconsumer", "djpagetabs",
-and the localtv apps to your INSTALLED_APPS::
-
-    INSTALLED_APPS = (
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.admin',
-        'django.contrib.sites',
-        'south',
-        'django_openidconsumer',
-        'djpagetabs',
-        'localtv',
-        'localtv.admin',
-        'localtv.inline_edit',
-        'localtv.submit_video',
-        'localtv.comments',
-        'localtv_openid'
-    )
-
-Set up the OpenID authentication::
-
-    LOGIN_REDIRECT_URL = '/'
-
-    AUTHENTICATION_BACKENDS = (
-        'localtv_openid.OpenIdBackend',
-        )
-
-
-urls.py
--------
-
-::
-
-    from django.conf.urls.defaults import *
-
-    from django.contrib import admin
-    admin.autodiscover()
-
-    urlpatterns = patterns('',
-        (r'^djadmin/(.*)', admin.site.root),
-        (r'', include('localtv.mainsite.urls')),
-    )
-
-
-Sync the database
------------------
-
-::
-
-    django-admin.py syncdb --settings=mainsite_project.settings
-    django-admin.py migrate --settings=mainsite_project.settings
-
-
-Subsites
+RabbitMQ
 --------
 
-Now you'll need to make django projects for each community local
-subsite.  Let's say Chicago is one of our cities.  In the
-djangoproject directory::
-
-    mkdir chicago_project
-    touch chicago_project/__init__.py
+Miro Community requires an AMQP server to run.  We recommend RabbitMQ
+(http://www.rabbitmq.com/) but any server should work.  Check the documentation
+on their site for instructions on installing it.
 
 
-create the site object
-----------------------
+Setting up the Django project
+==============================
 
-Fire up the python shell::
-
-    django-admin.py shell --settings=mainsite_project.settings
-
-Import the Site model::
-
-    >>> from django.contrib.sites.models import Site 
-    >>> from localtv.models import SiteLocation
-
-Add the site and the sitelocation (obviously replacing the domain name
-and name with those appropriate to your site)::
-
-    >>> chicago_site = Site(domain='chicago.example.org', name='Chicago LocalTv')
-    >>> chicago_site.save()
-    >>> chicago_sitelocation = SiteLocation(site=chicago_site)
-    >>> chicago_sitelocation.save()
-
-Be sure to take note of the id... we'll need it::
-
-    >>> print chicago_site.id
-    2
-
-Repeat for any other subsites you need.
-
-
-settings.py
------------
-
-The code here is pretty minimal in this case.
-
-::
-
-    from mainsite_project.settings import *
-
-    SITE_ID = 2
-    ROOT_URLCONF = 'chicago_project.urls'
-
-Fill in SITE_ID with the id you got while creating the site object
-
-
-urls.py
--------
-
-::
-
-    from django.conf.urls.defaults import patterns, include
-
-    urlpatterns = patterns('',
-        (r'^openid/', include('localtv_openid.urls')),
-        (r'', include('localtv.subsite.urls')),
-    )
-
+There's an example project in src/miro-community/example_project/.  You'll need
+to update the settings.py file to point to the right paths, and to include the
+keys for the Vimeo, uStream, bit.ly, and reCaptcha.
 
 
 Apache / nginx / web server config
@@ -446,7 +112,7 @@ the bin/ directory of your virtualenv environment, like::
     #!/var/www/localtv/bin/python
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'mainsite_project.settings'
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'project.settings'
     from django.core.servers.fastcgi import runfastcgi
     runfastcgi(daemonize='false')
 

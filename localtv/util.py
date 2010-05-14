@@ -130,7 +130,7 @@ def get_or_create_tags(tag_list):
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
         tags = tagging.models.Tag.objects.filter(name=tag_text)
-        if not tags:
+        if not tags.count():
             tag = tagging.models.Tag.objects.create(name=tag_text)
         elif tags.count() == 1:
             tag = tags[0]
