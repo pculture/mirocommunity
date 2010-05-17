@@ -33,6 +33,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </div>
   {% endif %}
 </div>
+<div id="category">
+{% if page_obj.has_other_pages %}
+<div class="pag">
+  <b>Pages</b>
+  {% pagetabs page_obj %}
+</div>
+{% endif %}
+
+  <ul>
+    {% for video in video_list %}
+    <li>
+      {% include "localtv/video_listing_individual.html" %}
+    </li>
+    {% endfor %}
+  </ul>
+
+</div>
 {% if category.child_set.count %}
 <div id="subcategory_sidebar">
   <div id="main_header" class="small">
@@ -54,21 +71,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
 </div>
 {% endif %}
-<div id="category">
-{% if page_obj.has_other_pages %}
-<div class="pag">
-  <b>Pages</b>
-  {% pagetabs page_obj %}
-</div>
-{% endif %}
-
-  <ul>
-    {% for video in video_list %}
-    <li>
-      {% include "localtv/video_listing_individual.html" %}
-    </li>
-    {% endfor %}
-  </ul>
-
-</div>
 {% endblock %}

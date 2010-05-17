@@ -2163,20 +2163,21 @@ background-position: right 0;
 
 #author_info img {
     float: left;
-    margin-right: 20px;
-    width: 200px;
+    margin: 0 20px 20px 0;
+    width: 272px;
 }
 
-div#category{
+div#category, div#author {
 float: right;
 width: 600px !important;
-padding-top: 26px !important;
+padding-top: 46px !important;
 }
 
-#subcategory_sidebar{
+#category_sidebar, #subcategory_sidebar, #author_sidebar {
 width: 312px !important;
 padding-top: 20px;
 float: left;
+clear: left;
 }
 
 #subcategory_sidebar .cat_list a {
@@ -2212,7 +2213,7 @@ float: right;
 }
 
 #category .pag {
-    padding-top: 0;
+    padding-top: 13px;
 }
 .actions select {
 margin-right: 8px;
