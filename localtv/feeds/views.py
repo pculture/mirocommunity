@@ -61,7 +61,7 @@ def feed_view(klass):
                     feed.writeString('utf8'))
                 mime_type = 'text/javascript'
             else:
-                output = feed.writeString('utf8')
+                output = feed.writeString('utf-8')
             return HttpResponse(output,
                                 mimetype=mime_type)
     return wrapper
