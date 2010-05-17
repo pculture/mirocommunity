@@ -30,20 +30,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div>{{ author.get_profile.description|sanitize }}</div>
   </div>
 </div>
-<div class="pag">
+<div id="author">
   {% if page_obj.has_other_pages %}
-  <b>Pages</b>
-  {% pagetabs page_obj %}
+  <div class="pag">
+    <b>Pages</b>
+    {% pagetabs page_obj %}
+  </div>
   {% endif %}
-</div>
-
-<div id="author_videos">
-  <ul>
-    {% for video in video_list %}
-    <li>
-      {% include "localtv/video_listing_individual.html" %}
-    </li>
-    {% endfor %}
-  </ul>
+  <div id="author_videos">
+    <ul>
+      {% for video in video_list %}
+      <li>
+        {% include "localtv/video_listing_individual.html" %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
 </div>
 {% endblock %}
