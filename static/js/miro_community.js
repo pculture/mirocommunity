@@ -80,7 +80,7 @@ $(document).ready( function(){
         }
         return false;
     });
-    placeholder_fallback();
+    if(!has_placeholder) placeholder_fallback();
 }).ajaxStart(function() {
     indicator = $("#load-indicator");
     if (!indicator.length) {
