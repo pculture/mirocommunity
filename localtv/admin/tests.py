@@ -1782,6 +1782,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-0-name'] = 'NewFirst NewLast'
         POST_data['form-0-role'] = 'user'
         POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-name'] = ''
         POST_data['form-1-description'] = 'Superuser Description'
         POST_data['form-2-username'] = 'new_admin'
         POST_data['form-2-role'] = 'admin'
@@ -1805,6 +1806,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         superuser = User.objects.get(username='superuser')
         self.assertEquals(superuser.pk, 2)
         self.assertEquals(superuser.is_superuser, True)
+        self.assertEquals(superuser.first_name, '')
+        self.assertEquals(superuser.last_name, '')
         self.assertFalse(superuser in self.site_location.admins.all())
         self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
