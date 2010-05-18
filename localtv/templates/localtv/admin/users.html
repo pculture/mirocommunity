@@ -58,7 +58,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block columns %}
 <td>
-  {{ form.instance.username }}
+  <span>{{ form.instance.username }}</span>
   <div class="actions">
     <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{% url localtv_author form.instance.pk %}" class="view_icon">View</a>
   </div>
