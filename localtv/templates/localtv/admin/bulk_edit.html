@@ -226,7 +226,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </td>
           {% block columns %}
           <td>
-            <a href="{{ form.instance.get_absolute_url }}">{{ form.instance.name }}</a>
+            <span>{{ form.instance.name }}</span>
             <div class="actions">
               <a href="#" onclick="return showEdit(this);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
             </div>

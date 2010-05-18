@@ -178,6 +178,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               <span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
               <ul id="footer_links">
                 <li><a href="{% url localtv_index %}">Home</a></li>
+                {% if request.user.is_authenticated %}<li><a href="{% url localtv_user_profile %}">Your Profile</a><li>{% endif %}
                 <li><a href="{% url localtv_goodies_widget %}">Goodies</a></li>
                 <li>
           {% if request.user.is_authenticated %}

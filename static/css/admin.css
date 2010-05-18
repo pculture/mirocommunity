@@ -1335,6 +1335,11 @@ padding: 5px 0;
 text-align: left;
 }
 
+#labels tr > td:first-child + td > span {
+    font-weight: bold;
+    text-decoration: none;
+}
+
 
 .search_sites label{
 float: left;

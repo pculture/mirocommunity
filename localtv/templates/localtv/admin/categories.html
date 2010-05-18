@@ -89,7 +89,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block columns %}
 <td valign="middle">
-  {{ form.instance.dashes }}{{ form.instance.name }}
+  <span>{{ form.instance.dashes }}{{ form.instance.name }}</span>
   <div class="actions">
     <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
   </div>
