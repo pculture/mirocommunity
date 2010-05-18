@@ -37,7 +37,7 @@ class ProfileForm(forms.ModelForm):
 
     def clean_name(self):
         if not self.cleaned_data['name']:
-            return None
+            return '', ''
         parts = self.cleaned_data['name'].split()
         first, parts = [parts[0]], parts[1:]
         while len(' '.join(parts)) > 30:
