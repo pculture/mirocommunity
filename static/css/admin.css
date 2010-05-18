@@ -330,6 +330,7 @@ background: url(../images/admin_sprites.png) 0 -77px no-repeat;
 
 
 .reject_button{
+    border: 0;
 float: right;
 text-decoration: none;
 color: #fff;
