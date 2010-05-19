@@ -786,11 +786,11 @@ background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important
 }
 
 a.profile {
-background: url(../images/admin_icons.png) 20px -631px no-repeat;
+background: url(../images/admin_icons.png) 20px -727px no-repeat;
 }
 
 a.profile:hover, #user_profile a.profile {
-    background-position: 20px -584px;
+    background-position: 20px -679px;
 }
 
 #admin_nav a.goodies {
