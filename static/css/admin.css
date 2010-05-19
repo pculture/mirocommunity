@@ -717,7 +717,7 @@ border-bottom: 1px solid #fff;
 #admin.searches a.watched,
 #admin.incomingvids #admin_subnav a.sub,
 #admin.managesources a.watched,
-#user_profile.user_profile a.profile,
+#user_profile.user_profile #admin_subnav a.profile,
 #user_profile.notifications a.notifications,
 #goodies.widgetcreater a.widget,
 #goodies.bookmarklet a.bookmarklet
@@ -742,7 +742,7 @@ background: url(../images/admin_icons.png) 20px 18px no-repeat;
 border-top: 1px solid #ddd;
 }
 
-a.sub:hover{
+#admin_nav a.sub:hover{
 background: #fff url(../images/admin_icons.png) 20px -23px no-repeat;
 }
 
@@ -785,6 +785,13 @@ background: #fff url(../images/admin_icons.png) 20px -266px no-repeat;
 background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important;
 }
 
+a.profile {
+background: url(../images/admin_icons.png) 20px -491px no-repeat;
+}
+
+#admin_nav a.goodies {
+background: url(../images/admin_icons.png) 20px -396px no-repeat;
+}
 
 /*//////////////////////////////////////
 
