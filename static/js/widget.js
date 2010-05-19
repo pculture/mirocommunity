@@ -43,7 +43,7 @@ if (typeof MiroCommunity === 'undefined') {
                 this.load();
             },
             addStyle: function() {
-            head = document.getElementsByTagName('head')[0];
+                head = document.getElementsByTagName('head')[0];
                 if (!MiroCommunity.Widget._addedStyles && this.opts.stylesheet !== '') {
                     link = document.createElement('link');
                     link.rel = 'stylesheet';
@@ -58,7 +58,12 @@ if (typeof MiroCommunity === 'undefined') {
                 style = document.createElement('style');
                 style.type = 'text/css';
                 width = this.opts.width ? this.opts.width : 300;
-                style.innerText = '#' + this.id + ', #' + this.id + ' ul {width: ' + width + 'px;}';
+                rules = document.createTextNode('#' + this.id + ', #' + this.id + ' ul {width: ' + width + 'px;}');
+                if(style.styleSheet) {
+                    style.styleSheet.cssText = rules.nodeValue;
+                } else {
+                    style.appendChild(rules);
+                }
                 head.appendChild(style);
             },
             load: function() {
