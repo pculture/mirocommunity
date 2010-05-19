@@ -786,11 +786,19 @@ background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important
 }
 
 a.profile {
-background: url(../images/admin_icons.png) 20px -491px no-repeat;
+background: url(../images/admin_icons.png) 20px -631px no-repeat;
+}
+
+a.profile:hover, #user_profile a.profile {
+    background-position: 20px -584px;
 }
 
 #admin_nav a.goodies {
-background: url(../images/admin_icons.png) 20px -396px no-repeat;
+background: url(../images/admin_icons.png) 20px -536px no-repeat;
+}
+
+#admin_nav a.goodies:hover, #goodies a.goodies {
+    background-position: 20px -488px;
 }
 
 /*//////////////////////////////////////
