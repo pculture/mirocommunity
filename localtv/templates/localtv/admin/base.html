@@ -41,7 +41,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <body id="{% block body_id %}admin{% endblock body_id %}" class="{% block body_class %}{% endblock %}">
     {% block next_link %}<a id="next" href="{{ request.path }}"></a>{% endblock %}
     {% if not request.is_ajax %}
-    <p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
+    {% if user_is_admin %}<p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>{% endif %}
     <!--[if IE]><p class="internet_explorer">
       Administrative content is not optimized for the Internet Explorer.
       We recommend upgrading to a <a href="http://www.firefox.com/">better browser</a> if you are experiencing problems.
