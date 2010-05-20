@@ -83,13 +83,13 @@ if (typeof MiroCommunity === 'undefined') {
                 var count = this.opts.count ? this.opts.count : 4;
                 var li = null;
                 for (var i=0; i < json.items.length && i < count; i++) {
-                    item = json.items[i];
+                    video = json.items[i];
                     li = MiroCommunity.createElement('li', {className: 'mc-video'});
-                    link = MiroCommunity.createElement('a', {href: item.link});
+                    link = MiroCommunity.createElement('a', {href: video.link});
                     thumb = MiroCommunity.createElement('span', {className: 'mc-thumbnail'});
                     var thumbnail = null;
-                    if (item.thumbnail) {
-                        thumbnail = item.thumbnail;
+                    if (video.thumbnail) {
+                        thumbnail = video.thumbnail;
                     } else {
                         thumbnail = 'http://' + this.opts.domain + '/images/default_vid.gif';
                     }
@@ -99,8 +99,8 @@ if (typeof MiroCommunity === 'undefined') {
                         src: thumbnail}));
                     thumb.appendChild(MiroCommunity.createSpan('', 'mc-play'));
                     link.appendChild(thumb);
-                    link.appendChild(MiroCommunity.createSpan(item.title, 'mc-title'));
-                    link.appendChild(MiroCommunity.createSpan(item.when, 'mc-when'));
+                    link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
+                    link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
                     li.appendChild(link);
                     ul.appendChild(li);
                 }
