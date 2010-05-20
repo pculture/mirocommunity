@@ -303,7 +303,7 @@ background: url(../images/admin_sprites.png) right -110px no-repeat;
 
 
 button.add span{
-padding-bottom: 8px
+padding-bottom: 6px
 }
 
 .add span{
@@ -336,10 +336,13 @@ text-decoration: none;
 color: #fff;
 margin-left: 10px;
 margin-bottom: 25px;
-padding-right: 18px;
+padding: 0 15px 0 0;
 background: url(../images/admin_sprites.png) right -331px no-repeat;
 }
 
+button.reject_button {
+    background-position: right -330px;
+}
 
 .reject_button:hover{
 background: url(../images/admin_sprites.png) right -408px no-repeat;
