@@ -2,6 +2,15 @@ if (!('placeholder' in document.createElement('input'))) {
     var has_placeholder = false;
     // browser doesn't support the HTML5 placeholder attribute
     function placeholder_fallback() {
+        function copyAttributes(from_elm, to_elm) {
+            attributes = ['id', 'name', 'placeholder']
+            for (idx in attributes) {
+                attribute = attributes[idx];
+                to_elm.attr(attribute, from_elm.attr(attribute));
+            };
+            from_elm.replaceWith(to_elm);
+            return to_elm;
+        }
         $('input[placeholder]').each(function() {
             var that = $(this);
             if (!this.defaultValue) {
@@ -9,17 +18,29 @@ if (!('placeholder' in document.createElement('input'))) {
             }
             function setPlaceholder() {
                 if (!that.val()) {
+                    if (that.attr('type') === 'password') {
+                        that = copyAttributes(that,
+                                              $("<input type='text' />"));
+                        that.addClass('fake_password');
+                    }
                     that.addClass('placeholder');
                     return that.val(that.attr('placeholder'));
                 } else {
                     return that;
                 }
             };
-            setPlaceholder().focus(function() {
+            function removePlaceholder() {
                 if (that.hasClass('placeholder')) {
-                    that.val('').removeClass('placeholder');
+                    if (that.hasClass('fake_password')) {
+                        that = copyAttributes(that,
+                                              $("<input type='password' />"));
+                        that.focus(removePlaceholder).blur(setPlaceholder).focus();
+                    } else {
+                        that.val('').removeClass('placeholder');
+                    }
                 }
-            }).blur(setPlaceholder);
+            };
+            setPlaceholder().focus(removePlaceholder).blur(setPlaceholder);
         });
     }
     $("form").live('submit', function() {
