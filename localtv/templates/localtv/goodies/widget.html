@@ -35,19 +35,19 @@ var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.
 function update_widget() {
     display = $("#widget-display");
     area = $("#widget-code textarea");
-    title = $("input[name=title]").val();
-    count = $("input[name=count]").val();
-    source = $("select[name=source]").val();
+    widget_title = $("input[name=title]").val();
+    widget_count = $("input[name=count]").val();
+    widget_source = $("select[name=source]").val();
     embed = embed_base;
-    embed = embed.replace(/TITLE/g, title);
-    embed = embed.replace(/COUNT/g, count);
-    embed = embed.replace(/SOURCE/g, source);
+    embed = embed.replace(/TITLE/g, widget_title);
+    embed = embed.replace(/COUNT/g, widget_count);
+    embed = embed.replace(/SOURCE/g, widget_source);
     area.val(embed);
     $('#widget-example h2').text(title);
     $('#widget-example ul').empty();
     example_widget = new MiroCommunity.Widget({domain: '{{ sitelocation.site.domain }}',
-                                               source: source,
-                                               count: count
+                                               source: widget_source,
+                                               count: widget_count
                                               });
     example_widget.id = 'widget-example';
     example_widget.load();
