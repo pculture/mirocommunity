@@ -43,7 +43,7 @@ function update_widget() {
     embed = embed.replace(/COUNT/g, widget_count);
     embed = embed.replace(/SOURCE/g, widget_source);
     area.val(embed);
-    $('#widget-example h2').text(title);
+    $('#widget-example h2').text(widget_title);
     $('#widget-example ul').empty();
     example_widget = new MiroCommunity.Widget({domain: '{{ sitelocation.site.domain }}',
                                                source: widget_source,
