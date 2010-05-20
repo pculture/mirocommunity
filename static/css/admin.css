@@ -348,7 +348,9 @@ button.reject_button {
 background: url(../images/admin_sprites.png) right -408px no-repeat;
 }
 
-
+button.reject_button:hover {
+    background-position: right -407px;
+}
 
 .reject_button span{
 padding: 9px 0px 7px 35px;
