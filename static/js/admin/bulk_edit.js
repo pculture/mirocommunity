@@ -28,13 +28,13 @@ function toggleDelete(obj) {
 }
 
 function bulkAction() {
-    action = $("#bulk_action_selector").val();
-    if (action == 'edit') {
+    action_val = $("#bulk_action_selector").val();
+    if (action_val == 'edit') {
         // show the bulk edit window
         $("#massedit").overlay({api: true,
                                 onClose: resetOverlay}).load();
-    } else if (action) {
-        $("#bulk_action").val(action);
+    } else if (action_val) {
+        $("#bulk_action").val(action_val);
         bulkSubmit();
     } else {
         alert('Please select an action.');
