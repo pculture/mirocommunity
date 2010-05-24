@@ -1,9 +1,9 @@
 function resetOverlay() {
-    overlay = this.getOverlay();
-    overlay.find('input[type=text], input[type=file], textarea').each(function() {
+    overlay_elm = this.getOverlay()
+    overlay_elm.find('input[type=text], input[type=file], textarea').each(function() {
         this.value = this.defaultValue;
     });
-    overlay.find('input[type=checkbox], input[type=radio]').each(function() {
+    overlay_elm.find('input[type=checkbox], input[type=radio]').each(function() {
         this.checked = this.defaultChecked;
     });
 }
