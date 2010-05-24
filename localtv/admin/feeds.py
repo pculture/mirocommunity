@@ -58,7 +58,7 @@ class UnapprovedVideosFeed(views.BaseVideosFeed):
 @verify_secret
 def unapproved(request):
     feed = UnapprovedVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf8'))
+    return HttpResponse(feed.writeString('utf-8'))
 
 
 class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
@@ -79,5 +79,5 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
 @verify_secret
 def unapproved_user(request):
     feed = UnapprovedUserVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf8'))
+    return HttpResponse(feed.writeString('utf-8'))
 
