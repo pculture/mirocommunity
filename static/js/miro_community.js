@@ -68,9 +68,17 @@ function setup_submit_callbacks(wrap, result) {
 $(document).ready( function(){
     $("#nav li").mouseover(function(){$(this).addClass('sfhover');}).mouseout(function(){$(this).removeClass('sfhover');}).filter('.categories a:eq(0)').click(function() {return false;}).css('cursor', 'default');
     if (!has_placeholder) placeholder_fallback();
+    if ($.browser.msie && /^[5-7]/.exec($.browser.version)) {
+        // early MSIE browsers mess up the z-index, so don't do the expose
+        // thing when we run into it
+        expose = null;
+    } else {
+        expose = '#499ad9';
+    }
+
     $('a[rel^=#]').overlay({
-        expose: '#499ad9',
-        effect: 'apple',
+        expose: expose,
+        //effect: 'apple',
 
         onBeforeLoad: function() {
             if (this.getTrigger().attr("href") != "#") {
