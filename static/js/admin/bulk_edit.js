@@ -8,8 +8,8 @@ function resetOverlay() {
     });
 }
 function showEdit(obj) {
-    overlay = $(obj).parents('tr').find('.simple_overlay');
-    overlay.overlay({api: true,
+    overlay_elm = $(obj).parents('tr').find('.simple_overlay');
+    overlay_elm.overlay({api: true,
                      onClose: resetOverlay}).load();
     return false;
 }
