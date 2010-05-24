@@ -164,6 +164,11 @@ $(document).ready(function() {
     {{ field }}
   </li>
   {% endfor %}
+  <li>
+    {{ form.thumbnail.label_tag }}
+    {{ form.thumbnail.errors }}
+    {{ form.thumbnail }}
+  </li>
   <li class="scrollable">
     {{ form.auto_categories.label_tag }}
     {{ form.auto_categories.errors }}
