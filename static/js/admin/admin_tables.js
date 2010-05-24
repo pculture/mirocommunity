@@ -49,31 +49,31 @@ function load_click_callbacks() {
 }
 
 function scroll_admin() {
-    admin_table = document.getElementById('admin_table');
-	admin_table_offset = $("#admin_table").offset();
-    admin_leftpane = document.getElementById('admin_leftpane');
-    admin_rightpane = document.getElementById('admin_rightpane');
-    if (admin_rightpane.clientHeight > window.innerHeight) {
-        diff = admin_rightpane.clientHeight - window.innerHeight;
+    table = document.getElementById('admin_table');
+    table_offset = $("#admin_table").offset();
+    leftpane = document.getElementById('admin_leftpane');
+    rightpane = document.getElementById('admin_rightpane');
+    if (rightpane.clientHeight > window.innerHeight) {
+        diff = rightpane.clientHeight - window.innerHeight;
     } else {
         diff = 0;
     }
-    if (admin_table_offset.top + diff > window.scrollY) {
-        admin_rightpane.style.top = (admin_table_offset.top - window.scrollY) + 'px';
+    if (table_offset.top + diff > window.scrollY) {
+        rightpane.style.top = (table_offset.top - window.scrollY) + 'px';
     } else {
-        admin_rightpane.style.top = (-diff) + 'px';
+        rightpane.style.top = (-diff) + 'px';
     }
-    admin_leftpane.style.width = (admin_table.clientWidth - 590) + 'px';
-    admin_rightpane.style.display = "block";
-    if (admin_leftpane.clientHeight < admin_rightpane.clientHeight) {
-        admin_leftpane.style.height = admin_rightpane.clientHeight + 'px';
+    leftpane.style.width = (table.clientWidth - 590) + 'px';
+    rightpane.style.display = "block";
+    if (leftpane.clientHeight < rightpane.clientHeight) {
+        leftpane.style.height = rightpane.clientHeight + 'px';
     }
 
-	admin_videolisting_row = $("#admin_videolisting_row");
-	admin_videolisting_row_offset = admin_videolisting_row.offset();
+	videolisting_row = $("#admin_videolisting_row");
+	videolisting_row_offset = videolisting_row.offset();
 	$("#admin_rightpane").css({
 		right: "auto",
-		left: (admin_videolisting_row_offset.left + admin_videolisting_row.width())+"px",
+		left: (videolisting_row_offset.left + videolisting_row.width())+"px",
 		position: "fixed",
 		width: ($("#content").width()-500)+"px"
 	});
