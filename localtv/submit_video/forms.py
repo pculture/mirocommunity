@@ -165,13 +165,13 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
             description=sanitize(scraped_data.get('description', ''),
                                  extra_filters=['img']),
             file_url=file_url or '',
-            embed_code=scraped_data.get('embed', ''),
-            flash_enclosure_url=scraped_data.get('flash_enclosure_url', ''),
+            embed_code=scraped_data.get('embed') or '',
+            flash_enclosure_url=scraped_data.get('flash_enclosure_url') or '',
             website_url=self.cleaned_data['url'],
-            thumbnail_url=scraped_data.get('thumbnail_url', ''),
+            thumbnail_url=scraped_data.get('thumbnail_url') or '',
             when_published=scraped_data.get('publish_date'),
-            video_service_user=scraped_data.get('user', ''),
-            video_service_url=scraped_data.get('user_url', ''))
+            video_service_user=scraped_data.get('user') or '',
+            video_service_url=scraped_data.get('user_url') or '')
 
         if file_url:
             self.instance.try_to_get_file_url_data()
