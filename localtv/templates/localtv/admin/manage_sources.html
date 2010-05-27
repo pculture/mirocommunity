@@ -156,6 +156,7 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block quick-edit-fields %}
+{{ form.auto_approve.as_hidden }} 
 <ul>
   {% for field in form.extra_fields %}
   <li>
