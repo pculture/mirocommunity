@@ -148,33 +148,25 @@ class VideoEditorsComment(forms.Form):
     def save(self, commit=True):
         text = self.cleaned_data.get('editors_comment', '')
         if self.comment:
-            if not text:
-                self.comment.delete()
-                return
-            self.comment.comment = self.cleaned_data['editors_comment']
-            if commit:
-                self.comment.save()
-            else:
-                self.save_m2m = lambda: None
+            self.comment.delete()
+        if not text:
+            return
+        self.comment = comments.get_model()(
+            comment=self.cleaned_data['editors_comment'],
+            content_type=self.content_type,
+            object_pk=self.instance.pk,
+            is_removed=True, # don't put it in the queue
+            is_public=False)
+        def save_m2m():
+            comments.models.CommentFlag.objects.get_or_create(
+                comment=self.comment,
+                user=self.comment.user,
+                flag='editors comment')
+        if commit:
+            self.comment.save()
+            save_m2m()
         else:
-            if not text:
-                return
-            self.comment = comments.get_model()(
-                comment=self.cleaned_data['editors_comment'],
-                content_type=self.content_type,
-                object_pk=self.instance.pk,
-                is_removed=True, # don't put it in the queue
-                is_public=False)
-            def save_m2m():
-                comments.models.CommentFlag.objects.get_or_create(
-                    comment=self.comment,
-                    user=self.comment.user,
-                    flag='editors comment')
-            if commit:
-                self.comment.save()
-                save_m2m()
-            else:
-                self.save_m2m = save_m2m
+            self.save_m2m = save_m2m
         return self.comment
 
 class VideoThumbnailForm(EditVideoForm):
