@@ -6,7 +6,7 @@ function insert_and_activate_action_buttons(obj) {
         } else {
             obj.append(button_code);
         }
-        obj.children('.done').click(function() {obj.submit();});
+        obj.children('.done').click(function() {obj.submit(); return false;});
     }
 }
 
