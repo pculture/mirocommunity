@@ -107,11 +107,14 @@ def add_feed(request, sitelocation=None):
 
             thumbnail_url = util.get_thumbnail_url(parsed_feed.feed)
             if thumbnail_url:
-                thumbnail_file = ContentFile(
-                    urllib2.urlopen(
-                        util.quote_unicode_url(thumbnail_url)).read())
-                feed.save_thumbnail_from_file(thumbnail_file)
-
+                try:
+                    thumbnail_file = ContentFile(
+                        urllib2.urlopen(
+                            util.quote_unicode_url(thumbnail_url)).read())
+                except IOError: # couldn't get the thumbnail
+                    pass
+                else:
+                    feed.save_thumbnail_from_file(thumbnail_file)
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],
