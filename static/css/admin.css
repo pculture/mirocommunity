@@ -331,7 +331,7 @@ background: url(../images/admin_sprites.png) 0 -77px no-repeat;
 
 .reject_button{
     border: 0;
-float: right;
+float: left;
 text-decoration: none;
 color: #fff;
 margin-left: 10px;
@@ -370,7 +370,7 @@ background: url(../images/admin_sprites.png) left -374px no-repeat;
 
 
 .approve_button{
-float: right;
+float: left;
 text-decoration: none;
 color: #fff;
 margin-left: 10px;
@@ -430,7 +430,7 @@ width: 100%;
 
 
 .plain_button{
-float: right;
+float: left;
 text-decoration: none;
 color: #333;
 margin-left: 10px;

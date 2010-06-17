@@ -41,13 +41,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% include "localtv/admin/video_header.html" %}
 
-         
-       {% block admin_actions %}
-                <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve Page</span></a>
-                <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject Page</span></a>
-                <a class="plain_button" href="{% url localtv_admin_clear_all %}"><span>Clear Queue</span></a>
-       {% endblock %}
-
 <h2 class="page_title">Videos for Review</h2>
 
 
@@ -63,6 +56,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </div>
         </div>
         {% endblock %}
+
+        {% block admin_actions %}
+        <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All Videos on this Page</span></a>
+        <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject All Videos on this Page</span></a>
+        <a class="plain_button" href="{% url localtv_admin_clear_all %}"><span>Clear Entire Queue</span></a>
+       {% endblock %}
+
 
 
 <div id="labels">
