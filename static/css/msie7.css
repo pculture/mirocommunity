@@ -9,3 +9,11 @@
 #home_page .med_button.clear {
     clear: none;
 }
+
+#user_profile .form_container {
+    margin-top: 0;
+}
+
+.add span, .approve_button span {
+    float: left;
+}
