@@ -58,8 +58,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endblock %}
 
         {% block admin_actions %}
-        <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All Videos on this Page</span></a>
-        <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject All Videos on this Page</span></a>
+        <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All Videos on This Page</span></a>
+        <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject All Videos on This Page</span></a>
         <a class="plain_button" href="{% url localtv_admin_clear_all %}"><span>Clear Entire Queue</span></a>
        {% endblock %}
 
