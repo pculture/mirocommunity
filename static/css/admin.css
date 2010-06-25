@@ -1852,6 +1852,10 @@ padding: 5px;
     padding-top: 20px;
 }
 
+#user_profile .approve_button, #user_profile .plain_button {
+    float: right;
+}
+
 #user_profile .form_container {
     width: 430px;
     padding: 0 40px;
