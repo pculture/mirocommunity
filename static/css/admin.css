@@ -1391,6 +1391,9 @@ padding-right: 10px;
 
 //////////////////////////////////////*/
 
+body.themes h2 {
+    clear: left;
+}
 
 #default_theme{
 float: left;
