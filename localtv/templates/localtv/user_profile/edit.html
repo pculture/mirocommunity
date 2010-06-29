@@ -1,0 +1,30 @@
+{% extends "localtv/admin/base.html" %}
+
+{% load uploadtemplate_tags %}
+{% block title %}User Profile {% endblock %}
+{% block body_id %}user_profile{% endblock %}
+{% block body_class %}user_profile" onbeforeunload="return setting_onunload();{% endblock %}
+{% block head %}
+ {{ block.super }}
+ {% include "localtv/admin/dirty_form.html" %}
+ {% endblock %}
+{% block content %}
+  {% include "localtv/user_profile/header.html" %}
+  <form action="{{ request.path }}" method="POST" enctype="multipart/form-data">
+    <div>
+      <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+      {% block profile_button %}<a class="plain_button" href="{% url localtv_author request.user.pk %}"><span>View Profile</span></a>{% endblock %}
+      <div class="form_container">
+        {% block form %}
+        {% for field in form %}
+        <div class="form_box">
+          {{ field.label_tag }}
+          {{ field.errors }}
+          {{ field }}
+        </div>
+        {% endfor %}
+        {% endblock %}
+      </div>
+    </div>
+  </form>
+{% endblock %}

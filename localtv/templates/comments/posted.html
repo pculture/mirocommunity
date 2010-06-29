@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -23,5 +23,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{% trans "Thanks for commenting" %}.{% endblock %}
 
 {% block content %}
-  <h2 class="page_title">Your comment has been sent to the moderators. Click <a href="{{ comment.get_content_object_url }}">here</a> to go back to <a href="{{ comment.get_content_object_url }}">{{ comment.get_content_object.name }}</a>.</h2>
+  <h2 class="page_title comment_posted">Your comment has been sent to the moderators.{% if not request.is_ajax %} Click <a href="{{ comment.get_content_object_url }}">here</a> to go back to <a href="{{ comment.get_content_object_url }}">{{ comment.content_object }}</a>.{% endif %}</h2>
 {% endblock %}

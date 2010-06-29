@@ -1,0 +1,12 @@
+{% extends "localtv/user_profile/edit.html" %}
+
+{% block title %}Notifications{% endblock %}
+{% block body_class %}notifications" onbeforeunload="return setting_onunload();{% endblock %}
+{% block profile_button %}{% endblock %}
+{% block form %}
+  <div class="form_box">
+    <label for="id_notifications">I want to be notified by e-mail when:</label>
+  {{ form.notifications.errors }}
+  {{ form.notifications }}
+  </div>
+{% endblock %}

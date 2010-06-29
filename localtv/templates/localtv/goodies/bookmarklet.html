@@ -1,0 +1,10 @@
+{% extends "localtv/admin/base.html" %}
+{% block body_id %}goodies{% endblock body_id %}
+{% block body_class %}bookmarklet{% endblock body_class %}
+{% block title %}Bookmarklet{% endblock %}
+{% block content %}
+  {% include "localtv/goodies/header.html" %}
+  <h2>Bookmarklet</h2>
+  <p>If you add the link below to your browser, it will allow you to add the current page as a video to this site.</p>
+  <p><a href="javascript:(function(){u='http://{{ sitelocation.site.domain }}/submit_video?from_ajax&bookmarklet&url='+encodeURIComponent(location.href); w=window.open(u,'_blank', 'width=630,height=300,resizable=yes'); setTimeout(function(){w.focus();}, 250);})();">Add to {{ sitelocation.site.name }}</a></p>
+{% endblock %}

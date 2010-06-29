@@ -1,0 +1,233 @@
+.editable .simple_overlay h2{
+font-size: 18px !important;
+width: 100%;
+margin: 0 0 15px;
+padding: 0 0 13px;
+border-bottom: 1px solid #ddd;
+}
+
+.editable .simple_overlay .approve_button{
+margin: 25px 0 0;
+}
+
+.editable .input_field{
+list-style: none;
+font-size: 12px;
+}
+
+
+.editable .input_field ul{
+margin: 0;
+padding: 0;
+}
+
+
+.editable .input_field ul li{
+list-style: none;
+margin: 0;
+padding: 0;
+clear: both;
+float: left;
+width: 100%;
+}
+
+
+.editable .input_field .done{
+float: right;
+text-decoration: none;
+color: #fff;
+margin-top: 15px;
+margin-left: 10px;
+background: url(../images/admin_sprites.png) right -185px no-repeat;
+padding-right: 14px;
+border: 0;
+cursor: pointer;
+}
+.editable .input_field .done span {
+padding: 7px 0px 7px 35px;
+float: right;
+text-shadow: 0 1px 1px rgba(0,0,0,1);
+background: url(../images/admin_sprites.png) left -151px no-repeat;
+
+}
+
+.editable .input_field .done:hover{
+curosor: pointer !important;
+background: url(../images/admin_sprites.png) right -262px no-repeat;
+}
+
+.editable .input_field .done:hover span{
+background: url(../images/admin_sprites.png) left -228px no-repeat;
+}
+
+
+
+.editable .input_field ul li label{
+float: left;
+width: 110px;
+line-height: 2.6em;
+}
+
+
+.editable .input_field ul li input,
+.editable .input_field ul li textarea{
+float: left;
+border: 1px solid #ccc;
+width: 584px;
+font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+padding: 8px;
+font-size: 12px;
+line-height: 1.4em;
+}
+
+
+.editable .post_url{
+display: none;
+}
+
+.editable .simple_overlay{
+display: none;
+text-align: left;
+padding: 20px;
+width: 600px !important;
+background: #fff !important;
+-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+float: none !important;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+overflow: inherit !important;
+}
+
+.editable .simple_overlay *{
+overflow: inherit !important;
+-moz-box-shadow: none;
+-webkit-box-shadow: none;
+text-shadow: none;
+}
+
+.editable .close{
+height: 32px;
+width: 32px;
+cursor: pointer;
+position: absolute;
+right: -13px;
+top: -13px;
+background: url(../images/admin_sprites.png) -44px -38px no-repeat;
+}
+
+
+.editable .close:active{
+background: url(../images/admin_sprites.png) -78px -38px no-repeat;
+}
+
+/*////////////////////////////////////////////
+
+~ Thumbnail Changer
+
+////////////////////////////////////////////*/
+
+.simple_overlay .thumbnail_changer {
+  padding-top: 20px;
+  width: 600px;
+}
+
+.simple_overlay .thumbnail_changer .thumbnail{
+height: 30px;
+color: #000;
+font-size: 11px;
+text-align: center;
+float: left;
+width: 222px;
+border: 1px solid #CCC;
+padding: 170px 5px 0;
+position: relative;
+text-decoration: none;
+}
+
+
+.simple_overlay .thumbnail_changer .thumbnail span{
+display: block;
+color: #777;
+font-size: 10px;
+font-weight: normal !important;
+text-align: center;
+margin: 1em 0;
+}
+
+
+.simple_overlay .thumbnail_changer .form {
+width: 330px;
+float: left;
+color: #000;
+clear: none;
+text-align: left !important;
+margin: 0 0 0 10px;
+padding-left: 15px;
+}
+
+
+.simple_overlay .thumbnail_changer .form p{
+width: 330px;
+float: right;
+color: #000;
+clear: none;
+text-align: left !important;
+margin: 0 0 0 35px;
+height: 6em;
+}
+
+
+
+.simple_overlay .thumbnail_changer .form p label{
+width: 100px;
+font-weight: bold;
+float: left;
+color: #000;
+display: block;
+line-height: 2em;
+text-align: left !important;
+width: 330px;
+}
+
+.input_field ul li.scrollable {
+	clear: none;
+	height: 400px;
+	float: left;
+	overflow: auto !important;
+	width: 594px !important;
+}
+
+@media all and (max-height: 700px) {
+    .input_field ul li.scrollable {
+        height: 200px;
+    }
+}
+
+.input_field ul li.scrollable.right {
+	border-left: 1px solid #cccccc;
+	float: right;
+	padding-left: 10px;
+}
+.input_field ul li.scrollable > label {font-weight: bold;}
+.input_field ul li.scrollable > ul {
+	height: 270px;
+	overflow: visible !important;
+	overflow-x: hidden;
+	padding: 0 !important;
+	width: 100% !important;
+}
+.input_field ul li.scrollable ul li {
+	float: none;
+}
+.input_field ul li.scrollable ul li label {
+	width: 550px;
+}
+.input_field ul li.scrollable ul li label input {
+	margin: 6px 0 0 0;
+	width: 20px;
+}
+.input_field ul li.scrollable ul li label span {
+	line-height: 1em;
+}

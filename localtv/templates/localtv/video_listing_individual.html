@@ -1,0 +1,57 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load i18n localtv_thumbnail filters uploadtemplate_tags %}
+
+<div class="video">
+
+  <a href="{{ video.get_absolute_url }}" class="thumbnail" style="background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;">
+  <img src="{% get_static_url "/images/vid_overlay.png" %}" /></a>
+
+  <div class="title_desc">
+    <h3>
+      <a href="{{ video.get_absolute_url }}" title="{{ video.name }}">
+        {% if video.name %}
+          {{ video.name }}
+        {% else %}
+          {% trans "(no title)" %}
+        {% endif %}
+      </a>
+    </h3>
+    <span class="desc">
+    {% autoescape off %}
+    {{ video.description|striptags }}
+    {% endautoescape %}
+    </span>
+  </div>
+  <p>
+    {{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago
+  </p>
+  <p>
+    {% if video.authors.count %}
+    By {% for user in video.authors.all %}
+    <span class="author"><a href="{% url localtv_author user.pk %}" title="{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    {% else %}
+    {% if video.feed %}
+    By <span class="author"><a href="{% url localtv_list_feed video.feed.pk %}" title="{{ video.feed.name }}">{{ video.feed.name }}</a></span>
+    {% endif %}
+    {% endif %}
+  </p>
+</div>

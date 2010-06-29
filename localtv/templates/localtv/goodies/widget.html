@@ -1,0 +1,151 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% block body_id %}goodies{% endblock body_id %}
+{% block body_class %}widgetcreater{% endblock body_class %}
+
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/css/widget.css">
+<script src="/js/widget.js"></script>
+<script type="text/javascript">
+var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
+
+function update_widget() {
+    display = $("#widget-display");
+    area = $("#widget-code textarea");
+    widget_title = $("input[name=title]").val();
+    widget_count = $("input[name=count]").val();
+    widget_source = $("select[name=source]").val();
+    widget_size = $("select[name=size]").val();
+    widget_logo = $("input[name=logo]").val();
+    opts = {
+        version: 2,
+        domain: '{{ sitelocation.site.domain }}',
+        source: widget_source,
+        size: widget_size,
+        count: widget_count,
+        title: widget_title
+    }
+    if (widget_logo) {
+        opts.logo = widget_logo;
+    }
+    embed = embed_base;
+    embed = embed.replace(/JSON/g, JSON.stringify(opts));
+    area.val(embed);
+    $("#widget-example")[0].className = 'mc-widget-v2';
+    $("#widget-example .mc-footer img").remove();
+    if (widget_size == 'small') {
+        $('#widget-example').width(110).addClass('mc-widget-small');
+    } else if (widget_size == 'medium') {
+        $("#widget-example").width(170).addClass('mc-widget-medium');
+    } else if (widget_size == 'large') {
+        $("#widget-example").width(260).addClass('mc-widget-large');
+    }
+    $('#widget-example .mc-widget-title').text(widget_title);
+    $('#widget-example ul').empty();
+    if (widget_logo) {
+        img = $("<img/>");
+        img.attr('src', widget_logo);
+        $("#widget-example .mc-footer").prepend(img);
+    }
+    example_widget = new MiroCommunity.Widget(opts);
+    example_widget.id = 'widget-example';
+    example_widget.load();
+}
+
+$(document).ready(update_widget);
+</script>
+{% endblock %}
+{% block content %}
+  {% include "localtv/goodies/header.html" %}
+  <div id="widget-base">
+    <div>
+      <div id="widget-settings">
+        <h2>Pick Your Options</h2>
+        <div>
+          <label for="count">Title</label>
+          <input name="title" value="Watch Videos on {{ sitelocation.site.name }}" />
+        </div>
+        <div>
+          <label for="count">Number of Videos:</label>
+          <input name="count" value="4" />
+        </div>
+        <div>
+          <label for="size">Widget Size:</label>
+          <select name="size">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div>
+          <label for="source">Video Source:</label>
+          <select name="source">
+            <option value="new/">New</option>
+            <option value="popular/">Popular</option>
+            <option value="featured/">Featured</option>
+          </select>
+        </div>
+        <div>
+          <label for="logo">Logo URL(optional):</label>
+          <input name="logo" type="url" value="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% endif %}"/>
+        </div>
+        {% comment %}
+        <div>
+          <label for="titles">Show Title:</label>
+          <input type="checkbox" selected="selected" name="titles">
+        </div>
+        <div>
+          <label for="titles">Show Description:</label>
+          <input type="checkbox" selected="selected" name="titles">
+        </div>
+        {% endcomment %}
+        <button id="widget-submit" type="button" onclick="update_widget();">Update</button>
+      </div>
+      <div id="widget-code">
+        <div>
+          <h2>Widget Code</h2>
+          <a href="https://develop.participatoryculture.org/trac/democracy/wiki/MiroCommunity/Widget">Documentation</a>
+        </div>
+        <textarea cols="40" rows="10"></textarea>
+        
+      </div>
+    </div>
+    <div id="widget-display">
+      <h2>Preview</h2>
+      <div id="widget-example" class="mc-widget-v2 mc-widget-small">
+        <div>
+          <div class="mc-widget-title">Watch Videos From Miro Community</div>
+          <ul></ul>
+          <div class="mc-footer">
+            <div>
+              <a href="http://{{ sitelocation.site.domain }}/">See More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

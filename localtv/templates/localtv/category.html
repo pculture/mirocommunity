@@ -1,0 +1,74 @@
+{% extends "localtv/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load pagetabs %}
+{% block content %}
+<div id="category_sidebar">
+  {% if category.name %}
+  <div id="category_info">
+    {% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+
+    <h1>{{ category.name }}</h1>
+    <a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a>
+
+    <div>{{ category.description|safe }}</div>
+
+  </div>
+  {% endif %}
+</div>
+<div id="category">
+{% if page_obj.has_other_pages %}
+<div class="pag">
+  <b>Pages</b>
+  {% pagetabs page_obj %}
+</div>
+{% endif %}
+
+  <ul>
+    {% for video in video_list %}
+    <li>
+      {% include "localtv/video_listing_individual.html" %}
+    </li>
+    {% endfor %}
+  </ul>
+
+</div>
+{% if category.child_set.count %}
+<div id="subcategory_sidebar">
+  <div id="main_header" class="small">
+    <h2>Subcategories</h2>
+  </div>
+  <ul class="cat_list">
+    {% for subcat in category.child_set.all %}
+    <li>
+      <a class="top_cat_button" title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
+      {% if subcat.child_set.count %}
+      <ul>
+        {% for subsubcat in subcat.child_set.all %}
+        <li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

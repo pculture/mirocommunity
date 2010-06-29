@@ -1,0 +1,80 @@
+{% extends "localtv/admin/approve_reject_table.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% load pagetabs i18n %}
+
+{% block name %}{% trans "Admin - Search Video Sites" %}{% endblock %}
+{% block body_class %}searches{% endblock body_class %}
+{% block admin_actions %}
+{% if is_saved_search %}
+    <span href="#" class="floatright"><span>This search is saved</span></span>
+  {% else %}
+  {% if query_string %}
+    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="add">
+      <span>Save as a Source</span></a>
+  {% endif %}
+  {% endif %}
+
+
+
+<h2 class="marginbottom">Searched Video Sites for "{% if query_string %}{{ query_string }}{% endif %}"</h2>
+
+  
+  <div id="saved_searches" class="search_sites rounded">
+  <form method="GET" action="{% url localtv_admin_search %}">
+    <label>Try another search</label>
+    <button class="med_button"><span>Search Video Sites</span></button>
+  <div class="fields">
+
+    <input id="livesearch_query_input" class="left large_field"
+           name="query"
+           value="{{ query_string }}"/>
+           <span class="left">and sort by</span>
+    <select name="order_by" class="left">
+      <option value="relevant"
+              {% ifequal order_by "relevant" %}
+                selected="selected"
+              {% endifequal %}>Relevance</option>
+      <option value="latest"
+              {% ifequal order_by "latest" %}
+                selected="selected"
+              {% endifequal %}>Latest</option>
+    </select>
+    </div>
+    
+    
+  </form>
+  	</div>
+{% endblock %}
+
+{% block pagination %}
+  {% if page_obj and page_obj.has_other_pages %}
+   {% pagetabs page_obj "localtv/admin/livesearch_pagetabs.html" %}
+  {% endif %}
+{% endblock pagination %}
+
+{% block pagination2 %}
+  {% if page_obj and page_obj.has_other_pages  %}
+   {% pagetabs page_obj "localtv/admin/livesearch_pagetabs.html" %}
+  {% endif %}
+{% endblock pagination2 %}
+
+{% block helpful %}{% endblock %}

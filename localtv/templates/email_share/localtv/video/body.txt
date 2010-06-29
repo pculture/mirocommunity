@@ -1,0 +1,15 @@
+{% load i18n %}{% autoescape off %}{% trans "Hello!" %}
+{% trans "A friend thinks you should see this!" %}
+
+{% trans "Video URL:" %} http://{{ site.domain }}{{ content_object.get_absolute_url }} 
+
+{% if message %}{% trans "*A Note from the Sender*" %}
+{{ message }}
+
+{% endif %}{% if content_object.name %}*{% trans "Name" %}* {{ content_object.name }}
+
+{% endif %}{% if content_object.description %}*{% trans "Description" %}*
+{{ content_object.description|striptags }}
+
+{% endif %}{% trans "This video was shared via" %} {{ sitelocation.name }}: http://{{ site.domain }}/
+{% endautoescape %}

@@ -1,4 +1,4 @@
-{% extends "localtv/subsite/base.html" %}
+{% extends "localtv/base.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -24,9 +24,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   {% load comments %}
-  <form action="{% comment_form_target %}" method="post">
+  <form action="{% comment_form_target %}" method="post" id="comment_form">
     {% if form.errors %}
-    <h2>{% blocktrans count form.errors|length as counter %}Please correct the error below{% plural %}Please correct the errors below{% endblocktrans %}</h2>
+    <h2 class="errorlist">{% blocktrans count form.errors|length as counter %}Please correct the error below{% plural %}Please correct the errors below{% endblocktrans %}</h2>
     {% else %}
     <h2 class="page_title">{% trans "Preview your comment" %}</h2>
       <blockquote>{{ comment|linebreaks }}</blockquote>

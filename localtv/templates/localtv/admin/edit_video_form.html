@@ -1,0 +1,34 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load editable_widget %}
+<div id="edit_video_wrapper" class="rounded">
+  {% ifnotequal current_video.status VIDEO_STATUS_REJECTED %}
+  <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button reject_video"><span>Reject this video</span></a></p>
+  {%else %}
+  <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button approve_video"><span>Approve this video</span></a></p>
+  {% endifnotequal %}
+  {% if current_video.last_featured %}
+  <p><a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button unfeature_video"><span>Unfeature this video</span></a></p>
+  {% else %}
+  <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button feature_video"><span>Feature this video</span></a></p>
+  {% endif %}
+  {% editable_widget current_video "thumbnail" %}
+  <br clear="all"/>
+</div>

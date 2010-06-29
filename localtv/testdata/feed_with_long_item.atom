@@ -1,0 +1,32 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://www.example.org/myfeed</id>
+  <title>My Podcast Feed</title>
+  <updated>2005-07-15T12:00:00Z</updated>
+  <author>
+    <name>James M Snell</name>
+  </author>
+  <link href="http://example.org" />
+  <link rel="self" href="http://example.org/myfeed" />
+  <entry>
+    <id>http://www.example.org/entries/1</id>
+    <title>Atom 1.0</title>
+    <updated>2005-07-15T12:00:00Z</updated>
+    <link href="http://www.example.org/entries/1" />
+    <summary>An overview of Atom 1.0</summary>
+    <link rel="enclosure"
+          type="video/mp4"
+          title="Ogg"
+          href="http://downloads.economist.feedroom.com/podcast/t_assets/20100119/20100119_kerger_4AMH.mp4?site=economist&cid=8c9fb7cb6ccca6fb5c1058e006b34355a6ec141c&sid=780c8a35deb6cb523f44864f40c0215570141bfe&pid=a27eca95c17a61e7bb614471455df5227fd4a3a1"
+          length="1234" />
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <h1>Show Notes</h1>
+        <ul>
+          <li>00:01:00 -- Introduction</li>
+          <li>00:15:00 -- Talking about Atom 1.0</li>
+          <li>00:30:00 -- Wrapping up</li>
+        </ul>
+      </div>
+    </content>
+  </entry>
+</feed>

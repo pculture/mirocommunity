@@ -1,0 +1,5 @@
+User-Agent: *
+Disallow: /accounts/
+Disallow: /search/
+Disallow: /feeds/
+Disallow: /admin/

@@ -1,0 +1,98 @@
+{% extends "localtv/admin/bulk_edit.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Pages" %}{% endblock %}
+{% block body_class %}flatpages{% endblock body_class %}
+{% block subheader %}{% include "localtv/admin/settings_header.html" %}{% endblock %}
+{% block pre-labels %}
+
+<a href="#" class="add" rel="#label_sidebar"><span>Add Page</span></a>
+
+<h2>Pages</h2>
+
+  <div id="label_sidebar" class="simple_overlay rounded{% if form.errors %} errors{% endif %}">
+    <div id="add_page">
+      <h1>Add a Page</h1>
+      <form action="" method="POST" enctype="multipart/form-data">
+        <div class="input_field">
+          <ul>
+            {% for field in form %}
+            <li>
+              {{ field.label_tag }}
+              {{ field.errors }}
+              {{ field }}
+              {% if field.help_text %}
+              <span class="form_help">{{ field.help_text }}</span>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          <button name="submit" value="Add" class="approve_button marginbottom behave"><span>Add Page</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block labels %}
+  <div class="bulkedit_controls">
+    <select id="bulk_action_selector" class="behave">
+      <option value="">Bulk Actions</option>
+      <option value="delete">Delete</option>
+    </select>
+    <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+  </div>
+
+{% endblock %}
+
+
+
+{% block columns %}
+<td>
+  {{ form.instance.title }}
+  <div class="actions">
+    <a href="#" onclick="return showEdit(this, true);">Edit</a> | <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+  </div>
+</td>
+<td><a href="{{ form.instance.get_absolute_url }}">{{ form.instance.url }}</a></td>
+{% endblock %}
+{% block quick-edit-fields %}
+<ul>
+  <li>
+    {{ form.url.errors }}
+    {{ form.url.label_tag }}
+    {{ form.url }}
+  </li>
+  <li>
+    {{ form.title.errors }}
+    {{ form.title.label_tag }}
+    {{ form.title }}
+  </li>
+  <li>
+    {{ form.content.errors }}
+    {{ form.content.label_tag }}
+    {{ form.content }}
+  </li>
+</ul>
+{% endblock %}

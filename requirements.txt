@@ -1,0 +1,27 @@
+-e git+http://git.participatoryculture.org/localtv@master#egg=Miro_Community-dev
+-e git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs-dev
+-e git+http://git.participatoryculture.org/djvideo@master#egg=djvideo-dev
+-e git+http://git.participatoryculture.org/vidscraper@master#egg=vidscraper-dev
+-e git+http://git.participatoryculture.org/django-email-share@master#egg=django-email-share-dev
+-e git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django-uploadtemplate-dev
+BeautifulSoup
+Django==1.1.1
+http://effbot.org/downloads/Imaging-1.1.6.tar.gz
+#South==0.6.2
+-e svn+http://feedparser.googlecode.com/svn/trunk/feedparser#egg=feedparser-dev
+flup>=1.0.2
+lxml==2.1.5
+python-memcached==1.44
+python-openid==2.2.4
+python-yadis==1.1.0
+simplejson==1.9.2
+wsgiref==0.1.2
+-e git+git://github.com/winhamwr/django-tagging.git#egg=django-tagging
+-e svn+http://recaptcha.googlecode.com/svn/trunk/recaptcha-plugins/python@124#egg=recaptcha_client-dev
+-e svn+http://recaptcha-django.googlecode.com/svn/trunk@6#egg=recaptcha_django-0.1-py2.5-dev
+django-haystack>=1.0.1
+whoosh # or another Haystack backend
+celery==1.0.0
+-e git+http://git.participatoryculture.org/python-bitly@master#egg=python-bitly
+django-notification==0.1.5
+-e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration

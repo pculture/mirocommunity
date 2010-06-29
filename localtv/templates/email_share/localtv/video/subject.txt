@@ -1,0 +1,1 @@
+{% load i18n %}{% blocktrans with sender as sender %}{{ sender }} wants to share a video with you{% endblocktrans %}

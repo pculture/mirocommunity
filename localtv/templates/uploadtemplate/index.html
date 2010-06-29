@@ -1,0 +1,74 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% block body_class %}themes{% endblock body_class %}
+
+
+{% load i18n %} 
+
+{% block title %}{{ block.super }} - {% trans "Admin - Upload Templates" %}{% endblock %}
+
+{% block content %}
+  {% include "localtv/admin/settings_header.html" %}
+
+
+  {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
+  <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
+  <div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
+    <form method="post" action="" enctype="multipart/form-data">
+      <h2>Upload a Custom Theme</h2>
+      <p class="clear">Themes are done with Django templates, which are <a href="http://docs.djangoproject.com/en/1.0/ref/templates/">documented here</a>.</p>
+      <p>Download/modify any existing theme and upload it as a ZIP file.</p>
+      <div class="upload_form">{{ form.as_p }}</div>
+      <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
+    </form>
+  </div>
+  {% endif %}
+
+  {% if default %}
+  
+  
+  <h2>Current Theme</h2>
+
+  <div id="default_theme" class="theme">
+  
+  <span id="check_bubble"></span>
+  {% if default.thumbnail %}<img src="{{ default.thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
+ 
+  <h3>{{ default.name }}</h3>
+  <div class="description">{{ default.description }}</div>
+  <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
+  </div>
+  {% endif %}
+  <h2>Additional Themes</h2>
+  <ul>
+    {% for theme in non_default_themes %}
+    <li class="theme">
+      {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
+      <h3>{{ theme.name }}</h3>
+      <div class="description">{{ theme.description }}</div>
+      <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
+      <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
+      <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

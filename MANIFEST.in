@@ -1,0 +1,8 @@
+global-include *.py
+recursive-include localtv/templates *.html
+recursive-include static/css *.css
+recursive-include static/images *
+recursive-include static/swf *.swf
+include static/js/*.js
+include static/js/extern/*.js
+recursive-include docs *

@@ -18,7 +18,6 @@
 import urllib
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
 
 from localtv import models
@@ -37,8 +36,7 @@ def get_sitelocation(view_func):
     Push the current sitelocation as part of the view's arguments
     """
     def new_view_func(request, *args, **kwargs):
-        sitelocation = models.SiteLocation.objects.get(
-            site=Site.objects.get_current())
+        sitelocation = models.SiteLocation.objects.get_current()
         return view_func(request, sitelocation=sitelocation, *args, **kwargs)
 
     return _make_safe(new_view_func, view_func)
@@ -62,8 +60,7 @@ def request_passes_test(test_func):
 
 
 def _check_site_admin(request):
-    site = Site.objects.get_current()
-    sitelocation = models.SiteLocation.objects.get(site=site)
+    sitelocation = models.SiteLocation.objects.get_current()
     return sitelocation.user_is_admin(request.user)
 
 require_site_admin = request_passes_test(_check_site_admin)

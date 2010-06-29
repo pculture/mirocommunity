@@ -1,0 +1,55 @@
+{% load i18n localtv_thumbnail filters %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="en-us" />
+</head>
+
+<body style="margin: 0px; padding: 0px; text-align: center; border: 0px; color: #484848; font-size: 11px; font-family:Arial, Helvetica, sans-serif; line-height: 12px; padding: 0px; margin: 0px;">
+
+<div align="center" style="width: 100%; height: 14px; color: #a8a8a8; font-size: 10px; font-family:Verdana, Helvetica, Arial, sans-serif; line-height: 12px; background-color: #FFFFFF; border: 0px; margin: 0px; padding: 0px;">This video was shared via {{ site.name }}: <a href="http://{{ site.domain }}/" style="color: #a8a8a8; font-size: 10px;">http://{{ site.domain }}</a></div>
+
+<div align="center" style="width: 100%; color: #b92000; background-color: #FFFFFF; font-size: 23px; font-family:Verdana, Helvetica, Arial, sans-serif; line-height: 12px; border: 0px; margin: 0px; padding: 0px; padding-top: 15px;">{% trans "I thought you would like this video!" %}</div>
+
+<div align="center" style="width: 100%; color: #000000; font-size: 11px; font-family:Verdana, Helvetica, Arial, sans-serif; line-height: 12px; border: 0px; margin: 0px; padding: 0px; margin-top: 25px;">
+	<table align="center"  cellspacing="0" cellpadding="0" width="420" hspace="0" style="background: #f3faff; border: none; margin: 0px; padding: 0px; vertical-align: top;">
+		<tr align="center" valign="top" style="padding: 0px; margin: 0px; border: 0px;">
+		<td style="margin: 0px; padding: 0px; border: 0px;">
+			<table align="center"  cellspacing="0" cellpadding="0" width="520" hspace="0" style="background: #f3faff; border: none; margin: 0px; padding: 0px; vertical-align: top;">
+				<tr align="left" valign="top" style="padding: 0px; padding-left: 25px; margin: 0px; border: 0px;">
+				{% if content_object.has_thumbnail %}<td width="155"><a href="http://{{ site.domain }}{{ content_object.get_absolute_url }}" target="_blank" style="border:0;"><img src="{% get_thumbnail_url content_object 140 110 %}" style="width: 140px; height: 110px; border:0; padding-right: 0; padding-left: 15px; padding-top: 25px; padding-bottom: 10px; margin: 0;" alt="thumbnail" /></a></td>{% endif %}
+				<td style="font-size: 12px; color: #484848; margin: 0px; padding: 0px; border: 0px;">
+
+				<p style="margin:0; padding-left:10px; padding-top: 25px; padding-right: 10px; line-height: 20px;"><span style="color: #b92000; font-size: 19px">{% trans "Title" %}:</span> <a href="http://{{ site.domain }}{{ content_object.get_absolute_url }}" target="_blank" style="color: #484848; text-decoration: none;">{{ content_object.name }}</a></p>
+				<p style="font-size: 12px; color: #484848; line-height: 18px; margin:0; padding-left:15px; padding-top:5px; padding-bottom: 15px; padding-right: 10px;"><span style="color: #b92000;">{% trans "Description" %}:</span>{{ content_object.description|sanitize }}</p>
+				</td>
+				</tr>
+			</table>
+		</td>
+
+		</tr>
+		<tr align="center" valign="top" style="padding: 0px; margin: 0px; border: 0px;">
+		<td style="margin: 0px; padding: 0px; border: 0px;">
+			<a target="_blank" href="http://{{ site.domain }}{{ content_object.get_absolute_url }}">{% trans "Click to Watch" %}</a>
+		</td>
+		</tr>
+				{% if message %}
+		<tr align="left" valign="top" style="padding: 0px; margin: 0px; border: 0px;">
+		<td style="margin: 0px; padding: 0px; border: 0px;">
+		<p style="color: #858585; font-size: 14px; font-family:Arial, Helvetica, sans-serif; line-height: 12px; border: 0px; margin: 0px; padding: 0px; padding-top: 15px; padding-left: 15px; padding-bottom: 15px;">Note from Sender:</p>
+
+		</td>
+		</tr>
+		<tr align="left" valign="top" style="padding: 0px; margin: 0px; border: 0px;">
+		<td style="margin: 0px; padding: 0px; border: 0px;">
+		<p style="color: #484848; font-size: 13px; font-family: Georgia, Times New Roman, Times, serif; line-height: 12px; border: 0px; margin: 0px; padding: 0px; padding-left: 40px; padding-bottom: 25px;">{{ message|linebreaksbr }}</p>
+		</td>
+		</tr>
+				{% endif %}
+	</table>
+
+</div>
+</body>
+</html>

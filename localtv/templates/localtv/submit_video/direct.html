@@ -1,0 +1,59 @@
+{% extends "localtv/submit_video/second.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block form_action %}{% url localtv_submit_directlink_video %}{% endblock %}
+{% block form %}
+    <tr>
+      <td>
+        {{ form.name.errors }}
+        {{ form.name.label_tag }}
+        {{ form.name }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.website_url.errors }}
+        {{ form.website_url.label_tag }}
+        {{ form.website_url }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.thumbnail_file.errors }}
+        {{ form.thumbnail_file.label_tag }}
+        {{ form.thumbnail_file }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div>or</div>
+        {{ form.thumbnail.errors }}
+        {{ form.thumbnail.label_tag }}
+        {{ form.thumbnail }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{ form.description.errors }}
+        {{ form.description.label_tag }}
+        {{ form.description }}
+      </td>
+    </tr>
+{% endblock %}

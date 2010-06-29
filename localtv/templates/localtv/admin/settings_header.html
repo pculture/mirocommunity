@@ -1,0 +1,26 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+<div id="admin_subnav">
+ <ul>
+    <li><a class="settings" href="{% url localtv_admin_settings %}"><span>Settings</span></a></li>
+    <li><a class="themes" href="{% url uploadtemplate-index %}"><span>Themes</span></a></li>
+    {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}<li><a class="flatpages" href="{% url localtv_admin_flatpages %}"><span>Pages</span></a></li>{% endif %}
+  </ul>
+</div>
