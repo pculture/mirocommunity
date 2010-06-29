@@ -38,17 +38,39 @@ function update_widget() {
     widget_title = $("input[name=title]").val();
     widget_count = $("input[name=count]").val();
     widget_source = $("select[name=source]").val();
+    widget_size = $("select[name=size]").val();
+    widget_logo = $("input[name=logo]").val();
+    opts = {
+        version: 2,
+        domain: '{{ sitelocation.site.domain }}',
+        source: widget_source,
+        size: widget_size,
+        count: widget_count,
+        title: widget_title
+    }
+    if (widget_logo) {
+        opts.logo = widget_logo;
+    }
     embed = embed_base;
-    embed = embed.replace(/TITLE/g, widget_title);
-    embed = embed.replace(/COUNT/g, widget_count);
-    embed = embed.replace(/SOURCE/g, widget_source);
+    embed = embed.replace(/JSON/g, JSON.stringify(opts));
     area.val(embed);
-    $('#widget-example h2').text(widget_title);
+    $("#widget-example")[0].className = 'mc-widget-v2';
+    $("#widget-example .mc-footer img").remove();
+    if (widget_size == 'small') {
+        $('#widget-example').width(110).addClass('mc-widget-small');
+    } else if (widget_size == 'medium') {
+        $("#widget-example").width(170).addClass('mc-widget-medium');
+    } else if (widget_size == 'large') {
+        $("#widget-example").width(260).addClass('mc-widget-large');
+    }
+    $('#widget-example .mc-widget-title').text(widget_title);
     $('#widget-example ul').empty();
-    example_widget = new MiroCommunity.Widget({domain: '{{ sitelocation.site.domain }}',
-                                               source: widget_source,
-                                               count: widget_count
-                                              });
+    if (widget_logo) {
+        img = $("<img/>");
+        img.attr('src', widget_logo);
+        $("#widget-example .mc-footer").prepend(img);
+    }
+    example_widget = new MiroCommunity.Widget(opts);
     example_widget.id = 'widget-example';
     example_widget.load();
 }
@@ -70,15 +92,14 @@ $(document).ready(update_widget);
           <label for="count">Number of Videos:</label>
           <input name="count" value="4" />
         </div>
-        {% comment %}
         <div>
-          <label for="thumb_size">Thumbnail Size:</label>
-          <select name="thumb_size">
+          <label for="size">Widget Size:</label>
+          <select name="size">
             <option value="small">Small</option>
+            <option value="medium">Medium</option>
             <option value="large">Large</option>
           </select>
         </div>
-        {% endcomment %}
         <div>
           <label for="source">Video Source:</label>
           <select name="source">
@@ -86,6 +107,10 @@ $(document).ready(update_widget);
             <option value="popular/">Popular</option>
             <option value="featured/">Featured</option>
           </select>
+        </div>
+        <div>
+          <label for="logo">Logo URL(optional):</label>
+          <input name="logo" type="url" value="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% endif %}"/>
         </div>
         {% comment %}
         <div>
@@ -110,10 +135,16 @@ $(document).ready(update_widget);
     </div>
     <div id="widget-display">
       <h2>Preview</h2>
-      <div id="widget-example" class="mc-widget">
-        <h2>Watch Videos From Miro Community</h2>
-        <ul></ul>
-        <a class="mc-from" href="http://{{ sitelocation.site.domain }}/">{{ sitelocation.site.domain }}</a>
+      <div id="widget-example" class="mc-widget-v2 mc-widget-small">
+        <div>
+          <div class="mc-widget-title">Watch Videos From Miro Community</div>
+          <ul></ul>
+          <div class="mc-footer">
+            <div>
+              <a href="http://{{ sitelocation.site.domain }}/">See More</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
