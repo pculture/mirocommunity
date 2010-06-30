@@ -126,6 +126,11 @@ class JSONGenerator(feedgenerator.SyndicationFeed):
             json_item['categories'] = item['categories']
         if 'thumbnail' in item:
             json_item['thumbnail'] = item['thumbnail']
+            json_item['thumbnails_resized'] = resized = []
+            for size, url in item['thumbnails_resized'].items():
+                resized.append({'width': size[0],
+                                'height': size[1],
+                                'url': url})
         if 'website_url' in item:
             json_item['website_url'] = item['website_url']
         if 'embed_code' in item:
@@ -180,6 +185,15 @@ class BaseVideosFeed(Feed):
                     default_url = 'http://%s%s' % (
                     self.sitelocation.site.domain, default_url)
                 kwargs['thumbnail'] = default_url
+            kwargs['thumbnails_resized'] = resized = {}
+            for size in models.THUMB_SIZES:
+                url = default_storage.url(
+                    item.get_resized_thumb_storage_path(*size))
+                if not (url.startswith('http://') or
+                        url.startswith('http://')):
+                    url = 'http://%s%s' % (
+                        self.sitelocation.site.domain, url)
+                resized[size] = url
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs

@@ -15,10 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 import datetime
 import re
 import sys
@@ -27,7 +23,6 @@ import urllib2
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
 from django.http import (HttpResponse, HttpResponseBadRequest,
@@ -35,6 +30,7 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 
+import celery
 from importlib import import_module
 import simplejson
 
@@ -158,14 +154,14 @@ def add_feed_done(request, feed_id, sitelocation):
         return HttpResponseRedirect('%s?task_id=%s' % (
                 request.path, result.task_id))
 
-    cache_key = 'celery-task-meta-%s' % task_id
-    result = cache.get(cache_key)
-    if result is not None:
-        result = pickle.loads(str(result))
+    task = celery.result.AsyncResult(task_id)
+    if task.ready(): # completed
         context = {'feed': feed,
-                   'result': result}
-        if result['status'] != 'FAILURE':
-            json = simplejson.loads(result['result'])
+                   'result': {
+                'status': task.status,
+                'result': task.result}}
+        if task.successful():
+            json = simplejson.loads(task.result)
             context.update(json)
         else:
             feed.status = models.FEED_STATUS_ACTIVE
