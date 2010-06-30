@@ -1391,6 +1391,9 @@ padding-right: 10px;
 
 //////////////////////////////////////*/
 
+body.themes h2 {
+    clear: left;
+}
 
 #default_theme{
 float: left;
@@ -1512,6 +1515,10 @@ padding-left: 110px;
 
 .dirtyform{
 width: 100%;
+}
+
+#admin.settings .approve_button {
+    float: right;
 }
 
 #admin.settings .dirtyform div.form_container.additional span.form_help{
