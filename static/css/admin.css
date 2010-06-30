@@ -1517,6 +1517,10 @@ padding-left: 110px;
 width: 100%;
 }
 
+#admin.settings .approve_button {
+    float: right;
+}
+
 #admin.settings .dirtyform div.form_container.additional span.form_help{
 display: block;
 padding: 2px 0 4px 21px;
