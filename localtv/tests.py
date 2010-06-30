@@ -379,14 +379,14 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertEquals(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
         self.assertEquals(video.embed_code,
-                          '<object width="425" height="344">'
+                          '<object width="480" height="385">'
                           '<param name="movie" value="'
                           'http://www.youtube.com/v/BBwtzeZdoHQ&amp;hl=en&amp;'
                           'fs=1"><param name="allowFullScreen" value="true">'
                           '<param name="allowscriptaccess" value="always">'
                           '<embed src="http://www.youtube.com/v/BBwtzeZdoHQ'
                           '&amp;hl=en&amp;fs=1" allowscriptaccess="always" '
-                          'height="344" width="425" allowfullscreen="true" '
+                          'height="385" width="480" allowfullscreen="true" '
                           'type="application/x-shockwave-flash"></embed>'
                           '</object>')
         self.assertEquals(video.file_url, '')
@@ -1151,6 +1151,8 @@ class CommentModerationTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self.video = models.Video.objects.get(pk=20)
         self.url = get_form_target()
+        if 'captcha' in CommentForm.base_fields:
+            del CommentForm.base_fields['captcha']
         self.form = CommentForm(self.video,
                                 initial={
                 'name': 'postname',
