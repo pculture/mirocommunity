@@ -39,7 +39,10 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 import django.dispatch
-from django.forms.fields import ipv4_re
+try:
+    from django.core.validators import ipv4_re # Django 1.2+
+except ImportError:
+    from django.forms.fields import ipv4_re # Django 1.1
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 
@@ -348,8 +351,6 @@ class Source(Thumbnailable):
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
-
-    objects = models.Manager()
 
     class Meta:
         abstract = True

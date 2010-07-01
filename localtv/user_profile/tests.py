@@ -40,7 +40,7 @@ class ProfileFormTestCase(TestCase):
             'email': 'test@foo.bar.com',
             'description': 'New Description',
             'location': 'Where I am',
-            'website': 'http://www.google.com'
+            'website': 'http://www.google.com/'
             }
         form = forms.ProfileForm(data, instance=self.user)
         self.assertTrue(form.is_valid())

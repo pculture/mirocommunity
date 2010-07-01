@@ -25,7 +25,11 @@ from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.core import cache
 from django.db.models import Q
-from django.forms.fields import url_re
+try:
+    from django.core.validators import URLValidator
+    url_re = URLValidator.regex # Django 1.2+
+except ImportError:
+    from django.forms.fields import url_re
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext, Context, loader

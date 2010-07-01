@@ -21,7 +21,8 @@ import feedparser
 
 from django import forms
 from django.forms.formsets import BaseFormSet
-from django.forms.models import modelformset_factory, BaseModelFormSet
+from django.forms.models import modelformset_factory, BaseModelFormSet, \
+    construct_instance
 from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
@@ -94,22 +95,32 @@ class SourceWidget(forms.HiddenInput):
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, basestring):
             value = '%s-%i' % (
-                value.__class__.__name__.lower(),
+                value._meta.module_name,
                 value.pk)
         return forms.HiddenInput.render(self, name, value)
 
-class SourceChoiceField(forms.ModelChoiceField):
+class SourceChoiceField(forms.TypedChoiceField):
     widget = SourceWidget
     name = 'id'
 
-    def __init__(self, *args, **kwargs):
-        forms.ModelChoiceField.__init__(self, models.Source.objects, *args,
+    def __init__(self, **kwargs):
+        feed_choices = [('feed-%s' % feed.pk, feed) for feed in
+                         models.Feed.objects.all()]
+        search_choices = [('savedsearch-%s' % search.pk, search) for search in
+                          models.SavedSearch.objects.all()]
+        choices = feed_choices + search_choices
+        initial = kwargs.pop('initial', None)
+        if initial:
+            initial = '%s-%s' % (initial._meta.module_name, initial.pk)
+        else:
+            initial = None
+        forms.TypedChoiceField.__init__(self,
+                                        choices=choices,
+                                        coerce=self.coerce,
+                                        empty_value=None,
+                                        initial=initial,
                                         **kwargs)
-
-    def clean(self, value):
-        forms.Field.clean(self, value)
-        if value in ['', None]:
-            return None
+    def coerce(self, value):
         model_name, pk = value.split('-')
         if model_name == 'feed':
             model = models.Feed
@@ -171,15 +182,38 @@ class SourceForm(forms.ModelForm):
                 self._extra_field_names = ['query_string']
             self.fields.update(extra_fields)
             self._meta.fields = self._meta.fields + tuple(extra_fields.keys())
+            self._meta.model = type(self.instance)
 
-    def save(self, *args):
-        if self.cleaned_data['thumbnail']:
+    def save(self, *args, **kwargs):
+        if self.cleaned_data.get('thumbnail'):
             self.instance.save_thumbnail_from_file(
                 self.cleaned_data['thumbnail'])
-        if self.cleaned_data['delete_thumbnail']:
+        if self.cleaned_data.get('delete_thumbnail'):
             self.instance.delete_thumbnails()
-        return forms.ModelForm.save(self, *args)
 
+        # if the categories or authors changed, update unchanged videos to the
+        # new values
+        if self.instance.pk:
+            old_categories = set(self.instance.auto_categories.all())
+            old_authors = set(self.instance.auto_authors.all())
+            source = forms.ModelForm.save(self, *args, **kwargs)
+            new_categories = set(source.auto_categories.all())
+            new_authors = set(source.auto_authors.all())
+            if old_categories != new_categories or \
+                    old_authors != new_authors:
+                for v in source.video_set.all():
+                    changed = False
+                    if set(v.categories.all()) == old_categories:
+                        changed = True
+                        v.categories = new_categories
+                    if set(v.authors.all()) == old_authors:
+                        changed = True
+                        v.authors = new_authors
+                    if changed:
+                        v.save()
+            return source
+        else:
+            return forms.ModelForm.save(self, *args, **kwargs)
 
     def _extra_fields(self):
         fields = [self[name] for name in self._extra_field_names]
@@ -195,6 +229,82 @@ class BaseSourceFormSet(BaseModelFormSet):
         if i < self.initial_form_count() and not kwargs.get('instance'):
             kwargs['instance'] = self.get_queryset()[i]
         return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+
+    @property
+    def bulk_forms(self):
+        for form in self.initial_forms:
+            if form.cleaned_data['BULK'] and \
+                    not self._should_delete_form(form):
+                yield form
+
+    def save_new_objects(self, commit=True):
+        """
+        Editing this form does not result in new objects.
+        """
+        return []
+
+    def save_existing_objects(self, commit=True):
+        """
+        Have to re-implement this, because our PK values aren't normal in this
+        formset.
+        """
+        self.changed_objects = []
+        self.deleted_objects = []
+        if not self.get_queryset():
+            return []
+
+        bulk_action = self.data.get('bulk_action', '')
+
+        saved_instances = []
+        for form in self.initial_forms:
+            pk_name = self._pk_field.name
+            raw_pk_value = form._raw_value(pk_name)
+
+            # clean() for different types of PK fields can sometimes return
+            # the model instance, and sometimes the PK. Handle either.
+            obj = form.fields[pk_name].clean(raw_pk_value)
+
+            if self.can_delete:
+                raw_delete_value = form._raw_value('DELETE')
+                raw_bulk_value = form._raw_value('BULK')
+                should_delete = form.fields['DELETE'].clean(raw_delete_value)
+                bulk_delete = (bulk_action == 'remove') and \
+                    form.fields['BULK'].clean(raw_bulk_value)
+                if should_delete or bulk_delete:
+                    self.deleted_objects.append(obj)
+                    if self.data.get('keep'):
+                        form.instance.video_set.all().update(
+                            search=None, feed=None)
+                    obj.delete()
+                    continue
+            if form.has_changed():
+                self.changed_objects.append((obj, form.changed_data))
+                saved_instances.append(self.save_existing(form, obj,
+                                                          commit=commit))
+                if not commit:
+                    self.saved_forms.append(form)
+        return saved_instances
+
+    def clean(self):
+        bulk_edits = self.extra_forms[0].cleaned_data
+        for key in list(bulk_edits.keys()): # get the list because we'll be
+                                            # changing the dictionary
+            if bulk_edits[key] in ['', None] or key == 'id':
+                del bulk_edits[key]
+        if bulk_edits:
+            for form in self.bulk_forms:
+                for key, value in bulk_edits.items():
+                    if key == 'auto_categories':
+                        # categories append, not replace
+                        form.cleaned_data[key] = (
+                            list(form.cleaned_data[key]) +
+                            list(value))
+                    else:
+                        form.cleaned_data[key] = value
+                form.instance = construct_instance(form, form.instance,
+                                                   form._meta.fields,
+                                                   form._meta.exclude)
+        return BaseModelFormSet.clean(self)
 
     def add_fields(self, form, index):
         # We're adding the id field, so we can just call the

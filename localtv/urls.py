@@ -35,7 +35,9 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.comments.views',
-    (r'^comments/post/$', 'post_comment', {}, 'comment-post-comment'),
+    (r'^comments/post/$', 'post_comment', {}, 'comments-post-comment'),
+    (r'^comments/moderation-queue$', 'moderation_queue', {},
+     'comments-moderation-queue'),
     (r'^comments/', include('django.contrib.comments.urls')))
 
 urlpatterns += patterns(

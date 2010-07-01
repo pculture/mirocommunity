@@ -53,10 +53,6 @@ class AdministrationBaseTestCase(BaseTestCase):
                 data = form.initial.get(name, field.initial)
                 if callable(data):
                     data = data()
-                if isinstance(field, admin_forms.SourceChoiceField):
-                    if data is not None:
-                        data = '%s-%s' % (data.__class__.__name__.lower(),
-                                          data.pk)
                 if isinstance(data, (list, tuple)):
                     data = [force_unicode(item) for item in data]
                 elif data:
@@ -2156,6 +2152,15 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
     url = reverse('localtv_admin_bulk_edit')
 
+    @staticmethod
+    def Video_sort_lower(*args, **kwargs):
+        videos = models.Video.objects.all()
+        if args or kwargs:
+            videos = videos.filter(*args, **kwargs)
+        return videos.extra(select={
+                'name_lower': 'LOWER(localtv_video.name)'}).order_by(
+            'name_lower')
+
     def test_GET(self):
         """
         A GET request to the bulk_edit view should return a paged view of the
@@ -2182,9 +2187,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(
             [form.instance for form in
              response.context[0]['formset'].initial_forms],
-            list(models.Video.objects.filter(
-                    status=models.VIDEO_STATUS_ACTIVE).order_by(
-                    'name')[:50]))
+            list(
+                self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEquals(list(response.context[0]['categories']),
                           list(models.Category.objects.filter(
@@ -2254,10 +2258,10 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'category': '3'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     categories=3,
                     status=models.VIDEO_STATUS_ACTIVE,
-                    ).order_by('name')))
+                    )))
 
     def test_GET_filter_authors(self):
         """
@@ -2268,10 +2272,10 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'author': '3'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     authors=3,
                     status=models.VIDEO_STATUS_ACTIVE,
-                    ).order_by('name')))
+                    )))
 
     def test_GET_filter_featured(self):
         """
@@ -2282,9 +2286,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'featured'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     status=models.VIDEO_STATUS_ACTIVE,
-                    ).exclude(last_featured=None).order_by('name')))
+                    ).exclude(last_featured=None)))
 
     def test_GET_filter_no_attribution(self):
         """
@@ -2296,9 +2300,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'no-attribution'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     status=models.VIDEO_STATUS_ACTIVE,
-                    authors=None).order_by('name')))
+                    authors=None)))
 
     def test_GET_filter_no_category(self):
         """
@@ -2315,9 +2319,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'no-category'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     status=models.VIDEO_STATUS_ACTIVE,
-                    categories=None).order_by('name')))
+                    categories=None)))
 
     def test_GET_filter_rejected(self):
         """
@@ -2328,8 +2332,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'rejected'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
-                    status=models.VIDEO_STATUS_REJECTED).order_by('name')))
+                          list(self.Video_sort_lower(
+                    status=models.VIDEO_STATUS_REJECTED)))
 
     def test_GET_search(self):
         """
@@ -2340,12 +2344,12 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'q': 'blend'})
         self.assertEquals(list(response.context['page'].object_list),
-                          list(models.Video.objects.filter(
+                          list(self.Video_sort_lower(
                     Q(name__icontains="blend") |
                     Q(description__icontains="blend") |
                     Q(feed__name__icontains="blend"),
                     status=models.VIDEO_STATUS_ACTIVE,
-                    ).order_by('name')))
+                    )))
 
     def test_POST_failure(self):
         """

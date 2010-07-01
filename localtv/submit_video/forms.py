@@ -158,20 +158,21 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
         else:
             file_url = scraped_data.get('file_url', '')
 
-        self.instance = models.Video(
-            name=scraped_data.get('title', ''),
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_UNAPPROVED,
-            description=sanitize(scraped_data.get('description', ''),
-                                 extra_filters=['img']),
-            file_url=file_url or '',
-            embed_code=scraped_data.get('embed') or '',
-            flash_enclosure_url=scraped_data.get('flash_enclosure_url') or '',
-            website_url=self.cleaned_data['url'],
-            thumbnail_url=scraped_data.get('thumbnail_url') or '',
-            when_published=scraped_data.get('publish_date'),
-            video_service_user=scraped_data.get('user') or '',
-            video_service_url=scraped_data.get('user_url') or '')
+        self.instance.name=scraped_data.get('title') or ''
+        self.instance.site=self.sitelocation.site
+        self.instance.status=models.VIDEO_STATUS_UNAPPROVED
+        self.instance.description=sanitize(scraped_data.get('description') or \
+                                               '',
+                                           extra_filters=['img'])
+        self.instance.file_url=file_url or ''
+        self.instance.embed_code=scraped_data.get('embed') or ''
+        self.instance.flash_enclosure_url=scraped_data.get(
+            'flash_enclosure_url') or ''
+        self.instance.website_url=self.cleaned_data['url']
+        self.instance.thumbnail_url=scraped_data.get('thumbnail_url') or ''
+        self.instance.when_published=scraped_data.get('publish_date')
+        self.instance.video_service_user=scraped_data.get('user') or ''
+        self.instance.video_service_url=scraped_data.get('user_url') or ''
 
         if file_url:
             self.instance.try_to_get_file_url_data()

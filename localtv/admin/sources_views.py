@@ -117,7 +117,6 @@ def manage_sources(request, sitelocation=None):
         queryset = sorted(queryset,
                           reverse=reverse,
                           key=lambda source: source.source_type().lower())
-
     paginator = Paginator(queryset, 15)
     try:
         page = paginator.page(int(request.GET.get('page', 1)))
@@ -128,49 +127,15 @@ def manage_sources(request, sitelocation=None):
         formset = forms.SourceFormset(request.POST, request.FILES,
                                       queryset=MockQueryset(page.object_list))
         if formset.is_valid():
-            bulk_edits = formset.extra_forms[0].cleaned_data
-            for key in list(bulk_edits.keys()): # get the list because we'll be
-                                                # changing the dictionary
-                if bulk_edits[key] in ['', None]:
-                    del bulk_edits[key]
+            formset.save()
             bulk_action = request.POST.get('bulk_action', '')
-            for form in formset.initial_forms:
-                if form.cleaned_data['BULK']:
-                    if bulk_action == 'remove':
-                        if request.POST.get('keep'):
-                            form.instance.video_set.all().update(
-                                search=None, feed=None)
-                        form.instance.delete()
-                        continue
-                    if bulk_edits:
-                        for key, value in bulk_edits.items():
-                            if key == 'auto_categories':
-                                # categories append, not replace
-                                form.cleaned_data[key] = (
-                                    list(form.cleaned_data[key]) +
-                                    list(value))
-                            else:
-                                form.cleaned_data[key] = value
+            for form in formset.bulk_forms:
+                if bulk_action == 'remove':
+                    if request.POST.get('keep'):
+                        form.instance.video_set.all().update(
+                            search=None, feed=None)
+                    form.instance.delete()
 
-                # if the categories or authors changed, update unchanged videos
-                # to the new values
-                old_categories = set(form.instance.auto_categories.all())
-                old_authors = set(form.instance.auto_authors.all())
-                form.save()
-                new_categories = set(form.instance.auto_categories.all())
-                new_authors = set(form.instance.auto_authors.all())
-                if old_categories != new_categories or \
-                        old_authors != new_authors:
-                    for v in form.instance.video_set.all():
-                        changed = False
-                        if set(v.categories.all()) == old_categories:
-                            changed = True
-                            v.categories = new_categories
-                        if set(v.authors.all()) == old_authors:
-                            changed = True
-                            v.authors = new_authors
-                        if changed:
-                            v.save()
             for form in formset.deleted_forms:
                 if request.POST.get('keep'):
                     form.instance.video_set.all().update(search=None,

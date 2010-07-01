@@ -208,6 +208,10 @@ class MockQueryset(object):
     def __init__(self, objects, model=None):
         self.objects = objects
         self.model = model
+        if self.model:
+            self.db = model.objects.all().db
+        else:
+            self.db = type(self.objects[0]).objects.all().db
 
         self._count = None
         self._iter_index = None

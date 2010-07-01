@@ -1550,7 +1550,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         ss = models.SavedSearch.objects.get(pk=1)
         self.assertEquals(ss.video_set.count(), 0)
         ss.update_items()
-        self.assertEquals(ss.video_set.count(), 1)
+        self.assertNotEquals(ss.video_set.count(), 0)
 
     def test_update_items_ignore_duplicates(self):
         """
@@ -1559,9 +1559,9 @@ class SavedSearchModelTestCase(BaseTestCase):
         """
         ss = models.SavedSearch.objects.get(pk=1)
         ss.update_items()
-        self.assertEquals(ss.video_set.count(), 1)
+        count = ss.video_set.count()
         ss.update_items()
-        self.assertEquals(ss.video_set.count(), 1)
+        self.assertEquals(ss.video_set.count(), count)
 
     def test_attribution_auto(self):
         """
@@ -1571,7 +1571,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         ss = models.SavedSearch.objects.get(pk=1)
         ss.auto_authors = [User.objects.get(pk=1)]
         ss.update_items()
-        video = ss.video_set.get()
+        video = ss.video_set.all()[0]
         self.assertEquals(list(ss.auto_authors.all()),
                           list(video.authors.all()))
 
@@ -1583,7 +1583,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         ss = models.SavedSearch.objects.get(pk=1)
         ss.save()
         ss.update_items()
-        video = ss.video_set.get()
+        video = ss.video_set.all()[0]
         user = User.objects.get(username='dpikop')
         self.assertEquals(user.get_profile().website,
                           'http://www.youtube.com/user/dpikop')
