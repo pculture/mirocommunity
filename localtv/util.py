@@ -205,22 +205,62 @@ class MockQueryset(object):
     Wrap a list of objects in an object which pretends to be a QuerySet.
     """
 
-    def __init__(self, objects):
+    def __init__(self, objects, model=None):
         self.objects = objects
+        self.model = model
+
+        self._count = None
+        self._iter_index = None
+        self._result_cache = []
         self.ordered = True
 
     def _clone(self):
         return self
 
     def __len__(self):
-        return len(self.objects)
+        if self._count is None:
+            if self.model:
+                self._count = self.model.objects.filter(
+                    pk__in=self.objects).count()
+            else:
+                self._count = len(self.objects)
+        return self._count
 
     def __iter__(self):
-        return iter(self.objects)
+        if not self.model:
+            return iter(self.objects)
+
+        it = MockQueryset(self.objects, self.model)
+        it._count = self._count
+        it._result_cache = self._result_cache[:]
+        it._iter_index = 0
+        return it
+
+    def next(self):
+        if self._iter_index is None:
+            raise RuntimeError('Cannot use MockQueryset directly as an '
+                               'iterator, must call iter() first')
+        if self._iter_index == len(self):
+            raise StopIteration # don't even bother looking for more results
+
+        if self._iter_index >= len(self._result_cache): # not enough data
+            next_batch = self.objects[self._iter_index:self._iter_index + 20]
+            values = self.model.objects.in_bulk(next_batch)
+            self._result_cache += [values[k] for k in next_batch
+                                   if k in values]
+
+        if self._iter_index >= len(self._result_cache):
+            raise StopIteration
+
+        result = self._result_cache[self._iter_index]
+        self._iter_index += 1
+
+        return result
 
     def __getitem__(self, k):
         if isinstance(k, slice):
-            return MockQueryset(self.objects[k])
+            mq = MockQueryset(self.objects[k], self.model)
+            return mq
         return self.objects[k]
 
 def get_profile_model():

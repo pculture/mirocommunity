@@ -829,8 +829,8 @@ localtv_video.when_submitted)""" % published})
                 v = v.replace(microsecond=0)
                 v = hash(now - v)
             cache_key += ':%s-%s' % (k, v)
-        result = cache.cache.get(cache_key)
-        if result is None:
+        ids = cache.cache.get(cache_key)
+        if ids is None:
             try:
                 earliest_time = datetime.datetime.now() - delta
             except OverflowError:
@@ -851,17 +851,17 @@ localtv_watch.timestamp > %s"""},
             if 'extra_where' in kwargs:
                 where = kwargs.pop('extra_where')
                 videos = videos.extra(where=where)
-            videos = videos.select_related('feed', 'search', 'user', 'authors',
-                                           'tags', 'categories')
-            videos = list(videos.order_by('-watchcount', '-when_published',
-                                          '-when_approved').distinct())
-            result = util.MockQueryset(videos)
-            cache.cache.set(cache_key, result,
+            videos = videos.order_by(
+                    '-watchcount',
+                    '-when_published',
+                    '-when_approved').distinct()
+            ids = [v[0] for v in videos.values_list('id', 'watchcount')]
+            cache.cache.set(cache_key, ids,
                             timeout=getattr(settings,
                                             'LOCALTV_POPULAR_QUERY_TIMEOUT',
                                             120 * 60 # 120 minutes
                                             ))
-        return result
+        return util.MockQueryset(ids, self.model)
 
 
 class Video(Thumbnailable):
