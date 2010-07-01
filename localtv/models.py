@@ -916,6 +916,9 @@ class Video(Thumbnailable):
     file_url = BitLyWrappingURLField(verify_exists=False, blank=True)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
+    when_modified = models.DateTimeField(auto_now=True,
+                                         db_index=True,
+                                         default=datetime.datetime.now)
     when_submitted = models.DateTimeField(auto_now_add=True)
     when_approved = models.DateTimeField(null=True, blank=True)
     when_published = models.DateTimeField(null=True, blank=True)

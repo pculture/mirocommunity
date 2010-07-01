@@ -58,6 +58,8 @@ def context_processor(request):
         'user_is_admin': sitelocation.user_is_admin(request.user),
         'categories':  models.Category.objects.filter(site=sitelocation.site,
                                                       parent=None),
+        'cache_invalidator': str(models.Video.objects.order_by(
+                '-when_modified').values_list('when_modified', flat=True)[0]),
 
         'display_submit_button': display_submit_button,
 

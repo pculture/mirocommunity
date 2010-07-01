@@ -224,7 +224,7 @@ margin: 0 auto;
       {% if current_video.file_url %}<a href="{{ current_video.file_url }}" class="download">Download Video File</a>{% endif %}
     </div>
     {% if category %}
-    {% cache 3600 view_video_category_new sitelocation category %}
+    {% cache 3600 view_video_category_new sitelocation category cache_invalidator %}
     <div class="sidebar_header">
       <h2>{{ category.name }}</h2>
 
@@ -240,7 +240,7 @@ margin: 0 auto;
     {% endfor %}
     {% endcache %}
     {% else %}
-    {% cache 3600 view_video_new sitelocation %}
+    {% cache 3600 view_video_new sitelocation cache_invalidator %}
     <div class="sidebar_header">
       <h2>New Videos</h2>
 
