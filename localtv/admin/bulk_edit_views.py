@@ -29,7 +29,7 @@ from django.views.decorators.csrf import csrf_protect
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
 from localtv.admin import forms
-from localtv.util import sort_header, MockQueryset
+from localtv.util import SortHeaders, MockQueryset
 
 try:
     from operator import methodcaller
@@ -90,7 +90,15 @@ def bulk_edit(request, sitelocation=None):
             Q(video_service_user__icontains=search_string) |
             Q(feed__name__icontains=search_string)).distinct()
 
-    sort = request.GET.get('sort', 'name')
+    headers = SortHeaders(request, (
+            ('Video Title', 'name'),
+            ('Source', 'source'),
+            ('Categories', None),
+            ('Date Published', 'when_published'),
+            ('Date Imported', 'when_submitted'),
+            ))
+
+    sort = headers.order_by()
     if sort.endswith('source'):
         reverse = sort.startswith('-')
         videos = videos.extra(select={
@@ -112,13 +120,6 @@ def bulk_edit(request, sitelocation=None):
         return HttpResponseBadRequest('Not a page number')
     except EmptyPage:
         page = video_paginator.page(video_paginator.num_pages)
-
-    headers = [
-        sort_header('name', 'Video Title', sort),
-        sort_header('source', 'Source', sort),
-        {'label': 'Categories'},
-        sort_header('when_published', 'Date Published', sort),
-        sort_header('when_submitted', 'Date Imported', sort)]
 
     if request.method == 'POST':
         formset = forms.VideoFormSet(request.POST, request.FILES,

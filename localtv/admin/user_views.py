@@ -25,20 +25,20 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.admin import forms
-from localtv.util import sort_header
+from localtv.util import SortHeaders
 
 @require_site_admin
 @get_sitelocation
 @csrf_protect
 def users(request, sitelocation=None):
-    sort = request.GET.get('sort', 'username')
-    headers = [
-        sort_header('username', 'Username', sort),
-         {'label': 'Email'},
-         {'label': 'Role'},
-         sort_header('authored_set__count', 'Videos', sort)
-        ]
-    users = User.objects.all().annotate(Count('authored_set')).order_by(sort)
+    headers = SortHeaders(request, (
+            ('Username', 'username'),
+            ('Email', None),
+            ('Role', None),
+            ('Videos', 'authored_set__count')))
+
+    users = User.objects.all().annotate(Count('authored_set'))
+    users = users.order_by(headers.order_by())
     if request.GET.get('show', None) != 'all':
         filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))
         if 'localtv_openid' in settings.INSTALLED_APPS:

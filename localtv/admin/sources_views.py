@@ -28,7 +28,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
-from localtv.util import sort_header, MockQueryset
+from localtv.util import SortHeaders, MockQueryset
 from localtv.admin import forms
 
 VIDEO_SERVICE_TITLES = (
@@ -45,15 +45,14 @@ VIDEO_SERVICE_TITLES = (
 @get_sitelocation
 @csrf_protect
 def manage_sources(request, sitelocation=None):
-    sort = request.GET.get('sort', 'name__lower')
-    headers = [
-        sort_header('name__lower', 'Source', sort),
-        {'label': 'Categories'},
-        {'label': 'User Attribution'},
-        sort_header('type', 'Type', sort),
-        sort_header('auto_approve', 'Auto Approve', sort)
-        ]
+    headers = SortHeaders(request, (
+            ('Source', 'name__lower'),
+            ('Categories', None),
+            ('User Attribution', None),
+            ('Type', 'type'),
+            ('Auto Approve', 'auto_approve')))
 
+    sort = headers.order_by()
     if sort.endswith('type'):
         if sort[0] == '-':
             orm_sort = '-name__lower'

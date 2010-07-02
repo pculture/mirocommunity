@@ -181,31 +181,85 @@ def send_notice(notice_label, subject, message, fail_silently=True,
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  bcc=recipient_list).send(fail_silently=fail_silently)
 
-def sort_header(sort, label, current):
-    """
-    Generate some metadata for a sortable header.
+class SortHeaders:
+    def __init__(self, request, headers, default_order=None):
+        self.request = request
+        self.header_defs = headers
+        self.reverse_header = {}
+        for header, ordering in headers:
+            self.reverse_header[ordering] = header
+        if default_order is None:
+            for header, ordering in headers:
+                if ordering is not None:
+                    default_order = ordering
+                    break
+        self.default_order = default_order
+        if default_order.startswith('-'):
+            self.desc = True
+            self.ordering = default_order[1:]
+        else:
+             self.desc = False
+             self.ordering = default_order
 
-    @param sort: the sort which this header represents
-    @param label: the human-readable label
-    @param the current sort
+        # Determine order field and order type for the current request
+        sort = request.GET.get('sort', '')
+        desc = False
+        if sort.startswith('-'):
+            desc = True
+            sort = sort[1:]
+        if sort and sort in self.reverse_header:
+            self.ordering, self.desc = sort, desc
 
-    Returns a dictionary with a link and a CSS class to use for this header,
-    based on the scurrent sort.
-    """
-    if current.endswith(sort):
-        # this is the current sort
-        css_class = 'sortup'
-        if current[0] != '-':
-            sort = '-%s' % sort
-            css_class = 'sortdown'
-    else:
-        css_class = ''
-    return {
-        'sort': sort,
-        'link': '?sort=%s' % sort,
-        'label': label,
-        'class': css_class
-        }
+    def headers(self):
+        """
+        Generates dicts containing header and sort link details for
+        all defined headers.
+        """
+        for header, ordering in self.header_defs:
+            css_class = ''
+            if ordering == self.ordering:
+                # current sort
+                if self.desc:
+                    css_class = 'sortup'
+                else:
+                    ordering = '-%s' % self.ordering
+                    css_class = 'sortdown'
+            yield {
+                'sort': ordering,
+                'link': self._query_string(ordering),
+                'label': header,
+                'class': css_class
+                }
+
+    def __iter__(self):
+        return iter(self.headers())
+
+    def _query_string(self, sort):
+        """
+        Creates a query string from the given dictionary of
+        parameters, including any additonal parameters which should
+        always be present.
+        """
+        if sort is None:
+            return None
+        params = self.request.GET.copy()
+        if 'sort' in params:
+            del params['sort']
+        if sort != self.default_order:
+            params['sort'] = sort
+        if not params:
+            return self.request.path
+        return '?%s' % params.urlencode()
+
+    def order_by(self):
+        """
+        Creates an ordering criterion based on the current order
+        field and order type, for use with the Django ORM's
+        ``order_by`` method.
+        """
+        return '%s%s' % (
+            self.desc and '-' or '',
+            self.ordering)
 
 class MockQueryset(object):
     """
