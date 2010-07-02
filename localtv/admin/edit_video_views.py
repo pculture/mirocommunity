@@ -20,6 +20,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 from localtv import models
 from localtv.decorators import get_sitelocation, require_site_admin
@@ -27,6 +28,7 @@ from localtv.admin import forms
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def edit_video(request, sitelocation=None):
     video_id = request.GET.get('video_id') or request.POST.get('video_id')
     video = get_object_or_404(

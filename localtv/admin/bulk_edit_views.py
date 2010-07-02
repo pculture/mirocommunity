@@ -24,6 +24,7 @@ from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
@@ -40,6 +41,7 @@ except ImportError:
 
 @get_sitelocation
 @require_site_admin
+@csrf_protect
 def bulk_edit(request, sitelocation=None):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,

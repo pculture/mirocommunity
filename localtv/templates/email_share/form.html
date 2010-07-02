@@ -4,7 +4,7 @@ See LICENSE for details.
 {% endcomment %}
 {% load i18n %}
 
-<form id="share_form" action="{{ request.path }}" method="POST">
+<form id="share_form" action="{{ request.path }}" method="POST">{% csrf_token %}
   <ul>
   {{ form.as_ul }}
   </ul>

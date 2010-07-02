@@ -29,6 +29,7 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 import celery
 from importlib import import_module
@@ -52,6 +53,7 @@ VIDEO_SERVICE_TITLES = (
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def add_feed(request, sitelocation=None):
     add_form = forms.AddFeedForm(request.GET)
 

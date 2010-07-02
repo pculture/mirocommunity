@@ -30,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block content %}
 {% include "localtv/admin/settings_header.html" %}
-<form method="POST" action="" enctype="multipart/form-data" class="floatleft">
+<form method="POST" action="" enctype="multipart/form-data" class="floatleft">{% csrf_token %}
     
     
         <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>

@@ -23,6 +23,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext, Context, loader
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin, \
     referrer_redirect
@@ -47,6 +48,7 @@ def get_video_paginator(sitelocation):
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def approve_reject(request, sitelocation=None):
     if request.method == "GET":
         video_paginator = get_video_paginator(sitelocation)
@@ -165,6 +167,7 @@ def unfeature_video(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def reject_all(request, sitelocation=None):
     video_paginator = get_video_paginator(sitelocation)
     try:
@@ -184,6 +187,7 @@ def reject_all(request, sitelocation=None):
 @referrer_redirect
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def approve_all(request, sitelocation=None):
     video_paginator = get_video_paginator(sitelocation)
     try:
@@ -203,6 +207,7 @@ def approve_all(request, sitelocation=None):
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def clear_all(request, sitelocation=None):
     videos = models.Video.objects.filter(
         site=sitelocation.site,

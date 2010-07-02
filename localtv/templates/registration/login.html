@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="login_tab_user">
       <div class="left">
         <h4>Log in</h4>
-        <form action="{{ settings.LOGIN_URL }}" method="POST">
+        <form action="{{ settings.LOGIN_URL }}" method="POST">{% csrf_token %}
           {% if form.non_field_errors %}
           {{ form.non_field_errors }}
           {% endif %}
@@ -57,7 +57,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </div>
       <div class="right">
         <h4>Sign up</h4>
-        <form action="/accounts/register/" method="POST">
+        <form action="/accounts/register/" method="POST">{% csrf_token %}
           <p>
             <label><input id="id_username" placeholder="Username" type="text" class="required" name="username" maxlength="30" /></label>
           </p>

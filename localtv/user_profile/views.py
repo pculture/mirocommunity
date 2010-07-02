@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation
 
@@ -9,6 +10,7 @@ from localtv.user_profile import forms
 
 @login_required
 @get_sitelocation
+@csrf_protect
 def profile(request, sitelocation=None):
     if request.method == 'POST':
         form = forms.ProfileForm(request.POST, request.FILES,
@@ -25,6 +27,7 @@ def profile(request, sitelocation=None):
 
 @login_required
 @get_sitelocation
+@csrf_protect
 def notifications(request, sitelocation=None):
     if request.method == 'POST':
         form = forms.NotificationsForm(request.POST,

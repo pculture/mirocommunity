@@ -33,6 +33,7 @@ except ImportError:
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext, Context, loader
+from django.views.decorators.csrf import csrf_protect
 
 from localtv import models, util
 from localtv.decorators import get_sitelocation, request_passes_test
@@ -75,6 +76,7 @@ def submit_lock(func):
 
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
+@csrf_protect
 def submit_video(request, sitelocation=None):
     if not (sitelocation.display_submit_button or
             sitelocation.user_is_admin(request.user)):
@@ -181,6 +183,7 @@ def _submit_finish(form, *args, **kwargs):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 @submit_lock
+@csrf_protect
 def scraped_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
@@ -222,6 +225,7 @@ def scraped_submit_video(request, sitelocation=None):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 @submit_lock
+@csrf_protect
 def embedrequest_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
@@ -265,6 +269,7 @@ def embedrequest_submit_video(request, sitelocation=None):
 @request_passes_test(_check_submit_permissions)
 @get_sitelocation
 @submit_lock
+@csrf_protect
 def directlink_submit_video(request, sitelocation=None):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):

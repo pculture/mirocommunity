@@ -21,6 +21,7 @@ from django.contrib.auth.models import User, UNUSABLE_PASSWORD
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.admin import forms
@@ -28,6 +29,7 @@ from localtv.util import sort_header
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def users(request, sitelocation=None):
     sort = request.GET.get('sort', 'username')
     headers = [

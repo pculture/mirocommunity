@@ -18,6 +18,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load comments %}
-<form action="{% comment_form_target %}" method="POST">
+<form action="{% comment_form_target %}" method="POST">{% csrf_token %}
   {% include "comments/form_base.html" %}
 </form>

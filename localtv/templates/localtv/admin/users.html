@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <a href="#" rel="#add_user" class="add"><span>Add User</span></a>
     <div id="add_user" class="simple_overlay displaynone rounded">
       <h2>Add a User</h2>
-      <form action="" method="POST" enctype="multipart/form-data">
+      <form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
         <div class="input_field">
           <ul>
             {% for field in add_user_form %}

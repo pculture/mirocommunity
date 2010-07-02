@@ -24,6 +24,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv import models
@@ -42,6 +43,7 @@ VIDEO_SERVICE_TITLES = (
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def manage_sources(request, sitelocation=None):
     sort = request.GET.get('sort', 'name__lower')
     headers = [

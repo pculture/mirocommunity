@@ -18,6 +18,7 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.models import Category
@@ -26,6 +27,7 @@ from localtv.admin import forms
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def categories(request, sitelocation=None):
     categories = MockQueryset(Category.in_order(sitelocation.site))
     formset = forms.CategoryFormSet(queryset=categories)

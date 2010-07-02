@@ -60,7 +60,7 @@ label, label + input {
 {% block content %}
 <div class="login">
 <h1>Register for a New Account</h1>
-  <form action="{% url registration_register %}" method="POST">
+  <form action="{% url registration_register %}" method="POST">{% csrf_token %}
     {{ form.as_p }}
   <input type="submit" value="Register">
 </form>

@@ -17,6 +17,7 @@
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import get_sitelocation, require_site_admin
 from localtv.inline_edit import forms
@@ -25,6 +26,7 @@ from localtv.templatetags.editable_widget import editable_widget
 
 @require_site_admin
 @get_sitelocation
+@csrf_protect
 def editors_comment(request, id, sitelocation=None):
     obj = get_object_or_404(
         Video,

@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
     <h1>Are you sure you want to reject {{ videos.count }} videos?</h1>
     <br class="clear" />
-    <form method="POST" action="">
+    <form method="POST" action="">{% csrf_token %}
       <button class="approve_button" name="confirm" value="yes"><span>Yes, Clear Queue</span></button>
       <a class="reject_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
     </form>

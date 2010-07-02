@@ -33,7 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div id="label_sidebar" class="simple_overlay rounded{% if form.errors %} errors{% endif %}">
     <div id="add_page">
       <h1>Add a Page</h1>
-      <form action="" method="POST" enctype="multipart/form-data">
+      <form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
         <div class="input_field">
           <ul>
             {% for field in form %}

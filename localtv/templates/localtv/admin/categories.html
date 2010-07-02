@@ -45,7 +45,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="close"></div>
   <h2>Add a Category</h2>
   <div class="input_field">
-    <form action="" method="POST" enctype="multipart/form-data">
+    <form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
       <ul>
         {% if add_category_form.non_field_errors %}
         <li>
