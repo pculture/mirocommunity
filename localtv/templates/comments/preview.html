@@ -24,7 +24,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   {% load comments %}
-  <form action="{% comment_form_target %}" method="post" id="comment_form">
+  <form action="{% comment_form_target %}" method="post" id="comment_form">{% csrf_token %}
     {% if form.errors %}
     <h2 class="errorlist">{% blocktrans count form.errors|length as counter %}Please correct the error below{% plural %}Please correct the errors below{% endblocktrans %}</h2>
     {% else %}

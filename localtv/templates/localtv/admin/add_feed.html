@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}addingfeed{% endblock body_class %}
 
 {% block content %}
-<form method="post" action="{{ request.get_full_path }}">
+<form method="post" action="{{ request.get_full_path }}">{% csrf_token %}
 
 <button class="reject_button" type="submit" name="cancel"><span>Cancel</span></button>
 <button class="add" type="submit"><span>Add Source</span></button>

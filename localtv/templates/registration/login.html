@@ -96,7 +96,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="login_tab_openid" class="inactive">
       <div class="left">
         <h4>Sign in with your OpenID</h4>
-        <form action="{{ localtv_openid_start }}" method="post">
+        <form action="{{ localtv_openid_start }}" method="post">{% csrf_token %}
           <p>
             <label><input class="openid" type="text" name="openid_url" value="Sign in with OpenID" /></label>
           </p>
@@ -112,7 +112,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div id="login_tab_google" class="inactive">
       <div class="left">
         <h4>Sign in with your Google Account</h4>
-        <form action="{{ localtv_openid_start }}" method="post">
+        <form action="{{ localtv_openid_start }}" method="post">{% csrf_token %}
           <input type="hidden" name="openid_url" value="https://www.google.com/accounts/o8/id" />
           <p><input type="submit" value="Sign in" class="button" /></p>
         </form>

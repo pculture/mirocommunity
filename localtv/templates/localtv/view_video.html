@@ -177,11 +177,11 @@ margin: 0 auto;
           <h4>{{ comment.user_name }}</h4>
           {% if user_is_admin %}
           <div class="comment-moderation">
-            <form action="{% url comments-delete comment.id %}" method="post">
+            <form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
               <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
               <button type="submit">delete</button>
             </form>
-            <form action="{% url comments-spam comment.id %}" method="post">
+            <form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
               <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
               <button type="submit">spam</button>
             </form>
@@ -198,7 +198,7 @@ margin: 0 auto;
     {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
     <h2 class="clear post-comment-title">Post a comment</h2>
     {% get_comment_form for current_video as comment_form %}
-    <form action="{% comment_form_target %}" method="post" id="comment_form">
+    <form action="{% comment_form_target %}" method="post" id="comment_form">{% csrf_token %}
       {% with comment_form as form %}
       {% include "comments/form_base.html" %}
       {% endwith %}

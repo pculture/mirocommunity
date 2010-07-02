@@ -62,11 +62,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           <td>
             {{ comment.name }}
             <div class="actions">
-              <form action="{% url comments-approve comment.pk %}" method="post">
+              <form action="{% url comments-approve comment.pk %}" method="post">{% csrf_token %}
                 <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
                 <input class="approve submit" type="submit" name="submit" value="{% trans "Approve" %}" />
               </form>
-              <form action="{% url comments-delete comment.pk %}" method="post">
+              <form action="{% url comments-delete comment.pk %}" method="post">{% csrf_token %}
                 <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
                 <input class="remove submit" type="submit" name="submit" value="{% trans "Remove" %}" />
               </form>
