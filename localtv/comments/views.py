@@ -1,5 +1,6 @@
 from django import template
 from django.contrib.auth.decorators import permission_required
+from django.contrib.comments import get_model as get_comment_model
 from django.contrib.comments.views import comments
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
@@ -43,7 +44,7 @@ def moderation_queue(request):
 
     Copied from Django 1.1, since it was removed in Django 1.2.
     """
-    qs = comments.get_model().objects.filter(is_public=False, is_removed=False)
+    qs = get_comment_model().objects.filter(is_public=False, is_removed=False)
     paginator = Paginator(qs, 100)
 
     try:
