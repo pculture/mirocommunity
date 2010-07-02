@@ -122,6 +122,22 @@ def get_thumbnail_url(entry):
 
     return None
 
+def get_tag(tag_text):
+    while True:
+        try:
+            tags = tagging.models.Tag.objects.filter(name=tag_text)
+            if not tags.count():
+                return tagging.models.Tag.objects.create(name=tag_text)
+            elif tags.count() == 1:
+                return tags[0]
+            else:
+                for tag in tags:
+                    if tag.name == tag:
+                        # MySQL doesn't do case-sensitive equals on strings
+                        return tag
+        except Exception:
+            pass # try again to create the tag
+
 def get_or_create_tags(tag_list):
     tag_set = set()
     for tag_text in tag_list:
@@ -129,16 +145,7 @@ def get_or_create_tags(tag_list):
             tag_text = tag_text[:50] # tags can only by 50 chars
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
-        tags = tagging.models.Tag.objects.filter(name=tag_text)
-        if not tags.count():
-            tag = tagging.models.Tag.objects.create(name=tag_text)
-        elif tags.count() == 1:
-            tag = tags[0]
-        else:
-            for tag in tags:
-                if tag.name == tag:
-                    # MySQL doesn't do case-sensitive equals on strings
-                    break
+        tag = get_tag(tag_text);
         tag.name = force_unicode(tag.name)
         tag_set.add(tag)
     return tagging.utils.edit_string_for_tags(list(tag_set))
