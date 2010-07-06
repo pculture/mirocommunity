@@ -266,9 +266,10 @@ class MockQueryset(object):
     Wrap a list of objects in an object which pretends to be a QuerySet.
     """
 
-    def __init__(self, objects, model=None):
+    def __init__(self, objects, model=None, filters=None):
         self.objects = objects
         self.model = model
+        self.filters = filters or {}
         if self.model:
             self.db = model.objects.all().db
         else:
@@ -309,10 +310,18 @@ class MockQueryset(object):
             raise StopIteration # don't even bother looking for more results
 
         if self._iter_index >= len(self._result_cache): # not enough data
-            next_batch = self.objects[self._iter_index:self._iter_index + 20]
-            values = self.model.objects.in_bulk(next_batch)
-            self._result_cache += [values[k] for k in next_batch
-                                   if k in values]
+            objs = []
+            while True:
+                next = self.objects[self._iter_index:self._iter_index + 20]
+                if not next:
+                    break
+                values = self.model.objects.in_bulk(next)
+                objs = [values[k] for k in next
+                        if k in values and \
+                            self._is_valid(values[k])]
+                if objs:
+                    break
+            self._result_cache += objs
 
         if self._iter_index >= len(self._result_cache):
             raise StopIteration
@@ -321,6 +330,14 @@ class MockQueryset(object):
         self._iter_index += 1
 
         return result
+
+    def _is_valid(self, obj):
+        if not self.filters:
+            return True
+        for filter_key, filter_value in self.filters.items():
+            if getattr(obj, filter_key) != filter_value:
+                return False
+        return True
 
     def __getitem__(self, k):
         if isinstance(k, slice):

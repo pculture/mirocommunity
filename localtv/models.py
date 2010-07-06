@@ -862,7 +862,10 @@ localtv_watch.timestamp > %s"""},
                                             'LOCALTV_POPULAR_QUERY_TIMEOUT',
                                             120 * 60 # 120 minutes
                                             ))
-        return util.MockQueryset(ids, self.model)
+        keys = [key for key in kwargs if '__' not in key]
+        return util.MockQueryset(ids, self.model,
+                                 dict((key, kwargs[key]) for key in keys)
+                                 )
 
 
 class Video(Thumbnailable):
