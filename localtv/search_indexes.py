@@ -12,4 +12,7 @@ class VideoIndex(indexes.SearchIndex):
         """
         return Video.objects.filter(status=VIDEO_STATUS_ACTIVE)
 
+    def get_updated_field(self):
+        return 'when_modified'
+
 site.register(Video, VideoIndex)
