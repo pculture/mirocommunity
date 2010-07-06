@@ -53,7 +53,12 @@ if (!('placeholder' in document.createElement('input'))) {
 function setup_submit_callbacks(wrap, result) {
     page = $(result);
     if (page.filter('#next').length) {
-        location.href = page.filter('#next').attr('href');
+        href = page.filter('#next').attr('href');
+        if (window.location.pathname === href) {
+            window.location.reload(true);
+        } else {
+            location.href = href;
+        }
         return;
     }
     function callback(result){setup_submit_callbacks(wrap, result);}
