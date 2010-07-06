@@ -2112,6 +2112,10 @@ display: block;
 height: 17px;
 line-height: 2em;
 background: url(../images/top_cat.png) no-repeat 0 0;
+max-width: 200px;
+overflow: hidden;
+white-space: nowrap;
+text-overflow: ellipsis;
 }
 
 
