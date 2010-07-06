@@ -296,7 +296,7 @@ class MockQueryset(object):
         if not self.model:
             return iter(self.objects)
 
-        it = MockQueryset(self.objects, self.model)
+        it = MockQueryset(self.objects, self.model, self.filters)
         it._count = self._count
         it._result_cache = self._result_cache[:]
         it._iter_index = 0
@@ -341,7 +341,7 @@ class MockQueryset(object):
 
     def __getitem__(self, k):
         if isinstance(k, slice):
-            mq = MockQueryset(self.objects[k], self.model)
+            mq = MockQueryset(self.objects[k], self.model, self.filters)
             return mq
         return self.objects[k]
 
