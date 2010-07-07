@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% block input_field %}
       <ul>
         {% for field in form %}
-        <li>{{ field.errors }}{{ field }}</li>
+        <li>{{ field.errors }}{{ field }}{{ field.help_text }}</li>
         {% endfor %}
       </ul>
       {% endblock %}
