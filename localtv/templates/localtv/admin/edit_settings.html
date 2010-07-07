@@ -36,7 +36,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
 
     <h2>Design and Content</h2>
-
+    <div class="helpful rounded">
+      Use this page to customize your site and make it unique.<br/><br/>
+      Remember that your title and tagline, in particular, define your site for both
+      humans and search engines. Consider including key words such as "video" and the
+      name of your community or organization, so that people can easily find your
+      site.
+    </div>
     <div class="form_container">
       <p>
         <span class="form_error">{{ form.title.errors }}</span>
@@ -47,7 +53,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <span class="form_error">{{ form.tagline.errors }}</span>
         {{ form.tagline.label_tag }}
         {{ form.tagline }}
-        <span class="form_help">{{ form.tagline.help_text }}</span>
       </p>
       <p>
         <span class="form_error">{{ form.logo.errors }}</span>
