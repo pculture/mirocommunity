@@ -174,7 +174,7 @@ clear: both;
 }
 
 .mc-widget-medium .mc-flat-bg:hover {
-    background-image:url("../images/widget/overlay_med.png");
+    background-image:url("../images/widget/overlay_medium.png");
 }
 .mc-widget-large .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_large.png");
@@ -230,7 +230,8 @@ clear: both;
 }
 
 .mc-widget-v2 .mc-description {
-    max-height: 30px;
+    display: block;
+    max-height: 32px;
     overflow: hidden;
 }
 .mc-widget-v2 li > div {
