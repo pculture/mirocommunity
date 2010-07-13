@@ -22,12 +22,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}Sign in{% endblock %}
 {% block next_link %}{% endblock %}
 {% block content %}
+{% url socialauth_facebook_login as socialauth_facebook_login %}{# see if facebook is enabled #}
+{% url socialauth_twitter_login as socialauth_twitter_login %} {# see if twitter is enabled #}
 {% url localtv_openid_start as localtv_openid_start %}{# see if openid is enabled #}
 <div id="login">
   <ul class="tabs">
     <li class="active"><a href="#" class="login_tab_user">Login/Sign Up</a></li>
-    {# <li class="fb"><a href="#" class="login_tab_two">Facebook</a></li>#}
-    {#<li class="tw"><a href="#" class="login_tab_three">Twitter</a></li>#}
+    {% if socialauth_facebook_login %}<li class="fb"><a href="#" class="login_tab_facebook">Facebook</a></li>{% endif %}
+    {% if socialauth_twitter_login %}<li class="tw"><a href="#" class="login_tab_twitter">Twitter</a></li>{% endif %}
     {% if localtv_openid_start %}<li class="oi"><a href="#" class="login_tab_openid">OpenID</a></li>
     <li class="go"><a href="#" class="login_tab_google">Google</a></li>{% endif %}
   </ul>
@@ -78,20 +80,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </div>
       <div class="clear"></div>
     </div>
-    {% comment %}
-        <div id="login_tab_two" class="inactive">
-            <div class="left">
-              {% facebook_button %}
-            </div>
-            <div class="clear"></div>
-        </div>
-        <div id="login_tab_three" class="inactive">
-            <div class="left">
-              {% twitter_button %}
-            </div>
-            <div class="clear"></div>
-        </div>
-    {% endcomment %}
+    <div id="login_tab_facebook" class="inactive">
+      <div class="left">
+        <a href="{{ socialauth_facebook_login }}"><img src="{% get_static_url "/images/facebook_login.png" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+      </div>
+      <div class="clear"></div>
+    </div>
+    <div id="login_tab_twitter" class="inactive">
+      <div class="left">
+        <a href="{{ socialauth_twitter_login }}"><img src="{% get_static_url "/images/twitter_login.gif" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+      </div>
+      <div class="clear"></div>
+    </div>
     {% if localtv_openid_start %}
     <div id="login_tab_openid" class="inactive">
       <div class="left">

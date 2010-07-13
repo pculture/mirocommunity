@@ -26,3 +26,5 @@ celery==1.0.0
 django-notification==0.1.5
 -e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration
 oauth2
+-e git+https://paulswartz@github.com/paulswartz/Django-Socialauth.git
+-e git+http://github.com/facebook/python-sdk.git#egg=facebook_python_sdk

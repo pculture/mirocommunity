@@ -98,11 +98,12 @@ INSTALLED_APPS = (
     'haystack',
     'email_share',
     'celery',
-    'notification'
+    'notification',
 
-    # Uncomment these if you want OpenID login support
+    # Uncomment these if you want OpenID/Facebook/Twitter login support
     #'django_openidconsumer',
     #'localtv_openid',
+    #'socialauth',
 
 )
 
@@ -162,3 +163,15 @@ CELERY_BACKEND = 'cache' # this MUST be set, otherwise the import page won't be
 HAYSTACK_SITECONF = 'example_project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = 'whoosh_index'
+
+# Facebook options
+FACEBOOK_APP_ID = None
+FACEBOOK_API_KEY = None
+FACEBOOK_SECRET_KEY = None
+FACEBOOK_CONNECT_URL = None
+FACEBOOK_CONNECT_DOMAIN = None
+
+# Twitter options
+TWITTER_CONSUMER_KEY = None
+TWITTER_CONSUMER_SECRET = None
+
