@@ -1,3 +1,4 @@
+
 import datetime
 
 import vidscraper
@@ -37,6 +38,7 @@ class MetasearchVideo(object):
                     }
                 }
         self.file_url = file_url or ''
+        self.file_url_mimetype = ''
         self.website_url = website_url or ''
         self.thumbnail_url = thumbnail_url or ''
         self.embed_code = embed_code or ''
