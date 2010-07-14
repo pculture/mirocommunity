@@ -63,7 +63,10 @@ class EditVideoForm(forms.ModelForm):
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if thumbnail_url and thumbnail_url != self.instance.thumbnail_url:
                 self.instance.thumbnail_url = thumbnail_url
-                self.instance.save_thumbnail()
+                try:
+                    self.instance.save_thumbnail()
+                except models.CannotOpenImageUrl:
+                    pass # wwe'll get it in a later update
         return forms.ModelForm.save(self, *args, **kwargs)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
