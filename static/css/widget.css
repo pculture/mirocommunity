@@ -151,7 +151,7 @@ clear: both;
 .mc-widget-small .mc-flat-bg {
     width: 88px;
     height: 68px;
-    margin-left: -8px;
+    margin-left: -9px;
 }
 
 .mc-widget-medium .mc-flat-bg {
@@ -163,23 +163,27 @@ clear: both;
 .mc-widget-large .mc-flat-bg {
     width: 222px;
     height: 169px;
-    margin-left: -2px;
+    margin-left: -1px;
 }
 
 .mc-widget-v2 .mc-flat-bg:hover {
     background-repeat: no-repeat;
-    background-position: bottom;
 }
 
 .mc-widget-small .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_small.png");
+    background-position: 0 46px;
 }
 
 .mc-widget-medium .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_medium.png");
+    background-position: 0 88px;
+
 }
 .mc-widget-large .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_large.png");
+    background-position: 0 147px;
+
 }
 
 .mc-widget-v2 ul > li {
