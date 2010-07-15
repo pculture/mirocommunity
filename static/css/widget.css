@@ -151,22 +151,24 @@ clear: both;
 .mc-widget-small .mc-flat-bg {
     width: 88px;
     height: 68px;
+    margin-left: -8px;
 }
 
 .mc-widget-medium .mc-flat-bg {
     width: 140px;
     height: 110px;
+    margin-left: -5px;
 }
 
 .mc-widget-large .mc-flat-bg {
     width: 222px;
     height: 169px;
+    margin-left: -2px;
 }
 
 .mc-widget-v2 .mc-flat-bg:hover {
     background-repeat: no-repeat;
     background-position: bottom;
-    margin-left: -10px;
 }
 
 .mc-widget-small .mc-flat-bg:hover {
@@ -183,8 +185,17 @@ clear: both;
 .mc-widget-v2 ul > li {
     display: block;
     background-repeat: no-repeat;
-    background-position: 10px 0;
     padding: 0 10px;
+}
+
+.mc-widget-small ul > li {
+    background-position: 12px 0;
+}
+.mc-widget-medium ul > li {
+    background-position: 15px 0;
+}
+.mc-widget-large ul > li {
+    background-position: 17px 0;
 }
 
 .mc-widget-v2 {
@@ -239,9 +250,6 @@ clear: both;
     margin-right: 10px;
 }
 
-.mc-widget-v2 IMG {
-    margin-left: -10px;
-}
 .mc-widget-v2 .mc-footer > div {
     float: right;
 }
