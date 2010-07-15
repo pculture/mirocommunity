@@ -184,14 +184,18 @@ if (typeof MiroCommunity === 'undefined') {
                     link = MiroCommunity.createElement('a', {href: video.link});
                     link.appendChild(flat_bg.cloneNode(false));
                     link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
-                    link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
-                    fake_description = document.createElement('div');
-                    fake_description.innerHTML = video.description;
-                    fake_description_divs = fake_description.getElementsByTagName('div');
-                    for(j=0; j < fake_description_divs.length; j++) {
-                        div = fake_description_divs[j];
-                        if (div.className === 'miro-community-description') {
-                            link.appendChild(MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description'));
+                    if (widget_size !== 'small') {
+                        link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
+                    }
+                    if (widget_size === 'large') {
+                        fake_description = document.createElement('div');
+                        fake_description.innerHTML = video.description;
+                        fake_description_divs = fake_description.getElementsByTagName('div');
+                        for(j=0; j < fake_description_divs.length; j++) {
+                            div = fake_description_divs[j];
+                            if (div.className === 'miro-community-description') {
+                                link.appendChild(MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description'));
+                            }
                         }
                     }
                     box.appendChild(link);

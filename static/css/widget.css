@@ -183,8 +183,8 @@ clear: both;
 .mc-widget-v2 ul > li {
     display: block;
     background-repeat: no-repeat;
-    background-position: 10px 10px;
-    padding: 10px;
+    background-position: 10px 0;
+    padding: 0 10px;
 }
 
 .mc-widget-v2 {
