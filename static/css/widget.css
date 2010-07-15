@@ -189,13 +189,13 @@ clear: both;
 }
 
 .mc-widget-small ul > li {
-    background-position: 12px 0;
+    background-position: 11px 0;
 }
 .mc-widget-medium ul > li {
     background-position: 15px 0;
 }
 .mc-widget-large ul > li {
-    background-position: 17px 0;
+    background-position: 19px 0;
 }
 
 .mc-widget-v2 {
@@ -222,7 +222,6 @@ clear: both;
 .mc-widget-v2 .mc-widget-title {
     font-size: 13px;
     padding: 10px 3px;
-    padding-bottom: 0px;
     text-align: center;
     color: #b0b0b0;
 }

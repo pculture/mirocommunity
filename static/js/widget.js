@@ -132,11 +132,11 @@ if (typeof MiroCommunity === 'undefined') {
                 if (this.opts.width) {
                     wrapper.style.width = this.opts.width + 'px';
                 } else if (this.opts.size === 'small') {
-                    wrarpper.style.width = '110px';
+                    wrarpper.style.width = '108px';
                 } else if (this.opts.size === 'medium') {
-                    wrapper.style.width = '170px';
+                    wrapper.style.width = '160px';
                 } else if (this.opts.size == 'large') {
-                    wrapper.style.width = '260px';
+                    wrapper.style.width = '242px';
                 }
                 wrapper.className = wrapper.className + ' mc-widget-' + this.opts.size;
                 div = document.createElement('div');
@@ -183,8 +183,8 @@ if (typeof MiroCommunity === 'undefined') {
                     box = document.createElement('div');
                     link = MiroCommunity.createElement('a', {href: video.link});
                     link.appendChild(flat_bg.cloneNode(false));
-                    link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
                     if (widget_size !== 'small') {
+                        link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
                         link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
                     }
                     if (widget_size === 'large') {
