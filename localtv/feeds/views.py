@@ -20,6 +20,7 @@ import urllib
 
 from django.contrib.auth.models import User
 from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
+from django.core import cache
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -49,21 +50,28 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        try:
-            feed = klass(None, request, json=json).get_feed(*args)
-        except FeedDoesNotExist:
-            raise Http404
-        else:
-            mime_type = feed.mime_type
-            if json and request.GET.get('jsoncallback'):
-                output = '%s(%s);' % (
-                    request.GET['jsoncallback'],
-                    feed.writeString('utf8'))
-                mime_type = 'text/javascript'
+        cache_key = 'feed_cache:%s:%i:%s' % (
+            klass.__name__, json, args)
+        mime_type_and_output = cache.cache.get(cache_key)
+        if mime_type_and_output is None:
+            try:
+                feed = klass(None, request, json=json).get_feed(*args)
+            except FeedDoesNotExist:
+                raise Http404
             else:
-                output = feed.writeString('utf-8')
-            return HttpResponse(output,
-                                mimetype=mime_type)
+                mime_type = feed.mime_type
+                output = feed.writeString('utf8')
+                cache.cache.set(cache_key, (mime_type, output))
+        else:
+            mime_type, output = mime_type_and_output
+
+        if json and request.GET.get('jsoncallback'):
+            output = '%s(%s);' % (
+                request.GET['jsoncallback'],
+                output)
+            mime_type = 'text/javascript'
+        return HttpResponse(output,
+                            mimetype=mime_type)
     return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
