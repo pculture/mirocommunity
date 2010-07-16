@@ -20,6 +20,8 @@ from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 
+Comment = comments.get_model()
+
 register = template.Library()
 
 class EditorsCommentNode(template.Node):
@@ -31,16 +33,17 @@ class EditorsCommentNode(template.Node):
     def render(self, context):
         obj = self.obj.resolve(context)
         content_type = ContentType.objects.get_for_model(obj)
-        try:
-            comment = comments.get_model().objects.get(
-                site=Site.objects.get_current(),
-                content_type=content_type,
-                object_pk=unicode(obj.pk),
-                flags__flag='editors comment')
-        except comments.get_model().DoesNotExist:
+        comments = Comment.objects.filter(
+            site=Site.objects.get_current(),
+            content_type=content_type,
+            object_pk=unicode(obj.pk),
+            flags__flag='editors comment')
+        if comments.count() == 0:
             context[self.as_varname] = None
         else:
-            context[self.as_varname] = comment
+            context[self.as_varname] = comments[0]
+            for extra in list(comments[1:]):
+                extra.delete()
         return ''
 
 @register.tag('get_editors_comment')
