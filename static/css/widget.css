@@ -148,22 +148,23 @@ clear: both;
     padding-bottom: 10px;
 }
 
+.mc-widget-v2 .mc-flat-bg {
+    margin-left: -10px;
+}
+
 .mc-widget-small .mc-flat-bg {
     width: 88px;
     height: 68px;
-    margin-left: -9px;
 }
 
 .mc-widget-medium .mc-flat-bg {
     width: 140px;
     height: 110px;
-    margin-left: -5px;
 }
 
 .mc-widget-large .mc-flat-bg {
     width: 222px;
     height: 169px;
-    margin-left: -1px;
 }
 
 .mc-widget-v2 .mc-flat-bg:hover {
@@ -190,16 +191,7 @@ clear: both;
     display: block;
     background-repeat: no-repeat;
     padding: 0 10px;
-}
-
-.mc-widget-small ul > li {
-    background-position: 11px 0;
-}
-.mc-widget-medium ul > li {
-    background-position: 15px 0;
-}
-.mc-widget-large ul > li {
-    background-position: 19px 0;
+    background-position: 10px 0;
 }
 
 .mc-widget-v2 {

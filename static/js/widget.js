@@ -207,6 +207,6 @@ if (typeof MiroCommunity === 'undefined') {
                     li.className += ' mc-last';
                 }
             },
-        };
+        }
     }();
 }
