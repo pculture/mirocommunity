@@ -18,6 +18,10 @@
 import re
 import os.path
 import feedparser
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 
 from django import forms
 from django.forms.formsets import BaseFormSet
@@ -448,7 +452,8 @@ class EditSettingsForm(forms.ModelForm):
         sl = forms.ModelForm.save(self)
         if sl.logo:
             sl.logo.open()
-            sl.save_thumbnail_from_file(sl.logo)
+            sio = StringIO.StringIO(sl.logo.read())
+            sl.save_thumbnail_from_file(sio)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteLocation.objects.clear_cache()

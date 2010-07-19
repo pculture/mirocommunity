@@ -1,4 +1,4 @@
-
+import StringIO
 from south.db import db
 from django.db import models
 from localtv.models import *
@@ -12,7 +12,8 @@ class Migration:
         sl = SiteLocation.objects.get_current()
         if sl.logo:
             sl.logo.open()
-            sl.save_thumbnail_from_file(sl.logo)
+            sio = StringIO.StringIO(sl.logo.read())
+            sl.save_thumbnail_from_file(sio)
     
     def backwards(self, orm):
         "Write your backwards migration here"
