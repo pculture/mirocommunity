@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}widgetcreater{% endblock body_class %}
 
 
-{% load i18n %}
+{% load i18n localtv_thumbnail %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
@@ -38,23 +38,44 @@ function update_widget() {
     widget_title = $("input[name=title]").val();
     widget_count = $("input[name=count]").val();
     widget_source = $("select[name=source]").val();
+    if (widget_source === 'custom') {
+        widget_source = $("input[name=custom_source]").val();
+    }
     widget_size = $("select[name=size]").val();
-    widget_logo = $("input[name=logo]").val();
+    widget_bg = $("input[name=bg]").val();
+    widget_border = $("input[name=border]").val();
+    if (widget_size == 'small') {
+        widget_logo = '{% get_thumbnail_url sitelocation 88 68 %}';
+    } else if (widget_size == 'medium') {
+        widget_logo = '{% get_thumbnail_url sitelocation 140 110 %}';
+    } else {
+        widget_logo = '{% get_thumbnail_url sitelocation 222 169 %}';
+    }
+    if (!/https?:\/\//.exec(widget_logo)) {
+        // not a full URL
+        widget_logo = 'http://{{ sitelocation.site.domain }}' + widget_logo;
+    }
     opts = {
         version: 2,
         domain: '{{ sitelocation.site.domain }}',
         source: widget_source,
         size: widget_size,
         count: widget_count,
-        title: widget_title
+        title: widget_title,
+        logo: widget_logo
     }
-    if (widget_logo) {
-        opts.logo = widget_logo;
+    if (widget_bg) {
+        opts.bg = widget_bg;
+    }
+    if (widget_border) {
+        opts.border = widget_border;
     }
     embed = embed_base;
     embed = embed.replace(/JSON/g, JSON.stringify(opts));
     area.val(embed);
     $("#widget-example")[0].className = 'mc-widget-v2';
+    $("#widget-example").css('background', widget_border);
+    $("#widget-example > div").css('background', widget_bg);
     $("#widget-example .mc-footer img").remove();
     if (widget_size == 'small') {
         $('#widget-example').width(108).addClass('mc-widget-small');
@@ -65,17 +86,25 @@ function update_widget() {
     }
     $('#widget-example .mc-widget-title').text(widget_title);
     $('#widget-example ul').empty();
-    if (widget_logo) {
-        img = $("<img/>");
-        img.attr('src', widget_logo);
-        $("#widget-example .mc-footer").prepend(img);
-    }
+    img = $("<img/>");
+    img.attr('src', widget_logo);
+    $("#widget-example .mc-footer").prepend(img);
     example_widget = new MiroCommunity.Widget(opts);
     example_widget.id = 'widget-example';
     example_widget.load();
 }
 
 $(document).ready(update_widget);
+$(document).ready(function () {
+    $("select[name=source]").change(function() {
+        val = $("select[name=source]").val();
+        if (val === 'custom') {
+            $("#custom_source_input").show();
+        } else {
+            $("#custom_source_input").hide();
+        }
+    });
+});
 </script>
 {% endblock %}
 {% block content %}
@@ -103,14 +132,22 @@ $(document).ready(update_widget);
         <div>
           <label for="source">Video Source:</label>
           <select name="source">
-            <option value="new/">New</option>
-            <option value="popular/">Popular</option>
-            <option value="featured/">Featured</option>
+            <option value="new">New</option>
+            <option value="popular">Popular</option>
+            <option value="featured">Featured</option>
+            <option value="custom">Custom</option>
           </select>
+          <div id="custom_source_input" style="display: none;">
+            <label for="custom_source">http://{{ sitelocation.site.domain }}/feeds/</label><input name="custom_source">
+          </div>
         </div>
         <div>
-          <label for="logo">Logo URL(optional):</label>
-          <input name="logo" type="url" value=""/>
+          <label for="bg">Background Color (optional):</label>
+          <input name="bg" type="text" value=""/>
+        </div>
+        <div>
+          <label for="border">Border Color (optional):</label>
+          <input name="border" type="text" value=""/>
         </div>
         {% comment %}
         <div>
