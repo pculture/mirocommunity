@@ -44,6 +44,7 @@ function update_widget() {
     widget_size = $("select[name=size]").val();
     widget_bg = $("input[name=bg]").val();
     widget_border = $("input[name=border]").val();
+    {% if sitelocation.has_thumbnail %}
     if (widget_size == 'small') {
         widget_logo = '{% get_thumbnail_url sitelocation 88 68 %}';
     } else if (widget_size == 'medium') {
@@ -55,6 +56,9 @@ function update_widget() {
         // not a full URL
         widget_logo = 'http://{{ sitelocation.site.domain }}' + widget_logo;
     }
+    {% else %}
+    widget_logo = '';
+    {% endif %}
     opts = {
         version: 2,
         domain: '{{ sitelocation.site.domain }}',
@@ -62,8 +66,9 @@ function update_widget() {
         size: widget_size,
         count: widget_count,
         title: widget_title,
-        logo: widget_logo
     }
+    if (widget_logo) {
+        opts.logo = widget_logo;
     if (widget_bg) {
         opts.bg = widget_bg;
     }
