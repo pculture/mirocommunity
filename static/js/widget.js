@@ -128,17 +128,17 @@ if (typeof MiroCommunity === 'undefined') {
             },
             // Widget version 2
             beforeLoad_v2: function () {
-                wrapper = document.getElementById(this.id);
+                widget_wrapper = document.getElementById(this.id);
                 if (this.opts.width) {
-                    wrapper.style.width = this.opts.width + 'px';
+                    widget_wrapper.style.width = this.opts.width + 'px';
                 } else if (this.opts.size === 'small') {
-                    wrarpper.style.width = '108px';
+                    widget_wrarpper.style.width = '108px';
                 } else if (this.opts.size === 'medium') {
-                    wrapper.style.width = '160px';
+                   widget_wrapper.style.width = '160px';
                 } else if (this.opts.size == 'large') {
-                    wrapper.style.width = '242px';
+                    widget_wrapper.style.width = '242px';
                 }
-                wrapper.className = wrapper.className + ' mc-widget-' + this.opts.size;
+                widget_wrapper.className = wrapper.className + ' mc-widget-' + this.opts.size;
                 div = document.createElement('div');
                 title = MiroCommunity.createElement('div', {className: 'mc-widget-title'});
                 title.innerText = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
@@ -155,7 +155,7 @@ if (typeof MiroCommunity === 'undefined') {
                 more_link_wrapper.appendChild(more_link);
                 footer_box.appendChild(more_link_wrapper);
                 div.appendChild(footer_box);
-                wrapper.appendChild(div);
+                widget_wrapper.appendChild(div);
             },
             update_v2: function(div, json) {
                 var ul = div.getElementsByTagName('ul')[0];
@@ -206,7 +206,7 @@ if (typeof MiroCommunity === 'undefined') {
                 if (li !== null) {
                     li.className += ' mc-last';
                 }
-            },
-        }
+            }
+        };
     }();
 }
