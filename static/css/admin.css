@@ -21,6 +21,7 @@ color: #000;
 h2{
 min-width: 250px;
 float: left;
+clear: left;
 }
 
 
