@@ -65,10 +65,11 @@ function update_widget() {
         source: widget_source,
         size: widget_size,
         count: widget_count,
-        title: widget_title,
+        title: widget_title
     }
     if (widget_logo) {
         opts.logo = widget_logo;
+    }
     if (widget_bg) {
         opts.bg = widget_bg;
     }
@@ -91,9 +92,14 @@ function update_widget() {
     }
     $('#widget-example .mc-widget-title').text(widget_title);
     $('#widget-example ul').empty();
-    img = $("<img/>");
-    img.attr('src', widget_logo);
-    $("#widget-example .mc-footer").prepend(img);
+    if (widget_logo) {
+        a = $("<a/>");
+        a.attr('href', 'http://{{ sitelocation.site.domain }}/');
+        img = $("<img/>");
+        img.attr('src', widget_logo);
+        a.append(img)
+        $("#widget-example .mc-footer").prepend(a);
+    }
     example_widget = new MiroCommunity.Widget(opts);
     example_widget.id = 'widget-example';
     example_widget.load();

@@ -18,10 +18,6 @@
 import re
 import os.path
 import feedparser
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
 
 from django import forms
 from django.forms.formsets import BaseFormSet
@@ -32,6 +28,7 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
 from django.utils.html import conditional_escape
@@ -452,8 +449,8 @@ class EditSettingsForm(forms.ModelForm):
         sl = forms.ModelForm.save(self)
         if sl.logo:
             sl.logo.open()
-            sio = StringIO.StringIO(sl.logo.read())
-            sl.save_thumbnail_from_file(sio)
+            cf = ContentFile(sl.logo.read())
+            sl.save_thumbnail_from_file(cf)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteLocation.objects.clear_cache()

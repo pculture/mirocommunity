@@ -153,7 +153,10 @@ if (typeof MiroCommunity === 'undefined') {
                 div.appendChild(ul);
                 footer_box = MiroCommunity.createElement('div', {className: "mc-footer"});
                 if (this.opts.logo) {
-                    footer_box.appendChild(MiroCommunity.createElement('img', {src: this.opts.logo}));
+                    img = MiroCommunity.createElement('img', {src: this.opts.logo})
+                    a = MiroCommunity.createElement('a', {href: "http://" + this.opts.domain + '/'});
+                    a.appendChild(img);
+                    footer_box.appendChild(a);
                 }
                 more_link = MiroCommunity.createElement('a', {href: "http://" + this.opts.domain + '/'});
                 more_link.innerText = more_link.textContent = 'See More';
@@ -164,7 +167,8 @@ if (typeof MiroCommunity === 'undefined') {
                 widget_wrapper.appendChild(div);
             },
             update_v2: function(div, json) {
-                more_link = div.getElementsByTagName('a')[0];
+                links = div.getElementsByTagName('a');
+                more_link = links[links.length-1];
                 more_link.href = json.link;
                 var ul = div.getElementsByTagName('ul')[0];
                 ul.innerHTML = ul.className = '';
