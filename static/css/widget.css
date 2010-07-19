@@ -165,6 +165,7 @@ clear: both;
 .mc-widget-large .mc-flat-bg {
     width: 222px;
     height: 169px;
+    margin-top: -10px;
 }
 
 .mc-widget-v2 .mc-flat-bg:hover {
@@ -194,6 +195,10 @@ clear: both;
     background-position: 10px 0;
 }
 
+.mc-widget-large ul > li {
+    padding: 10px;
+}
+
 .mc-widget-v2 {
     background-image:url('../images/widget/bg_wrapper.png');
     padding: 3px;
@@ -203,6 +208,11 @@ clear: both;
     color: #D3D3D3;
     text-decoration: none;
     font-size: 11px;
+    line-height: 120%;
+}
+
+.mc-widget-large A {
+    line-height: 140%;
 }
 
 .mc-widget-v2 A IMG {

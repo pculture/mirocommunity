@@ -132,16 +132,16 @@ if (typeof MiroCommunity === 'undefined') {
                 if (this.opts.width) {
                     widget_wrapper.style.width = this.opts.width + 'px';
                 } else if (this.opts.size === 'small') {
-                    widget_wrarpper.style.width = '108px';
+                    widget_wrapper.style.width = '108px';
                 } else if (this.opts.size === 'medium') {
                    widget_wrapper.style.width = '160px';
                 } else if (this.opts.size == 'large') {
                     widget_wrapper.style.width = '242px';
                 }
-                widget_wrapper.className = wrapper.className + ' mc-widget-' + this.opts.size;
+                widget_wrapper.className = widget_wrapper.className + ' mc-widget-' + this.opts.size;
                 div = document.createElement('div');
                 title = MiroCommunity.createElement('div', {className: 'mc-widget-title'});
-                title.innerText = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
+                title.innerText = title.textContent = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
                 div.appendChild(title);
                 ul = MiroCommunity.createElement('ul', {className: "mc-loading"});
                 div.appendChild(ul);
@@ -150,7 +150,7 @@ if (typeof MiroCommunity === 'undefined') {
                     footer_box.appendChild(MiroCommunity.createElement('img', {src: this.opts.logo}));
                 }
                 more_link = MiroCommunity.createElement('a', {href: "http://" + this.opts.domain + '/'});
-                more_link.innerText = 'See More';
+                more_link.innerText = more_link.textContent = 'See More';
                 more_link_wrapper = document.createElement('div');
                 more_link_wrapper.appendChild(more_link);
                 footer_box.appendChild(more_link_wrapper);
