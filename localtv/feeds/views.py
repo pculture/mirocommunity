@@ -43,6 +43,7 @@ LOCALTV_FEED_LENGTH = 30
 
 def feed_view(klass):
     def wrapper(request, *args):
+        sitelocation = models.SiteLocation.objects.get_current()
         if len(args) == 0:
             args = [None]
         if args[0] == 'json/': # JSON feed
@@ -50,8 +51,8 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        cache_key = 'feed_cache:%s:%i:%s' % (
-            klass.__name__, json, args)
+        cache_key = 'feed_cache:%s:%s:%i:%s' % (
+            sitelocation.site.domain, klass.__name__, json, args)
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
@@ -157,8 +158,7 @@ class BaseVideosFeed(Feed):
             if kwargs.pop('json'):
                 self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
-        self.sitelocation = models.SiteLocation.objects.get(
-            site=models.Site.objects.get_current())
+        self.sitelocation = models.SiteLocation.objects.get_current()
 
     def item_pubdate(self, video):
         if video.status != models.VIDEO_STATUS_ACTIVE:
