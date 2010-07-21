@@ -143,9 +143,10 @@ clear: both;
 /* Widget v2 */
 .mc-widget-v2 > div{
     color: #d3d3d3;
-    line-height: 140%;
+    line-height: 16px;
     background-image:url('../images/widget/bg_big.png');
     padding-bottom: 10px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .mc-widget-v2 .mc-flat-bg {
