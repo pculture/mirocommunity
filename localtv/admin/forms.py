@@ -28,6 +28,7 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
 from django.utils.html import conditional_escape
@@ -63,7 +64,10 @@ class EditVideoForm(forms.ModelForm):
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if thumbnail_url and thumbnail_url != self.instance.thumbnail_url:
                 self.instance.thumbnail_url = thumbnail_url
-                self.instance.save_thumbnail()
+                try:
+                    self.instance.save_thumbnail()
+                except models.CannotOpenImageUrl:
+                    pass # wwe'll get it in a later update
         return forms.ModelForm.save(self, *args, **kwargs)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
@@ -443,6 +447,10 @@ class EditSettingsForm(forms.ModelForm):
 
     def save(self):
         sl = forms.ModelForm.save(self)
+        if sl.logo:
+            sl.logo.open()
+            cf = ContentFile(sl.logo.read())
+            sl.save_thumbnail_from_file(cf)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteLocation.objects.clear_cache()

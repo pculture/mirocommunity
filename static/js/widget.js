@@ -78,7 +78,7 @@ if (typeof MiroCommunity === 'undefined') {
                     var div = document.getElementById(t.id);
                     t.versioned('update', div, json);
                 };
-                t.scriptTag = MiroCommunity.jsonP(ajax_path + '/?jsoncallback=MiroCommunity.callback_' + t.counter);
+                t.scriptTag = MiroCommunity.jsonP(ajax_path + '?jsoncallback=MiroCommunity.callback_' + t.counter);
             },
             // Widget version 1
             beforeLoad: function () {
@@ -128,36 +128,48 @@ if (typeof MiroCommunity === 'undefined') {
             },
             // Widget version 2
             beforeLoad_v2: function () {
-                wrapper = document.getElementById(this.id);
+                widget_wrapper = document.getElementById(this.id);
                 if (this.opts.width) {
-                    wrapper.style.width = this.opts.width + 'px';
+                    widget_wrapper.style.width = this.opts.width + 'px';
                 } else if (this.opts.size === 'small') {
-                    wrarpper.style.width = '110px';
+                    widget_wrapper.style.width = '108px';
                 } else if (this.opts.size === 'medium') {
-                    wrapper.style.width = '170px';
+                   widget_wrapper.style.width = '160px';
                 } else if (this.opts.size == 'large') {
-                    wrapper.style.width = '260px';
+                    widget_wrapper.style.width = '242px';
                 }
-                wrapper.className = wrapper.className + ' mc-widget-' + this.opts.size;
+                if (this.opts.border) {
+                    widget_wrapper.style.background = this.opts.border;
+                }
+                widget_wrapper.className = widget_wrapper.className + ' mc-widget-' + this.opts.size;
                 div = document.createElement('div');
+                if (this.opts.bg) {
+                    div.style.background = this.opts.bg;
+                }
                 title = MiroCommunity.createElement('div', {className: 'mc-widget-title'});
-                title.innerText = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
+                title.innerText = title.textContent = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
                 div.appendChild(title);
                 ul = MiroCommunity.createElement('ul', {className: "mc-loading"});
                 div.appendChild(ul);
                 footer_box = MiroCommunity.createElement('div', {className: "mc-footer"});
                 if (this.opts.logo) {
-                    footer_box.appendChild(MiroCommunity.createElement('img', {src: this.opts.logo}));
+                    img = MiroCommunity.createElement('img', {src: this.opts.logo})
+                    a = MiroCommunity.createElement('a', {href: "http://" + this.opts.domain + '/'});
+                    a.appendChild(img);
+                    footer_box.appendChild(a);
                 }
                 more_link = MiroCommunity.createElement('a', {href: "http://" + this.opts.domain + '/'});
-                more_link.innerText = 'See More';
+                more_link.innerText = more_link.textContent = 'See More';
                 more_link_wrapper = document.createElement('div');
                 more_link_wrapper.appendChild(more_link);
                 footer_box.appendChild(more_link_wrapper);
                 div.appendChild(footer_box);
-                wrapper.appendChild(div);
+                widget_wrapper.appendChild(div);
             },
             update_v2: function(div, json) {
+                links = div.getElementsByTagName('a');
+                more_link = links[links.length-1];
+                more_link.href = json.link;
                 var ul = div.getElementsByTagName('ul')[0];
                 ul.innerHTML = ul.className = '';
                 var count = this.opts.count ? this.opts.count : 4;
@@ -183,15 +195,19 @@ if (typeof MiroCommunity === 'undefined') {
                     box = document.createElement('div');
                     link = MiroCommunity.createElement('a', {href: video.link});
                     link.appendChild(flat_bg.cloneNode(false));
-                    link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
-                    link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
-                    fake_description = document.createElement('div');
-                    fake_description.innerHTML = video.description;
-                    fake_description_divs = fake_description.getElementsByTagName('div');
-                    for(j=0; j < fake_description_divs.length; j++) {
-                        div = fake_description_divs[j];
-                        if (div.className === 'miro-community-description') {
-                            link.appendChild(MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description'));
+                    if (widget_size !== 'small') {
+                        link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
+                        link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
+                    }
+                    if (widget_size === 'large') {
+                        fake_description = document.createElement('div');
+                        fake_description.innerHTML = video.description;
+                        fake_description_divs = fake_description.getElementsByTagName('div');
+                        for(j=0; j < fake_description_divs.length; j++) {
+                            div = fake_description_divs[j];
+                            if (div.className === 'miro-community-description') {
+                                link.appendChild(MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description'));
+                            }
                         }
                     }
                     box.appendChild(link);
@@ -202,7 +218,7 @@ if (typeof MiroCommunity === 'undefined') {
                 if (li !== null) {
                     li.className += ' mc-last';
                 }
-            },
+            }
         };
     }();
 }

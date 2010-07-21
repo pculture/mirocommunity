@@ -91,7 +91,10 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
                 video.when_approved = video.when_submitted
                 video.save()
             if video.thumbnail_url and not video.has_thumbnail:
-                video.save_thumbnail()
+                try:
+                    video.save_thumbnail()
+                except models.CannotOpenImageUrl:
+                    pass # we'll get it later
             if self.cleaned_data.get('tags'):
                 video.tags = self.cleaned_data['tags']
             old_m2m()

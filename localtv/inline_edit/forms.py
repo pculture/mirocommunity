@@ -27,6 +27,7 @@ from tagging.utils import edit_string_for_tags
 from localtv import models
 from localtv.admin.forms import EditVideoForm, BulkChecklistField
 
+Comment = comments.get_model()
 
 class FeedNameForm(forms.ModelForm):
     class Meta:
@@ -132,15 +133,17 @@ class VideoEditorsComment(forms.Form):
         if self.instance:
             self.content_type = ContentType.objects.get_for_model(
                 self.instance)
-            try:
-                self.comment = comments.get_model().objects.get(
-                    site=self.instance.site,
-                    content_type=self.content_type,
-                    object_pk=unicode(self.instance.pk),
-                    flags__flag='editors comment')
-            except comments.get_model().DoesNotExist:
+            comments = Comment.objects.filter(
+                site=self.instance.site,
+                content_type=self.content_type,
+                object_pk=unicode(self.instance.pk),
+                flags__flag='editors comment')
+            if not comments.count():
                 self.comment = None
             else:
+                self.comment = comments[0]
+                for extra in list(comments[1:]):
+                    extra.delete()
                 self.initial['editors_comment'] = self.comment.comment
         else:
             self.comment = None

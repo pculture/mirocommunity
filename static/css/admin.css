@@ -24,6 +24,10 @@ float: left;
 }
 
 
+br.clearboth {
+    clear: both;
+}
+
 /*//////////////////////////////////////
 
 ~ Layout
@@ -1828,10 +1832,15 @@ padding: 5px;
 }
 /* Widget Creator */
 #widget-base h2 {
+    float: inherit;
     margin-top: 10px;
 }
 #widget-settings, #widget-display {
     float: left;
+}
+
+#widget-settings > div {
+    clear: left;
 }
 
 #widget-settings {

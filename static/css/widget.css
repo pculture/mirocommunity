@@ -143,9 +143,14 @@ clear: both;
 /* Widget v2 */
 .mc-widget-v2 > div{
     color: #d3d3d3;
-    line-height: 140%;
+    line-height: 16px;
     background-image:url('../images/widget/bg_big.png');
     padding-bottom: 10px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.mc-widget-v2 .mc-flat-bg {
+    margin-left: -10px;
 }
 
 .mc-widget-small .mc-flat-bg {
@@ -161,29 +166,37 @@ clear: both;
 .mc-widget-large .mc-flat-bg {
     width: 222px;
     height: 169px;
+    margin-top: -10px;
 }
 
 .mc-widget-v2 .mc-flat-bg:hover {
     background-repeat: no-repeat;
-    background-position: bottom;
-    margin-left: -10px;
 }
 
 .mc-widget-small .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_small.png");
+    background-position: 0 46px;
 }
 
 .mc-widget-medium .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_medium.png");
+    background-position: 0 88px;
+
 }
 .mc-widget-large .mc-flat-bg:hover {
     background-image:url("../images/widget/overlay_large.png");
+    background-position: 0 147px;
+
 }
 
 .mc-widget-v2 ul > li {
     display: block;
     background-repeat: no-repeat;
-    background-position: 10px 10px;
+    padding: 0 10px;
+    background-position: 10px 0;
+}
+
+.mc-widget-large ul > li {
     padding: 10px;
 }
 
@@ -196,6 +209,11 @@ clear: both;
     color: #D3D3D3;
     text-decoration: none;
     font-size: 11px;
+    line-height: 120%;
+}
+
+.mc-widget-large A {
+    line-height: 140%;
 }
 
 .mc-widget-v2 A IMG {
@@ -211,7 +229,6 @@ clear: both;
 .mc-widget-v2 .mc-widget-title {
     font-size: 13px;
     padding: 10px 3px;
-    padding-bottom: 0px;
     text-align: center;
     color: #b0b0b0;
 }
@@ -239,9 +256,6 @@ clear: both;
     margin-right: 10px;
 }
 
-.mc-widget-v2 IMG {
-    margin-left: -10px;
-}
 .mc-widget-v2 .mc-footer > div {
     float: right;
 }
