@@ -272,8 +272,10 @@ class MockQueryset(object):
         self.filters = filters or {}
         if self.model:
             self.db = model.objects.all().db
+        elif hasattr(objects, 'db'):
+            self.db = objects.db
         else:
-            self.db = type(self.objects[0]).objects.all().db
+            self.db = 'default'
 
         self._count = None
         self._iter_index = None
