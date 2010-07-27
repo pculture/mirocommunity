@@ -31,7 +31,7 @@
 <td valign="middle">
   <span>{{ form.instance.video.name }}</span>
   <div class="actions">
-    <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.video.get_absolute_url }}" class="view_icon">View</a>
+    <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.video.get_absolute_url }}?playlist={{ playlist.pk }}" class="view_icon">View</a>
   </div>
 </td>
 <td valign="middle">{{ form.ORDER }}</td>

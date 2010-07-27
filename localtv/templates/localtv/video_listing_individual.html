@@ -26,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <div class="title_desc">
     <h3>
-      <a href="{{ video.get_absolute_url }}" title="{{ video.name }}">
+      <a href="{{ video.get_absolute_url }}{{ video_url_extra }}" title="{{ video.name }}">
         {% if video.name %}
           {{ video.name }}
         {% else %}

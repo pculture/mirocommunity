@@ -97,7 +97,8 @@ def view(request, pk, slug=None, count=15):
         template_name='localtv/playlists/view.html',
         allow_empty=True,
         template_object_name='video',
-        extra_context={'playlist': playlist})
+        extra_context={'playlist': playlist,
+                       'video_url_extra': '?playlist=%i' % playlist.pk})
 
 
 @get_sitelocation
