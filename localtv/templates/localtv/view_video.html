@@ -242,7 +242,7 @@ margin: 0 auto;
     {% if request.user.is_authenticated or current_video.playlistitem_set.count %}
     {% if request.user.is_authenticated or current_video.playlistitem_set.count != 1 or not playlistitem %}
     <div class="sidebar_header">
-      <h2>Playlists</h2>
+      <h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
     </div>
     <div id="playlists">
       <div>
@@ -278,7 +278,7 @@ margin: 0 auto;
         {% endfor %}
         <option value="new">New playlist...</option>
       </select>
-      <input type="submit" value="+"/>
+      <input type="submit" value="Add"/>
     </form>
     <form method="POST" action="{% url localtv_playlist_index %}">
       <input type="hidden" name="name" />
