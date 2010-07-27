@@ -1779,9 +1779,11 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-0-role'] = 'user'
         POST_data['form-1-logo'] = file(self._data_file('logo.png'))
         POST_data['form-1-name'] = ''
+        POST_data['form-1-website'] = 'http://google.com/'
         POST_data['form-1-description'] = 'Superuser Description'
         POST_data['form-2-username'] = 'new_admin'
         POST_data['form-2-role'] = 'admin'
+        POST_data['form-2-location'] = 'New Location'
         POST_data['form-2-password_f'] = 'new_admin'
         POST_data['form-2-password_f2'] = 'new_admin'
 
@@ -1798,6 +1800,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(new_admin.pk, 1)
         self.assertTrue(self.site_location.user_is_admin(new_admin))
         self.assertTrue(new_admin.check_password('new_admin'))
+        self.assertEquals(new_admin.get_profile().location, 'New Location')
 
         superuser = User.objects.get(username='superuser')
         self.assertEquals(superuser.pk, 2)
@@ -1808,6 +1811,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
         self.assertTrue(profile.logo.name.endswith('logo.png'))
+        self.assertEquals(profile.website, 'http://google.com/')
         self.assertEquals(profile.description, 'Superuser Description')
 
         old_admin = User.objects.get(username='admin')

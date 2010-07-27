@@ -67,7 +67,7 @@ class ProfileForm(forms.ModelForm):
             except Profile.DoesNotExist:
                 profile = Profile.objects.create(
                     user=instance)
-            for field_name in self.Meta.fields[-4:]:
+            for field_name in ('location', 'website', 'logo', 'description'):
                 value = self.cleaned_data.get(field_name)
                 if value:
                     setattr(profile, field_name, value)
