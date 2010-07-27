@@ -20,15 +20,16 @@ from django.core.urlresolvers import reverse
 
 from localtv import models
 from localtv.inline_edit import forms
+from localtv.playlists.models import Playlist
 
 WIDGET_DIRECTORY = {
-    models.Feed: {
+    Playlist: {
         'name': {
-            'form': forms.FeedNameForm},
-        'auto_categories': {
-            'form': forms.FeedAutoCategoriesForm},
-        'auto_authors': {
-            'form': forms.FeedAutoAuthorsForm},
+            'form': forms.PlaylistNameForm},
+        'slug': {
+            'form': forms.PlaylistSlugForm},
+        'description': {
+            'form': forms.PlaylistDescriptionForm},
         },
     models.Video: {
         'name': {

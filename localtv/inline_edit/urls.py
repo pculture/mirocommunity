@@ -18,6 +18,7 @@
 from django.conf.urls.defaults import patterns
 
 from localtv import models
+from localtv.playlists.models import Playlist
 
 urlpatterns = patterns(
     'localtv.inline_edit',
@@ -46,4 +47,14 @@ urlpatterns = patterns(
      {}, 'localtv_admin_video_edit_editors_comment'),
     (r'^video/(?P<id>[0-9]+)/thumbnail/$', 'simple.edit_field',
      {'model': models.Video, 'field': 'thumbnail'},
-     'localtv_admin_video_edit_thumbnail'))
+     'localtv_admin_video_edit_thumbnail'),
+    (r'^playlist/(?P<id>[0-9]+)/name/$', 'simple.edit_field',
+     {'model': Playlist, 'field': 'name'},
+     'localtv_admin_playlist_edit_name'),
+    (r'^playlist/(?P<id>[0-9]+)/slug/$', 'simple.edit_field',
+     {'model': Playlist, 'field': 'slug'},
+     'localtv_admin_playlist_edit_slug'),
+    (r'^playlist/(?P<id>[0-9]+)/description/$', 'simple.edit_field',
+     {'model': Playlist, 'field': 'description'},
+     'localtv_admin_playlist_edit_description'),
+    )

@@ -19,20 +19,18 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.templatetags.editable_widget import WIDGET_DIRECTORY, \
     editable_widget
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def edit_field(request, id, sitelocation=None, model=None, field=None):
+def edit_field(request, id, model=None, field=None):
     if model is None or field is None:
         raise RuntimeError('must provide a model and a field')
     obj = get_object_or_404(
         model,
-        id=id,
-        site=sitelocation.site)
+        id=id)
 
     edit_form = WIDGET_DIRECTORY[model][field]['form'](request.POST,
                                                        request.FILES,

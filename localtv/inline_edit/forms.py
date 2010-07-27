@@ -25,32 +25,27 @@ from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
 
 from localtv import models
+from localtv.playlists.models import Playlist
 from localtv.admin.forms import EditVideoForm, BulkChecklistField
 
 Comment = comments.get_model()
 
-class FeedNameForm(forms.ModelForm):
+class PlaylistNameForm(forms.ModelForm):
     class Meta:
-        model = models.Feed
+        model = Playlist
         fields = ('name',)
 
 
-class FeedAutoCategoriesForm(forms.ModelForm):
+class PlaylistSlugForm(forms.ModelForm):
     class Meta:
-        model = models.Feed
-        fields = ('auto_categories',)
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-        self.fields['auto_categories'].queryset = \
-            self.fields['auto_categories'].queryset.filter(
-            site=self.instance.site)
+        model = Playlist
+        fields = ('slug',)
 
 
-class FeedAutoAuthorsForm(forms.ModelForm):
+class PlaylistDescriptionForm(forms.ModelForm):
     class Meta:
-        model = models.Feed
-        fields = ('auto_authors',)
+        model = Playlist
+        fields = ('description',)
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)

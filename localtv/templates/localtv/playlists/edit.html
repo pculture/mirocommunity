@@ -1,10 +1,17 @@
 {% extends "localtv/admin/bulk_edit.html" %}
-{% load filters %}
+{% load filters editable_widget %}
 {% block body_id %}goodies{% endblock body_id %}
 {% block body_class %}playlists{% endblock body_class %}
 {% block title %}Playlist: {{ playlist.name }}{% endblock %}
+{% block head %}
+  {{ block.super }}
+  {% include "localtv/inline_edit/header.html" %}
+{% endblock %}
 {% block subheader %}{% include "localtv/goodies/header.html" %}{% endblock %}
 {% block pre-labels %}
+{% editable_widget playlist "name" %}
+{% editable_widget playlist "slug" %}
+{% editable_widget playlist "description" %}
 {% endblock %}
 {% block labels %}
 <div class="bulkedit_controls">

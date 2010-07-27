@@ -17,16 +17,5 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n %}
-
-<h3 class="categories editable">{% trans "Categories" %}</h3>
-
-<ul>
-  {% for category in instance.auto_categories.all %}
-    <li>
-       <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
-    </li> 
-  {% endfor %}
-</ul>
-
+Slug: {{ instance.slug }}
 <span class="edit_link"><span>Edit</span></span>
