@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </script>{% endif %}
   <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.form.js" %}"></script>
   <script type="text/javascript" src="{% get_static_url "/js/comment.js" %}"></script>
-  {% if request.user.is_authenticated or current_video.playlists.count %}<script type="text/javascript" src="{% get_static_url "/js/admin/playlist.js" %}"></script>{% endif %}
+  {% if request.user.is_authenticated or current_video.playlists.count %}<script type="text/javascript" src="{% get_static_url "/js/playlist.js" %}"></script>{% endif %}
   {% include "localtv/view_video_meta.html" %}
   {% if current_video.video_service %}<style>
   .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
