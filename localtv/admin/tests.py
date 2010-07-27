@@ -2512,11 +2512,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
+        index = len(formset.forms) - 1
         POST_data['form-0-BULK'] = 'yes'
         POST_data['form-1-BULK'] = 'yes'
-        POST_data['form-%i-categories' % (len(formset.forms) - 1)] = [1]
-        POST_data['form-%i-authors' % (len(formset.forms) - 1)] = [1, 2]
-        POST_data['form-%i-tags' % (len(formset.forms) - 1)] = 'tag3, tag4'
+        POST_data['form-%i-name' % index] = 'New Name'
+        POST_data['form-%i-description' % index] = 'New Description'
+        POST_data['form-%i-when_published' % index] = datetime.datetime(
+            1985, 3, 24, 18, 55, 00)
+        POST_data['form-%i-categories' % index] = [1]
+        POST_data['form-%i-authors' % index] = [1, 2]
+        POST_data['form-%i-tags' % index] = 'tag3, tag4'
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
@@ -2538,6 +2543,11 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             set([1]))
 
         for video in video1, video2:
+            self.assertEquals(video.name, 'New Name')
+            self.assertEquals(video.description, 'New Description')
+            self.assertEquals(video.when_published,
+                              datetime.datetime(1985, 3, 24,
+                                                18, 55, 00))
             self.assertEquals(
                 set(video.authors.values_list('pk', flat=True)),
                 set([1, 2]))

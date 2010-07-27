@@ -163,8 +163,10 @@ def bulk_edit(request, sitelocation=None):
                             form.cleaned_data[key] = (
                                 list(form.cleaned_data[key]) +
                                 list(value))
-                        else:
+                        elif key == 'authors':
                             form.cleaned_data[key] = value
+                        else:
+                            setattr(form.instance, key, value)
             formset.forms = formset.initial_forms # get rid of the extra bulk
                                                   # edit form
             formset.can_delete = False
