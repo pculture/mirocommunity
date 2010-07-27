@@ -273,9 +273,30 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {'playlist': self.list.pk},
                           HTTP_REFERER=video.get_absolute_url())
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
+        self.assertEquals(response['Location'], 'http://%s%s?playlist=%i' % (
                 self.site_location.site.domain,
-                video.get_absolute_url()))
+                video.get_absolute_url(), self.list.pk))
+
+        self.assertEquals(list(self.list.video_set.all())[-1], video)
+
+    def test_add_video_opens_new_playlist(self):
+        """
+        Even if we were in a playlist before, adding a video to a playlist
+        should redirect to the page with the added playlist open.
+        """
+        video = Video.objects.filter(status=1)[0]
+        url = reverse('localtv_playlist_add_video', args=(video.pk,))
+        self.assertRequiresAuthentication(url)
+
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {'playlist': self.list.pk},
+                          HTTP_REFERER='%s?playlist=0' %
+                          video.get_absolute_url())
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s?playlist=%i' % (
+                self.site_location.site.domain,
+                video.get_absolute_url(), self.list.pk))
 
         self.assertEquals(list(self.list.video_set.all())[-1], video)
 
@@ -290,9 +311,9 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(url, {'playlist': self.list.pk})
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
+        self.assertEquals(response['Location'], 'http://%s%s?playlist=%i' % (
                 self.site_location.site.domain,
-                reverse('localtv_playlist_index')))
+                video.get_absolute_url(), self.list.pk))
 
         self.assertEquals(list(self.list.video_set.all())[-1], video)
 

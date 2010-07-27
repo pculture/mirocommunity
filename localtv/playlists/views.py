@@ -129,7 +129,6 @@ def edit(request, playlist, sitelocation=None):
                               context_instance=RequestContext(request))
 
 @get_sitelocation
-@referrer_redirect
 @login_required
 def add_video(request, video_pk, sitelocation=None):
     """
@@ -142,9 +141,7 @@ def add_video(request, video_pk, sitelocation=None):
     if sitelocation.user_is_admin(request.user) or \
             playlist.user == request.user:
         playlist.add_video(video)
-        if 'HTTP_REFERER' in request.META:
-            return HttpResponse('ADDED')
-        else:
-            return redirect_to_index()
+        return HttpResponseRedirect('%s?playlist=%i' % (
+                video.get_absolute_url(), playlist.pk))
     return redirect_to_login()
 
