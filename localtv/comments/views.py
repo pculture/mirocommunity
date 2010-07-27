@@ -5,6 +5,7 @@ from django.contrib.comments.views import comments
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
 from django.shortcuts import render_to_response
+from django.views.decorators.csrf import csrf_protect
 
 def post_comment(request, next=None):
     POST = request.POST.copy()
@@ -12,6 +13,7 @@ def post_comment(request, next=None):
     request.POST = POST
     return comments.post_comment(request, next)
 
+@csrf_protect
 @permission_required("comments.can_moderate")
 def moderation_queue(request):
     """
