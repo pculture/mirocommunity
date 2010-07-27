@@ -29,6 +29,8 @@ from localtv.decorators import get_sitelocation
 from localtv.admin import forms as admin_forms
 from localtv.listing import views as listing_views
 
+from localtv.playlists.models import Playlist
+
 @get_sitelocation
 def index(request, sitelocation=None):
     featured_videos = models.Video.objects.filter(
@@ -126,6 +128,17 @@ def view_video(request, video_id, slug=None, sitelocation=None):
             datetime.timedelta(days=7),
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
+
+    if request.user.is_authenticated():
+        context['playlists'] = Playlist.objects.filter(
+            user=request.user)
+
+    if 'playlist' in request.GET:
+        try:
+            context['playlistitem'] = video.playlistitem_set.get(
+                playlist=request.GET['playlist'])
+        except Playlist.DoesNotExist:
+            pass
     models.Watch.add(request, video)
 
     return render_to_response(

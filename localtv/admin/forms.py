@@ -43,6 +43,22 @@ from localtv.user_profile import forms as user_profile_forms
 
 Profile = util.get_profile_model()
 
+class BulkFormSetMixin(object):
+    """
+    Mixin form-like which adds a bulk field to each form.
+    """
+    def add_fields(self, form, i):
+        super(BulkFormSetMixin, self).add_fields(form, i)
+        if i < self.initial_form_count():
+            form.fields['BULK'] = forms.BooleanField(required=False)
+
+    @property
+    def bulk_forms(self):
+        for form in self.initial_forms:
+            if form.cleaned_data['BULK'] and \
+                    not self._should_delete_form(form):
+                yield form
+
 class EditVideoForm(forms.ModelForm):
     """
     """
@@ -225,7 +241,7 @@ class SourceForm(forms.ModelForm):
     extra_fields = property(_extra_fields)
 
 
-class BaseSourceFormSet(BaseModelFormSet):
+class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def _construct_form(self, i, **kwargs):
         # Since we're doing something weird with the id field, we just use the
@@ -233,13 +249,6 @@ class BaseSourceFormSet(BaseModelFormSet):
         if i < self.initial_form_count() and not kwargs.get('instance'):
             kwargs['instance'] = self.get_queryset()[i]
         return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
-
-    @property
-    def bulk_forms(self):
-        for form in self.initial_forms:
-            if form.cleaned_data['BULK'] and \
-                    not self._should_delete_form(form):
-                yield form
 
     def save_new_objects(self, commit=True):
         """
@@ -481,7 +490,7 @@ class CategoryForm(forms.ModelForm):
         return 'Category with this %s already exists.' % (
             unique_check[0],)
 
-class BaseCategoryFormSet(BaseModelFormSet):
+class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def clean(self):
         BaseModelFormSet.clean(self)
@@ -524,11 +533,6 @@ class BaseCategoryFormSet(BaseModelFormSet):
                 form = self.forms[form_index]
                 form.instance.parent = None
                 form.instance.save()
-
-    def add_fields(self, form, i):
-        BaseModelFormSet.add_fields(self, form, i)
-        if i < self.initial_form_count():
-            form.fields['BULK'] = forms.BooleanField(required=False)
 
 
 CategoryFormSet = modelformset_factory(models.Category,
@@ -580,12 +584,8 @@ class FlatPageForm(forms.ModelForm):
                 'View with that URL already exists.')
         return value
 
-class BaseFlatPageFormSet(BaseModelFormSet):
-
-    def add_fields(self, form, i):
-        BaseModelFormSet.add_fields(self, form, i)
-        if i < self.initial_form_count():
-            form.fields['BULK'] = forms.BooleanField(required=False)
+class BaseFlatPageFormSet(BulkFormSetMixin, BaseModelFormSet):
+    pass
 
 FlatPageFormSet = modelformset_factory(FlatPage,
                                        form=FlatPageForm,

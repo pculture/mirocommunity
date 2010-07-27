@@ -54,4 +54,5 @@ urlpatterns += patterns(
     (r'^feeds/', include('localtv.feeds.urls')),
     (r'^goodies/', include('localtv.goodies.urls')),
     (r'^share/', include('email_share.urls')),
-    (r'^widgets/', include('localtv.widgets.urls')))
+    (r'^widgets/', include('localtv.widgets.urls')),
+    (r'^playlists/', include('localtv.playlists.urls')))

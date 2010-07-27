@@ -1,0 +1,34 @@
+{% extends "localtv/admin/bulk_edit.html" %}
+{% load filters %}
+{% block body_id %}goodies{% endblock body_id %}
+{% block body_class %}playlists{% endblock body_class %}
+{% block title %}Playlist: {{ playlist.name }}{% endblock %}
+{% block subheader %}{% include "localtv/goodies/header.html" %}{% endblock %}
+{% block pre-labels %}
+{% endblock %}
+{% block labels %}
+<div class="bulkedit_controls">
+  <select name="action" id="bulk_action_selector">
+    <option value="">Bulk Actions</option>
+    <option value="delete">Delete</option>
+  </select>
+  <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
+</div>
+{% endblock %}
+
+{% block massedit %}
+<button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+{% endblock %}
+
+{% block columns %}
+<td valign="middle">
+  <span>{{ form.instance.video.name }}</span>
+  <div class="actions">
+    <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.video.get_absolute_url }}" class="view_icon">View</a>
+  </div>
+</td>
+<td valign="middle">{{ form.ORDER }}</td>
+{% endblock %}
+
+{% block quick-edit-fields %}
+{% endblock %}

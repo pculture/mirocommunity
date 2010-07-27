@@ -92,6 +92,7 @@ INSTALLED_APPS = (
     'localtv.submit_video',
     'localtv.inline_edit',
     'localtv.user_profile',
+    'localtv.playlists',
     'registration',
     'tagging',
     'uploadtemplate',

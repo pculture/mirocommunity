@@ -19,7 +19,7 @@ import datetime
 import os.path
 import shutil
 import tempfile
-from urllib import quote_plus
+from urllib import quote_plus, urlencode
 
 import feedparser
 import vidscraper
@@ -130,12 +130,14 @@ class BaseTestCase(TestCase):
             c.login(**kwargs)
 
         response = c.get(url, *args)
+        if args and args[0]:
+            url = '%s?%s' % (url, urlencode(args[0]))
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?next=%s' %
                           (self.site_location.site.domain,
                            settings.LOGIN_URL,
-                           quote_plus(url)))
+                           quote_plus(url, safe='/')))
 
 
 # -----------------------------------------------------------------------------

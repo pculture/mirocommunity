@@ -729,7 +729,8 @@ border-bottom: 1px solid #fff;
 #user_profile.user_profile #admin_subnav a.profile,
 #user_profile.notifications a.notifications,
 #goodies.widgetcreater a.widget,
-#goodies.bookmarklet a.bookmarklet
+#goodies.bookmarklet a.bookmarklet,
+#goodies.playlists a.playlists
 {
 background: #fff;
 border-bottom: 1px solid #fff;

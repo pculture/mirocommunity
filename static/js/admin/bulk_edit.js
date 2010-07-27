@@ -49,7 +49,7 @@ $(document).ready(function() {
             $('td:first-child > input[type=checkbox]:checked').click();
         }
     });
-    if ($("form input[name$=-id]").length != parseInt($("#id_form-INITIAL_FORMS").val(), 10)) {
+    if ($("form input[name$=-id]").length != parseInt($("input[id$=INITIAL_FORMS]").val(), 10)) {
         $("#overlay .contentWrap").html("<div id='load_error'>We're sorry, the editing page did not fully load and so you won't be able to edit existing items.  <a href='" + location.href + "'>Reload the page</a> to let it load fully.</div>").overlay({target: '#overlay', close: '#doesnotexist', closeOnClick: false, closeOnEsc: false, api: true}).load();
         $("#overlay .contentWrap a").click(function() { location.href = location.href;});
     }

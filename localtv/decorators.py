@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib
-
-from django.conf import settings
+from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponseRedirect
 
 from localtv import models
@@ -46,11 +44,7 @@ def request_passes_test(test_func):
     def decorate(view_func):
         def new_view_func(request, *args, **kwargs):
             if not test_func(request):
-                # redirect here
-                redirect_url = settings.LOGIN_URL
-                redirect_url += '?' + urllib.urlencode(
-                    {'next': request.META['PATH_INFO']})
-                return HttpResponseRedirect(redirect_url)
+                return redirect_to_login(request.get_full_path())
             else:
                 return view_func(request, *args, **kwargs)
 

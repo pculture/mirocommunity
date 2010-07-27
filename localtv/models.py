@@ -1174,7 +1174,6 @@ class VideoModerator(CommentModerator):
         else:
             return False
 
-
 moderator.register(Video, VideoModerator)
 
 admin.site.register(SiteLocation)

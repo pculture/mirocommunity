@@ -40,6 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </script>{% endif %}
   <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.form.js" %}"></script>
   <script type="text/javascript" src="{% get_static_url "/js/comment.js" %}"></script>
+  {% if request.user.is_authenticated or current_video.playlists.count %}<script type="text/javascript" src="{% get_static_url "/js/admin/playlist.js" %}"></script>{% endif %}
   {% include "localtv/view_video_meta.html" %}
   {% if current_video.video_service %}<style>
   .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
@@ -223,6 +224,69 @@ margin: 0 auto;
       <a href="http://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">Tweet this Video</a>
       {% if current_video.file_url %}<a href="{{ current_video.file_url }}" class="download">Download Video File</a>{% endif %}
     </div>
+    {% if playlistitem %}
+    <div class="sidebar_header">
+      <h2>{{ playlistitem.playlist.name }}</h2>
+    </div>
+    <div class="playlist_thumbs">
+      {% for sibling in playlistitem.get_two_from_order %}
+      <a href="{{ sibling.video.get_absolute_url }}?playlist={{ playlistitem.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right"{% endif %};">
+        <span class="thumb_number">{{ sibling.index }}</span>
+        <img src="{% get_thumbnail_url sibling.video 140 110 %}"/>
+        <div class="thumb_title">{{ sibling.video.name }}</div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {# The logic I want is 'if authenticated or (items and (not playlist or more than 1 item))' #}
+    {% if request.user.is_authenticated or current_video.playlistitem_set.count %}
+    {% if request.user.is_authenticated or current_video.playlistitem_set.count != 1 or not playlistitem %}
+    <div class="sidebar_header">
+      <h2>Playlists</h2>
+    </div>
+    <div id="playlists">
+      <div>
+        <ul>
+          {% for item in current_video.playlistitem_set.all %}
+          {% if item != playlistitem %}
+          <li>
+            <div class="playlist_title">
+              <a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>
+              {% with item.playlist.video_set.count as count %}<span class="playlist_count"><a href="{{ item.playlist.get_absolute_url }}">({{ count }} video{{ count|pluralize }})</a></span>{% endwith %}
+            </div>
+            <div class="playlist_thumbs">
+              {% for sibling in item.get_two_from_order %}
+              <a href="{{ sibling.video.get_absolute_url }}?playlist={{ item.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right"{% endif %};">
+                <span class="thumb_number">{{ sibling.index }}</span>
+                <img src="{% get_thumbnail_url sibling.video 140 110 %}"/>
+                <div class="thumb_title">{{ sibling.video.name }}</div>
+              </a>
+              {% endfor %}
+            </div>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% if request.user.is_authenticated %}
+    <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">
+      <select name="playlist" id="id_playlist">
+        <option value="">Add video to your playlist</option>
+        {% for playlist in playlists %}
+        {% if playlist not in current_video.playlists.all %}<option value="{{ playlist.pk }}">{{ playlist.name }}</option>{% endif %}
+        {% endfor %}
+        <option value="new">New playlist...</option>
+      </select>
+      <input type="submit" value="+"/>
+    </form>
+    <form method="POST" action="{% url localtv_playlist_index %}">
+      <input type="hidden" name="name" />
+      <input type="hidden" name="video" value="{{ current_video.pk }}">
+    </form>
+    {% endif %}
+    {% endif %}
+    {% endif %}
     {% if category %}
     {% cache 3600 view_video_category_new sitelocation category cache_invalidator %}
     <div class="sidebar_header">
