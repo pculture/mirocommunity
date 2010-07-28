@@ -1626,3 +1626,146 @@ class SavedSearchModelTestCase(BaseTestCase):
                           'http://www.youtube.com/user/dpikop')
         self.assertEquals(list(video.authors.all()), [user])
 
+class OriginalModelTestCase(BaseTestCase):
+
+    BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
+    BASE_DATA = {
+        'name': u'Miro appreciates the support of our sponsors',
+        'description': u"""<div><br><p>Miro is a non-profit project working \
+to build a better media future as television moves online. We provide our \
+software free to our users and other developers, despite the significant \
+cost of developing the software. This work is made possible in part by the \
+support of our sponsors. Please watch this video for a message from our \
+sponsors. </p><p>If you wish to support Miro yourself, please \
+<a href="http://www.getmiro.com/about/donate?ref=blipfeed">donate $10 \
+today</a>.</p></div>""",
+        'tags': u'"Default Category"',
+        'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
+                          'MiroAppreciatesTheSupportOfOurSponsors478.png'),
+        'thumbnail_updated': datetime.datetime(2010, 6, 30, 6, 56, 41)
+        }
+
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.video = models.Video.objects.create(
+            site=self.site_location.site,
+            website_url=self.BASE_URL,
+            name=self.BASE_DATA['name'],
+            description=self.BASE_DATA['description'],
+            thumbnail_url=self.BASE_DATA['thumbnail_url'])
+        self.video.tags = self.BASE_DATA['tags']
+        self.original = self.video.original
+        self.original.thumbnail_updated = self.BASE_DATA['thumbnail_updated']
+        self.original.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_video_updated')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
+
+    def test_no_changes(self):
+        """
+        If nothing has changed, then OriginalVideo.changed_fields() should
+        return an empty dictionary.
+        """
+        self.assertEquals(self.original.changed_fields(), {})
+
+    def test_name_change(self):
+        """
+        If the name has changed, OriginalVideo.changed_fields() should return
+        the new name.
+        """
+        self.video.name = self.original.name = 'Different Name'
+        self.video.save()
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'name': self.BASE_DATA['name']})
+
+    def test_description_change(self):
+        """
+        If the description has changed, OriginalVideo.changed_fields() should
+        return the new description.
+        """
+        self.video.description = self.original.description = \
+            'Different Description'
+        self.video.save()
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'description': self.BASE_DATA['description']})
+
+    def test_tags_change(self):
+        """
+        If the tags have changed, OriginalVideo.changed_fields() should return
+        the new tags.
+        """
+        self.video.tags = self.original.tags = ['Different', 'Tags']
+        self.video.save()
+        self.original.save()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'tags': set((tag,))})
+
+    def test_thumbnail_url_change(self):
+        """
+        If the thumbnail_url has changed, OriginalVideo.changed_fields() should
+        return the new thumbnail_url.
+        """
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.save()
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'thumbnail_url': self.BASE_DATA['thumbnail_url']})
+
+    def test_thumbnail_updated_change(self):
+        """
+        If the date on the thumbnail has changed,
+        OriginalVideo.changed_fields() should return the new thumbnail date.
+        """
+        self.original.thumbnail_updated = datetime.datetime.min
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'thumbnail_updated':
+                               self.BASE_DATA['thumbnail_updated']})
+
+
+    def test_update_no_updates(self):
+        """
+        If nothing has been updated, OriginalVideo.update() should not send any
+        e-mails.
+        """
+        self.original.update()
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_update(self):
+        """
+        If there have been updates, send an e-mail to anyone with the
+        'admin_video_updated' notification option.  It should also update the
+        OriginalVideo object to the current data.
+        """
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.save()
+        self.original.save()
+
+        self.original.update()
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
