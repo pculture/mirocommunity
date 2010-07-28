@@ -347,7 +347,7 @@ class SiteLocation(Thumbnailable):
         return bool(self.admins.filter(pk=user.pk).count())
 
     def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[self.pk] = self
+        SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
 
 class Source(Thumbnailable):
