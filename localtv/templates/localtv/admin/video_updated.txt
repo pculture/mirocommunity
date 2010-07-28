@@ -1,0 +1,6 @@
+Changed metadata:
+{% for item in changed_fields.items %}
+{% if item.0 == 'thumbnail_url' or item.0 == 'thumbnail_updated' %}Thumbnail has been modified{% else %}{{ item.0|title }}: {{ item.1 }}{% endif %}
+{% endfor %}
+
+You can see this video at: http://{{ video.site.domain }}{{ video.get_absolute_url }}
