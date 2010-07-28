@@ -809,6 +809,17 @@ class SavedSearch(Source):
         return 'Search'
 
 
+class VideoBase(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
+
+class OriginalVideo(VideoBase):
+    video = models.OneToOneField('Video', related_name='original')
+    thumbnail_updated = models.DateTimeField(blank=True)
+
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
@@ -879,7 +890,7 @@ localtv_watch.timestamp > %s"""},
                                  )
 
 
-class Video(Thumbnailable):
+class Video(Thumbnailable, VideoBase):
     """
     Fields:
      - name: Name of this video
@@ -922,9 +933,7 @@ class Video(Thumbnailable):
        info
      - notes: a free-text field to add notes about the video
     """
-    name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
-    description = models.TextField(blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
@@ -1184,6 +1193,7 @@ admin.site.register(SavedSearch)
 admin.site.register(Watch)
 
 tagging.register(Video)
+tagging.register(OriginalVideo)
 
 def finished(sender, **kwargs):
     SiteLocation.objects.clear_cache()
@@ -1251,3 +1261,35 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
 models.signals.post_syncdb.connect(create_email_notices,
                                    sender=notification)
 
+def create_original_video(sender, instance=None, created=False, **kwargs):
+    if not created:
+        return # don't care about saving
+    if not instance.website_url:
+        # we don't know how to scrape this, so ignore it
+        return
+    OriginalVideo.objects.create(
+        video=instance,
+        name=instance.name,
+        description=instance.description,
+        thumbnail_updated=datetime.datetime.now())
+
+def save_original_tags(sender, instance, created=False, **kwargs):
+    if not created:
+        # not a new tagged item
+        return
+    if not isinstance(instance.object, Video):
+        # not a video
+        return
+    if not instance.object.original:
+        # doesn't get an original object
+        return
+    if (instance.object.when_submitted - datetime.datetime.now() >
+        datetime.timedelta(seconds=10)):
+        return
+    tagging.models.Tag.objects.add_tag(instance.object.original,
+                                       '"%s"' % instance.tag)
+
+models.signals.post_save.connect(create_original_video,
+                                 sender=Video)
+models.signals.post_save.connect(save_original_tags,
+                                 sender=tagging.models.TaggedItem)
