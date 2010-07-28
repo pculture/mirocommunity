@@ -45,6 +45,7 @@ from localtv import models
 from localtv import util
 
 from notification import models as notification
+from tagging.models import Tag
 
 Profile = util.get_profile_model()
 
@@ -1526,6 +1527,40 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
         for path in paths:
             self.assertFalse(storage.default_storage.exists(path),
                              '%s was not deleted' % path)
+
+    def test_original_video_created(self):
+        """
+        When an Video object is a created, an OriginalVideo object should also
+        be created with the data from that video.
+        """
+        v = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Test Name',
+            description='Test Description',
+            website_url='http://www.youtube.com/'
+            )
+        v.tags = 'foo bar "baz bum"'
+        self.assertFalse(v.original is None)
+        self.assertEquals(v.original.name, v.name)
+        self.assertEquals(v.original.description, v.description)
+        self.assertTrue(v.original.thumbnail_updated -
+                        datetime.datetime.now() <
+                        datetime.timedelta(seconds=15))
+        self.assertEquals(set(v.tags), set(Tag.objects.filter(
+                    name__in=('foo', 'bar', 'baz bum'))))
+
+    def test_no_original_video_without_website_url(self):
+        """
+        If we don't know have a website URL for the video, don't bother
+        creating an OriginalVideo object.
+        """
+        v = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Test Name',
+            description='Test Description',
+            )
+        self.assertRaises(models.OriginalVideo.DoesNotExist,
+                          lambda: v.original)
 
 # -----------------------------------------------------------------------------
 # Watch model tests
