@@ -878,6 +878,11 @@ class SavedSearch(Source):
 
 
 class VideoBase(models.Model):
+    """
+    Base class between Video and OriginalVideo.  It would be simple enough to
+    duplicate these fields, but this way it's easier to add more points of
+    duplication in the future.
+    """
     name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
 
@@ -1351,11 +1356,13 @@ def create_original_video(sender, instance=None, created=False, **kwargs):
     if not instance.website_url:
         # we don't know how to scrape this, so ignore it
         return
+    new_data = dict(
+        (field.name, getattr(instance, field.name))
+        for field in VideoBase._meta.fields)
     OriginalVideo.objects.create(
         video=instance,
-        name=instance.name,
-        description=instance.description,
-        thumbnail_updated=datetime.datetime.now())
+        thumbnail_updated=datetime.datetime.now(),
+        **new_data)
 
 def save_original_tags(sender, instance, created=False, **kwargs):
     if not created:
