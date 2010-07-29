@@ -390,6 +390,66 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertEquals(list(playlist.video_set.all()),
                           self.video_set)
 
+    def test_edit_POST_ordering_down(self):
+        """
+        If two videos have the same number (the higher one has moved down), the
+        one that changed should take precedence.
+        """
+         # flip the last two
+        video_set = self.video_set[:3] + [self.video_set[4],
+                                          self.video_set[3]]
+        url = reverse('localtv_playlist_edit', args=(self.list.pk,))
+        data = {
+            'playlistitem_set-INITIAL_FORMS': len(self.video_set),
+            'playlistitem_set-TOTAL_FORMS': len(self.video_set),
+            }
+        for index, video in enumerate(self.video_set):
+            data['playlistitem_set-%i-playlist' % index] = self.list.pk
+            data['playlistitem_set-%i-id' % index] = \
+                self.list._item_for(video).pk
+            data['playlistitem_set-%i-ORDER' % index] = index + 1  # 1-indexed
+        data['playlistitem_set-4-ORDER'] = 4 # 3 and 4 both have 4 as their
+                                             # order
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain, url))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(list(playlist.video_set.all()),
+                          video_set)
+
+    def test_edit_POST_ordering_up(self):
+        """
+        If two videos have the same number (the lower one has moved up), the
+        one that changed should take precedence.
+        """
+         # flip the last two
+        video_set = self.video_set[:3] + [self.video_set[4],
+                                          self.video_set[3]]
+        url = reverse('localtv_playlist_edit', args=(self.list.pk,))
+        data = {
+            'playlistitem_set-INITIAL_FORMS': len(self.video_set),
+            'playlistitem_set-TOTAL_FORMS': len(self.video_set),
+            }
+        for index, video in enumerate(self.video_set):
+            data['playlistitem_set-%i-playlist' % index] = self.list.pk
+            data['playlistitem_set-%i-id' % index] = \
+                self.list._item_for(video).pk
+            data['playlistitem_set-%i-ORDER' % index] = index + 1  # 1-indexed
+        data['playlistitem_set-3-ORDER'] = 5 # 3 and 4 both have 5 as their
+                                             # order
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain, url))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(list(playlist.video_set.all()),
+                          video_set)
+
     def test_edit_POST_delete(self):
         """
         Using the delete option on the formset should remove the video from the

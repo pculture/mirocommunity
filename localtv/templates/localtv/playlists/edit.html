@@ -1,19 +1,45 @@
 {% extends "localtv/admin/bulk_edit.html" %}
-{% load filters editable_widget %}
+{% load filters editable_widget uploadtemplate_tags %}
 {% block body_id %}goodies{% endblock body_id %}
 {% block body_class %}playlists{% endblock body_class %}
 {% block title %}Playlist: {{ playlist.name }}{% endblock %}
 {% block head %}
   {{ block.super }}
   {% include "localtv/inline_edit/header.html" %}
+  <script type="text/javascript" src="/js/admin/urlify.js"></script>
+  </script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          document.getElementById("id_slug").onchange = function() { this._changed = true; };
+          document.getElementById("id_name").onkeyup = function() {
+              var e = document.getElementById("id_slug");
+              if (!e._changed) { e.value = URLify(document.getElementById("id_name").value, 50); }
+          }
+          $("#labels img.up, #labels img.down").each(function() {
+              var that = $(this);
+              var our_order = that.parent().children('input');
+              that.click(function() {
+                  if (this.className == 'up') {
+                      our_order.val(our_order.val() - 1);
+                  } else {
+                      // use the weird syntax to keep JS in math mode
+                      our_order.val(our_order.val() - (-1));
+                  }
+              });
+          });
+      });
+
+</script>
 {% endblock %}
 {% block subheader %}{% include "localtv/goodies/header.html" %}{% endblock %}
 {% block pre-labels %}
-{% editable_widget playlist "name" %}
-{% editable_widget playlist "slug" %}
-{% editable_widget playlist "description" %}
+{% editable_widget playlist "info" %}
 {% endblock %}
 {% block labels %}
+{% endblock %}
+
+{% block massedit %}
+<button id="submit_settings" type="submit" value="save all changes" class="approve_button floatright"><span>Save Changes</span></button>
 <div class="bulkedit_controls">
   <select name="action" id="bulk_action_selector">
     <option value="">Bulk Actions</option>
@@ -23,10 +49,6 @@
 </div>
 {% endblock %}
 
-{% block massedit %}
-<button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
-{% endblock %}
-
 {% block columns %}
 <td valign="middle">
   <span>{{ form.instance.video.name }}</span>
@@ -34,7 +56,10 @@
     <a href="#" class="delete_icon" onclick="return toggleDelete(this);">Delete</a> {{ form.DELETE.as_hidden }} | <a href="{{ form.instance.video.get_absolute_url }}?playlist={{ playlist.pk }}" class="view_icon">View</a>
   </div>
 </td>
-<td valign="middle">{{ form.ORDER }}</td>
+<td valign="middle">{{ form.ORDER }}
+<img class="up" src="{% get_static_url "/images/playlist/up.png" %}" alt="Up" />
+<img class="down" src="{% get_static_url "/images/playlist/down.png" %}" alt="Down" />
+</td>
 {% endblock %}
 
 {% block quick-edit-fields %}

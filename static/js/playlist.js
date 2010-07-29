@@ -1,10 +1,10 @@
 $(document).ready(function(){
     $("#playlists .playlist_thumbs").hide()
     $("#playlists .playlist_title > a").each(function(){
-        parent = $(this).parent()
-        thumbs = parent.next();
         flip = 0;
         $(this).click(function() {
+            parent = $(this).parent();
+            thumbs = parent.next();
             if (++flip % 2) {
                 parent.addClass('open')
                 thumbs.show(400);

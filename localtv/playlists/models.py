@@ -89,15 +89,17 @@ class PlaylistItem(models.Model):
         if self._order == 0: # first video:
             next = self.get_next_in_order()
             try:
+                # next two videos
                 return (next, next.get_next_in_order())
             except PlaylistItem.DoesNotExist:
+                # only one next video
                 return (next,)
         previous = self.get_previous_in_order()
         try:
+            # previous and next videos
             return (previous, self.get_next_in_order())
         except PlaylistItem.DoesNotExist:
             pass
-        try:
-            return (previous.get_previous_in_order(), previous)
-        except PlaylistItem.DoesNotExist:
-            return (previous,)
+
+        # last video, return the previous video and ourself
+        return (previous, self)

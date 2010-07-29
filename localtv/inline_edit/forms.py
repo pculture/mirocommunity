@@ -25,30 +25,9 @@ from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
 
 from localtv import models
-from localtv.playlists.models import Playlist
 from localtv.admin.forms import EditVideoForm, BulkChecklistField
 
 Comment = comments.get_model()
-
-class PlaylistNameForm(forms.ModelForm):
-    class Meta:
-        model = Playlist
-        fields = ('name',)
-
-
-class PlaylistSlugForm(forms.ModelForm):
-    class Meta:
-        model = Playlist
-        fields = ('slug',)
-
-
-class PlaylistDescriptionForm(forms.ModelForm):
-    class Meta:
-        model = Playlist
-        fields = ('description',)
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
 
 class VideoNameForm(forms.ModelForm):
     class Meta:

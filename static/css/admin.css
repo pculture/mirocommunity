@@ -228,8 +228,8 @@ tr.grey{
 background: #f8f8f8;
 }
 
-.floatright{	
-float: right;
+.floatright{
+float: right !important;
 }
 
 .only_show{
@@ -1988,4 +1988,18 @@ padding: 5px;
 
 #user_profile.notifications form ul {
     list-style: none;
+}
+
+body.playlists .edit_link {
+    text-decoration: underline;
+}
+
+body.playlists #labels {
+    padding-top: 10px;
+}
+body.playlists .bulkedit_controls {
+    margin-top: -20px;
+    padding-top: 0;
+    float: right;
+    clear: right;
 }
