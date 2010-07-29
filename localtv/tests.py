@@ -1626,7 +1626,7 @@ class SavedSearchModelTestCase(BaseTestCase):
                           'http://www.youtube.com/user/dpikop')
         self.assertEquals(list(video.authors.all()), [user])
 
-class OriginalModelTestCase(BaseTestCase):
+class OriginalVideoModelTestCase(BaseTestCase):
 
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
@@ -1679,8 +1679,7 @@ today</a>.</p></div>""",
         If the name has changed, OriginalVideo.changed_fields() should return
         the new name.
         """
-        self.video.name = self.original.name = 'Different Name'
-        self.video.save()
+        self.original.name = 'Different Name'
         self.original.save()
 
         self.assertEquals(self.original.changed_fields(),
@@ -1691,9 +1690,8 @@ today</a>.</p></div>""",
         If the description has changed, OriginalVideo.changed_fields() should
         return the new description.
         """
-        self.video.description = self.original.description = \
+        self.original.description = \
             'Different Description'
-        self.video.save()
         self.original.save()
 
         self.assertEquals(self.original.changed_fields(),
@@ -1704,8 +1702,7 @@ today</a>.</p></div>""",
         If the tags have changed, OriginalVideo.changed_fields() should return
         the new tags.
         """
-        self.video.tags = self.original.tags = ['Different', 'Tags']
-        self.video.save()
+        self.original.tags = ['Different', 'Tags']
         self.original.save()
 
         tag = 'Default Category'
@@ -1720,9 +1717,8 @@ today</a>.</p></div>""",
         If the thumbnail_url has changed, OriginalVideo.changed_fields() should
         return the new thumbnail_url.
         """
-        self.video.thumbnail_url = self.original.thumbnail_url = \
+        self.original.thumbnail_url = \
             'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
-        self.video.save()
         self.original.save()
 
         self.assertEquals(self.original.changed_fields(),
@@ -1749,23 +1745,69 @@ today</a>.</p></div>""",
         self.original.update()
         self.assertEquals(len(mail.outbox), 0)
 
-    def test_update(self):
+    def test_update_modified(self):
         """
-        If there have been updates, send an e-mail to anyone with the
-        'admin_video_updated' notification option.  It should also update the
-        OriginalVideo object to the current data.
+        If there have been updates to a modified video, send an e-mail to
+        anyone with the 'admin_video_updated' notification option.  It should
+        also update the OriginalVideo object to the current data.
         """
-        self.video.thumbnail_url = self.original.thumbnail_url = \
+        self.original.name = 'Different Name'
+        self.original.thumbnail_url = \
             'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
-        self.video.save()
+        self.original.tags = 'foo bar'
         self.original.save()
 
         self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
 
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
         original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
         self.assertEquals(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.thumbnail_url,
+                          self.video.thumbnail_url) # didn't change
+        self.assertEquals(set(original.video.tags),
+                          set(self.video.tags))
+
+    def test_update_unmodified(self):
+        """
+        If there have been updates to an unmodified video, no e-mail should be
+        sent; the video should simply be changed.
+        """
+        self.video.name = self.original.name = 'Different Name'
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.tags = self.original.tags = 'foo bar'
+        self.video.save()
+        self.original.save()
+
+        self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(len(mail.outbox), 0)
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.name,
+                          original.name)
+        self.assertEquals(original.video.thumbnail_url,
+                          original.thumbnail_url)
+        self.assertEquals(set(original.video.tags),
+                          set(original.tags))
