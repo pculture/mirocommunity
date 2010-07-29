@@ -1393,13 +1393,14 @@ def save_original_tags(sender, instance, created=False, **kwargs):
     if not isinstance(instance.object, Video):
         # not a video
         return
-    if not instance.object.original:
-        # doesn't get an original object
-        return
     if (instance.object.when_submitted - datetime.datetime.now() >
         datetime.timedelta(seconds=10)):
         return
-    tagging.models.Tag.objects.add_tag(instance.object.original,
+    try:
+        original = instance.object.original
+    except OriginalVideo.DoesNotExist:
+        return
+    tagging.models.Tag.objects.add_tag(original,
                                        '"%s"' % instance.tag)
 
 models.signals.post_save.connect(create_original_video,
