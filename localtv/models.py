@@ -1446,8 +1446,7 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     default=2,
                                     verbosity=verbosity)
 
-models.signals.post_syncdb.connect(create_email_notices,
-                                   sender=notification)
+models.signals.post_syncdb.connect(create_email_notices)
 
 def delete_comments(sender, instance, **kwargs):
     from django.contrib.comments import get_model
