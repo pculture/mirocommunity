@@ -907,29 +907,10 @@ class OriginalVideo(VideoBase):
             # anything here
             self.delete()
             return {}
-        checkable_fields = set(('name', 'description', 'tags',
-                                'thumbnail_url'))
-        # if a field has changed in the parent object, we don't care about it
-        for field in checkable_fields.copy():
-            if field == 'tags': # special case tag equality
-                if set(self.tags) != set(video.tags):
-                    checkable_fields.remove('tags')
-            elif getattr(self, field) != getattr(video, field):
-                checkable_fields.remove(field)
-        # the only exception is if there's no thumbnail at all; then we should
-        # check
-        if not video.has_thumbnail:
-            checkable_fields.add('thumbnail_url')
-        if not checkable_fields:
-            # nothing to do
-            return {}
-        if 'name' in checkable_fields:
-            # it's called title for vidscraper
-            checkable_fields.remove('name')
-            checkable_fields.add('title')
 
         scraped_data = vidscraper.auto_scrape(video.website_url,
-                                              fields=checkable_fields)
+                                              fields=['title', 'description',
+                                                      'tags', 'thumbnail_url'])
         changed_fields = {}
         if 'title' in scraped_data:
             scraped_data['name'] = scraped_data['title']
@@ -976,11 +957,37 @@ class OriginalVideo(VideoBase):
         return changed_fields
 
     def update(self):
-        from localtv.util import send_notice
+        from localtv.util import get_or_create_tags, send_notice
 
         changed_fields = self.changed_fields()
         if not changed_fields:
             return # don't need to do anything
+
+        changed_model = False
+        for field in changed_fields.copy():
+            if field == 'tags': # special case tag equality
+                if set(self.tags) == set(self.video.tags):
+                    self.tags = self.video.tags = get_or_create_tags(
+                        changed_fields.pop('tags'))
+            elif field in ('thumbnail_url', 'thumbnail_updated'):
+                if self.thumbnail_url == self.video.thumbnail_url:
+                    value = changed_fields.pop(field)
+                    if field == 'thumbnail_url':
+                        self.thumbnail_url = self.video.thumbnail_url = value
+                    changed_model = True
+                    self.video.save_thumbnail()
+            elif getattr(self, field) == getattr(self.video, field):
+                value = changed_fields.pop(field)
+                setattr(self, field, value)
+                setattr(self.video, field, value)
+                changed_model = True
+
+        if changed_model:
+            self.save()
+            self.video.save()
+
+        if not changed_fields: # modified them all
+            return
 
         t = loader.get_template('localtv/admin/video_updated.txt')
         c = Context({'video': self.video,
@@ -993,7 +1000,10 @@ class OriginalVideo(VideoBase):
                     sitelocation=SiteLocation.objects.get(
                 site=self.video.site))
         for field in changed_fields:
-            setattr(self, field, changed_fields[field])
+            if field == 'tags':
+                self.tags = get_or_create_tags(changed_fields[field])
+            else:
+                setattr(self, field, changed_fields[field])
         self.save()
 
 
