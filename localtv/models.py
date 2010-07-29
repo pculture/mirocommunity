@@ -1370,8 +1370,7 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     default=1,
                                     verbosity=verbosity)
 
-models.signals.post_syncdb.connect(create_email_notices,
-                                   sender=notification)
+models.signals.post_syncdb.connect(create_email_notices)
 
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:
