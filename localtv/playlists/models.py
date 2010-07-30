@@ -84,8 +84,8 @@ class PlaylistItem(models.Model):
         return self._order + 1
 
     def get_two_from_order(self):
-        if self.playlist.items.count() < 2:
-            return () # no other videos to show
+        if self.playlist.items.count() <= 2:
+            return self.playlist.items.all()
         if self._order == 0: # first video:
             next = self.get_next_in_order()
             try:
