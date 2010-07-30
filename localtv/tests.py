@@ -1811,3 +1811,41 @@ today</a>.</p></div>""",
                           original.thumbnail_url)
         self.assertEquals(set(original.video.tags),
                           set(original.tags))
+
+    def test_update_both(self):
+        """
+        If there are some fields that are modified in the video, and others
+        that aren't, the modified fields should have an e-mail sent and the
+        other should just be modified.
+        """
+        self.video.name = self.original.name = 'Different Name'
+        self.original.description = 'Different Description'
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.tags = self.original.tags = 'foo bar'
+        self.video.save()
+        self.original.save()
+
+        self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.name,
+                          original.name)
+        self.assertEquals(original.video.thumbnail_url,
+                          original.thumbnail_url)
+        self.assertEquals(set(original.video.tags),
+                          set(original.tags))
