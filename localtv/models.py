@@ -350,6 +350,34 @@ class SiteLocation(Thumbnailable):
         SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
 
+
+class WidgetSettings(Thumbnailable):
+    """
+    A Model which represents the options for controlling the widget creator.
+    """
+    _thumbnail_force_height = False
+
+    site = models.OneToOneField(Site)
+
+    title = models.CharField(max_length=250, blank=True)
+    title_editable = models.BooleanField(default=False)
+
+    icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
+    icon_editable = models.BooleanField(default=False)
+
+    css = models.FileField(upload_to='localtv/widget_css', blank=True)
+    css_editable = models.BooleanField(default=False)
+
+    bg_color = models.CharField(max_length=20, blank=True)
+    bg_color_editable = models.BooleanField(default=False)
+
+    text_color = models.CharField(max_length=20, blank=True)
+    text_color_editable = models.BooleanField(default=False)
+
+    border_color = models.CharField(max_length=20, blank=True)
+    border_color_editable = models.BooleanField(default=False)
+
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
