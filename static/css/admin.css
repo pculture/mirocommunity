@@ -1991,6 +1991,7 @@ padding: 5px;
 }
 
 body.playlists .edit_link {
+    cursor: pointer;
     text-decoration: underline;
     padding-bottom: 10px;
     clear: left;
