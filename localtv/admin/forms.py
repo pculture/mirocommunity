@@ -465,6 +465,20 @@ class EditSettingsForm(forms.ModelForm):
         models.SiteLocation.objects.clear_cache()
         return sl
 
+class WidgetSettingsForm(forms.ModelForm):
+
+    class Meta:
+        model = models.WidgetSettings
+        exclude = ['site', 'has_thumbnail', 'thumbnail_extension']
+
+    def save(self):
+        ws = forms.ModelForm.save(self)
+        if ws.icon:
+            ws.icon.open()
+            cf = ContentFile(ws.icon.read())
+            ws.save_thumbnail_from_file(cf)
+        return ws
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = models.Category

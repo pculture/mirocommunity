@@ -45,3 +45,30 @@ def edit_settings(request, sitelocation):
         "localtv/admin/edit_settings.html",
         {'form': form},
         context_instance=RequestContext(request))
+
+@require_site_admin
+@get_sitelocation
+@csrf_protect
+def widget_settings(request, sitelocation):
+    form = forms.WidgetSettingsForm(instance=sitelocation.site.widgetsettings)
+
+    if request.method == 'POST':
+        form = forms.WidgetSettingsForm(
+            request.POST,
+            request.FILES,
+            instance=sitelocation.site.widgetsettings)
+        if form.is_valid():
+            widgetsettings = form.save()
+            if request.POST.get('delete_icon'):
+                if widgetsettings.icon:
+                    widgetsettings.icon.delete()
+                    widgetsettings.delete_thumbnails()
+            if request.POST.get('delete_css'):
+                if widgetsettings.css:
+                    widgetsettings.css.delete()
+            return HttpResponseRedirect(
+                reverse('localtv_admin_widget_settings'))
+    return render_to_response(
+        'localtv/admin/widget_settings.html',
+        {'form': form},
+        context_instance=RequestContext(request))

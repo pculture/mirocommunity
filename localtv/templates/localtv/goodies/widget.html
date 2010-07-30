@@ -44,13 +44,14 @@ function update_widget() {
     widget_size = $("select[name=size]").val();
     widget_bg = $("input[name=bg]").val();
     widget_border = $("input[name=border]").val();
-    {% if sitelocation.has_thumbnail %}
+    widget_text = $("input[name=text]").val()
+    {% if sitelocation.site.widgetsettings.has_thumbnail %}
     if (widget_size == 'small') {
-        widget_logo = '{% get_thumbnail_url sitelocation 88 68 %}';
+        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 88 68 %}';
     } else if (widget_size == 'medium') {
-        widget_logo = '{% get_thumbnail_url sitelocation 140 110 %}';
+        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 140 110 %}';
     } else {
-        widget_logo = '{% get_thumbnail_url sitelocation 222 169 %}';
+        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 222 169 %}';
     }
     if (!/https?:\/\//.exec(widget_logo)) {
         // not a full URL
@@ -76,12 +77,16 @@ function update_widget() {
     if (widget_border) {
         opts.border = widget_border;
     }
+    if (widget_text) {
+        opts.text = widget_text;
+    }
     embed = embed_base;
     embed = embed.replace(/JSON/g, JSON.stringify(opts));
     area.val(embed);
     $("#widget-example")[0].className = 'mc-widget-v2';
     $("#widget-example").css('background', widget_border);
-    $("#widget-example > div").css('background', widget_bg);
+    $("#widget-example > div").css('background', widget_bg)
+    $("#widget-example *").css('color', widget_text);
     $("#widget-example .mc-footer img").remove();
     if (widget_size == 'small') {
         $('#widget-example').width(108).addClass('mc-widget-small');
@@ -120,61 +125,108 @@ $(document).ready(function () {
 {% endblock %}
 {% block content %}
   {% include "localtv/goodies/header.html" %}
+  <h1>Widget</h1>
+  {% if not sitelocation.site.widgetsettings.title_editable %}
+  <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
+  {% endif %}
+  {% if not sitelocation.site.widgetsettings.bg_color_editable %}
+  <input type="hidden" name="bg" value="{{ sitelocation.site.widgetsettings.bg_color }}" />
+  {% endif %}
+  {% if not sitelocation.site.widgetsettings.text_color_editable %}
+  <input type="hidden" name="text" value="{{ sitelocation.site.widgetsettings.text_color }}" />
+  {% endif %}
+  {% if not sitelocation.site.widgetsettings.border_color_editable %}
+  <input type="hidden" name="border" value="{{ sitelocation.site.widgetsettings.border_color }}" />
+  {% endif %}
   <div id="widget-base">
     <div>
       <div id="widget-settings">
-        <h2>Pick Your Options</h2>
-        <div>
-          <label for="count">Title</label>
-          <input name="title" value="Watch Videos on {{ sitelocation.site.name }}" />
-        </div>
-        <div>
-          <label for="count">Number of Videos:</label>
-          <input name="count" value="4" />
-        </div>
-        <div>
-          <label for="size">Widget Size:</label>
-          <select name="size">
-            <option value="small">Small</option>
-            <option value="medium" selected="selected">Medium</option>
-            <option value="large">Large</option>
-          </select>
-        </div>
-        <div>
-          <label for="source">Video Source:</label>
-          <select name="source">
-            <option value="new">New</option>
-            <option value="popular">Popular</option>
-            <option value="featured">Featured</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div id="custom_source_input" style="display: none;">
-            <label for="custom_source">http://{{ sitelocation.site.domain }}/feeds/</label><input name="custom_source">
-          </div>
-        </div>
-        <div>
-          <label for="bg">Background Color (optional):</label>
-          <input name="bg" type="text" value=""/>
-        </div>
-        <div>
-          <label for="border">Border Color (optional):</label>
-          <input name="border" type="text" value=""/>
-        </div>
-        {% comment %}
-        <div>
-          <label for="titles">Show Title:</label>
-          <input type="checkbox" selected="selected" name="titles">
-        </div>
-        <div>
-          <label for="titles">Show Description:</label>
-          <input type="checkbox" selected="selected" name="titles">
-        </div>
-        {% endcomment %}
+        <table>
+          {% if sitelocation.site.widgetsettings.title_editable %}
+          <tr>
+            <td>
+              <label for="count">Title</label>
+            </td>
+            <td>
+              <input name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td>
+              <label for="count">Number of Videos:</label>
+            </td>
+            <td>
+              <input name="count" value="4" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="size">Widget Size:</label>
+            </td>
+            <td>
+              <select name="size">
+                <option value="small">Small</option>
+                <option value="medium" selected="selected">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="source">Video Source:</label>
+            </td>
+            <td>
+              <select name="source">
+                <option value="new">New</option>
+                <option value="popular">Popular</option>
+                <option value="featured">Featured</option>
+                <option value="custom">Custom</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="custom_source_input" style="display: none;">
+            <td colspan="2">
+              <label for="custom_source">Source: http://{{ sitelocation.site.domain }}/feeds/</label><input name="custom_source">
+              </div>
+            </td>
+          </tr>
+          {% if sitelocation.site.widgetsettings.bg_color_editable %}
+          <tr>
+            <td>
+              <label for="bg">Background Color (optional):</label>
+            </td>
+            <td>
+              <input name="bg" type="text" value=""/>
+            </td>
+          </tr>
+          {% endif %}
+          {% if sitelocation.site.widgetsettings.border_color_editable %}
+          <tr>
+            <td>
+              <label for="border">Border Color (optional):</label>
+            </td>
+            <td>
+              <input name="border" type="text" value=""/>
+            </td>
+          </tr>
+          {% endif %}
+          {% if sitelocation.site.widgetsettings.text_color_editable %}
+          <tr>
+            <td>
+              <label for="text">Text Color (optional):</label>
+            </td>
+            <td>
+              <input name="text" type="text" value=""/>
+            </td>
+          </tr>
+          {% endif %}
+        </table>
         <button id="widget-submit" type="button" onclick="update_widget();">Update</button>
       </div>
       <div id="widget-code">
         <div>
-          <h2>Widget Code</h2>
+          <h2>Widget Embed Code</h2>
           <a href="https://develop.participatoryculture.org/trac/democracy/wiki/MiroCommunity/Widget">Documentation</a>
         </div>
         <textarea cols="40" rows="10"></textarea>
@@ -182,7 +234,7 @@ $(document).ready(function () {
       </div>
     </div>
     <div id="widget-display">
-      <h2>Preview</h2>
+      <h2>Widget Preview</h2>
       <div id="widget-example" class="mc-widget-v2 mc-widget-small">
         <div>
           <div class="mc-widget-title">Watch Videos From Miro Community</div>
