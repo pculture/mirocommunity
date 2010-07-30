@@ -75,6 +75,9 @@ def index(request, sitelocation=None):
                 playlist = form.save()
                 if video:
                     playlist.add_video(video)
+                    return HttpResponseRedirect('%s?playlist=%i' % (
+                            video.get_absolute_url(),
+                            playlist.pk))
                 return HttpResponseRedirect(request.path)
 
     return render_to_response('localtv/playlists/index.html',

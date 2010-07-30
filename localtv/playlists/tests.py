@@ -149,11 +149,13 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
-
         playlist = Playlist.objects.order_by('-pk')[0]
+
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s?playlist=%i' % (
+                self.site_location.site.domain,
+                video.get_absolute_url(), playlist.pk))
+
         self.assertEquals(playlist.name, data['name'])
         self.assertEquals(playlist.slug, 'new-playlist')
         self.assertEquals(playlist.description, '')
