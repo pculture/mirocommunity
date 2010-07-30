@@ -1992,14 +1992,21 @@ padding: 5px;
 
 body.playlists .edit_link {
     text-decoration: underline;
+    padding-bottom: 10px;
+    clear: left;
+    float: left;
 }
 
 body.playlists #labels {
     padding-top: 10px;
+    position: relative;
 }
 body.playlists .bulkedit_controls {
-    margin-top: -20px;
     padding-top: 0;
     float: right;
     clear: right;
+}
+body.playlists #submit_settings {
+    position: absolute;
+    right: 10px;
 }
