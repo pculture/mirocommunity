@@ -1,0 +1,88 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block body_class %}widget_settings" onbeforeunload="return setting_onunload();{% endblock body_class %}
+
+
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Widget Settings" %}{% endblock %}
+{% block head %}
+  {% include "localtv/admin/dirty_form.html" %}
+{% endblock %}
+{% block content %}
+{% include "localtv/admin/settings_header.html" %}
+<form method="POST" action="" enctype="multipart/form-data" class="floatleft">{% csrf_token %}
+    
+    
+        <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>
+
+    <h2>Widget Settings</h2>
+    <div class="helpful rounded">
+      Configuring the settings on this page will determine how the widget and widget creator work.
+    </div>
+    <div class="form_container">
+      <table>
+        <th>
+          <td></td>
+          <td></td>
+          <td>User-editable?</td>
+        </th>
+        <tr>
+          <td>{{ form.title.label_tag }}{{ form.title.errors }}<td>
+          <td>{{ form.title }}</td>
+          <td>{{ form.title_editable }}</td>
+        </tr>
+        <tr>
+          <td>{{ form.icon.label_tag }}{% if form.instance.icon %}<img src="{{ form.instance.icon.url }}" />{% endif %}{{ form.icon.errors }}<td>
+          <td>
+              {{ form.icon }}
+              <input type="submit" name="delete_icon" value="delete"></td>
+          <td>{{ form.icon_editable }}</td>
+        </tr>
+        <tr>
+          <td>{{ form.css.label_tag }}{% if form.instance.css %} (uploaded){% endif %}{{ form.css.errors }}<td>
+          <td>
+              {{ form.css }}
+              <input type="submit" name="delete_css" value="delete"></td>
+          </td>
+          <td>{{ form.css_editable }}</td>
+        </tr>
+        <tr>
+          <td>{{ form.bg_color.label_tag }}{{ form.bg_color.errors }}<td>
+          <td>{{ form.bg_color }}</td>
+          <td>{{ form.bg_color_editable }}</td>
+        </tr>
+        <tr>
+          <td>{{ form.text_color.label_tag }}{{ form.text_color.errors }}<td>
+          <td>{{ form.text_color }}</td>
+          <td>{{ form.text_color_editable }}</td>
+        </tr>
+        <tr>
+          <td>{{ form.border_color.label_tag }}{{ form.border_color.errors }}<td>
+          <td>{{ form.border_color }}</td>
+          <td>{{ form.border_color_editable }}</td>
+        </tr>
+      </table>
+    </div>
+    <br class="clearboth">
+</form>
+{% endblock content %}

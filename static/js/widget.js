@@ -147,6 +147,9 @@ if (typeof MiroCommunity === 'undefined') {
                     div.style.background = this.opts.bg;
                 }
                 title = MiroCommunity.createElement('div', {className: 'mc-widget-title'});
+                if (this.opts.text) {
+                    title.style.color = this.opts.text;
+                }
                 title.innerText = title.textContent = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
                 div.appendChild(title);
                 ul = MiroCommunity.createElement('ul', {className: "mc-loading"});
@@ -196,8 +199,13 @@ if (typeof MiroCommunity === 'undefined') {
                     link = MiroCommunity.createElement('a', {href: video.link});
                     link.appendChild(flat_bg.cloneNode(false));
                     if (widget_size !== 'small') {
-                        link.appendChild(MiroCommunity.createSpan(video.title, 'mc-title'));
-                        link.appendChild(MiroCommunity.createSpan(video.when, 'mc-when'));
+                        title_span = MiroCommunity.createSpan(video.title, 'mc-title');
+                        when_span = MiroCommunity.createSpan(video.when, 'mc-when');
+                        if (this.opts.text) {
+                            title_span.style.color = when_span.style.color = this.opts.text;
+                        }
+                        link.appendChild(title_span);
+                        link.appendChild(when_span);
                     }
                     if (widget_size === 'large') {
                         fake_description = document.createElement('div');
@@ -206,7 +214,11 @@ if (typeof MiroCommunity === 'undefined') {
                         for(j=0; j < fake_description_divs.length; j++) {
                             div = fake_description_divs[j];
                             if (div.className === 'miro-community-description') {
-                                link.appendChild(MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description'));
+                                desc_span = MiroCommunity.createSpan(div.innerText || div.textContent, 'mc-description');
+                                if (this.opts.text) {
+                                    desc_span.style.color = this.opts.text;
+                                }
+                                link.appendChild(desc_span);
                             }
                         }
                     }

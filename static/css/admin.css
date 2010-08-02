@@ -723,6 +723,7 @@ border-bottom: 1px solid #fff;
 #admin.category_admin a.categories,
 #admin.themes a.themes,
 #admin.settings a.settings,
+#admin.widget_settings a.widget_settings,
 #admin.searches a.watched,
 #admin.incomingvids #admin_subnav a.sub,
 #admin.managesources a.watched,
@@ -1522,7 +1523,7 @@ padding-left: 110px;
 width: 100%;
 }
 
-#admin.settings .approve_button {
+#admin.settings .approve_button, #admin.widget_settings .approve_button {
     float: right;
 }
 
@@ -1835,11 +1836,11 @@ padding: 5px;
 #widget-base h2 {
     float: inherit;
     margin-top: 10px;
+    font-size: 120%;
 }
-#widget-settings, #widget-display {
+#widget-base > div {
     float: left;
 }
-
 #widget-settings > div {
     clear: left;
 }
@@ -1847,18 +1848,18 @@ padding: 5px;
 #widget-settings {
     padding-right: 40px;
 }
+#widget-code {
+    padding-top: 50px;
+}
 #widget-code h2 {
     float: none;
 }
 #widget-code textarea {
     float: left;
 }
-#widget-display {
-    width: 100%;o
-    border-top: 2px solid grey;
-    margin-top: 40px;
+#widget-display h2 {
+    text-align: center;
 }
-
 #widget-example {
     margin: 30px auto;
     width: 300px;
@@ -1991,15 +1992,23 @@ padding: 5px;
 }
 
 body.playlists .edit_link {
+    cursor: pointer;
     text-decoration: underline;
+    padding-bottom: 10px;
+    clear: left;
+    float: left;
 }
 
 body.playlists #labels {
     padding-top: 10px;
+    position: relative;
 }
 body.playlists .bulkedit_controls {
-    margin-top: -20px;
     padding-top: 0;
     float: right;
     clear: right;
+}
+body.playlists #submit_settings {
+    position: absolute;
+    right: 10px;
 }

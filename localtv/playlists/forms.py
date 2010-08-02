@@ -15,6 +15,9 @@ class PlaylistForm(forms.ModelForm):
         Make sure that the given field is unique.
         """
         value = self.cleaned_data[field]
+        if getattr(self.instance, field, None) == value:
+            # not modified
+            return value
         if models.Playlist.objects.filter(**{
                 field: value,
                 'user': self.instance.user}).count():
