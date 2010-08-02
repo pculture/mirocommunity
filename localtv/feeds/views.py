@@ -51,8 +51,9 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        cache_key = 'feed_cache:%s:%s:%i:%s' % (
-            sitelocation.site.domain, klass.__name__, json, args)
+        cache_key = 'feed_cache:%s:%s:%i:%s:%s' % (
+            sitelocation.site.domain, klass.__name__, json, args,
+            repr(request.GET.items()).replace(' ', ''))
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
