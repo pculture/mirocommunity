@@ -31,6 +31,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <script src="/js/widget.js"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
+function full_url(path) {
+    if (!path) {
+        return;
+    }
+    if (!/https?:\/\//.exec(path)) {
+        // not a full URL
+        return'http://{{ sitelocation.site.domain }}' + path;
+    }
+    return path;
+}
 
 function update_widget() {
     display = $("#widget-display");
@@ -42,6 +52,7 @@ function update_widget() {
         widget_source = $("input[name=custom_source]").val();
     }
     widget_size = $("select[name=size]").val();
+    widget_css = full_url($("input[name=css]").val())
     widget_bg = $("input[name=bg]").val();
     widget_border = $("input[name=border]").val();
     widget_text = $("input[name=text]").val()
@@ -53,12 +64,14 @@ function update_widget() {
     } else {
         widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 222 169 %}';
     }
-    if (!/https?:\/\//.exec(widget_logo)) {
-        // not a full URL
-        widget_logo = 'http://{{ sitelocation.site.domain }}' + widget_logo;
-    }
+    widget_logo = full_url(widget_logo);
     {% else %}
     widget_logo = '';
+    {% endif %}
+    {% if sitelocation.site.widgetsettings.icon_editable %}
+    if ($("input[name=icon]").val()) {
+        widget_logo = $("input[name=icon]").val();
+    }
     {% endif %}
     opts = {
         version: 2,
@@ -70,6 +83,9 @@ function update_widget() {
     }
     if (widget_logo) {
         opts.logo = widget_logo;
+    }
+    if (widget_css) {
+        opts.stylesheet = widget_css;
     }
     if (widget_bg) {
         opts.bg = widget_bg;
@@ -128,6 +144,9 @@ $(document).ready(function () {
   <h1>Widget</h1>
   {% if not sitelocation.site.widgetsettings.title_editable %}
   <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
+  {% endif %}
+  {% if not sitelocation.site.widgetsettings.css_editable and sitelocation.site.widgetsettings.css %}
+  <input type="hidden" name="css" value="{{ sitelocation.site.widgetsettings.css.url }}">
   {% endif %}
   {% if not sitelocation.site.widgetsettings.bg_color_editable %}
   <input type="hidden" name="bg" value="{{ sitelocation.site.widgetsettings.bg_color }}" />
@@ -191,13 +210,34 @@ $(document).ready(function () {
               </div>
             </td>
           </tr>
+          {% if sitelocation.site.widgetsettings.icon_editable %}
+          <tr>
+            <td>
+              <label for="icon">Icon URL (optional):</label>
+            </td>
+            <td>
+              <input name="icon" type="url" value=""/>
+            </td>
+          </tr>
+          {% endif %}
+          {% if sitelocation.site.widgetsettings.css_editable %}
+          <tr>
+            <td>
+              <label for="icon">CSS URL (optional):</label>
+            </td>
+            <td>
+              <input name="css" type="url" value=""/>
+              <span class="help_text">Custom CSS won't be reflected in the preview</span>
+            </td>
+          </tr>
+          {% endif %}
           {% if sitelocation.site.widgetsettings.bg_color_editable %}
           <tr>
             <td>
               <label for="bg">Background Color (optional):</label>
             </td>
             <td>
-              <input name="bg" type="text" value=""/>
+              <input name="bg" type="text" value="{{ sitelocation.site.widgetsettings.bg_color }}"/>
             </td>
           </tr>
           {% endif %}
@@ -207,7 +247,7 @@ $(document).ready(function () {
               <label for="border">Border Color (optional):</label>
             </td>
             <td>
-              <input name="border" type="text" value=""/>
+              <input name="border" type="text" value="{{ sitelocation.site.widgetsettings.border_color }}"/>
             </td>
           </tr>
           {% endif %}
@@ -217,7 +257,7 @@ $(document).ready(function () {
               <label for="text">Text Color (optional):</label>
             </td>
             <td>
-              <input name="text" type="text" value=""/>
+              <input name="text" type="text" value="{{ sitelocation.site.widgetsettings.text_color }}"/>
             </td>
           </tr>
           {% endif %}

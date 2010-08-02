@@ -52,14 +52,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           <td>{{ form.title_editable }}</td>
         </tr>
         <tr>
-          <td>{{ form.icon.label_tag }}{{ form.icon.errors }}<td>
+          <td>{{ form.icon.label_tag }}{% if form.instance.icon %}<img src="{{ form.instance.icon.url }}" />{% endif %}{{ form.icon.errors }}<td>
           <td>
               {{ form.icon }}
               <input type="submit" name="delete_icon" value="delete"></td>
           <td>{{ form.icon_editable }}</td>
         </tr>
         <tr>
-          <td>{{ form.css.label_tag }}{{ form.css.errors }}<td>
+          <td>{{ form.css.label_tag }}{% if form.instance.css %} (uploaded){% endif %}{{ form.css.errors }}<td>
           <td>
               {{ form.css }}
               <input type="submit" name="delete_css" value="delete"></td>
