@@ -284,9 +284,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return category.get_absolute_url()
 
     def items(self, category):
-        videos = category.video_set.filter(
-            status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return category.approved_set.all()[:LOCALTV_FEED_LENGTH]
 
     def title(self, category):
         return "%s: %s" % (
