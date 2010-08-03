@@ -3527,6 +3527,8 @@ body.bulkedit td div.field {
 
 #playlists .playlist_count A {
     color: #BCBCBC;
+    padding: 0;
+    margin: 0;
 }
 
 #playlists .playlist_count A:hover {
