@@ -82,6 +82,9 @@ THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (88, 68),   # small thumb
     ]
 
+FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
+FORCE_HEIGHT_PADDING = 2
+
 VIDEO_SERVICE_REGEXES = (
     ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
     ('YouTube', r'http://(www\.)?youtube\.com/'),
@@ -159,31 +162,49 @@ class Thumbnailable(models.Model):
                 default_storage.open(self.get_original_thumb_storage_path()))
         for size in self.THUMB_SIZES:
             if len(size) == 2:
-                (width, height), force_height = size, True
+                (width, height), force_height = size, FORCE_HEIGHT_CROP
             else:
                 width, height, force_height = size
             resized_image = thumb.copy()
             if resized_image.size != (width, height):
                 width_scale = float(resized_image.size[0]) / width
                 if force_height:
-                    # make the resized_image have one side the same as the
-                    # thumbnail, and the other bigger so we can crop it
                     height_scale = float(resized_image.size[1]) / height
-                    if width_scale < height_scale:
-                        new_height = int(resized_image.size[1] / width_scale)
-                        new_width = width
-                    else:
-                        new_width = int(resized_image.size[0] / height_scale)
-                        new_height = height
+                    if force_height == FORCE_HEIGHT_CROP:
+                        # make the resized_image have one side the same as the
+                        # thumbnail, and the other bigger so we can crop it
+                        if width_scale < height_scale:
+                            new_height = int(resized_image.size[1] /
+                                             width_scale)
+                            new_width = width
+                        else:
+                            new_width = int(resized_image.size[0] /
+                                            height_scale)
+                            new_height = height
+                    else: # FORCE_HEIGHT_PADDING
+                        if width_scale < height_scale:
+                            new_width = int(resized_image.size[0] /
+                                            height_scale)
+                            new_height = height
+                        else:
+                            new_height = int(resized_image.size[1] /
+                                             width_scale)
+                            new_width = width
                     resized_image = resized_image.resize(
                         (new_width, new_height),
                         Image.ANTIALIAS)
                     if resized_image.size != (width, height):
                         x = y = 0
-                        if resized_image.size[1] > height:
-                            y = int((height - resized_image.size[1]) / 2)
-                        else:
-                            x = int((width - resized_image.size[0]) / 2)
+                        if force_height == FORCE_HEIGHT_CROP:
+                            if resized_image.size[1] > height:
+                                y = int((height - resized_image.size[1]) / 2)
+                            else:
+                                x = int((width - resized_image.size[0]) / 2)
+                        else: # FORCE_HEIGHT_PADDING:
+                            if resized_image.size[1] == height:
+                                x = int((width - resized_image.size[0]) / 2)
+                            else:
+                                y = int((height - resized_image.size[1]) / 2)
                         new_image = Image.new('RGBA',
                                               (width, height), (0, 0, 0, 0))
                         new_image.paste(resized_image, (x, y))
@@ -334,7 +355,7 @@ class SiteLocation(Thumbnailable):
         (88, 68, False),
         (140, 110, False),
         (222, 169, False),
-        (130, 110) # Facebook
+        (130, 110, FORCE_HEIGHT_PADDING) # Facebook
         ]
 
     def __unicode__(self):
