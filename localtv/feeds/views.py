@@ -51,8 +51,9 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        cache_key = 'feed_cache:%s:%s:%i:%s' % (
-            sitelocation.site.domain, klass.__name__, json, args)
+        cache_key = 'feed_cache:%s:%s:%i:%s:%s' % (
+            sitelocation.site.domain, klass.__name__, json, args,
+            repr(request.GET.items()).replace(' ', ''))
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
@@ -341,6 +342,12 @@ class SearchVideosFeed(BaseVideosFeed):
         if not form.is_valid():
             raise FeedDoesNotExist(search)
         results = form.search()
+        if self.request.GET.get('sort', None) == 'latest':
+            return models.Video.objects.new(
+                site=self.sitelocation.site,
+                status=models.VIDEO_STATUS_ACTIVE,
+                pk__in=[result.pk for result in results[:LOCALTV_FEED_LENGTH]
+                        if result])
         return [result.object for result in results[:LOCALTV_FEED_LENGTH]
                 if result]
 
