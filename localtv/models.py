@@ -73,7 +73,7 @@ SITE_STATUSES = (
     (SITE_STATUS_DISABLED, 'Disabled'),
     (SITE_STATUS_ACTIVE, 'Active'))
 
-THUMB_SIZES = [
+THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (534, 430), # behind a video
     (375, 295), # featured on frontpage
     (140, 110),
@@ -117,9 +117,6 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    _thumbnail_force_height = True # make sure the thumbnail is the correct
-                                   # size
-
     def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
@@ -160,11 +157,15 @@ class Thumbnailable(models.Model):
         if not thumb:
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
-        for width, height in THUMB_SIZES:
+        for size in self.THUMB_SIZES:
+            if len(size) == 2:
+                (width, height), force_height = size, True
+            else:
+                width, height, force_height = size
             resized_image = thumb.copy()
             if resized_image.size != (width, height):
                 width_scale = float(resized_image.size[0]) / width
-                if self._thumbnail_force_height:
+                if force_height:
                     # make the resized_image have one side the same as the
                     # thumbnail, and the other bigger so we can crop it
                     height_scale = float(resized_image.size[1]) / height
@@ -329,7 +330,12 @@ class SiteLocation(Thumbnailable):
 
     objects = SiteLocationManager()
 
-    _thumbnail_force_height = False
+    THUMB_SIZES = [
+        (88, 68, False),
+        (140, 110, False),
+        (222, 169, False),
+        (130, 110) # Facebook
+        ]
 
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
@@ -355,8 +361,6 @@ class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
     """
-    _thumbnail_force_height = False
-
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
@@ -377,6 +381,11 @@ class WidgetSettings(Thumbnailable):
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
 
+    THUMB_SIZES = [
+        (88, 68, False),
+        (140, 110, False),
+        (222, 169, False),
+        ]
 
 class Source(Thumbnailable):
     """
@@ -390,6 +399,8 @@ class Source(Thumbnailable):
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
+
+    THUMB_SIZES = THUMB_SIZES
 
     class Meta:
         abstract = True
@@ -990,6 +1001,8 @@ class Video(Thumbnailable):
 
 
     objects = VideoManager()
+
+    THUMB_SIZES = THUMB_SIZES
 
     class Meta:
         ordering = ['-when_submitted']
