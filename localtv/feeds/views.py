@@ -164,8 +164,7 @@ class BaseVideosFeed(Feed):
     def item_pubdate(self, video):
         if video.status != models.VIDEO_STATUS_ACTIVE:
             return None
-        return (video.when_published or video.when_approved).replace(
-            tzinfo=FixedOffset(0))
+        return video.when().replace(tzinfo=FixedOffset(0))
 
     def item_guid(self, video):
         if video.guid:
