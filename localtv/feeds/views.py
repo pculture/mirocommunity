@@ -35,6 +35,7 @@ from tagging.models import Tag
 import simplejson
 
 from localtv import models
+from localtv.playlists.models import Playlist
 from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
@@ -352,6 +353,24 @@ class SearchVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('Search: %s') % search)
 
+class PlaylistVideosFeed(BaseVideosFeed):
+    def get_object(self, bits):
+        return Playlist.objects.get(pk=bits[0])
+
+    def link(self, playlist):
+        return playlist.get_absolute_url()
+
+    def items(self, playlist):
+        videos = playlist.video_set.all()
+        if self.request.GET.get('sort', None) != 'order':
+            print 'backwards'
+            videos = videos.order_by('-playlistitem___order')
+        print str(videos.query)
+        return videos[:LOCALTV_FEED_LENGTH]
+
+    def title(self, playlist):
+        return "%s: %s" % (
+            self.sitelocation.site.name, _('Playlist: %s') % playlist.name)
 
 new = feed_view(NewVideosFeed)
 featured = feed_view(FeaturedVideosFeed)
@@ -360,3 +379,4 @@ category = feed_view(CategoryVideosFeed)
 author = feed_view(AuthorVideosFeed)
 tag = feed_view(TagVideosFeed)
 search = feed_view(SearchVideosFeed)
+playlist = feed_view(PlaylistVideosFeed)
