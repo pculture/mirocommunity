@@ -228,7 +228,7 @@ margin: 0 auto;
     <div class="sidebar_header">
       <h2>This video is number {{ playlistitem.index }} (of {{ playlistitem.playlist.items.count }}) in the playlist</h2>
     </div>
-    <h3 class="playlist_title">{{ playlistitem.playlist.name }}</h3>
+    <h3 class="playlist_title"><a href="{{ playlistitem.playlist.get_absolute_url }}">{{ playlistitem.playlist.name }}</a></h3>
     <div class="playlist_thumbs">
       {% for sibling in playlistitem.get_two_from_order %}
       <a href="{{ sibling.video.get_absolute_url }}?playlist={{ playlistitem.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right"{% endif %};">
