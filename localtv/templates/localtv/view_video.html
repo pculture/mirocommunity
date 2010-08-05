@@ -242,9 +242,11 @@ margin: 0 auto;
     {# The logic I want is 'if authenticated or (items and (not playlist or more than 1 item))' #}
     {% if request.user.is_authenticated or current_video.playlistitem_set.count %}
     {% if request.user.is_authenticated or current_video.playlistitem_set.count != 1 or not playlistitem %}
+    {% if not playlistitem or current_video.playlistitem_set.count > 1 %}
     <div class="sidebar_header">
       <h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
     </div>
+    {% endif %}
     <div id="playlists">
       <div>
         <ul>
