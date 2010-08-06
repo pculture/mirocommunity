@@ -19,6 +19,7 @@ import datetime
 import re
 from BeautifulSoup import BeautifulSoup, Comment, Tag
 from django.template import Library
+from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 
 register = Library()
@@ -45,6 +46,11 @@ def sanitize(value, extra_filters=None):
     """
     if value is None:
         return u''
+
+    if '<' not in value: # no HTML
+        return urlize(mark_safe(value),
+                       nofollow=True,
+                       autoescape=True) # convert plain-text links into HTML
 
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)
