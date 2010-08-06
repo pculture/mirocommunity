@@ -241,7 +241,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             {% endif %}
             {% endif %}
           </td>
-          <td>{% for category in form.instance.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td>
+            {% if form.initial.categories %}
+            <ul class="categories_list">
+              {% for choice in form.categories.field.choices %}
+              {% if choice.0 in form.initial.categories %}<li>{{ choice.1 }}</li>{% endif %}
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </td>
           <td width="19%">{% if form.instance.when_published %}<span class="pub_date">{{ form.instance.when_published|date:"M, d Y" }}</span>{% endif %} </td>
           <td class="last" width="19%">{% if form.instance.when_submitted %}<span class="pub_date">{{ form.instance.when_submitted|date:"M, d Y" }}</span>{% endif %} </td>
           {% endblock %}

@@ -46,6 +46,7 @@ def bulk_edit(request, sitelocation=None):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
         site=sitelocation.site)
+    videos = videos.select_related('feed', 'search', 'site')
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']

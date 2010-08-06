@@ -1829,9 +1829,31 @@ width: 150px;
 margin-right: 20px;
 }
 
+#admin.bulkedit .categories_list {
+    list-style-type: none;
+}
+
+#admin.bulkedit .categories_list > li:first-child {
+    margin-left: 0;
+}
+#admin.bulkedit .categories_list > li {
+    display: inline;
+    margin-left: -0.3em;
+}
+
+#admin.bulkedit .categories_list > li:first-child:before {
+    content: '';
+}
+
+#admin.bulkedit .categories_list > li:before {
+    content: ', ';
+}
+
+
 #admin.comments th, #admin.comments td{
 padding: 5px;
 }
+
 /* Widget Creator */
 #widget-base h2 {
     float: inherit;
