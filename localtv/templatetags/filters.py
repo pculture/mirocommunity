@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import re
 from BeautifulSoup import BeautifulSoup, Comment, Tag
 from django.template import Library
@@ -30,7 +31,7 @@ def simpletimesince(value, arg=None):
     try:
         if arg:
             return timesince(value, arg)
-        return timesince(value).split(', ')[0]
+        return timesince(value, datetime.datetime.utcnow()).split(', ')[0]
     except (ValueError, TypeError):
         return u''
 
