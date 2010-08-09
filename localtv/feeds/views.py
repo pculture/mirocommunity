@@ -30,12 +30,12 @@ from django.utils.encoding import iri_to_uri
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
 
-import haystack.forms
 from tagging.models import Tag
 import simplejson
 
 from localtv import models
 from localtv.playlists.models import Playlist
+from localtv.search.forms import VideoSearchForm
 from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
@@ -336,7 +336,7 @@ class SearchVideosFeed(BaseVideosFeed):
             {'q': search})
 
     def items(self, search):
-        form = haystack.forms.ModelSearchForm({'q': search}, load_all=True)
+        form = VideoSearchForm({'q': search})
         if not form.is_valid():
             raise FeedDoesNotExist(search)
         results = form.search()

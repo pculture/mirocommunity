@@ -49,3 +49,9 @@ def tokenize(query):
                 yield token
     while or_stack:
         yield or_stack.pop()
+
+def auto_query(sqs, query):
+    """
+    Turn the given SearchQuerySet into something representing query.
+    """
+    return sqs.auto_query(query)
