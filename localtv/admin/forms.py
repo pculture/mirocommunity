@@ -505,14 +505,12 @@ class CategoryForm(forms.ModelForm):
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=self.site)
 
-    def clean(self):
-        self.fields['site'] = forms.ModelChoiceField(Site.objects)
-        self.cleaned_data['site'] = self.site
+    def _post_clean(self):
+        forms.ModelForm._post_clean(self)
         try:
-            return forms.ModelForm.clean(self)
-        finally:
-            del self.fields['site']
-            del self.cleaned_data['site']
+            self.instance.validate_unique()
+        except forms.ValidationError, e:
+            self._update_errors(e.message_dict)
 
     def unique_error_message(self, unique_check):
         return 'Category with this %s already exists.' % (
