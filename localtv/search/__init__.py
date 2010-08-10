@@ -3,11 +3,21 @@ import shlex
 def tokenize(query):
     or_stack = []
     negative = False
+    if isinstance(query, unicode):
+        # FIXME: ignores characters not in latin-1 since shlex doesn't handle
+        # them
+        while True:
+            try:
+                query = query.encode('latin-1')
+                break
+            except UnicodeEncodeError, e:
+                # strip offending characerers
+                query = query[:e.start] + query[e.end:]
     while query:
         try:
-            lex = shlex.shlex(query)
+            lex = shlex.shlex(query, posix=True)
             lex.commenters = '' # shlex has a crazy interface
-            lex.wordchars += ':'
+            lex.wordchars = lex.wordchars + '-:'
             tokens = list(lex)
             break
         except ValueError, e:
@@ -43,6 +53,7 @@ def tokenize(query):
             if negative and isinstance(token, basestring):
                 negative = False
                 token = '-' + token
+            token = token.decode('latin-1')
             if or_stack:
                 or_stack[-1].append(token)
             else:

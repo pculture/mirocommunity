@@ -54,3 +54,15 @@ class SearchTokenizeTestCase(BaseTestCase):
         """
         self.assertTokenizes('"foo', ('foo',))
         self.assertTokenizes("'foo", ('foo',))
+
+    def test_unicode(self):
+        """
+        Unicode should be handled as regular characters.
+        """
+        self.assertTokenizes(u'espa\xf1a', (u'espa\xf1a',))
+
+    def test_unicode_not_latin_1(self):
+        """
+        Non latin-1 characters should be ignored.
+        """
+        self.assertTokenizes(u'foo\u1234bar', (u'foobar',))
