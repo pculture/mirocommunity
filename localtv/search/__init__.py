@@ -65,4 +65,14 @@ def auto_query(sqs, query):
     """
     Turn the given SearchQuerySet into something representing query.
     """
-    return sqs.auto_query(query)
+    clean = sqs.query.clean
+    for token in tokenize(query):
+        if isinstance(token, basestring):
+            method = sqs.filter
+            if token[0] == '-':
+                method = sqs.exclude
+                token = token[1:]
+            if ':' not in token:
+                sqs = method(content=clean(token))
+
+    return sqs
