@@ -35,19 +35,6 @@ color: #444;
 margin: 0px 0 10px 0 !important;
 }
 
-h1 a{
-padding-top: 79px;
-margin: 0;
-height: 0;
-overflow: hidden;
-display: block;
-
-}
-
-h1 a:hover{
-
-}
-
 
 h2{
 font-size: 18px;
