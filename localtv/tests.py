@@ -751,8 +751,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['paginator'].num_pages, 2)
         self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
-                           SearchQuerySet(site=self.site_location.site
-                                          ).filter(content='blender')[:10]])
+                           SearchQuerySet().filter(content='blender')[:10]])
 
     def test_video_search_phrase(self):
         """
@@ -769,9 +768,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
-                           SearchQuerySet(
-                    site=self.site_location.site
-                    ).filter(content='bits ofblender')])
+                           SearchQuerySet().filter(content='bits ofblender')])
 
     def test_video_search_no_query(self):
         """
@@ -798,8 +795,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['paginator'].num_pages, 2)
         self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
-                           SearchQuerySet(site=self.site_location.site
-                                          ).filter(content='blender')[10:20]])
+                           SearchQuerySet().filter(content='blender')[10:20]])
 
 
     def test_video_search_includes_tags(self):
@@ -942,8 +938,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(list(response.context['video_list']),
                           [result.object for result in
-                           SearchQuerySet(site=self.site_location.site
-                                          ).exclude(content='blender')])
+                           SearchQuerySet().exclude(content='blender')])
 
     def test_video_search_unicode(self):
         """

@@ -7,6 +7,6 @@ class VideoSearchForm(forms.SearchForm):
     def search(self):
         self.clean()
         sqs = self.searchqueryset.models(models.Video)
-        sqs = search.auto_query(sqs, self.cleaned_data['q'])
+        sqs = search.auto_query(self.cleaned_data['q'], sqs)
 
         return sqs
