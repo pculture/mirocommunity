@@ -16,7 +16,11 @@ def profile(request, sitelocation=None):
         form = forms.ProfileForm(request.POST, request.FILES,
                                  instance=request.user)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            if request.POST.get('delete_logo'):
+                profile = user.get_profile()
+                if profile.logo:
+                    profile.logo.delete()
             return HttpResponseRedirect(request.path)
     else:
         form = forms.ProfileForm(instance=request.user)

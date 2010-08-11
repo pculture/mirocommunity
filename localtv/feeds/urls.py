@@ -26,4 +26,5 @@ urlpatterns = patterns(
     (r'^(json/)?author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
     (r'^(json/)?tag/(.+)$', 'tag', {}, 'localtv_feeds_tag'),
     (r'^(json/)?search/(.+)$', 'search', {}, 'localtv_feeds_search'),
+    (r'^(json/)?playlist/(\d+)$', 'playlist', {}, 'localtv_feeds_playlist'),
     )

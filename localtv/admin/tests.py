@@ -1898,6 +1898,27 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             getattr(response.context[0]['add_category_form'],
                     'errors') is not None)
 
+    def test_POST_add_failure_duplicate(self):
+        """
+        A POST to the categories view with a POST['submit'] value of 'Add' but
+        a duplicated category should rerender the template.
+        """
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'name': 'Miro',
+            'slug': 'miro'
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(response.template[0].name,
+                          'localtv/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue(
+            getattr(response.context[0]['add_category_form'],
+                    'errors') is not None)
+
     def test_POST_save_failure(self):
         """
         A POST to the categories view with a POST['submit'] value of 'Save' but

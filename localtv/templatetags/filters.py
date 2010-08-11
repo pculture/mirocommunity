@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import re
 from BeautifulSoup import BeautifulSoup, Comment, Tag
 from django.template import Library
+from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 
 register = Library()
@@ -30,7 +32,7 @@ def simpletimesince(value, arg=None):
     try:
         if arg:
             return timesince(value, arg)
-        return timesince(value).split(', ')[0]
+        return timesince(value, datetime.datetime.utcnow()).split(', ')[0]
     except (ValueError, TypeError):
         return u''
 
@@ -44,6 +46,11 @@ def sanitize(value, extra_filters=None):
     """
     if value is None:
         return u''
+
+    if '<' not in value: # no HTML
+        return urlize(mark_safe(value),
+                       nofollow=True,
+                       autoescape=True) # convert plain-text links into HTML
 
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)

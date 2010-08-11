@@ -152,6 +152,8 @@ margin: 0 auto;
   {% if currrent_video.submitter %}<li class="item"><h3>Submitted by</h3><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
   {% if current_video.search %}<li class="item"><h3>From search</h3><ul><li> {{ current_video.search }}</li</ul></li>{% endif %}
   {% if current_video.feed %}<li class="item"><h3>From feed</h3<ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
+  {% if current_video.contact %}<li class="item"><h3>Contact</h3><ul><li> {{ current_video.contact }}</li></ul></li>{% endif %}
+  {% if current_video.notes %}<li class="item"><h3>Notes</h3><ul><li> {{ current_video.notes }}</li></ul></li>{% endif %}
   {% endif %}
   {% comment %}
       <form id="add_tag">
@@ -228,7 +230,7 @@ margin: 0 auto;
     <div class="sidebar_header">
       <h2>This video is number {{ playlistitem.index }} (of {{ playlistitem.playlist.items.count }}) in the playlist</h2>
     </div>
-    <h3 class="playlist_title">{{ playlistitem.playlist.name }}</h3>
+    <h3 class="playlist_title"><a href="{{ playlistitem.playlist.get_absolute_url }}">{{ playlistitem.playlist.name }}</a></h3>
     <div class="playlist_thumbs">
       {% for sibling in playlistitem.get_two_from_order %}
       <a href="{{ sibling.video.get_absolute_url }}?playlist={{ playlistitem.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right"{% endif %};">
@@ -242,9 +244,11 @@ margin: 0 auto;
     {# The logic I want is 'if authenticated or (items and (not playlist or more than 1 item))' #}
     {% if request.user.is_authenticated or current_video.playlistitem_set.count %}
     {% if request.user.is_authenticated or current_video.playlistitem_set.count != 1 or not playlistitem %}
+    {% if not playlistitem or current_video.playlistitem_set.count > 1 %}
     <div class="sidebar_header">
       <h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
     </div>
+    {% endif %}
     <div id="playlists">
       <div>
         <ul>

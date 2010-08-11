@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% get_editors_comment for instance as editors_comment %}
 {% if editors_comment %}
 <div class="description editors_notes">
-  <span class="written_by">{{ editors_comment.user }} writes:</span>
+  <span class="written_by"><a href="{% url localtv_author editors_comment.user.id %}">{{ editors_comment.user }}</a> writes:</span>
   {{ editors_comment.comment|safe }}
 </div>
 {% endif %}

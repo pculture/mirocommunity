@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import operator
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -26,9 +25,8 @@ from django.views.generic.list_detail import object_list
 
 from tagging.models import Tag
 
-import haystack.forms, haystack.query
-
-from localtv import models, util
+from localtv import models
+from localtv.search.forms import VideoSearchForm
 from localtv.decorators import get_sitelocation
 
 def get_args(func):
@@ -147,16 +145,13 @@ def video_search(request, sitelocation=None, count=10, sort=None):
         request.GET = GET
 
     if request.GET.get('q'):
-        form = haystack.forms.ModelSearchForm(
-            request.GET,
-            searchqueryset=haystack.query.RelatedSearchQuerySet())
+        form = VideoSearchForm(request.GET)
 
         if form.is_valid():
             query = form.cleaned_data['q']
             results = form.search()
             pks = [result.pk for result in results if result is not None]
-    else:
-        form = haystack.forms.ModelSearchForm()
+
     if not pks:
         queryset = models.Video.objects.none()
     elif sort == 'latest':

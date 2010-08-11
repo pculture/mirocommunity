@@ -197,7 +197,9 @@ if (typeof MiroCommunity === 'undefined') {
                     }
                     box = document.createElement('div');
                     link = MiroCommunity.createElement('a', {href: video.link});
-                    link.appendChild(flat_bg.cloneNode(false));
+                    if (video.thumbnail) {
+                        link.appendChild(flat_bg.cloneNode(false));
+                    }
                     if (widget_size !== 'small') {
                         title_span = MiroCommunity.createSpan(video.title, 'mc-title');
                         when_span = MiroCommunity.createSpan(video.when, 'mc-when');
