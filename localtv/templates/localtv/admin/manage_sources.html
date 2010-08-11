@@ -33,10 +33,10 @@ $(document).ready(function() {
     $("td.autoapprove a").click(function() {
         obj = this;
         $.get(this.href, function() {
-            if (obj.className === "on") {
-                $(obj.parentNode).removeClass('disabled').addClass('enabled');
+            if (obj.className === "off") {
+                $(obj.parentNode).removeClass('disabled').addClass('enabled').children('input').val('True');
             } else {
-                $(obj.parentNode).removeClass('enabled').addClass('disabled');
+                $(obj.parentNode).removeClass('enabled').addClass('disabled').children('input').val('False');
             }
         });
         return false;
@@ -152,11 +152,10 @@ $(document).ready(function() {
 {% else %}
 {% url localtv_admin_feed_auto_approve form.instance.pk as auto_approve_url %}
 {% endif %}
-<td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" style="width: 100px;"><a class="on" href="{{ auto_approve_url }}?disable=true">On</a> <a class="off" href="{{ auto_approve_url }}">Off</a></td>
+<td class="last autoapprove {% if form.instance.auto_approve %}enabled{% else %}disabled{% endif %}" style="width: 100px;"><a class="on" href="{{ auto_approve_url }}?disable=true">On</a> <a class="off" href="{{ auto_approve_url }}">Off</a>{{ form.auto_approve.as_hidden }}</td>
 {% endblock %}
 
 {% block quick-edit-fields %}
-{{ form.auto_approve.as_hidden }} 
 <ul>
   {% for field in form.extra_fields %}
   <li>

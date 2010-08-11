@@ -21,6 +21,10 @@
           {{ field.label_tag }}
           {{ field.errors }}
           {{ field }}
+          {% if request.user.get_profile.logo and field.name == 'logo' %}
+          <img width="100" src="{{ request.user.get_profile.logo.url }}" alt="Logo for {{ request.user.username }}" />
+          <input type="submit" name="delete_logo" value="delete" />
+          {% endif %}
         </div>
         {% endfor %}
         {% endblock %}

@@ -7,6 +7,7 @@ Replace these with more appropriate tests for your application.
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
+from django.core.files.base import File
 from django.core.urlresolvers import reverse
 
 from notification import models as notification
@@ -152,6 +153,36 @@ class ProfileViewTestCase(BaseTestCase):
         self.assertEquals(user.get_profile().location, 'Where I am')
         self.assertEquals(user.get_profile().website,
                           'http://www.google.com/')
+
+    def test_POST_delete_logo(self):
+        """
+        If the 'delete_logo' POST argument is present, the logo should be
+        deleted.
+        """
+        self.profile.logo = File(
+            file(self._data_file('logo.png')))
+        self.profile.save()
+        self.assertTrue(self.profile.logo)
+
+        data = {
+            'username': self.user.username,
+            'name': self.user.get_full_name(),
+            'email': self.user.email,
+            'delete_logo': 'yes'
+            }
+
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(self.url, data)
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        user = User.objects.get(pk=self.user.pk)
+        profile = user.get_profile()
+        self.assertFalse(profile.logo)
 
 class NotificationsFormTestCase(TestCase):
 

@@ -354,10 +354,14 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     tags = TagField(required=False,
                     widget=forms.Textarea)
-    categories = BulkChecklistField(models.Category.objects, required=False)
-    authors = BulkChecklistField(User.objects, required=False)
-    when_published = forms.DateTimeField(required=False,
-                                         widget=forms.DateTimeInput(
+    categories = BulkChecklistField(models.Category.objects,
+                                    required=False)
+    authors = BulkChecklistField(User.objects,
+                                 required=False)
+    when_published = forms.DateTimeField(
+        required=False,
+        help_text='Format: yyyy-mm-dd hh:mm:ss',
+        widget=forms.DateTimeInput(
             attrs={'class': 'large_field'}))
 
     class Meta:
@@ -366,14 +370,24 @@ class BulkEditVideoForm(EditVideoForm):
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code')
 
+    _categories_queryset = None
+    _authors_queryset = None
+
     def __init__(self, *args, **kwargs):
         EditVideoForm.__init__(self, *args, **kwargs)
         site = Site.objects.get_current()
+
+        # cache the querysets so that we don't hit the DB for each form
+        if self.__class__._categories_queryset is None:
+            self.__class__._categories_queryset = util.MockQueryset(
+                models.Category.objects.filter(site=site))
+        if self.__class__._authors_queryset is None:
+            self.__class__._authors_queryset = util.MockQueryset(
+                User.objects.order_by('username'))
         self.fields['categories'].queryset = \
-            self.fields['categories'].queryset.filter(
-            site=site)
+            self.__class__._categories_queryset
         self.fields['authors'].queryset = \
-            self.fields['authors'].queryset.order_by('username')
+            self.__class__._authors_queryset
 
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
@@ -491,14 +505,12 @@ class CategoryForm(forms.ModelForm):
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=self.site)
 
-    def clean(self):
-        self.fields['site'] = forms.ModelChoiceField(Site.objects)
-        self.cleaned_data['site'] = self.site
+    def _post_clean(self):
+        forms.ModelForm._post_clean(self)
         try:
-            return forms.ModelForm.clean(self)
-        finally:
-            del self.fields['site']
-            del self.cleaned_data['site']
+            self.instance.validate_unique()
+        except forms.ValidationError, e:
+            self._update_errors(e.message_dict)
 
     def unique_error_message(self, unique_check):
         return 'Category with this %s already exists.' % (

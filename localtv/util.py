@@ -282,6 +282,9 @@ class MockQueryset(object):
         self._result_cache = []
         self.ordered = True
 
+    def all(self):
+        return self
+
     def _clone(self):
         return self
 
@@ -346,6 +349,14 @@ class MockQueryset(object):
             mq = MockQueryset(self.objects[k], self.model, self.filters)
             return mq
         return self.objects[k]
+
+    def filter(self, **kwargs):
+        new_filters = self.filters.copy()
+        for k, v in kwargs.items():
+            if '__' in k: # special filter
+                return self.objects.filter(**kwargs)
+            new_filters[k] = v
+        return MockQueryset(self.objects, self.model, new_filters)
 
 def get_profile_model():
     app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')

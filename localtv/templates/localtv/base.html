@@ -47,7 +47,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </script>
     <title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
     {% block head %}
-    <meta name="description" content="{{ sitelocation.about_html|striptags }}">
+    <meta name="description" content="{% if sitelocation.about_html|striptags %}{{ sitelocation.about_html|striptags }}{% else %}A Video Community for {{ sitelocation.site.name }}{% endif %}">
     {% if sitelocation.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url sitelocation 130 110 %}" />{% endif %}
     {% endblock head %}
   </head>

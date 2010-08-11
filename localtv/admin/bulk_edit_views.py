@@ -46,6 +46,7 @@ def bulk_edit(request, sitelocation=None):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
         site=sitelocation.site)
+    videos = videos.select_related('feed', 'search', 'site')
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
@@ -113,7 +114,7 @@ def bulk_edit(request, sitelocation=None):
             sort.replace('name', 'name_lower'))
     else:
         videos = videos.order_by(sort)
-    video_paginator = Paginator(videos, 50)
+    video_paginator = Paginator(videos, 30)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
