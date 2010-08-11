@@ -152,7 +152,7 @@ def _tokens_to_sqs(tokens, sqs):
             clone = sqs._clone()
             for or_token in token:
                 sqs = sqs | _tokens_to_sqs([or_token], clone)
-    print sqs.query.build_query()
+
     return sqs
 
 def auto_query(query, sqs=None):
