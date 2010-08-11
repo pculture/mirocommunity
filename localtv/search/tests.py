@@ -73,7 +73,8 @@ class SearchTokenizeTestCase(BaseTestCase):
 
 class AutoQueryTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'videos']
+    fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'savedsearches',
+                                        'videos']
 
     def _rebuild_index(self):
         """
@@ -222,6 +223,20 @@ class AutoQueryTestCase(BaseTestCase):
         self.assertEquals(self.search('playlist:%i' % playlist.pk), [video])
         self.assertEquals(self.search('playlist:user/test-list'), [video])
 
+    def test_search_includes_search(self):
+        """
+        Search should include the saved search a video came from.
+        """
+        video = models.Video.objects.get(pk=20)
+        search = models.SavedSearch.objects.get(pk=6) # Participatory Culture
+        video.search = search
+        video.save()
+
+        self._rebuild_index()
+
+        self.assertEquals(self.search('search:%i' % search.pk), [video])
+        self.assertEquals(self.search('search:"Participatory Culture"'),
+                          [video])
 
     def test_search_or(self):
         """

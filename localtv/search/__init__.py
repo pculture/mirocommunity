@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from haystack.query import SearchQuerySet
 
 from tagging.models import Tag
-from localtv.models import Feed, Category
+from localtv.models import Feed, Category, SavedSearch
 from localtv.playlists.models import Playlist
 
 def tokenize(query):
@@ -118,6 +118,11 @@ def _tokens_to_sqs(tokens, sqs):
                                        'name', 'pk')
                     if feed is not None:
                         sqs = method(feed=feed.pk)
+                elif keyword == 'search':
+                    search = _get_object(SavedSearch, rest,
+                                         'query_string', 'pk')
+                    if search is not None:
+                        sqs = method(search=search.pk)
                 elif keyword == 'tag':
                     tag = _get_object(Tag, rest, 'name')
                     if tag is not None:
@@ -147,6 +152,7 @@ def _tokens_to_sqs(tokens, sqs):
             clone = sqs._clone()
             for or_token in token:
                 sqs = sqs | _tokens_to_sqs([or_token], clone)
+    print sqs.query.build_query()
     return sqs
 
 def auto_query(query, sqs=None):
