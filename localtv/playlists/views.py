@@ -2,18 +2,24 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
 from django.http import (Http404, HttpResponseRedirect,
-                         HttpResponsePermanentRedirect,
-                         HttpResponse)
+                         HttpResponsePermanentRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.views.generic.list_detail import object_list
 
-from localtv.decorators import get_sitelocation, referrer_redirect
+from localtv.decorators import get_sitelocation
 from localtv.models import Video
 
 from localtv.playlists import forms
 from localtv.playlists.models import Playlist
+
+def playlist_enabled(func):
+    def wrapper(request, *args, **kwargs):
+        if not kwargs['sitelocation'].playlists_enabled:
+            raise Http404
+        return func(request, *args, **kwargs)
+    return wrapper
 
 def playlist_authorized(func):
     def wrapper(request, playlist_pk, *args, **kwargs):
@@ -28,8 +34,9 @@ def playlist_authorized(func):
 def redirect_to_index():
     return HttpResponseRedirect(reverse(index))
 
-@login_required
 @get_sitelocation
+@playlist_enabled
+@login_required
 def index(request, sitelocation=None):
     """
     Displays the list of playlists for a given user, or the current one if none
@@ -86,7 +93,9 @@ def index(request, sitelocation=None):
                                'formset': formset},
                               context_instance=RequestContext(request))
 
-def view(request, pk, slug=None, count=15):
+@get_sitelocation
+@playlist_enabled
+def view(request, pk, slug=None, count=15, sitelocation=None):
     """
     Displays the videos of a given playlist.
     """
@@ -105,6 +114,7 @@ def view(request, pk, slug=None, count=15):
 
 
 @get_sitelocation
+@playlist_enabled
 @playlist_authorized
 def edit(request, playlist, sitelocation=None):
     """
@@ -132,6 +142,7 @@ def edit(request, playlist, sitelocation=None):
                               context_instance=RequestContext(request))
 
 @get_sitelocation
+@playlist_enabled
 @login_required
 def add_video(request, video_pk, sitelocation=None):
     """

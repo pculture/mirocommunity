@@ -439,6 +439,9 @@ class EditSettingsForm(forms.ModelForm):
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.",
         required=False)
+    playlists_enabled = forms.BooleanField(
+        label="Enable Playlists?",
+        required=False)
 
     class Meta:
         model = models.SiteLocation

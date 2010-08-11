@@ -504,3 +504,19 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEquals(list(playlist.video_set.all()),
                           self.video_set[:2:-1] + self.video_set[1::-1])
+
+    def test_disabled(self):
+        """
+        If playlists are disabled, every playlist view should return a 404.
+        """
+        self.site_location.playlists_enabled = False
+        self.site_location.save()
+
+        c = Client()
+        for view, args in (('localtv_playlist_index', ()),
+                     ('localtv_playlist_view', (1,)),
+                     ('localtv_playlist_edit', (1,)),
+                     ('localtv_playlist_add_video', (1,))):
+            url = reverse(view, args=args)
+            response = c.get(url, follow=True)
+            self.assertStatusCodeEquals(response, 404)
