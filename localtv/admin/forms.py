@@ -515,10 +515,6 @@ class CategoryForm(forms.ModelForm):
         except forms.ValidationError, e:
             self._update_errors(e.message_dict)
 
-    def unique_error_message(self, unique_check):
-        return 'Category with this %s already exists.' % (
-            unique_check[0],)
-
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def clean(self):

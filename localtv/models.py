@@ -804,6 +804,10 @@ class Category(models.Model):
                                  categories__in=categories).distinct()
     approved_set = property(approved_set)
 
+    def unique_error_message(self, model_class, unique_check):
+        return 'Category with this %s already exists.' % (
+            unique_check[0],)
+
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
