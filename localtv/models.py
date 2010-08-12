@@ -334,6 +334,7 @@ class SiteLocation(Thumbnailable):
     css = models.TextField(blank=True)
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
+    playlists_enabled = models.BooleanField(default=True)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -804,6 +805,10 @@ class Category(models.Model):
         return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
                                  categories__in=categories).distinct()
     approved_set = property(approved_set)
+
+    def unique_error_message(self, model_class, unique_check):
+        return 'Category with this %s already exists.' % (
+            unique_check[0],)
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}

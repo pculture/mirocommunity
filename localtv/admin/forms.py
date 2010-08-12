@@ -439,6 +439,9 @@ class EditSettingsForm(forms.ModelForm):
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.",
         required=False)
+    playlists_enabled = forms.BooleanField(
+        label="Enable Playlists?",
+        required=False)
 
     class Meta:
         model = models.SiteLocation
@@ -511,10 +514,6 @@ class CategoryForm(forms.ModelForm):
             self.instance.validate_unique()
         except forms.ValidationError, e:
             self._update_errors(e.message_dict)
-
-    def unique_error_message(self, unique_check):
-        return 'Category with this %s already exists.' % (
-            unique_check[0],)
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
 

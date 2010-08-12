@@ -3543,7 +3543,7 @@ h3.playlist_title {
 }
 
 #playlists .playlist_title {
-    background: url('../images/playlist/arrow_left.png') no-repeat 2px 11px;
+    background: url('../images/playlist/arrow_left.png') no-repeat 2px 9px;
     border-top: 1px solid #dcdcdc;
     margin-left: 20px;
     padding-left: 15px;
