@@ -58,6 +58,29 @@ def sanitize(value, extra_filters=None):
                     'ol li span').split()
     allowed_attributes = 'href src style'.split()
 
+    whitelist = False
+    extra_tags = ()
+    extra_attributes = ()
+    if isinstance(extra_filters, basestring):
+        if '|' in extra_filters:
+            parts = extra_filters.split('|')
+        else:
+            parts = [extra_filters.split()]
+        if parts[0] == 'whitelist':
+            whitelist = True
+            parts = parts[1:]
+        extra_tags = parts[0].split()
+        if len(parts) > 1:
+            extra_attributes = parts[1].split()
+    elif extra_filters:
+        extra_tags = extra_filters
+
+    if whitelist:
+        allowed_tags, allowed_attributes = extra_tags, extra_attributes
+    else:
+        allowed_tags = set(allowed_tags) | set(extra_tags)
+        allowed_attributes = set(allowed_attributes) | set(extra_attributes)
+
     soup = BeautifulSoup(value)
     for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
         # remove comments
@@ -65,8 +88,6 @@ def sanitize(value, extra_filters=None):
 
     for tag in soup.findAll(True):
         if tag.name not in allowed_tags:
-            tag.hidden = True
-        elif extra_filters and tag.name in extra_filters:
             tag.hidden = True
         else:
             tag.attrs = [(attr, js_regex.sub('', val))

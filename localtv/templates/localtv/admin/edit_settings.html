@@ -122,6 +122,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
        <span class="form_help"> {{ form.comments_required_login.help_text }}</span>
       </p>
       <p>
+        {{ form.playlists_enabled }}
+        {{ form.playlists_enabled.label_tag }}
+      </p>
+      <p>
         {{ form.comments_email_admins }}
         {{ form.comments_email_admins.label_tag }}
        <span class="form_help"> {{ form.comments_email_admins.help_text }}</span>

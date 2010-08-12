@@ -49,11 +49,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <ul>
         {% if add_category_form.non_field_errors %}
         <li>
-          {% if add_category_form.non_field_errors|length_is:"1" %}
+          <strong>{% if add_category_form.non_field_errors|length_is:"1" %}
           We're sorry, there was an error saving your changes:
           {% else %}
           We're sorry, there were errors saving your changes:
-          {% endif %}
+          {% endif %}</strong>
           {{ add_category_form.non_field_errors }}
           Please make corrections and try saving again.
         </li
