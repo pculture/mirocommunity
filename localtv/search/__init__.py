@@ -1,7 +1,7 @@
 import shlex
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from haystack.query import SearchQuerySet
+from haystack.query import SearchQuerySet, SQ
 
 from tagging.models import Tag
 from localtv.models import Feed, Category, SavedSearch
@@ -103,7 +103,9 @@ def _tokens_to_sqs(tokens, sqs):
     for token in tokens:
         if isinstance(token, basestring):
             method = sqs.filter
+            negative = False
             if token[0] == '-':
+                negative = True
                 method = sqs.exclude
                 token = token[1:]
             if ':' not in token:
@@ -135,7 +137,12 @@ def _tokens_to_sqs(tokens, sqs):
                     user = _get_object(User, rest,
                                        'username', 'pk')
                     if user is not None:
-                        sqs = method(user=user.pk) | method(authors=user.pk)
+                        if not negative:
+                            sqs = sqs.filter(SQ(user=user.pk) |
+                                             SQ(authors=user.pk))
+                        else:
+                            sqs = sqs.exclude(user=user.pk).exclude(
+                                    authors=user.pk)
                 elif keyword == 'playlist':
                     playlist = _get_object(Playlist, rest, 'pk')
                     if playlist is None and '/' in rest:
@@ -156,7 +163,7 @@ def _tokens_to_sqs(tokens, sqs):
             clone = sqs._clone()
             for or_token in token:
                 sqs = sqs | _tokens_to_sqs([or_token], clone)
-
+    print sqs.query.build_query()
     return sqs
 
 def auto_query(query, sqs=None):
