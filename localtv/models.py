@@ -944,8 +944,9 @@ class OriginalVideo(VideoBase):
                     # errors too
                     pass
                 else:
-                    if response.info()['Last-modified'] == modified:
-                        continue # hasn't really changed
+                    if response.info().get('Last-modified', modified) == \
+                            modified:
+                        continue # hasn't really changed, or doesn't exist
                     timetuple = email.utils.parsedate(
                         response.info()['Last-modified'])
                     changed_fields['thumbnail_updated'] = \
