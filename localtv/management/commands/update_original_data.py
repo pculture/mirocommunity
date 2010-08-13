@@ -15,5 +15,5 @@ class Command(NoArgsCommand):
             video__status=models.FEED_STATUS_REJECTED):
             try:
                 original.update()
-            except:
+            except Exception:
                 traceback.print_exc()
