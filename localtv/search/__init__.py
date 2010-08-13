@@ -83,12 +83,16 @@ def _get_object(model, token, *fields):
         fields = fields + ('pk',)
 
     for field in fields:
-        kwargs = default_kwargs.copy()
-        kwargs['%s__exact' % field] = token
-        try:
-            return model.objects.get(**kwargs)
-        except (model.DoesNotExist, ValueError):
-            pass
+        methods = ['exact']
+        if field != 'pk':
+            methods.append('iexact')
+        for method in methods:
+            kwargs = default_kwargs.copy()
+            kwargs['%s__%s' % (field, method)] = token
+            try:
+                return model.objects.get(**kwargs)
+            except (model.DoesNotExist, ValueError):
+                pass
 
 def _tokens_to_sqs(tokens, sqs):
     """

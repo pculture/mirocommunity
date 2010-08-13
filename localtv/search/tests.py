@@ -149,19 +149,28 @@ class AutoQueryTestCase(BaseTestCase):
         """
         video = models.Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
+        video.user.username = 'SuperUser'
         video.user.first_name = 'firstname'
         video.user.last_name = 'lastname'
         video.user.save()
         video.save()
 
+        video2 = models.Video.objects.get(pk=47)
+        video2.authors = [video.user]
+        video2.save()
+
         self._rebuild_index()
 
-        self.assertEquals(self.search('superuser'), [video])
-        self.assertEquals(self.search('firstname'), [video])
-        self.assertEquals(self.search('lastname'), [video])
+        self.assertEquals(self.search('superuser'), [video2, video])
+        self.assertEquals(self.search('firstname'), [video2, video])
+        self.assertEquals(self.search('lastname'), [video2, video])
 
-        self.assertEquals(self.search('user:superuser'), [video]) # name
-        self.assertEquals(self.search('user:%i' % video.user.pk), [video]) # pk
+        self.assertEquals(self.search('user:SuperUser'),
+                          [video2, video]) # name
+        self.assertEquals(self.search('user:superuser'),
+                          [video2, video]) # case-insenstive name
+        self.assertEquals(self.search('user:%i' % video.user.pk),
+                          [video2, video]) # pk
 
     def test_search_includes_service_user(self):
         """
