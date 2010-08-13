@@ -172,6 +172,31 @@ class AutoQueryTestCase(BaseTestCase):
         self.assertEquals(self.search('user:%i' % video.user.pk),
                           [video2, video]) # pk
 
+    def test_search_excludes_user(self):
+        """
+        -user:name should exclude that user's videos from the search results.
+        """
+        video = models.Video.objects.get(pk=20)
+        video.user = User.objects.get(username='superuser')
+        video.user.username = 'SuperUser'
+        video.user.first_name = 'firstname'
+        video.user.last_name = 'lastname'
+        video.user.save()
+        video.save()
+
+        video2 = models.Video.objects.get(pk=47)
+        video2.user = video.user
+        video2.authors = [video.user]
+        video2.save()
+
+        self._rebuild_index()
+
+        excluded = self.search('-user:superuser')
+        for e in excluded:
+            # should not include the superuser videos
+            self.assertNotEquals(e, video)
+            self.assertNotEquals(e, video2)
+
     def test_search_includes_service_user(self):
         """
         Search should search the video service user for videos.
