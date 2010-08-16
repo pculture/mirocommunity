@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import operator
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -28,7 +27,7 @@ from tagging.models import Tag
 
 import haystack.forms, haystack.query
 
-from localtv import models, util
+from localtv import models
 from localtv.decorators import get_sitelocation
 
 def get_args(func):

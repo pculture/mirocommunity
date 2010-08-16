@@ -20,7 +20,6 @@ import time
 import urllib
 import urlparse
 
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.core import cache
@@ -28,7 +27,7 @@ from django.db.models import Q
 from django.core.validators import URLValidator
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
-from django.template import RequestContext, Context, loader
+from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv import models, util

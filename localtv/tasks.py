@@ -1,7 +1,5 @@
 import subprocess
-import logging
 from celery.decorators import task
-from django.core.mail import mail_admins
 
 @task()
 def check_call(args):

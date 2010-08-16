@@ -26,7 +26,6 @@ from django.views.decorators.vary import vary_on_headers
 
 from localtv import models
 from localtv.decorators import get_sitelocation
-from localtv.admin import forms as admin_forms
 from localtv.listing import views as listing_views
 
 from localtv.playlists.models import Playlist

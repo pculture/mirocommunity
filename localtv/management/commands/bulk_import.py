@@ -1,4 +1,4 @@
-import simplejson, sys
+import simplejson
 
 from django.core.management.base import BaseCommand, CommandError
 from vidscraper.bulk_import import bulk_import
