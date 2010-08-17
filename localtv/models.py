@@ -245,7 +245,8 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = False
         default_storage.delete(self.get_original_thumb_storage_path())
         for size in self.THUMB_SIZES:
-            default_storage.delete(self.get_resized_thumb_storage_path(*size))
+            default_storage.delete(
+                self.get_resized_thumb_storage_path(*size[:2]))
         self.thumbnail_extension = ''
         self.save()
 
