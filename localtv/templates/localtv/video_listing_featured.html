@@ -26,3 +26,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Featured Videos" %}{% endblock %}
 
 {% block body_id %}video_listing_featured{% endblock body_id %}
+
+{% block content %}
+  {% with 1 as featured_videos %}
+  {{ block.super }}
+  {% endwith %}
+{% endblock %}
