@@ -23,8 +23,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
   
-  <h2 class="page_title">{% block page_title %}Page Title{% endblock %}</h2>
-  
+  <h2 class="page_title">
+      {% block page_title %}Page Title{% endblock %}
+      <a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>
+  </h2>
   {% block pagination %}
     <div class="pag">
       {% if page_obj.has_other_pages %}

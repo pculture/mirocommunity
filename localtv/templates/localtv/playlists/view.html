@@ -1,2 +1,4 @@
 {% extends "localtv/video_listing.html" %}
 {% block page_title %}Playlist: {{ playlist.name }}{% endblock %}
+{% block rss_url %}{% url localtv_feeds_playlist playlist.pk %}{% endblock %}
+
