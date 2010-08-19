@@ -1,6 +1,7 @@
 
 from south.db import db
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db import models
 from localtv.models import *
 
@@ -13,9 +14,10 @@ class Migration:
 
         sitelocation = orm['localtv.SiteLocation'].objects.get(
             site__pk=settings.SITE_ID)
+        site = Site.objects.get(settings.SITE_ID)
         widgetsettings = WidgetSettings.objects.create(
-            site=settings.SITE_ID,
-            title='Watch Videos on %s' % sitelocation.site.name)
+            site=site,
+            title='Watch Videos on %s' % site.name)
         if sitelocation.logo:
             sitelocation.logo.open()
             widgetsettings.logo = sitelocation.logo
