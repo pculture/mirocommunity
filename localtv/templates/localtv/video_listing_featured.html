@@ -30,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_id %}video_listing_featured{% endblock body_id %}
 
 {% block content %}
-  {% with 1 as featured_videos %}
+  {% with 1 as is_featured_video %}
   {{ block.super }}
   {% endwith %}
 {% endblock %}
