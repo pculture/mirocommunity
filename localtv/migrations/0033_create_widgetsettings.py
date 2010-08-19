@@ -1,5 +1,6 @@
 
 from south.db import db
+from django.conf import settings
 from django.db import models
 from localtv.models import *
 
@@ -10,7 +11,8 @@ class Migration:
     def forwards(self, orm):
         "Write your forwards migration here"
 
-        sitelocation = SiteLocation.objects.get_current()
+        sitelocation = orm['SiteLocation'].objects.get(
+            site__pk=settings.SITE_ID)
         widgetsettings = WidgetSettings.objects.create(
             site=sitelocation.site,
             title='Watch Videos on %s' % sitelocation.site.name)
