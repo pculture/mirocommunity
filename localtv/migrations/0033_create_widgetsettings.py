@@ -11,7 +11,7 @@ class Migration:
     def forwards(self, orm):
         "Write your forwards migration here"
 
-        sitelocation = orm['SiteLocation'].objects.get(
+        sitelocation = orm['localtv.SiteLocation'].objects.get(
             site__pk=settings.SITE_ID)
         widgetsettings = WidgetSettings.objects.create(
             site=sitelocation.site,
