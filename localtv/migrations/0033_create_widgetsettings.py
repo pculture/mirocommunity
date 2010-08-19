@@ -14,7 +14,7 @@ class Migration:
 
         sitelocation = orm['localtv.SiteLocation'].objects.get(
             site__pk=settings.SITE_ID)
-        site = Site.objects.get(settings.SITE_ID)
+        site = Site.objects.get(pk=settings.SITE_ID)
         widgetsettings = WidgetSettings.objects.create(
             site=site,
             title='Watch Videos on %s' % site.name)
