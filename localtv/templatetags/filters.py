@@ -48,8 +48,9 @@ def sanitize(value, extra_filters=None):
         return u''
 
     if '<' not in value: # no HTML
-        return urlize(mark_safe(value),
-                       nofollow=True) # convert plain-text links into HTML
+        return urlize(value,
+                   nofollow=True,
+                   autoescape=True) # convert plain-text links into HTML
 
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)
