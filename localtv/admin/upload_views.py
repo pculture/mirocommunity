@@ -35,6 +35,10 @@ def filter_admin_files(sender, file_paths=None, **kwargs):
             to_remove.append(path)
         elif '/flatpages/' in path:
             to_remove.append(path)
+        elif '/goodies/' in path:
+            to_remove.append(path)
+        elif '/playlists/' in path and 'view.html' not in path:
+            to_remove.append(path)
         elif '/comments/' in path:
             if 'spam' in path or 'moderation_queue' in path or \
                     path.endswith('.txt'):
