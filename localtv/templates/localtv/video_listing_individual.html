@@ -41,7 +41,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </span>
   </div>
   <p>
-    {% if featured_videos %}
+    {% if is_featured_video %}
     Featured {{ video.last_featured|simpletimesince }} ago
     {% else %}
     {{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago
