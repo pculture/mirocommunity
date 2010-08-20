@@ -41,10 +41,7 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 import django.dispatch
-try:
-    from django.core.validators import ipv4_re # Django 1.2+
-except ImportError:
-    from django.forms.fields import ipv4_re # Django 1.1
+from django.core.validators import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 
@@ -250,7 +247,8 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = False
         default_storage.delete(self.get_original_thumb_storage_path())
         for size in self.THUMB_SIZES:
-            default_storage.delete(self.get_resized_thumb_storage_path(*size))
+            default_storage.delete(
+                self.get_resized_thumb_storage_path(*size[:2]))
         self.thumbnail_extension = ''
         self.save()
 

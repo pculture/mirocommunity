@@ -215,7 +215,7 @@ margin: 0 0 4px;
 
 }
 
-.title_desc p {
+.title_desc > p {
 line-height: 16px;
 max-height: 49px;
 color: #555;
@@ -246,7 +246,7 @@ _overflow: hidden;
 text-shadow: none !important;
 }
 
-.video p {
+.video > p {
 margin-bottom: 1px;
 color: #aaa;
 }

@@ -25,4 +25,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% blocktrans with feed.name as name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
 
+{% block rss_url %}{{ feed.url }}{% endblock %}
+
 {% block body_id %}video_listing_new{% endblock body_id %}

@@ -6,10 +6,11 @@ Whois  : http://ws.arin.net/cgi-bin/whois.pl?queryinput={{ comment.ip_address}}
 Comment:
 {{ comment.comment }}
 
-{% if comment.is_public %}You can see all comments on this post here:
+You can see all comments on this post here:
 http://{{ content_object.site.domain }}{{ content_object.get_absolute_url }}#comments
-{% else %}You can moderate this comment here:
+{% if user.is_admin %}{% if not comment.is_public %}
+You can moderate this comment here:
 http://{{ content_object.site.domain }}{% url comments-moderation-queue %}
 {% endif %}
-{% if user_is_admin %}Delete it: http://{{ content_object.site.domain }}{% url comments-delete comment.pk %}
+Delete it: http://{{ content_object.site.domain }}{% url comments-delete comment.pk %}
 Spam it: http://{{ content_object.site.domain }}{% url comments-spam comment.pk %}{% endif %}

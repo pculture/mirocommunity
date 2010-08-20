@@ -33,9 +33,9 @@ CommentForm = get_form()
 from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
-from django.core.urlresolvers import get_resolver, reverse
+from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
 

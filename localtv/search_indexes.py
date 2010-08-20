@@ -1,3 +1,5 @@
+from django.utils.encoding import force_unicode
+
 from haystack import indexes
 from haystack import site
 from localtv.models import Video, VIDEO_STATUS_ACTIVE
@@ -27,7 +29,7 @@ class VideoIndex(indexes.SearchIndex):
                 for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        return self._prepare_field(video, 'tags', 'name', unicode)
+        return self._prepare_field(video, 'tags', 'name', force_unicode)
 
     def prepare_categories(self, video):
         return self._prepare_field(video, 'categories')

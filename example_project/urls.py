@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, include
 
 urlpatterns = patterns('',
                        (r'^(?P<path>(?:css|images|js|swf|versioned).*)', 'django.views.static.serve',

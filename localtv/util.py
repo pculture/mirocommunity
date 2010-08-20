@@ -21,7 +21,6 @@ import string
 import urllib
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q

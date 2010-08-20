@@ -10,7 +10,6 @@ from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
 
-from localtv.admin import forms as admin_forms
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util

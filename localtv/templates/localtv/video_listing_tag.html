@@ -25,4 +25,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% blocktrans with tag as tag %}Videos Tagged With "{{ tag }}"{% endblocktrans %}{% endblock %}
 
+{% block rss_url %}{% url localtv_feeds_tag tag %}{% endblock %}
+
 {% block body_id %}video_listing_new{% endblock body_id %}
