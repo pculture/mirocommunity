@@ -330,7 +330,7 @@ class SiteLocation(Thumbnailable):
     css = models.TextField(blank=True)
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
-    playlists_enabled = models.BooleanField(default=True)
+    playlists_enabled = models.IntegerField(default=1)
 
     # ordering options
     use_original_date = models.BooleanField(

@@ -58,6 +58,13 @@
 {% endblock %}
 
 {% block labels %}
+   {% if user_is_admin %}
+   <ul class="only_show">
+     <label>Show:</label>
+     <li{% if request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_playlist_index %}?show=all">All Playlists</a></li>
+     <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_playlist_index %}">My Playlists</a></li>
+</ul>
+     {% endif %}
 <div class="bulkedit_controls">
   <select name="action" id="bulk_action_selector">
     <option value="">Bulk Actions</option>
@@ -78,6 +85,7 @@
 </td>
 <td valign="middle">{{ form.instance.description|sanitize }}</td>
 <td valign="middle">{{ form.instance.slug }}</td>
+{% if user_is_admin and request.GET.show == 'all' %}<td valign="middle">{{ form.instance.user.username }}</td>{% endif %}
 {% with form.instance.video_set.count as count %}
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ form.instance.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}

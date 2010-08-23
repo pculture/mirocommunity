@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import (Http404, HttpResponseRedirect,
                          HttpResponsePermanentRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
@@ -10,13 +11,18 @@ from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation
 from localtv.models import Video
+from localtv.util import SortHeaders
 
 from localtv.playlists import forms
 from localtv.playlists.models import Playlist
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        if not kwargs['sitelocation'].playlists_enabled:
+        sitelocation = kwargs['sitelocation']
+        if not sitelocation.playlists_enabled:
+            raise Http404
+        if sitelocation.playlists_enabled == 2 and \
+                not sitelocation.user_is_admin(request.user):
             raise Http404
         return func(request, *args, **kwargs)
     return wrapper
@@ -45,14 +51,29 @@ def index(request, sitelocation=None):
     if not request.user.is_authenticated():
         return redirect_to_login(request.get_full_path())
 
-    headers = [
-        {'label': 'Playlist'},
-        {'label': 'Description'},
-        {'label': 'Slug'},
-         {'label': 'Video Count'}
-        ]
+    if sitelocation.user_is_admin(request.user) and request.GET.get(
+        'show', None) == 'all':
+        headers = SortHeaders(request, (
+                ('Playlist', 'name'),
+                ('Description', None),
+                ('Slug', None),
+                ('Username', 'user__username'),
+                ('Video Count', 'items__count')
+                ))
+        playlists = Playlist.objects.all()
+    else:
+        headers = SortHeaders(request, (
+                ('Playlist', 'name'),
+                ('Description', None),
+                ('Slug', None),
+                ('Video Count', 'items__count')
+                ))
+        playlists = Playlist.objects.filter(user=request.user)
 
-    playlists = Playlist.objects.filter(user=request.user)
+    if headers.ordering == 'items__count':
+        playlists = playlists.annotate(Count('items'))
+    playlists = playlists.order_by(headers.order_by())
+
 
     formset = forms.PlaylistFormSet(queryset=playlists)
     form = forms.PlaylistForm()
