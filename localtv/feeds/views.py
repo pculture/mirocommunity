@@ -63,7 +63,7 @@ def feed_view(klass):
                 raise Http404
             else:
                 mime_type = feed.mime_type
-                output = feed.writeString('utf8')
+                output = feed.writeString('utf-8')
                 cache.cache.set(cache_key, (mime_type, output))
         else:
             mime_type, output = mime_type_and_output
