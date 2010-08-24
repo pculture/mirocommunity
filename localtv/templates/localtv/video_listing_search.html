@@ -25,6 +25,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% trans "Search" %}{% endblock %}
 
+{% block rss_link %}{% if query %}{{ block.super }}{% endif %}{% endblock %}
+
 {% block rss_url %}{% url localtv_feeds_search query %}{% endblock %}
 
 {% block body_id %}video_listing_search{% endblock body_id %}

@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   
   <h2 class="page_title">
       {% block page_title %}Page Title{% endblock %}
-      <a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>
+      {% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>{% endblock %}
   </h2>
   {% block pagination %}
     <div class="pag">
