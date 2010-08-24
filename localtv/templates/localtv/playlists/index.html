@@ -85,7 +85,7 @@
 </td>
 <td valign="middle">{{ form.instance.description|sanitize }}</td>
 <td valign="middle">{{ form.instance.slug }}</td>
-{% if user_is_admin and request.GET.show == 'all' %}<td valign="middle">{{ form.instance.user.username }}</td>{% endif %}
+{% if user_is_admin and request.GET.show == 'all' %}<td valign="middle"><a href="{% url localtv_author form.instance.user.pk %}">{{ form.instance.user.username }}</a></td>{% endif %}
 {% with form.instance.video_set.count as count %}
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ form.instance.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}
