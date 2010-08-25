@@ -1,8 +1,15 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.template import Context, loader
 
 from localtv.models import Video
 
+PLAYLIST_STATUS_PRIVATE = 0
+PLAYLIST_STATUS_WAITING_FOR_MODERATION = 1
+PLAYLIST_STATUS_PUBLIC = 2
+
 class Playlist(models.Model):
+    status = models.IntegerField(default=PLAYLIST_STATUS_PRIVATE)
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
@@ -103,3 +110,21 @@ class PlaylistItem(models.Model):
 
         # last video, return the previous video and ourself
         return (previous, self)
+
+def send_notification(sender, instance, raw, created, **kwargs):
+    if instance.status == PLAYLIST_STATUS_WAITING_FOR_MODERATION:
+        from localtv.models import SiteLocation
+        from localtv.util import send_notice
+
+        sitelocation = SiteLocation.objects.get_current()
+        t = loader.get_template('localtv/playlists/notification_email.txt')
+        c = Context({ 'playlist': instance,
+                      'sitelocation': sitelocation})
+        subject = '[%s] %s asked for a playlist to be public: %s' % (
+            sitelocation.site.name, instance.user.username, instance.name)
+        message = t.render(c)
+
+        send_notice('admin_new_playlist', subject, message,
+                    sitelocation=SiteLocation.objects.get_current())
+
+post_save.connect(send_notification, sender=Playlist)

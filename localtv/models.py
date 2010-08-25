@@ -1312,6 +1312,11 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     'A daily e-mail of the queue status',
                                     default=1,
                                     verbosity=verbosity)
+    notification.create_notice_type('admin_new_playlist',
+                                    'New Playlist',
+                                    'A new playlist asked to be public',
+                                    default=1,
+                                    verbosity=verbosity)
 
 models.signals.post_syncdb.connect(create_email_notices,
                                    sender=notification)

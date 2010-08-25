@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </script>{% endif %}
   <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.form.js" %}"></script>
   <script type="text/javascript" src="{% get_static_url "/js/comment.js" %}"></script>
-  {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or sitelocation.playlists_enabled and current_video.playlists.count %}<script type="text/javascript" src="{% get_static_url "/js/playlist.js" %}"></script>{% endif %}
+  {% if playlistitem_set or playlists %}<script type="text/javascript" src="{% get_static_url "/js/playlist.js" %}"></script>{% endif %}
   {% include "localtv/view_video_meta.html" %}
   {% if current_video.video_service %}<style>
   .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
@@ -243,9 +243,9 @@ margin: 0 auto;
     </div>
     {% endif %}
     {# The logic I want is 'if can make playlists or (items and (not playlist or more than 1 item))' #}
-    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or current_video.playlistitem_set.count %}
-    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or current_video.playlistitem_set.count != 1 or not playlistitem %}
-    {% if not playlistitem or current_video.playlistitem_set.count > 1 %}
+    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set %}
+    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
+    {% if not playlistitem or playlistitem_set|length > 1 %}
     <div class="sidebar_header">
       <h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
     </div>
@@ -253,7 +253,7 @@ margin: 0 auto;
     <div id="playlists">
       <div>
         <ul>
-          {% for item in current_video.playlistitem_set.all %}
+          {% for item in playlistitem_set %}
           {% if item != playlistitem %}
           <li>
             <div class="playlist_title">

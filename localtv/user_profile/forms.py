@@ -93,6 +93,7 @@ class NotificationsForm(forms.Form):
     ADMIN_CHOICES = (
         ('admin_new_comment', 'A new comment was left on the site'),
         ('admin_new_submission', 'A new video was submitted'),
+        ('admin_new_playlist', 'A new playlist was created'),
         ('admin_queue_daily', 'A daily update of the review queue status'),
         ('admin_queue_weekly', 'A weekly update of the review queue status'),
         )

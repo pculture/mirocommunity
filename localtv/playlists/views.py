@@ -14,7 +14,9 @@ from localtv.models import Video
 from localtv.util import SortHeaders
 
 from localtv.playlists import forms
-from localtv.playlists.models import Playlist
+from localtv.playlists.models import (Playlist, PLAYLIST_STATUS_PRIVATE,
+                                      PLAYLIST_STATUS_WAITING_FOR_MODERATION,
+                                      PLAYLIST_STATUS_PUBLIC)
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
@@ -52,20 +54,26 @@ def index(request, sitelocation=None):
         return redirect_to_login(request.get_full_path())
 
     if sitelocation.user_is_admin(request.user) and request.GET.get(
-        'show', None) == 'all':
+        'show', None) in ('all', 'waiting'):
         headers = SortHeaders(request, (
                 ('Playlist', 'name'),
                 ('Description', None),
                 ('Slug', None),
                 ('Username', 'user__username'),
+                ('Status', None),
                 ('Video Count', 'items__count')
                 ))
-        playlists = Playlist.objects.all()
+        if request.GET.get('show') == 'all':
+            playlists = Playlist.objects.all()
+        else:
+            playlists = Playlist.objects.filter(
+                status=PLAYLIST_STATUS_WAITING_FOR_MODERATION)
     else:
         headers = SortHeaders(request, (
                 ('Playlist', 'name'),
                 ('Description', None),
                 ('Slug', None),
+                ('Status', None),
                 ('Video Count', 'items__count')
                 ))
         playlists = Playlist.objects.filter(user=request.user)
@@ -85,6 +93,19 @@ def index(request, sitelocation=None):
                 if request.POST.get('bulk_action') == 'delete':
                     for form in formset.bulk_forms:
                         form.instance.delete()
+                elif request.POST.get('bulk_action') == 'public':
+                    if sitelocation.user_is_admin(request.user):
+                        new_status = PLAYLIST_STATUS_PUBLIC
+                    else:
+                        new_status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+                    for form in formset.bulk_forms:
+                        if form.instance.status < PLAYLIST_STATUS_PUBLIC:
+                            form.instance.status = new_status
+                            form.instance.save()
+                elif request.POST.get('bulk_action') == 'private':
+                    for form in formset.bulk_forms:
+                        form.instance.status = PLAYLIST_STATUS_PRIVATE
+                        form.instance.save()
                 return HttpResponseRedirect(request.path)
         else:
             video = None
@@ -179,4 +200,29 @@ def add_video(request, video_pk, sitelocation=None):
         return HttpResponseRedirect('%s?playlist=%i' % (
                 video.get_absolute_url(), playlist.pk))
     return redirect_to_login()
+
+@get_sitelocation
+@playlist_enabled
+@playlist_authorized
+def public(request, playlist, sitelocation=None):
+    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+        if sitelocation.user_is_admin(request.user):
+            playlist.status = PLAYLIST_STATUS_PUBLIC
+        else:
+            playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+        playlist.save()
+    return HttpResponseRedirect(
+        request.META.get('HTTP_REFERER',
+                         reverse('localtv_playlist_index')))
+
+
+@get_sitelocation
+@playlist_enabled
+@playlist_authorized
+def private(request, playlist, sitelocation=None):
+    playlist.status = PLAYLIST_STATUS_PRIVATE
+    playlist.save()
+    return HttpResponseRedirect(
+        request.META.get('HTTP_REFERER',
+                         reverse('localtv_playlist_index')))
 

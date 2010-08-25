@@ -18,6 +18,7 @@
 import datetime
 from django.contrib import comments
 from django.core.urlresolvers import resolve, Resolver404
+from django.db.models import Q
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -28,7 +29,8 @@ from localtv import models
 from localtv.decorators import get_sitelocation
 from localtv.listing import views as listing_views
 
-from localtv.playlists.models import Playlist
+from localtv.playlists.models import (Playlist, PlaylistItem,
+                                      PLAYLIST_STATUS_PUBLIC)
 
 @get_sitelocation
 def index(request, sitelocation=None):
@@ -128,16 +130,43 @@ def view_video(request, video_id, slug=None, sitelocation=None):
             sitelocation=sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
 
-    if request.user.is_authenticated():
-        context['playlists'] = Playlist.objects.filter(
-            user=request.user)
+    if sitelocation.playlists_enabled:
+        # showing playlists
+        user_is_admin = sitelocation.user_is_admin(request.user)
+        if request.user.is_authenticated():
+            if user_is_admin or sitelocation.playlists_enabled == 1:
+                # user can add videos to playlists
+                context['playlists'] = Playlist.objects.filter(
+                    user=request.user)
 
-    if 'playlist' in request.GET:
-        try:
-            context['playlistitem'] = video.playlistitem_set.get(
-                playlist=request.GET['playlist'])
-        except Playlist.DoesNotExist:
-            pass
+        if user_is_admin:
+            # show all playlists
+            context['playlistitem_set'] = video.playlistitem_set.all()
+        elif request.user.is_authenticated():
+            # public playlists or my playlists
+            context['playlistitem_set'] = video.playlistitem_set.filter(
+                Q(playlist__status=PLAYLIST_STATUS_PUBLIC) |
+                Q(playlist__user=request.user))
+        else:
+            # just public playlists
+            context['playlistitem_set'] = video.playlistitem_set.filter(
+                playlist__status=PLAYLIST_STATUS_PUBLIC)
+
+        if 'playlist' in request.GET:
+            try:
+                playlist = Playlist.objects.get(pk=request.GET['playlist'])
+            except Playlist.DoesNotExist:
+                pass
+            else:
+                if playlist.status == PLAYLIST_STATUS_PUBLIC or \
+                        request.user.is_authenticated() and \
+                        playlist.user_id == request.user.pk:
+                    try:
+                        context['playlistitem'] = video.playlistitem_set.get(
+                            playlist=playlist)
+                    except PlaylistItem.DoesNotExist:
+                        pass
+
     models.Watch.add(request, video)
 
     return render_to_response(
