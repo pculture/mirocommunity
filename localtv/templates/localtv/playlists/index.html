@@ -88,7 +88,7 @@
 <td valign="middle">{{ form.instance.description|sanitize }}</td>
 <td valign="middle">{{ form.instance.slug }}</td>
 {% if user_is_admin and request.GET.show == 'all' %}<td valign="middle"><a href="{% url localtv_author form.instance.user.pk %}">{{ form.instance.user.username }}</a></td>{% endif %}
-<td>{% if form.instance.status %}{% if form.instance.status == 2 %}Public{% else %}Waiting for Moderation{% endif %}{% else %}Private{% endif %}</td>
+<td>{% if form.instance.status %}<strong>{% if form.instance.status == 2 %}Public{% else %}Waiting for Moderation{% endif %}</strong> <a href="{% url localtv_playlist_private form.instance.pk %}">Private</a>{% else %}<a href="{% url localtv_playlist_public form.instance.pk %}">Public</a> <strong>Private</strong>{% endif %}</td>
 </td>
 {% with form.instance.video_set.count as count %}
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ form.instance.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
