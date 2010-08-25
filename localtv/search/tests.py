@@ -67,9 +67,15 @@ class SearchTokenizeTestCase(BaseTestCase):
 
     def test_unicode_not_latin_1(self):
         """
-        Non latin-1 characters should be ignored.
+        Non latin-1 characters should be included.
         """
-        self.assertTokenizes(u'foo\u1234bar', (u'foobar',))
+        self.assertTokenizes(u'foo\u1234bar', (u'foo\u1234bar',))
+
+    def test_blank(self):
+        """
+        A blank query should tokenize to a blank list.
+        """
+        self.assertTokenizes('', ())
 
 class AutoQueryTestCase(BaseTestCase):
 

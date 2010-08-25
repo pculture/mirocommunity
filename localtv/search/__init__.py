@@ -1,4 +1,3 @@
-import shlex
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from haystack.query import SearchQuerySet, SQ
@@ -7,24 +6,17 @@ from tagging.models import Tag
 from localtv.models import Feed, Category, SavedSearch
 from localtv.playlists.models import Playlist
 
+from localtv.search import shlex
+
 def tokenize(query):
     or_stack = []
     negative = False
-    if isinstance(query, unicode):
-        # FIXME: ignores characters not in latin-1 since shlex doesn't handle
-        # them
-        while True:
-            try:
-                query = query.encode('latin-1')
-                break
-            except UnicodeEncodeError, e:
-                # strip offending characerers
-                query = query[:e.start] + query[e.end:]
+
     while query:
         try:
-            lex = shlex.shlex(query, posix=True)
+            lex = shlex.shlex(query, posix=True, locale=True)
             lex.commenters = '' # shlex has a crazy interface
-            lex.wordchars = lex.wordchars + '-:/'
+            lex.wordchars = u'-:/_'
             tokens = list(lex)
             break
         except ValueError, e:
@@ -36,6 +28,11 @@ def tokenize(query):
                 else:
                     index = query.rfind("'")
                 query = query[:index] + query[index+1:]
+            else:
+                raise
+
+    if not query:
+        raise StopIteration
 
     for token in tokens:
         if token == '-':
@@ -60,7 +57,6 @@ def tokenize(query):
             if negative and isinstance(token, basestring):
                 negative = False
                 token = '-' + token
-            token = token.decode('latin-1')
             if or_stack:
                 or_stack[-1].append(token)
             else:
