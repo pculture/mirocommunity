@@ -1893,6 +1893,10 @@ padding: 5px;
     width: 300px;
 }
 
+/* bookmarklet page */
+body.bookmarklet ol li {
+    padding: 3px;
+}
 /* User Profiles */
 #user_profile .tabs {
     padding-top: 20px;
