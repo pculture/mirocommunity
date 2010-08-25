@@ -1361,9 +1361,17 @@ border-bottom: 1px solid #999;
 text-align: left;
 color: #fff;
 display: block;
-padding: 5px 0;
+padding: 0 0 0 10px;
+background: url(../images/arrows.gif) 0 -72px no-repeat;
 }
 
+#labels th a.sortdown {
+    background-position: 0 6px;
+}
+
+#labels th a.sortup {
+    background-position: 0 -31px;
+}
 
 #labels th.checkbox{
 text-align: left;
