@@ -54,7 +54,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <option {% ifequal request.GET.filter "no-attribution" %}selected="selected"{% endifequal %} value="no-attribution">Videos without Attribution</option>
       <option {% ifequal request.GET.filter "no-category" %}selected="selected"{% endifequal %} value="no-category">Videos without Category</option>
     </select>
-    <input type="text" class="small_field" name="q" value="{{ search_string }}" placeholder="Search Videos"/>
+    <input type="text" class="small_field" name="q" value="{{ search_string }}" placeholder="Keyword Filter"/>
     <button class="med_button" type="submit"><span>Search</span></button>
   </form>
 
