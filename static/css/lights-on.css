@@ -3494,6 +3494,7 @@ body.bulkedit td div.field {
 
 /* Playlists */
 #playlists {
+    clear: both;
     margin-bottom: 20px;
 }
 
