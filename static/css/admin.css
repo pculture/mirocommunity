@@ -1366,11 +1366,11 @@ background: url(../images/arrows.gif) 0 -72px no-repeat;
 }
 
 #labels th a.sortdown {
-    background-position: 0 6px;
+    background-position: 0 -31px;
 }
 
 #labels th a.sortup {
-    background-position: 0 -31px;
+    background-position: 0 6px;
 }
 
 #labels th.checkbox{
