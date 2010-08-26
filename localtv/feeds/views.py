@@ -26,6 +26,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
+from django.utils.cache import patch_vary_headers
 from django.utils.encoding import iri_to_uri
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
@@ -55,6 +56,7 @@ def feed_view(klass):
         cache_key = 'feed_cache:%s:%s:%i:%s:%s' % (
             sitelocation.site.domain, klass.__name__, json, args,
             repr(request.GET.items()).replace(' ', ''))
+        print cache_key
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
@@ -73,8 +75,15 @@ def feed_view(klass):
                 request.GET['jsoncallback'],
                 output)
             mime_type = 'text/javascript'
-        return HttpResponse(output,
+        if mime_type.startswith('application/') and \
+                'MSIE' in request.META.get('HTTP_USER_AGENT', ''):
+            # MSIE doesn't support application/atom+xml, so we fake it
+            mime_type = 'text/html'
+        response = HttpResponse(output,
                             mimetype=mime_type)
+        patch_vary_headers(response, ['User-Agent'])
+        print response
+        return response
     return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
