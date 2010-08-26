@@ -79,8 +79,8 @@ def sanitize(value, extra_filters=None):
     if whitelist:
         allowed_tags, allowed_attributes = extra_tags, extra_attributes
     else:
-        allowed_tags = set(allowed_tags) | set(extra_tags)
-        allowed_attributes = set(allowed_attributes) | set(extra_attributes)
+        allowed_tags = set(allowed_tags) - set(extra_tags)
+        allowed_attributes = set(allowed_attributes) - set(extra_attributes)
 
     soup = BeautifulSoup(value)
     for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):

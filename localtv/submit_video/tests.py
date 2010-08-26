@@ -205,6 +205,19 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertEquals(len(mail.outbox), 0)
         return video
 
+    def test_POST_succeed_description_no_images(self):
+        """
+        Images should be stripped from the video's description.
+        """
+        original_description = self.video_data['description']
+        self.video_data['description'] = original_description + "\
+<img src='http://www.google.com/' alt='this should be stripped' />"
+        c = Client()
+        c.post(self.url, self.POST_data)
+        video = models.Video.objects.all()[0]
+
+        self.assertEquals(video.description, original_description)
+
     def test_POST_succeed_thumbnail_file(self):
         """
         If the user uploads a thumbnail, we should use that and not the
