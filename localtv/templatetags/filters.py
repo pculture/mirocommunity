@@ -47,7 +47,8 @@ def sanitize(value, extra_filters=None):
     if value is None:
         return u''
 
-    if '<' not in value: # no HTML
+    if '<' not in value and '&#' not in value and \
+            re.search(r'&\w+;', value) is None: # no HTML
         # convert plain-text links into HTML
         return mark_safe(urlize(value,
                                 nofollow=True,
