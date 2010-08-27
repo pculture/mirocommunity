@@ -95,8 +95,8 @@ def bulk_edit(request, sitelocation=None):
             ('Video Title', 'name'),
             ('Source', 'source'),
             ('Categories', None),
-            ('Date Published', 'when_published'),
-            ('Date Imported', 'when_submitted'),
+            ('Date Published', '-when_published'),
+            ('Date Imported', '-when_submitted'),
             ))
 
     sort = headers.order_by()
