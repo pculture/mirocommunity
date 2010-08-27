@@ -53,10 +53,9 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        cache_key = 'feed_cache:%s:%s:%i:%s:%s' % (
+        cache_key = ('feed_cache:%s:%s:%i:%s:%s' % (
             sitelocation.site.domain, klass.__name__, json, args,
-            repr(request.GET.items()).replace(' ', ''))
-        print cache_key
+            repr(request.GET.items()))).replace(' ', '')
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
@@ -82,7 +81,6 @@ def feed_view(klass):
         response = HttpResponse(output,
                             mimetype=mime_type)
         patch_vary_headers(response, ['User-Agent'])
-        print response
         return response
     return wrapper
 
@@ -342,7 +340,7 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def link(self, search):
         return reverse('localtv_search') + '?' + urllib.urlencode(
-            {'q': search})
+            {'q': search.encode('utf-8')})
 
     def items(self, search):
         form = VideoSearchForm({'q': search})
@@ -356,11 +354,11 @@ class SearchVideosFeed(BaseVideosFeed):
                 pk__in=[result.pk for result in results[:LOCALTV_FEED_LENGTH]
                         if result])
         return [result.object for result in results[:LOCALTV_FEED_LENGTH]
-                if result]
+                if result.object]
 
     def title(self, search):
-        return "%s: %s" % (
-            self.sitelocation.site.name, _('Search: %s') % search)
+        return u"%s: %s" % (
+            self.sitelocation.site.name, _(u'Search: %s') % search)
 
 class PlaylistVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
@@ -372,9 +370,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def items(self, playlist):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
-            print 'backwards'
             videos = videos.order_by('-playlistitem___order')
-        print str(videos.query)
         return videos[:LOCALTV_FEED_LENGTH]
 
     def title(self, playlist):
