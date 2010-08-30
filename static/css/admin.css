@@ -2052,3 +2052,12 @@ body.playlists #submit_settings {
     position: absolute;
     right: 10px;
 }
+body.playlists .public {
+    color: green;
+}
+body.playlists .waiting {
+    color: orange;
+}
+body.playlists .private {
+    color: red;
+}
