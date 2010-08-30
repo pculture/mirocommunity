@@ -283,13 +283,14 @@ margin: 0 auto;
         {% for playlist in playlists %}
         {% if playlist not in current_video.playlists.all %}<option value="{{ playlist.pk }}">{{ playlist.name }}</option>{% endif %}
         {% endfor %}
-        <option value="new">New playlist...</option>
+        {# <option value="new">New playlist...</option> #}
       </select>
       <input type="submit" value="Add"/>
     </form>
     <form method="POST" action="{% url localtv_playlist_index %}">
-      <input type="hidden" name="name" />
+      <input type="text" name="name" />
       <input type="hidden" name="video" value="{{ current_video.pk }}">
+      <input type="submit" value="Add New Playlist">
     </form>
     {% endif %}
     {% endif %}
