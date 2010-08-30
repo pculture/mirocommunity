@@ -7,7 +7,7 @@ Videos:
 {% endfor %}
 
 You can moderate this playlist here:
-http://{{ content_object.site.domain }}{% url localtv_playlist_index %}?show=waiting
+http://{{ sitelocation.site.domain }}{% url localtv_playlist_index %}?show=waiting
 
-Make it public: http://{{ content_object.site.domain }}{% url localtv_playlist_public playlist.pk %}
-Make it private: http://{{ content_object.site.domain }}{% url localtv_playlist_private playlist.pk %}
+Make it public: http://{{ sitelocation.site.domain }}{% url localtv_playlist_public playlist.pk %}
+Make it private: http://{{ sitelocation.site.domain }}{% url localtv_playlist_private playlist.pk %}
