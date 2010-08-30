@@ -1313,9 +1313,9 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     default=1,
                                     verbosity=verbosity)
     notification.create_notice_type('admin_new_playlist',
-                                    'New Playlist',
+                                    'Request for Playlist Moderation',
                                     'A new playlist asked to be public',
-                                    default=1,
+                                    default=2,
                                     verbosity=verbosity)
 
 models.signals.post_syncdb.connect(create_email_notices,
