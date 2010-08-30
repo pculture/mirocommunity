@@ -222,6 +222,7 @@ class SortHeaders:
                 ordering[1:] == self.ordering):
                 # current sort
                 if self.desc:
+                    ordering = self.ordering
                     css_class = 'sortup'
                 else:
                     ordering = '-%s' % self.ordering
@@ -245,8 +246,8 @@ class SortHeaders:
         if sort is None:
             return None
         params = self.request.GET.copy()
-        if 'sort' in params:
-            del params['sort']
+        params.pop('sort', None)
+        params.pop('page', None)
         if sort != self.default_order:
             params['sort'] = sort
         if not params:
