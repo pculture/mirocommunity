@@ -27,10 +27,13 @@ $(document).ready(function(){
             // keep going!
             return true;
         }
-        name = prompt("Enter the name for the new playlist:");
-        if (name != null && name) {
+        if (!(name = prompt("Enter the name for the new playlist:"))) {
             return false;
         }
+        if (name == "") {
+            return false;
+        }
+
         new_playlist_form = that.next();
         new_playlist_form.find('input[name=name]').val(name);
         new_playlist_form.submit()
