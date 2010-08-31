@@ -215,9 +215,10 @@ def public(request, playlist, sitelocation=None):
         else:
             playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
         playlist.save()
-    return HttpResponseRedirect(
-        request.META.get('HTTP_REFERER',
-                         reverse('localtv_playlist_index')))
+    next = reverse('localtv_playlist_index')
+    if sitelocation.user_is_admin(request.user):
+        next = next + '?show=all'
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))
 
 
 @get_sitelocation
@@ -226,7 +227,7 @@ def public(request, playlist, sitelocation=None):
 def private(request, playlist, sitelocation=None):
     playlist.status = PLAYLIST_STATUS_PRIVATE
     playlist.save()
-    return HttpResponseRedirect(
-        request.META.get('HTTP_REFERER',
-                         reverse('localtv_playlist_index')))
-
+    next = reverse('localtv_playlist_index')
+    if sitelocation.user_is_admin(request.user):
+        next = next + '?show=all'
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))
