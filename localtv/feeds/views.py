@@ -26,16 +26,17 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
+from django.utils.cache import patch_vary_headers
 from django.utils.encoding import iri_to_uri
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
 
-import haystack.forms
 from tagging.models import Tag
 import simplejson
 
 from localtv import models
 from localtv.playlists.models import Playlist
+from localtv.search.forms import VideoSearchForm
 from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
@@ -52,9 +53,9 @@ def feed_view(klass):
         else:
             json = False
         args = args[1:]
-        cache_key = 'feed_cache:%s:%s:%i:%s:%s' % (
+        cache_key = ('feed_cache:%s:%s:%i:%s:%s' % (
             sitelocation.site.domain, klass.__name__, json, args,
-            repr(request.GET.items()).replace(' ', ''))
+            repr(request.GET.items()))).replace(' ', '')
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
@@ -63,7 +64,7 @@ def feed_view(klass):
                 raise Http404
             else:
                 mime_type = feed.mime_type
-                output = feed.writeString('utf8')
+                output = feed.writeString('utf-8')
                 cache.cache.set(cache_key, (mime_type, output))
         else:
             mime_type, output = mime_type_and_output
@@ -73,8 +74,14 @@ def feed_view(klass):
                 request.GET['jsoncallback'],
                 output)
             mime_type = 'text/javascript'
-        return HttpResponse(output,
+        if mime_type.startswith('application/') and \
+                'MSIE' in request.META.get('HTTP_USER_AGENT', ''):
+            # MSIE doesn't support application/atom+xml, so we fake it
+            mime_type = 'text/html'
+        response = HttpResponse(output,
                             mimetype=mime_type)
+        patch_vary_headers(response, ['User-Agent'])
+        return response
     return wrapper
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
@@ -333,10 +340,10 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def link(self, search):
         return reverse('localtv_search') + '?' + urllib.urlencode(
-            {'q': search})
+            {'q': search.encode('utf-8')})
 
     def items(self, search):
-        form = haystack.forms.ModelSearchForm({'q': search}, load_all=True)
+        form = VideoSearchForm({'q': search})
         if not form.is_valid():
             raise FeedDoesNotExist(search)
         results = form.search()
@@ -347,11 +354,11 @@ class SearchVideosFeed(BaseVideosFeed):
                 pk__in=[result.pk for result in results[:LOCALTV_FEED_LENGTH]
                         if result])
         return [result.object for result in results[:LOCALTV_FEED_LENGTH]
-                if result]
+                if result.object]
 
     def title(self, search):
-        return "%s: %s" % (
-            self.sitelocation.site.name, _('Search: %s') % search)
+        return u"%s: %s" % (
+            self.sitelocation.site.name, _(u'Search: %s') % search)
 
 class PlaylistVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
@@ -363,9 +370,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def items(self, playlist):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
-            print 'backwards'
             videos = videos.order_by('-playlistitem___order')
-        print str(videos.query)
         return videos[:LOCALTV_FEED_LENGTH]
 
     def title(self, playlist):

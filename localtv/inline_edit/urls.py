@@ -48,7 +48,6 @@ urlpatterns = patterns(
     (r'^video/(?P<id>[0-9]+)/thumbnail/$', 'simple.edit_field',
      {'model': models.Video, 'field': 'thumbnail'},
      'localtv_admin_video_edit_thumbnail'),
-    (r'^playlist/(?P<id>[0-9]+)/info/$', 'simple.edit_field',
-     {'model': Playlist, 'field': 'info'},
-     'localtv_admin_playlist_edit_info'),
+    (r'^playlist/([0-9]+)/info/$', 'playlist.info',
+     {}, 'localtv_admin_playlist_edit_info'),
     )

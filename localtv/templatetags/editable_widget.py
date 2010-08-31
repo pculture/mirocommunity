@@ -101,7 +101,7 @@ def editable_widget(model_instance, field_name, display_template_name=None,
         widget_data.get('reversible_post_url',
                         'localtv_admin_%s_edit_%s' % (
                 model_instance._meta.object_name.lower(),
-                field_name)), kwargs={'id': model_instance.id})
+                field_name)), args=(model_instance.id,))
 
     return render_template.render(
         template.Context(

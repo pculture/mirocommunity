@@ -330,7 +330,7 @@ class SiteLocation(Thumbnailable):
     css = models.TextField(blank=True)
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
-    playlists_enabled = models.BooleanField(default=True)
+    playlists_enabled = models.IntegerField(default=1)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -1311,6 +1311,11 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     'Daily Queue Update',
                                     'A daily e-mail of the queue status',
                                     default=1,
+                                    verbosity=verbosity)
+    notification.create_notice_type('admin_new_playlist',
+                                    'Request for Playlist Moderation',
+                                    'A new playlist asked to be public',
+                                    default=2,
                                     verbosity=verbosity)
 
 models.signals.post_syncdb.connect(create_email_notices,

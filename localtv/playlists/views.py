@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import (Http404, HttpResponseRedirect,
                          HttpResponsePermanentRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
@@ -10,13 +11,20 @@ from django.views.generic.list_detail import object_list
 
 from localtv.decorators import get_sitelocation
 from localtv.models import Video
+from localtv.util import SortHeaders
 
 from localtv.playlists import forms
-from localtv.playlists.models import Playlist
+from localtv.playlists.models import (Playlist, PLAYLIST_STATUS_PRIVATE,
+                                      PLAYLIST_STATUS_WAITING_FOR_MODERATION,
+                                      PLAYLIST_STATUS_PUBLIC)
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        if not kwargs['sitelocation'].playlists_enabled:
+        sitelocation = kwargs['sitelocation']
+        if not sitelocation.playlists_enabled:
+            raise Http404
+        if sitelocation.playlists_enabled == 2 and \
+                not sitelocation.user_is_admin(request.user):
             raise Http404
         return func(request, *args, **kwargs)
     return wrapper
@@ -45,14 +53,35 @@ def index(request, sitelocation=None):
     if not request.user.is_authenticated():
         return redirect_to_login(request.get_full_path())
 
-    headers = [
-        {'label': 'Playlist'},
-        {'label': 'Description'},
-        {'label': 'Slug'},
-         {'label': 'Video Count'}
-        ]
+    if sitelocation.user_is_admin(request.user) and request.GET.get(
+        'show', None) in ('all', 'waiting'):
+        headers = SortHeaders(request, (
+                ('Playlist', 'name'),
+                ('Description', None),
+                ('Slug', None),
+                ('Username', 'user__username'),
+                ('Status', None),
+                ('Video Count', 'items__count')
+                ))
+        if request.GET.get('show') == 'all':
+            playlists = Playlist.objects.all()
+        else:
+            playlists = Playlist.objects.filter(
+                status=PLAYLIST_STATUS_WAITING_FOR_MODERATION)
+    else:
+        headers = SortHeaders(request, (
+                ('Playlist', 'name'),
+                ('Description', None),
+                ('Slug', None),
+                ('Status', None),
+                ('Video Count', 'items__count')
+                ))
+        playlists = Playlist.objects.filter(user=request.user)
 
-    playlists = Playlist.objects.filter(user=request.user)
+    if headers.ordering == 'items__count':
+        playlists = playlists.annotate(Count('items'))
+    playlists = playlists.order_by(headers.order_by())
+
 
     formset = forms.PlaylistFormSet(queryset=playlists)
     form = forms.PlaylistForm()
@@ -64,6 +93,19 @@ def index(request, sitelocation=None):
                 if request.POST.get('bulk_action') == 'delete':
                     for form in formset.bulk_forms:
                         form.instance.delete()
+                elif request.POST.get('bulk_action') == 'public':
+                    if sitelocation.user_is_admin(request.user):
+                        new_status = PLAYLIST_STATUS_PUBLIC
+                    else:
+                        new_status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+                    for form in formset.bulk_forms:
+                        if form.instance.status < PLAYLIST_STATUS_PUBLIC:
+                            form.instance.status = new_status
+                            form.instance.save()
+                elif request.POST.get('bulk_action') == 'private':
+                    for form in formset.bulk_forms:
+                        form.instance.status = PLAYLIST_STATUS_PRIVATE
+                        form.instance.save()
                 return HttpResponseRedirect(request.path)
         else:
             video = None
@@ -101,6 +143,10 @@ def view(request, pk, slug=None, count=15, sitelocation=None):
     """
     playlist = get_object_or_404(Playlist,
                                  pk=pk)
+    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+        if not sitelocation.user_is_admin(request.user) and \
+                request.user != playlist.user:
+            raise Http404
     if request.path != playlist.get_absolute_url():
         return HttpResponsePermanentRedirect(playlist.get_absolute_url())
     return object_list(
@@ -159,3 +205,29 @@ def add_video(request, video_pk, sitelocation=None):
                 video.get_absolute_url(), playlist.pk))
     return redirect_to_login()
 
+@get_sitelocation
+@playlist_enabled
+@playlist_authorized
+def public(request, playlist, sitelocation=None):
+    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+        if sitelocation.user_is_admin(request.user):
+            playlist.status = PLAYLIST_STATUS_PUBLIC
+        else:
+            playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+        playlist.save()
+    next = reverse('localtv_playlist_index')
+    if sitelocation.user_is_admin(request.user):
+        next = next + '?show=all'
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))
+
+
+@get_sitelocation
+@playlist_enabled
+@playlist_authorized
+def private(request, playlist, sitelocation=None):
+    playlist.status = PLAYLIST_STATUS_PRIVATE
+    playlist.save()
+    next = reverse('localtv_playlist_index')
+    if sitelocation.user_is_admin(request.user):
+        next = next + '?show=all'
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))

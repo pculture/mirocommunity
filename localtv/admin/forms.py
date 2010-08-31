@@ -439,9 +439,13 @@ class EditSettingsForm(forms.ModelForm):
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.",
         required=False)
-    playlists_enabled = forms.BooleanField(
+    playlists_enabled = forms.ChoiceField(
         label="Enable Playlists?",
-        required=False)
+        required=False,
+        choices=(
+            (0, 'No'),
+            (1, 'Yes'),
+            (2, 'Admins Only')))
 
     class Meta:
         model = models.SiteLocation
@@ -470,6 +474,9 @@ class EditSettingsForm(forms.ModelForm):
             name, ext = os.path.splitext(background.name)
             background.name = name[:60] + ext
         return background
+
+    def clean_playlists_enabled(self):
+        return self.cleaned_data.get('playlists_enabled') or 0
 
     def save(self):
         sl = forms.ModelForm.save(self)

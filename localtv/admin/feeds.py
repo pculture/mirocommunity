@@ -19,7 +19,7 @@ import hashlib
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.utils.translation import ugettext as _
 
 from localtv.feeds import views
@@ -55,16 +55,10 @@ class UnapprovedVideosFeed(views.BaseVideosFeed):
         return videos[:views.LOCALTV_FEED_LENGTH]
 
 
-@verify_secret
-def unapproved(request):
-    feed = UnapprovedVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf-8'))
-
-
 class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Featured Videos'))
+            self.sitelocation.site.name, _('Unapproved User Submissions'))
 
     def items(self):
         videos = models.Video.objects.filter(
@@ -76,8 +70,5 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
         return videos[:views.LOCALTV_FEED_LENGTH]
 
 
-@verify_secret
-def unapproved_user(request):
-    feed = UnapprovedUserVideosFeed(None, request).get_feed(None)
-    return HttpResponse(feed.writeString('utf-8'))
-
+unapproved = verify_secret(views.feed_view(UnapprovedUserVideosFeed))
+unapproved_user = verify_secret(views.feed_view(UnapprovedUserVideosFeed))

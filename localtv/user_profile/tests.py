@@ -227,16 +227,18 @@ class NotificationsFormTestCase(TestCase):
         """
         admin = User.objects.get(username='admin')
         form = forms.NotificationsForm(instance=admin)
-        self.assertEquals(len(form.fields['notifications'].choices), 6)
+        self.assertEquals(len(form.fields['notifications'].choices), 7)
         self.assertEquals(form.initial, {
-                'notifications': ['video_approved', 'video_comment']
+                'notifications': ['video_approved', 'video_comment',
+                                  'admin_new_playlist']
                 })
 
         superuser = User.objects.get(username='superuser')
         form = forms.NotificationsForm(instance=superuser)
-        self.assertEquals(len(form.fields['notifications'].choices), 6)
+        self.assertEquals(len(form.fields['notifications'].choices), 7)
         self.assertEquals(form.initial, {
-                'notifications': ['video_approved', 'video_comment']
+                'notifications': ['video_approved', 'video_comment',
+                                  'admin_new_playlist']
                 })
 
     def test_save_admin_settings(self):

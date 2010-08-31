@@ -38,7 +38,7 @@ class BasePlaylistFormSet(BulkFormSetMixin, BaseModelFormSet):
 PlaylistFormSet = modelformset_factory(models.Playlist,
                                        formset=BasePlaylistFormSet,
                                        exclude=['name', 'description', 'slug',
-                                                'user', 'items'],
+                                                'user', 'items', 'status'],
                                        extra=0,
                                        can_delete=True)
 # just used for the ordering

@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    $("#id_playlist").append('<option value="new">New Playlist...</option>');
+    $("#playlists + form + form").hide()
     $("#playlists .playlist_thumbs").hide()
     $("#playlists .playlist_title > a").each(function(){
         flip = 0;
@@ -25,10 +27,13 @@ $(document).ready(function(){
             // keep going!
             return true;
         }
-        name = prompt("Enter the name for the new playlist:");
-        if (!name) {
+        if (!(name = prompt("Enter the name for the new playlist:"))) {
             return false;
         }
+        if (name == "") {
+            return false;
+        }
+
         new_playlist_form = that.next();
         new_playlist_form.find('input[name=name]').val(name);
         new_playlist_form.submit()

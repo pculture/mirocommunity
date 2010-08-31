@@ -1361,9 +1361,17 @@ border-bottom: 1px solid #999;
 text-align: left;
 color: #fff;
 display: block;
-padding: 5px 0;
+padding: 0 0 0 10px;
+background: url(../images/arrows.gif) 0 -72px no-repeat;
 }
 
+#labels th a.sortdown {
+    background-position: 0 -31px;
+}
+
+#labels th a.sortup {
+    background-position: 0 6px;
+}
 
 #labels th.checkbox{
 text-align: left;
@@ -1893,6 +1901,10 @@ padding: 5px;
     width: 300px;
 }
 
+/* bookmarklet page */
+body.bookmarklet ol li {
+    padding: 3px;
+}
 /* User Profiles */
 #user_profile .tabs {
     padding-top: 20px;
@@ -2039,4 +2051,13 @@ body.playlists .bulkedit_controls {
 body.playlists #submit_settings {
     position: absolute;
     right: 10px;
+}
+body.playlists .public {
+    color: green;
+}
+body.playlists .waiting {
+    color: orange;
+}
+body.playlists .private {
+    color: red;
 }

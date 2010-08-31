@@ -58,10 +58,20 @@
 {% endblock %}
 
 {% block labels %}
+   {% if user_is_admin %}
+   <ul class="only_show">
+     <label>Show:</label>
+     <li{% if request.GET.show == 'all' %} class="selected"{% endif %}><a href="{% url localtv_playlist_index %}?show=all">All Playlists</a></li>
+     <li{% if request.GET.show == 'waiting' %} class="selected"{% endif %}><a href="{% url localtv_playlist_index %}?show=waiting">Playlists Waiting for Moderation</a></li>
+     <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url localtv_playlist_index %}">My Playlists</a></li>
+</ul>
+     {% endif %}
 <div class="bulkedit_controls">
   <select name="action" id="bulk_action_selector">
     <option value="">Bulk Actions</option>
     <option value="delete">Delete</option>
+    <option value="public">Make Public</option>
+    <option value="private">Make Private</option>
   </select>
   <button type="button" class="med_button" onclick="bulkAction();"><span>Apply</span></button>
 </div>
@@ -78,6 +88,9 @@
 </td>
 <td valign="middle">{{ form.instance.description|sanitize }}</td>
 <td valign="middle">{{ form.instance.slug }}</td>
+{% if user_is_admin and request.GET.show == 'all' %}<td valign="middle"><a href="{% url localtv_author form.instance.user.pk %}">{{ form.instance.user.username }}</a></td>{% endif %}
+<td>{% if form.instance.status %}{% if form.instance.status == 2 %}<strong class="public">Public{% else %}<strong class="waiting">Waiting for Moderation{% endif %}</strong> {% if user_is_admin and form.instance.status == 1 %}<a href="{% url localtv_playlist_public form.instance.pk %}">Public</a> {% endif %}<a href="{% url localtv_playlist_private form.instance.pk %}">Private</a>{% else %}<a href="{% url localtv_playlist_public form.instance.pk %}">Public</a> <strong class="private">Private</strong>{% endif %}</td>
+</td>
 {% with form.instance.video_set.count as count %}
 <td valign="middle">{% if not count %}{{ count }}{% else %}<a href="{{ form.instance.get_absolute_url }}">{{ count }}</a>{% endif %}</td>
 {% endwith %}

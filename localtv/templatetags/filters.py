@@ -47,7 +47,8 @@ def sanitize(value, extra_filters=None):
     if value is None:
         return u''
 
-    if '<' not in value: # no HTML
+    if '<' not in value and '&#' not in value and \
+            re.search(r'&\w+;', value) is None: # no HTML
         # convert plain-text links into HTML
         return mark_safe(urlize(value,
                                 nofollow=True,
@@ -79,8 +80,8 @@ def sanitize(value, extra_filters=None):
     if whitelist:
         allowed_tags, allowed_attributes = extra_tags, extra_attributes
     else:
-        allowed_tags = set(allowed_tags) | set(extra_tags)
-        allowed_attributes = set(allowed_attributes) | set(extra_attributes)
+        allowed_tags = set(allowed_tags) - set(extra_tags)
+        allowed_attributes = set(allowed_attributes) - set(extra_attributes)
 
     soup = BeautifulSoup(value)
     for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):

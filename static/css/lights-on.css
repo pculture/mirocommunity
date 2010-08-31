@@ -3493,7 +3493,13 @@ body.bulkedit td div.field {
 }
 
 /* Playlists */
+.playlist_title a {
+    color: #4190E4;
+    text-decoration: none;
+    text-shadow: none;
+}
 #playlists {
+    clear: both;
     margin-bottom: 20px;
 }
 

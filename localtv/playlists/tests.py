@@ -1,11 +1,17 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.core import mail
 from django.test.client import Client
 
 from localtv.tests import BaseTestCase
 from localtv.models import Video
 
-from localtv.playlists.models import Playlist, PlaylistItem
+from localtv.playlists.models import (Playlist, PlaylistItem,
+                                      PLAYLIST_STATUS_PUBLIC,
+                                      PLAYLIST_STATUS_WAITING_FOR_MODERATION,
+                                      PLAYLIST_STATUS_PRIVATE)
+
+from notification import models as notification
 
 class PlaylistBaseTestCase(BaseTestCase):
 
@@ -135,6 +141,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertEquals(playlist.name, data['name'])
         self.assertEquals(playlist.slug, data['slug'])
         self.assertEquals(playlist.description, data['description'])
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PRIVATE)
         self.assertEquals(playlist.video_set.count(), 0)
 
     def test_add_with_video_success(self):
@@ -159,6 +166,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertEquals(playlist.name, data['name'])
         self.assertEquals(playlist.slug, 'new-playlist')
         self.assertEquals(playlist.description, '')
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PRIVATE)
         self.assertEquals(list(playlist.video_set.all()), [video])
 
     def test_add_failure(self):
@@ -260,6 +268,94 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
                           pk=self.list.pk)
 
+    def test_bulk_public(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'public' action should mark those videos
+        as waiting for moderation.
+        """
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_playlist')
+        setting = notification.get_notification_setting(
+            User.objects.get(username='admin'),
+            notice_type,
+            "1")
+        setting.send = True
+        setting.save()
+        url = reverse('localtv_playlist_index')
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'public'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status,
+                          PLAYLIST_STATUS_WAITING_FOR_MODERATION)
+        self.assertEquals(len(mail.outbox), 1)
+
+    def test_bulk_public_admin(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'public' action should mark those videos
+        as public if the user is an admin.
+        """
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_playlist')
+        setting = notification.get_notification_setting(
+            User.objects.get(username='admin'),
+            notice_type,
+            "1")
+        setting.send = True
+        setting.save()
+        url = reverse('localtv_playlist_index') + '?show=all'
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'public'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PUBLIC)
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_bulk_private(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'private' action should mark those videos
+        as private.
+        """
+        self.list.status = PLAYLIST_STATUS_PUBLIC
+        self.list.save()
+
+        url = reverse('localtv_playlist_index')
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'private'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PRIVATE)
+
     def test_add_video(self):
         """
         A POST to the add_video view should add the video with the given PK to
@@ -324,6 +420,9 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         The view view should render the 'localtv/playlists/view.html' template
         and include the playlist in the context.
         """
+        self.list.status = PLAYLIST_STATUS_PUBLIC
+        self.list.save()
+
         url = reverse('localtv_playlist_view', args=(
                 self.list.pk, self.list.slug))
         c = Client()
@@ -339,6 +438,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         URL.
         """
         c = Client()
+        c.login(username='user', password='password')
         for url in (reverse('localtv_playlist_view', args=(self.list.pk,)),
                     reverse('localtv_playlist_view', args=(self.list.pk,
                                                            'fake-slug'))):
@@ -347,6 +447,16 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             self.assertEquals(response['Location'], 'http://%s%s' % (
                     self.site_location.site.domain,
                     self.list.get_absolute_url()))
+
+    def test_view_404(self):
+        """
+        If the playlist isn't public, the page should return a 404.
+        """
+        url = reverse('localtv_playlist_view', args=(
+                self.list.pk, self.list.slug))
+        c = Client()
+        response = c.get(url, follow=True)
+        self.assertStatusCodeEquals(response, 404)
 
     def test_edit(self):
         """
@@ -505,6 +615,81 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertEquals(list(playlist.video_set.all()),
                           self.video_set[:2:-1] + self.video_set[1::-1])
 
+    def test_public(self):
+        """
+        The localtv_playlist_public view should set the playlist's status to
+        PLAYLIST_STATUS_WAITING_FOR_MODERATION and send a notification e-mail.
+        """
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_playlist')
+        setting = notification.get_notification_setting(
+            User.objects.get(username='admin'),
+            notice_type,
+            "1")
+        setting.send = True
+        setting.save()
+
+        url = reverse('localtv_playlist_public', args=(self.list.pk,))
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status,
+                          PLAYLIST_STATUS_WAITING_FOR_MODERATION)
+        self.assertEquals(len(mail.outbox), 1)
+
+    def test_public_admin(self):
+        """
+        The localtv_playlist_public view should set the playlist's status to
+        PLAYLIST_STATUS_WAITING_FOR_MODERATION and send a notification e-mail.
+        """
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_new_playlist')
+        setting = notification.get_notification_setting(
+            User.objects.get(username='admin'),
+            notice_type,
+            "1")
+        setting.send = True
+        setting.save()
+
+        url = reverse('localtv_playlist_public', args=(self.list.pk,))
+        c = Client()
+        c.login(username='superuser', password='superuser')
+        response = c.post(url, {})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s?show=all' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PUBLIC)
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_private(self):
+        """
+        The localtv_playlist_private view should set the playlist's status to
+        PLAYLIST_STATUS_PRIVATE.
+        """
+        self.list.status = PLAYLIST_STATUS_PUBLIC
+        self.list.save()
+
+        url = reverse('localtv_playlist_private', args=(self.list.pk,))
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEquals(response['Location'], 'http://%s%s' % (
+                self.site_location.site.domain,
+                reverse('localtv_playlist_index')))
+
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEquals(playlist.status, PLAYLIST_STATUS_PRIVATE)
+
     def test_disabled(self):
         """
         If playlists are disabled, every playlist view should return a 404.
@@ -516,7 +701,9 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         for view, args in (('localtv_playlist_index', ()),
                      ('localtv_playlist_view', (1,)),
                      ('localtv_playlist_edit', (1,)),
-                     ('localtv_playlist_add_video', (1,))):
+                     ('localtv_playlist_add_video', (1,)),
+                     ('localtv_playlist_public', (1,)),
+                     ('localtv_playlist_private', (1,)),):
             url = reverse(view, args=args)
             response = c.get(url, follow=True)
             self.assertStatusCodeEquals(response, 404)

@@ -23,6 +23,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block page_title %}Popular Videos{% endblock %}
 
+{% block rss_url %}{% url localtv_feeds_popular %}{% endblock %}
+
 {% block title %}{{ block.super }} - {% trans "Popular Videos" %}{% endblock %}
 
 {% block body_id %}video_listing_popular{% endblock body_id %}

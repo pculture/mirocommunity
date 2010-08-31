@@ -184,9 +184,6 @@ class SortHeaders:
     def __init__(self, request, headers, default_order=None):
         self.request = request
         self.header_defs = headers
-        self.reverse_header = {}
-        for header, ordering in headers:
-            self.reverse_header[ordering] = header
         if default_order is None:
             for header, ordering in headers:
                 if ordering is not None:
@@ -206,8 +203,12 @@ class SortHeaders:
         if sort.startswith('-'):
             desc = True
             sort = sort[1:]
-        if sort and sort in self.reverse_header:
-            self.ordering, self.desc = sort, desc
+        if sort:
+            for header, ordering in headers:
+                if ordering and ordering.startswith('-'):
+                    ordering = ordering[1:]
+                if sort == ordering:
+                    self.ordering, self.desc = sort, desc
 
     def headers(self):
         """
@@ -216,9 +217,12 @@ class SortHeaders:
         """
         for header, ordering in self.header_defs:
             css_class = ''
-            if ordering == self.ordering:
+            if ordering == self.ordering or (
+                ordering and ordering.startswith('-') and
+                ordering[1:] == self.ordering):
                 # current sort
                 if self.desc:
+                    ordering = self.ordering
                     css_class = 'sortup'
                 else:
                     ordering = '-%s' % self.ordering
@@ -242,8 +246,8 @@ class SortHeaders:
         if sort is None:
             return None
         params = self.request.GET.copy()
-        if 'sort' in params:
-            del params['sort']
+        params.pop('sort', None)
+        params.pop('page', None)
         if sort != self.default_order:
             params['sort'] = sort
         if not params:
