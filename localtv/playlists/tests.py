@@ -662,7 +662,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='superuser', password='superuser')
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
+        self.assertEquals(response['Location'], 'http://%s%s?show=all' % (
                 self.site_location.site.domain,
                 reverse('localtv_playlist_index')))
 
