@@ -41,8 +41,8 @@ def users(request, sitelocation=None):
     users = users.order_by(headers.order_by())
     if request.GET.get('show', None) != 'all':
         filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))
-        if 'localtv_openid' in settings.INSTALLED_APPS:
-            filters = filters | ~Q(openiduser=None)
+        if 'socialauth' in settings.INSTALLED_APPS:
+            filters = filters | ~Q(authmeta=None)
         users = users.filter(filters)
     formset = forms.AuthorFormSet(queryset=users)
     add_user_form = forms.AuthorForm()
