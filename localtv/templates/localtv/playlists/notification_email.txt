@@ -1,9 +1,9 @@
-{{ playlist.user.username }} has asked for their playlist to become public.
+{{ playlist.user.username|safe }} has asked for their playlist to become public.
 
-Name: {{ playlist.name }}
+Name: {{ playlist.name|safe }}
 URL: http://{{ sitelocation.site.domain }}{{ playlist.get_absolute_url }}
 Videos:
-{% for video in playlist.video_set %}#{{ forloop.counter }}: {{ video.name }}
+{% for video in playlist.video_set %}#{{ forloop.counter }}: {{ video.name|safe }}
 {% endfor %}
 
 You can moderate this playlist here:
