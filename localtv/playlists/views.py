@@ -143,6 +143,10 @@ def view(request, pk, slug=None, count=15, sitelocation=None):
     """
     playlist = get_object_or_404(Playlist,
                                  pk=pk)
+    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+        if not sitelocation.user_is_admin(request.user) and \
+                request.user != playlist.user:
+            raise Http404
     if request.path != playlist.get_absolute_url():
         return HttpResponsePermanentRedirect(playlist.get_absolute_url())
     return object_list(
