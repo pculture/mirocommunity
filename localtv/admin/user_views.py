@@ -23,14 +23,13 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.admin import forms
 from localtv.util import SortHeaders
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def users(request, sitelocation=None):
+def users(request):
     headers = SortHeaders(request, (
             ('Username', 'username'),
             ('Email', None),

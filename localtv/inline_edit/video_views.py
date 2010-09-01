@@ -19,26 +19,25 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.inline_edit import forms
 from localtv.models import Video
 from localtv.templatetags.editable_widget import editable_widget
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def editors_comment(request, id, sitelocation=None):
+def editors_comment(request, id):
     obj = get_object_or_404(
         Video,
         id=id,
-        site=sitelocation.site)
+        site=request.sitelocation.site)
 
     edit_form = forms.VideoEditorsComment(request.POST, instance=obj)
 
     if edit_form.is_valid():
         comment = edit_form.save(commit=False)
         if comment:
-            comment.site = sitelocation.site
+            comment.site = request.sitelocation.site
             comment.user = request.user
             comment.save()
             edit_form.save_m2m()

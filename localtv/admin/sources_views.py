@@ -26,7 +26,7 @@ from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.util import SortHeaders, MockQueryset
 from localtv.admin import forms
@@ -42,9 +42,8 @@ VIDEO_SERVICE_TITLES = (
 ## -------------------
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def manage_sources(request, sitelocation=None):
+def manage_sources(request):
     headers = SortHeaders(request, (
             ('Source', 'name__lower'),
             ('Categories', None),
@@ -61,11 +60,11 @@ def manage_sources(request, sitelocation=None):
     else:
         orm_sort = sort
     feeds = models.Feed.objects.filter(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.FEED_STATUS_ACTIVE).extra(select={
             'name__lower': 'LOWER(name)'}).order_by(orm_sort)
     searches = models.SavedSearch.objects.filter(
-        site=sitelocation.site).extra(select={
+        site=request.sitelocation.site).extra(select={
             'name__lower': 'LOWER(query_string)'}).order_by(
             orm_sort)
 
@@ -160,7 +159,7 @@ def manage_sources(request, sitelocation=None):
             'search_string': search_string,
             'source_filter': source_filter,
             'categories': models.Category.objects.filter(
-                site=sitelocation.site),
+                site=request.sitelocation.site),
             'users': User.objects.order_by('username'),
             'successful': 'successful' in request.GET,
             'formset': formset},

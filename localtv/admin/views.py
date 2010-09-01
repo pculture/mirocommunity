@@ -18,22 +18,21 @@ from django.contrib import comments
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv import models
 
 @require_site_admin
-@get_sitelocation
-def index(request, sitelocation=None):
+def index(request):
     """
     Simple index page for the admin site.
     """
     return render_to_response(
         'localtv/admin/index.html',
         {'total_count': models.Video.objects.filter(
-                site=sitelocation.site,
+                site=request.sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE).count(),
          'unreviewed_count': models.Video.objects.filter(
-                site=sitelocation.site,
+                site=request.sitelocation.site,
                 status=models.VIDEO_STATUS_UNAPPROVED).count(),
          'comment_count': comments.get_model().objects.filter(
                 is_public=False, is_removed=False).count()},

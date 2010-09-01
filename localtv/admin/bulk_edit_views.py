@@ -26,7 +26,7 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.admin import forms
 from localtv.util import SortHeaders, MockQueryset
@@ -39,13 +39,12 @@ except ImportError:
             return getattr(obj, name)()
         return wrapper
 
-@get_sitelocation
 @require_site_admin
 @csrf_protect
-def bulk_edit(request, sitelocation=None):
+def bulk_edit(request):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
-        site=sitelocation.site)
+        site=request.sitelocation.site)
     videos = videos.select_related('feed', 'search', 'site')
 
     if 'filter' in request.GET:
@@ -55,7 +54,7 @@ def bulk_edit(request, sitelocation=None):
         elif filter_type == 'rejected':
             videos = models.Video.objects.filter(
                 status=models.VIDEO_STATUS_REJECTED,
-                site=sitelocation.site)
+                site=request.sitelocation.site)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
@@ -189,6 +188,6 @@ def bulk_edit(request, sitelocation=None):
                                'search_string': search_string,
                                'page': page,
                                'categories': models.Category.objects.filter(
-                site=sitelocation.site),
+                site=request.sitelocation.site),
                                'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

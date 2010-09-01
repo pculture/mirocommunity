@@ -40,8 +40,18 @@ class FixAJAXMiddleware:
             response['Location'] = urlparse.urlunparse(parts)
         return response
 
+class SiteLocationMiddleware(object):
+    """
+    Makes the SiteLocation an attribute of the request, since nearly every view
+    uses it.
+    """
+    def process_request(self, request):
+        request.sitelocation = models.SiteLocation.objects.get_current()
+        request.user_is_admin = request.sitelocation.user_is_admin(
+            request.user)
+
 def context_processor(request):
-    sitelocation = models.SiteLocation.objects.get_current()
+    sitelocation = request.sitelocation
 
     display_submit_button = sitelocation.display_submit_button
     if display_submit_button:
@@ -61,7 +71,7 @@ def context_processor(request):
     return  {
         'sitelocation': sitelocation,
         'request': request,
-        'user_is_admin': sitelocation.user_is_admin(request.user),
+        'user_is_admin': request.user_is_admin,
         'categories':  models.Category.objects.filter(site=sitelocation.site,
                                                       parent=None),
         'cache_invalidator': cache_invalidator,

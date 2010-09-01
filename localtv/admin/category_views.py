@@ -20,16 +20,15 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.models import Category
 from localtv.util import MockQueryset
 from localtv.admin import forms
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def categories(request, sitelocation=None):
-    categories = MockQueryset(Category.in_order(sitelocation.site))
+def categories(request):
+    categories = MockQueryset(Category.in_order(request.sitelocation.site))
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
@@ -42,7 +41,7 @@ def categories(request, sitelocation=None):
         submit_value = request.POST.getlist('submit')
         if submit_value:
             if submit_value[0] == 'Add':
-                category = Category(site=sitelocation.site)
+                category = Category(site=request.sitelocation.site)
                 add_category_form = forms.CategoryForm(request.POST,
                                                        request.FILES,
                                                        instance=category)

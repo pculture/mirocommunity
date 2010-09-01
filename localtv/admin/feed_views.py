@@ -35,8 +35,7 @@ import celery
 from importlib import import_module
 import simplejson
 
-from localtv.decorators import get_sitelocation, require_site_admin, \
-    referrer_redirect
+from localtv.decorators import require_site_admin, referrer_redirect
 from localtv import models, tasks, util
 from localtv.admin import forms
 
@@ -52,9 +51,8 @@ VIDEO_SERVICE_TITLES = (
     )
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def add_feed(request, sitelocation=None):
+def add_feed(request):
     add_form = forms.AddFeedForm(request.GET)
 
     if not add_form.is_valid():
@@ -93,7 +91,7 @@ def add_feed(request, sitelocation=None):
         if form.is_valid():
             feed, created = models.Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=sitelocation.site,
+                site=request.sitelocation.site,
                 defaults=defaults)
 
             if not created:
@@ -138,8 +136,7 @@ def add_feed(request, sitelocation=None):
 
 
 @require_site_admin
-@get_sitelocation
-def add_feed_done(request, feed_id, sitelocation):
+def add_feed_done(request, feed_id):
     feed = get_object_or_404(models.Feed, pk=feed_id)
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
@@ -180,12 +177,11 @@ def add_feed_done(request, feed_id, sitelocation):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def feed_auto_approve(request, feed_id, sitelocation=None):
+def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
         models.Feed,
         id=feed_id,
-        site=sitelocation.site)
+        site=request.sitelocation.site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

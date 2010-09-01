@@ -21,17 +21,16 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.admin import forms
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def index(request, sitelocation=None):
+def index(request):
     headers = [
         {'label': 'Page Name'},
         {'label': 'URL'}]
-    flatpages = FlatPage.objects.filter(sites=sitelocation.site)
+    flatpages = FlatPage.objects.filter(sites=request.sitelocation.site)
     formset = forms.FlatPageFormSet(queryset=flatpages)
 
     form = forms.FlatPageForm()
@@ -47,7 +46,7 @@ def index(request, sitelocation=None):
 
             if form.is_valid():
                 flatpage = form.save()
-                flatpage.sites.add(sitelocation.site)
+                flatpage.sites.add(request.sitelocation.site)
                 return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/admin/flatpages.html',

@@ -21,7 +21,6 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
 from localtv import models
-from localtv.decorators import get_sitelocation
 
 def widget(func):
     def wrapper(request, *args, **kwargs):
@@ -38,10 +37,9 @@ def widget(func):
     return wrapper
 
 @widget
-@get_sitelocation
-def featured(request, sitelocation):
+def featured(request):
     featured_videos = models.Video.objects.filter(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
@@ -50,17 +48,15 @@ def featured(request, sitelocation):
     return featured_videos
 
 @widget
-@get_sitelocation
-def new(request, sitelocation):
+def new(request):
     new_videos = models.Video.objects.new(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     return new_videos
 
 @widget
-@get_sitelocation
-def popular(request, sitelocation):
+def popular(request):
     popular_videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation=sitelocation,
+        datetime.timedelta(days=7), sitelocation=request.sitelocation,
         status=models.VIDEO_STATUS_ACTIVE)
     return popular_videos

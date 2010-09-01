@@ -29,17 +29,6 @@ def _make_safe(decorator, original):
     decorator.__doc__ = original.__doc__
     return decorator
 
-def get_sitelocation(view_func):
-    """
-    Push the current sitelocation as part of the view's arguments
-    """
-    def new_view_func(request, *args, **kwargs):
-        sitelocation = models.SiteLocation.objects.get_current()
-        return view_func(request, sitelocation=sitelocation, *args, **kwargs)
-
-    return _make_safe(new_view_func, view_func)
-
-
 def request_passes_test(test_func):
     def decorate(view_func):
         def new_view_func(request, *args, **kwargs):
@@ -53,11 +42,7 @@ def request_passes_test(test_func):
     return decorate
 
 
-def _check_site_admin(request):
-    sitelocation = models.SiteLocation.objects.get_current()
-    return sitelocation.user_is_admin(request.user)
-
-require_site_admin = request_passes_test(_check_site_admin)
+require_site_admin = request_passes_test(lambda request: request.user_is_admin)
 
 def referrer_redirect(view_func):
     def new_view_func(request, *args, **kwargs):

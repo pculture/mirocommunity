@@ -25,7 +25,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin, \
+from localtv.decorators import require_site_admin, \
     referrer_redirect
 from localtv import models
 from localtv.admin import feeds
@@ -47,11 +47,10 @@ def get_video_paginator(sitelocation):
     return Paginator(videos, 10)
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def approve_reject(request, sitelocation=None):
+def approve_reject(request):
     if request.method == "GET":
-        video_paginator = get_video_paginator(sitelocation)
+        video_paginator = get_video_paginator(request.sitelocation)
         try:
             page = video_paginator.page(int(request.GET.get('page', 1)))
         except ValueError:
@@ -76,13 +75,12 @@ def approve_reject(request, sitelocation=None):
 
 
 @require_site_admin
-@get_sitelocation
-def preview_video(request, sitelocation=None):
+def preview_video(request):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
         status=models.VIDEO_STATUS_UNAPPROVED,
-        site=sitelocation.site)
+        site=request.sitelocation.site)
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': current_video},
@@ -91,12 +89,11 @@ def preview_video(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def approve_video(request, sitelocation=None):
+def approve_video(request):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        site=sitelocation.site)
+        site=request.sitelocation.site)
     current_video.status = models.VIDEO_STATUS_ACTIVE
     current_video.when_approved = datetime.datetime.now()
 
@@ -124,12 +121,11 @@ def approve_video(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def reject_video(request, sitelocation=None):
+def reject_video(request):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        site=sitelocation.site)
+        site=request.sitelocation.site)
     current_video.status = models.VIDEO_STATUS_REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
@@ -137,11 +133,10 @@ def reject_video(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def feature_video(request, sitelocation=None):
+def feature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation.site)
     if current_video.status != models.VIDEO_STATUS_ACTIVE:
         current_video.status = models.VIDEO_STATUS_ACTIVE
         current_video.when_approved = datetime.datetime.now()
@@ -153,11 +148,10 @@ def feature_video(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def unfeature_video(request, sitelocation=None):
+def unfeature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation.site)
     current_video.last_featured = None
     current_video.save()
 
@@ -166,10 +160,9 @@ def unfeature_video(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def reject_all(request, sitelocation=None):
-    video_paginator = get_video_paginator(sitelocation)
+def reject_all(request):
+    video_paginator = get_video_paginator(request.sitelocation)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -186,10 +179,9 @@ def reject_all(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def approve_all(request, sitelocation=None):
-    video_paginator = get_video_paginator(sitelocation)
+def approve_all(request):
+    video_paginator = get_video_paginator(request.sitelocation)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -206,11 +198,10 @@ def approve_all(request, sitelocation=None):
     return HttpResponse('SUCCESS')
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def clear_all(request, sitelocation=None):
+def clear_all(request):
     videos = models.Video.objects.filter(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.VIDEO_STATUS_UNAPPROVED)
     if request.POST.get('confirm') == 'yes':
         for video in videos:

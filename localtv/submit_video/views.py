@@ -31,23 +31,20 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv import models, util
-from localtv.decorators import get_sitelocation, request_passes_test
+from localtv.decorators import request_passes_test
 from localtv.submit_video import forms
 from localtv.submit_video.util import is_video_url
 
 url_re = URLValidator.regex
 
 def _check_submit_permissions(request):
-    sitelocation = models.SiteLocation.objects.get(
-        site=Site.objects.get_current())
-    user = request.user
-    if not sitelocation.submission_requires_login:
+    if not request.sitelocation.submission_requires_login:
         return True
     else:
-        if sitelocation.display_submit_button:
-            return user.is_authenticated() and user.is_active
+        if request.sitelocation.display_submit_button:
+            return request.user.is_authenticated() and request.user.is_active
         else:
-            return sitelocation.user_is_admin(user)
+            return request.user_is_admin
 
 
 def submit_lock(func):
@@ -55,7 +52,7 @@ def submit_lock(func):
         if request.method != 'POST':
             return func(request, *args, **kwargs)
         cache_key = 'submit_lock.%s.%s.%s' % (
-            kwargs['sitelocation'].site.domain,
+            request.sitelocation.site.domain,
             request.path,
             request.POST['url'])
         while True:
@@ -72,19 +69,17 @@ def submit_lock(func):
 
 
 @request_passes_test(_check_submit_permissions)
-@get_sitelocation
 @csrf_protect
-def submit_video(request, sitelocation=None):
-    if not (sitelocation.display_submit_button or
-            sitelocation.user_is_admin(request.user)):
+def submit_video(request):
+    if not (request.user_is_admin or \
+                request.sitelocation.display_submit_button):
         raise Http404
     url = request.POST.get('url') or request.GET.get('url', '')
     if request.method == "GET" and not url:
         submit_form = forms.SubmitVideoForm()
         return render_to_response(
             'localtv/submit_video/submit.html',
-            {'sitelocation': sitelocation,
-             'form': submit_form},
+            {'form': submit_form},
             context_instance=RequestContext(request))
     else:
         url = urlparse.urldefrag(url)[0]
@@ -93,10 +88,10 @@ def submit_video(request, sitelocation=None):
             existing = models.Video.objects.filter(
                 Q(website_url=submit_form.cleaned_data['url']) |
                 Q(file_url=submit_form.cleaned_data['url']),
-                site=sitelocation.site)
+                site=request.sitelocation.site)
             existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
             if existing.count():
-                if sitelocation.user_is_admin(request.user):
+                if request.user_is_admin:
                     # even if the video was rejected, an admin submitting it
                     # should make it approved
                     for v in existing.exclude(
@@ -118,8 +113,7 @@ def submit_video(request, sitelocation=None):
                         video = None
                     return render_to_response(
                         'localtv/submit_video/submit.html',
-                        {'sitelocation': sitelocation,
-                         'form': forms.SubmitVideoForm(),
+                        {'form': forms.SubmitVideoForm(),
                          'was_duplicate': True,
                          'video': video},
                         context_instance=RequestContext(request))
@@ -159,8 +153,7 @@ def submit_video(request, sitelocation=None):
         else:
             return render_to_response(
                 'localtv/submit_video/submit.html',
-                {'sitelocation': sitelocation,
-                 'form': submit_form},
+                {'form': submit_form},
                 context_instance=RequestContext(request))
 
 
@@ -178,10 +171,9 @@ def _submit_finish(form, *args, **kwargs):
 
 
 @request_passes_test(_check_submit_permissions)
-@get_sitelocation
 @submit_lock
 @csrf_protect
-def scraped_submit_video(request, sitelocation=None):
+def scraped_submit_video(request):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
         return HttpResponseRedirect(reverse('localtv_submit_video'))
@@ -189,7 +181,7 @@ def scraped_submit_video(request, sitelocation=None):
     scraped_data = util.get_scraped_data(request.REQUEST['url'])
 
     url = scraped_data.get('link', request.REQUEST['url'])
-    existing =  models.Video.objects.filter(site=sitelocation.site,
+    existing =  models.Video.objects.filter(site=request.sitelocation.site,
                                             website_url=url)
     existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
@@ -202,34 +194,32 @@ def scraped_submit_video(request, sitelocation=None):
 
         return render_to_response(
             'localtv/submit_video/scraped.html',
-            {'sitelocation': sitelocation,
-             'data': scraped_data,
+            {'data': scraped_data,
              'form': scraped_form},
             context_instance=RequestContext(request))
 
-    scraped_form = forms.ScrapedSubmitVideoForm(request.POST,
-                                                sitelocation=sitelocation,
-                                                user=request.user,
-                                                scraped_data=scraped_data)
+    scraped_form = forms.ScrapedSubmitVideoForm(
+        request.POST,
+        sitelocation=request.sitelocation,
+        user=request.user,
+        scraped_data=scraped_data)
     return _submit_finish(scraped_form,
             'localtv/submit_video/scraped.html',
-            {'sitelocation': sitelocation,
-             'data': scraped_data,
+            {'data': scraped_data,
              'form': scraped_form},
             context_instance=RequestContext(request))
 
 
 @request_passes_test(_check_submit_permissions)
-@get_sitelocation
 @submit_lock
 @csrf_protect
-def embedrequest_submit_video(request, sitelocation=None):
+def embedrequest_submit_video(request):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
         return HttpResponseRedirect(reverse('localtv_submit_video'))
 
     url = request.REQUEST['url']
-    existing =  models.Video.objects.filter(site=sitelocation.site,
+    existing =  models.Video.objects.filter(site=request.sitelocation.site,
                                             website_url=url)
     existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
@@ -248,33 +238,30 @@ def embedrequest_submit_video(request, sitelocation=None):
 
         return render_to_response(
             'localtv/submit_video/embed.html',
-            {'sitelocation': sitelocation,
-             'form': embed_form},
+            {'form': embed_form},
             context_instance=RequestContext(request))
 
     embed_form = forms.EmbedSubmitVideoForm(request.POST, request.FILES,
-                                            sitelocation=sitelocation,
+                                            sitelocation=request.sitelocation,
                                             user=request.user)
 
     return _submit_finish(embed_form,
                           'localtv/submit_video/embed.html',
-                          {'sitelocation': sitelocation,
-                           'form': embed_form},
+                          {'form': embed_form},
                           context_instance=RequestContext(request))
 
 
 @request_passes_test(_check_submit_permissions)
-@get_sitelocation
 @submit_lock
 @csrf_protect
-def directlink_submit_video(request, sitelocation=None):
+def directlink_submit_video(request):
     if not (request.REQUEST.get('url') and \
                 url_re.match(request.REQUEST['url'])):
         return HttpResponseRedirect(reverse('localtv_submit_video'))
 
     url = request.REQUEST['url']
     existing =  models.Video.objects.filter(Q(website_url=url)|Q(file_url=url),
-                                            site=sitelocation.site)
+                                            site=request.sitelocation.site)
     existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
@@ -285,24 +272,22 @@ def directlink_submit_video(request, sitelocation=None):
 
         return render_to_response(
             'localtv/submit_video/direct.html',
-            {'sitelocation': sitelocation,
-             'form': direct_form},
+            {'form': direct_form},
             context_instance=RequestContext(request))
 
-    direct_form = forms.DirectSubmitVideoForm(request.POST, request.FILES,
-                                              sitelocation=sitelocation,
-                                              user=request.user)
+    direct_form = forms.DirectSubmitVideoForm(
+        request.POST, request.FILES,
+        sitelocation=request.sitelocation,
+        user=request.user)
 
     return _submit_finish(direct_form,
                           'localtv/submit_video/direct.html',
-                          {'sitelocation': sitelocation,
-                           'form': direct_form},
+                          {'form': direct_form},
                           context_instance=RequestContext(request))
 
 
-@get_sitelocation
-def submit_thanks(request, video_id=None, sitelocation=None):
-    if sitelocation.user_is_admin(request.user) and video_id:
+def submit_thanks(request, video_id=None):
+    if request.user_is_admin and video_id:
         context = {
             'video': models.Video.objects.get(pk=video_id)
             }

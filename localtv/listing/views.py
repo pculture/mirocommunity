@@ -27,7 +27,6 @@ from tagging.models import Tag
 
 from localtv import models
 from localtv.search.forms import VideoSearchForm
-from localtv.decorators import get_sitelocation
 
 def get_args(func):
     def wrapper(request, *args, **kwargs):
@@ -47,17 +46,15 @@ def get_args(func):
         return func(request, *args, **kwargs)
     return wrapper
 
-@get_sitelocation
-def index(request, sitelocation=None):
+def index(request):
     return render_to_response(
         'localtv/browse.html', {},
         context_instance=RequestContext(request))
 
 @get_args
-@get_sitelocation
-def new_videos(request, sitelocation=None, count=15, sort=None):
+def new_videos(request, count=15, sort=None):
     videos = models.Video.objects.new(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     return object_list(
         request=request, queryset=videos,
@@ -66,11 +63,10 @@ def new_videos(request, sitelocation=None, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-@get_sitelocation
-def popular_videos(request, sitelocation=None, count=15, sort=None):
+def popular_videos(request, count=15, sort=None):
     period = datetime.timedelta(days=7)
     videos = models.Video.objects.popular_since(
-        period, sitelocation,
+        period, request.sitelocation,
         watch__timestamp__gte=datetime.datetime.now() - period,
         status=models.VIDEO_STATUS_ACTIVE,
         )
@@ -81,10 +77,9 @@ def popular_videos(request, sitelocation=None, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-@get_sitelocation
-def featured_videos(request, sitelocation=None, count=15, sort=None):
+def featured_videos(request, count=15, sort=None):
     kwargs = {
-        'site': sitelocation.site,
+        'site': request.sitelocation.site,
         'last_featured__isnull': False,
         'status': models.VIDEO_STATUS_ACTIVE}
     if sort == 'latest':
@@ -101,11 +96,10 @@ def featured_videos(request, sitelocation=None, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-@get_sitelocation
-def tag_videos(request, tag_name, sitelocation=None, count=15, sort=None):
+def tag_videos(request, tag_name, count=15, sort=None):
     tag = get_object_or_404(Tag, name=tag_name)
     videos = models.Video.tagged.with_all(tag).filter(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
     videos = videos.order_by(
         '-when_approved', '-when_published', '-when_submitted')
@@ -117,11 +111,10 @@ def tag_videos(request, tag_name, sitelocation=None, count=15, sort=None):
         extra_context={'tag': tag})
 
 @get_args
-@get_sitelocation
-def feed_videos(request, feed_id, sitelocation=None, count=15, sort=None):
+def feed_videos(request, feed_id, count=15, sort=None):
     feed = get_object_or_404(models.Feed, pk=feed_id,
-                             site=sitelocation.site)
-    videos = models.Video.objects.new(site=sitelocation.site,
+                             site=request.sitelocation.site)
+    videos = models.Video.objects.new(site=request.sitelocation.site,
                                       feed=feed,
                                       status=models.VIDEO_STATUS_ACTIVE)
     return object_list(
@@ -133,8 +126,7 @@ def feed_videos(request, feed_id, sitelocation=None, count=15, sort=None):
 
 
 @get_args
-@get_sitelocation
-def video_search(request, sitelocation=None, count=10, sort=None):
+def video_search(request, count=10, sort=None):
     query = ''
     pks = []
 
@@ -156,12 +148,12 @@ def video_search(request, sitelocation=None, count=10, sort=None):
         queryset = models.Video.objects.none()
     elif sort == 'latest':
         queryset = models.Video.objects.new(
-            site=sitelocation.site,
+            site=request.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE,
             pk__in=pks)
     else:
         queryset = models.Video.objects.filter(
-                site=sitelocation.site,
+                site=request.sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=pks).order_by()
         order = ['-localtv_video.id = %i' % int(pk) for pk in pks]
@@ -174,11 +166,10 @@ def video_search(request, sitelocation=None, count=10, sort=None):
         extra_context={'query': query})
 
 @get_args
-@get_sitelocation
-def category(request, slug=None, sitelocation=None, count=15, sort=None):
+def category(request, slug=None, count=15, sort=None):
     if slug is None:
         categories = models.Category.objects.filter(
-            site=sitelocation.site,
+            site=request.sitelocation.site,
             parent=None)
 
         return object_list(
@@ -188,7 +179,7 @@ def category(request, slug=None, sitelocation=None, count=15, sort=None):
             allow_empty=True, template_object_name='category')
     else:
         category = get_object_or_404(models.Category, slug=slug,
-                                     site=sitelocation.site)
+                                     site=request.sitelocation.site)
         return object_list(
             request=request, queryset=category.approved_set.all(),
             paginate_by=count,
@@ -197,8 +188,7 @@ def category(request, slug=None, sitelocation=None, count=15, sort=None):
             extra_context={'category': category})
 
 @get_args
-@get_sitelocation
-def author(request, id=None, sitelocation=None, count=15, sort=None):
+def author(request, id=None, count=15, sort=None):
     if id is None:
         return render_to_response(
             'localtv/author_list.html',
@@ -213,7 +203,7 @@ def author(request, id=None, sitelocation=None, count=15, sort=None):
             videos = models.Video.objects.all()
         videos = videos.filter(
             Q(authors=author) | Q(user=author),
-            site=sitelocation.site,
+            site=request.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
         return object_list(request=request, queryset=videos,
                            paginate_by=count,

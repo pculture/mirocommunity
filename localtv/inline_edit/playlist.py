@@ -18,17 +18,15 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation
 from localtv.templatetags.editable_widget import editable_widget
 
 from localtv.playlists.forms import PlaylistForm
 from localtv.playlists.views import playlist_enabled, playlist_authorized
 
-@get_sitelocation
 @playlist_enabled
 @playlist_authorized
 @csrf_protect
-def info(request, playlist, sitelocation=None):
+def info(request, playlist):
     edit_form = PlaylistForm(request.POST, instance=playlist)
     if edit_form.is_valid():
         edit_form.save()
