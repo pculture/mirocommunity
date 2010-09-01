@@ -41,15 +41,16 @@ class ThumbnailNode(template.Node):
         if isinstance(video, MetasearchVideo):
             return video.thumbnail_url
 
-        thumbnails = [source for source in [video,
-                                            getattr(video, 'feed', None),
-                                            getattr(video, 'search', None)]
-                      if source is not None]
-        for thumbnail in thumbnails:
-            if thumbnail.has_thumbnail:
-                break
+        thumbnail = None
 
-        if not thumbnail.has_thumbnail:
+        if video.has_thumbnail:
+            thumbnail = video
+        elif video.feed and video.feed.has_thumbnail:
+            thumbnail = video.feed
+        elif video.search and video.search.has_thumbnail:
+            thumbnail = video.search
+
+        if not thumbnail:
             return '/images/default_vid.gif'
 
         return default_storage.url(
