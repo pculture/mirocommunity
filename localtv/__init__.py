@@ -46,9 +46,13 @@ class SiteLocationMiddleware(object):
     uses it.
     """
     def process_request(self, request):
-        request.sitelocation = models.SiteLocation.objects.get_current()
-        request.user_is_admin = request.sitelocation.user_is_admin(
-            request.user)
+        try:
+            request.sitelocation = models.SiteLocation.objects.get_current()
+            request.user_is_admin = request.sitelocation.user_is_admin(
+                request.user)
+        except models.SiteLocation.DoesNotExist:
+            request.sitelocation = None
+            request.user_is_admin = False
 
 def context_processor(request):
     sitelocation = request.sitelocation
