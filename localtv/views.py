@@ -171,10 +171,10 @@ def view_video(request, video_id, slug=None):
         context,
         context_instance=RequestContext(request))
 
-def share_email(request, content_type_pk, object_id, sitelocation):
+def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
     return views.share_email(request, content_type_pk, object_id,
-                             {'site': sitelocation.site,
-                              'sitelocation': sitelocation},
+                             {'site': request.sitelocation.site,
+                              'sitelocation': request.sitelocation},
                              form_class = forms.ShareMultipleEmailForm
                              )
