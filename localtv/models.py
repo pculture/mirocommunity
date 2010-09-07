@@ -869,7 +869,7 @@ class SavedSearch(Source):
             video.save()
 
     def source_type(self):
-        return 'Search'
+        return u'Search'
 
 
 class VideoManager(models.Manager):
@@ -1084,16 +1084,16 @@ class Video(Thumbnailable):
 
     def source_type(self):
         if self.search:
-            return 'Search: %s' % self.search
+            return u'Search: %s' % self.search
         elif self.feed:
             if self.feed.video_service():
-                return 'User: %s: %s' % (
+                return u'User: %s: %s' % (
                     self.feed.video_service(),
                     self.feed)
             else:
                 return 'Feed: %s' % self.feed
         elif self.video_service_user:
-            return 'User: %s: %s' % (
+            return u'User: %s: %s' % (
                 self.video_service(),
                 self.video_service_user)
         else:
