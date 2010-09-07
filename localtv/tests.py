@@ -1158,6 +1158,17 @@ class CommentModerationTestCase(BaseTestCase):
         self.POST_data = self.form.initial
         self.POST_data['comment'] = 'comment string'
 
+    def test_deleting_video_deletes_comments(self):
+        """
+        If the video for a comment is deleted, the comment should be deleted as
+        well.
+        """
+        c = Client()
+        c.post(self.url, self.POST_data)
+        self.assertEquals(Comment.objects.count(), 1)
+        self.video.delete()
+        self.assertFalse(Comment.objects.exists())
+
     def test_comment_does_not_require_email_or_url(self):
         """
         Posting a comment should not require an e-mail address or URL.
