@@ -50,6 +50,10 @@ def index(request):
 
     recent_comments = comments.get_model().objects.filter(
         site=request.sitelocation.site,
+        content_type__app_label='localtv',
+        content_type__model='video',
+        object_pk__in=models.Video.objects.filter(
+            status=models.VIDEO_STATUS_ACTIVE),
         is_removed=False,
         is_public=True).order_by('-submit_date')
 
