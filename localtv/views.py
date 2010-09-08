@@ -160,6 +160,7 @@ def view_video(request, video_id, slug=None):
                 pass
             else:
                 if playlist.status == PLAYLIST_STATUS_PUBLIC or \
+                        request.user_is_admin or \
                         request.user.is_authenticated() and \
                         playlist.user_id == request.user.pk:
                     try:
