@@ -610,6 +610,38 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['new_videos']),
                           list(models.Video.objects.new(
                     status=models.VIDEO_STATUS_ACTIVE)))
+        self.assertEquals(list(response.context['comments']), [])
+
+    def test_index_recent_comments_skips_rejected_videos(self):
+        """
+        Recent comments should only include approved videos.
+        """
+        unapproved = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        approved = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_ACTIVE)[0]
+        rejected = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_REJECTED)[0]
+        for video in unapproved, approved, rejected:
+            Comment.objects.create(
+                site=self.site_location.site,
+                content_object=video,
+                comment='Test Comment')
+
+        c = Client()
+        response = c.get(reverse('localtv_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(len(response.context['comments']), 1)
+        self.assertEquals(response.context['comments'][0].content_object,
+                          approved)
+
+        approved.status = models.VIDEO_STATUS_REJECTED
+        approved.save()
+
+        c = Client()
+        response = c.get(reverse('localtv_index'))
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEquals(len(response.context['comments']), 0)
 
     def test_about(self):
         """
