@@ -461,6 +461,9 @@ class EditSettingsForm(forms.ModelForm):
         logo = self.cleaned_data.get('logo')
         if not logo:
             return logo
+        if self.instance and self.instance.logo and \
+                self.instance.logo.name == logo.name:
+            return logo
         if len(logo.name) > 60:
             name, ext = os.path.splitext(logo.name)
             logo.name = name[:60] + ext
@@ -469,6 +472,9 @@ class EditSettingsForm(forms.ModelForm):
     def clean_background(self):
         background = self.cleaned_data.get('background')
         if not background:
+            return background
+        if self.instance and self.instance.background and \
+                self.instance.background.name == background.name:
             return background
         if len(background.name) > 60:
             name, ext = os.path.splitext(background.name)
