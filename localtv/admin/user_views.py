@@ -46,8 +46,7 @@ def users(request):
     formset = forms.AuthorFormSet(queryset=users)
     add_user_form = forms.AuthorForm()
     if request.method == 'POST':
-        submit = request.POST.get('submit')
-        if submit == 'Add':
+        if not request.POST.get('form-TOTAL_FORMS'):
             add_user_form = forms.AuthorForm(request.POST, request.FILES)
             if add_user_form.is_valid():
                 add_user_form.save()
