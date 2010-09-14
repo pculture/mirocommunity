@@ -53,8 +53,15 @@ class ThumbnailNode(template.Node):
         if not thumbnail:
             return '/images/default_vid.gif'
 
-        return default_storage.url(
+        url = default_storage.url(
             thumbnail.get_resized_thumb_storage_path(*self.size))
+
+        if thumbnail._meta.get_latest_by:
+            key = hex(hash(getattr(thumbnail,
+                                   thumbnail._meta.get_latest_by)))[-8:]
+            return '%s?%s' % (url, key)
+        else:
+            return url
 
 @register.tag('get_thumbnail_url')
 def get_thumbnail_url(parser, token):

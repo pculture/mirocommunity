@@ -463,6 +463,7 @@ class Feed(Source):
     class Meta:
         unique_together = (
             ('feed_url', 'site'))
+        get_latest_by = 'last_updated'
 
     def __unicode__(self):
         return self.name
@@ -1030,6 +1031,7 @@ class Video(Thumbnailable):
 
     class Meta:
         ordering = ['-when_submitted']
+        get_latest_by = 'when_modified'
 
     def __unicode__(self):
         return self.name
