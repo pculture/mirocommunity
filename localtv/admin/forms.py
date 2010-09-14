@@ -78,7 +78,7 @@ class EditVideoForm(forms.ModelForm):
                 self.instance.save_thumbnail_from_file(thumbnail)
         if 'thumbnail_url' in self.cleaned_data:
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
-            if thumbnail_url and thumbnail_url != self.instance.thumbnail_url:
+            if thumbnail_url:
                 self.instance.thumbnail_url = thumbnail_url
                 try:
                     self.instance.save_thumbnail()

@@ -127,11 +127,11 @@ class Thumbnailable(models.Model):
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
-        self.thumbnail_extension = pil_image.format.lower()
-
         # save an unresized version, overwriting if necessary
         default_storage.delete(
             self.get_original_thumb_storage_path())
+
+        self.thumbnail_extension = pil_image.format.lower()
         default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)
