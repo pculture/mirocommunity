@@ -1,4 +1,4 @@
 {% extends "localtv/video_listing.html" %}
-{% block page_title %}Playlist: {{ playlist.name }}{% endblock %}
+{% block page_title %}Playlist: {{ playlist.name }}{% if not playlistitem.playlist.status %} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}{% endblock %}
 {% block rss_url %}{% url localtv_feeds_playlist playlist.pk %}{% endblock %}
 

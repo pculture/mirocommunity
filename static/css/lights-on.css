@@ -3599,3 +3599,10 @@ h3.playlist_title {
     color: #c6c6c6;
     padding-left: 15px;
 }
+
+#playlists .private, #playlists .private a,
+.playlist_title .private, .playlist_title .private a,
+h2.page_title .private, h2.page_title .private a{
+    color: red;
+    font-size: 0.9em;
+}
