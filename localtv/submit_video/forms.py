@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import urllib
 
 from django import forms

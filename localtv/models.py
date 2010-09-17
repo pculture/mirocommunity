@@ -22,7 +22,10 @@ import re
 import urllib
 import urllib2
 import urlparse
-import Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import StringIO
 from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
