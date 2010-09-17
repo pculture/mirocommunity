@@ -31,7 +31,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 {% block content %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-  {% block pre-labels %}{% endblock %}
+  {% block pre-labels %}
+  <h2>Bulk Edit</h2>
+  {% endblock %}
 <div id="labels">
   {% block labels %}
   <form action="" method="get" class="search_sources">
