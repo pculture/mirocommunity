@@ -257,7 +257,7 @@ margin: 0 auto;
           {% if item != playlistitem %}
           <li>
             <div class="playlist_title">
-              <a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>{% if not playlistitem.playlist.status %} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}
+              <a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>{% if not item.playlist.status %} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}
               {% with item.playlist.video_set.count as count %}<span class="playlist_count"><a href="{{ item.playlist.get_absolute_url }}">({{ count }} video{{ count|pluralize }})</a></span>{% endwith %}
             </div>
             <div class="playlist_thumbs">
