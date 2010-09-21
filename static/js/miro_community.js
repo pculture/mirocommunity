@@ -62,7 +62,7 @@ function setup_submit_callbacks(wrap, result) {
         return;
     }
     function callback(result){setup_submit_callbacks(wrap, result);}
-    form = wrap.getContent().find('.contentWrap').html(result).find('form:eq(0)');
+    form = wrap.getOverlay().find('.contentWrap').html(result).find('form:eq(0)');
     if (!has_placeholder) placeholder_fallback();
     form.ajaxForm({
         success: callback,
