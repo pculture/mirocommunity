@@ -70,5 +70,5 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
         return videos[:views.LOCALTV_FEED_LENGTH]
 
 
-unapproved = verify_secret(views.feed_view(UnapprovedUserVideosFeed))
+unapproved = verify_secret(views.feed_view(UnapprovedVideosFeed))
 unapproved_user = verify_secret(views.feed_view(UnapprovedUserVideosFeed))
