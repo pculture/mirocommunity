@@ -49,29 +49,26 @@ def get_video_paginator(sitelocation):
 @require_site_admin
 @csrf_protect
 def approve_reject(request):
-    if request.method == "GET":
-        video_paginator = get_video_paginator(request.sitelocation)
-        try:
-            page = video_paginator.page(int(request.GET.get('page', 1)))
-        except ValueError:
-            return HttpResponseBadRequest('Not a page number')
-        except EmptyPage:
-            page = video_paginator.page(video_paginator.num_pages)
+    video_paginator = get_video_paginator(request.sitelocation)
+    try:
+        page = video_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        page = video_paginator.page(video_paginator.num_pages)
 
 
-        current_video = None
-        if page.object_list:
-            current_video = page.object_list[0]
+    current_video = None
+    if page.object_list:
+        current_video = page.object_list[0]
 
-        return render_to_response(
-            'localtv/admin/approve_reject_table.html',
-            {'current_video': current_video,
-             'page_obj': page,
-             'feed_secret': feeds.generate_secret(),
-             'video_list': page.object_list},
-            context_instance=RequestContext(request))
-    else:
-        pass
+    return render_to_response(
+        'localtv/admin/approve_reject_table.html',
+        {'current_video': current_video,
+         'page_obj': page,
+         'feed_secret': feeds.generate_secret(),
+         'video_list': page.object_list},
+        context_instance=RequestContext(request))
 
 
 @require_site_admin
