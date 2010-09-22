@@ -178,6 +178,7 @@ margin: 0 auto;
       <li>
         <div class="comment-poster">
           <h4>{{ comment.user_name }}</h4>
+          <span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
           {% if user_is_admin %}
           <div class="comment-moderation">
             <form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
