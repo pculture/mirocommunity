@@ -177,7 +177,7 @@ margin: 0 auto;
       {% for comment in comments %}
       <li>
         <div class="comment-poster">
-          <h4>{{ comment.user_name }}</h4>
+          <h4>{% if comment.user %}<a href="{% url localtv_author comment.user.pk %}">{{ comment.user_name }}</a>{% else %}{{ comment.user_name }}{% endif %}</h4>
           <span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
           {% if user_is_admin %}
           <div class="comment-moderation">
