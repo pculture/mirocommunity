@@ -117,7 +117,7 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.feeds',
-    (r'^feeds/(\S+)/unapproved', 'unapproved', {},
+    (r'^feeds/(\S+)/unapproved$', 'unapproved', {},
      'localtv_admin_feed_unapproved'),
-    (r'^feeds/(\S+)/unapproved_user', 'unapproved_user', {},
+    (r'^feeds/(\S+)/unapproved_user$', 'unapproved_user', {},
      'localtv_admin_feed_unapproved_user'))
