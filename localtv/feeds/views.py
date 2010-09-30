@@ -339,8 +339,10 @@ class SearchVideosFeed(BaseVideosFeed):
         return bits[0]
 
     def link(self, search):
-        return reverse('localtv_search') + '?' + urllib.urlencode(
-            {'q': search.encode('utf-8')})
+        args = {'q': search.encode('utf-8')}
+        if self.request.GET.get('sort', None) == 'latest':
+            args['sort'] = 'latest'
+        return reverse('localtv_search') + '?' + urllib.urlencode(args)
 
     def items(self, search):
         form = VideoSearchForm({'q': search})
