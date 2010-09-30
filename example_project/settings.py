@@ -52,7 +52,7 @@ SECRET_KEY = ''
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'localtv.loaders.versioned.load_template_source',
+    'uploadtemplate.loader.load_template_source',
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
 #     'django.template.loaders.eggs.load_template_source',
@@ -70,6 +70,11 @@ MIDDLEWARE_CLASSES = (
     )
 
 ROOT_URLCONF = 'urls'
+
+UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate'
+UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate'
+UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
+UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
