@@ -612,6 +612,23 @@ class ViewTestCase(BaseTestCase):
                     status=models.VIDEO_STATUS_ACTIVE)))
         self.assertEquals(list(response.context['comments']), [])
 
+    def test_index_feeds_avoid_frontpage(self):
+        """
+        Feeds with 'avoid_frontpage' set to True shouldn't be displayed in any
+        of the video categories.
+        """
+        c = Client()
+        response = c.get(reverse('localtv_index'))
+        new_videos_count = len(response.context['new_videos'])
+
+        models.Feed.objects.all().update(avoid_frontpage=True)
+
+        response = c.get(reverse('localtv_index'))
+        self.assertStatusCodeEquals(response, 200)
+
+        self.assertNotEquals(len(response.context['new_videos']),
+                             new_videos_count)
+
     def test_index_recent_comments_skips_rejected_videos(self):
         """
         Recent comments should only include approved videos.

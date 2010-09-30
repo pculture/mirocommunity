@@ -46,7 +46,8 @@ def index(request):
 
     new_videos = models.Video.objects.new(
         site=request.sitelocation.site,
-        status=models.VIDEO_STATUS_ACTIVE)
+        status=models.VIDEO_STATUS_ACTIVE) \
+        .exclude(feed__avoid_frontpage=True)
 
     recent_comments = comments.get_model().objects.filter(
         site=request.sitelocation.site,
