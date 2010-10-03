@@ -8,6 +8,7 @@ html body div.mc-widget a,
 html body div.mc-widget img,
 html body div.mc-widget-v2,
 html body div.mc-widget-v2 div,
+html body div.mc-widget-v2 span,
 html body div.mc-widget-v2 ul,
 html body div.mc-widget-v2 li,
 html body div.mc-widget-v2 img,
@@ -24,6 +25,7 @@ html body div.mc-widget-v2 a {
     float: none;
     color: inherit;
     min-width: inherit;
+    text-shadow: none;
 }
 /* Widget v1 */
 html body div.mc-widget{
