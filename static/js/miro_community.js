@@ -93,7 +93,7 @@ $(document).ready( function(){
             }
         }
     });
-    $("#login form input").live('focus', function() {
+    $("#login form input[type=text], #login form input[type=password]").live('focus', function() {
         if ($(this).val() == $(this)[0].defaultValue) {
             $(this).val("");
         }
