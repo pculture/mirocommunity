@@ -142,7 +142,8 @@ $(document).ready(function () {
 {% endblock %}
 {% block content %}
   {% include "localtv/goodies/header.html" %}
-  <h1>Widget</h1>
+  <h2>Goodies | Widget</h2>
+  <div style="clear: both"><div/>
   {% if not sitelocation.site.widgetsettings.title_editable %}
   <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
   {% endif %}

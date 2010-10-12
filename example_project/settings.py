@@ -52,7 +52,7 @@ SECRET_KEY = ''
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'localtv.loaders.versioned.load_template_source',
+    'uploadtemplate.loader.load_template_source',
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
 #     'django.template.loaders.eggs.load_template_source',
@@ -63,11 +63,18 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'localtv.SiteLocationMiddleware',
+    'openid_consumer.middleware.OpenIDMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     )
 
 ROOT_URLCONF = 'urls'
+
+UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate'
+UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate'
+UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
+UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -100,12 +107,8 @@ INSTALLED_APPS = (
     'email_share',
     'celery',
     'notification',
-
-    # Uncomment these if you want OpenID/Facebook/Twitter login support
-    #'django_openidconsumer',
-    #'localtv_openid',
-    #'socialauth',
-
+    'socialauth',
+    'openid_consumer'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -116,9 +119,35 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 LOGIN_REDIRECT_URL = '/'
 
+OPENID_REDIRECT_NEXT = '/accounts/openid/done/'
+
+OPENID_SREG = {"requred": "nickname, email, fullname",
+               "policy_url": ""}
+
+#example should be something more like the real thing, i think
+OPENID_AX = [{"type_uri": "http://axschema.org/contact/email",
+              "count": 1,
+              "required": True,
+              "alias": "email"},
+             {"type_uri": "http://axschema.org/schema/fullname",
+              "count":1 ,
+              "required": False,
+              "alias": "fname"}]
+
+OPENID_AX_PROVIDER_MAP = {'Google': {'email': 'http://axschema.org/contact/email',
+                                     'firstname': 'http://axschema.org/namePerson/first',
+                                     'lastname': 'http://axschema.org/namePerson/last'},
+                          'Default': {'email': 'http://axschema.org/contact/email',
+                                      'fullname': 'http://axschema.org/namePerson',
+                                      'nickname': 'http://axschema.org/namePerson/friendly'}
+                          }
+
+
 AUTHENTICATION_BACKENDS = (
     'localtv.backend.SiteAdminBackend',
-    # 'localtv_openid.OpenIdBackend', # if you want OpenId logins
+    'socialauth.auth_backends.OpenIdBackend',
+    'socialauth.auth_backends.TwitterBackend',
+    'socialauth.auth_backends.FacebookBackend',
     )
 
 AUTH_PROFILE_MODULE = 'user_profile.Profile'

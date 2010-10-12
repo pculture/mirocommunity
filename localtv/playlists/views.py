@@ -9,7 +9,6 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.views.generic.list_detail import object_list
 
-from localtv.decorators import get_sitelocation
 from localtv.models import Video
 from localtv.util import SortHeaders
 
@@ -20,11 +19,10 @@ from localtv.playlists.models import (Playlist, PLAYLIST_STATUS_PRIVATE,
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        sitelocation = kwargs['sitelocation']
-        if not sitelocation.playlists_enabled:
+        if not request.sitelocation.playlists_enabled:
             raise Http404
-        if sitelocation.playlists_enabled == 2 and \
-                not sitelocation.user_is_admin(request.user):
+        if request.sitelocation.playlists_enabled == 2 and \
+                not request.user_is_admin:
             raise Http404
         return func(request, *args, **kwargs)
     return wrapper
@@ -32,7 +30,7 @@ def playlist_enabled(func):
 def playlist_authorized(func):
     def wrapper(request, playlist_pk, *args, **kwargs):
         playlist = get_object_or_404(Playlist, pk=playlist_pk)
-        if kwargs['sitelocation'].user_is_admin(request.user) or \
+        if request.user_is_admin or \
                 playlist.user == request.user:
             return func(request, playlist, *args, **kwargs)
         else:
@@ -42,10 +40,9 @@ def playlist_authorized(func):
 def redirect_to_index():
     return HttpResponseRedirect(reverse(index))
 
-@get_sitelocation
 @playlist_enabled
 @login_required
-def index(request, sitelocation=None):
+def index(request):
     """
     Displays the list of playlists for a given user, or the current one if none
     is specified.
@@ -53,7 +50,7 @@ def index(request, sitelocation=None):
     if not request.user.is_authenticated():
         return redirect_to_login(request.get_full_path())
 
-    if sitelocation.user_is_admin(request.user) and request.GET.get(
+    if request.user_is_admin and request.GET.get(
         'show', None) in ('all', 'waiting'):
         headers = SortHeaders(request, (
                 ('Playlist', 'name'),
@@ -94,7 +91,7 @@ def index(request, sitelocation=None):
                     for form in formset.bulk_forms:
                         form.instance.delete()
                 elif request.POST.get('bulk_action') == 'public':
-                    if sitelocation.user_is_admin(request.user):
+                    if request.user_is_admin:
                         new_status = PLAYLIST_STATUS_PUBLIC
                     else:
                         new_status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
@@ -135,16 +132,15 @@ def index(request, sitelocation=None):
                                'formset': formset},
                               context_instance=RequestContext(request))
 
-@get_sitelocation
 @playlist_enabled
-def view(request, pk, slug=None, count=15, sitelocation=None):
+def view(request, pk, slug=None, count=15):
     """
     Displays the videos of a given playlist.
     """
     playlist = get_object_or_404(Playlist,
                                  pk=pk)
     if playlist.status != PLAYLIST_STATUS_PUBLIC:
-        if not sitelocation.user_is_admin(request.user) and \
+        if not request.user_is_admin and \
                 request.user != playlist.user:
             raise Http404
     if request.path != playlist.get_absolute_url():
@@ -159,10 +155,9 @@ def view(request, pk, slug=None, count=15, sitelocation=None):
                        'video_url_extra': '?playlist=%i' % playlist.pk})
 
 
-@get_sitelocation
 @playlist_enabled
 @playlist_authorized
-def edit(request, playlist, sitelocation=None):
+def edit(request, playlist):
     """
     POST requests here edit/reorder a given list.
     """
@@ -187,10 +182,9 @@ def edit(request, playlist, sitelocation=None):
                                    'formset': formset},
                               context_instance=RequestContext(request))
 
-@get_sitelocation
 @playlist_enabled
 @login_required
-def add_video(request, video_pk, sitelocation=None):
+def add_video(request, video_pk):
     """
     Requests here add the given video to the list.
     """
@@ -198,36 +192,34 @@ def add_video(request, video_pk, sitelocation=None):
         raise Http404
     video = get_object_or_404(Video, pk=video_pk)
     playlist = get_object_or_404(Playlist, pk=request.POST['playlist'])
-    if sitelocation.user_is_admin(request.user) or \
+    if request.user_is_admin or \
             playlist.user == request.user:
         playlist.add_video(video)
         return HttpResponseRedirect('%s?playlist=%i' % (
                 video.get_absolute_url(), playlist.pk))
     return redirect_to_login()
 
-@get_sitelocation
 @playlist_enabled
 @playlist_authorized
-def public(request, playlist, sitelocation=None):
+def public(request, playlist):
     if playlist.status != PLAYLIST_STATUS_PUBLIC:
-        if sitelocation.user_is_admin(request.user):
+        if request.user_is_admin:
             playlist.status = PLAYLIST_STATUS_PUBLIC
         else:
             playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
         playlist.save()
     next = reverse('localtv_playlist_index')
-    if sitelocation.user_is_admin(request.user):
+    if request.user_is_admin:
         next = next + '?show=all'
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))
 
 
-@get_sitelocation
 @playlist_enabled
 @playlist_authorized
-def private(request, playlist, sitelocation=None):
+def private(request, playlist):
     playlist.status = PLAYLIST_STATUS_PRIVATE
     playlist.save()
     next = reverse('localtv_playlist_index')
-    if sitelocation.user_is_admin(request.user):
+    if request.user_is_admin:
         next = next + '?show=all'
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))

@@ -22,7 +22,10 @@ import re
 import urllib
 import urllib2
 import urlparse
-import Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import StringIO
 from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
@@ -127,11 +130,11 @@ class Thumbnailable(models.Model):
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
-        self.thumbnail_extension = pil_image.format.lower()
-
         # save an unresized version, overwriting if necessary
         default_storage.delete(
             self.get_original_thumb_storage_path())
+
+        self.thumbnail_extension = pil_image.format.lower()
         default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)
@@ -459,10 +462,12 @@ class Feed(Source):
     when_submitted = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
+    avoid_frontpage = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (
             ('feed_url', 'site'))
+        get_latest_by = 'last_updated'
 
     def __unicode__(self):
         return self.name
@@ -869,7 +874,7 @@ class SavedSearch(Source):
             video.save()
 
     def source_type(self):
-        return 'Search'
+        return u'Search'
 
 
 class VideoManager(models.Manager):
@@ -1030,6 +1035,7 @@ class Video(Thumbnailable):
 
     class Meta:
         ordering = ['-when_submitted']
+        get_latest_by = 'when_modified'
 
     def __unicode__(self):
         return self.name
@@ -1084,16 +1090,16 @@ class Video(Thumbnailable):
 
     def source_type(self):
         if self.search:
-            return 'Search: %s' % self.search
+            return u'Search: %s' % self.search
         elif self.feed:
             if self.feed.video_service():
-                return 'User: %s: %s' % (
+                return u'User: %s: %s' % (
                     self.feed.video_service(),
                     self.feed)
             else:
                 return 'Feed: %s' % self.feed
         elif self.video_service_user:
-            return 'User: %s: %s' % (
+            return u'User: %s: %s' % (
                 self.video_service(),
                 self.video_service_user)
         else:
@@ -1321,3 +1327,11 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
 models.signals.post_syncdb.connect(create_email_notices,
                                    sender=notification)
 
+def delete_comments(sender, instance, **kwargs):
+    from django.contrib.comments import get_model
+    get_model().objects.filter(object_pk=instance.pk,
+                               content_type__app_label='localtv',
+                               content_type__model='video'
+                               ).delete()
+models.signals.pre_delete.connect(delete_comments,
+                                  sender=Video)

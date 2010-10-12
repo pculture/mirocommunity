@@ -4,14 +4,11 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation
-
 from localtv.user_profile import forms
 
 @login_required
-@get_sitelocation
 @csrf_protect
-def profile(request, sitelocation=None):
+def profile(request):
     if request.method == 'POST':
         form = forms.ProfileForm(request.POST, request.FILES,
                                  instance=request.user)
@@ -30,9 +27,8 @@ def profile(request, sitelocation=None):
                               context_instance=RequestContext(request))
 
 @login_required
-@get_sitelocation
 @csrf_protect
-def notifications(request, sitelocation=None):
+def notifications(request):
     if request.method == 'POST':
         form = forms.NotificationsForm(request.POST,
                                  instance=request.user)

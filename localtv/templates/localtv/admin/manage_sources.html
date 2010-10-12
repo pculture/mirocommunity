@@ -59,7 +59,7 @@ $(document).ready(function() {
 {% block pre-labels %}
 <a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
 <a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
-<h2>Manage Your Video Sources</h2>
+<h2>Videos | Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
@@ -82,7 +82,7 @@ $(document).ready(function() {
       <option value="relevant">Relevance</option>
     </select>
     </span>
-    <button type="submit" class="med_button floatright"><span>Search</span></button>
+    <button type="submit" class="med_button"><span>Search</span></button>
   </form>
   <p>
     Search will import results from a bunch of video sites. You can pick out videos you think are interesting and optionally create an automated source.

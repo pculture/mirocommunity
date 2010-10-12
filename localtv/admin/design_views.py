@@ -22,17 +22,16 @@ from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def edit_settings(request, sitelocation):
-    form = forms.EditSettingsForm(instance=sitelocation)
+def edit_settings(request):
+    form = forms.EditSettingsForm(instance=request.sitelocation)
 
     if request.method == 'POST':
         form = forms.EditSettingsForm(request.POST, request.FILES,
-                                      instance=sitelocation)
+                                      instance=request.sitelocation)
         if form.is_valid():
             sitelocation = form.save()
             if request.POST.get('delete_background'):
@@ -47,16 +46,16 @@ def edit_settings(request, sitelocation):
         context_instance=RequestContext(request))
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def widget_settings(request, sitelocation):
-    form = forms.WidgetSettingsForm(instance=sitelocation.site.widgetsettings)
+def widget_settings(request):
+    form = forms.WidgetSettingsForm(
+        instance=request.sitelocation.site.widgetsettings)
 
     if request.method == 'POST':
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=sitelocation.site.widgetsettings)
+            instance=request.sitelocation.site.widgetsettings)
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):

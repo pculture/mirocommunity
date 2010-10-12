@@ -10,6 +10,7 @@
  {% endblock %}
 {% block content %}
   {% include "localtv/user_profile/header.html" %}
+  <h2 style="margin: 0 0 10px 40px">{% block page_title %}Profile | Edit profile{% endblock %}</h2>
   <form action="{{ request.path }}" method="POST" enctype="multipart/form-data">{% csrf_token %}
     <div>
       <button id="submit_settings" type="submit" value="save all changes" class="approve_button"><span>Save Changes</span></button>

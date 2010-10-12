@@ -21,16 +21,15 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv import models
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.admin import forms
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def edit_video(request, sitelocation=None):
+def edit_video(request):
     video_id = request.GET.get('video_id') or request.POST.get('video_id')
     video = get_object_or_404(
-        models.Video, pk=video_id, site=sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation.site)
 
     if request.method == 'GET':
         edit_video_form = forms.EditVideoForm(instance=video)

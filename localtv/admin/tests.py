@@ -1188,7 +1188,8 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(self.url + "?feed_url=%s" % self.feed_url,
                           {'feed_url': self.feed_url,
-                           'auto_approve': 'yes'})
+                           'auto_approve': 'yes',
+                           'avoid_frontpage': 'on'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
@@ -1199,6 +1200,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEquals(feed.name, 'Valid Feed with Relative Links')
         self.assertEquals(feed.feed_url, self.feed_url)
         self.assertEquals(feed.status, models.FEED_STATUS_UNAPPROVED)
+        self.assertEquals(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
 
     def test_GET_done(self):
@@ -1778,7 +1780,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         POST_data['form-0-role'] = 'user'
         POST_data['form-1-logo'] = file(self._data_file('logo.png'))
         POST_data['form-1-name'] = ''
-        POST_data['form-1-website'] = 'http://google.com/'
+        POST_data['form-1-website'] = 'http://google.com/ http://twitter.com/'
         POST_data['form-1-description'] = 'Superuser Description'
         POST_data['form-2-username'] = 'new_admin'
         POST_data['form-2-role'] = 'admin'
@@ -1810,7 +1812,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
         self.assertTrue(profile.logo.name.endswith('logo.png'))
-        self.assertEquals(profile.website, 'http://google.com/')
+        self.assertEquals(profile.website,
+                          'http://google.com/ http://twitter.com/')
         self.assertEquals(profile.description, 'Superuser Description')
 
         old_admin = User.objects.get(username='admin')

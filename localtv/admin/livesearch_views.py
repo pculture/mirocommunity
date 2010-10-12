@@ -25,7 +25,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
-from localtv.decorators import get_sitelocation, require_site_admin, \
+from localtv.decorators import require_site_admin, \
     referrer_redirect
 from localtv import models, util
 from localtv.admin.util import MetasearchVideo, metasearch_from_querystring, \
@@ -111,8 +111,7 @@ def get_search_video(view_func):
 ## ----------
 
 @require_site_admin
-@get_sitelocation
-def livesearch(request, sitelocation=None):
+def livesearch(request):
     query_string, order_by, query_subkey = get_query_components(request)
 
     results = []
@@ -126,12 +125,12 @@ def livesearch(request, sitelocation=None):
                 MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
             results = strip_existing_metasearchvideos(
-                results, sitelocation.site)
+                results, request.sitelocation.site)
             cache.add(query_subkey, results)
 
     is_saved_search = bool(
         models.SavedSearch.objects.filter(
-            site=sitelocation.site,
+            site=request.sitelocation.site,
             query_string=query_string).count())
 
     video_paginator = Paginator(results, 10)
@@ -156,18 +155,17 @@ def livesearch(request, sitelocation=None):
          'order_by': order_by,
          'is_saved_search': is_saved_search,
          'saved_searches': models.SavedSearch.objects.filter(
-                site=sitelocation.site)},
+                site=request.sitelocation.site)},
         context_instance=RequestContext(request))
 
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
 @get_search_video
-def approve(request, search_video, sitelocation=None):
-    video = search_video.generate_video_model(sitelocation.site)
+def approve(request, search_video):
+    video = search_video.generate_video_model(request.sitelocation.site)
     existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation.site, query_string=request.GET.get('query'))
+        site=request.sitelocation.site, query_string=request.GET.get('query'))
     if existing_saved_search.count():
         video.search = existing_saved_search[0]
     else:
@@ -196,9 +194,8 @@ def approve(request, search_video, sitelocation=None):
 
 
 @require_site_admin
-@get_sitelocation
 @get_search_video
-def display(request, search_video, sitelocation=None):
+def display(request, search_video):
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': search_video},
@@ -207,15 +204,14 @@ def display(request, search_video, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def create_saved_search(request, sitelocation=None):
+def create_saved_search(request):
     query_string = request.GET.get('query')
 
     if not query_string:
         return HttpResponseBadRequest('must provide a query_string')
 
     existing_saved_search = models.SavedSearch.objects.filter(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         query_string=query_string)
 
     if existing_saved_search.count():
@@ -223,7 +219,7 @@ def create_saved_search(request, sitelocation=None):
             'Saved search of that query already exists')
 
     saved_search = models.SavedSearch(
-        site=sitelocation.site,
+        site=request.sitelocation.site,
         query_string=query_string,
         user=request.user,
         when_created=datetime.datetime.now())
@@ -235,12 +231,11 @@ def create_saved_search(request, sitelocation=None):
 
 @referrer_redirect
 @require_site_admin
-@get_sitelocation
-def search_auto_approve(request, search_id, sitelocation=None):
+def search_auto_approve(request, search_id):
     search = get_object_or_404(
         models.SavedSearch,
         id=search_id,
-        site=sitelocation.site)
+        site=request.sitelocation.site)
 
     search.auto_approve = not request.GET.get('disable')
     search.save()

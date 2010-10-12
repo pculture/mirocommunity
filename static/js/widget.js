@@ -78,7 +78,12 @@ if (typeof MiroCommunity === 'undefined') {
                     var div = document.getElementById(t.id);
                     t.versioned('update', div, json);
                 };
-                t.scriptTag = MiroCommunity.jsonP(ajax_path + '?jsoncallback=MiroCommunity.callback_' + t.counter);
+                if (t.opts.source.search(/[?]/) > -1) {
+                    ajax_path = ajax_path + '&';
+                } else {
+                    ajax_path = ajax_path + '?';
+                }
+                t.scriptTag = MiroCommunity.jsonP(ajax_path + 'jsoncallback=MiroCommunity.callback_' + t.counter);
             },
             // Widget version 1
             beforeLoad: function () {

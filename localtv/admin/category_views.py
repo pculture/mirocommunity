@@ -20,16 +20,15 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import get_sitelocation, require_site_admin
+from localtv.decorators import require_site_admin
 from localtv.models import Category
 from localtv.util import MockQueryset
 from localtv.admin import forms
 
 @require_site_admin
-@get_sitelocation
 @csrf_protect
-def categories(request, sitelocation=None):
-    categories = MockQueryset(Category.in_order(sitelocation.site))
+def categories(request):
+    categories = MockQueryset(Category.in_order(request.sitelocation.site))
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
@@ -39,33 +38,31 @@ def categories(request, sitelocation=None):
         ]
     add_category_form = forms.CategoryForm()
     if request.method == 'POST':
-        submit_value = request.POST.getlist('submit')
-        if submit_value:
-            if submit_value[0] == 'Add':
-                category = Category(site=sitelocation.site)
-                add_category_form = forms.CategoryForm(request.POST,
-                                                       request.FILES,
-                                                       instance=category)
-                if add_category_form.is_valid():
-                    add_category_form.save()
-                    return HttpResponseRedirect(request.path + '?successful')
+        if not request.POST.get('form-TOTAL_FORMS'):
+            category = Category(site=request.sitelocation.site)
+            add_category_form = forms.CategoryForm(request.POST,
+                                                   request.FILES,
+                                                   instance=category)
+            if add_category_form.is_valid():
+                add_category_form.save()
+                return HttpResponseRedirect(request.path + '?successful')
 
-            else:
-                formset = forms.CategoryFormSet(request.POST, request.FILES,
-                                                queryset=categories)
-                if formset.is_valid():
-                    formset.save()
-                    action = request.POST.get('bulk_action')
-                    if action == 'delete':
-                        for data in  formset.cleaned_data:
-                            if data['BULK']:
-                                category = data['id']
-                                for child in category.child_set.all():
-                                    # reset children to no parent
-                                    child.parent = None
-                                    child.save()
-                                data['id'].delete()
-                    return HttpResponseRedirect(request.path + '?successful')
+        else:
+            formset = forms.CategoryFormSet(request.POST, request.FILES,
+                                            queryset=categories)
+            if formset.is_valid():
+                formset.save()
+                action = request.POST.get('bulk_action')
+                if action == 'delete':
+                    for data in  formset.cleaned_data:
+                        if data['BULK']:
+                            category = data['id']
+                            for child in category.child_set.all():
+                                # reset children to no parent
+                                child.parent = None
+                                child.save()
+                            data['id'].delete()
+                return HttpResponseRedirect(request.path + '?successful')
 
     return render_to_response('localtv/admin/categories.html',
                               {'formset': formset,
