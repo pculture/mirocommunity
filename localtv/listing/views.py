@@ -28,6 +28,11 @@ from tagging.models import Tag
 from localtv import models
 from localtv.search.forms import VideoSearchForm
 
+def count_or_default(count):
+    if count is None:
+        count = getattr(settings, 'VIDEOS_PER_PAGE', 15)
+    return count
+
 def get_args(func):
     def wrapper(request, *args, **kwargs):
         count = request.GET.get('count')
@@ -52,7 +57,9 @@ def index(request):
         context_instance=RequestContext(request))
 
 @get_args
-def new_videos(request, count=15, sort=None):
+def new_videos(request, count=None, sort=None):
+    count = count_or_default(count)
+
     videos = models.Video.objects.new(
         site=request.sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
@@ -63,7 +70,9 @@ def new_videos(request, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-def popular_videos(request, count=15, sort=None):
+def popular_videos(request, count=None, sort=None):
+    count = count_or_default(count)
+
     period = datetime.timedelta(days=7)
     videos = models.Video.objects.popular_since(
         period, request.sitelocation,
@@ -77,7 +86,9 @@ def popular_videos(request, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-def featured_videos(request, count=15, sort=None):
+def featured_videos(request, count=None, sort=None):
+    count = count_or_default(count)
+
     kwargs = {
         'site': request.sitelocation.site,
         'last_featured__isnull': False,
@@ -96,7 +107,9 @@ def featured_videos(request, count=15, sort=None):
         allow_empty=True, template_object_name='video')
 
 @get_args
-def tag_videos(request, tag_name, count=15, sort=None):
+def tag_videos(request, tag_name, count=None, sort=None):
+    count = count_or_default(count)
+
     tag = get_object_or_404(Tag, name=tag_name)
     videos = models.Video.tagged.with_all(tag).filter(
         site=request.sitelocation.site,
@@ -111,7 +124,9 @@ def tag_videos(request, tag_name, count=15, sort=None):
         extra_context={'tag': tag})
 
 @get_args
-def feed_videos(request, feed_id, count=15, sort=None):
+def feed_videos(request, feed_id, count=None, sort=None):
+    count = count_or_default(count)
+
     feed = get_object_or_404(models.Feed, pk=feed_id,
                              site=request.sitelocation.site)
     videos = models.Video.objects.new(site=request.sitelocation.site,
@@ -126,7 +141,9 @@ def feed_videos(request, feed_id, count=15, sort=None):
 
 
 @get_args
-def video_search(request, count=10, sort=None):
+def video_search(request, count=None, sort=None):
+    count = count_or_default(count)
+
     query = ''
     pks = []
 
@@ -166,7 +183,9 @@ def video_search(request, count=10, sort=None):
         extra_context={'query': query})
 
 @get_args
-def category(request, slug=None, count=15, sort=None):
+def category(request, slug=None, count=None, sort=None):
+    count = count_or_default(count)
+
     if slug is None:
         categories = models.Category.objects.filter(
             site=request.sitelocation.site,
@@ -188,7 +207,9 @@ def category(request, slug=None, count=15, sort=None):
             extra_context={'category': category})
 
 @get_args
-def author(request, id=None, count=15, sort=None):
+def author(request, id=None, count=None, sort=None):
+    count = count_or_default(count)
+
     if id is None:
         return render_to_response(
             'localtv/author_list.html',
