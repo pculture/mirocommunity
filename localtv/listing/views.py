@@ -134,7 +134,7 @@ def feed_videos(request, feed_id, sitelocation=None, count=12, sort=None):
 
 @get_args
 @get_sitelocation
-def video_search(request, sitelocation=None, count=10, sort=None):
+def video_search(request, sitelocation=None, count=12, sort=None):
     query = ''
     pks = []
 
