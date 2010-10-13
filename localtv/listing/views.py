@@ -55,7 +55,7 @@ def index(request, sitelocation=None):
 
 @get_args
 @get_sitelocation
-def new_videos(request, sitelocation=None, count=15, sort=None):
+def new_videos(request, sitelocation=None, count=12, sort=None):
     videos = models.Video.objects.new(
         site=sitelocation.site,
         status=models.VIDEO_STATUS_ACTIVE)
@@ -67,7 +67,7 @@ def new_videos(request, sitelocation=None, count=15, sort=None):
 
 @get_args
 @get_sitelocation
-def popular_videos(request, sitelocation=None, count=15, sort=None):
+def popular_videos(request, sitelocation=None, count=12, sort=None):
     period = datetime.timedelta(days=7)
     videos = models.Video.objects.popular_since(
         period, sitelocation,
@@ -82,7 +82,7 @@ def popular_videos(request, sitelocation=None, count=15, sort=None):
 
 @get_args
 @get_sitelocation
-def featured_videos(request, sitelocation=None, count=15, sort=None):
+def featured_videos(request, sitelocation=None, count=12, sort=None):
     kwargs = {
         'site': sitelocation.site,
         'last_featured__isnull': False,
@@ -102,7 +102,7 @@ def featured_videos(request, sitelocation=None, count=15, sort=None):
 
 @get_args
 @get_sitelocation
-def tag_videos(request, tag_name, sitelocation=None, count=15, sort=None):
+def tag_videos(request, tag_name, sitelocation=None, count=12, sort=None):
     tag = get_object_or_404(Tag, name=tag_name)
     videos = models.Video.tagged.with_all(tag).filter(
         site=sitelocation.site,
@@ -118,7 +118,7 @@ def tag_videos(request, tag_name, sitelocation=None, count=15, sort=None):
 
 @get_args
 @get_sitelocation
-def feed_videos(request, feed_id, sitelocation=None, count=15, sort=None):
+def feed_videos(request, feed_id, sitelocation=None, count=12, sort=None):
     feed = get_object_or_404(models.Feed, pk=feed_id,
                              site=sitelocation.site)
     videos = models.Video.objects.new(site=sitelocation.site,
@@ -175,7 +175,7 @@ def video_search(request, sitelocation=None, count=10, sort=None):
 
 @get_args
 @get_sitelocation
-def category(request, slug=None, sitelocation=None, count=15, sort=None):
+def category(request, slug=None, sitelocation=None, count=12, sort=None):
     if slug is None:
         categories = models.Category.objects.filter(
             site=sitelocation.site,
@@ -198,7 +198,7 @@ def category(request, slug=None, sitelocation=None, count=15, sort=None):
 
 @get_args
 @get_sitelocation
-def author(request, id=None, sitelocation=None, count=15, sort=None):
+def author(request, id=None, sitelocation=None, count=12, sort=None):
     if id is None:
         return render_to_response(
             'localtv/author_list.html',
