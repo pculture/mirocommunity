@@ -343,11 +343,11 @@ class SearchVideosFeed(BaseVideosFeed):
             raise FeedDoesNotExist(search)
         results = form.search()
         if self.request.GET.get('sort', None) == 'latest':
-            return models.Video.objects.new(
+            videos = models.Video.objects.new(
                 site=self.sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE,
-                pk__in=[result.pk for result in results[:LOCALTV_FEED_LENGTH]
-                        if result])
+                pk__in=[result.pk for result in results if result])
+            return videos[:LOCALTV_FEED_LENGTH]
         return [result.object for result in results[:LOCALTV_FEED_LENGTH]
                 if result]
 
