@@ -66,6 +66,10 @@ class BaseTestCase(TestCase):
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
 
+        # By default, tests run on an 'executive' account.
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.tmpdir
