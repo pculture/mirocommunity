@@ -4,13 +4,15 @@ class Tier(object):
 
     def videos_limit(self):
         data = {'free': 500,
-                'plus': 1000}
+                'plus': 1000,
+                'premium': 5000}
         return data[self.tier_name]
 
     def admins_limit(self):
         data = {'free': 1,
                 'plus': 5}
-        return data[self.tier_name]
+        default = None
+        return data.get(self.tier_name, default)
 
     def permit_custom_css(self):
         data = {'free': False}
