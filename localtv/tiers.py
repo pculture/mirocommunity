@@ -1,3 +1,11 @@
+## These "CHOICES" are used in the SiteLocation model.
+## They describe the different account types.
+CHOICES = [
+    ('free', 'Free account'),
+    ('plus', 'Plus account'),
+    ('premium', 'Premium account'),
+    ('executive', 'Executive account')]
+
 class Tier(object):
     def __init__(self, tier_name):
         self.tier_name = tier_name

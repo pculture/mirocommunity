@@ -336,7 +336,7 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='free', blank=False)
+    tier_name = models.CharField(max_length=255, default='free', blank=False, choices=tiers.CHOICES)
 
     # ordering options
     use_original_date = models.BooleanField(
