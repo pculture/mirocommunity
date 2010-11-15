@@ -54,6 +54,7 @@ import tagging
 
 from localtv.templatetags.filters import sanitize
 from localtv import util
+from localtv import tiers
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
@@ -317,6 +318,7 @@ class SiteLocation(Thumbnailable):
        actually can though)
      - submission_requires_login: whether or not users need to log in to submit
        videos.
+     - tier_name: A short string representing the class of site. This relates to paid extras.
     """
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
@@ -334,6 +336,7 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
+    tier_name = models.CharField(max_length=255, default='free', blank=False)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -378,6 +381,9 @@ class SiteLocation(Thumbnailable):
     def save(self, *args, **kwargs):
         SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
+
+    def get_tier(self):
+        return tiers.Tier(self.tier_name)
 
 
 class WidgetSettings(Thumbnailable):

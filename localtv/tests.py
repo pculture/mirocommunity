@@ -1528,6 +1528,20 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
                              '%s was not deleted' % path)
 
 # -----------------------------------------------------------------------------
+# Site tier tests
+# -----------------------------------------------------------------------------
+class SiteTierTests(BaseTestCase):
+    def test_free_account(self):
+        # Create a SiteLocation whose site_tier is set to 'free'
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(500, tier.videos_limit())
+        self.assertEqual(1, tier.admins_limit())
+        self.assertFalse(tier.permit_custom_css())
+
+
+# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 
