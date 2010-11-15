@@ -1540,6 +1540,15 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(1, tier.admins_limit())
         self.assertFalse(tier.permit_custom_css())
 
+    def test_plus_account(self):
+        # Create a SiteLocation whose site_tier is set to 'plus'
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(1000, tier.videos_limit())
+        self.assertEqual(5, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+
 
 # -----------------------------------------------------------------------------
 # Watch model tests
