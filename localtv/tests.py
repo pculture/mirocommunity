@@ -1539,6 +1539,7 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(500, tier.videos_limit())
         self.assertEqual(1, tier.admins_limit())
         self.assertFalse(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
 
     def test_plus_account(self):
         # Create a SiteLocation whose site_tier is set to 'plus'
@@ -1548,6 +1549,7 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(1000, tier.videos_limit())
         self.assertEqual(5, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
 
     def test_premium_account(self):
         # Create a SiteLocation whose site_tier is set to 'premium'
@@ -1557,6 +1559,16 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(5000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_executive_account(self):
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(25000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertTrue(tier.permit_custom_template())
 
 
 # -----------------------------------------------------------------------------

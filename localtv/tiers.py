@@ -5,7 +5,8 @@ class Tier(object):
     def videos_limit(self):
         data = {'free': 500,
                 'plus': 1000,
-                'premium': 5000}
+                'premium': 5000,
+                'executive': 25000}
         return data[self.tier_name]
 
     def admins_limit(self):
@@ -19,4 +20,7 @@ class Tier(object):
         default = True
         return data.get(self.tier_name, default)
 
-                    
+    def permit_custom_template(self):
+        data = {'executive': True}
+        default = False
+        return data.get(self.tier_name, default)
