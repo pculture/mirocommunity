@@ -1549,6 +1549,15 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(5, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
 
+    def test_premium_account(self):
+        # Create a SiteLocation whose site_tier is set to 'premium'
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(5000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+
 
 # -----------------------------------------------------------------------------
 # Watch model tests
