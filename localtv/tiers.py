@@ -24,3 +24,10 @@ class Tier(object):
         data = {'executive': True}
         default = False
         return data.get(self.tier_name, default)
+
+    def dollar_cost(self):
+        data = {'free': 0,
+                'plus': 15,
+                'premium': 35,
+                'executive': 75}
+        return data[self.tier_name]
