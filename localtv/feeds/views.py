@@ -365,9 +365,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def items(self, playlist):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
-            print 'backwards'
             videos = videos.order_by('-playlistitem___order')
-        print str(videos.query)
         return videos[:LOCALTV_FEED_LENGTH]
 
     def title(self, playlist):
