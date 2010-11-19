@@ -7,7 +7,7 @@
 BeautifulSoup
 Django==1.2.1
 http://effbot.org/downloads/Imaging-1.1.6.tar.gz#egg=Imaging
-#South==0.6.2
+South==0.6.2
 -e svn+http://feedparser.googlecode.com/svn/trunk/feedparser#egg=feedparser
 flup>=1.0.2
 lxml==2.1.5
