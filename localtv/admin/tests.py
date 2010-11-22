@@ -2802,6 +2802,46 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
         # We know from the HTTP 302 that it worked.
         self.assertStatusCodeEquals(POST_response, 302)
 
+class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
+    url = reverse('localtv_admin_users')
+
+    def test_POST_rejects_first_admin_beyond_superuser(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Add' and a
+        successful form should create a new user and redirect the user back to
+        the management page.  If the password isn't specified,
+        User.has_unusable_password() should be True.
+        """
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertFalse(response.context['add_user_form'].is_valid())
+
+        # but with 'premium' it works
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
+
 # -----------------------------------------------------------------------------
 # Design administration tests
 # -----------------------------------------------------------------------------
