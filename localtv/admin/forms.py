@@ -19,6 +19,7 @@ import re
 import os.path
 import feedparser
 
+import django.template.defaultfilters
 from django import forms
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
@@ -700,6 +701,35 @@ class AuthorForm(user_profile_forms.ProfileForm):
             for field_name in ['name', 'logo', 'location',
                                'description', 'website']:
                 del self.fields[field_name]
+        ## Add a note to the 'role' help text indicating how many admins
+        ## are permitted with this kind of account.
+        tier = localtv.tiers.Tier.get()
+        if tier.admins_limit() is not None:
+            message = 'With a %s, you may have %d administrator%s.' % (
+                models.SiteLocation.objects.get_current().get_tier_name_display(),
+                tier.admins_limit(),
+                django.template.defaultfilters.pluralize(tier.admins_limit()))
+            self.fields['role'].help_text = message
+
+    def clean_role(self):
+        # If the user tried to create an admin, but the tier does not
+        # permit creating another admin, raise an error.
+        permitted_admins = localtv.tiers.Tier.get().admins_limit()
+        if self.cleaned_data['role'] == 'admin' and permitted_admins is not None:
+            normal_admin_ids = set([k.id for k in
+                                models.SiteLocation.objects.get_current().admins.all()])
+            super_user_ids = set([k.id for k in
+                                  django.contrib.auth.models.User.objects.filter(
+                                      is_superuser=True)])
+            normal_admin_ids.update(super_user_ids)
+            num_admins = len(normal_admin_ids)
+
+            if (permitted_admins is not None) and num_admins >= permitted_admins:
+                raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
+                    permitted_admins,
+                    django.template.defaultfilters.pluralize(permitted_admins)))
+        # Otherwise, things seem good!
+        return self.cleaned_data['role']
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
