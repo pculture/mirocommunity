@@ -13,6 +13,7 @@ from django.utils.encoding import force_unicode
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
+import mock
 
 import vidscraper
 from notification import models as notification
@@ -2752,6 +2753,54 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is None)
 
+# ----------------------------------
+# Administration tests with tiers
+# ----------------------------------
+
+def naysayer(*args, **kwargs):
+    return False
+
+class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_settings')
+
+    def setUp(self):
+        AdministrationBaseTestCase.setUp(self)
+        self.POST_data = {
+            'title': self.site_location.site.name,
+            'tagline': self.site_location.tagline,
+            'about_html': self.site_location.about_html,
+            'sidebar_html': self.site_location.sidebar_html,
+            'footer_html': self.site_location.footer_html,
+            'css': self.site_location.css}
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_failure(self):
+        """
+        When CSS is not permitted, the POST should fail with a validation error.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data['css'] = 'new css'
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/admin/edit_settings.html')
+        self.assertFalse(POST_response.context['form'].is_valid())
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_succeeds_when_same_as_db_contents(self):
+        """
+        When CSS is not permitted, but we send the same CSS as what
+        is in the database, the form should be valid.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, self.POST_data)
+
+        # We know from the HTTP 302 that it worked.
+        self.assertStatusCodeEquals(POST_response, 302)
 
 # -----------------------------------------------------------------------------
 # Design administration tests
