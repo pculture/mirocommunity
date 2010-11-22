@@ -16,14 +16,14 @@ class Tier(object):
 
     def videos_limit(self):
         special_cases = {'free': 500,
-                'plus': 1000,
-                'premium': 5000,
-                'executive': 25000}
+                         'plus': 1000,
+                         'premium': 5000,
+                         'executive': 25000}
         return special_cases[self.tier_name]
 
     def admins_limit(self):
         special_cases = {'free': 1,
-                'plus': 5}
+                         'plus': 5}
         default = None
         return special_cases.get(self.tier_name, default)
 
@@ -39,9 +39,9 @@ class Tier(object):
 
     def dollar_cost(self):
         special_cases = {'free': 0,
-                'plus': 15,
-                'premium': 35,
-                'executive': 75}
+                         'plus': 15,
+                         'premium': 35,
+                         'executive': 75}
         return special_cases[self.tier_name]
 
 class BooleanRepresentingUploadTemplatePermission(object):
