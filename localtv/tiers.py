@@ -11,31 +11,31 @@ class Tier(object):
         self.tier_name = tier_name
 
     def videos_limit(self):
-        data = {'free': 500,
+        special_cases = {'free': 500,
                 'plus': 1000,
                 'premium': 5000,
                 'executive': 25000}
-        return data[self.tier_name]
+        return special_cases[self.tier_name]
 
     def admins_limit(self):
-        data = {'free': 1,
+        special_cases = {'free': 1,
                 'plus': 5}
         default = None
-        return data.get(self.tier_name, default)
+        return special_cases.get(self.tier_name, default)
 
     def permit_custom_css(self):
-        data = {'free': False}
+        special_cases = {'free': False}
         default = True
-        return data.get(self.tier_name, default)
+        return special_cases.get(self.tier_name, default)
 
     def permit_custom_template(self):
-        data = {'executive': True}
+        special_cases = {'executive': True}
         default = False
-        return data.get(self.tier_name, default)
+        return special_cases.get(self.tier_name, default)
 
     def dollar_cost(self):
-        data = {'free': 0,
+        special_cases = {'free': 0,
                 'plus': 15,
                 'premium': 35,
                 'executive': 75}
-        return data[self.tier_name]
+        return special_cases[self.tier_name]
