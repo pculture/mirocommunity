@@ -43,6 +43,7 @@ from haystack.query import SearchQuerySet
 
 from localtv import models
 from localtv import util
+from localtv import tiers
 
 from notification import models as notification
 
@@ -1577,6 +1578,18 @@ class SiteTierTests(BaseTestCase):
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
         self.assertTrue(tier.permit_custom_template())
+
+    def test_fake_uploadtemplate_variable_false(self):
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        self.assertFalse(fake_bool)
+
+    def test_fake_uploadtemplate_variable_true(self):
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        self.assertTrue(fake_bool)
 
 # -----------------------------------------------------------------------------
 # Watch model tests
