@@ -54,7 +54,7 @@ import tagging
 
 from localtv.templatetags.filters import sanitize
 from localtv import util
-from localtv import tiers
+import localtv.tiers
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
@@ -336,7 +336,7 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='free', blank=False, choices=tiers.CHOICES)
+    tier_name = models.CharField(max_length=255, default='free', blank=False, choices=localtv.tiers.CHOICES)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -383,7 +383,7 @@ class SiteLocation(Thumbnailable):
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):
-        return tiers.Tier(self.tier_name)
+        return localtv.tiers.Tier(self.tier_name)
 
 
 class WidgetSettings(Thumbnailable):
