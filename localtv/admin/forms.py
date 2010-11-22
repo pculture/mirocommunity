@@ -450,7 +450,7 @@ class EditSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.SiteLocation
-        exclude = ['site', 'status', 'admins']
+        exclude = ['site', 'status', 'admins', 'tier_name']
 
 
     def __init__(self, *args, **kwargs):
