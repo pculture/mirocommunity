@@ -27,6 +27,7 @@ from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
@@ -38,6 +39,7 @@ from tagging.forms import TagField
 
 from localtv import models
 from localtv import util
+import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
 
@@ -457,6 +459,37 @@ class EditSettingsForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
+        if localtv.tiers.Tier.get().permit_custom_css():
+            pass
+        else: # CSS not permitted
+            # To handle only letting certain paid users edit CSS,
+            # we do two things.
+            #
+            # 1. Cosmetically, we set the CSS editing box's CSS class
+            # to be 'hidden'. (We have some CSS that makes it not show
+            # up.)
+            css_field = self.fields['css']
+            css_field.label += ' (upgrade to enable this form field)'
+            css_field.widget.attrs['readonly'] = True
+            #
+            # 2. In validation, we make sure that changing the CSS is
+            # rejected as invalid if the site does not have permission
+            # to do that.
+
+    def clean_css(self):
+        css = self.cleaned_data.get('css')
+        # Does thes SiteLocation permit CSS modifications? If so,
+        # return the data the user inputted.
+        if localtv.tiers.Tier.get().permit_custom_css():
+            return css # no questions asked
+
+        # We permit the value if it's the same as self.instance has:
+        if self.instance.css == css:
+            return css
+
+        # Otherwise, reject the change.
+        self.data['css'] = self.instance.css
+        raise ValidationError("To edit CSS for your site, you have to upgrade.")
 
     def clean_logo(self):
         logo = self.cleaned_data.get('logo')
