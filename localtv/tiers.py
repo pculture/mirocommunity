@@ -14,6 +14,33 @@ class Tier(object):
     def __init__(self, tier_name):
         self.tier_name = tier_name
 
+    @staticmethod
+    def get(log_warnings=False):
+        DEFAULT = None
+
+        # Iterative sanity checks
+        # We have a settings.SITE_ID, right?
+        site_id = getattr(settings, 'SITE_ID', None)
+        if site_id is None and log_warnings:
+            logging.warn("Eek, SITE_ID is None.")
+            return DEFAULT
+        # We have a SiteLocation, right?
+        try:
+            sl = localtv.models.SiteLocation.objects.get(site=site_id)
+        except localtv.models.SiteLocation.DoesNotExist:
+            if log_warnings:
+                logging.warn("Eek, SiteLocation does not exist.")
+            return DEFAULT
+
+        # We have a tier set, right?
+        if sl.tier_name:
+            # Good, then just call get_tier() and return the result.
+            return sl.get_tier()
+        else:
+            if log_warnings:
+                logging.warn("Eek, we have no tier set.")
+            return DEFAULT
+
     def videos_limit(self):
         special_cases = {'free': 500,
                          'plus': 1000,
@@ -46,37 +73,15 @@ class Tier(object):
 
 class BooleanRepresentingUploadTemplatePermission(object):
     def __nonzero__(self):
-        return self.get_value()
-
-    def get_value(self, log_warnings=False):
         default = False # By default, we say that custom themes are disabled.
+
+        tier = Tier.get()
+        if tier is None:
+            return default
+        return tier.permit_custom_css()
         
-        # Iterative sanity checks
-        # We have a settings.SITE_ID, right?
-        site_id = getattr(settings, 'SITE_ID', None)
-        if site_id is None and log_warnings:
-            logging.warn("Eek, SITE_ID is None.")
-            return default
-        # We have a SiteLocation, right?
-        try:
-            sl = localtv.models.SiteLocation.objects.get(site=site_id)
-        except localtv.models.SiteLocation.DoesNotExist:
-            if log_warnings:
-                logging.warn("Eek, SiteLocation does not exist.")
-            return default
-
-        # We have a tier set, right?
-        if sl.tier_name:
-            # Good, then just call get_tier() and return the result.
-            value = sl.get_tier().permit_custom_template()
-            import pdb
-            pdb.set_trace()
-            return value
-        else:
-            if log_warnings:
-                logging.warn("Eek, we have no tier set.")
-            return default
-
     def __init__(self):
-        # Call get_value() and log any warnings that come up.
-        self.get_value(log_warnings=True)
+        # Call Tier.get() and log any warnings that come up.
+        # Throw away the result so that we can always check the tier
+        # at the latest possible time.
+        Tier.get(log_warnings=True)
