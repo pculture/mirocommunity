@@ -21,7 +21,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-
+    
+    <link rel="stylesheet" type="text/css" href="/css/admin/reset.css" />
     <link rel="StyleSheet" type="text/css" href="/css/admin.css" />
     <link rel="StyleSheet" type="text/css" href="/css/overlay.css" />
 <!--[if lt IE 8]>
@@ -35,6 +36,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             type="text/javascript">
     </script>
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
+    {% block extrahead %}
+    {% endblock extrahead %}
     {% block head %}{% endblock head %}
   </head>
   {% endif %}

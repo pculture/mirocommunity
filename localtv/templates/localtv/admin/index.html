@@ -1,37 +1,128 @@
 {% extends "localtv/admin/base.html" %}
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/css/admin/signup.css" />
+<link rel="stylesheet" type="text/css" href="/css/admin/upgrade.css" />
+{% endblock extrahead %}
+
+{% block body_id %}upgrade{% endblock %}
 {% block content %}
 
-<div class="stats">
-	<div class="total">Total Videos: {{ total_count }}</div>
-	<div class="unreviewed">Unreviewed Videos: {{ unreviewed_count }}</div>
-	<div class="length">Comments Waiting Approval: {{ comment_count }}</div> 
-</div>
+<div class="clear">
+  <div id="upgrade_title">
+    <h1>Upgrade Your Site</h1>
+    <p>All <strong>new</strong> monthly subscribers get a <strong>free 30 day</strong> trial.</p> 
+  </div><!-- // upgrade_title -->
+  
+<div id="basic_plan" class="clear">
+  <h1>Your current plan: <strong>Basic</strong></h1>
+  <p>Easily upgrade to receive a free 30 day trial. Only takes seconds.</p>
+  <a id="btn_started" href="">Upgrade Today!</a>
+</div><!-- // basic_plan -->
 
-<h2>Welcome!</h2> 
-   <p class="clear">Get started by adding sources, or managing your exsisting sources.</p> 
-<br /> 
-<br /> 
- 
-	<h2>Videos</h2> 
-  
-  <h3 class="clear">Add Videos</h3> 
-  <p>Got to the Videos tab and click the Submit Video tab to add your video site.  <a href="#">Start!</a> 
-</p> 
- 
-  
-  <h3>Add Sources to Automatically Add Videos for You</h3> 
-  <p>Got to the Add Sources page under the Videos tab and add a feed that you like, or search the web for a topic and save your search as a feed.  <a href="#">Start!</a> 
-</p> 
-  
-  <h3>Add Users</h3> 
-  <p>Got to the Users page and add a user to help you manage your video site.  <a href="#">Start!</a> 
-</p> 
- 
-<br class="clear" /> 
-<br /> 
-	<h2 class="clear">Customize</h2> 
-  <h3 class="clear">Change Settings</h3> 
-  <p>You can customize your sites appearance by navigating to the Settings tab.  <a href="#">Start!</a> 
-</p> 
+<div id="starter_pack" class="selected plan">
+  <div class="hdr">
+    <h1>Starter Pack</h1>
+    <h2>$15/month</h2>
+  </div><!-- // hdr -->
+  <ul>
+    <li>Your site, logo &amp; background</li>
+    <li>Custom Domain</li>
+    <li>Custom CSS</li>
+    <li><strong>1,000</strong> Video Limit</li>
+    <li><strong>5</strong> Administrator Accounts</li>
+  </ul>
+  <div class="ft">
+    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+  </div><!-- // ft -->
+  <span class="downgrade">Would you like to <a href="">downgrade</a>?</span>
+</div><!-- // starter_pack -->
 
- {% endblock %}
+<div id="value_added" class="plan">
+  <div class="hdr">
+    <h1>Value Added</h1>
+    <h2>$35/month</h2>
+  </div><!-- // hdr -->
+  <ul>
+    <li>Your site, logo &amp; background</li>
+    <li>Custom Domain</li>
+    <li>Custom CSS</li>
+    <li><strong>5,000</strong> Video Limit</li>
+    <li><strong>Unlimited</strong> Administrator Accounts</li>
+    <li>You can run advertising</li>
+  </ul>
+  <div class="ft">
+    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+  </div><!-- // ft -->
+</div><!-- // value_added -->
+
+<div id="delicious_plan" class="plan last">
+  <div class="hdr">
+    <h1>Delicious</h1>
+    <h2>$75/month</h2>
+  </div><!-- // hdr -->
+  <ul>
+    <li>Your site, logo &amp; background</li>
+    <li>Custom Domain</li>
+    <li>Custom CSS</li>
+    <li><strong>25,000</strong> Video Limit</li>
+    <li><strong>Unlimited</strong> Administrator Accounts</li>
+    <li>You can run advertising</li>
+    <li>Fully Custom Templating</li>
+  </ul>
+  <div class="ft">
+    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+  </div><!-- // ft -->
+</div><!-- // delcisious_plan -->
+</div><!-- // clear -->
+<div id="signup_form" class="clear">
+  <div id="error_container"><!-- Use this to display any global form errors -->
+    <h2>The Following Error(s) Occured:</h2>
+    <ul>
+      <li>This is one of many errors.</li>
+      <li>This is one of many errors.</li>
+      <li>This is one of many errors.</li>
+      <li>This is one of many errors.</li>
+      <li>This is one of many errors.</li>
+      <li>This is one of many errors.</li>
+      <li>Wow, there is a lot wrong here.</li>
+    </ul>
+  </div><!-- // error_container -->
+  <form>
+  <div class="clear">
+  <fieldset id="account_info_set">
+    <h1 id="account">Account Information</h1>
+    <div><label>First Name</label><input type="text" /></div>
+    <div><label>Last Name</label><input type="text" /></div>
+    <div><label>Email <span>(Must be a valid email address.)</span></label><input type="text" /></div>
+    <div class="error"><label>Username <span>(You will use this to login as admin.)</span></label><input type="text" /><span class="error">THAT IS NOT REAL!</span></div>
+    <div><label>Password <span>(Must be at least 8 characters.)</span></label><input type="password" /></div>
+    <div><label>Confirm Password</label><input type="password" /></div>
+  
+    <div id="site_url"><label>Site URL</label> http://<input type="text" />.mirocommunity.org</div>
+  </fieldset><!-- // fieldset -->
+  
+  <fieldset id="billing_info_set">
+    <h1 id="billing">Billing Information <span id="secure">Secure</span> <span id="we_accept">We Accept - Visa, Mastercard, American Express</span></h1>
+    <div><label>Billing Address</label><input type="text" /></div>
+    <div><label>Address Line 2</label><input type="text" /></div>
+    <div><label>Card number</label><input type="text" /></div>
+    <div><label>Expires</label>
+      <select>
+        <option>11 - November</option>
+      </select>
+      <select>
+        <option>2010</option>
+      </select>
+    </div>
+    <div><label>Billing Zip</label><input type="text" /></div>
+  </fieldset><!-- // fieldset -->
+  </div><!-- // clear -->
+
+  <div class="msg"><p>Your 30-day free trial lasts until midnight on December 11, 2010. If you don't want to continue using Miro Community, just cancel before the trial ends and you won't be charged (we'll email you 5 days before the trial ends to remind you). Otherwise, you'll pay just $49/month for the service as long as your account is open. You can upgrade, downgrade, or cancel any time.</p></div>
+    
+    <p id="disclaimer">By clicking you agree to our <a href="">Terms of Service</a> and <a href="">Privacy Policy</a>.</p>
+    <button type="submit">Upgrade My Account</button>
+  </form>
+</div><!-- // signup_form -->
+{% endblock %}
+
