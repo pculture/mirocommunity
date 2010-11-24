@@ -468,13 +468,6 @@ background: url(../images/admin_sprites.png) 0 -443px no-repeat;
 background: url(../images/admin_sprites.png) left -520px no-repeat;
 }
 
-
-
-
-
-
-
-
 .download_theme{
 padding: 0 0 0 18px;
 background: url(../images/small_icons.png) 0 -277px no-repeat;
@@ -502,9 +495,9 @@ input.placeholder {
 //////////////////////////////////////*/
 
 
-#header{
-border-bottom: 1px solid #fff;
-background: #999;
+#header {
+border-bottom: 1px solid #dadada;
+background: #e3e3e3;
 height: 5em;
 }
 

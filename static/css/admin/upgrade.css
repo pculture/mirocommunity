@@ -1,0 +1,194 @@
+body#upgrade #upgrade_title {
+  margin: 0 0 30px 0;
+  background: transparent url(/images/admin/icon_upgrade_shield.png) 0 0 no-repeat;
+  padding: 5px 0 30px 55px;
+  border-bottom: 1px #DDD solid;
+}
+
+body#upgrade #upgrade_title h1 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #523d30;
+  letter-spacing: -1px;
+}
+
+body#upgrade #upgrade_title p {
+  color: #656565;
+  margin: 5px 0 0 0;
+}
+
+body#upgrade #upgrade_title p strong {
+  color: #333;
+  font-weight: bold;
+}
+
+body#upgrade #basic_plan {
+  width: 941px;
+  height: 49px;
+  background: transparent url(/images/admin/upgrade_basic_bg.png) 0 0 no-repeat;
+  display: block;
+  margin: 0 0 0 0;
+}
+
+body#upgrade #basic_plan h1 {
+  font-family: Helvetica, Arial, sans-serif;
+  color: #9e5900;
+  margin: 18px 0 0 25px;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 0 #ffff00;
+  float: left;
+}
+
+body#upgrade #basic_plan h1 strong {
+  font-weight: bold;
+}
+
+body#upgrade #basic_plan p {
+  color: #7f7f6e;
+  float: left;
+  margin: 18px 0 0 65px;
+  font-size: 15px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 0 #ffffcf;
+}
+
+body#upgrade #basic_plan a#btn_started {
+  float: right;
+  display: block;
+  width: 155px;
+  height: 35px;
+  background: transparent url(/images/admin/btn_upgrade_today.png) 0 0 no-repeat;
+  text-indent: -9999px;
+  margin: 8px 8px 0 0;
+}
+
+body#upgrade #basic_plan a:hover#btn_started {
+  background-position: 0 -35px;
+}
+
+body#upgrade #basic_plan a:active#btn_started {
+  background-position: 0 -70px;
+}
+
+body#upgrade span.downgrade {
+  font-size: 18px;
+  color: #777;
+  letter-spacing: -0.5px;
+  text-align: center;
+  display: block;
+  position: relative;
+  top: 10px;
+}
+
+body#upgrade span.downgrade a {
+  font-weight: bold;
+  color: #555;
+  border-bottom: 1px #DDD solid;
+  text-decoration: none;
+}
+
+body#upgrade span.downgrade a:hover {
+  color: #222;
+  border-color: #BBB;
+}
+
+body#upgrade .selected .hdr {
+  background: transparent url(/images/admin/current_hdr_bg.png) 0 0 no-repeat;
+}
+
+body#upgrade .selected .hdr h1 {
+  font-family: Helvetica, Arial, sans-serif;
+  padding: 25px 0 8px 0;
+  color: #bad8e3;
+  font-size: 20px;
+  text-shadow: 0 1px 0 #223841;
+  display: none;
+}
+
+body#upgrade .selected .hdr h2 {
+  font-weight: bold;
+  font-size: 30px;
+  color: #FFF;
+  text-shadow: 0 1px 0 #333;
+  letter-spacing: -1px;
+  padding: 53px 0 0 0;
+}
+
+body#upgrade .selected .ft {
+  background: transparent url(/images/admin/current_ft_bg.png) 0 0 no-repeat;
+}
+
+body#upgrade .selected .ft a {
+  display: none;
+}
+
+body#upgrade .ft a {
+  color: #FFF;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 0 0 5px 0;
+  text-decoration: none;
+  display: block;
+  float: left;
+  position: relative;
+  top: 20px;
+  left: 37px;
+}
+
+#signup_form #error_container {
+  width: 900px;
+}
+
+#signup_form #error_container ul {
+  margin: 55px 0 0 0;
+}
+
+body#upgrade form {
+  float: none !important;
+  width: 950px;
+}
+
+body#upgrade fieldset {
+  width: 400px;
+  float: left;
+}
+
+body#upgrade fieldset#account_info_set {
+  width: 400px;
+  margin: 0 100px 0 0;
+}
+
+body#upgrade fieldset#account_info_set h1 {
+  width: 400px;
+}
+
+body#upgrade fieldset#billing_info_set h1 {
+  width: 400px;
+}
+
+body#upgrade h1#billing span#we_accept {
+  background: transparent url(/images/admin/icon_we_accept.png) 0 0 no-repeat;
+  text-indent: -99999px;
+  display: inline-block;
+  width: 214px;
+  height: 24px;
+  margin: 0 0 0 20px;
+  display: none;
+}
+
+body#upgrade div#site_url input {
+  width: 200px;
+}
+
+body#upgrade form h1 {
+  width: 400px;
+}
+
+body#upgrade form h1#account {
+  margin: 49px 0 0 0;
+}
+
+#signup_form .msg {
+  width: 900px;
+}
