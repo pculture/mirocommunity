@@ -25,6 +25,8 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 	font-size: 100%;
 	font-family: inherit;
 	vertical-align: baseline;
+	font-family: Helvetica, Arial, sans-serif;
+	letter-spacing: 0;
 }
 
 /* remember to define focus styles! */

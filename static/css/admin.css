@@ -496,72 +496,24 @@ input.placeholder {
 
 
 #header {
-border-bottom: 1px solid #dadada;
-background: #e3e3e3;
-height: 5em;
+  border-bottom: 1px solid #dadada;
+  background: #e3e3e3;
 }
 
-
-#header #logo {
-margin: 0px;
-float: left;
-
-}
-
-#header #logo img{
-height: 3em !important;
-border: none;
-float: left;
-}
-
-
-#header #logo h1{
-float: left;
-height: 35px;
-margin: 0 !important;
-font-size: 13px;
-line-height: 2.4em;
-margin: 0;
-}
-#header #logo a {
-	margin: 12px;
-	float: left;
-	display: block;	
-}
-#header #logo h1 a{
-padding: 0 12px;
-margin: 12px 0 0 0;
-height: 1em;
-line-height: 1em;
-float: left;
-display: block;
-width: 100%;
-}
-#header #logo span {
-	display: block;
-	float: left;
-	font-size: 0.9em;
-	font-weight: normal;
-	height: 1em;
-	line-height: 1em;
-	padding: 3px 12px 0;
-}
-
-
-ul.login{
+ul.login {
 margin: 0;
 float: left;
 }
 
 
-ul.login li{
+ul.login li {
 margin: 0;
 list-style: none;
 float: left;
 }
 
 
-ul.login li a{
+ul.login li a {
 line-height: 2.4em;
 float: left;
 margin: 13px;
@@ -647,73 +599,75 @@ ul#admin_nav li a.admin {
 #user_profile #admin_nav a.profile,
 #goodies #admin_nav a.goodies
 {
-background-color: #fff;
-border-bottom: 1px solid #ddd;
-border-top: 1px solid #ddd;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  border-top: 1px solid #ddd;
 }
 
 
 
 
 ul#admin_nav li a.comments{
-border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
 
 
 #admin_subnav {
-position: relative;
-left: -25px;
-top: -44px;
-padding: 0;
-margin: -10px 0;
-z-index: 4567;
+  position: relative;
+  left: -25px;
+  top: -27px;
+  padding: 0;
+  margin: -33px 0;
+  z-index: 4567;
 }
 
 
-#admin_subnav ul{
-padding: 0;
-margin: 0;
+#admin_subnav ul {
+  padding: 0;
+  margin: 0;
 }
 
 
-#admin_subnav li{
-float: left;
-list-style: none;
+#admin_subnav li {
+  float: left;
+  list-style: none;
+  margin: 0 7px 0 -1px;
 }
 
 
 
-#admin_subnav li a{
-float: left;
-line-height: 2.5em;
-text-decoration: none;
-color: #000;
-font-weight: bold;
-font-size: 11px;
-margin: 0 1em 0 0;
-background: #f4f4f4;
-border-top: 1px solid #ddd;
-border-right: 1px solid #ddd;
-border-left: 1px solid #ddd;
-border-bottom: 1px solid #ddd;
+#admin_subnav li a {
+  float: left;
+  text-decoration: none;
+  color: #656565;
+  font-weight: bold;
+  font-size: 13px;
+  background: #f4f4f4;
+  border-top: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-top-left-radius: 5px;
+  text-shadow: 0 1px 0 #FFF;
 }
 
 
-#admin_subnav li a span{
-float: left;
-line-height: 2.5em;
-text-decoration: none;
-padding: 0 1.5em;
-color: #000;
-font-weight: bold;
-font-size: 11px;
-
-border-top: 1px solid #fff;
+#admin_subnav li a span {
+  float: left;
+  line-height: 2.5em;
+  padding: 0 1.5em;
+  border-top: 1px solid #fff;
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-top-right-radius: 5px;
+  text-shadow: 0 1px 0 #FFF;
 }
 
 #admin_subnav li a:hover {
-background: #fff;
-border-bottom: 1px solid #fff;
+  background: #fff;
+  border-bottom: 1px solid #fff;
+  color: #000;
+  text-shadow: 0 1px 0 #FFF;
 }
 
 
@@ -732,8 +686,10 @@ border-bottom: 1px solid #fff;
 #goodies.bookmarklet a.bookmarklet,
 #goodies.playlists a.playlists
 {
-background: #fff;
-border-bottom: 1px solid #fff;
+  color: #000;
+  background: #fff;
+  border-bottom: 1px solid #fff;
+  text-shadow: 0 1px 0 #FFF;
 }
 
 
@@ -741,9 +697,10 @@ border-bottom: 1px solid #fff;
 #admin.incomingvids #admin_nav a.sub,
 #admin.addingfeed #admin_nav a.sub,
 #admin.managesources #admin_nav a.sub,
+#admin.admin_dash #admin_nav a.dash,
 #admin.bulkedit #admin_nav a.sub,
 #admin.category_admin #admin_nav a.sub{
-background: #fff url(../images/admin_icons.png) 20px -23px no-repeat;
+background: #fff;
 }
 
 
@@ -820,14 +777,11 @@ background: url(../images/admin_icons.png) 20px -536px no-repeat;
 #content{
 border: 1px solid #dfdfdf;
 background: #fff;
-left: 13em;
-top: 8em;
-padding: 2em;
-width: 80%;
-max-width: 975px;
-min-width: 755px;
-margin: 4.5em 30px 0em 13em;
-min-height: 22em;
+padding: 25px;
+width: 75%;
+margin: 60px 30px 30px 0;
+min-height: 300px;
+float: left;
 }
 
 

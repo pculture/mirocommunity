@@ -8,18 +8,18 @@
 
 /* use a semi-transparent image for the overlay */
 #overlay {
-	background:#efefef;
-	width: 600px;
-        text-align: left;
-    color:#efefef;
-    height:400px;
-    padding: 10px;
-    display: none;
-    border: 1px solid #225d84;
-
-    /* CSS3 styling for latest browsers */
-    -moz-box-shadow:0 0 30px 5px #3476a1;
-    -webkit-box-shadow: 0 0 90px #000;
+  background:#efefef;
+  width: 600px;
+  text-align: left;
+  color:#efefef;
+  height:400px;
+  padding: 10px;
+  display: none;
+  border: 1px solid #225d84;
+  
+  /* CSS3 styling for latest browsers */
+  -moz-box-shadow:0 0 30px 5px #3476a1;
+  -webkit-box-shadow: 0 0 90px #000;
 }
 
 /* container for external content. uses vertical scrollbar, if needed */
