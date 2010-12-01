@@ -670,8 +670,8 @@ class AuthorForm(user_profile_forms.ProfileForm):
     role = forms.ChoiceField(choices=(
             ('user', 'User'),
             ('admin', 'Admin')),
-                             widget=forms.RadioSelect,
-                             required=False)
+            widget=forms.RadioSelect,
+            required=False)
     website = forms.CharField(label='Website', required=False)
     password_f = forms.CharField(
         widget=forms.PasswordInput,
