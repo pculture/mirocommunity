@@ -1595,7 +1595,6 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
         self.assertFalse(saved_search.auto_approve)
 
-
 # -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
