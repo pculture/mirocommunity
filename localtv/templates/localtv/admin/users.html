@@ -26,7 +26,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block pre-labels %}
   <h2>Users</h2>
   <div id="label_sidebar">
-    <a href="#" rel="#add_user" class="add"><span>Add User</span></a>
+    <a id="add_user_link" href="#" rel="#add_user" class="add"><span>Add User</span></a>
+    {% if add_user_form.errors %}<script type="text/javascript">$(function() { $('#add_user_link').click();})</script>{% endif %}
     <div id="add_user" class="simple_overlay displaynone rounded">
       <h2>Add a User</h2>
       <form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
