@@ -129,7 +129,7 @@ if (typeof jQuery == 'undefined') throw("jQuery could not be found.");
         modal: true,
         resizeable: false,
         autoResize: false,
-        overlay: {backgroundColor: "black", opacity: 0.5}
+        overlay: {backgroundColor: "#000", opacity: 0.5}
       },
       message : '<br/><p>You have changed form data without saving. All of your changes will be lost.</p><p>Are you sure you want to proceed?</p>'
     }

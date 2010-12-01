@@ -78,7 +78,7 @@ $(document).ready( function(){
         // thing when we run into it
         expose = null;
     } else {
-        expose = '#499ad9';
+        expose = '#000';
     }
 
     $('a[rel^=#]').overlay({
