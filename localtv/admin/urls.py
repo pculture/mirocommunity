@@ -121,3 +121,9 @@ urlpatterns += patterns(
      'localtv_admin_feed_unapproved'),
     (r'^feeds/(\S+)/unapproved_user$', 'unapproved_user', {},
      'localtv_admin_feed_unapproved_user'))
+
+urlpatterns = patterns('django.views.generic.simple',
+    (r'^upgrade/$',             'direct_to_template', {'template': 'localtv/admin/upgrade.html'}),
+)
+
+
