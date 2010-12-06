@@ -1,4 +1,5 @@
 import logging
+import datetime
 from django.conf import settings
 import localtv.models
 
@@ -85,3 +86,33 @@ class BooleanRepresentingUploadTemplatePermission(object):
         # Throw away the result so that we can always check the tier
         # at the latest possible time.
         Tier.get(log_warnings=True)
+
+def add_a_month(date):
+    month = date.month
+    new_date = None
+    if 1 < month < 11:
+        new_date = date.replace(month=month+1)
+    else:
+        new_date = date.replace(month=1, year=date.year+1)
+    return new_date
+
+### Here, we listen for changes in the SiteLocation
+### As it changes, we make sure we adjust the payment due date stored in the SiteLocation.
+def pre_save_set_payment_due_date(instance, signal, **kwargs):
+    # If transitioning from 'free' tier to something else,
+    # set the payment_due_date to be now plus thirty days.
+
+    # Right here, we do a direct filter() call to evade the SiteLocation cache.
+    current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
+    if not current_sitelocs:
+        return
+
+    current_siteloc = current_sitelocs[0]
+    current_tier_name = current_siteloc.tier_name
+    new_tier_name = instance.tier_name
+    if (current_tier_name == 'free') and (new_tier_name != 'free'):
+        # There should be no due date, because we used to be in 'free' mode. If there was,
+        # log an error.
+        if instance.payment_due_date:
+            log.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
+        instance.payment_due_date = add_a_month(datetime.datetime.utcnow())

@@ -3298,3 +3298,32 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         # three flatpages got removed
         self.assertEquals(FlatPage.objects.count(), 2)
+
+### Class tier payment tests
+class TierPaymentTests(BaseTestCase):
+    def test_change_to_non_free_tier_creates_payment_due_date(self):
+        # For cleanliness, clear any payment due date.
+        self.site_location.payment_due_date = None
+        self.site_location.save()
+
+        # Set the site tier to free
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+
+        # Verify that there is no payment due date still.
+        self.assertEqual(None, self.site_location.payment_due_date)
+
+        # Bump it up to 'executive'
+        # Discover that we have a payment due date now (and that it is
+        # after today)
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        self.assert_(self.site_location.payment_due_date > datetime.datetime.now())
+
+    def test_pay_early(self):
+        from paypal.standard.ipn.models import PayPalIPN
+        ipn_obj = PayPalIPN()
+        import localtv.admin.payment_handlers
+        localtv.admin.payment_handlers.handle_ipn(ipn_obj)
+        self.assert_(False)
+
