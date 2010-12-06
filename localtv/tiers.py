@@ -87,6 +87,16 @@ class BooleanRepresentingUploadTemplatePermission(object):
         # at the latest possible time.
         Tier.get(log_warnings=True)
 
+def process_payment(dollars):
+    site_location = localtv.models.SiteLocation.objects.get_current()
+    amount_due = site_location.get_tier().dollar_cost()
+    if dollars == amount_due:
+        site_location.payment_due_date = add_a_month(site_location.payment_due_date)
+    else:
+        logging.error("Weird, the user paid %f but owed %f" % (
+            dollars, amount_due))
+
+
 def add_a_month(date):
     month = date.month
     new_date = None

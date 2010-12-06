@@ -14,6 +14,7 @@ from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
 import mock
+import localtv.tiers
 
 import vidscraper
 from notification import models as notification
@@ -3320,10 +3321,15 @@ class TierPaymentTests(BaseTestCase):
         self.site_location.save()
         self.assert_(self.site_location.payment_due_date > datetime.datetime.now())
 
-    def test_pay_early(self):
-        from paypal.standard.ipn.models import PayPalIPN
-        ipn_obj = PayPalIPN()
-        import localtv.admin.payment_handlers
-        localtv.admin.payment_handlers.handle_ipn(ipn_obj)
-        self.assert_(False)
+    def test_handle_one_payment(self):
+        # Set the payment due date to tomorrow
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        self.site_location.payment_due_date = tomorrow
+        self.site_location.save()
+
+        # Process a complete payment.
+        localtv.tiers.process_payment(self.site_location.get_tier().dollar_cost())
+
+        # Make sure the due date is now in the future
+        self.assert_(self.site_location.payment_due_date > tomorrow)
 
