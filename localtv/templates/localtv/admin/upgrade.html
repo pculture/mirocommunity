@@ -29,7 +29,7 @@ You can always downgrade to the free plan.
   <a id="btn_started" href="">Upgrade Today!</a>
 </div><!-- // basic_plan -->
 
-<div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}plan">
+<div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
   <div class="hdr">
     <h1>Plus Pack</h1>
     <h2>$15/month</h2>
@@ -42,7 +42,7 @@ You can always downgrade to the free plan.
     <li><strong>5</strong> Administrator Accounts</li>
   </ul>
   <div class="ft">
-    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+    <a href="/new_signup_form/" class="start_trial">{{ switch_messages.plus }}</a>
   </div><!-- // ft -->
   <span class="downgrade">Would you like to <a href="">downgrade</a>?</span>
 </div><!-- // starter_pack -->
@@ -61,7 +61,7 @@ You can always downgrade to the free plan.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+    <a href="/new_signup_form/" class="start_trial">{{ switch_messages.premium }}</a>
   </div><!-- // ft -->
 </div><!-- // value_added -->
 

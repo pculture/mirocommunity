@@ -34,7 +34,24 @@ from localtv.admin import forms
 @require_site_admin
 @csrf_protect
 def upgrade(request):
+    SWITCH_TO = 'Switch to this'
+    UPGRADE = 'Upgrade Your Account'
+
+    siteloc = models.SiteLocation.objects.get_current()
+    switch_messages = {}
+    if siteloc.tier_name in ('premium', 'max'):
+        switch_messages['plus'] = SWITCH_TO
+    else:
+        switch_messages['plus'] = UPGRADE
+
+    if siteloc.tier_name == 'max':
+        switch_messages['premium'] = SWITCH_TO
+    else:
+        switch_messages['premium'] = UPGRADE
+
     data = {}
-    data['site_location'] = models.SiteLocation.objects.get_current()
+    data['site_location'] = siteloc
+    data['switch_messages'] = switch_messages
+
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
