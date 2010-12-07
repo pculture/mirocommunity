@@ -92,6 +92,7 @@ def process_payment(dollars):
     amount_due = site_location.get_tier().dollar_cost()
     if dollars == amount_due:
         site_location.payment_due_date = add_a_month(site_location.payment_due_date)
+        site_location.save()
     else:
         logging.error("Weird, the user paid %f but owed %f" % (
             dollars, amount_due))
@@ -125,4 +126,10 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         # log an error.
         if instance.payment_due_date:
             log.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
-        instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
+        # If the user can use a free trial, then the due date is a month from now
+        if current_site_loc.free_trial_used:
+            
+            instance.payment_due_date = datetime.datetime.utcnow()
+        else:
+            instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
+        
