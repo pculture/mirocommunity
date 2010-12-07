@@ -127,9 +127,10 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         if instance.payment_due_date:
             log.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
         # If the user can use a free trial, then the due date is a month from now
-        if current_site_loc.free_trial_used:
+        if not current_siteloc.free_trial_available:
             
             instance.payment_due_date = datetime.datetime.utcnow()
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
         
+

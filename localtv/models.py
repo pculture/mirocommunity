@@ -338,7 +338,7 @@ class SiteLocation(Thumbnailable):
     playlists_enabled = models.IntegerField(default=1)
     tier_name = models.CharField(max_length=255, default='free', blank=False, choices=localtv.tiers.CHOICES)
     payment_due_date = models.DateTimeField(null=True, blank=True)
-    free_trial_used = models.BooleanField(default=False)
+    free_trial_available = models.BooleanField(default=True)
 
     # ordering options
     use_original_date = models.BooleanField(
