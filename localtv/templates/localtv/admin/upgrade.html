@@ -13,13 +13,23 @@
     <p>All <strong>new</strong> monthly subscribers get a <strong>free 30 day</strong> trial.</p> 
   </div><!-- // upgrade_title -->
   
+
 <div id="basic_plan" class="clear">
-  <h1>Your current plan: <strong>Basic</strong></h1>
-  <p>Easily upgrade to receive a free 30 day trial. Only takes seconds.</p>
+  <h1>{% ifequal site_location.tier_name 'free' %}Your current plan: {%endifequal%}<strong>Basic</strong></h1>
+  <p>  {% ifequal site_location.tier_name 'free' %}
+{% if site_location.free_trial_available %}
+Easily upgrade to receive a free 30 day trial. Only takes seconds.
+{% else %}
+To upgrade, make a choice below.
+{% endif %}
+{% else %}
+You can always downgrade to the free plan.
+{% endifequal %}
+</p>
   <a id="btn_started" href="">Upgrade Today!</a>
 </div><!-- // basic_plan -->
 
-<div id="starter_pack" class="selected plan">
+<div id="starter_pack" class="{% ifequal site_location.tier_name 'starter' %}selected {% endifequal %}plan">
   <div class="hdr">
     <h1>Starter Pack</h1>
     <h2>$15/month</h2>
@@ -37,7 +47,7 @@
   <span class="downgrade">Would you like to <a href="">downgrade</a>?</span>
 </div><!-- // starter_pack -->
 
-<div id="value_added" class="plan">
+<div id="value_added" class="{% ifequal site_location.tier_name 'value_added'%}selected {% endifequal %}plan">
   <div class="hdr">
     <h1>Value Added</h1>
     <h2>$35/month</h2>
@@ -55,7 +65,7 @@
   </div><!-- // ft -->
 </div><!-- // value_added -->
 
-<div id="delicious_plan" class="plan last">
+<div id="delicious_plan" class="{% ifequal site_location.tier_name 'delicious' %}selected {% endifequal %}last plan">
   <div class="hdr">
     <h1>Delicious</h1>
     <h2>$75/month</h2>

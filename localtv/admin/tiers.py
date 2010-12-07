@@ -34,5 +34,7 @@ from localtv.admin import forms
 @require_site_admin
 @csrf_protect
 def upgrade(request):
-    return render_to_response('localtv/admin/upgrade.html', {},
+    data = {}
+    data['site_location'] = models.SiteLocation.objects.get_current()
+    return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
