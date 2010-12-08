@@ -1498,7 +1498,10 @@ def save_original_tags(sender, instance, created=False, **kwargs):
     tagging.models.Tag.objects.add_tag(original,
                                        '"%s"' % instance.tag)
 
-models.signals.post_save.connect(create_original_video,
-                                 sender=Video)
-models.signals.post_save.connect(save_original_tags,
-                                 sender=tagging.models.TaggedItem)
+ENABLE_ORIGINAL_VIDEO = not getattr(settings, 'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY', None)
+
+if ENABLE_ORIGINAL_VIDEO:
+    models.signals.post_save.connect(create_original_video,
+                                     sender=Video)
+    models.signals.post_save.connect(save_original_tags,
+                                     sender=tagging.models.TaggedItem)
