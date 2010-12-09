@@ -1,5 +1,181 @@
 {% extends "localtv/admin/base.html" %}
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/css/admin/dashboard.css" />
+{% endblock extrahead %}
 {% block body_class %}admin_dash{% endblock body_class %}
 {% block content %}
-Hey
+<div id="dashboard">
+<h1 id="hdr_activity">Activity</h1>
+<div id="video_limit">
+  <h2>You've used <strong>325</strong> of your <strong>500</strong> video limit.</h2>
+  <div id="limit_bar">
+  <div id="limit_progress" style="width: 80%;">
+    <a href=""><em class="icon"></em>Upgrade</a>
+  </div><!-- // limit_progress -->
+  </div><!-- // limit_bar -->
+</div><!-- // video_limit -->
+
+<div class="clear"></div>
+<div id="account_stats">
+  <div class="clear">
+  <div id="comments_pending">
+    <h1>1251</h1>
+    <h2>Comments</h2>
+    <h3>pending moderation</h3>
+    <div class="clear"></div>
+    <a id="btn_comment_moderate" href="">Moderate</a>
+  </div><!-- // comments_pending -->
+  
+  <div id="videos_pending">
+    <h1>5232</h1>
+    <h2>Videos</h2>
+    <h3>pending moderation</h3>
+    <div class="clear"></div>
+    <a id="btn_comment_moderate" href="">Moderate</a>
+  </div><!-- // videos_pending -->
+  
+  <div id="videos_week">
+    <h1>1251</h1>
+    <h2>Videos</h2>
+    <h3>this week</h3>
+    <div class="clear"></div>
+    <a id="btn_comment_moderate" href="">Moderate</a>
+  </div><!-- // videos_week -->
+  </div><!-- // clear -->
+</div><!-- // accounts_stats -->
+
+<div id="get_started">
+  <div id="hd">
+    <div class="clear">
+      <h1 id="hdr_getstarted">Get Started</h1>
+      <a id="started_hide" href="">Hide This</a>
+    </div><!-- // clear -->
+  </div><!-- // hd -->
+  <ul>
+    <li id="step1"><strong>Add Video Feeds</strong> — <span>Pellentesque eu est a nulla placerat dignissim.</span></li>
+    <li id="step2"><strong>Change Your Theme</strong> — <span>Pellentesque eu est a nulla placerat dignissim.</span></li>
+    <li id="step3"><strong>Edit Your Site Info &amp; Design</strong> — <span>Pellentesque eu est a nulla placerat dignissim.</span></li>
+    <li id="step4"><strong>Set Your Notification Preferences</strong> — <span>Pellentesque eu est a nulla placerat dignissim.</span></li>
+  </ul>
+</div><!-- // get_started -->
+
+<div style="width: 435px; margin: 0 35px 0 0; float: left;">
+<div id="video_views" class="trending_stats">
+  <h1 id="hdr_videoviews">Video Views</h1>
+  <ul>
+    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
+    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
+    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
+  </ul>
+</div><!-- // video_views -->
+
+<div id="user_activity" class="trending_stats">
+  <h1 id="hdr_useractivity">User Activity</h1>
+  <ul>
+    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
+    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
+    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
+    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
+  </ul>
+</div><!-- // user_activity -->
+</div><!-- // left -->
+
+<div style="width: 435px;  float: left;">
+<div id="widget_stats">
+  <h1 id="hdr_widgetstats">Widget Stats <a class="wiki_link" href="">(?)</a></h1>
+  <ul class="clear stats_filter">
+    <li class="selected" >
+      <a href="" class="filter_title">Impressions <em class="icon"></em>
+        <ul class="clear filter_menu">
+          <li>this week</li>
+          <li>this month</li>
+          <li>this year</li>
+        </ul>
+      </a></li>
+    <li><a href="" class="filter_title">Newly Created </a></li>
+    <li><a href="" class="filter_title">Clicks <em class="icon"></em>
+      <ul class="clear filter_menu">
+        <li>this week</li>
+        <li>this month</li>
+        <li>this year</li>
+      </ul>
+    </a></li>
+  </ul><!-- // stats_filter -->
+  <table class="stats_table">
+    <tr>
+      <th>referral url</th>
+      <th class="right_col">monthly impressions</th>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+  </table>
+    
+</div><!-- // video_views -->
+
+<div id="site_referrals">
+  <h1 id="hdr_referrals">Referrals <a class="wiki_link" href="">(?)</a></h1>
+  <ul class="clear stats_filter">
+    <li><a href="" class="filter_title">Websites <em class="icon"></em>
+      <ul class="clear filter_menu">
+        <li>this week</li>
+        <li>this month</li>
+        <li>this year</li>
+      </ul>
+    </a></li>
+    <li><a href="" class="filter_title">Search Engines <em class="icon"></em>
+      <ul class="clear filter_menu">
+        <li>Google</li>
+        <li>Yahoo</li>
+        <li>Bing</li>
+      </ul>
+    </a></li>
+  </ul><!-- // stats_filter -->
+  <table class="stats_table">
+    <tr>
+      <th>referral url</th>
+      <th class="right_col">monthly impressions</th>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+    <tr>
+      <td><a href="">duke.edu/library/video</a></td>
+      <td class="right_col impressions">32,315,724</td>
+    </tr>
+  </table>
+</div><!-- // user_activity -->
+</div><!-- // right -->
+
+</div><!-- // dashboard -->
 {% endblock %}

@@ -5,13 +5,12 @@
 
 //////////////////////////////////////*/
 
-body{
-font-family: Helvetica, Verdana, Arial, sans-serif;
-font-size: 12px;
-padding: 0 0 20px;
-background: #eee;
-margin: 0;
-height: 100%;
+body {
+  font-family: Helvetica, Verdana, Arial, sans-serif;
+  font-size: 12px;
+  background: #eee;
+  margin: 0;
+  height: 100%;
 }
 
 a{
@@ -34,10 +33,8 @@ br.clearboth {
 
 //////////////////////////////////////*/
 
-#wrapper{
-width: 100% !important; 
-position: relative;
-height: 100%;
+#wrapper {
+  width: 1210px;
 }
 
 
@@ -699,73 +696,73 @@ ul#admin_nav li a.comments{
 #admin.managesources #admin_nav a.sub,
 #admin.admin_dash #admin_nav a.dash,
 #admin.bulkedit #admin_nav a.sub,
-#admin.category_admin #admin_nav a.sub{
-background: #fff;
+#admin.category_admin #admin_nav a.sub {
+  background: #fff;
 }
 
 
-#admin_nav a.sub{
-background: url(../images/admin_icons.png) 20px 18px no-repeat;
-border-top: 1px solid #ddd;
+#admin_nav a.sub {
+  background: url(../images/admin_icons.png) 20px 18px no-repeat;
+  border-top: 1px solid #ddd;
 }
 
-#admin_nav a.sub:hover{
-background: #fff url(../images/admin_icons.png) 20px -23px no-repeat;
+#admin_nav a.sub:hover {
+  background: #fff url(../images/admin_icons.png) 20px -23px no-repeat;
 }
 
-a.design{
-background: url(../images/admin_icons.png) 20px -63px no-repeat;
+a.design {
+  background: url(../images/admin_icons.png) 20px -63px no-repeat;
 }
 
-a.design:hover{
-background: #fff url(../images/admin_icons.png) 20px -104px no-repeat;
+a.design:hover {
+  background: #fff url(../images/admin_icons.png) 20px -104px no-repeat;
 }
 
 #admin.settings a.design,
 #admin.themes a.design,
-#admin.flatpages a.design{
-background: #fff url(../images/admin_icons.png) 20px -104px no-repeat;
+#admin.flatpages a.design {
+  background: #fff url(../images/admin_icons.png) 20px -104px no-repeat;
 }
 
 a.users{
 background: url(../images/admin_icons.png) 20px -144px no-repeat;
 }
 
-a.users:hover{
-background: #fff url(../images/admin_icons.png) 20px -185px no-repeat;
+a.users:hover {
+  background: #fff url(../images/admin_icons.png) 20px -185px no-repeat;
 }
 
-#admin.user_admin a.users{
-background: #fff url(../images/admin_icons.png) 20px -185px no-repeat;
+#admin.user_admin a.users {
+  background: #fff url(../images/admin_icons.png) 20px -185px no-repeat;
 }
 
-a.comments{
-background: url(../images/admin_icons.png) 20px -225px no-repeat;
+a.comments {
+  background: url(../images/admin_icons.png) 20px -225px no-repeat;
 }
 
-a.comments:hover{
-background: #fff url(../images/admin_icons.png) 20px -266px no-repeat;
+a.comments:hover {
+  background: #fff url(../images/admin_icons.png) 20px -266px no-repeat;
 }
 
 
-#admin.comments a.comments{
-background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important;
+#admin.comments a.comments {
+  background: #fff url(../images/admin_icons.png) 20px -266px no-repeat !important;
 }
 
 a.profile {
-background: url(../images/admin_icons.png) 20px -727px no-repeat;
+  background: url(../images/admin_icons.png) 20px -727px no-repeat;
 }
 
 a.profile:hover, #user_profile a.profile {
-    background-position: 20px -679px;
+  background-position: 20px -679px;
 }
 
 #admin_nav a.goodies {
-background: url(../images/admin_icons.png) 20px -536px no-repeat;
+  background: url(../images/admin_icons.png) 20px -536px no-repeat;
 }
 
 #admin_nav a.goodies:hover, #goodies a.goodies {
-    background-position: 20px -488px;
+  background-position: 20px -488px;
 }
 
 /*//////////////////////////////////////
@@ -774,25 +771,27 @@ background: url(../images/admin_icons.png) 20px -536px no-repeat;
 
 //////////////////////////////////////*/
 
-#content{
-border: 1px solid #dfdfdf;
-background: #fff;
-padding: 25px;
-width: 75%;
-margin: 60px 30px 30px 0;
-min-height: 300px;
-float: left;
+#content {
+  border: 1px solid #dfdfdf;
+  background: #fff;
+  padding: 25px;
+  width: 75%;
+  margin: 60px 0 30px 0;
+  min-height: 300px;
+  float: left;
 }
 
 
 #content h1, 
-#content h2{
-margin: 0 0 10px;
-color: #000;
+#content h2 {
+  margin: 0 0 10px;
+  color: #000;
+  font-weight: bold;
+  font-size: 20px;
 }
 
-#content ul{
-padding: 0;
+#content ul {
+  padding: 0;
 }
 
 
@@ -805,12 +804,38 @@ padding: 0;
 #footer {
     border: none;
 }
+
 #admin_nav #footer a {
     border: none;
     font-size: 11px;
     color: #999;
     margin: 20px;
     line-height: 1.4em;
+}
+
+#admin_footer {
+  margin: -15px 0 12px 150px;
+}
+
+#admin_footer ul {
+  margin: 0 0 15px 0;
+}
+
+#admin_footer ul li {
+  float: left;
+  display: block;
+  margin: 0 15px 0 0;
+}
+
+#admin_footer ul li a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #777;
+  text-shadow: 0 1px 0 #FFF;
+}
+
+#admin_footer ul li a:hover {
+  color: #444;
 }
 
 /*//////////////////////////////////////

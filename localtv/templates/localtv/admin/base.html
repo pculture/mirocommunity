@@ -45,7 +45,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       We recommend upgrading to a <a href="http://www.firefox.com/">better browser</a> if you are experiencing problems.
     </p><![endif]-->
 
-    <div id="wrapper" style="{% block wrapper-style-extra %}width: 85%; min-width: 960px;{% endblock %}">
+    
       <div id="header">
         <div class="clear">
           <div id="user_panel">
@@ -65,23 +65,33 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </div><!-- // logo -->
         </div><!-- // clear -->
       </div><!-- // header -->
+      <div id="wrapper">
       {% block nav %}{% include "localtv/admin/new_header.html" %}{% endblock %}
       <div id="content">
       {% endif %}
         {% block content %}
         {% endblock content %}
       {% if not request.is_ajax %}
-        <br class="clear">
-      </div>
-    </div>
-    {% if user_is_admin %}
-      <p id="footer_help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
-    {% endif %}
-	<!-- overlayed element --> 
+      </div><!-- // content -->
+      <div class="clear"></div>
+    </div><!-- // wrapper -->
+    <div class="clear"></div>
+    <div id="admin_footer">
+      <ul class="clear">
+        <li><a href="">Privacy Policy</a></li>
+        <li><a href="">Terms of Service</a></li>
+      </ul>
+      {% if user_is_admin %}
+        <p id="footer_help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>
+      {% endif %}
+    </div><!-- // admin_footer -->
+    
+    
+<!-- overlayed element --> 
 <div class="overlay" id="overlay"> 
-	<!-- the external content is loaded inside this tag --> 
-	<div class="contentWrap"></div> 
-</div>
+<!-- the external content is loaded inside this tag --> 
+<div class="contentWrap"></div> 
+</div><!-- // overlay -->
 
       {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
