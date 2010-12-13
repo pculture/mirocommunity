@@ -28,7 +28,12 @@ def filter_admin_files(sender, file_paths=None, **kwargs):
     to_remove = []
     for path in file_paths:
         if '/admin' in path:
-            to_remove.append(path)
+            if getattr(settings, 'PERMIT_DOWNLOAD_ADMIN_TEMPLATES', False):
+                # in this case, downloading admin file is permitted.
+                pass
+            else:
+                # By default, we remove admin files from the zip file that you get back.
+                to_remove.append(path)
         elif '/inline_edit' in path:
             to_remove.append(path)
         elif '/uploadtemplate/' in path:
