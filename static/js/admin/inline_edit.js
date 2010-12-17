@@ -1,6 +1,6 @@
 function insert_and_activate_action_buttons(obj) {
     if (!obj.children('.done').length) {
-        button_code = '<button type="submit" class="done"><span>Save Changes</span></button>'
+        button_code = '<button type="submit" class="done"><span>Save Changes</span></button>';
         if (obj.find('.checklist').length) {
             obj.prepend(button_code);
         } else {
