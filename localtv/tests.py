@@ -1904,3 +1904,33 @@ today</a>.</p></div>""",
                           original.thumbnail_url)
         self.assertEquals(set(original.video.tags),
                           set(original.tags))
+
+    def test_remote_video_deletion(self):
+        """
+        If there are some fields that are modified in the video, and others
+        that aren't, the modified fields should have an e-mail sent and the
+        other should just be modified.
+        """
+        # For vimeo, at least, this is what remote video deletion looks like:
+        vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
+
+        self.original.update(override_vidscraper_result=vidscraper_result)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        import pdb; pdb.set_trace()
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.name,
+                          original.name)
+        self.assertEquals(original.video.thumbnail_url,
+                          original.thumbnail_url)
+        self.assertEquals(set(original.video.tags),
+                          set(original.tags))
