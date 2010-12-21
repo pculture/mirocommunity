@@ -937,7 +937,7 @@ class OriginalVideo(VideoBase):
                 old = set(tag.name for tag in self.tags)
                 if new != old:
                     changed_fields[field] = new
-            elif scraped_data[field] != getattr(self, field):
+            elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
                 changed_fields[field] = scraped_data[field]
             elif field == 'thumbnail_url':
                 # because the data might have changed, check to see if the

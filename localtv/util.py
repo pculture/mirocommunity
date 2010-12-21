@@ -168,6 +168,9 @@ def get_scraped_data(url):
 
     return scraped_data
 
+def normalize_newlines(s):
+    return s.replace('\r\n', '\n')
+
 def send_notice(notice_label, subject, message, fail_silently=True,
                 sitelocation=None):
     notice_type = notification.NoticeType.objects.get(label=notice_label)
