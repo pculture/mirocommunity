@@ -897,7 +897,7 @@ class OriginalVideo(VideoBase):
     video = models.OneToOneField('Video', related_name='original')
     thumbnail_updated = models.DateTimeField(blank=True)
 
-    def changed_fields(self):
+    def changed_fields(self, override_vidscraper_result=None):
         """
         Check our video for new data.
         """
@@ -908,9 +908,12 @@ class OriginalVideo(VideoBase):
             self.delete()
             return {}
 
-        scraped_data = vidscraper.auto_scrape(video.website_url,
-                                              fields=['title', 'description',
-                                                      'tags', 'thumbnail_url'])
+        if override_vidscraper_result is not None:
+            scraped_data = override_vidscraper_result
+        else:
+            scraped_data = vidscraper.auto_scrape(video.website_url,
+                                                  fields=['title', 'description',
+                                                          'tags', 'thumbnail_url'])
         changed_fields = {}
         if 'title' in scraped_data:
             scraped_data['name'] = scraped_data['title']
@@ -957,10 +960,10 @@ class OriginalVideo(VideoBase):
                         time.mktime(timetuple))
         return changed_fields
 
-    def update(self):
+    def update(self, override_vidscraper_result = None):
         from localtv.util import get_or_create_tags, send_notice
 
-        changed_fields = self.changed_fields()
+        changed_fields = self.changed_fields(override_vidscraper_result)
         if not changed_fields:
             return # don't need to do anything
 
