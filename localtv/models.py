@@ -961,7 +961,7 @@ class OriginalVideo(VideoBase):
         return changed_fields
 
     def update(self, override_vidscraper_result = None):
-        from localtv.util import get_or_create_tags, send_notice
+        from localtv.util import get_or_create_tags
 
         changed_fields = self.changed_fields(override_vidscraper_result)
         if not changed_fields:
@@ -993,6 +993,10 @@ class OriginalVideo(VideoBase):
         if not changed_fields: # modified them all
             return
 
+        self.send_updated_notification(changed_fields)
+
+    def send_updated_notification(self, changed_fields):
+        from localtv.util import send_notice, get_or_create_tags
         t = loader.get_template('localtv/admin/video_updated.txt')
         c = Context({'video': self.video,
                      'original': self,
@@ -1003,6 +1007,8 @@ class OriginalVideo(VideoBase):
         send_notice('admin_video_updated', subject, message,
                     sitelocation=SiteLocation.objects.get(
                 site=self.video.site))
+
+        # And update the self instance to reflect the changes.
         for field in changed_fields:
             if field == 'tags':
                 self.tags = get_or_create_tags(changed_fields[field])
