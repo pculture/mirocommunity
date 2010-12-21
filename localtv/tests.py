@@ -1907,9 +1907,8 @@ today</a>.</p></div>""",
 
     def test_remote_video_deletion(self):
         """
-        If there are some fields that are modified in the video, and others
-        that aren't, the modified fields should have an e-mail sent and the
-        other should just be modified.
+        If the remote video is deleted, send a special message along those
+        lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
         vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
@@ -1921,3 +1920,28 @@ today</a>.</p></div>""",
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
         self.assert_(u'Deleted' in unicode(mail.outbox[0].message()))
+
+    def test_remote_video_newline_fiddling(self):
+        """
+        YouTube's descriptions sometimes come back with \r\n as the line
+        ending, and sometimes with \n.
+
+        When comparing descriptions that are the same except for that, consider
+        them equivalent.
+        """
+        # Set up the Original Video to have the \n-based line breaks
+        self.original.description = 'Something with some\nline breaks'
+        self.original.save()
+
+        # and set up the user's modified video to have a totally different description
+        self.original.video.description = 'Something chosen by the user'
+        self.original.video.save()
+
+        # Now, do a refresh, simulating the remote response having \r\n line endings
+        vidscraper_result =  {'description': self.original.description.replace('\n', '\r\n'),
+                              'thumbnail_url': self.BASE_DATA['thumbnail_url'],
+                              'title': self.BASE_DATA['name'],
+                              'tags': None, # skip tag check
+                              }
+        changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
+        self.assertFalse(changes)
