@@ -1920,17 +1920,4 @@ today</a>.</p></div>""",
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
-        import pdb; pdb.set_trace()
-        original = models.OriginalVideo.objects.get(pk=self.original.pk)
-        self.assertEquals(original.name,
-                          self.BASE_DATA['name'])
-        self.assertEquals(original.thumbnail_url,
-                          self.BASE_DATA['thumbnail_url'])
-        self.assertEquals(set(tag.name for tag in original.tags),
-                          set((tag,)))
-        self.assertEquals(original.video.name,
-                          original.name)
-        self.assertEquals(original.video.thumbnail_url,
-                          original.thumbnail_url)
-        self.assertEquals(set(original.video.tags),
-                          set(original.tags))
+        self.assert_(u'Deleted' in unicode(mail.outbox[0].message()))

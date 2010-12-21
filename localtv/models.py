@@ -914,6 +914,12 @@ class OriginalVideo(VideoBase):
             scraped_data = vidscraper.auto_scrape(video.website_url,
                                                   fields=['title', 'description',
                                                           'tags', 'thumbnail_url'])
+
+        # If the scraped_data has all None values, then the remote video was
+        # deleted.
+        if all([x is None for x in scraped_data.values()]):
+            return {'deleted': True}
+
         changed_fields = {}
         if 'title' in scraped_data:
             scraped_data['name'] = scraped_data['title']
@@ -960,12 +966,29 @@ class OriginalVideo(VideoBase):
                         time.mktime(timetuple))
         return changed_fields
 
+    def send_deleted_notification(self):
+        from localtv.util import send_notice, get_or_create_tags
+        t = loader.get_template('localtv/admin/video_deleted.txt')
+        c = Context({'video': self.video})
+        subject = '[%s] Video Deleted: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+
     def update(self, override_vidscraper_result = None):
         from localtv.util import get_or_create_tags
 
         changed_fields = self.changed_fields(override_vidscraper_result)
         if not changed_fields:
             return # don't need to do anything
+
+        # Was the remote video deleted?
+        if changed_fields.get('deleted', None):
+            # Yes? Uh oh.
+            self.send_deleted_notification()
+            return # Stop processing here.
 
         changed_model = False
         for field in changed_fields.copy():
