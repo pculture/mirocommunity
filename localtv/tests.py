@@ -1697,7 +1697,7 @@ today</a>.</p></div>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
                           'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2010, 6, 30, 6, 56, 41)
+        'thumbnail_updated': datetime.datetime(2010, 11, 24, 6, 56, 41)
         }
 
 
