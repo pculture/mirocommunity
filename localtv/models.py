@@ -111,6 +111,8 @@ class BitLyWrappingURLField(models.URLField):
         except bitly.BitlyError:
             return unicode(value)[:self.max_length]
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 class Thumbnailable(models.Model):
     """
@@ -918,7 +920,10 @@ class OriginalVideo(VideoBase):
         # If the scraped_data has all None values, then the remote video was
         # deleted.
         if all([x is None for x in scraped_data.values()]):
-            return {'deleted': True}
+            if self.remote_video_was_deleted:
+                return {} # We already notified the admins of the deletion.
+            else:
+                return {'deleted': True}
 
         changed_fields = {}
         if 'title' in scraped_data:
@@ -976,6 +981,10 @@ class OriginalVideo(VideoBase):
         send_notice('admin_video_updated', subject, message,
                     sitelocation=SiteLocation.objects.get(
                 site=self.video.site))
+        # Update the OriginalVideo to show that we sent this notification
+        # out.
+        self.remote_video_was_deleted = True
+        self.save()
 
     def update(self, override_vidscraper_result = None):
         from localtv.util import get_or_create_tags
@@ -986,6 +995,8 @@ class OriginalVideo(VideoBase):
 
         # Was the remote video deleted?
         if changed_fields.get('deleted', None):
+            # Have we already sent the notification
+            # Mark inside the OriginalVideo that the video has been deleted.
             # Yes? Uh oh.
             self.send_deleted_notification()
             return # Stop processing here.
