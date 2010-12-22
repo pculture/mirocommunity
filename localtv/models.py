@@ -911,16 +911,27 @@ class OriginalVideo(VideoBase):
             self.delete()
             return {}
 
+        remote_video_was_deleted = False
+
         if override_vidscraper_result is not None:
             scraped_data = override_vidscraper_result
         else:
-            scraped_data = vidscraper.auto_scrape(video.website_url,
-                                                  fields=['title', 'description',
-                                                          'tags', 'thumbnail_url'])
+            try:
+                scraped_data = vidscraper.auto_scrape(video.website_url,
+                                                      fields=['title', 'description',
+                                                              'tags', 'thumbnail_url'])
+                # Does the video look like it has no data? Then we infer that the remote
+                # video was deleted.
+                if all([x is None for x in scraped_data.values()]):
+                    remote_video_was_deleted = True
 
-        # If the scraped_data has all None values, then the remote video was
+            except vidscraper.errors.VideoDeleted, e:
+                remote_video_was_deleted = True
+
+        # If the scraped_data has all None values, then infer that the remote video was
         # deleted.
-        if all([x is None for x in scraped_data.values()]):
+
+        if remote_video_was_deleted:
             if self.remote_video_was_deleted:
                 return {} # We already notified the admins of the deletion.
             else:
