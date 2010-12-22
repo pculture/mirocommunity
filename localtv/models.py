@@ -898,6 +898,7 @@ class VideoBase(models.Model):
 class OriginalVideo(VideoBase):
     video = models.OneToOneField('Video', related_name='original')
     thumbnail_updated = models.DateTimeField(blank=True)
+    remote_video_was_deleted = models.BooleanField(default=False)
 
     def changed_fields(self, override_vidscraper_result=None):
         """
