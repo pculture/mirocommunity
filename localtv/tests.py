@@ -1920,6 +1920,11 @@ today</a>.</p></div>""",
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
         self.assert_(u'Deleted' in unicode(mail.outbox[0].message()))
+        # Now, imagine a day goes by.
+        # Clear the outbox, and do the same query again.
+        mail.outbox = []
+        self.original.update(override_vidscraper_result=vidscraper_result)
+        self.assertEquals(len(mail.outbox), 0)
 
     def test_remote_video_newline_fiddling(self):
         """
