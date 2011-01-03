@@ -1063,6 +1063,135 @@ class OriginalVideo(VideoBase):
         self.save()
 
 
+class VideoBase(models.Model):
+    """
+    Base class between Video and OriginalVideo.  It would be simple enough to
+    duplicate these fields, but this way it's easier to add more points of
+    duplication in the future.
+    """
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(
+        verify_exists=False, blank=True, max_length=400)
+
+    class Meta:
+        abstract = True
+
+class OriginalVideo(VideoBase):
+    video = models.OneToOneField('Video', related_name='original')
+    thumbnail_updated = models.DateTimeField(blank=True)
+
+    def changed_fields(self):
+        """
+        Check our video for new data.
+        """
+        video = self.video
+        if not video.website_url:
+            # we shouldn't have been created, but either way we can't do
+            # anything here
+            self.delete()
+            return {}
+
+        scraped_data = vidscraper.auto_scrape(video.website_url,
+                                              fields=['title', 'description',
+                                                      'tags', 'thumbnail_url'])
+        changed_fields = {}
+        if 'title' in scraped_data:
+            scraped_data['name'] = scraped_data['title']
+            del scraped_data['title']
+
+        for field in scraped_data:
+            if field == 'tags': # special case tag checking
+                if scraped_data['tags'] is None:
+                    # failed to get tags, so don't send a spurious change
+                    # message
+                    continue
+                new = set(scraped_data['tags'])
+                if settings.FORCE_LOWERCASE_TAGS:
+                    new = set(name.lower() for name in new)
+                old = set(tag.name for tag in self.tags)
+                if new != old:
+                    changed_fields[field] = new
+            elif scraped_data[field] != getattr(self, field):
+                changed_fields[field] = scraped_data[field]
+            elif field == 'thumbnail_url':
+                # because the data might have changed, check to see if the
+                # thumbnail has been modified
+                made_time = time.mktime(self.thumbnail_updated.utctimetuple())
+                made_time = made_time - time.timezone # adjust for mktime's
+                                                      # conversion
+                modified = email.utils.formatdate(made_time,
+                                                  usegmt=True)
+                request = urllib2.Request(self.thumbnail_url)
+                request.add_header('If-Modified-Since', modified)
+                try:
+                    response = urllib2.build_opener().open(request)
+                except urllib2.HTTPError:
+                    # We get this for 304, but we'll just ignore all the other
+                    # errors too
+                    pass
+                else:
+                    if response.info().get('Last-modified', modified) == \
+                            modified:
+                        continue # hasn't really changed, or doesn't exist
+                    timetuple = email.utils.parsedate(
+                        response.info()['Last-modified'])
+                    changed_fields['thumbnail_updated'] = \
+                        datetime.datetime.fromtimestamp(
+                        time.mktime(timetuple))
+        return changed_fields
+
+    def update(self):
+        from localtv.util import get_or_create_tags, send_notice
+
+        changed_fields = self.changed_fields()
+        if not changed_fields:
+            return # don't need to do anything
+
+        changed_model = False
+        for field in changed_fields.copy():
+            if field == 'tags': # special case tag equality
+                if set(self.tags) == set(self.video.tags):
+                    self.tags = self.video.tags = get_or_create_tags(
+                        changed_fields.pop('tags'))
+            elif field in ('thumbnail_url', 'thumbnail_updated'):
+                if self.thumbnail_url == self.video.thumbnail_url:
+                    value = changed_fields.pop(field)
+                    if field == 'thumbnail_url':
+                        self.thumbnail_url = self.video.thumbnail_url = value
+                    changed_model = True
+                    self.video.save_thumbnail()
+            elif getattr(self, field) == getattr(self.video, field):
+                value = changed_fields.pop(field)
+                setattr(self, field, value)
+                setattr(self.video, field, value)
+                changed_model = True
+
+        if changed_model:
+            self.save()
+            self.video.save()
+
+        if not changed_fields: # modified them all
+            return
+
+        t = loader.get_template('localtv/admin/video_updated.txt')
+        c = Context({'video': self.video,
+                     'original': self,
+                     'changed_fields': changed_fields})
+        subject = '[%s] Video Updated: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+        for field in changed_fields:
+            if field == 'tags':
+                self.tags = get_or_create_tags(changed_fields[field])
+            else:
+                setattr(self, field, changed_fields[field])
+        self.save()
+
+
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
