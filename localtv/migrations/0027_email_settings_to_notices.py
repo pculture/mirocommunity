@@ -28,7 +28,11 @@ class Migration:
     
     def forwards(self, orm):
         "Write your forwards migration here"
-        sitelocation = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sitelocation = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         if sitelocation.comments_email_admins:
             add_notice_for_admins(sitelocation, 'admin_new_comment')
 
@@ -40,7 +44,11 @@ class Migration:
     
     def backwards(self, orm):
         "Write your backwards migration here"
-        sitelocation = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sitelocation = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         sitelocation.comments_email_admins = notice_has_admins(sitelocation,
                                                                'admin_new_comment')
         sitelocation.email_on_new_video = notice_has_admins(sitelocation,
