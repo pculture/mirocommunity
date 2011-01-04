@@ -8,7 +8,12 @@ class Migration:
     def forwards(self, orm):
         
         # Adding field 'SiteLocation.playlists_enabled'
-        db.add_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'])
+        try:
+            db.add_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'])
+        except Exception, e:
+            pass # This try/except inanity is necessary because this migration used
+                 # to have a different name, so those sites have already run this
+                 # migration by a different name. No big deal.
         
     
     

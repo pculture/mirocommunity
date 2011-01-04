@@ -8,10 +8,16 @@ class Migration:
     def forwards(self, orm):
         
         # Adding field 'SiteLocation.has_thumbnail'
-        db.add_column('localtv_sitelocation', 'has_thumbnail', orm['localtv.sitelocation:has_thumbnail'])
+        try:
+            db.add_column('localtv_sitelocation', 'has_thumbnail', orm['localtv.sitelocation:has_thumbnail'])
+        except Exception, e:
+            pass # This dumb try-except is here for the same reason it's in the other 0026 ones.
         
         # Adding field 'SiteLocation.thumbnail_extension'
-        db.add_column('localtv_sitelocation', 'thumbnail_extension', orm['localtv.sitelocation:thumbnail_extension'])
+        try:
+            db.add_column('localtv_sitelocation', 'thumbnail_extension', orm['localtv.sitelocation:thumbnail_extension'])
+        except Exception, e:
+            pass # see above
         
     
     
