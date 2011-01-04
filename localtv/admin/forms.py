@@ -19,6 +19,7 @@ import re
 import os.path
 import feedparser
 
+import django.template.defaultfilters
 from django import forms
 from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
@@ -27,6 +28,7 @@ from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
@@ -38,6 +40,7 @@ from tagging.forms import TagField
 
 from localtv import models
 from localtv import util
+import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
 
@@ -450,13 +453,44 @@ class EditSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.SiteLocation
-        exclude = ['site', 'status', 'admins']
+        exclude = ['site', 'status', 'admins', 'tier_name']
 
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
+        if localtv.tiers.Tier.get().permit_custom_css():
+            pass
+        else: # CSS not permitted
+            # To handle only letting certain paid users edit CSS,
+            # we do two things.
+            #
+            # 1. Cosmetically, we set the CSS editing box's CSS class
+            # to be 'hidden'. (We have some CSS that makes it not show
+            # up.)
+            css_field = self.fields['css']
+            css_field.label += ' (upgrade to enable this form field)'
+            css_field.widget.attrs['readonly'] = True
+            #
+            # 2. In validation, we make sure that changing the CSS is
+            # rejected as invalid if the site does not have permission
+            # to do that.
+
+    def clean_css(self):
+        css = self.cleaned_data.get('css')
+        # Does thes SiteLocation permit CSS modifications? If so,
+        # return the data the user inputted.
+        if localtv.tiers.Tier.get().permit_custom_css():
+            return css # no questions asked
+
+        # We permit the value if it's the same as self.instance has:
+        if self.instance.css == css:
+            return css
+
+        # Otherwise, reject the change.
+        self.data['css'] = self.instance.css
+        raise ValidationError("To edit CSS for your site, you have to upgrade.")
 
     def clean_logo(self):
         logo = self.cleaned_data.get('logo')
@@ -636,8 +670,8 @@ class AuthorForm(user_profile_forms.ProfileForm):
     role = forms.ChoiceField(choices=(
             ('user', 'User'),
             ('admin', 'Admin')),
-                             widget=forms.RadioSelect,
-                             required=False)
+            widget=forms.RadioSelect,
+            required=False)
     website = forms.CharField(label='Website', required=False)
     password_f = forms.CharField(
         widget=forms.PasswordInput,
@@ -667,6 +701,35 @@ class AuthorForm(user_profile_forms.ProfileForm):
             for field_name in ['name', 'logo', 'location',
                                'description', 'website']:
                 del self.fields[field_name]
+        ## Add a note to the 'role' help text indicating how many admins
+        ## are permitted with this kind of account.
+        tier = localtv.tiers.Tier.get()
+        if tier.admins_limit() is not None:
+            message = 'With a %s, you may have %d administrator%s.' % (
+                models.SiteLocation.objects.get_current().get_tier_name_display(),
+                tier.admins_limit(),
+                django.template.defaultfilters.pluralize(tier.admins_limit()))
+            self.fields['role'].help_text = message
+
+    def clean_role(self):
+        # If the user tried to create an admin, but the tier does not
+        # permit creating another admin, raise an error.
+        permitted_admins = localtv.tiers.Tier.get().admins_limit()
+        if self.cleaned_data['role'] == 'admin' and permitted_admins is not None:
+            normal_admin_ids = set([k.id for k in
+                                models.SiteLocation.objects.get_current().admins.all()])
+            super_user_ids = set([k.id for k in
+                                  django.contrib.auth.models.User.objects.filter(
+                                      is_superuser=True)])
+            normal_admin_ids.update(super_user_ids)
+            num_admins = len(normal_admin_ids)
+
+            if (permitted_admins is not None) and num_admins >= permitted_admins:
+                raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
+                    permitted_admins,
+                    django.template.defaultfilters.pluralize(permitted_admins)))
+        # Otherwise, things seem good!
+        return self.cleaned_data['role']
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
