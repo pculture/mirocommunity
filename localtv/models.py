@@ -17,6 +17,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import email.utils
 import httplib
 import re
 import urllib
@@ -27,6 +28,7 @@ try:
 except ImportError:
     import Image
 import StringIO
+import time
 from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
 
@@ -109,6 +111,8 @@ class BitLyWrappingURLField(models.URLField):
         except bitly.BitlyError:
             return unicode(value)[:self.max_length]
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 class Thumbnailable(models.Model):
     """
@@ -877,6 +881,317 @@ class SavedSearch(Source):
         return u'Search'
 
 
+class VideoBase(models.Model):
+    """
+    Base class between Video and OriginalVideo.  It would be simple enough to
+    duplicate these fields, but this way it's easier to add more points of
+    duplication in the future.
+    """
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(
+        verify_exists=False, blank=True, max_length=400)
+
+    class Meta:
+        abstract = True
+
+class OriginalVideo(VideoBase):
+    video = models.OneToOneField('Video', related_name='original')
+    thumbnail_updated = models.DateTimeField(blank=True)
+    remote_video_was_deleted = models.BooleanField(default=False)
+
+    def changed_fields(self, override_vidscraper_result=None):
+        """
+        Check our video for new data.
+        """
+        video = self.video
+        if not video.website_url:
+            # we shouldn't have been created, but either way we can't do
+            # anything here
+            self.delete()
+            return {}
+
+        remote_video_was_deleted = False
+
+        if override_vidscraper_result is not None:
+            scraped_data = override_vidscraper_result
+        else:
+            try:
+                scraped_data = vidscraper.auto_scrape(video.website_url,
+                                                      fields=['title', 'description',
+                                                              'tags', 'thumbnail_url'])
+                # Does the video look like it has no data? Then we infer that the remote
+                # video was deleted.
+                if all([x is None for x in scraped_data.values()]):
+                    remote_video_was_deleted = True
+
+            except vidscraper.errors.VideoDeleted, e:
+                remote_video_was_deleted = True
+
+        # If the scraped_data has all None values, then infer that the remote video was
+        # deleted.
+
+        if remote_video_was_deleted:
+            if self.remote_video_was_deleted:
+                return {} # We already notified the admins of the deletion.
+            else:
+                return {'deleted': True}
+
+        changed_fields = {}
+        if 'title' in scraped_data:
+            scraped_data['name'] = scraped_data['title']
+            del scraped_data['title']
+
+        for field in scraped_data:
+            if field == 'tags': # special case tag checking
+                if scraped_data['tags'] is None:
+                    # failed to get tags, so don't send a spurious change
+                    # message
+                    continue
+                new = set(scraped_data['tags'])
+                if settings.FORCE_LOWERCASE_TAGS:
+                    new = set(name.lower() for name in new)
+                old = set(tag.name for tag in self.tags)
+                if new != old:
+                    changed_fields[field] = new
+            elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
+                changed_fields[field] = scraped_data[field]
+            elif field == 'thumbnail_url':
+                # because the data might have changed, check to see if the
+                # thumbnail has been modified
+                made_time = time.mktime(self.thumbnail_updated.utctimetuple())
+                made_time = made_time - time.timezone # adjust for mktime's
+                                                      # conversion
+                modified = email.utils.formatdate(made_time,
+                                                  usegmt=True)
+                request = urllib2.Request(self.thumbnail_url)
+                request.add_header('If-Modified-Since', modified)
+                try:
+                    response = urllib2.build_opener().open(request)
+                except urllib2.HTTPError:
+                    # We get this for 304, but we'll just ignore all the other
+                    # errors too
+                    pass
+                else:
+                    if response.info().get('Last-modified', modified) == \
+                            modified:
+                        continue # hasn't really changed, or doesn't exist
+                    timetuple = email.utils.parsedate(
+                        response.info()['Last-modified'])
+                    changed_fields['thumbnail_updated'] = \
+                        datetime.datetime.fromtimestamp(
+                        time.mktime(timetuple))
+        return changed_fields
+
+    def send_deleted_notification(self):
+        from localtv.util import send_notice, get_or_create_tags
+        t = loader.get_template('localtv/admin/video_deleted.txt')
+        c = Context({'video': self.video})
+        subject = '[%s] Video Deleted: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+        # Update the OriginalVideo to show that we sent this notification
+        # out.
+        self.remote_video_was_deleted = True
+        self.save()
+
+    def update(self, override_vidscraper_result = None):
+        from localtv.util import get_or_create_tags
+
+        changed_fields = self.changed_fields(override_vidscraper_result)
+        if not changed_fields:
+            return # don't need to do anything
+
+        # Was the remote video deleted?
+        if changed_fields.get('deleted', None):
+            # Have we already sent the notification
+            # Mark inside the OriginalVideo that the video has been deleted.
+            # Yes? Uh oh.
+            self.send_deleted_notification()
+            return # Stop processing here.
+
+        changed_model = False
+        for field in changed_fields.copy():
+            if field == 'tags': # special case tag equality
+                if set(self.tags) == set(self.video.tags):
+                    self.tags = self.video.tags = get_or_create_tags(
+                        changed_fields.pop('tags'))
+            elif field in ('thumbnail_url', 'thumbnail_updated'):
+                if self.thumbnail_url == self.video.thumbnail_url:
+                    value = changed_fields.pop(field)
+                    if field == 'thumbnail_url':
+                        self.thumbnail_url = self.video.thumbnail_url = value
+                    changed_model = True
+                    self.video.save_thumbnail()
+            elif getattr(self, field) == getattr(self.video, field):
+                value = changed_fields.pop(field)
+                setattr(self, field, value)
+                setattr(self.video, field, value)
+                changed_model = True
+
+        if changed_model:
+            self.save()
+            self.video.save()
+
+        if not changed_fields: # modified them all
+            return
+
+        self.send_updated_notification(changed_fields)
+
+    def send_updated_notification(self, changed_fields):
+        from localtv.util import send_notice, get_or_create_tags
+        t = loader.get_template('localtv/admin/video_updated.txt')
+        c = Context({'video': self.video,
+                     'original': self,
+                     'changed_fields': changed_fields})
+        subject = '[%s] Video Updated: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+
+        # And update the self instance to reflect the changes.
+        for field in changed_fields:
+            if field == 'tags':
+                self.tags = get_or_create_tags(changed_fields[field])
+            else:
+                setattr(self, field, changed_fields[field])
+        self.save()
+
+
+class VideoBase(models.Model):
+    """
+    Base class between Video and OriginalVideo.  It would be simple enough to
+    duplicate these fields, but this way it's easier to add more points of
+    duplication in the future.
+    """
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(
+        verify_exists=False, blank=True, max_length=400)
+
+    class Meta:
+        abstract = True
+
+class OriginalVideo(VideoBase):
+    video = models.OneToOneField('Video', related_name='original')
+    thumbnail_updated = models.DateTimeField(blank=True)
+
+    def changed_fields(self):
+        """
+        Check our video for new data.
+        """
+        video = self.video
+        if not video.website_url:
+            # we shouldn't have been created, but either way we can't do
+            # anything here
+            self.delete()
+            return {}
+
+        scraped_data = vidscraper.auto_scrape(video.website_url,
+                                              fields=['title', 'description',
+                                                      'tags', 'thumbnail_url'])
+        changed_fields = {}
+        if 'title' in scraped_data:
+            scraped_data['name'] = scraped_data['title']
+            del scraped_data['title']
+
+        for field in scraped_data:
+            if field == 'tags': # special case tag checking
+                if scraped_data['tags'] is None:
+                    # failed to get tags, so don't send a spurious change
+                    # message
+                    continue
+                new = set(scraped_data['tags'])
+                if settings.FORCE_LOWERCASE_TAGS:
+                    new = set(name.lower() for name in new)
+                old = set(tag.name for tag in self.tags)
+                if new != old:
+                    changed_fields[field] = new
+            elif scraped_data[field] != getattr(self, field):
+                changed_fields[field] = scraped_data[field]
+            elif field == 'thumbnail_url':
+                # because the data might have changed, check to see if the
+                # thumbnail has been modified
+                made_time = time.mktime(self.thumbnail_updated.utctimetuple())
+                made_time = made_time - time.timezone # adjust for mktime's
+                                                      # conversion
+                modified = email.utils.formatdate(made_time,
+                                                  usegmt=True)
+                request = urllib2.Request(self.thumbnail_url)
+                request.add_header('If-Modified-Since', modified)
+                try:
+                    response = urllib2.build_opener().open(request)
+                except urllib2.HTTPError:
+                    # We get this for 304, but we'll just ignore all the other
+                    # errors too
+                    pass
+                else:
+                    if response.info().get('Last-modified', modified) == \
+                            modified:
+                        continue # hasn't really changed, or doesn't exist
+                    timetuple = email.utils.parsedate(
+                        response.info()['Last-modified'])
+                    changed_fields['thumbnail_updated'] = \
+                        datetime.datetime.fromtimestamp(
+                        time.mktime(timetuple))
+        return changed_fields
+
+    def update(self):
+        from localtv.util import get_or_create_tags, send_notice
+
+        changed_fields = self.changed_fields()
+        if not changed_fields:
+            return # don't need to do anything
+
+        changed_model = False
+        for field in changed_fields.copy():
+            if field == 'tags': # special case tag equality
+                if set(self.tags) == set(self.video.tags):
+                    self.tags = self.video.tags = get_or_create_tags(
+                        changed_fields.pop('tags'))
+            elif field in ('thumbnail_url', 'thumbnail_updated'):
+                if self.thumbnail_url == self.video.thumbnail_url:
+                    value = changed_fields.pop(field)
+                    if field == 'thumbnail_url':
+                        self.thumbnail_url = self.video.thumbnail_url = value
+                    changed_model = True
+                    self.video.save_thumbnail()
+            elif getattr(self, field) == getattr(self.video, field):
+                value = changed_fields.pop(field)
+                setattr(self, field, value)
+                setattr(self.video, field, value)
+                changed_model = True
+
+        if changed_model:
+            self.save()
+            self.video.save()
+
+        if not changed_fields: # modified them all
+            return
+
+        t = loader.get_template('localtv/admin/video_updated.txt')
+        c = Context({'video': self.video,
+                     'original': self,
+                     'changed_fields': changed_fields})
+        subject = '[%s] Video Updated: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+        for field in changed_fields:
+            if field == 'tags':
+                self.tags = get_or_create_tags(changed_fields[field])
+            else:
+                setattr(self, field, changed_fields[field])
+        self.save()
+
+
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
@@ -947,7 +1262,7 @@ localtv_watch.timestamp > %s"""},
                                  )
 
 
-class Video(Thumbnailable):
+class Video(Thumbnailable, VideoBase):
     """
     Fields:
      - name: Name of this video
@@ -990,9 +1305,7 @@ class Video(Thumbnailable):
        info
      - notes: a free-text field to add notes about the video
     """
-    name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
-    description = models.TextField(blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
@@ -1016,8 +1329,6 @@ class Video(Thumbnailable):
     flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
                                                 blank=True)
     guid = models.CharField(max_length=250, blank=True)
-    thumbnail_url = models.URLField(
-        verify_exists=False, blank=True, max_length=400)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
     video_service_user = models.CharField(max_length=250, blank=True,
@@ -1255,6 +1566,7 @@ admin.site.register(SavedSearch)
 admin.site.register(Watch)
 
 tagging.register(Video)
+tagging.register(OriginalVideo)
 
 def finished(sender, **kwargs):
     SiteLocation.objects.clear_cache()
@@ -1318,14 +1630,18 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     'A daily e-mail of the queue status',
                                     default=1,
                                     verbosity=verbosity)
+    notification.create_notice_type('admin_video_updated',
+                                    'Video Updated',
+                                    'A video from a service was updated',
+                                    default=1,
+                                    verbosity=verbosity)
     notification.create_notice_type('admin_new_playlist',
                                     'Request for Playlist Moderation',
                                     'A new playlist asked to be public',
                                     default=2,
                                     verbosity=verbosity)
 
-models.signals.post_syncdb.connect(create_email_notices,
-                                   sender=notification)
+models.signals.post_syncdb.connect(create_email_notices)
 
 def delete_comments(sender, instance, **kwargs):
     from django.contrib.comments import get_model
@@ -1335,3 +1651,41 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
+def create_original_video(sender, instance=None, created=False, **kwargs):
+    if not created:
+        return # don't care about saving
+    if not instance.website_url:
+        # we don't know how to scrape this, so ignore it
+        return
+    new_data = dict(
+        (field.name, getattr(instance, field.name))
+        for field in VideoBase._meta.fields)
+    OriginalVideo.objects.create(
+        video=instance,
+        thumbnail_updated=datetime.datetime.now(),
+        **new_data)
+
+def save_original_tags(sender, instance, created=False, **kwargs):
+    if not created:
+        # not a new tagged item
+        return
+    if not isinstance(instance.object, Video):
+        # not a video
+        return
+    if (instance.object.when_submitted - datetime.datetime.now() >
+        datetime.timedelta(seconds=10)):
+        return
+    try:
+        original = instance.object.original
+    except OriginalVideo.DoesNotExist:
+        return
+    tagging.models.Tag.objects.add_tag(original,
+                                       '"%s"' % instance.tag)
+
+ENABLE_ORIGINAL_VIDEO = not getattr(settings, 'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY', None)
+
+if ENABLE_ORIGINAL_VIDEO:
+    models.signals.post_save.connect(create_original_video,
+                                     sender=Video)
+    models.signals.post_save.connect(save_original_tags,
+                                     sender=tagging.models.TaggedItem)

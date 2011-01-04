@@ -1,4 +1,40 @@
 
+function scroll_admin() {
+    table = document.getElementById('admin_table');
+    table_offset = $("#admin_table").offset();
+    leftpane = document.getElementById('admin_leftpane');
+    rightpane = document.getElementById('admin_rightpane');
+    if (rightpane.clientHeight > window.innerHeight) {
+        diff = rightpane.clientHeight - window.innerHeight;
+    } else {
+        diff = 0;
+    }
+    if (table_offset.top + diff > window.scrollY) {
+        rightpane.style.top = (table_offset.top - window.scrollY) + 'px';
+    } else {
+        rightpane.style.top = (-diff) + 'px';
+    }
+    leftpane.style.width = (table.clientWidth - 590) + 'px';
+    rightpane.style.display = "block";
+    if (leftpane.clientHeight < rightpane.clientHeight) {
+        leftpane.style.height = rightpane.clientHeight + 'px';
+    }
+
+	videolisting_row = $("#admin_videolisting_row");
+	videolisting_row_offset = videolisting_row.offset();
+	$("#admin_rightpane").css({
+		right: "auto",
+		left: (videolisting_row_offset.left + videolisting_row.width())+"px",
+		position: "fixed",
+		width: ($("#content").width()-500)+"px"
+	});
+	
+	$("#admin_rightpane object, #admin_rightpane embed").css({
+		width: ($("#content").width()-540)+"px"
+	});
+	
+}
+
 /* TODO: Allow and adjust for padding */
 
 function remove_video_and_refresh_list(video_div) {
@@ -46,42 +82,6 @@ function load_click_callbacks() {
         run_and_disappear);
     $('div.video').click(load_video);
     $("#admin_rightpane .simple_overlay").overlay({absolute: true});
-}
-
-function scroll_admin() {
-    table = document.getElementById('admin_table');
-    table_offset = $("#admin_table").offset();
-    leftpane = document.getElementById('admin_leftpane');
-    rightpane = document.getElementById('admin_rightpane');
-    if (rightpane.clientHeight > window.innerHeight) {
-        diff = rightpane.clientHeight - window.innerHeight;
-    } else {
-        diff = 0;
-    }
-    if (table_offset.top + diff > window.scrollY) {
-        rightpane.style.top = (table_offset.top - window.scrollY) + 'px';
-    } else {
-        rightpane.style.top = (-diff) + 'px';
-    }
-    leftpane.style.width = (table.clientWidth - 590) + 'px';
-    rightpane.style.display = "block";
-    if (leftpane.clientHeight < rightpane.clientHeight) {
-        leftpane.style.height = rightpane.clientHeight + 'px';
-    }
-
-	videolisting_row = $("#admin_videolisting_row");
-	videolisting_row_offset = videolisting_row.offset();
-	$("#admin_rightpane").css({
-		right: "auto",
-		left: (videolisting_row_offset.left + videolisting_row.width())+"px",
-		position: "fixed",
-		width: ($("#content").width()-500)+"px"
-	});
-	
-	$("#admin_rightpane object, #admin_rightpane embed").css({
-		width: ($("#content").width()-540)+"px"
-	});
-	
 }
 
 if ('attachEvent' in window) {

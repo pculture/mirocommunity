@@ -24,6 +24,7 @@ import urllib
 from django import forms
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.conf import settings
 
 from tagging.forms import TagField
 
@@ -51,6 +52,14 @@ class ImageURLField(forms.URLField):
 class SubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True)
 
+REQUIRE_EMAIL = getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', None)
+if REQUIRE_EMAIL:
+    contact_label = 'E-mail (required)'
+    contact_required = True
+else:
+    contact_label = 'E-mail (optional)'
+    contact_required = False
+
 class SecondStepSubmitVideoForm(forms.ModelForm):
     url = forms.URLField(verify_exists=True,
                          widget=forms.widgets.HiddenInput)
@@ -58,8 +67,8 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
                     help_text=("You can also <span class='url'>optionally add "
                                "tags</span> for the video (below)."))
     contact = forms.CharField(max_length=250,
-                              label='E-mail (optional)',
-                              required=False)
+                              label=contact_label,
+                              required=contact_required)
     notes = forms.CharField(widget=forms.Textarea,
                            label='Notes (optional)',
                            required=False)
