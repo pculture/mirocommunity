@@ -12,7 +12,11 @@ class Migration:
 
         # NOTE: this only migrates when there's one SiteLocation
         # If it fails, you'll have to do the migration manually
-        sitelocation = orm.SiteLocation.objects.get()
+        sitelocations = orm.SiteLocation.objects.all()
+        if sitelocations:
+            sitelocation = sitelocations[0]
+        else:
+            return
         theme_id = None
         if sitelocation.frontpage_style == 'list':
             theme_id = 1
