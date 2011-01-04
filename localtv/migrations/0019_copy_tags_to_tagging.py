@@ -3,6 +3,8 @@ from south.db import db
 from django.db import models
 from localtv.models import *
 
+import django.contrib.contenttypes.models
+
 class Migration:
 
     no_dry_run = True
@@ -13,8 +15,13 @@ class Migration:
             orm['tagging.Tag'].objects.get_or_create(
                 name=tag.name)
 
-        content_type = orm['contenttypes.ContentType'].objects.get(
+        content_types = orm['contenttypes.ContentType'].objects.filter(
             app_label='localtv', model='video')
+        if content_types:
+            content_type = content_types[0]
+        else:
+            return
+
         for video in orm.Video.objects.all():
             for tag in video.tags.all():
                 orm['tagging.TaggedItem'].objects.get_or_create(
