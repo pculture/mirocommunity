@@ -9,7 +9,11 @@ class Migration:
     
     def forwards(self, orm):
         "Write your forwards migration here"
-        sl = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sl = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         if sl.logo:
             sl.logo.open()
             cf = ContentFile(sl.logo.read())
@@ -17,7 +21,11 @@ class Migration:
     
     def backwards(self, orm):
         "Write your backwards migration here"
-        sl = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sl = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         if sl.has_thumbnail:
             sl.delete_thumbnails()
     
