@@ -56,7 +56,7 @@ class SiteLocationMiddleware(object):
         except models.SiteLocation.DoesNotExist:
             # Or, for some reason, the SiteLocation does not yet exist. That
             # is okay; we can create it.
-            SiteLocation.objects.create(site=Site.objects.get_current())
+            models.SiteLocation.objects.create(site=Site.objects.get_current())
             return self.process_request(request)
 
 def context_processor(request):
