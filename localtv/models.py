@@ -341,6 +341,8 @@ class SiteLocation(Thumbnailable):
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
     tier_name = models.CharField(max_length=255, default='free', blank=False, choices=localtv.tiers.CHOICES)
+    payment_due_date = models.DateTimeField(null=True, blank=True)
+    free_trial_available = models.BooleanField(default=True)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -1657,6 +1659,10 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
+
+### register pre-save handler for Tiers and payment due dates
+models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
+                                sender=SiteLocation)
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:
         return # don't care about saving

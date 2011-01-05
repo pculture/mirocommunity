@@ -13,15 +13,25 @@
     <p>All <strong>new</strong> monthly subscribers get a <strong>free 30 day</strong> trial.</p> 
   </div><!-- // upgrade_title -->
   
+
 <div id="basic_plan" class="clear">
-  <h1>Your current plan: <strong>Basic</strong></h1>
-  <p>Easily upgrade to receive a free 30 day trial. Only takes seconds.</p>
+  <h1>{% ifequal site_location.tier_name 'free' %}Your current plan: {%endifequal%}<strong>free</strong></h1>
+  <p>  {% ifequal site_location.tier_name 'free' %}
+{% if site_location.free_trial_available %}
+Easily upgrade to receive a free 30 day trial. Only takes seconds.
+{% else %}
+To upgrade, make a choice below.
+{% endif %}
+{% else %}
+You can always downgrade to the free plan.
+{% endifequal %}
+</p>
   <a id="btn_started" href="">Upgrade Today!</a>
 </div><!-- // basic_plan -->
 
-<div id="starter_pack" class="selected plan">
+<div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
   <div class="hdr">
-    <h1>Starter Pack</h1>
+    <h1>Plus Pack</h1>
     <h2>$15/month</h2>
   </div><!-- // hdr -->
   <ul>
@@ -32,14 +42,14 @@
     <li><strong>5</strong> Administrator Accounts</li>
   </ul>
   <div class="ft">
-    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+    <a href="/new_signup_form/" class="start_trial">{{ switch_messages.plus }}</a>
   </div><!-- // ft -->
   <span class="downgrade">Would you like to <a href="">downgrade</a>?</span>
 </div><!-- // starter_pack -->
 
-<div id="value_added" class="plan">
+<div id="value_added" class="{% ifequal site_location.tier_name 'premium'%}selected {% endifequal %}plan">
   <div class="hdr">
-    <h1>Value Added</h1>
+    <h1>Premium</h1>
     <h2>$35/month</h2>
   </div><!-- // hdr -->
   <ul>
@@ -51,13 +61,13 @@
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-    <a href="/new_signup_form/" class="start_trial">Upgrade Your Account</a>
+    <a href="/new_signup_form/" class="start_trial">{{ switch_messages.premium }}</a>
   </div><!-- // ft -->
 </div><!-- // value_added -->
 
-<div id="delicious_plan" class="plan last">
+<div id="delicious_plan" class="{% ifequal site_location.tier_name 'max' %}selected {% endifequal %}last plan">
   <div class="hdr">
-    <h1>Delicious</h1>
+    <h1>Max</h1>
     <h2>$75/month</h2>
   </div><!-- // hdr -->
   <ul>

@@ -1627,6 +1627,65 @@ class SiteTierTests(BaseTestCase):
         self.assertTrue(fake_bool)
 
 # -----------------------------------------------------------------------------
+# Site tier tests
+# -----------------------------------------------------------------------------
+class SiteTierTests(BaseTestCase):
+    def test_free_account(self):
+        # Create a SiteLocation whose site_tier is set to 'free'
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(0, tier.dollar_cost())
+        self.assertEqual(500, tier.videos_limit())
+        self.assertEqual(1, tier.admins_limit())
+        self.assertFalse(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_plus_account(self):
+        # Create a SiteLocation whose site_tier is set to 'plus'
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(15, tier.dollar_cost())
+        self.assertEqual(1000, tier.videos_limit())
+        self.assertEqual(5, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_premium_account(self):
+        # Create a SiteLocation whose site_tier is set to 'premium'
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(35, tier.dollar_cost())
+        self.assertEqual(5000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_executive_account(self):
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(75, tier.dollar_cost())
+        self.assertEqual(25000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertTrue(tier.permit_custom_template())
+
+    def test_fake_uploadtemplate_variable_false(self):
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        self.assertFalse(fake_bool)
+
+    def test_fake_uploadtemplate_variable_true(self):
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        self.assertTrue(fake_bool)
+
+# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 

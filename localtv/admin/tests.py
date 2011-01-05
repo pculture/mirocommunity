@@ -14,6 +14,7 @@ from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
 import mock
+import localtv.tiers
 
 import vidscraper
 from notification import models as notification
@@ -3298,3 +3299,58 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         # three flatpages got removed
         self.assertEquals(FlatPage.objects.count(), 2)
+
+### Class tier payment tests
+class TierPaymentTests(BaseTestCase):
+    def test_change_to_non_free_tier_creates_payment_due_date(self):
+        # For cleanliness, clear any payment due date and free trial status
+        self.site_location.free_trial_used = False
+        self.site_location.payment_due_date = None
+        self.site_location.save()
+
+        # Set the site tier to free
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+
+        # Verify that there is no payment due date still.
+        self.assertEqual(None, self.site_location.payment_due_date)
+
+        # Bump it up to 'executive'
+        # Discover that we have a payment due date now (and that it is
+        # after today)
+        self.site_location.tier_name = 'executive'
+        self.site_location.save()
+        self.assert_(self.site_location.payment_due_date > datetime.datetime.now())
+        self.assert_(self.site_location.free_trial_used)
+
+    def test_handle_one_payment(self):
+        # Set the payment due date to tomorrow
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        self.site_location.payment_due_date = tomorrow
+        self.site_location.save()
+
+        # Process a complete payment.
+        localtv.tiers.process_payment(self.site_location.get_tier().dollar_cost())
+
+        # Make sure the due date is now in the future
+        self.assert_(self.site_location.payment_due_date > tomorrow)
+
+    def test_user_cannot_jump_from_trial_to_trial(self):
+        # Make sure the tier_name is not free, and that there is a payment due
+        self.assertNotEqual(self.site_location.tier_name, 'free')
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        self.site_location.payment_due_date = tomorrow
+        self.site_location.save()
+
+        # So what if the user tries to transition down to 'free'? Should it work?
+        # If the payment due date is in the future, sure, anyone can jump down to 'free'.
+        self.site_location.tier_name = 'free'
+        self.site_location.save()
+
+        # What happens to the payment due date?
+        # if the yuse
+
+
+
+        # If the user has used up the free trial, we should retain a record of the balance.
+                

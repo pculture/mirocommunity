@@ -29,4 +29,5 @@ oauth2
 -e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
 -e git+http://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
 oauth
+-e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
