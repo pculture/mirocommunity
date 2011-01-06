@@ -9,13 +9,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Changing field 'Video.flash_enclosure_url'
-        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
         # Changing field 'Video.website_url'
-        db.alter_column('localtv_video', 'website_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'website_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
         # Changing field 'Video.file_url'
-        db.alter_column('localtv_video', 'file_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'file_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
 
     def backwards(self, orm):

@@ -9,7 +9,7 @@ class Migration:
         
         # Changing field 'SiteLocation.playlists_enabled'
         # (to signature: django.db.models.fields.IntegerField())
-        db.alter_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'])
+        db.alter_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'], ignore_constraints=True)
         
     
     
@@ -17,7 +17,7 @@ class Migration:
         
         # Changing field 'SiteLocation.playlists_enabled'
         # (to signature: django.db.models.fields.BooleanField(blank=True))
-        db.alter_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'])
+        db.alter_column('localtv_sitelocation', 'playlists_enabled', orm['localtv.sitelocation:playlists_enabled'], ignore_constraints=True)
         
     
     

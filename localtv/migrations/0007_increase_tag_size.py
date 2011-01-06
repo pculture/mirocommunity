@@ -26,7 +26,7 @@ class Migration:
         
         # Changing field 'Tag.name'
         # (to signature: django.db.models.fields.CharField(max_length=255))
-        db.alter_column('localtv_tag', 'name', orm['localtv.tag:name'])
+        db.alter_column('localtv_tag', 'name', orm['localtv.tag:name'], ignore_constraints=True)
         
     
     
@@ -34,7 +34,7 @@ class Migration:
         
         # Changing field 'Tag.name'
         # (to signature: django.db.models.fields.CharField(max_length=25))
-        db.alter_column('localtv_tag', 'name', orm['localtv.tag:name'])
+        db.alter_column('localtv_tag', 'name', orm['localtv.tag:name'], ignore_constraints=True)
         
     
     
