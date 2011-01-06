@@ -9,7 +9,7 @@
 <div id="video_limit">
   <h2>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</h2>
   <div id="limit_bar">
-  <div id="limit_progress" style="width: 80%;">
+  <div id="limit_progress" style="width: {{ percent_videos_used }}%;">
     <a href=""><em class="icon"></em>Upgrade</a>
   </div><!-- // limit_progress -->
   </div><!-- // limit_bar -->

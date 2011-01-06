@@ -14,6 +14,8 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+import math
+
 from django.contrib import comments
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -26,11 +28,15 @@ def index(request):
     """
     Simple index page for the admin site.
     """
+    total_count = models.Video.objects.filter(
+                site=request.sitelocation.site,
+                status=models.VIDEO_STATUS_ACTIVE).count()
+    percent_videos_used = math.floor(
+        (100.0 * total_count) / request.sitelocation.get_tier().videos_limit())
     return render_to_response(
         'localtv/admin/index.html',
-        {'total_count': models.Video.objects.filter(
-                site=request.sitelocation.site,
-                status=models.VIDEO_STATUS_ACTIVE).count(),
+        {'total_count': total_count,
+         'percent_videos_used': percent_videos_used,
          'unreviewed_count': models.Video.objects.filter(
                 site=request.sitelocation.site,
                 status=models.VIDEO_STATUS_UNAPPROVED).count(),
