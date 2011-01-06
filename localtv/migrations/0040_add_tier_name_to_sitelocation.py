@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding field 'SiteLocation.tier_name'
-        db.add_column('localtv_sitelocation', 'tier_name', self.gf('django.db.models.fields.CharField')(default='free', max_length=255), keep_default=False)
+        db.add_column('localtv_sitelocation', 'tier_name', self.gf('django.db.models.fields.CharField')(default='basic', max_length=255), keep_default=False)
 
 
     def backwards(self, orm):
@@ -128,7 +128,7 @@ class Migration(SchemaMigration):
             'submission_requires_login': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'tagline': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
-            'tier_name': ('django.db.models.fields.CharField', [], {'default': "'free'", 'max_length': '255'}),
+            'tier_name': ('django.db.models.fields.CharField', [], {'default': "'basic'", 'max_length': '255'}),
             'use_original_date': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         'localtv.video': {
