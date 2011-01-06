@@ -124,6 +124,7 @@ urlpatterns += patterns(
 
 urlpatterns += patterns('localtv.admin.tiers',
     (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
+    (r'^change_tier/$',             'change_tier', {}, 'localtv_admin_change_tier'),
 )
 
 

@@ -25,11 +25,14 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
+from django.core.urlresolvers import reverse
 
 from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.util import SortHeaders, MockQueryset
 from localtv.admin import forms
+
+import localtv.tiers
 
 @require_site_admin
 @csrf_protect
@@ -55,3 +58,20 @@ def upgrade(request):
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
+
+@require_site_admin
+# FIXME: Needs csrf protect; but that means that the preceding page has to be a form.
+def change_tier(request):
+    target_tier_name = request.GET.get('tier_name', '')
+    # validate
+    if target_tier_name in dict(localtv.tiers.CHOICES):
+        # Switch our tier
+        sl = request.sitelocation
+        sl.tier_name = target_tier_name
+        sl.save()
+        # The below code should cause a PayPal redirect. Instead, it simply emulates full
+        # payment.
+        localtv.tiers.process_payment(request.sitelocation.get_tier().dollar_cost())
+
+    # Always redirect back to tiers page
+    return HttpResponseRedirect(reverse('localtv_admin_tier'))
