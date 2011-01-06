@@ -340,7 +340,7 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='free', blank=False, choices=localtv.tiers.CHOICES)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
     payment_due_date = models.DateTimeField(null=True, blank=True)
     free_trial_available = models.BooleanField(default=True)
 

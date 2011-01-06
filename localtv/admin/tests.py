@@ -2812,7 +2812,7 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
         the management page.  If the password isn't specified,
         User.has_unusable_password() should be True.
         """
-        self.site_location.tier_name = 'free'
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
 
         c = Client()
@@ -3302,14 +3302,14 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
 ### Class tier payment tests
 class TierPaymentTests(BaseTestCase):
-    def test_change_to_non_free_tier_creates_payment_due_date(self):
-        # For cleanliness, clear any payment due date and free trial status
+    def test_change_to_non_basic_tier_creates_payment_due_date(self):
+        # For cleanliness, clear any payment due date and basic trial status
         self.site_location.free_trial_used = False
         self.site_location.payment_due_date = None
         self.site_location.save()
 
-        # Set the site tier to free
-        self.site_location.tier_name = 'free'
+        # Set the site tier to basic
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
 
         # Verify that there is no payment due date still.
@@ -3336,15 +3336,15 @@ class TierPaymentTests(BaseTestCase):
         self.assert_(self.site_location.payment_due_date > tomorrow)
 
     def test_user_cannot_jump_from_trial_to_trial(self):
-        # Make sure the tier_name is not free, and that there is a payment due
-        self.assertNotEqual(self.site_location.tier_name, 'free')
+        # Make sure the tier_name is not basic, and that there is a payment due
+        self.assertNotEqual(self.site_location.tier_name, 'basic')
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         self.site_location.payment_due_date = tomorrow
         self.site_location.save()
 
-        # So what if the user tries to transition down to 'free'? Should it work?
-        # If the payment due date is in the future, sure, anyone can jump down to 'free'.
-        self.site_location.tier_name = 'free'
+        # So what if the user tries to transition down to 'basic'? Should it work?
+        # If the payment due date is in the future, sure, anyone can jump down to 'basic'.
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
 
         # What happens to the payment due date?

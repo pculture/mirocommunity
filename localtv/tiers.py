@@ -6,7 +6,7 @@ import localtv.models
 ## These "CHOICES" are used in the SiteLocation model.
 ## They describe the different account types.
 CHOICES = [
-    ('free', 'Free account'),
+    ('basic', 'Free account'),
     ('plus', 'Plus account'),
     ('premium', 'Premium account'),
     ('executive', 'Executive account')]
@@ -43,20 +43,20 @@ class Tier(object):
             return DEFAULT
 
     def videos_limit(self):
-        special_cases = {'free': 500,
+        special_cases = {'basic': 500,
                          'plus': 1000,
                          'premium': 5000,
                          'executive': 25000}
         return special_cases[self.tier_name]
 
     def admins_limit(self):
-        special_cases = {'free': 1,
+        special_cases = {'basic': 1,
                          'plus': 5}
         default = None
         return special_cases.get(self.tier_name, default)
 
     def permit_custom_css(self):
-        special_cases = {'free': False}
+        special_cases = {'basic': False}
         default = True
         return special_cases.get(self.tier_name, default)
 
@@ -66,7 +66,7 @@ class Tier(object):
         return special_cases.get(self.tier_name, default)
 
     def dollar_cost(self):
-        special_cases = {'free': 0,
+        special_cases = {'basic': 0,
                          'plus': 15,
                          'premium': 35,
                          'executive': 75}
@@ -110,7 +110,7 @@ def add_a_month(date):
 ### Here, we listen for changes in the SiteLocation
 ### As it changes, we make sure we adjust the payment due date stored in the SiteLocation.
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
-    # If transitioning from 'free' tier to something else,
+    # If transitioning from 'basic' tier to something else,
     # set the payment_due_date to be now plus thirty days.
 
     # Right here, we do a direct filter() call to evade the SiteLocation cache.
@@ -121,8 +121,8 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     current_siteloc = current_sitelocs[0]
     current_tier_name = current_siteloc.tier_name
     new_tier_name = instance.tier_name
-    if (current_tier_name == 'free') and (new_tier_name != 'free'):
-        # There should be no due date, because we used to be in 'free' mode. If there was,
+    if (current_tier_name == 'basic') and (new_tier_name != 'basic'):
+        # There should be no due date, because we used to be in 'basic' mode. If there was,
         # log an error.
         if instance.payment_due_date:
             log.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")

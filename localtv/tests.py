@@ -1571,9 +1571,9 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
 # Site tier tests
 # -----------------------------------------------------------------------------
 class SiteTierTests(BaseTestCase):
-    def test_free_account(self):
-        # Create a SiteLocation whose site_tier is set to 'free'
-        self.site_location.tier_name = 'free'
+    def test_basic_account(self):
+        # Create a SiteLocation whose site_tier is set to 'basic'
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
         tier = self.site_location.get_tier()
         self.assertEqual(0, tier.dollar_cost())
@@ -1615,7 +1615,7 @@ class SiteTierTests(BaseTestCase):
         self.assertTrue(tier.permit_custom_template())
 
     def test_fake_uploadtemplate_variable_false(self):
-        self.site_location.tier_name = 'free'
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
         fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
         self.assertFalse(fake_bool)
@@ -1630,9 +1630,9 @@ class SiteTierTests(BaseTestCase):
 # Site tier tests
 # -----------------------------------------------------------------------------
 class SiteTierTests(BaseTestCase):
-    def test_free_account(self):
-        # Create a SiteLocation whose site_tier is set to 'free'
-        self.site_location.tier_name = 'free'
+    def test_basic_account(self):
+        # Create a SiteLocation whose site_tier is set to 'basic'
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
         tier = self.site_location.get_tier()
         self.assertEqual(0, tier.dollar_cost())
@@ -1674,7 +1674,7 @@ class SiteTierTests(BaseTestCase):
         self.assertTrue(tier.permit_custom_template())
 
     def test_fake_uploadtemplate_variable_false(self):
-        self.site_location.tier_name = 'free'
+        self.site_location.tier_name = 'basic'
         self.site_location.save()
         fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
         self.assertFalse(fake_bool)

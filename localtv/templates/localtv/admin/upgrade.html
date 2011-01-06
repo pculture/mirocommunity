@@ -15,15 +15,15 @@
   
 
 <div id="basic_plan" class="clear">
-  <h1>{% ifequal site_location.tier_name 'free' %}Your current plan: {%endifequal%}<strong>free</strong></h1>
-  <p>  {% ifequal site_location.tier_name 'free' %}
-{% if site_location.free_trial_available %}
+  <h1>{% ifequal site_location.tier_name 'basic' %}Your current plan: {%endifequal%}<strong>basic</strong></h1>
+  <p>  {% ifequal site_location.tier_name 'basic' %}
+{% if site_location.basic_trial_available %}
 Easily upgrade to receive a free 30 day trial. Only takes seconds.
 {% else %}
 To upgrade, make a choice below.
 {% endif %}
 {% else %}
-You can always downgrade to the free plan.
+You can always downgrade to the basic plan.
 {% endifequal %}
 </p>
   <a id="btn_started" href="">Upgrade Today!</a>
