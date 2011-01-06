@@ -44,7 +44,9 @@ You can always downgrade to the basic plan.
   <div class="ft">
     <a href="/new_signup_form/" class="start_trial">{{ switch_messages.plus }}</a>
   </div><!-- // ft -->
+  {% ifnotequal site_location.tier_name 'basic' %}
   <span class="downgrade">Would you like to <a href="">downgrade</a>?</span>
+  {% endifnotequal %}
 </div><!-- // starter_pack -->
 
 <div id="value_added" class="{% ifequal site_location.tier_name 'premium'%}selected {% endifequal %}plan">
