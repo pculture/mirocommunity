@@ -90,7 +90,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.comments',
     'django.contrib.flatpages',
-    #'south',
+    'south',
     'djpagetabs',
     'djvideo',
     'localtv',
@@ -108,7 +108,8 @@ INSTALLED_APPS = (
     'celery',
     'notification',
     'socialauth',
-    'openid_consumer'
+    'openid_consumer',
+    'paypal',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
