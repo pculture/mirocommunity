@@ -123,7 +123,7 @@ urlpatterns += patterns(
      'localtv_admin_feed_unapproved_user'))
 
 urlpatterns += patterns('localtv.admin.tiers',
-    (r'^upgrade/$',             'upgrade'),
+    (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
 )
 
 
