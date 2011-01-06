@@ -59,6 +59,8 @@
   </ul>
 </div><!-- // get_started -->
 
+{% if settings.show_extra_dashboard %}
+
 <div style="width: 435px; margin: 0 35px 0 0; float: left;">
 <div id="video_views" class="trending_stats">
   <h1 id="hdr_videoviews">Video Views</h1>
@@ -176,6 +178,8 @@
   </table>
 </div><!-- // user_activity -->
 </div><!-- // right -->
+
+{% endif %}
 
 </div><!-- // dashboard -->
 {% endblock %}
