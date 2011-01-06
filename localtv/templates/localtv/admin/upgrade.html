@@ -1,12 +1,21 @@
 {% extends "localtv/admin/base.html" %}
+{% block body_class %}settings" onbeforeunload="return setting_onunload();{% endblock body_class %}
+
+{% load i18n %}
+
+{% block title %}{{ block.super }} - {% trans "Admin - Change site tier" %}{% endblock %}
+{% block head %}
+  {% include "localtv/admin/dirty_form.html" %}
+{% endblock %}
 {% block extrahead %}
 <link rel="stylesheet" type="text/css" href="/css/admin/signup.css" />
 <link rel="stylesheet" type="text/css" href="/css/admin/upgrade.css" />
 {% endblock extrahead %}
 
 {% block body_id %}upgrade{% endblock %}
-{% block content %}
 
+{% block content %}
+{% include "localtv/admin/settings_header.html" %}
 <div class="clear">
   <div id="upgrade_title">
     <h1>Upgrade Your Site</h1>
