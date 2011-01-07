@@ -390,6 +390,18 @@ class SiteLocation(Thumbnailable):
     def get_tier(self):
         return localtv.tiers.Tier(self.tier_name)
 
+    def get_css_for_display_if_permitted(self):
+        '''This function checks the site tier, and if permitted, returns the
+        custom CSS the admin has set.
+
+        If that is not permitted, it returns the empty unicode string.'''
+        if self.get_tier().permit_custom_css():
+            # Sweet.
+            return self.css
+        else:
+            # Silenced.
+            return u''
+
 
 class WidgetSettings(Thumbnailable):
     """
