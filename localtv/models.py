@@ -1,4 +1,3 @@
-
 # Copyright 2009 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
