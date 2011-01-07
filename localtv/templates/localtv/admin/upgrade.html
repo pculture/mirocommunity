@@ -54,7 +54,7 @@ To upgrade, make a choice below.
 You can always downgrade to the basic plan.
 {% endifequal %}
 </p>
-{% ifequal site_location.tier_name 'basic' %}
+{% ifnotequal site_location.tier_name 'basic' %}
   <a id="btn_started" href="{% url localtv_admin_change_tier %}?tier_name=basic">Switch to basic</a>
 {% endifequal %}
 </div><!-- // basic_plan -->
