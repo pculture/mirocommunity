@@ -668,6 +668,7 @@ ul#admin_nav li a.comments{
 }
 
 
+body#tier.settings a.tier,
 #admin.flatpages a.flatpages,
 #admin.bulkedit a.bulkedit,
 #admin.category_admin a.categories,
