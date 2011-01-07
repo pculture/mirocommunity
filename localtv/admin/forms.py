@@ -461,8 +461,10 @@ class EditSettingsForm(forms.ModelForm):
         if self.instance:
             self.initial['title'] = self.instance.site.name
         if localtv.tiers.Tier.get().permit_custom_css():
-            pass
-        else: # CSS not permitted
+            pass # Sweet, CSS is permitted.
+        else:
+            # Uh-oh: custom CSS is not permitted!
+            #
             # To handle only letting certain paid users edit CSS,
             # we do two things.
             #
