@@ -716,13 +716,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
         # permit creating another admin, raise an error.
         permitted_admins = localtv.tiers.Tier.get().admins_limit()
         if self.cleaned_data['role'] == 'admin' and permitted_admins is not None:
-            normal_admin_ids = set([k.id for k in
-                                models.SiteLocation.objects.get_current().admins.all()])
-            super_user_ids = set([k.id for k in
-                                  django.contrib.auth.models.User.objects.filter(
-                                      is_superuser=True)])
-            normal_admin_ids.update(super_user_ids)
-            num_admins = len(normal_admin_ids)
+            num_admins = localtv.tiers.number_of_admins_including_superuser()
 
             if (permitted_admins is not None) and num_admins >= permitted_admins:
                 raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (

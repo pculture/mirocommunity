@@ -3,6 +3,17 @@ import datetime
 from django.conf import settings
 import localtv.models
 
+def number_of_admins_including_superuser():
+    normal_admin_ids = set([k.id for k in
+                            localtv.models.SiteLocation.objects.get_current().admins.all()])
+    super_user_ids = set(
+        [k.id for k in
+         django.contrib.auth.models.User.objects.filter(
+                is_superuser=True)])
+    normal_admin_ids.update(super_user_ids)
+    num_admins = len(normal_admin_ids)
+    return num_admins
+
 ## These "CHOICES" are used in the SiteLocation model.
 ## They describe the different account types.
 CHOICES = [
