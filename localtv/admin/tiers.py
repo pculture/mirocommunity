@@ -71,7 +71,7 @@ def change_tier(request):
             return HttpResponseRedirect(reverse('localtv_admin_downgrade_confirm') + '?tier_name=' + target_tier_name)
         return confirmed_change_tier(request, override_tier=target_tier_name)
     else:
-        eek
+        return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
 @require_site_admin
 @csrf_protect
