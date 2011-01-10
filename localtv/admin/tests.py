@@ -3353,4 +3353,36 @@ class TierPaymentTests(BaseTestCase):
 
 
         # If the user has used up the free trial, we should retain a record of the balance.
-                
+
+class DowngradingDisablesThings(BaseTestCase):
+    def test_go_to_basic_with_one_admin(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'executive')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        User.objects.all()[1].delete()
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertFalse(localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_with_two_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'executive')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertEqual(set(['admins']),
+                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))

@@ -2,6 +2,20 @@ import logging
 import datetime
 from django.conf import settings
 import localtv.models
+import django.contrib.auth.models
+
+def user_warnings_for_downgrade(new_tier_name):
+    warnings = set()
+
+    # How many admins do we have right now?
+    current_admins_count = number_of_admins_including_superuser()
+    # How many are we permitted to, in the future?
+    future_permitted = Tier(new_tier_name).admins_limit()
+
+    if current_admins_count > future_permitted:
+        warnings.add('admins')
+
+    return warnings
 
 def number_of_admins_including_superuser():
     normal_admin_ids = set([k.id for k in
