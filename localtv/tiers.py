@@ -17,6 +17,36 @@ def user_warnings_for_downgrade(new_tier_name):
 
     return warnings
 
+def push_number_of_admins_down(new_limit, actually_demote_people=False):
+    '''Return a list of usernames that will be demoted.
+
+    If you pass actually_demote_people in as True, then the function will actually
+    remove people from the admins set.'''
+    # No matter what, the super-user is going to still be an admin.
+    # Therefore, any limit has to be greater than or equal to one.
+    assert new_limit >= 1
+
+    # grab hold of the current SiteLocation
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+
+    # We have this many right now
+    initial_admins_count = number_of_admins_including_superuser()
+
+    # If we do not have excess admins, we can quit early.
+    demote_this_many = initial_admins_count - new_limit
+    if demote_this_many <= 0:
+        return
+
+    # Okay, we have to actually demote some users from admin.
+    # Well, uh, sort them by user ID.
+    demotees = sitelocation.admins.order_by('-pk')[:demote_this_many]
+    demotee_usernames = set([x.username for x in demotees])
+    if actually_demote_people:
+        for demotee in demotees:
+            sitelocation.admins.remove(demotee)
+    return demotee_usernames
+    
+
 def number_of_admins_including_superuser():
     normal_admin_ids = set([k.id for k in
                             localtv.models.SiteLocation.objects.get_current().admins.all()])
