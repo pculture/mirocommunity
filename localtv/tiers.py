@@ -37,6 +37,8 @@ CHOICES = [
     ('executive', 'Executive account')]
 
 class Tier(object):
+    __slots__ = ['tier_name']
+
     def __init__(self, tier_name):
         self.tier_name = tier_name
 
