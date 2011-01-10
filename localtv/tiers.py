@@ -64,7 +64,7 @@ CHOICES = [
     ('basic', 'Free account'),
     ('plus', 'Plus account'),
     ('premium', 'Premium account'),
-    ('executive', 'Executive account')]
+    ('max', 'Max account')]
 
 class Tier(object):
     __slots__ = ['tier_name']

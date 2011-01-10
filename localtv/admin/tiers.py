@@ -20,7 +20,7 @@ import re
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
@@ -65,6 +65,23 @@ def change_tier(request):
     target_tier_name = request.GET.get('tier_name', '')
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
+        # Would the user lose anything? If so, stop the process to warn the user.
+        would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
+        if would_lose:
+            return HttpResponseRedirect(reverse('localtv_admin_downgrade_confirm') + '?tier_name=' + target_tier_name)
+        return confirmed_change_tier(request, override_tier=target_tier_name)
+    else:
+        eek
+
+@require_site_admin
+@csrf_protect
+def confirmed_change_tier(request, override_tier = None):
+    if override_tier:
+        target_tier_name = override_tier
+    else:
+        target_tier_name = request.POST.get('tier_name', '')
+    # validate
+    if target_tier_name in dict(localtv.tiers.CHOICES):
         # Switch our tier
         sl = request.sitelocation
         sl.tier_name = target_tier_name
@@ -72,6 +89,18 @@ def change_tier(request):
         # The below code should cause a PayPal redirect. Instead, it simply emulates full
         # payment.
         localtv.tiers.process_payment(request.sitelocation.get_tier().dollar_cost())
+
+    # Always redirect back to tiers page
+    return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
+@require_site_admin
+def downgrade_confirm(request):
+    target_tier_name = request.GET.get('tier_name', '')
+    # validate
+    if target_tier_name in dict(localtv.tiers.CHOICES):
+        would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
+        if would_lose:
+            return HttpResponse("You would lose things related to " + ' '.join(would_lose))
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
