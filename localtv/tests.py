@@ -68,8 +68,8 @@ class BaseTestCase(TestCase):
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
 
-        # By default, tests run on an 'executive' account.
-        self.site_location.tier_name = 'executive'
+        # By default, tests run on an 'max' account.
+        self.site_location.tier_name = 'max'
         self.site_location.save()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
@@ -1604,8 +1604,8 @@ class SiteTierTests(BaseTestCase):
         self.assertTrue(tier.permit_custom_css())
         self.assertFalse(tier.permit_custom_template())
 
-    def test_executive_account(self):
-        self.site_location.tier_name = 'executive'
+    def test_max_account(self):
+        self.site_location.tier_name = 'max'
         self.site_location.save()
         tier = self.site_location.get_tier()
         self.assertEqual(75, tier.dollar_cost())
@@ -1621,7 +1621,7 @@ class SiteTierTests(BaseTestCase):
         self.assertFalse(fake_bool)
 
     def test_fake_uploadtemplate_variable_true(self):
-        self.site_location.tier_name = 'executive'
+        self.site_location.tier_name = 'max'
         self.site_location.save()
         fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
         self.assertTrue(fake_bool)

@@ -108,7 +108,7 @@ class Tier(object):
         special_cases = {'basic': 500,
                          'plus': 1000,
                          'premium': 5000,
-                         'executive': 25000}
+                         'max': 25000}
         return special_cases[self.tier_name]
 
     def admins_limit(self):
@@ -123,7 +123,7 @@ class Tier(object):
         return special_cases.get(self.tier_name, default)
 
     def permit_custom_template(self):
-        special_cases = {'executive': True}
+        special_cases = {'max': True}
         default = False
         return special_cases.get(self.tier_name, default)
 
@@ -131,7 +131,7 @@ class Tier(object):
         special_cases = {'basic': 0,
                          'plus': 15,
                          'premium': 35,
-                         'executive': 75}
+                         'max': 75}
         return special_cases[self.tier_name]
 
 class BooleanRepresentingUploadTemplatePermission(object):

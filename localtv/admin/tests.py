@@ -3315,10 +3315,10 @@ class TierPaymentTests(BaseTestCase):
         # Verify that there is no payment due date still.
         self.assertEqual(None, self.site_location.payment_due_date)
 
-        # Bump it up to 'executive'
+        # Bump it up to 'max'
         # Discover that we have a payment due date now (and that it is
         # after today)
-        self.site_location.tier_name = 'executive'
+        self.site_location.tier_name = 'max'
         self.site_location.save()
         self.assert_(self.site_location.payment_due_date > datetime.datetime.now())
         self.assert_(self.site_location.free_trial_used)
@@ -3357,7 +3357,7 @@ class TierPaymentTests(BaseTestCase):
 class DowngradingDisablesThings(BaseTestCase):
     def test_go_to_basic_with_one_admin(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'executive')
+        self.assertEqual(self.site_location.tier_name, 'max')
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3380,7 +3380,7 @@ class DowngradingDisablesThings(BaseTestCase):
 
     def test_go_to_basic_with_two_admins(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'executive')
+        self.assertEqual(self.site_location.tier_name, 'max')
 
         # Verify that we started with 2 admins, including the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
