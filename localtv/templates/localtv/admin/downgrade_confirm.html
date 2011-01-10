@@ -39,6 +39,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <form method="POST" action="{% url localtv_admin_confirmed_change_tier %}">{% csrf_token %}
       <input type="hidden" name="tier_name" value="{{ tier_name }}" />
       <button class="approve_button" name="confirm" value="yes"><span>Yes, do it</span></button>
-      <a class="reject_button" href="{% url localtv_admin_change_tier %}"><span>Cancel</span></a>
+      <a class="reject_button" href="{% url localtv_admin_tier %}"><span>Cancel</span></a>
     </form>
 {% endblock content %}
