@@ -26,8 +26,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
     <h1>If you switch to {{ tier_name }}, you will lose some settings.</h1>
-    {% if would_lose.admins %}
+    {% if would_lose_admin_usernames %}
     <h2>Users that will stop being admins</h2>
+    <br class="clear" />
     <ul>
       {% for username in would_lose_admin_usernames %}
       <li>{{ username }}</li>
@@ -36,6 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
     <br class="clear" />
     <form method="POST" action="{% url localtv_admin_confirmed_change_tier %}">{% csrf_token %}
+      <input type="hidden" name="tier_name" value="{{ tier_name }}" />
       <button class="approve_button" name="confirm" value="yes"><span>Yes, do it</span></button>
       <a class="reject_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
     </form>

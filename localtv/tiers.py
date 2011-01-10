@@ -194,5 +194,11 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
             instance.payment_due_date = datetime.datetime.utcnow()
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
-        
 
+def pre_save_adjust_admin_count(instance, signal, **kwargs):
+    # When tranisitioning between any two site tiers, make sure that
+    # the number of admins there are on the site is within the tier.
+    new_tier_name = instance.tier_name
+    new_tier_obj = Tier(new_tier_name)
+    push_number_of_admins_down(new_tier_obj.admins_limit(),
+                               actually_demote_people=True)

@@ -1674,6 +1674,9 @@ models.signals.pre_delete.connect(delete_comments,
 ### register pre-save handler for Tiers and payment due dates
 models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
                                 sender=SiteLocation)
+models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_admin_count,
+                                sender=SiteLocation)
+
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:
         return # don't care about saving

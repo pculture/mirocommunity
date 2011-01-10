@@ -82,10 +82,13 @@ def confirmed_change_tier(request, override_tier = None):
         target_tier_name = request.POST.get('tier_name', '')
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
+        target_tier_obj = localtv.tiers.Tier(target_tier_name)
+
         # Switch our tier
         sl = request.sitelocation
         sl.tier_name = target_tier_name
         sl.save()
+        
         # The below code should cause a PayPal redirect. Instead, it simply emulates full
         # payment.
         localtv.tiers.process_payment(request.sitelocation.get_tier().dollar_cost())
@@ -104,7 +107,6 @@ def downgrade_confirm(request):
         if would_lose:
             data = {}
             data['tier_name'] = target_tier_name
-            data['would_lose'] = would_lose
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))
