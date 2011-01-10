@@ -3374,7 +3374,7 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertFalse(localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # Try pushing the number of admins down to 1, which should change nothing.
-        localtv.tiers.push_number_of_admins_down(1)
+        self.assertFalse(localtv.tiers.push_number_of_admins_down(1))
         # Still one admin.
         self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
 
