@@ -12,8 +12,9 @@ def user_warnings_for_downgrade(new_tier_name):
     # How many are we permitted to, in the future?
     future_permitted = Tier(new_tier_name).admins_limit()
 
-    if current_admins_count > future_permitted:
-        warnings.add('admins')
+    if future_permitted is not None:
+        if current_admins_count > future_permitted:
+            warnings.add('admins')
 
     return warnings
 
@@ -22,6 +23,10 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
 
     If you pass actually_demote_people in as True, then the function will actually
     remove people from the admins set.'''
+    # None is the special value indicating there is no limit.
+    if new_limit is None:
+        return
+
     # No matter what, the super-user is going to still be an admin.
     # Therefore, any limit has to be greater than or equal to one.
     assert new_limit >= 1

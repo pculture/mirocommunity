@@ -1,0 +1,42 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block body_class %}downgrade_confirm{% endblock body_class %}
+
+{% load pagetabs i18n %}
+
+{% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Confirm downgrade" %}{% endblock %}{% endblock %}
+
+{% block content %}
+    <h1>If you switch to {{ tier_name }}, you will lose some settings.</h1>
+    {% if would_lose.admins %}
+    <h2>Users that will stop being admins</h2>
+    <ul>
+      {% for username in would_lose_admin_usernames %}
+      <li>{{ username }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <br class="clear" />
+    <form method="POST" action="{% url localtv_admin_confirmed_change_tier %}">{% csrf_token %}
+      <button class="approve_button" name="confirm" value="yes"><span>Yes, do it</span></button>
+      <a class="reject_button" href="{% url localtv_admin_approve_reject %}"><span>Cancel</span></a>
+    </form>
+{% endblock content %}

@@ -98,9 +98,15 @@ def downgrade_confirm(request):
     target_tier_name = request.GET.get('tier_name', '')
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
+        target_tier_obj = localtv.tiers.Tier(target_tier_name)
+
         would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
         if would_lose:
-            return HttpResponse("You would lose things related to " + ' '.join(would_lose))
-
+            data = {}
+            data['tier_name'] = target_tier_name
+            data['would_lose'] = would_lose
+            data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
+            return render_to_response('localtv/admin/downgrade_confirm.html', data,
+                                      context_instance=RequestContext(request))
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
