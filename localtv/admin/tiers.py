@@ -108,5 +108,13 @@ def downgrade_confirm(request):
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))
+        else:
+            # Well, see, the point of this page is to show you what
+            # you would lose.
+            #
+            # If you would lose nothing, you shouldn't even be here.
+            # Sending you back to the tiers editing page...
+            pass
+            
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
