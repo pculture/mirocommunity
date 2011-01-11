@@ -1,20 +1,37 @@
 import logging
 import datetime
+
 from django.conf import settings
-import localtv.models
 import django.contrib.auth.models
+
+import localtv.models
+
+import uploadtemplate.models
 
 def user_warnings_for_downgrade(new_tier_name):
     warnings = set()
 
+    future_tier = Tier(new_tier_name)
+
     # How many admins do we have right now?
     current_admins_count = number_of_admins_including_superuser()
     # How many are we permitted to, in the future?
-    future_permitted = Tier(new_tier_name).admins_limit()
+    future_admins_permitted = future_tier.admins_limit()
 
-    if future_permitted is not None:
-        if current_admins_count > future_permitted:
+    if future_admins_permitted is not None:
+        if current_admins_count > future_admins_permitted:
             warnings.add('admins')
+
+    # Is there a custom theme? If so, check if we will have to ditch it.
+    if uploadtemplate.models.Theme.objects.filter(default=True):
+        current_theme = uploadtemplate.models.Theme.objects.get_default()
+        if current_theme.bundled:
+            pass # No matter what tiers you are going between, you may
+                 # use a bundled theme
+        else:
+            # Does the future tier permit a custom theme? If not, complain:
+            if not future_tier.permit_custom_template():
+                warnings.add('customtheme')
 
     return warnings
 

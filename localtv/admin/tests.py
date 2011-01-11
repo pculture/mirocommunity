@@ -16,6 +16,8 @@ from localtv import models, util
 import mock
 import localtv.tiers
 
+import uploadtemplate
+
 import vidscraper
 from notification import models as notification
 
@@ -3419,6 +3421,33 @@ class DowngradingDisablesThings(BaseTestCase):
         u.save()
         self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
         
+    def test_go_to_basic_with_a_custom_theme(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
+        
+        # Modify the current default theme so that its Theme.bundled = False
+        # (This is how we will test if the theme is a user-uploaded one.)
+        current_theme = uploadtemplate.models.Theme.objects.get_default()
+        current_theme.bundled = False
+        current_theme.save()
+
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertEqual(set(['customtheme']),
+                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
+        # For now, the default theme is still the bundled one.
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+        # Now, force the transition
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        # Check that the user is now on a bundled theme
+        self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
+
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']
 
