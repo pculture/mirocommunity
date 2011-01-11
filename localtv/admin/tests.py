@@ -3406,6 +3406,19 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(set(['admin']), usernames)
         self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
         
+    def test_non_active_users_do_not_count_as_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # If we make the 'admin' person not is_active, now there is only "1" admin
+        u = User.objects.get(username='admin')
+        u.is_active = False
+        u.save()
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+        
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']
 
