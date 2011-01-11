@@ -107,6 +107,7 @@ def downgrade_confirm(request):
         if would_lose:
             data = {}
             data['tier_name'] = target_tier_name
+            data['target_tier_obj'] = target_tier_obj
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))

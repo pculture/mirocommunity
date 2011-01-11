@@ -25,10 +25,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Confirm downgrade" %}{% endblock %}{% endblock %}
 
 {% block content %}
-    <h1>If you switch to {{ tier_name }}, you will lose some settings.</h1>
+<h1>Warning!</h1>
+    <h2>Downgrading to {{tier_name}} will cause the following changes:</h2>
     {% if would_lose_admin_usernames %}
-    <h2>Users that will stop being admins</h2>
+    <h3>Limit of {{ target_tier_obj.admins_limit }} admins</h3>
     <br class="clear" />
+    <p>The following current administrators will become regular users:</p>
     <ul>
       {% for username in would_lose_admin_usernames %}
       <li>{{ username }}</li>
