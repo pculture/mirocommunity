@@ -32,7 +32,10 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     assert new_limit >= 1
 
     # grab hold of the current SiteLocation
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    try:
+        sitelocation = localtv.models.SiteLocation.objects.get_current()
+    except localtv.models.SiteLocation.DoesNotExist, e:
+        return # well okay, there is no current SiteLocation.
 
     # We have this many right now
     initial_admins_count = number_of_admins_including_superuser()
