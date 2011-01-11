@@ -3442,6 +3442,10 @@ class DowngradingDisablesThings(BaseTestCase):
         # For now, the default theme is still the bundled one.
         self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
 
+        # "Transition" from max to max, to make sure the theme stays
+        self.site_location.save()
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
         # Now, force the transition
         self.site_location.tier_name = 'premium'
         self.site_location.save()

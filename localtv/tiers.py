@@ -35,6 +35,25 @@ def user_warnings_for_downgrade(new_tier_name):
 
     return warnings
 
+### XXX Merge all these functions into one tidy little thing.
+
+def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
+    if uploadtemplate.models.Theme.objects.filter(default=True):
+        current_theme = uploadtemplate.models.Theme.objects.get_default()
+        if not current_theme.bundled:
+            if not future_tier_obj.permit_custom_template():
+                # Grab the bundled theme with the lowest ID, and make it the default.
+                # If there is no such theme, log an error, but do not crash.
+                bundleds = uploadtemplate.models.Theme.objects.filter(bundled=True).order_by('pk')
+                if bundleds:
+                    first = bundleds[0]
+                    if actually_do_it:
+                        first.set_as_default()
+                    return first.name
+                else:
+                    logging.error("Hah, there are no bundled themes left.")
+                    return None
+
 def push_number_of_admins_down(new_limit, actually_demote_people=False):
     '''Return a list of usernames that will be demoted.
 
@@ -215,10 +234,14 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
 
-def pre_save_adjust_admin_count(instance, signal, **kwargs):
+def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # When tranisitioning between any two site tiers, make sure that
     # the number of admins there are on the site is within the tier.
     new_tier_name = instance.tier_name
     new_tier_obj = Tier(new_tier_name)
     push_number_of_admins_down(new_tier_obj.admins_limit(),
                                actually_demote_people=True)
+
+    # Also change the theme, if necessary.
+    switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
+    
