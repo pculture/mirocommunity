@@ -3406,3 +3406,34 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(set(['admin']), usernames)
         self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
         
+class DowngradingSevenAdmins(BaseTestCase):
+    fixtures = BaseTestCase.fixtures + ['five_more_admins']
+
+    def test_go_to_plus_with_seven_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the plus account type only permits 5
+        self.assertEqual(5, localtv.tiers.Tier('plus').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertEqual(set(['admins']),
+                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Well, good -- that means we have to deal with them.
+        # Run a function that 
+        # Try pushing the number of admins down to 1, which should change nothing.
+        usernames = localtv.tiers.push_number_of_admins_down(5)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        # Still two admins -- the above does a dry-run by default.
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Re-do it for real.
+        usernames = localtv.tiers.push_number_of_admins_down(5, actually_demote_people=True)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
+        
