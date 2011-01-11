@@ -37,6 +37,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endfor %}
     </ul>
     {% endif %}
+    {% if customtheme_nag %}
+    <h3>Custom Themes</h3>
+    <br class="clear" />
+    <p>You will no longer be able to Add custom themes. Custom themes that have
+previously been uploaded will be saved, but cannot be activated.</p>
+    
+    {% if new_theme_name %}
+    <p>You currently have a custom theme activated, so when you click "Yes," the theme will switch back to the default
+      {{new_theme_name}} theme.</p>
+    {% endif %}
+    {% endif %}
     <br class="clear" />
     <form method="POST" action="{% url localtv_admin_confirmed_change_tier %}">{% csrf_token %}
       <input type="hidden" name="tier_name" value="{{ tier_name }}" />
