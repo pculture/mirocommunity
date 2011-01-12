@@ -1722,6 +1722,18 @@ today</a>.</p></div>""",
             setting.send = True
             setting.save()
 
+    def test_normalize_newlines_backslash_r(self):
+        dos_style = 'hello\r\nthere'
+        unix_style = 'hello\nthere'
+        self.assertEqual(
+            util.normalize_newlines(dos_style),
+            util.normalize_newlines(unix_style))
+
+    def test_normalize_newlines_weird_input(self):
+        self.assert_(util.normalize_newlines(None)
+                     is None)
+        self.assert_(util.normalize_newlines(True) is True)
+
     def test_no_changes(self):
         """
         If nothing has changed, then OriginalVideo.changed_fields() should

@@ -19,6 +19,7 @@ import hashlib
 import re
 import string
 import urllib
+import types
 
 from django.conf import settings
 from django.core.cache import cache
@@ -169,7 +170,9 @@ def get_scraped_data(url):
     return scraped_data
 
 def normalize_newlines(s):
-    return s.replace('\r\n', '\n')
+    if type(s) in types.StringTypes:
+        s = s.replace('\r\n', '\n')
+    return s
 
 def send_notice(notice_label, subject, message, fail_silently=True,
                 sitelocation=None):
