@@ -11,6 +11,7 @@ import uploadtemplate.models
 def user_warnings_for_downgrade(new_tier_name):
     warnings = set()
 
+    current_tier = localtv.models.SiteLocation.objects.get_current().get_tier()
     future_tier = Tier(new_tier_name)
 
     # How many admins do we have right now?
@@ -27,6 +28,12 @@ def user_warnings_for_downgrade(new_tier_name):
         # Does the future tier permit a custom theme? If not, complain:
         if not future_tier.permit_custom_template():
             warnings.add('customtheme')
+
+    # If the old tier permitted advertising, and the new one does not,
+    # then let the user know about that change.
+    if (current_tier.permits_advertising() and 
+        not future_tier.permits_advertising()):
+        warnings.add('advertising')
 
     return warnings
 
@@ -140,6 +147,11 @@ class Tier(object):
             if log_warnings:
                 logging.warn("Eek, we have no tier set.")
             return DEFAULT
+
+    def permits_advertising(self):
+        special_cases = {'premium': True,
+                         'max': True}
+        return special_cases.get(self.tier_name, False)
 
     def videos_limit(self):
         special_cases = {'basic': 500,

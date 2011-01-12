@@ -3357,6 +3357,33 @@ class TierPaymentTests(BaseTestCase):
         # If the user has used up the free trial, we should retain a record of the balance.
 
 class DowngradingDisablesThings(BaseTestCase):
+    def test_go_to_basic_from_max_lose_advertising(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertEqual(set(['advertising']),
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_plus_no_advertising_msg(self):
+        # Start out in Plus
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertFalse(
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
     def test_go_to_basic_with_one_admin(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
@@ -3373,7 +3400,8 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Now check what messages we would generate if we dropped down
         # to basic.
-        self.assertFalse(localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        self.assert_(
+            'admins' not in localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # Try pushing the number of admins down to 1, which should change nothing.
         self.assertFalse(localtv.tiers.push_number_of_admins_down(1))
@@ -3392,8 +3420,8 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Now check what messages we would generate if we dropped down
         # to basic.
-        self.assertEqual(set(['admins']),
-                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # Well, good -- that means we have to deal with them.
         # Run a function that 
