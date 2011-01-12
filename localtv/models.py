@@ -920,13 +920,13 @@ class OriginalVideo(VideoBase):
                 scraped_data = vidscraper.auto_scrape(video.website_url,
                                                       fields=['title', 'description',
                                                               'tags', 'thumbnail_url'])
-                # Does the video look like it has no data? Then we infer that the remote
-                # video was deleted.
-                if all([x is None for x in scraped_data.values()]):
-                    remote_video_was_deleted = True
-
             except vidscraper.errors.VideoDeleted, e:
                 remote_video_was_deleted = True
+
+        # Now that we have the "scraped_data", analyze it: does it look like
+        # a skeletal video, with no data? Then we infer it was deleted.
+        if all([x is None for x in scraped_data.values()]):
+            remote_video_was_deleted = True
 
         # If the scraped_data has all None values, then infer that the remote video was
         # deleted.
