@@ -1615,18 +1615,6 @@ class SiteTierTests(BaseTestCase):
         self.assertTrue(tier.permit_custom_css())
         self.assertTrue(tier.permit_custom_template())
 
-    def test_fake_uploadtemplate_variable_false(self):
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
-        fake_bool = tiers_fake_settings.BooleanRepresentingUploadTemplatePermission()
-        self.assertFalse(fake_bool)
-
-    def test_fake_uploadtemplate_variable_true(self):
-        self.site_location.tier_name = 'max'
-        self.site_location.save()
-        fake_bool = tiers_fake_settings.BooleanRepresentingUploadTemplatePermission()
-        self.assertTrue(fake_bool)
-
 # -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
