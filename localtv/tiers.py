@@ -87,6 +87,9 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     
 
 def number_of_admins_including_superuser():
+    if not localtv.models.SiteLocation.objects.all():
+        return 0
+
     normal_admin_ids = set([k.id for k in
                             localtv.models.SiteLocation.objects.get_current().admins.filter(is_active=True)])
     super_user_ids = set(
