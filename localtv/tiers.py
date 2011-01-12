@@ -43,12 +43,22 @@ def user_warnings_for_downgrade(new_tier_name):
         sitelocation.css.strip()):
             warnings.add('css')
 
-    if localtv.models.Video.objects.filter(status=localtv.models.VIDEO_STATUS_ACTIVE).count() > future_tier.videos_limit():
+    if current_videos_that_count_toward_limit.count() > future_tier.videos_limit():
         warnings.add('videos')
 
     return warnings
 
 ### XXX Merge all these functions into one tidy little thing.
+
+def current_videos_that_count_toward_limit():
+    return localtv.models.Video.objects.filter(status=localtv.models.VIDEO_STATUS_ACTIVE)
+
+def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
+    new_limit = future_tier_obj.videos_limit()
+    current_count = current_videos_that_count_toward_limit().count()
+    if current_count <= new_limit:
+        return 0
+    return (current_count - new_limit)
 
 def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
     if uploadtemplate.models.Theme.objects.filter(default=True):

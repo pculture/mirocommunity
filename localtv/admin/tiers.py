@@ -110,6 +110,10 @@ def downgrade_confirm(request):
             data['target_tier_obj'] = target_tier_obj
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             data['customtheme_nag'] = ('customtheme' in would_lose)
+            data['advertising_nag'] = ('advertising' in would_lose)
+            data['css_nag'] = ('css' in would_lose)
+            data['videos_nag'] = ('videos' in would_lose)
+            data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
             data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))
