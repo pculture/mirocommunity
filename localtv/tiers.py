@@ -171,21 +171,6 @@ class Tier(object):
                          'max': 75}
         return special_cases[self.tier_name]
 
-class BooleanRepresentingUploadTemplatePermission(object):
-    def __nonzero__(self):
-        default = False # By default, we say that custom themes are disabled.
-
-        tier = Tier.get()
-        if tier is None:
-            return default
-        return tier.permit_custom_css()
-        
-    def __init__(self):
-        # Call Tier.get() and log any warnings that come up.
-        # Throw away the result so that we can always check the tier
-        # at the latest possible time.
-        Tier.get(log_warnings=True)
-
 def process_payment(dollars):
     site_location = localtv.models.SiteLocation.objects.get_current()
     amount_due = site_location.get_tier().dollar_cost()
