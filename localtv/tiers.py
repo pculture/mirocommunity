@@ -43,7 +43,7 @@ def user_warnings_for_downgrade(new_tier_name):
         sitelocation.css.strip()):
             warnings.add('css')
 
-    if current_videos_that_count_toward_limit.count() > future_tier.videos_limit():
+    if current_videos_that_count_toward_limit().count() > future_tier.videos_limit():
         warnings.add('videos')
 
     return warnings
