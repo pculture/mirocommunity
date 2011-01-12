@@ -41,15 +41,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if videos_nag %}
     <h3>Limit of {{ target_tier_obj.videos_limit }} videos</h3>
     <br class="clear" />
-    <p>Since you are {{ videos_over_limit }} video{{videos_over_limit|pluralize}}
-      over this limit, you will no longer be able to publish new
-      videos. Videos submitted by users will go into your review queue, but you will
-      not be able to approve them until you are within the limit. 
-      <!-- Videos will not come in from sources while you are over the limit (once you have fewer than {{target_tier_obj.videos_limit}}
-      videos, videos will once again import from sources from the point at which they left off). -->
-      When you transition to the new tier, your oldest videos will be unapproved and will return to the review
-      queue.
-    </p>
+    <p>Since you are {{ videos_over_limit}} video{{videos_over_limit|pluralize}}
+      over this limit, you will no longer be able to publish
+      new videos. Videos submitted by users and videos from sources will go into your
+      review queue, but you will not be able to approve them until you are within the
+      limit.</p>
+
+    <p>When you transition to {{ tier_name }}, the oldest {{ videos_over_limit }}
+      videos will be unapproved
+      and will return to the review queue. When you delete enough videos on the site
+      to be under {{ target_tier_obj.videos_limit}}, you will be able to re-approve these videos.</p>
     {% endif %}
     {% if css_nag %}
     <h3>Custom CSS</h3>
