@@ -27,6 +27,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <h1>Warning!</h1>
     <h2>Downgrading to {{tier_name}} will cause the following changes:</h2>
+    <br class="clear" />
     {% if would_lose_admin_usernames %}
     <h3>Limit of {{ target_tier_obj.admins_limit }} admins</h3>
     <br class="clear" />
@@ -40,7 +41,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if customtheme_nag %}
     <h3>Custom Themes</h3>
     <br class="clear" />
-    <p>You will no longer be able to Add custom themes. Custom themes that have
+    <p>You will no longer be able to add custom themes. Custom themes that have
 previously been uploaded will be saved, but cannot be activated.</p>
     
     {% if new_theme_name %}
