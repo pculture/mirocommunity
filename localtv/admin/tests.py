@@ -3544,6 +3544,38 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(set(['customtheme']),
                          localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
         
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_max_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='max'))
+        
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']
 
