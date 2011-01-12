@@ -11,7 +11,8 @@ import uploadtemplate.models
 def user_warnings_for_downgrade(new_tier_name):
     warnings = set()
 
-    current_tier = localtv.models.SiteLocation.objects.get_current().get_tier()
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    current_tier = sitelocation.get_tier()
     future_tier = Tier(new_tier_name)
 
     # How many admins do we have right now?
@@ -34,6 +35,14 @@ def user_warnings_for_downgrade(new_tier_name):
     if (current_tier.permits_advertising() and 
         not future_tier.permits_advertising()):
         warnings.add('advertising')
+
+    # If the old tier permitted custom CSS, and the new one does not,
+    # and the site has custom CSS in use, then warn the user.
+    if (current_tier.permit_custom_css() and
+        not future_tier.permit_custom_css() and
+        sitelocation.css.strip()):
+            warnings.add('css')
+            
 
     return warnings
 
