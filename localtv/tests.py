@@ -44,6 +44,7 @@ from haystack.query import SearchQuerySet
 from localtv import models
 from localtv import util
 from localtv import tiers
+from localtv import tiers_fake_settings
 
 from notification import models as notification
 from tagging.models import Tag
@@ -1617,13 +1618,13 @@ class SiteTierTests(BaseTestCase):
     def test_fake_uploadtemplate_variable_false(self):
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        fake_bool = tiers_fake_settings.BooleanRepresentingUploadTemplatePermission()
         self.assertFalse(fake_bool)
 
     def test_fake_uploadtemplate_variable_true(self):
         self.site_location.tier_name = 'max'
         self.site_location.save()
-        fake_bool = tiers.BooleanRepresentingUploadTemplatePermission()
+        fake_bool = tiers_fake_settings.BooleanRepresentingUploadTemplatePermission()
         self.assertTrue(fake_bool)
 
 # -----------------------------------------------------------------------------
