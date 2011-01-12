@@ -1062,21 +1062,6 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, changed_fields[field])
         self.save()
 
-
-class VideoBase(models.Model):
-    """
-    Base class between Video and OriginalVideo.  It would be simple enough to
-    duplicate these fields, but this way it's easier to add more points of
-    duplication in the future.
-    """
-    name = models.CharField(max_length=250)
-    description = models.TextField(blank=True)
-    thumbnail_url = models.URLField(
-        verify_exists=False, blank=True, max_length=400)
-
-    class Meta:
-        abstract = True
-
 class OriginalVideo(VideoBase):
     video = models.OneToOneField('Video', related_name='original')
     thumbnail_updated = models.DateTimeField(blank=True)
