@@ -3356,7 +3356,26 @@ class TierPaymentTests(BaseTestCase):
 
         # If the user has used up the free trial, we should retain a record of the balance.
 
+def videos_limit_of_two(*args, **kwargs):
+    return 2
+
 class DowngradingDisablesThings(BaseTestCase):
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Create two videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_within_new_limit(self):
+        # Create just one video
+        models.Video.objects.create(site_id=self.site_location.site_id)
+        self.assertTrue('videos' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
     def test_go_to_basic_from_max_warn_about_css_loss(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
@@ -3494,8 +3513,8 @@ class DowngradingDisablesThings(BaseTestCase):
         uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
-        self.assertEqual(set(['customtheme']),
-                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        self.assertTrue('customtheme' in 
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
         
         # For now, the default theme is still the bundled one.
         self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)

@@ -42,7 +42,9 @@ def user_warnings_for_downgrade(new_tier_name):
         not future_tier.permit_custom_css() and
         sitelocation.css.strip()):
             warnings.add('css')
-            
+
+    if localtv.models.Video.objects.filter(status=localtv.models.VIDEO_STATUS_ACTIVE).count() > future_tier.videos_limit():
+        warnings.add('videos')
 
     return warnings
 
