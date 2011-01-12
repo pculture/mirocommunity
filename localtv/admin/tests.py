@@ -3429,12 +3429,6 @@ class DowngradingDisablesThings(BaseTestCase):
         uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
         uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
         
-        # Modify the current default theme so that its Theme.bundled = False
-        # (This is how we will test if the theme is a user-uploaded one.)
-        current_theme = uploadtemplate.models.Theme.objects.get_default()
-        current_theme.bundled = False
-        current_theme.save()
-
         # Now, make sure that the downgrade helper notices and complains
         self.assertEqual(set(['customtheme']),
                          localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
@@ -3452,6 +3446,21 @@ class DowngradingDisablesThings(BaseTestCase):
         # Check that the user is now on a bundled theme
         self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
 
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
+        '''Even if the custom themes are not the default ones, if they exist, we should
+        let the user know that it won't be accessible anymore.'''
+
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertEqual(set(['customtheme']),
+                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']
 

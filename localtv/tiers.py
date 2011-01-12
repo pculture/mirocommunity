@@ -23,15 +23,10 @@ def user_warnings_for_downgrade(new_tier_name):
             warnings.add('admins')
 
     # Is there a custom theme? If so, check if we will have to ditch it.
-    if uploadtemplate.models.Theme.objects.filter(default=True):
-        current_theme = uploadtemplate.models.Theme.objects.get_default()
-        if current_theme.bundled:
-            pass # No matter what tiers you are going between, you may
-                 # use a bundled theme
-        else:
-            # Does the future tier permit a custom theme? If not, complain:
-            if not future_tier.permit_custom_template():
-                warnings.add('customtheme')
+    if uploadtemplate.models.Theme.objects.filter(bundled=False):
+        # Does the future tier permit a custom theme? If not, complain:
+        if not future_tier.permit_custom_template():
+            warnings.add('customtheme')
 
     return warnings
 
