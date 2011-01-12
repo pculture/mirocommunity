@@ -1750,7 +1750,7 @@ today</a>.</p></div>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
                           'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2010, 11, 24, 6, 56, 41)
+        'thumbnail_updated': datetime.datetime(2010, 12, 15, 6, 56, 41),
         }
 
 
@@ -1774,6 +1774,18 @@ today</a>.</p></div>""",
                                                             "1")
             setting.send = True
             setting.save()
+
+    def test_normalize_newlines_backslash_r(self):
+        dos_style = 'hello\r\nthere'
+        unix_style = 'hello\nthere'
+        self.assertEqual(
+            util.normalize_newlines(dos_style),
+            util.normalize_newlines(unix_style))
+
+    def test_normalize_newlines_weird_input(self):
+        self.assert_(util.normalize_newlines(None)
+                     is None)
+        self.assert_(util.normalize_newlines(True) is True)
 
     def test_no_changes(self):
         """
