@@ -3589,6 +3589,24 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertTrue('customtheme' not in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='max'))
         
+class AdminDashboardLoadsWithoutError(BaseTestCase):
+    url = reverse('localtv_admin_index')
+
+    def test(self):
+        """
+        This view should have status code 200 for an admin.
+
+        (This is there to make sure we at least *cover* the index view.)
+        """
+        self.assertRequiresAuthentication(self.url)
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+
+        
+
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']
 
