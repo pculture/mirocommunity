@@ -29,7 +29,7 @@ def index(request):
     """
     Simple index page for the admin site.
     """
-    total_count = localtv.tiers.current_videos_that_count_toward_limit.count()
+    total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
     percent_videos_used = math.floor(
         (100.0 * total_count) / request.sitelocation.get_tier().videos_limit())
     return render_to_response(
