@@ -3304,6 +3304,18 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
 ### Class tier payment tests
 class TierPaymentTests(BaseTestCase):
+    def test_process_payment_when_due_date_is_none(self):
+        # For cleanliness, clear any payment due date and basic trial status
+        self.site_location.tier_name='basic'
+        self.site_location.payment_due_date = None
+        self.site_location.save()
+        
+        # for some reason, process a payment (of zero dollars)
+        localtv.tiers.process_payment(0)
+
+        # If we get this far, the test passes -- the problem was that
+        # process_payment would raise an exception.
+
     def test_change_to_non_basic_tier_creates_payment_due_date(self):
         # For cleanliness, clear any payment due date and basic trial status
         self.site_location.free_trial_used = False
@@ -3315,6 +3327,7 @@ class TierPaymentTests(BaseTestCase):
         self.site_location.save()
 
         # Verify that there is no payment due date still.
+        self.assertFalse(self.site_location.free_trial_used)
         self.assertEqual(None, self.site_location.payment_due_date)
 
         # Bump it up to 'max'

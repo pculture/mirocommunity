@@ -208,8 +208,11 @@ class Tier(object):
 def process_payment(dollars):
     site_location = localtv.models.SiteLocation.objects.get_current()
     amount_due = site_location.get_tier().dollar_cost()
-    if dollars == amount_due:
-        site_location.payment_due_date = add_a_month(site_location.payment_due_date)
+    if (amount_due > 0) and (
+        dollars == amount_due):
+        site_location.payment_due_date = add_a_month(
+            site_location.payment_due_date or
+            datetime.datetime.utcnow())
         site_location.save()
     else:
         logging.error("Weird, the user paid %f but owed %f" % (
