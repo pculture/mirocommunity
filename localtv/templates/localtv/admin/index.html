@@ -18,14 +18,6 @@
 <div class="clear"></div>
 <div id="account_stats">
   <div class="clear">
-  <div id="comments_pending">
-    <h1>{{ comment_count }}</h1>
-    <h2>Comments</h2>
-    <h3>pending moderation</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url comments-moderation-queue %}">Moderate</a>
-  </div><!-- // comments_pending -->
-  
   <div id="videos_pending">
     <h1>{{ unreviewed_count }}</h1>
     <h2>Videos</h2>
@@ -34,6 +26,14 @@
     <a id="btn_comment_moderate" href="{% url localtv_admin_approve_reject %}">Moderate</a>
   </div><!-- // videos_pending -->
   
+  <div id="comments_pending">
+    <h1>{{ comment_count }}</h1>
+    <h2>Comments</h2>
+    <h3>pending moderation</h3>
+    <div class="clear"></div>
+    <a id="btn_comment_moderate" href="{% url comments-moderation-queue %}">Moderate</a>
+  </div><!-- // comments_pending -->
+  
   <div id="videos_week">
     <h1>{{ videos_this_week_count }}</h1>
     <h2>Videos</h2>
@@ -41,6 +41,7 @@
     <div class="clear"></div>
     <a id="btn_comment_moderate" href="{% url localtv_list_new %}">Moderate</a>
   </div><!-- // videos_week -->
+
   </div><!-- // clear -->
 </div><!-- // accounts_stats -->
 
