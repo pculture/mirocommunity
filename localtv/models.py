@@ -521,7 +521,7 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        if self.auto_approve:
+        if self.auto_approve and not localtv.tiers.Tier.get().over_videos_limit():
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED

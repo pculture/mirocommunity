@@ -21,6 +21,8 @@ import shutil
 import tempfile
 from urllib import quote_plus, urlencode
 
+import mock
+
 import feedparser
 import vidscraper
 
@@ -184,6 +186,20 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+
+    @mock.patch('localtv.tiers.Tier.over_videos_limit', lambda *args: True)
+    def test_auto_approve_True_when_user_past_video_limit(self):
+        """
+        If Feed.auto_approve is True, but the site is past the video limit,
+        the imported videos should be marked as unapproved.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.auto_approve = True
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 5)
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
         """

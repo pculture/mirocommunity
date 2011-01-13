@@ -182,6 +182,11 @@ class Tier(object):
                          'max': 25000}
         return special_cases[self.tier_name]
 
+    def over_videos_limit(self):
+        return (
+            current_videos_that_count_toward_limit().count() >=
+            self.videos_limit())
+
     def admins_limit(self):
         special_cases = {'basic': 1,
                          'plus': 5}
