@@ -23,7 +23,7 @@
     <h2>Comments</h2>
     <h3>pending moderation</h3>
     <div class="clear"></div>
-    <a id="btn_comment_moderate" href="">Moderate</a>
+    <a id="btn_comment_moderate" href="{% url comments-moderation-queue %}">Moderate</a>
   </div><!-- // comments_pending -->
   
   <div id="videos_pending">
@@ -31,7 +31,7 @@
     <h2>Videos</h2>
     <h3>pending moderation</h3>
     <div class="clear"></div>
-    <a id="btn_comment_moderate" href="">Moderate</a>
+    <a id="btn_comment_moderate" href="{% url localtv_admin_approve_reject %}">Moderate</a>
   </div><!-- // videos_pending -->
   
   <div id="videos_week">
@@ -39,7 +39,7 @@
     <h2>Videos</h2>
     <h3>this week</h3>
     <div class="clear"></div>
-    <a id="btn_comment_moderate" href="">Moderate</a>
+    <a id="btn_comment_moderate" href="{% url localtv_list_new %}">Moderate</a>
   </div><!-- // videos_week -->
   </div><!-- // clear -->
 </div><!-- // accounts_stats -->
