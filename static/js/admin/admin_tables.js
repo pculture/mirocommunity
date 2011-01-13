@@ -49,7 +49,7 @@ function run_and_disappear(eventdata) {
         success: function() {
             remove_video_and_refresh_list(video_div);},
 	error: function(xhr, ajaxOptions, thrownError) {
-	    alert(xhr.statusText);
+	    alert(xhr.responseText);
 	}});
     return false;
 }
