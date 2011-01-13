@@ -22,15 +22,14 @@ from django.template import RequestContext
 
 from localtv.decorators import require_site_admin
 from localtv import models
+import localtv.tiers
 
 @require_site_admin
 def index(request):
     """
     Simple index page for the admin site.
     """
-    total_count = models.Video.objects.filter(
-                site=request.sitelocation.site,
-                status=models.VIDEO_STATUS_ACTIVE).count()
+    total_count = localtv.tiers.current_videos_that_count_toward_limit.count()
     percent_videos_used = math.floor(
         (100.0 * total_count) / request.sitelocation.get_tier().videos_limit())
     return render_to_response(
