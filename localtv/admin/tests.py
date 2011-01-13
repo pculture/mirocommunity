@@ -3604,8 +3604,8 @@ class DowngradingSevenAdmins(BaseTestCase):
 
         # Now check what messages we would generate if we dropped down
         # to basic.
-        self.assertEqual(set(['admins']),
-                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # Well, good -- that means we have to deal with them.
         # Run a function that 
