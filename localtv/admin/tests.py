@@ -3412,6 +3412,34 @@ class TierPaymentTests(BaseTestCase):
 def videos_limit_of_two(*args, **kwargs):
     return 2
 
+class CannotApproveVideoIfLimitExceeded(BaseTestCase):
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Let there be one video already approved
+        models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        # Create two in the queue
+        for k in range(2):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_UNAPPROVED)
+
+        first_video_id, second_video_id = [v.id for v in
+                                           models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED)]
+
+        # Try to activate the first one -- should work fine.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(first_video_id)})
+        self.assertStatusCodeEquals(response, 200)
+
+        # Try to activate the second one -- you're past the limit.
+        # HTTP 402: Payment Required
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(second_video_id)})
+        self.assertStatusCodeEquals(response, 402)
+
 class DowngradingDisablesThings(BaseTestCase):
 
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)

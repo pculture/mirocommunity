@@ -183,9 +183,10 @@ class Tier(object):
         return special_cases[self.tier_name]
 
     def over_videos_limit(self):
-        return (
-            current_videos_that_count_toward_limit().count() >=
-            self.videos_limit())
+        return (self.remaining_videos >= 0)
+
+    def remaining_videos(self):
+        return self.videos_limit() - current_videos_that_count_toward_limit().count()
 
     def admins_limit(self):
         special_cases = {'basic': 1,

@@ -57,7 +57,6 @@ def approve_reject(request):
     except EmptyPage:
         page = video_paginator.page(video_paginator.num_pages)
 
-
     current_video = None
     if page.object_list:
         current_video = page.object_list[0]
@@ -91,6 +90,12 @@ def approve_video(request):
         models.Video,
         id=request.GET['video_id'],
         site=request.sitelocation.site)
+
+    # If the site would exceed its video allotment, then fail
+    # with a HTTP 403 and a clear message about why.
+    if request.sitelocation.get_tier().remaining_videos() < 1:
+        return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
+
     current_video.status = models.VIDEO_STATUS_ACTIVE
     current_video.when_approved = datetime.datetime.now()
 
