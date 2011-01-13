@@ -47,7 +47,10 @@ function run_and_disappear(eventdata) {
     jQuery.ajax({
         url: this_anchor.attr('href'),
         success: function() {
-            remove_video_and_refresh_list(video_div);}});
+            remove_video_and_refresh_list(video_div);},
+	error: function(xhr, ajaxOptions, thrownError) {
+	    alert(xhr.statusText);
+	}});
     return false;
 }
 
