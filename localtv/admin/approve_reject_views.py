@@ -192,6 +192,15 @@ def approve_all(request):
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
 
+    tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
+    if len(page.object_list) > tier_remaining_videos:
+        return HttpResponse(content="You only have " +
+                            str(tier_remaining_videos) + 
+                            "videos remaining, but you need " +
+                            str(len(page.object_list)) +
+                            "to be able to approve all these videos. " +
+                            "You can upgrade to get more.", status=402)
+
     for video in page.object_list:
         video.status = models.VIDEO_STATUS_ACTIVE
         video.when_approved = datetime.datetime.now()

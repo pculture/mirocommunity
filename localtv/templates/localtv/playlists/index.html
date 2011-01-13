@@ -21,6 +21,17 @@
 {% block pre-labels %}
 <h2>Goodies | Playlists</h2>
 <a href="#" class="add" rel="#label_sidebar"><span>Add Playlist</span></a>
+
+	{% block helpful %}<div class="helpful rounded">
+        Videos here require moderator approval before appearing on the site.
+        <div>
+          <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
+          <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
+          </div>
+        </div>
+        {% endblock %}
+
+
 <div id="label_sidebar" class="simple_overlay displaynone {% if form.errors %}errors{% endif %}">
   <div class="close"></div>
   <h2>Add a Playlist</h2>

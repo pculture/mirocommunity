@@ -3425,6 +3425,13 @@ class CannotApproveVideoIfLimitExceeded(BaseTestCase):
                                            models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED)]
 
+        # Try to activate all of them, but that would take us over the limit.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_all'),
+                         {'page': '1'})
+        self.assertStatusCodeEquals(response, 402)
+
         # Try to activate the first one -- should work fine.
         c = Client()
         c.login(username='admin', password='admin')
