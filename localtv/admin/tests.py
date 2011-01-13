@@ -1858,6 +1858,46 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
 
+    def test_POST_delete_nonhuman_user(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  If form-*-DELETE is
+        present, that user should be removed, unless that user is a superuser.
+        """
+        # Take the user called "user" and give the user an unusable password
+        # this should simulate the person being a nonhuman user.
+        
+        u = User.objects.get(username='user')
+        u.set_unusable_password()
+        u.save()
+        self.assertEqual(
+            3,
+            User.objects.filter(localtv.admin.user_views._filter_just_humans()).count())
+       
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url + "?show=all")
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        # form-0 is admin (3)
+        # form-1 is superuser (2)
+        # form-2 is user (1)
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                self.site_location.site.domain,
+                self.url))
+
+        self.assertEquals(User.objects.count(), 3) # one user got removed
+
+        self.assertEquals(User.objects.filter(username='user').count(), 0)
+
 
 # -----------------------------------------------------------------------------
 # Category administration tests

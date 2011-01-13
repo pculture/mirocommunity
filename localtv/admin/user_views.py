@@ -27,6 +27,13 @@ from localtv.decorators import require_site_admin
 from localtv.admin import forms
 from localtv.util import SortHeaders
 
+def _filter_just_humans():
+    filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))
+    if 'socialauth' in settings.INSTALLED_APPS:
+        filters = filters | ~Q(authmeta=None)
+    return filters
+    
+
 @require_site_admin
 @csrf_protect
 def users(request):
@@ -39,9 +46,7 @@ def users(request):
     users = User.objects.all().annotate(Count('authored_set'))
     users = users.order_by(headers.order_by())
     if request.GET.get('show', None) != 'all':
-        filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))
-        if 'socialauth' in settings.INSTALLED_APPS:
-            filters = filters | ~Q(authmeta=None)
+        filters = _filter_just_humans()
         users = users.filter(filters)
     formset = forms.AuthorFormSet(queryset=users)
     add_user_form = forms.AuthorForm()
