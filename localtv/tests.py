@@ -2038,5 +2038,11 @@ class TestWmodeFilter(BaseTestCase):
         output = '<object>\n <param name="wmode" value="transparent">\n </param>\n</object>'
         self.assertEqual(output,
                          localtv.templatetags.filters.wmode_transparent(input))
+
+    def test_add_transparent_wmode_to_embed(self):
+        input = '<embed type="application/x-shockwave-flash"></embed>'
+        output = '<embed type="application/x-shockwave-flash" wmode="transparent">\n</embed>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
                 
         
