@@ -46,7 +46,6 @@ from haystack.query import SearchQuerySet
 from localtv import models
 from localtv import util
 from localtv import tiers
-from localtv import tiers_fake_settings
 
 from notification import models as notification
 from tagging.models import Tag
