@@ -22,14 +22,19 @@
 <h2>Goodies | Playlists</h2>
 <a href="#" class="add" rel="#label_sidebar"><span>Add Playlist</span></a>
 
-	{% block helpful %}<div class="helpful rounded">
-        Videos here require moderator approval before appearing on the site.
-        <div>
-          <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
-          <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
-          </div>
-        </div>
-        {% endblock %}
+{% block helpful %}
+   <div class="helpful rounded">
+     <p>This page lists all the playlists you have created. Once you create a
+       playlist, you will need to go to the page of the video you want to add in order
+       to add it to that playlist. There is no way to add videos to playlists in bulk
+       at this time. Playlists are private by default. Users can request that their
+       playlists be made public by clicking the "Public" link under "Status" in the
+       list below.</p>
+     <p>If you are an administrator, you can also see all playlists on the site and
+       those awaiting moderation by clicking the given links at the top of the list.</p>
+     
+   </div>
+{% endblock %}
 
 
 <div id="label_sidebar" class="simple_overlay displaynone {% if form.errors %}errors{% endif %}">
