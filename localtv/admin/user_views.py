@@ -22,6 +22,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
+from django.core.paginator import Paginator, EmptyPage
 
 from localtv.decorators import require_site_admin
 from localtv.admin import forms
@@ -48,7 +49,17 @@ def users(request):
     if request.GET.get('show', None) != 'all':
         filters = _filter_just_humans()
         users = users.filter(filters)
-    formset = forms.AuthorFormSet(queryset=users)
+
+    # Display only the appropriate page. Put 50 on each page at a time.
+    user_paginator = Paginator(users, 50)
+    try:
+        page = user_paginator.page(int(request.GET.get('page', 1)))
+    except ValueError:
+        return HttpResponseBadRequest('Not a page number')
+    except EmptyPage:
+        page = user_paginator.page(video_paginator.num_pages)
+
+    formset = forms.AuthorFormSet(queryset=page.object_list)
     add_user_form = forms.AuthorForm()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
@@ -66,5 +77,6 @@ def users(request):
     return render_to_response('localtv/admin/users.html',
                               {'formset': formset,
                                'add_user_form': add_user_form,
+                               'page': page,
                                'headers': headers},
                               context_instance=RequestContext(request))
