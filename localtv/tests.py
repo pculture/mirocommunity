@@ -43,6 +43,7 @@ from django.test.client import Client
 
 from haystack.query import SearchQuerySet
 
+import localtv.templatetags.filters
 from localtv import models
 from localtv import util
 from localtv import tiers
@@ -2030,3 +2031,12 @@ today</a>.</p></div>""",
                               }
         changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
         self.assertFalse(changes)
+
+class TestWmodeFilter(BaseTestCase):
+    def test_add_transparent_wmode_to_object(self):
+        input = "<object></object>"
+        output = '<object>\n <param name="wmode" value="transparent">\n </param>\n</object>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
+                
+        
