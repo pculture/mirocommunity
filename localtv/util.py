@@ -150,10 +150,12 @@ def get_or_create_tags(tag_list):
         tag_set.add(tag)
     return tagging.utils.edit_string_for_tags(list(tag_set))
 
-def hash_file_obj(file_obj, hash_constructor=hashlib.sha1):
+def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
     hasher = hash_constructor()
     for chunk in iter(lambda: file_obj.read(4096), ''):
         hasher.update(chunk)
+    if close_it:
+        file_obj.close()
     return hasher.hexdigest()
 
 def get_scraped_data(url):
