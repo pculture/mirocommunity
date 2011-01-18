@@ -1793,17 +1793,27 @@ today</a>.</p></div>""",
 
     def test_thumbnail_updated_change(self):
         """
-        If the date on the thumbnail has changed,o
+        If the date on the thumbnail has changed,
         OriginalVideo.changed_fields() should return the new thumbnail date.
         """
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1197'
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.save()
 
         time_at_start_of_test = datetime.datetime.utcnow()
         changed_fields = self.original.changed_fields()
         self.assertTrue('thumbnail_updated' in changed_fields)
-        self.assertTrue(changed_fields['thumbnail_updated'] >=
-                         time_at_start_of_test)
+        new_thumbnail_timestamp = changed_fields['thumbnail_updated']
+        self.assertTrue(new_thumbnail_timestamp >=
+                        time_at_start_of_test)
+
+    def test_thumbnail_change_ignored_if_hash_matches(self):
+        self.original.thumbnail_updated = datetime.datetime.min
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
+        self.original.save()
+
+        changed_fields = self.original.changed_fields()
+        self.assertFalse('thumbnail_updated' in changed_fields)
 
     def test_update_no_updates(self):
         """

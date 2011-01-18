@@ -1002,10 +1002,7 @@ class OriginalVideo(VideoBase):
         # We should check its SHA1 hash against the one we have stored.
         new_sha1 = util.hash_fd(response)
 
-        # FIXME: We can't do that check yet, because there is no column in the database
-        # for this.
-        hashes_match = False
-        if hashes_match:
+        if new_sha1 == self.remote_thumbnail_hash:
             # FIXME: Somehow alert downstream layers that it is safe to update
             # the modified-date in the database.
             return False # bail out early, empty -- the image is the same
