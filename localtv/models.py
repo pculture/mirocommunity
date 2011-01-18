@@ -22,7 +22,6 @@ import re
 import urllib
 import urllib2
 import urlparse
-import hashlib
 try:
     from PIL import Image
 except ImportError:
