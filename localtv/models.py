@@ -918,6 +918,7 @@ class OriginalVideo(VideoBase):
     video = models.OneToOneField('Video', related_name='original')
     thumbnail_updated = models.DateTimeField(blank=True)
     remote_video_was_deleted = models.BooleanField(default=False)
+    remote_thumbnail_hash = models.CharField(max_length=64, default='')
 
     def changed_fields(self, override_vidscraper_result=None):
         """
@@ -967,40 +968,67 @@ class OriginalVideo(VideoBase):
                     # failed to get tags, so don't send a spurious change
                     # message
                     continue
-                new = set(scraped_data['tags'])
+                new = util.unicode_set(scraped_data['tags'])
                 if settings.FORCE_LOWERCASE_TAGS:
-                    new = set(name.lower() for name in new)
-                old = set(tag.name for tag in self.tags)
+                    new = util.unicode_set(name.lower() for name in new)
+                old = util.unicode_set(self.tags)
                 if new != old:
                     changed_fields[field] = new
             elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
                 changed_fields[field] = scraped_data[field]
             elif field == 'thumbnail_url':
-                # because the data might have changed, check to see if the
-                # thumbnail has been modified
-                made_time = time.mktime(self.thumbnail_updated.utctimetuple())
-                made_time = made_time - time.timezone # adjust for mktime's
-                                                      # conversion
-                modified = email.utils.formatdate(made_time,
-                                                  usegmt=True)
-                request = urllib2.Request(self.thumbnail_url)
-                request.add_header('If-Modified-Since', modified)
-                try:
-                    response = urllib2.build_opener().open(request)
-                except urllib2.HTTPError:
-                    # We get this for 304, but we'll just ignore all the other
-                    # errors too
-                    pass
-                else:
-                    if response.info().get('Last-modified', modified) == \
-                            modified:
-                        continue # hasn't really changed, or doesn't exist
-                    timetuple = email.utils.parsedate(
-                        response.info()['Last-modified'])
-                    changed_fields['thumbnail_updated'] = \
-                        datetime.datetime.fromtimestamp(
-                        time.mktime(timetuple))
+                right_now = datetime.datetime.utcnow()
+                if self._remote_thumbnail_appears_changed():
+                    changed_fields['thumbnail_updated'] = right_now
+
         return changed_fields
+
+    def _remote_thumbnail_appears_changed(self):
+        '''This private method checks if the remote thumbnail has been updated.
+
+        It takes no arguments, because you are only supposed to call it
+        when the remote video service did not give us a new thumbnail URL.
+
+        It returns a boolean. True, if and only if the remote video has:
+        
+        * a Last-Modified header indicating it has been modified, and
+        * HTTP response body that hashes to a different SHA1 than the
+          one we stored.
+
+        It treats "self" as read-only.'''
+        # because the data might have changed, check to see if the
+        # thumbnail has been modified
+        made_time = time.mktime(self.thumbnail_updated.utctimetuple())
+        # we take made_time literally, because the localtv app MUST
+        # be storing UTC time data in the column.
+        modified = email.utils.formatdate(made_time,
+                                          usegmt=True)
+        request = urllib2.Request(self.thumbnail_url)
+        request.add_header('If-Modified-Since', modified)
+        try:
+            response = urllib2.build_opener().open(request)
+        except urllib2.HTTPError:
+            # We get this for 304, but we'll just ignore all the other
+            # errors too
+            return False
+        else:
+            if response.info().get('Last-modified', modified) == \
+                    modified:
+                # hasn't really changed, or doesn't exist
+                return False
+
+        # If we get here, then the remote server thinks that the file is fresh.
+        # We should check its SHA1 hash against the one we have stored.
+        new_sha1 = util.hash_file_obj(response)
+
+        if new_sha1 == self.remote_thumbnail_hash:
+            # FIXME: Somehow alert downstream layers that it is safe to update
+            # the modified-date in the database.
+            return False # bail out early, empty -- the image is the same
+
+        # Okay, so the hashes do not match; the remote image truly has changed.
+        # Let's report the timestamp as having a Last-Modified date of right now.
+        return True
 
     def send_deleted_notification(self):
         from localtv.util import send_notice, get_or_create_tags

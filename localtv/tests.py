@@ -1766,7 +1766,7 @@ today</a>.</p></div>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
                           'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2010, 12, 15, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
         }
 
 
@@ -1865,13 +1865,24 @@ today</a>.</p></div>""",
         If the date on the thumbnail has changed,
         OriginalVideo.changed_fields() should return the new thumbnail date.
         """
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1197'
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.save()
 
-        self.assertEquals(self.original.changed_fields(),
-                          {'thumbnail_updated':
-                               self.BASE_DATA['thumbnail_updated']})
+        time_at_start_of_test = datetime.datetime.utcnow()
+        changed_fields = self.original.changed_fields()
+        self.assertTrue('thumbnail_updated' in changed_fields)
+        new_thumbnail_timestamp = changed_fields['thumbnail_updated']
+        self.assertTrue(new_thumbnail_timestamp >=
+                        time_at_start_of_test)
 
+    def test_thumbnail_change_ignored_if_hash_matches(self):
+        self.original.thumbnail_updated = datetime.datetime.min
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
+        self.original.save()
+
+        changed_fields = self.original.changed_fields()
+        self.assertFalse('thumbnail_updated' in changed_fields)
 
     def test_update_no_updates(self):
         """
