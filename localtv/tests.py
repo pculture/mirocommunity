@@ -1799,9 +1799,11 @@ today</a>.</p></div>""",
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.save()
 
-        self.assertEquals(self.original.changed_fields(),
-                          {'thumbnail_updated':
-                               self.BASE_DATA['thumbnail_updated']})
+        time_at_start_of_test = datetime.datetime.utcnow()
+        changed_fields = self.original.changed_fields()
+        self.assertTrue('thumbnail_updated' in changed_fields)
+        self.assertTrue(changed_fields['thumbnail_updated'] >=
+                         time_at_start_of_test)
 
     def test_update_no_updates(self):
         """
