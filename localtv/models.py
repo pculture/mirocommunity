@@ -959,8 +959,8 @@ class OriginalVideo(VideoBase):
                 # because the data might have changed, check to see if the
                 # thumbnail has been modified
                 made_time = time.mktime(self.thumbnail_updated.utctimetuple())
-                made_time = made_time - time.timezone # adjust for mktime's
-                                                      # conversion
+                # we take made_time literally, because the localtv app MUST
+                # run with the Django TIME_ZONE set to UTC.
                 modified = email.utils.formatdate(made_time,
                                                   usegmt=True)
                 request = urllib2.Request(self.thumbnail_url)
