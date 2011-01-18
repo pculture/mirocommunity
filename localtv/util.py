@@ -158,6 +158,12 @@ def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
         file_obj.close()
     return hasher.hexdigest()
 
+def unicode_set(iterable):
+    output = set()
+    for thing in iterable:
+        output.add(force_unicode(thing, strings_only=True))
+    return output
+
 def get_scraped_data(url):
     cache_key = 'vidscraper_data-' + url
     if len(cache_key) >= 250:

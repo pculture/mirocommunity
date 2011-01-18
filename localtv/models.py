@@ -948,10 +948,10 @@ class OriginalVideo(VideoBase):
                     # failed to get tags, so don't send a spurious change
                     # message
                     continue
-                new = set(scraped_data['tags'])
+                new = util.unicode_set(scraped_data['tags'])
                 if settings.FORCE_LOWERCASE_TAGS:
-                    new = set(name.lower() for name in new)
-                old = set(tag.name for tag in self.tags)
+                    new = util.unicode_set(name.lower() for name in new)
+                old = util.unicode_set(self.tags)
                 if new != old:
                     changed_fields[field] = new
             elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
