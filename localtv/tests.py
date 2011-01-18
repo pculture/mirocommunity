@@ -1697,7 +1697,7 @@ today</a>.</p></div>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
                           'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2010, 12, 15, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
         }
 
 
@@ -1793,7 +1793,7 @@ today</a>.</p></div>""",
 
     def test_thumbnail_updated_change(self):
         """
-        If the date on the thumbnail has changed,
+        If the date on the thumbnail has changed,o
         OriginalVideo.changed_fields() should return the new thumbnail date.
         """
         self.original.thumbnail_updated = datetime.datetime.min
@@ -1802,7 +1802,6 @@ today</a>.</p></div>""",
         self.assertEquals(self.original.changed_fields(),
                           {'thumbnail_updated':
                                self.BASE_DATA['thumbnail_updated']})
-
 
     def test_update_no_updates(self):
         """
