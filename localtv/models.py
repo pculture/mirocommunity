@@ -1000,7 +1000,7 @@ class OriginalVideo(VideoBase):
 
         # If we get here, then the remote server thinks that the file is fresh.
         # We should check its SHA1 hash against the one we have stored.
-        new_sha1 = util.hash_fd(response)
+        new_sha1 = util.hash_file_obj(response)
 
         if new_sha1 == self.remote_thumbnail_hash:
             # FIXME: Somehow alert downstream layers that it is safe to update
