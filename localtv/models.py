@@ -999,8 +999,8 @@ class OriginalVideo(VideoBase):
 
         # If we get here, then the remote server thinks that the file is fresh.
         # We should check its SHA1 hash against the one we have stored.
-        remote_url_contents = response.read()
-        new_sha1 = hashlib.sha1(remote_url_contents).hexdigest()
+        new_sha1 = util.hash_fd(response)
+
         # FIXME: We can't do that check yet, because there is no column in the database
         # for this.
         hashes_match = False

@@ -150,6 +150,11 @@ def get_or_create_tags(tag_list):
         tag_set.add(tag)
     return tagging.utils.edit_string_for_tags(list(tag_set))
 
+def hash_fd(fd, hash_constructor=hashlib.sha1):
+    obj = hash_constructor()
+    for chunk in iter(lambda: fd.read(4096), ''):
+        obj.update(chunk)
+    return obj.hexdigest()
 
 def get_scraped_data(url):
     cache_key = 'vidscraper_data-' + url
