@@ -951,7 +951,7 @@ class OriginalVideo(VideoBase):
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
-        if all([x is None for x in scraped_data.values()]):
+        if remote_video_was_deleted or all([x is None for x in scraped_data.values()]):
             remote_video_was_deleted = True
 
         # If the scraped_data has all None values, then infer that the remote video was
