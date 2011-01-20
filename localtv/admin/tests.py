@@ -3351,7 +3351,15 @@ class TestPaymentFailures(BaseTestCase):
     def test_bad_secret(self):
         self.assertRaises(localtv.tiers.WrongPaymentSecret,
                           localtv.tiers.process_payment, 0, 'wrong secret')
+    def test_infer_amount(self):
+        # No exception
+        localtv.tiers.process_payment(0, 'sekrit')
+        # Exception, due to invalid payment amount
+        self.assertRaises(
+            localtv.tiers.WrongAmount,
+            localtv.tiers.process_payment, 3, 'sekrit')
 
+                          
 class TierPaymentTests(BaseTestCase):
     def test_process_payment_when_due_date_is_none(self):
         # For cleanliness, clear any payment due date and basic trial status

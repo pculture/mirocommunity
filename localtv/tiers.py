@@ -219,11 +219,22 @@ class PaymentException(Exception):
 class WrongPaymentSecret(PaymentException):
     pass
 
+class WrongAmount(PaymentException):
+    pass
+
 def process_payment(dollars, payment_secret):
     site_location = localtv.models.SiteLocation.objects.get_current()
     if payment_secret != site_location.payment_secret:
         raise WrongPaymentSecret()
 
+    # Reverse the NAME_TO_COST dictionary to grab the name from
+    # the cost.
+    cost2name = dict(map(reversed, Tier.NAME_TO_COST.items()))
+    if dollars in cost2name:
+        target_tier_name = cost2name[dollars]
+    else:
+        raise WrongAmount()
+                     
     amount_due = site_location.get_tier().dollar_cost()
     if (amount_due > 0) and (
         dollars == amount_due):
