@@ -138,7 +138,12 @@ CHOICES = [
     ('max', 'Max account')]
 
 class Tier(object):
-    __slots__ = ['tier_name']
+    __slots__ = ['tier_name', 'NAME_TO_COST']
+
+    NAME_TO_COST = {'basic': 0,
+                    'plus': 15,
+                    'premium': 35,
+                    'max': 75}
 
     def __init__(self, tier_name):
         self.tier_name = tier_name
@@ -205,10 +210,7 @@ class Tier(object):
         return special_cases.get(self.tier_name, default)
 
     def dollar_cost(self):
-        special_cases = {'basic': 0,
-                         'plus': 15,
-                         'premium': 35,
-                         'max': 75}
+        special_cases = self.NAME_TO_COST
         return special_cases[self.tier_name]
 
 class PaymentException(Exception):

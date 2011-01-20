@@ -3343,6 +3343,15 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(FlatPage.objects.count(), 2)
 
 ### Class tier payment tests
+class TestPaymentFailures(BaseTestCase):
+    def setUp(self):
+        super(TestPaymentFailures, self).setUp()
+        self.site_location.payment_secret = 'sekrit'
+        self.site_location.save()
+    def test_bad_secret(self):
+        self.assertRaises(localtv.tiers.WrongPaymentSecret,
+                          localtv.tiers.process_payment, 0, 'wrong secret')
+
 class TierPaymentTests(BaseTestCase):
     def test_process_payment_when_due_date_is_none(self):
         # For cleanliness, clear any payment due date and basic trial status
