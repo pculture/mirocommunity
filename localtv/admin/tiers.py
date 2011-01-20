@@ -91,8 +91,11 @@ def confirmed_change_tier(request, override_tier = None):
         
         # The below code should cause a PayPal redirect. Instead, it simply emulates full
         # payment.
-        localtv.tiers.process_payment(dollars=request.sitelocation.get_tier().dollar_cost(),
-                                      payment_secret=request.site_location.payment_secret)
+        localtv.tiers.process_payment(
+            dollars=request.sitelocation.get_tier().dollar_cost(),
+            payment_secret=request.site_location.payment_secret,
+            start_date=datetime.datetime.utcnow())
+                                      
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))

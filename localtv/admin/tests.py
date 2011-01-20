@@ -3351,15 +3351,22 @@ class TestPaymentFailures(BaseTestCase):
 
     def test_bad_secret(self):
         self.assertRaises(localtv.tiers.WrongPaymentSecret,
-                          localtv.tiers.process_payment, 0, 'wrong secret')
+                          localtv.tiers.process_payment, 0, 'wrong secret', datetime.datetime.utcnow())
 
     def test_infer_amount(self):
         # No exception
-        localtv.tiers.process_payment(0, 'sekrit')
+        localtv.tiers.process_payment(0, 'sekrit', datetime.datetime.utcnow())
         # Exception, due to invalid payment amount
         self.assertRaises(
             localtv.tiers.WrongAmount,
-            localtv.tiers.process_payment, 3, 'sekrit')
+            localtv.tiers.process_payment, 3, 'sekrit', datetime.datetime.utcnow())
+
+    def test_start_date_for_trial(self):
+        self.site_location.free_trial_available = True
+        self.site_location.save()
+
+        
+        
 
                           
 class TierPaymentTests(BaseTestCase):
@@ -3371,7 +3378,8 @@ class TierPaymentTests(BaseTestCase):
         
         # for some reason, process a payment (of zero dollars)
         localtv.tiers.process_payment(dollars=0,
-                                      payment_secret=self.site_location.payment_secret)
+                                      payment_secret=self.site_location.payment_secret,
+                                      start_date=datetime.datetime.utcnow())
 
         # If we get this far, the test passes -- the problem was that
         # process_payment would raise an exception.
@@ -3406,7 +3414,8 @@ class TierPaymentTests(BaseTestCase):
 
         # Process a complete payment.
         localtv.tiers.process_payment(dollars=self.site_location.get_tier().dollar_cost(),
-                                      payment_secret=self.site_location.payment_secret)
+                                      payment_secret=self.site_location.payment_secret,
+                                      start_date=datetime.datetime.utcnow())
 
         # Make sure the due date is now in the future
         self.assert_(self.site_location.payment_due_date > tomorrow)

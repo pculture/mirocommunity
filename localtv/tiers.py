@@ -222,7 +222,7 @@ class WrongPaymentSecret(PaymentException):
 class WrongAmount(PaymentException):
     pass
 
-def process_payment(dollars, payment_secret):
+def process_payment(dollars, payment_secret, start_date):
     site_location = localtv.models.SiteLocation.objects.get_current()
     if payment_secret != site_location.payment_secret:
         raise WrongPaymentSecret()
@@ -234,8 +234,10 @@ def process_payment(dollars, payment_secret):
         target_tier_name = cost2name[dollars]
     else:
         raise WrongAmount()
+
+    target_tier = Tier(target_tier_name)
                      
-    amount_due = site_location.get_tier().dollar_cost()
+    amount_due = target_tier.dollar_cost()
     if (amount_due > 0) and (
         dollars == amount_due):
         site_location.payment_due_date = add_a_month(
