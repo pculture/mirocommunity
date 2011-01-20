@@ -3361,13 +3361,20 @@ class TestPaymentFailures(BaseTestCase):
             localtv.tiers.WrongAmount,
             localtv.tiers.process_payment, 3, 'sekrit', datetime.datetime.utcnow())
 
-    def test_start_date_for_trial(self):
-        self.site_location.free_trial_available = True
+    def test_start_date_without_free_trial(self):
+        self.site_location.free_trial_available = False
         self.site_location.save()
 
-        
-        
+        NOW = datetime.datetime.utcnow()
+        LATER = datetime.datetime.utcnow() + datetime.timedelta(days=4)
 
+        # No exception
+        localtv.tiers.process_payment(15, 'sekrit', NOW)
+
+        # Error -- bad start date
+        self.assertRaises(
+            localtv.tiers.WrongStartDate,
+            localtv.tiers.process_payment, 15, 'sekrit', LATER)
                           
 class TierPaymentTests(BaseTestCase):
     def test_process_payment_when_due_date_is_none(self):

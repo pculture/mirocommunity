@@ -222,6 +222,9 @@ class WrongPaymentSecret(PaymentException):
 class WrongAmount(PaymentException):
     pass
 
+class WrongStartDate(PaymentException):
+    pass
+
 def process_payment(dollars, payment_secret, start_date):
     site_location = localtv.models.SiteLocation.objects.get_current()
     if payment_secret != site_location.payment_secret:
@@ -234,6 +237,13 @@ def process_payment(dollars, payment_secret, start_date):
         target_tier_name = cost2name[dollars]
     else:
         raise WrongAmount()
+
+    # Check the start_date. It should be within a day of right now.
+    NOW = datetime.datetime.utcnow()
+    difference = NOW - start_date
+    # If the delta is too large, raise WrongStartDate
+    if abs(difference) > datetime.timedelta(days=1):
+        raise WrongStartDate()
 
     target_tier = Tier(target_tier_name)
                      
