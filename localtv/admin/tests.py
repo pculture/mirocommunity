@@ -3348,9 +3348,11 @@ class TestPaymentFailures(BaseTestCase):
         super(TestPaymentFailures, self).setUp()
         self.site_location.payment_secret = 'sekrit'
         self.site_location.save()
+
     def test_bad_secret(self):
         self.assertRaises(localtv.tiers.WrongPaymentSecret,
                           localtv.tiers.process_payment, 0, 'wrong secret')
+
     def test_infer_amount(self):
         # No exception
         localtv.tiers.process_payment(0, 'sekrit')
