@@ -3355,7 +3355,7 @@ class TestPaymentFailures(BaseTestCase):
 
     def test_infer_amount(self):
         # No exception
-        localtv.tiers.process_payment(0, 'sekrit', datetime.datetime.utcnow())
+        localtv.tiers.process_payment(15, 'sekrit', datetime.datetime.utcnow())
         # Exception, due to invalid payment amount
         self.assertRaises(
             localtv.tiers.WrongAmount,
