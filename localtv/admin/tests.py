@@ -3351,7 +3351,8 @@ class TierPaymentTests(BaseTestCase):
         self.site_location.save()
         
         # for some reason, process a payment (of zero dollars)
-        localtv.tiers.process_payment(0)
+        localtv.tiers.process_payment(dollars=0,
+                                      payment_secret=self.site_location.payment_secret)
 
         # If we get this far, the test passes -- the problem was that
         # process_payment would raise an exception.
@@ -3385,7 +3386,8 @@ class TierPaymentTests(BaseTestCase):
         self.site_location.save()
 
         # Process a complete payment.
-        localtv.tiers.process_payment(self.site_location.get_tier().dollar_cost())
+        localtv.tiers.process_payment(dollars=self.site_location.get_tier().dollar_cost(),
+                                      payment_secret=self.site_location.payment_secret)
 
         # Make sure the due date is now in the future
         self.assert_(self.site_location.payment_due_date > tomorrow)

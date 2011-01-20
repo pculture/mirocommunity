@@ -211,8 +211,17 @@ class Tier(object):
                          'max': 75}
         return special_cases[self.tier_name]
 
-def process_payment(dollars):
+class PaymentException(Exception):
+    pass
+
+class WrongPaymentSecret(PaymentException):
+    pass
+
+def process_payment(dollars, payment_secret):
     site_location = localtv.models.SiteLocation.objects.get_current()
+    if payment_secret != site_location.payment_secret:
+        raise WrongPaymentSecret()
+
     amount_due = site_location.get_tier().dollar_cost()
     if (amount_due > 0) and (
         dollars == amount_due):
