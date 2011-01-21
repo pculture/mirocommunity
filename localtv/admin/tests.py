@@ -3347,34 +3347,50 @@ class TestPaymentFailures(BaseTestCase):
     def setUp(self):
         super(TestPaymentFailures, self).setUp()
         self.site_location.payment_secret = 'sekrit'
+        self.site_location.free_trial_available = False
         self.site_location.save()
+        self.NOW = datetime.datetime.utcnow()
+        self.IN_FOUR_DAYS = self.NOW + datetime.timedelta(days=4)
+        self.IN_A_MONTH = self.NOW + datetime.timedelta(days=30)
+        self.EVEN_LATER = self.IN_A_MONTH + datetime.timedelta(days=4)
 
     def test_bad_secret(self):
         self.assertRaises(localtv.tiers.WrongPaymentSecret,
-                          localtv.tiers.process_payment, 0, 'wrong secret', datetime.datetime.utcnow())
+                          localtv.tiers.process_payment, 0, 'wrong secret', self.NOW)
 
     def test_infer_amount(self):
         # No exception
-        localtv.tiers.process_payment(15, 'sekrit', datetime.datetime.utcnow())
+        localtv.tiers.process_payment(15, 'sekrit', self.NOW)
         # Exception, due to invalid payment amount
         self.assertRaises(
             localtv.tiers.WrongAmount,
-            localtv.tiers.process_payment, 3, 'sekrit', datetime.datetime.utcnow())
+            localtv.tiers.process_payment, 3, 'sekrit', self.NOW)
 
     def test_start_date_without_free_trial(self):
-        self.site_location.free_trial_available = False
-        self.site_location.save()
-
-        NOW = datetime.datetime.utcnow()
-        LATER = datetime.datetime.utcnow() + datetime.timedelta(days=4)
-
         # No exception
-        localtv.tiers.process_payment(15, 'sekrit', NOW)
+        localtv.tiers.process_payment(15, 'sekrit', self.NOW)
 
         # Error -- bad start date
         self.assertRaises(
             localtv.tiers.WrongStartDate,
-            localtv.tiers.process_payment, 15, 'sekrit', LATER)
+            localtv.tiers.process_payment, 15, 'sekrit', self.IN_FOUR_DAYS)
+                          
+    def test_start_date_with_free_trial(self):
+        self.site_location.free_trial_available = True
+        self.site_location.save()
+
+        # No exception
+        localtv.tiers.process_payment(15, 'sekrit', self.IN_A_MONTH)
+        self.assertFalse(self.site_location.free_trial_available)
+
+    def test_bad_start_date_with_free_trial(self):
+        self.site_location.free_trial_available = True
+        self.site_location.save()
+
+        # Error -- bad start date
+        self.assertRaises(
+            localtv.tiers.WrongStartDate,
+            localtv.tiers.process_payment, 15, 'sekrit', self.EVEN_LATER)
                           
 class TierPaymentTests(BaseTestCase):
     def test_process_payment_when_due_date_is_none(self):

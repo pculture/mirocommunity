@@ -238,8 +238,12 @@ def process_payment(dollars, payment_secret, start_date):
     else:
         raise WrongAmount()
 
-    # Check the start_date. It should be within a day of right now.
+    # Check the start_date. It should be within a day of right now
+    # (if there is a free trial available, we push NOW forward
+    # by 30 days)
     NOW = datetime.datetime.utcnow()
+    if site_location.free_trial_available:
+        NOW += datetime.timedelta(days=30)
     difference = NOW - start_date
     # If the delta is too large, raise WrongStartDate
     if abs(difference) > datetime.timedelta(days=1):
@@ -252,7 +256,8 @@ def process_payment(dollars, payment_secret, start_date):
         dollars == amount_due):
         site_location.payment_due_date = add_a_month(
             site_location.payment_due_date or
-            datetime.datetime.utcnow())
+            NOW)
+        site_location.free_trial_available = False
         site_location.save()
     else:
         logging.error("Weird, the user paid %f but owed %f" % (
