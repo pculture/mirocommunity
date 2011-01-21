@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
@@ -93,7 +94,7 @@ def confirmed_change_tier(request, override_tier = None):
         # payment.
         localtv.tiers.process_payment(
             dollars=request.sitelocation.get_tier().dollar_cost(),
-            payment_secret=request.site_location.payment_secret,
+            payment_secret=request.sitelocation.payment_secret,
             start_date=datetime.datetime.utcnow())
                                       
 
