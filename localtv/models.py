@@ -1160,7 +1160,6 @@ class OriginalVideo(VideoBase):
         subject = '[%s] Video Updated: "%s"' % (
             self.video.site.name, self.video.name)
         message = t.render(c)
-        print message
         send_notice('admin_video_updated', subject, message,
                     sitelocation=SiteLocation.objects.get(
                 site=self.video.site))
