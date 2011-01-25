@@ -439,6 +439,34 @@ class WidgetSettings(Thumbnailable):
         (222, 169, False),
         ]
 
+    def get_title_or_reasonable_default(self):
+        # Is the title worth using? If so, use that.
+        use_title = True
+        if self.title.endswith('example.com'):
+            use_title = False
+        if not self.title:
+            use_title = False
+
+        # Okay, so either we return the title, or a sensible default
+        if use_title:
+            return self.title
+        return self.generate_reasonable_default_title()
+
+    def generate_reasonable_default_title(self):
+        prefix = 'Watch Videos on %s'
+        # Now, work on calculating what goes at the end.
+
+        # First, we try the site name, if that's a nice string.
+        if site.name and site.name.lower() != 'example.com':
+            return prefix % site.name
+
+        # Else, we try the site domain, if that's not example.com
+        if site.domain.lower() != 'example.com':
+            return prefix % site.name
+
+        # else...?
+        return prefix % 'our video site'
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
