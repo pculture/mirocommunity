@@ -1018,6 +1018,24 @@ class OriginalVideo(VideoBase):
 
         return changed_fields
 
+    def originals_for_changed_fields(self, changed_fields):
+        '''The OriginalVideo emails need to say not just the new data, but also
+        provide the value that was in the OriginalVideo object just before the
+        email is sent.
+
+        This function takes a changed_fields dictionary, and uses its keys to
+        figure out what relevant snapshotted information would help the user
+        contextualize the changed_fields data.'''
+        old_fields = {}
+
+        if 'deleted' in changed_fields:
+            return old_fields
+
+        for key in changed_fields:
+            old_fields[key] = getattr(self, key)
+
+        return old_fields
+
     def _remote_thumbnail_appears_changed(self):
         '''This private method checks if the remote thumbnail has been updated.
 
@@ -1095,6 +1113,8 @@ class OriginalVideo(VideoBase):
             self.send_deleted_notification()
             return # Stop processing here.
 
+        original_values = self.originals_for_changed_fields(changed_fields)
+
         changed_model = False
         for field in changed_fields.copy():
             if field == 'tags': # special case tag equality
@@ -1121,17 +1141,26 @@ class OriginalVideo(VideoBase):
         if not changed_fields: # modified them all
             return
 
-        self.send_updated_notification(changed_fields)
+        self.send_updated_notification(changed_fields, originals_for_changed_fields)
 
-    def send_updated_notification(self, changed_fields):
+    def send_updated_notification(self, changed_fields, originals_for_changed_fields):
         from localtv.util import send_notice, get_or_create_tags
+
+        # Create a custom hodge-podge of changed fields and the original values
+        hodge_podge = {}
+        for key in changed_fields:
+            hodge_podge[key] = (
+                changed_fields[key],
+                originals_for_changed_fields.get(key, None))
+
         t = loader.get_template('localtv/admin/video_updated.txt')
         c = Context({'video': self.video,
                      'original': self,
-                     'changed_fields': changed_fields})
+                     'changed_fields': hodge_podge})
         subject = '[%s] Video Updated: "%s"' % (
             self.video.site.name, self.video.name)
         message = t.render(c)
+        print message
         send_notice('admin_video_updated', subject, message,
                     sitelocation=SiteLocation.objects.get(
                 site=self.video.site))
