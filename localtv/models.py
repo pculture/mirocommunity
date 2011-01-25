@@ -455,6 +455,7 @@ class WidgetSettings(Thumbnailable):
     def generate_reasonable_default_title(self):
         prefix = 'Watch Videos on %s'
         # Now, work on calculating what goes at the end.
+        site = Site.objects.get_current()
 
         # First, we try the site name, if that's a nice string.
         if site.name and site.name.lower() != 'example.com':
