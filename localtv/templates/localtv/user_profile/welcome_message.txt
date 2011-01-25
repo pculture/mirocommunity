@@ -1,3 +1,5 @@
+Hello {{ user.username }},
+
 Thank you for signing up for {{ site.name }}! You can read more about {{ site.name }}
 at http://{{site.domain}}/about/.
 

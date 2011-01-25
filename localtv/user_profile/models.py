@@ -89,7 +89,8 @@ def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=
     site = localtv.models.SiteLocation.objects.get_current().site
 
     t = loader.get_template('localtv/user_profile/welcome_message.txt')
-    c = Context({'site': site})
+    c = Context({'site': site,
+                 'user': instance})
     subject = "Welcome to %s" % site.name
     message = t.render(c)
 
