@@ -68,6 +68,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       advertising for more than two weeks, we reserve the right to shut
       down your site.</p>
     {% endif %}
+    {% if customdomain_nag %}
+    <h3>Custom domain</h3>
+    <br class="clear" />
+    <p>Custom domains are only allowed on sites with a Max
+      account level. If you downgrade to {{ tier_name }}, we will contact you
+      and start the process of migrating your site to a domain within
+      mirocommunity.org.</p>
+    {% endif %}
     {% if customtheme_nag %}
     <h3>Custom Themes</h3>
     <br class="clear" />

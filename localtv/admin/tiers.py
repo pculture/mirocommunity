@@ -116,6 +116,7 @@ def downgrade_confirm(request):
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             data['customtheme_nag'] = ('customtheme' in would_lose)
             data['advertising_nag'] = ('advertising' in would_lose)
+            data['customdomain_nag'] = ('customdomain' in would_lose)
             data['css_nag'] = ('css' in would_lose)
             data['videos_nag'] = ('videos' in would_lose)
             data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
