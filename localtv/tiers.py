@@ -44,6 +44,13 @@ def user_warnings_for_downgrade(new_tier_name):
         sitelocation.css.strip()):
             warnings.add('css')
 
+    # If the site has a custom domain, and the future tier doesn't permit it, then
+    # we should warn the user.
+    if (current_tier.permits_custom_domain()
+        and not sitelocation.site.domain.endswith('mirocommunity.org')
+        and not future_tier.permits_custom_domain()):
+        warnings.add('customdomain')
+
     if current_videos_that_count_toward_limit().count() > future_tier.videos_limit():
         warnings.add('videos')
 
@@ -178,6 +185,10 @@ class Tier(object):
     def permits_advertising(self):
         special_cases = {'premium': True,
                          'max': True}
+        return special_cases.get(self.tier_name, False)
+
+    def permits_custom_domain(self):
+        special_cases = {'max': True}
         return special_cases.get(self.tier_name, False)
 
     def videos_limit(self):
