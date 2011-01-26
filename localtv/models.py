@@ -454,19 +454,29 @@ class WidgetSettings(Thumbnailable):
 
     def generate_reasonable_default_title(self):
         prefix = 'Watch Videos on %s'
+
         # Now, work on calculating what goes at the end.
         site = Site.objects.get_current()
 
+        # The default suffix is a self-link. If the site name and
+        # site domain are plausible, do that.
+        if ((site.name and site.name.lower() != 'example.com') and
+            (site.domain and site.domain.lower() != 'example.com')):
+            suffix = '<a href="http://%s/">%s</a>' % (
+                site.domain, site.name)
+
         # First, we try the site name, if that's a nice string.
-        if site.name and site.name.lower() != 'example.com':
-            return prefix % site.name
+        elif site.name and site.name.lower() != 'example.com':
+            suffix = site.name
 
         # Else, we try the site domain, if that's not example.com
-        if site.domain.lower() != 'example.com':
-            return prefix % site.name
+        elif site.domain.lower() != 'example.com':
+            suffix = site.domain
 
-        # else...?
-        return prefix % 'our video site'
+        else:
+            suffix = 'our video site'
+
+        return prefix % suffix
 
 class Source(Thumbnailable):
     """

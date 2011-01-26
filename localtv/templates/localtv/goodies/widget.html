@@ -112,7 +112,7 @@ function update_widget() {
     } else if (widget_size == 'large') {
         $("#widget-example").width(242).addClass('mc-widget-large');
     }
-    $('#widget-example .mc-widget-title').text(widget_title);
+    $('#widget-example .mc-widget-title').html(widget_title);
     $('#widget-example ul').empty();
     if (widget_logo) {
         a = $("<a/>");
