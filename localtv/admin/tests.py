@@ -3580,6 +3580,32 @@ class DowngradingDisablesThings(BaseTestCase):
             'advertising' not in
             localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
         
+    def test_go_to_basic_from_max_lose_custom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be myawesomesite.example.com
+        self.site_location.site.domain = 'myawesomesite.example.com'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertTrue(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_from_max_with_a_noncustom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be within mirocommunity.org
+        self.site_location.site.domain = 'myawesomesite.mirocommunity.org'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertFalse(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
     def test_go_to_basic_with_one_admin(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
