@@ -268,11 +268,7 @@ SITE_LOCATION_CACHE = {}
 class SiteLocationManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
-        try:
-            current_site_location = SITE_LOCATION_CACHE[sid]
-        except KeyError:
-            current_site_location = self.select_related().get(site__pk=sid)
-            SITE_LOCATION_CACHE[sid] = current_site_location
+        current_site_location = self.select_related().get(site__pk=sid)
         return current_site_location
 
     def get(self, **kwargs):
@@ -281,12 +277,7 @@ class SiteLocationManager(models.Manager):
             if not isinstance(site, (int, long, basestring)):
                 site = site.id
             site = int(site)
-            try:
-                return SITE_LOCATION_CACHE[site]
-            except KeyError:
-                pass
         site_location = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[site_location.site_id] = site_location
         return site_location
 
     def clear_cache(self):
@@ -390,7 +381,6 @@ class SiteLocation(Thumbnailable):
         return bool(self.admins.filter(pk=user.pk).count())
 
     def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):

@@ -5,7 +5,7 @@ from django.contrib.comments.views import comments
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
 from django.shortcuts import render_to_response
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
 def post_comment(request, next=None):
     POST = request.POST.copy()
