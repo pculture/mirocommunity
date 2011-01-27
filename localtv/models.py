@@ -416,7 +416,7 @@ class WidgetSettings(Thumbnailable):
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
-    title_editable = models.BooleanField(default=False)
+    title_editable = models.BooleanField(default=True)
 
     icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
     icon_editable = models.BooleanField(default=False)
