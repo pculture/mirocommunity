@@ -158,12 +158,17 @@ def bulk_edit(request):
                 data = form.initial.get(name, field.initial)
                 if callable(data):
                     data = data()
+
+                # if we got nothing, just skip this.
+                if not data:
+                    continue
+
                 if isinstance(data, (list, tuple)):
-                    data = [force_unicode(item) for item in data]
-                elif data:
+                    data = data[-1]
+                else:
                     data = force_unicode(data)
-                if data:
-                    request.POST[prefixed] = data
+                request.POST.update(
+                    {prefixed: data})
 
         formset = forms.VideoFormSet(request.POST, request.FILES,
                                      queryset=page.object_list)
