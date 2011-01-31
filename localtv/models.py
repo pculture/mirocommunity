@@ -347,8 +347,10 @@ class SiteLocation(Thumbnailable):
     tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
     payment_due_date = models.DateTimeField(null=True, blank=True)
     free_trial_available = models.BooleanField(default=True)
+    in_free_trial = models.BooleanField(default=False)
     payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
     video_allotment_warning_sent = models.BooleanField(default=False)
+    free_trial_warning_sent = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -396,6 +398,14 @@ class SiteLocation(Thumbnailable):
 
     def get_tier(self):
         return localtv.tiers.Tier(self.tier_name)
+
+    def time_until_free_trial_expires(self):
+        if not self.in_free_trial:
+            return None
+        if not self.payment_due_date:
+            return None
+
+        return (self.datetime.datetime.utcnow() - self.payment_due_date)
 
     def get_css_for_display_if_permitted(self):
         '''This function checks the site tier, and if permitted, returns the

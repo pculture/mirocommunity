@@ -16,6 +16,8 @@ def nightly_warnings():
     ret = set()
     if should_send_video_allotment_warning(sitelocation, current_tier):
         ret.add('video_allotment_warning_sent')
+    if should_send_five_day_free_trial_warning(sitelocation):
+        ret.add('free_trial_warning_sent')
     return ret
 
 def should_send_video_allotment_warning(sitelocation, current_tier):
@@ -25,6 +27,16 @@ def should_send_video_allotment_warning(sitelocation, current_tier):
 
     if current_tier.remaining_videos_as_proportion() < (1/3.0):
         return True
+
+def should_send_five_day_free_trial_warning(sitelocation):
+    time_remaining = sitelocation.time_until_free_trial_expires()
+    if time_remaining is None:
+        return False
+    if sitelocation.free_trial_warning_sent:
+        return False
+    if time_remaining <= datetime.timedelta(days=5):
+        return True
+    return False
 
 def user_warnings_for_downgrade(new_tier_name):
     warnings = set()

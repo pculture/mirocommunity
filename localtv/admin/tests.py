@@ -3837,17 +3837,33 @@ class DowngradingSevenAdmins(BaseTestCase):
 class NightlyTiersEmails(BaseTestCase):
     fixtures = BaseTestCase.fixtures
 
+    def setUp(self):
+        super(NightlyTiersEmails, self).setUp()
+        from localtv.management.commands import nightly_tiers_events
+        self.tiers_cmd = nightly_tiers_events.Command()
+
     @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
     def test_video_allotment(self):
-        from localtv.management.commands import nightly_tiers_events
-        cmd = nightly_tiers_events.Command()
-
         # First, it sends an email. But it saves a note in the SiteLocation...
-        cmd.handle()
+        self.tiers_cmd.handle()
         self.assertEquals(len(mail.outbox), 1)
         mail.outbox = []
 
         # ..so that the next time, it doesn't send any email.
-        cmd = nightly_tiers_events.Command()
-        cmd.handle()
+        self.tiers_cmd.handle()
         self.assertEquals(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.SiteLocation.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
+    def test_free_trial_nearly_up_notification_false(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.SiteLocation.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=5)))
+    def test_free_trial_nearly_up_notification_true(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # Make sure it does not want to send it again
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
