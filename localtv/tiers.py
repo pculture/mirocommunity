@@ -8,6 +8,24 @@ import localtv.models
 
 import uploadtemplate.models
 
+def nightly_warnings():
+    '''This returns a dictionary, mapping English-language reasons to
+    localtv.admin.tiers functions to call.'''
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    current_tier = sitelocation.get_tier()
+    ret = set()
+    if should_send_video_allotment_warning(sitelocation, current_tier):
+        ret.add('video_allotment_warning_sent')
+    return ret
+
+def should_send_video_allotment_warning(sitelocation, current_tier):
+    # Check for the video warning having already been sent
+    if sitelocation.video_allotment_warning_sent:
+        return False
+
+    if current_tier.remaining_videos_as_proportion() < (1/3.0):
+        return True
+
 def user_warnings_for_downgrade(new_tier_name):
     warnings = set()
 
@@ -203,6 +221,9 @@ class Tier(object):
 
     def remaining_videos(self):
         return self.videos_limit() - current_videos_that_count_toward_limit().count()
+
+    def remaining_videos_as_proportion(self):
+        return (self.remaining_videos() * 1.0 / self.videos_limit())
 
     def admins_limit(self):
         special_cases = {'basic': 1,

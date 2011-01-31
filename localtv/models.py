@@ -348,6 +348,7 @@ class SiteLocation(Thumbnailable):
     payment_due_date = models.DateTimeField(null=True, blank=True)
     free_trial_available = models.BooleanField(default=True)
     payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    video_allotment_warning_sent = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
