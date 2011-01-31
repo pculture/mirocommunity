@@ -16,7 +16,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-            <div class="bulk_edit editing{% if form.errors %} errors{% endif %}">
+            <div class="{% if not skip_individual_form %}simple_overlay {% endif %}bulk_edit editing{% if form.errors %} errors{% endif %}">
             <h2>Editing</h2>
               {% block quick-edit %}
               <div class="input_field">
