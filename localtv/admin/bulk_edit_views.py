@@ -22,7 +22,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 from django.utils.encoding import force_unicode
@@ -43,6 +43,19 @@ except ImportError:
 @require_site_admin
 @csrf_protect
 def bulk_edit(request):
+    if ('just_the_form' in request.GET and 'video_id' in request.GET):
+        # generate just the particular form that the user wants
+        template_data = {}
+        form_prefix = request.GET['just_the_form']
+        video = get_object_or_404(models.Video, pk=int(request.GET['video_id']))
+        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
+        template_data['form'] = form
+        template_data['skip_individual_form'] = True
+        template = 'localtv/admin/bulk_edit_individual_form.html'
+        return render_to_response(template,
+                                  template_data,
+                                  context_instance=RequestContext(request))
+
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
         site=request.sitelocation.site)
@@ -240,17 +253,6 @@ def bulk_edit(request):
             site=request.sitelocation.site),
                      'users': User.objects.order_by('username')}
     template = 'localtv/admin/bulk_edit.html'
-
-    if 'just_the_form' in request.GET:
-        # find the particular form that the user wants
-        wanted_prefix = request.GET['just_the_form']
-        form = None
-        for maybe_form in formset.forms:
-            if maybe_form.prefix == wanted_prefix:
-                form = maybe_form
-        if form:
-            template_data['form'] = form
-            template = 'localtv/admin/bulk_edit_individual_form.html'
 
     return render_to_response(template,
                               template_data,

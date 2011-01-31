@@ -179,7 +179,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <div class="actions">
 	      <a
 		 {% if skip_individual_form %}
-		 href='?{% generate_modified_query_string "just_the_form" form.prefix %}' rel="#bulk_edit_overlay" class="form_link_overlay"
+		 href='?{% generate_modified_query_string "just_the_form" form.prefix %}&video_id={{form.instance.id }}' rel="#bulk_edit_overlay" class="form_link_overlay"
 		 {% else %}
 		 href="#" onclick="return showEdit(this);"
 		 {% endif %}>
