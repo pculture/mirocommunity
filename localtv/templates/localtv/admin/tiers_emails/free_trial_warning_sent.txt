@@ -1,0 +1,43 @@
+Hi, {{ short_name }},
+
+This is just a friendly reminder that your free trial with Miro Community will
+expire in 5 days, on {{ next_payment_due_date }}. Want to keep your premium account? No problem -
+once your trial runs out, we'll start charging your account. Want to cancel or
+change your account level? You can do so at your tiers page:
+
+http://{{ site.domain }}{% url localtv_admin_tier %}
+
+To get the most out of Miro Community, here are some tips:
+
+Organize
+
+People will want to visit your video site because they can easily find material
+they're looking for. If you follow these guides in the Miro Community manual,
+your site will stay fresh and easy to navigate:
+
+* Featuring good content: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Featuring_Videos
+
+* Adding categories: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Categories
+
+* Making playlists: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Playlists
+
+
+Spread the Word
+
+Ask other websites within your community to add a widget to their sites - they'll
+get an influx of community videos and you'll get great exposure.
+
+  More on widgets: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Widgets
+
+
+Build a Community
+
+Encourage users to build their profiles and add videos of their own, if
+appropriate. You can search out other relevant videos using the Search
+for Videos button.
+
+  More on profiles: ?? Is there a link for this?
+  More on the Search for Videos button: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Search_for_Videos
+
+Have any questions, ideas, or a great story to share about your site? Email
+questions@mirocommunity.org.
