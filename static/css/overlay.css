@@ -7,7 +7,7 @@
 
 
 /* use a semi-transparent image for the overlay */
-#overlay {
+.overlay {
   background: #efefef !important;
   width: 600px;
   text-align: left;
