@@ -3833,4 +3833,21 @@ class DowngradingSevenAdmins(BaseTestCase):
         usernames = localtv.tiers.push_number_of_admins_down(5, actually_demote_people=True)
         self.assertEqual(set(['admin8', 'admin9']), usernames)
         self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
-        
+
+class NightlyTiersEmails(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
+    def test_video_allotment(self):
+        from localtv.management.commands import nightly_tiers_events
+        cmd = nightly_tiers_events.Command()
+
+        # First, it sends an email. But it saves a note in the SiteLocation...
+        cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # ..so that the next time, it doesn't send any email.
+        cmd = nightly_tiers_events.Command()
+        cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
