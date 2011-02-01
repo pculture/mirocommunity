@@ -39,4 +39,4 @@ class Command(BaseCommand):
             sitelocation.save()
 
             template_name, subject = column2template[site_location_column] 
-            localtv.tiers.send_tiers_related_email(subject, template_name)
+            localtv.tiers.send_tiers_related_email(subject, template_name, sitelocation)

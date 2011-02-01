@@ -80,6 +80,7 @@ class BaseTestCase(TestCase):
         settings.MEDIA_ROOT = self.tmpdir
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
+        mail.outbox = [] # reset any email at the start of the suite
 
     def tearDown(self):
         TestCase.tearDown(self)

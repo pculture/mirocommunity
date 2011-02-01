@@ -3839,6 +3839,7 @@ class NightlyTiersEmails(BaseTestCase):
 
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()
+        self.assertEquals(len(mail.outbox), 0)
         from localtv.management.commands import nightly_tiers_events
         self.tiers_cmd = nightly_tiers_events.Command()
 
@@ -3867,3 +3868,13 @@ class NightlyTiersEmails(BaseTestCase):
         # Make sure it does not want to send it again
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 0)
+
+class EmailSwitchTests(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        self.assertEqual(len(mail.outbox), 0)
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
+        self.assertEqual(len(mail.outbox), 1)
+

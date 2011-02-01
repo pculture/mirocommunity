@@ -322,6 +322,7 @@ def add_a_month(date):
 ### Here, we listen for changes in the SiteLocation
 ### As it changes, we make sure we adjust the payment due date stored in the SiteLocation.
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
+    ## FIXME: this has to be changed, based on the new handling of Paypal and free trials.
     # If transitioning from 'basic' tier to something else,
     # set the payment_due_date to be now plus thirty days.
 
@@ -344,8 +345,13 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
 
+    if current_tier_name != new_tier_name:
         # Send an email about the transition
-        
+        template_name = 'localtv/admin/tiers_emails/welcome_to_tier.txt'
+        subject = '%s has been upgraded!' % (current_siteloc.site.name or current_siteloc.site.domain)
+
+        # Pass in the new, modified sitelocation instance. That way, it has the new tier.
+        send_tiers_related_email(subject, template_name, sitelocation=instance)
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # When tranisitioning between any two site tiers, make sure that
@@ -358,8 +364,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
     
-def send_tiers_related_email(subject, template_name):
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
+def send_tiers_related_email(subject, template_name, sitelocation):
     # Send it to the site superuser with the lowest ID
     superusers = django.contrib.auth.models.User.objects.filter(is_superuser=True)
     first_one = superusers.order_by('pk')[0]
@@ -372,6 +377,10 @@ def send_tiers_related_email(subject, template_name):
     # Generate the email
     t = loader.get_template(template_name)
     c = Context({'site': sitelocation.site,
+                 'in_free_trial': sitelocation.in_free_trial,
+                 'tier_obj': sitelocation.get_tier(),
+                 'tier_name_capitalized': sitelocation.tier_name.title(),
+                 'site_name': sitelocation.site.name or sitelocation.site.domain,
                  'video_count': current_videos_that_count_toward_limit(),
                  'short_name': first_one.first_name or first_one.username,
                  'next_payment_due_date': next_payment_due_date,
