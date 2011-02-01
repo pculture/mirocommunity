@@ -26,6 +26,9 @@ import localtv.models
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        self.handle_sitelocation_emails()
+
+    def handle_sitelocation_emails(self):
         column2template = {
             'video_allotment_warning_sent': (
                 'localtv/admin/tiers_emails/video_allotment.txt', 'Upgrade your Miro Community site to store more video'),
