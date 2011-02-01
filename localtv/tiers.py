@@ -3,6 +3,8 @@ import datetime
 
 from django.conf import settings
 import django.contrib.auth.models
+from django.core.mail import EmailMessage
+from django.template import Context, loader
 
 import localtv.models
 
@@ -338,10 +340,12 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
             logging.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
         # If the user can use a free trial, then the due date is a month from now
         if not current_siteloc.free_trial_available:
-            
             instance.payment_due_date = datetime.datetime.utcnow()
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
+
+        # Send an email about the transition
+        
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # When tranisitioning between any two site tiers, make sure that
@@ -354,3 +358,27 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
     
+def send_tiers_related_email(subject, template_name):
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    # Send it to the site superuser with the lowest ID
+    superusers = django.contrib.auth.models.User.objects.filter(is_superuser=True)
+    first_one = superusers.order_by('pk')[0]
+
+    if sitelocation.payment_due_date:
+        next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
+    else:
+        next_payment_due_date = None
+
+    # Generate the email
+    t = loader.get_template(template_name)
+    c = Context({'site': sitelocation.site,
+                 'video_count': current_videos_that_count_toward_limit(),
+                 'short_name': first_one.first_name or first_one.username,
+                 'next_payment_due_date': next_payment_due_date,
+                 })
+    message = t.render(c)
+
+    # Send the sucker
+    from django.conf import settings
+    EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
+                 [first_one.email]).send(fail_silently=False)

@@ -16,9 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.management.base import BaseCommand
-from django.core.mail import EmailMessage
-from django.template import Context, loader
-from django.contrib.auth.models import User
 
 import localtv.tiers
 import localtv.models
@@ -41,26 +38,5 @@ class Command(BaseCommand):
             setattr(sitelocation, site_location_column, True)
             sitelocation.save()
 
-            # Send it to the site superuser with the lowest ID
-            superusers = User.objects.filter(is_superuser=True)
-            first_one = superusers.order_by('pk')[0]
-
-            if sitelocation.payment_due_date:
-                next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
-            else:
-                next_payment_due_date = None
-
-            # Generate the email
             template_name, subject = column2template[site_location_column] 
-            t = loader.get_template(template_name)
-            c = Context({'site': sitelocation.site,
-                         'video_count': localtv.tiers.current_videos_that_count_toward_limit(),
-                         'short_name': first_one.first_name or first_one.username,
-                         'next_payment_due_date': next_payment_due_date,
-                         })
-            message = t.render(c)
-
-            # Send the sucker
-            from django.conf import settings
-            EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
-                         [first_one.email]).send(fail_silently=False)
+            localtv.tiers.send_tiers_related_email(subject, template_name)
