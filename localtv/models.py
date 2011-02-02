@@ -259,8 +259,8 @@ class Thumbnailable(models.Model):
         Return the path for the original thumbnail, relative to the default
         file storage system.
         """
-        return 'localtv/%s_thumbs/%s/%s.orig.%s' % (
-            self.sha1_of_last_image_we_thumbnailed,
+        return 'localtv/%s_thumbs/%s%s/orig.%s' % (
+            self.get_or_save_sha1_of_last_image_we_thumbnailed(),
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
@@ -269,10 +269,23 @@ class Thumbnailable(models.Model):
         Return the path for the a thumbnail of a resized width and height,
         relative to the default file storage system.
         """
-        return 'localtv/%s_thumbs/%s/%s.%sx%s.png' % (
-            self.sha1_of_last_image_we_thumbnailed,
+        return 'localtv/%s_thumbs/%s%s/%s.%sx%s.png' % (
+            self.get_or_save_sha1_of_last_image_we_thumbnailed(),
             self._meta.object_name.lower(),
             self.id, width, height)
+
+    def get_or_save_sha1_of_last_image_we_thumbnailed(self):
+        if self.sha1_of_last_image_we_thumbnailed:
+            return self.sha1_of_last_image_we_thumbnailed
+
+        if not self.has_thumbnail:
+            return ''
+
+        try:
+            file_obj = default_storage.open(self.get_original_thumb_storage_path())
+            return util.hash_file_obj(file_obj)
+        except IOError:
+            return ''
 
     def delete_thumbnails(self):
         self.has_thumbnail = False
