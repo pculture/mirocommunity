@@ -120,15 +120,26 @@ class Thumbnailable(models.Model):
     """
     has_thumbnail = models.BooleanField(default=False)
     thumbnail_extension = models.CharField(max_length=8, blank=True)
+    sha1_of_last_image_we_thumbnailed = models.CharField(max_length=40, blank=True)
 
     class Meta:
         abstract = True
+
+    def looks_like_the_last_thing_we_thumbnailed(self, content_thumb):
+        return False # For now, bail out never.
 
     def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
         """
+        # First, check: Does the content_thumb have the same SHA1 hash as the last
+        # thing we stored thumbnails of?
+        #
+        # If so, bail out early.
+        if self.looks_like_the_last_thing_we_thumbnailed(content_thumb):
+            return
+
         try:
             pil_image = Image.open(content_thumb)
         except IOError:
