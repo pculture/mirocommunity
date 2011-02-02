@@ -20,7 +20,25 @@ def nightly_warnings():
         ret.add('video_allotment_warning_sent')
     if should_send_five_day_free_trial_warning(sitelocation):
         ret.add('free_trial_warning_sent')
+    if should_send_inactive_site_warning(sitelocation, current_tier):
+        ret.add('inactive_site_warning_sent')
     return ret
+
+def get_main_site_admin():
+    superusers = django.contrib.auth.models.User.objects.filter(is_superuser=True)
+    first_one = superusers.order_by('pk')[0]
+    return first_one
+
+def should_send_inactive_site_warning(sitelocation, current_tier):
+    # If we have already sent the warning, refuse to send it again.
+    if sitelocation.inactive_site_warning_sent:
+        return False
+
+    # Grab the time the main site admin last logged in. If it is greater
+    # than six weeks, then yup, the admin gets a warning.
+    SIX_WEEKS = datetime.timedelta(days=7 * 6)
+    if (datetime.datetime.utcnow() - get_main_site_admin().last_login) > SIX_DAYS:
+        return True
 
 def should_send_video_allotment_warning(sitelocation, current_tier):
     # Check for the video warning having already been sent
@@ -366,8 +384,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     
 def send_tiers_related_email(subject, template_name, sitelocation):
     # Send it to the site superuser with the lowest ID
-    superusers = django.contrib.auth.models.User.objects.filter(is_superuser=True)
-    first_one = superusers.order_by('pk')[0]
+    first_one = get_main_site_admin()
 
     if sitelocation.payment_due_date:
         next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
