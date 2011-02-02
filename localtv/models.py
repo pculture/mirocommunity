@@ -157,13 +157,15 @@ class Thumbnailable(models.Model):
             self.get_original_thumb_storage_path())
 
         self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(
+        self.last_original_thumb_path = default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)
 
         content_thumb.seek(0)
         self.sha1_of_last_image_we_thumbnailed = util.hash_file_obj(
             content_thumb, close_it=False)
+        content_thumb.seek(0)
+        self.save()
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
@@ -248,7 +250,7 @@ class Thumbnailable(models.Model):
             # write file, deleting old thumb if it exists
             default_storage.delete(
                 self.get_resized_thumb_storage_path(width, height))
-            default_storage.save(
+            self.last_resized_thumb_path = default_storage.save(
                 self.get_resized_thumb_storage_path(width, height),
                 cf_image)
 
@@ -257,7 +259,8 @@ class Thumbnailable(models.Model):
         Return the path for the original thumbnail, relative to the default
         file storage system.
         """
-        return 'localtv/%s_thumbs/%s/orig.%s' % (
+        return 'localtv/%s_thumbs/%s/%s.orig.%s' % (
+            self.sha1_of_last_image_we_thumbnailed,
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
@@ -266,12 +269,14 @@ class Thumbnailable(models.Model):
         Return the path for the a thumbnail of a resized width and height,
         relative to the default file storage system.
         """
-        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
+        return 'localtv/%s_thumbs/%s/%s.%sx%s.png' % (
+            self.sha1_of_last_image_we_thumbnailed,
             self._meta.object_name.lower(),
             self.id, width, height)
 
     def delete_thumbnails(self):
         self.has_thumbnail = False
+        self.sha1_of_last_image_we_thumbnailed = ''
         default_storage.delete(self.get_original_thumb_storage_path())
         for size in self.THUMB_SIZES:
             default_storage.delete(
