@@ -126,7 +126,14 @@ class Thumbnailable(models.Model):
         abstract = True
 
     def looks_like_the_last_thing_we_thumbnailed(self, content_thumb):
-        return False # For now, bail out never.
+        content_thumb.seek(0)
+        content_thumb_hash = util.hash_file_obj(content_thumb, close_it=False)
+        content_thumb.seek(0)
+
+        if content_thumb_hash == self.sha1_of_last_image_we_thumbnailed:
+            return True
+
+        # Aw well, we did what we can. I guess it's a real update.
 
     def save_thumbnail_from_file(self, content_thumb):
         """
@@ -153,6 +160,10 @@ class Thumbnailable(models.Model):
         default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)
+
+        content_thumb.seek(0)
+        self.sha1_of_last_image_we_thumbnailed = util.hash_file_obj(
+            content_thumb, close_it=False)
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might

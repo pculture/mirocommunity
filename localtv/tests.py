@@ -1551,6 +1551,15 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
             self.assertFalse(storage.default_storage.exists(path),
                              '%s was not deleted' % path)
 
+    def test_skip_thumbnailing_if_image_is_familiar(self):
+        """
+        If a Video has a thumbnail, deleting the Video should remove the
+        thumbnail.
+        """
+        v = models.Video.objects.get(pk=11)
+        v.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+        self.assert_(v.looks_like_the_last_thing_we_thumbnailed(File(file(self._data_file('logo.png')))))
+
     def test_original_video_created(self):
         """
         When an Video object is a created, an OriginalVideo object should also
