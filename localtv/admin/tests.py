@@ -3878,3 +3878,12 @@ class EmailSwitchTests(BaseTestCase):
         self.site_location.save()
         self.assertEqual(len(mail.outbox), 1)
 
+class SendWelcomeEmailTest(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        from localtv.management.commands import send_welcome_email
+        cmd = send_welcome_email.Command()
+        cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+

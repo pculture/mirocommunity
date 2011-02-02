@@ -32,23 +32,6 @@ class Command(BaseCommand):
         # If we haven't sent it, prepare the email
 
         # Now send the sucker
-        subject = "%s: Welcome to Miro Community"
-        template = 'localtv/admin/ti
-
-mark a note in the SiteLocation to indicate we have sent it
-        site_location.already_sent_welcome_email = True
-        site_location.save()
-
-        
-        
-
-        localtv.tiers.send_tiers_related_email("
-
-        for site_location_column in localtv.tiers.nightly_warnings():
-            # Save a note saying we sent the notice
-            sitelocation = localtv.models.SiteLocation.objects.get_current()
-            setattr(sitelocation, site_location_column, True)
-            sitelocation.save()
-
-            template_name, subject = column2template[site_location_column] 
-            localtv.tiers.send_tiers_related_email(subject, template_name, sitelocation)
+        subject = "%s: Welcome to Miro Community" % site_location.site.name
+        template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
+        localtv.tiers.send_tiers_related_email(subject, template, site_location)
