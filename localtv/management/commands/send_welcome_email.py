@@ -33,5 +33,8 @@ class Command(BaseCommand):
 
         # Now send the sucker
         subject = "%s: Welcome to Miro Community" % site_location.site.name
-        template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
+        if site_location.tier_name == 'basic':
+            template = 'localtv/admin/tiers_emails/welcome_to_your_site_basic.txt'
+        else:
+            template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
         localtv.tiers.send_tiers_related_email(subject, template, site_location)
