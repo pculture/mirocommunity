@@ -250,7 +250,7 @@ class Thumbnailable(models.Model):
             # write file, deleting old thumb if it exists
             default_storage.delete(
                 self.get_resized_thumb_storage_path(width, height))
-            self.last_resized_thumb_path = default_storage.save(
+            default_storage.save(
                 self.get_resized_thumb_storage_path(width, height),
                 cf_image)
 
