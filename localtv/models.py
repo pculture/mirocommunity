@@ -351,6 +351,7 @@ class SiteLocation(Thumbnailable):
     payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
     video_allotment_warning_sent = models.BooleanField(default=False)
     free_trial_warning_sent = models.BooleanField(default=False)
+    already_sent_welcome_email = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
