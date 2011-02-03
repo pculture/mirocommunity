@@ -13,7 +13,7 @@ flup>=1.0.2
 lxml==2.1.5
 python-memcached==1.44
 python-openid==2.2.4
-python-yadis==1.1.0
+http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
 simplejson==1.9.2
 wsgiref==0.1.2
 -e git+git://github.com/winhamwr/django-tagging.git#egg=django-tagging
