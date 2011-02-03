@@ -287,7 +287,7 @@
   background: transparent url(/images/admin/icon_started_four.png) 0 0 no-repeat;
 }
 
-#dashboard #get_started ul li strong {
+#dashboard #get_started ul li strong a {
   color: #1f526f;
   font-size: 20px;
   font-weight: bold;
