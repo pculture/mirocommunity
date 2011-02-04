@@ -161,9 +161,12 @@ class Thumbnailable(models.Model):
             self.get_original_thumb_storage_path(),
             content_thumb)
 
-        content_thumb.seek(0)
-        self.sha1_of_last_image_we_thumbnailed = util.hash_file_obj(
-            content_thumb, close_it=False)
+        try:
+            content_thumb.seek(0)
+            self.sha1_of_last_image_we_thumbnailed = util.hash_file_obj(
+                content_thumb, close_it=False)
+        except (ValueError, IOError), e:
+            pass # aw shucks
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
