@@ -404,6 +404,13 @@ class SiteLocation(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
+    @staticmethod
+    def enforce_tiers():
+        '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
+        then this function returns False. Otherwise, it returns True.'''
+        disabled = getattr(settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
+        return not disabled
+
     def user_is_admin(self, user):
         """
         Return True if the given User is an admin for this SiteLocation.

@@ -372,6 +372,10 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         send_tiers_related_email(subject, template_name, sitelocation=instance)
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
+    ### Check if tiers enforcement is disabled. If so, bail out now.
+    if not localtv.models.SiteLocation.enforce_tiers():
+        return
+
     # When tranisitioning between any two site tiers, make sure that
     # the number of admins there are on the site is within the tier.
     new_tier_name = instance.tier_name
@@ -381,7 +385,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
 
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
-    
+
 def send_tiers_related_email(subject, template_name, sitelocation):
     # Send it to the site superuser with the lowest ID
     first_one = get_main_site_admin()
