@@ -31,3 +31,4 @@ oauth2
 oauth
 -e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
+django-storages
