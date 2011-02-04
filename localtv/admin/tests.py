@@ -173,6 +173,24 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is None)
 
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_approve_fails_when_over_limit(self):
+        """
+        A GET request to the approve_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_approve_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
+
     def test_GET_approve_email(self):
         """
         If the video is approved, and the submitter has the 'video_approved'
@@ -276,6 +294,25 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is not None)
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_feature_fails_outside_video_limit(self):
+        """
+        A GET request to the feature_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  If the video is unapproved, it should become
+        approved.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_feature_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
 
     def test_GET_unfeature(self):
         """

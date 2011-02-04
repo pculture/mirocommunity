@@ -141,6 +141,9 @@ def feature_video(request):
     current_video = get_object_or_404(
         models.Video, pk=video_id, site=request.sitelocation.site)
     if current_video.status != models.VIDEO_STATUS_ACTIVE:
+        if (models.SiteLocation.enforce_tiers() and
+            request.sitelocation.get_tier().remaining_videos() < 1):
+            return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
         current_video.status = models.VIDEO_STATUS_ACTIVE
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
