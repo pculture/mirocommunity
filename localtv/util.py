@@ -394,14 +394,18 @@ SAFE_URL_CHARACTERS = string.ascii_letters + string.punctuation
 def quote_unicode_url(url):
     return urllib.quote(url, safe=SAFE_URL_CHARACTERS)
 
-import backends.s3
-class SimplerS3Storage(backends.s3.S3Storage):
-    '''This is just like the normal S3Storage backend, only
-    we override the get_available_name method so that we permit
-    ourselves to overwrite files. By default, the core of Django's
-    storage layer refuses to overwrite files.'''
+try:
+    import storages.backends.s3
+except AttributeError:
+    pass
+else:
+    class SimplerS3Storage(storages.backends.s3.S3Storage):
+        '''This is just like the normal S3Storage backend, only
+        we override the get_available_name method so that we permit
+        ourselves to overwrite files. By default, the core of Django's
+        storage layer refuses to overwrite files.'''
 
-    def get_available_name(self, name):
-        """ Overwrite existing file with the same name. """
-        name = self._clean_name(name)
-        return name
+        def get_available_name(self, name):
+            """ Overwrite existing file with the same name. """
+            name = self._clean_name(name)
+            return name
