@@ -115,8 +115,21 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     new_limit = future_tier_obj.videos_limit()
     current_count = current_videos_that_count_toward_limit().count()
     if current_count <= new_limit:
-        return 0
-    return (current_count - new_limit)
+        count = 0
+    count = (current_count - new_limit)
+    if not actually_do_it:
+        return count
+
+    if count <= 0:
+        return
+
+    disabled_this_many = 0
+    disable_these_videos = current_videos_that_count_toward_limit().order_by('-pk')[:count]
+    for vid in disable_these_videos:
+        vid.status = localtv.models.VIDEO_STATUS_UNAPPROVED
+        vid.save()
+        disabled_this_many += 1
+    return disabled_this_many
 
 def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
     if uploadtemplate.models.Theme.objects.filter(default=True):
@@ -382,6 +395,9 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     new_tier_obj = Tier(new_tier_name)
     push_number_of_admins_down(new_tier_obj.admins_limit(),
                                actually_demote_people=True)
+
+    # Push the published videos into something within the limit
+    hide_videos_above_limit(new_tier_obj, actually_do_it=True)
 
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)

@@ -3738,6 +3738,49 @@ class DowngradingDisablesThings(BaseTestCase):
         # Check that the user is now on a bundled theme
         self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
 
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should only be two active videos now
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(2,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos_but_do_not_enforce(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should still be three videos because enforcement is disabled
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
     def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
         '''Even if the custom themes are not the default ones, if they exist, we should
         let the user know that it won't be accessible anymore.'''
