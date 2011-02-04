@@ -23,11 +23,6 @@ from localtv.inline_edit import forms
 from localtv.playlists.models import Playlist
 from localtv.playlists.forms import PlaylistForm
 
-### NOTE: We only use this because simple_tag() from Django doesn't provide
-### takes_context=1 as a valid argument until Django 1.3. When Django 1.3 comes
-### out, we should delete this.
-import localtv.templatetags.helpers
-
 WIDGET_DIRECTORY = {
     Playlist: {
         'info': {
@@ -79,8 +74,7 @@ def get_display_content(request, model_instance, field_name,
         template.RequestContext(request,
             {'instance': model_instance}))
 
-@register.tag
-@localtv.templatetags.helpers.basictag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def editable_widget(context, model_instance, field_name, display_template_name=None,
                     form=None):
     request = context['request']
