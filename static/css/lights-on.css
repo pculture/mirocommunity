@@ -1986,7 +1986,8 @@ padding: 50px 0 7px 0px;
 #about_page .logo {
 max-width: 470px;
 float: right;
-margin: 100px 50px;
+margin: 50px;
+margin-bottom: 20px;
 }
 
 
