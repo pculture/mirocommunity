@@ -3887,3 +3887,11 @@ class SendWelcomeEmailTest(BaseTestCase):
         cmd.handle()
         self.assertEqual(len(mail.outbox), 1)
 
+class TestDisableEnforcement(BaseTestCase):
+
+    def testTrue(self):
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=False))
+
+    def testFalse(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+
