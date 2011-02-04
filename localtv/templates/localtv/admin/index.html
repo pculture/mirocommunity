@@ -2,7 +2,7 @@
 {% block extrahead %}
 <link rel="stylesheet" type="text/css" href="/css/admin/dashboard.css" />
 {% endblock extrahead %}
-{% block body_class %}admin_dash{% endblock body_class %}
+{% block body_class %}admin_dash {% if site_location.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
 {% block content %}
 <div id="dashboard">
 <h1 id="hdr_activity">Activity</h1>

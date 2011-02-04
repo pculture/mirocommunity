@@ -1,3 +1,7 @@
+body.hide_get_started #dashboard #get_started {
+    display: none;
+}
+
 body.admin_dash #content {
   margin: 30px 30px 30px 0 !important;
 }
