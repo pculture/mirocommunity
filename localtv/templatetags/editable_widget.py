@@ -58,7 +58,7 @@ WIDGET_DIRECTORY = {
 
 register = template.Library()
 
-def get_display_content(model_instance, field_name,
+def get_display_content(request, model_instance, field_name,
                         display_template_name=None):
     try:
         widget_data = WIDGET_DIRECTORY[model_instance.__class__][field_name]
@@ -71,12 +71,13 @@ def get_display_content(model_instance, field_name,
             model_instance._meta.object_name.lower(),
             field_name))
     return display_template.render(
-        template.Context(
+        template.RequestContext(request,
             {'instance': model_instance}))
 
-@register.simple_tag
-def editable_widget(model_instance, field_name, display_template_name=None,
+@register.simple_tag(takes_context=True)
+def editable_widget(context, model_instance, field_name, display_template_name=None,
                     form=None):
+    request = context['request']
     try:
         widget_data = WIDGET_DIRECTORY[model_instance.__class__][field_name]
     except KeyError:
@@ -88,7 +89,7 @@ def editable_widget(model_instance, field_name, display_template_name=None,
 
     # render the display template
     
-    display_content = get_display_content(model_instance, field_name,
+    display_content = get_display_content(request, model_instance, field_name,
                                           display_template_name)
 
 
@@ -104,7 +105,7 @@ def editable_widget(model_instance, field_name, display_template_name=None,
                 field_name)), args=(model_instance.id,))
 
     return render_template.render(
-        template.Context(
+        template.RequestContext(request,
             {'instance': model_instance,
              'display_content': display_content,
              'post_url': post_url,
