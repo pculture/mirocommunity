@@ -20,6 +20,7 @@ import datetime
 from django.contrib import comments
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.http import HttpResponse, HttpBadRequest
 
 from localtv.decorators import require_site_admin
 from localtv import models
@@ -48,3 +49,12 @@ def index(request):
          'comment_count': comments.get_model().objects.filter(
                 is_public=False, is_removed=False).count()},
         context_instance=RequestContext(request))
+
+@require_site_admin
+def hide_get_started(request):
+    if request.method != 'POST':
+        return HttpBadRequest('You have to POST to this URL.')
+    site_location = models.SiteLocation.objects.get_current()
+    site_location.hide_get_started = True
+    site_location.save()
+    return HttpResponse("OK")
