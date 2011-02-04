@@ -401,7 +401,7 @@ except ImportError:
 
 try:
     import backends.s3
-except AttributeError:
+except (AttributeError, ImportError):
     pass
 else:
     class SimplerS3Storage(backends.s3.S3Storage):
