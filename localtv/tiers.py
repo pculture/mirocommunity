@@ -238,8 +238,8 @@ class Tier(object):
         return special_cases.get(self.tier_name, False)
 
     def permits_custom_domain(self):
-        special_cases = {'max': True}
-        return special_cases.get(self.tier_name, False)
+        special_cases = {'basic': False}
+        return special_cases.get(self.tier_name, True)
 
     def videos_limit(self):
         special_cases = {'basic': 500,
