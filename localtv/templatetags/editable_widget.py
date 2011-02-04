@@ -74,10 +74,9 @@ def get_display_content(request, model_instance, field_name,
         template.RequestContext(request,
             {'instance': model_instance}))
 
-@register.simple_tag(takes_context=True)
-def editable_widget(context, model_instance, field_name, display_template_name=None,
+@register.simple_tag
+def editable_widget(request, model_instance, field_name, display_template_name=None,
                     form=None):
-    request = context['request']
     try:
         widget_data = WIDGET_DIRECTORY[model_instance.__class__][field_name]
     except KeyError:
