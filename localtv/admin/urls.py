@@ -20,7 +20,7 @@ from django.conf.urls.defaults import patterns
 urlpatterns = patterns(
     'localtv.admin.views',
     (r'^$', 'index', {}, 'localtv_admin_index'),
-    (r'^hide_get_started$', 'hide_get_started', {}, 'localtv_admin_index'))
+    (r'^hide_get_started$', 'hide_get_started', {}, 'localtv_admin_hide_get_started'))
 
 urlpatterns += patterns(
     'localtv.admin.approve_reject_views',
