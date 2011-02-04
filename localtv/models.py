@@ -375,6 +375,7 @@ class SiteLocation(Thumbnailable):
     free_trial_warning_sent = models.BooleanField(default=False)
     already_sent_welcome_email = models.BooleanField(default=False)
     hide_get_started = models.BooleanField(default=False)
+    inactive_site_warning_sent = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
