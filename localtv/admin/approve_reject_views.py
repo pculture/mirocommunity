@@ -93,7 +93,8 @@ def approve_video(request):
 
     # If the site would exceed its video allotment, then fail
     # with a HTTP 403 and a clear message about why.
-    if request.sitelocation.get_tier().remaining_videos() < 1:
+    if (models.SiteLocation.enforce_tiers() and
+        request.sitelocation.get_tier().remaining_videos() < 1):
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
     current_video.status = models.VIDEO_STATUS_ACTIVE
@@ -192,14 +193,15 @@ def approve_all(request):
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
 
-    tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
-    if len(page.object_list) > tier_remaining_videos:
-        return HttpResponse(content="You only have " +
-                            str(tier_remaining_videos) + 
-                            "videos remaining, but you need " +
-                            str(len(page.object_list)) +
-                            "to be able to approve all these videos. " +
-                            "You can upgrade to get more.", status=402)
+    if models.SiteLocation.enforce_tiers():
+        tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
+        if len(page.object_list) > tier_remaining_videos:
+            return HttpResponse(content="You only have " +
+                                str(tier_remaining_videos) + 
+                                "videos remaining, but you need " +
+                                str(len(page.object_list)) +
+                                "to be able to approve all these videos. " +
+                                "You can upgrade to get more.", status=402)
 
     for video in page.object_list:
         video.status = models.VIDEO_STATUS_ACTIVE

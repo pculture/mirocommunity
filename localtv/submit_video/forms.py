@@ -93,9 +93,10 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         video = forms.ModelForm.save(self, **kwargs)
         if self.user.is_authenticated():
             video.user = self.user
-        if (self.sitelocation.user_is_admin(self.user) and 
-            self.sitelocation.get_tier().remaining_videos() >= 1):
-            video.status = models.VIDEO_STATUS_ACTIVE
+        if self.sitelocation.user_is_admin(self.user):
+            if (not sitelocation.enforce_tiers() or
+                self.sitelocation.get_tier().remaining_videos() >= 1):
+                video.status = models.VIDEO_STATUS_ACTIVE
         old_m2m = self.save_m2m
         def save_m2m():
             video = self.instance
