@@ -45,6 +45,11 @@ function bulkAction() {
 }
 
 $(document).ready(function() {
+    /* If the page says we didn't permit some actions, we should say so. */
+    if (window.location.href.indexOf("not_all_actions_done") {
+	alert("Due to your site level, we did not complete all of your bulk edits. You should review this page and make sure that the edits you wanted saved properly.");
+    }
+
     $("#toggle_all").click(function() {
         if (this.checked) {
             $('td:first-child > input[type=checkbox]:not(:checked)').click();

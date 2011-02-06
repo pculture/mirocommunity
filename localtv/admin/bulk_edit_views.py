@@ -187,6 +187,10 @@ def bulk_edit(request):
                                      queryset=page.object_list)
 
         if formset.is_valid():
+            tier_prevented_some_action = False
+            tier = request.sitelocation.get_tier()
+            videos_approved_so_far = 0
+
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
                 form.instance.status = models.VIDEO_STATUS_REJECTED
@@ -209,13 +213,26 @@ def bulk_edit(request):
                                 form.instance.status = \
                                     models.VIDEO_STATUS_REJECTED
                             elif value == 'approve':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_ACTIVE
+                                if (request.sitelocation.enforce_tiers() and
+                                    tier.remaining_videos() <= videos_approved_so_far):
+                                    tier_prevented_some_action = True
+                                else:
+                                    form.instance.status = \
+                                        models.VIDEO_STATUS_ACTIVE
+                                    videos_approved_so_far += 1
                             elif value == 'unapprove':
                                 form.instance.status = \
                                     models.VIDEO_STATUS_UNAPPROVED
                             elif value == 'feature':
-                                form.instance.last_featured = datetime.now()
+                                if form.instance.status != models.VIDEO_STATUS_ACTIVE:
+                                    if (request.sitelocation.enforce_tiers() and
+                                        tier.remaining_videos() <= videos_approved_so_far):
+                                        tier_prevented_some_action = True
+                                    else:
+                                        form.instance.status = \
+                                            models.VIDEO_STATUS_ACTIVE
+                                if form.instance.status == models.VIDEO_STATUS_ACTIVE:
+                                    form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None
                         elif key == 'tags':
@@ -233,14 +250,22 @@ def bulk_edit(request):
                                                   # edit form
             formset.can_delete = False
             formset.save()
+            path_with_success = None
             if 'successful' in request.GET:
-                return HttpResponseRedirect(request.get_full_path())
+                path_with_success = request.get_full_path()
             else:
                 path = request.get_full_path()
                 if '?' in path:
-                    return HttpResponseRedirect(path + '&successful')
+                    path_with_success =  path + '&successful'
                 else:
-                    return HttpResponseRedirect(path + '?successful')
+                    path_with_success = path + '?successful'
+
+            if tier_prevented_some_action:
+                path = path_with_success + '&not_all_actions_done'
+            else:
+                path = path_with_success
+
+            return HttpResponseRedirect(path)
     else:
         formset = forms.VideoFormSet(queryset=page.object_list)
 
