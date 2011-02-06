@@ -120,33 +120,15 @@ class Thumbnailable(models.Model):
     """
     has_thumbnail = models.BooleanField(default=False)
     thumbnail_extension = models.CharField(max_length=8, blank=True)
-    sha1_of_last_image_we_thumbnailed = models.CharField(max_length=40, blank=True)
 
     class Meta:
         abstract = True
-
-    def looks_like_the_last_thing_we_thumbnailed(self, content_thumb):
-        content_thumb.seek(0)
-        content_thumb_hash = util.hash_file_obj(content_thumb, close_it=False)
-        content_thumb.seek(0)
-
-        if content_thumb_hash == self.sha1_of_last_image_we_thumbnailed:
-            return True
-
-        # Aw well, we did what we can. I guess it's a real update.
 
     def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
         """
-        # First, check: Does the content_thumb have the same SHA1 hash as the last
-        # thing we stored thumbnails of?
-        #
-        # If so, bail out early.
-        if self.looks_like_the_last_thing_we_thumbnailed(content_thumb):
-            return
-
         try:
             pil_image = Image.open(content_thumb)
         except IOError:
@@ -160,13 +142,6 @@ class Thumbnailable(models.Model):
         default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)
-
-        try:
-            content_thumb.seek(0)
-            self.sha1_of_last_image_we_thumbnailed = util.hash_file_obj(
-                content_thumb, close_it=False)
-        except (ValueError, IOError), e:
-            pass # aw shucks
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
