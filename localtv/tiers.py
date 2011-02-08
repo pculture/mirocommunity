@@ -58,10 +58,11 @@ def should_send_five_day_free_trial_warning(sitelocation):
         return True
     return False
 
-def user_warnings_for_downgrade(new_tier_name):
+def user_warnings_for_downgrade(new_tier_name, sitelocation=None):
     warnings = set()
 
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    if sitelocation is None:
+        sitelocation = localtv.models.SiteLocation.objects.get_current()
     current_tier = sitelocation.get_tier()
     future_tier = Tier(new_tier_name)
 
@@ -96,7 +97,8 @@ def user_warnings_for_downgrade(new_tier_name):
 
     # If the site has a custom domain, and the future tier doesn't permit it, then
     # we should warn the user.
-    if (current_tier.permits_custom_domain()
+    if (sitelocation.enforce_tiers()
+        and sitelocation.site.domain
         and not sitelocation.site.domain.endswith('mirocommunity.org')
         and not future_tier.permits_custom_domain()):
         warnings.add('customdomain')
@@ -389,6 +391,14 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     if not localtv.models.SiteLocation.enforce_tiers():
         return
 
+    # Check if there is an existing SiteLocation. If not, we should bail
+    # out now.
+    current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
+    if not current_sitelocs:
+        return
+    # This dance defeats the SiteLocation cache.
+    current_siteloc = current_sitelocs[0]
+
     # When transitioning between any two site tiers, make sure that
     # the number of admins there are on the site is within the tier.
     new_tier_name = instance.tier_name
@@ -399,8 +409,8 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # When transitioning down from a tier that permitted custom domains,
     # and if the user had a custom domain, then this website should automatically
     # file a support request to have the site's custom domain disabled.
-    if 'customdomain' in user_warnings_for_downgrade(new_tier_name):
-        send_tiers_related_email(subject="Remove custom domain for %s" % sitelocation.site.domain,
+    if 'customdomain' in user_warnings_for_downgrade(new_tier_name, sitelocation=current_siteloc):
+        send_tiers_related_email(subject="Remove custom domain for %s" % instance.site.domain,
                                  template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
                                  sitelocation=instance,
                                  override_to=['support@mirocommunity.org'])
@@ -441,4 +451,4 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     # Send the sucker
     from django.conf import settings
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
-                 [first_one.email]).send(fail_silently=False)
+                 recipient_list).send(fail_silently=False)

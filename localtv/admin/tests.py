@@ -3975,3 +3975,30 @@ class TestDisableEnforcement(BaseTestCase):
     def testFalse(self):
         self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
 
+class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Give the site a custom domain
+        site = self.site_location.site
+        site.domain = 'custom.example.com'
+        site.save()
+
+        # Make sure it stuck
+        self.assertEqual(self.site_location.site.domain,
+                         'custom.example.com')
+
+        # There are no emails in the outbox yet
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+        # Bump down to 'basic'.
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        support_ticket_emails = [msg for msg in mail.outbox
+                                 if msg.to[0] == 'support@mirocommunity.org']
+        self.assertEqual(1, len(support_ticket_emails))
