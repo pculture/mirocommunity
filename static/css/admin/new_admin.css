@@ -39,7 +39,7 @@ ul#new_admin_nav li a:hover {
   text-decoration: underline;
 }
 
-body#tier.settings ul#new_admin_nav li#admin_settings a,
+body#tier.account ul#new_admin_nav li#admin_account a,
 body#admin.admin_dash ul#new_admin_nav li#admin_dash a,
 body#admin.incomingvids ul#new_admin_nav li#admin_videos a,
 body#admin.settings ul#new_admin_nav li#admin_settings a,

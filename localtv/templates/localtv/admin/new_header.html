@@ -23,6 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li id="admin_settings"><a href="{% url localtv_admin_settings %}">Settings</a></li>
     <li id="admin_users"><a href="{% url localtv_admin_users %}">Users</a></li>
     <li id="admin_comments"><a href="{% url comments-moderation-queue %}">Comments</a></li>
+    <li id="admin_account"><a class="account" href="{% url localtv_admin_tier %}"><span>Account</span></a></li>
     {% endif %}
     {% if request.user.is_authenticated %}
     <li id="admin_profile"><a href="{% url localtv_user_profile %}">Your Profile</a></li>

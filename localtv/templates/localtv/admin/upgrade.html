@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block body_class %}settings" onbeforeunload="return setting_onunload();{% endblock body_class %}
+{% block body_class %}account" onbeforeunload="return setting_onunload();{% endblock body_class %}
 
 {% load i18n %}
 
@@ -34,7 +34,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_id %}tier{% endblock %}
 
 {% block content %}
-{% include "localtv/admin/settings_header.html" %}
+{% include "localtv/admin/account_header.html" %}
 <div class="clear">
   <div id="upgrade_title">
     <h1>Upgrade Your Site</h1>
