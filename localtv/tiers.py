@@ -37,7 +37,7 @@ def should_send_inactive_site_warning(sitelocation, current_tier):
     # Grab the time the main site admin last logged in. If it is greater
     # than six weeks, then yup, the admin gets a warning.
     SIX_WEEKS = datetime.timedelta(days=7 * 6)
-    if (datetime.datetime.utcnow() - get_main_site_admin().last_login) > SIX_DAYS:
+    if (datetime.datetime.utcnow() - get_main_site_admin().last_login) > SIX_WEEKS:
         return True
 
 def should_send_video_allotment_warning(sitelocation, current_tier):
