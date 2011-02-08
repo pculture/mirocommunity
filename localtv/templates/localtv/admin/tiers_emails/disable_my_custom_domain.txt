@@ -1,7 +1,7 @@
 Hello support team!
 
 There was a Miro Community site with a neat custom domain:
-    {{ site.comain }}
+    {{ site.domain }}
 
 But now it has a new tier:
     {{ tier_name_capitalized }}
