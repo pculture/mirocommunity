@@ -1,0 +1,14 @@
+Hello support team!
+
+There was a Miro Community site with a neat custom domain:
+    {{ site.comain }}
+
+But now it has a new tier:
+    {{ tier_name_capitalized }}
+
+So I guess you should figure out what its old domain name was,
+and put it back to that.
+
+Sincerely,
+
+A robot.

@@ -389,12 +389,21 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     if not localtv.models.SiteLocation.enforce_tiers():
         return
 
-    # When tranisitioning between any two site tiers, make sure that
+    # When transitioning between any two site tiers, make sure that
     # the number of admins there are on the site is within the tier.
     new_tier_name = instance.tier_name
     new_tier_obj = Tier(new_tier_name)
     push_number_of_admins_down(new_tier_obj.admins_limit(),
                                actually_demote_people=True)
+
+    # When transitioning down from a tier that permitted custom domains,
+    # and if the user had a custom domain, then this website should automatically
+    # file a support request to have the site's custom domain disabled.
+    if 'customdomain' in user_warnings_for_downgrade(new_tier_name):
+        send_tiers_related_email(subject="Remove custom domain for %s" % sitelocation.site.domain,
+                                 template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
+                                 sitelocation=instance,
+                                 override_to=['support@mirocommunity.org'])
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)
@@ -402,7 +411,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
 
-def send_tiers_related_email(subject, template_name, sitelocation):
+def send_tiers_related_email(subject, template_name, sitelocation, override_to=None):
     # Send it to the site superuser with the lowest ID
     first_one = get_main_site_admin()
 
@@ -423,6 +432,11 @@ def send_tiers_related_email(subject, template_name, sitelocation):
                  'next_payment_due_date': next_payment_due_date,
                  })
     message = t.render(c)
+
+    recipient_list = [first_one.email]
+    if override_to:
+        assert type(override_to) in (list, tuple)
+        recipient_list = override_to
 
     # Send the sucker
     from django.conf import settings
