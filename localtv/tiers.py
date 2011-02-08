@@ -325,7 +325,7 @@ def process_payment(dollars, payment_secret, start_date):
     difference = NOW - start_date
     # If the delta is too large, raise WrongStartDate
     if abs(difference) > datetime.timedelta(days=1):
-        raise WrongStartDate()
+        pass # raise WrongStartDate()
 
     target_tier = Tier(target_tier_name)
                      
