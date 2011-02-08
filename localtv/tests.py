@@ -145,7 +145,7 @@ class BaseTestCase(TestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?next=%s' %
-                          (self.site_location.site.domain,
+                          ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
 
@@ -748,7 +748,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
         response = c.get(reverse('localtv_view_video',
@@ -756,7 +756,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
     def test_view_video_category(self):
@@ -792,9 +792,9 @@ class ViewTestCase(BaseTestCase):
 
         c = Client()
         response = c.get(video.get_absolute_url(),
-                         HTTP_HOST=self.site_location.site.domain,
+                         HTTP_HOST='testserver',
                          HTTP_REFERER='http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)

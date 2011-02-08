@@ -462,7 +462,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_approve_reject')))
 
         # all the unapproved videos are now rejected
@@ -667,7 +667,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -703,7 +703,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -738,7 +738,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -785,7 +785,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -828,7 +828,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         feed = models.Feed.objects.get(pk=3) # form 0
@@ -882,7 +882,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -931,7 +931,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -1000,7 +1000,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for v in models.Video.objects.order_by('pk')[:3]:
@@ -1213,7 +1213,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_manage_page')))
 
         self.assertEquals(models.Feed.objects.count(), 0)
@@ -1234,7 +1234,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_feed_add_done', args=[1])))
 
         feed = models.Feed.objects.get()
@@ -1262,7 +1262,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertTrue(response['Location'].startswith(
                 'http://%s%s?task_id=' % (
-                    self.site_location.site.domain,
+                    'testserver',
                     reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
@@ -1713,7 +1713,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1749,7 +1749,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1792,7 +1792,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_users, User.objects.values()):
@@ -1832,7 +1832,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 4) # no one got added
@@ -1887,7 +1887,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 3) # one user got removed
@@ -1928,7 +1928,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 3) # one user got removed
@@ -2092,7 +2092,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = models.Category.objects.order_by('-id')[0]
@@ -2132,7 +2132,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_categories, models.Category.objects.values()):
@@ -2162,7 +2162,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(models.Category.objects.count(), 5) # no one got
@@ -2203,7 +2203,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three categories got removed
@@ -2235,7 +2235,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
@@ -2510,7 +2510,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2552,7 +2552,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2587,7 +2587,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2608,7 +2608,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2629,7 +2629,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2672,7 +2672,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2725,7 +2725,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2766,7 +2766,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2797,7 +2797,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2828,7 +2828,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2863,7 +2863,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -3053,7 +3053,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3093,7 +3093,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3114,7 +3114,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3140,7 +3140,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3161,7 +3161,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3246,7 +3246,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = FlatPage.objects.order_by('-id')[0]
@@ -3324,7 +3324,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_flatpages, FlatPage.objects.values()):
@@ -3352,7 +3352,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(FlatPage.objects.count(), 5) # no one got added
@@ -3386,7 +3386,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three flatpages got removed
@@ -3414,7 +3414,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
