@@ -1,0 +1,23 @@
+Congratulations, {{ short_name }}!
+
+Your new Miro Community site is ready to go at http://{{ site.domain }}/.
+
+As soon as you arrive, log in and visit the "admin control panel" to
+begin adding videos to your site. Remember that your username and
+password are case sensitive. You can find it here:
+  http://{{ site.domain }}{% reverse localtv_admin_index %}
+
+You have created a free site, which includes:
+
+    * Your site with the logo & background of your choice
+    * Up to 500 videos
+    * 1 Administrator Account
+
+For more features and a larger video limit, you can upgrade at any time at
+http://{{ site.domain }}{% url localtv_admin_tier %}.
+
+Learn more about how to use Miro Community in the manual:
+http://develop.participatoryculture.org/index.php/MiroCommunityManual
+
+Still have questions? Don't hesitate to get in touch  -
+questions@mirocommunity.org.
