@@ -58,11 +58,10 @@ def should_send_five_day_free_trial_warning(sitelocation):
         return True
     return False
 
-def user_warnings_for_downgrade(new_tier_name, sitelocation=None):
+def user_warnings_for_downgrade(new_tier_name):
     warnings = set()
 
-    if sitelocation is None:
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
     current_tier = sitelocation.get_tier()
     future_tier = Tier(new_tier_name)
 
@@ -409,7 +408,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # When transitioning down from a tier that permitted custom domains,
     # and if the user had a custom domain, then this website should automatically
     # file a support request to have the site's custom domain disabled.
-    if 'customdomain' in user_warnings_for_downgrade(new_tier_name, sitelocation=current_siteloc):
+    if 'customdomain' in user_warnings_for_downgrade(new_tier_name):
         send_tiers_related_email(subject="Remove custom domain for %s" % instance.site.domain,
                                  template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
                                  sitelocation=instance,
