@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #Usage http://uswaretech.com/blog/2008/11/using-paypal-with-django/
 
+## SOURCE: http://djangosnippets.org/snippets/1181/
+## Copyright status: (C) 2007 Mike Atlas. The original permission statement is
+## below.
+
 # PayPal python NVP API wrapper class.
 # This is a sample to help others get started on working
 # with the PayPal NVP API in Python. 
