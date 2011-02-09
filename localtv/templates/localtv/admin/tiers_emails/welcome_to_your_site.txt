@@ -6,21 +6,23 @@ Your new Miro Community site is ready to go at http://{{ site.domain }}/.
 you don't want to continue using Miro Community at a paid level, just switch to
 "basic" before the trial ends and you won't be charged (we'll email you 5 days
 before the trial ends to remind you). Otherwise, you'll pay just ${{ tier_obj.dollar_cost }}/month
-for the service as long as your account is open. You can upgrade, downgrade,
-or cancel any time at http://{{ site.domain}}{% url localtv_admin_tier %}
+for the service as long as your account is open. You can upgrade or downgrade at
+any time at http://{{ site.domain}}{% url localtv_admin_tier %}
 {% endif %}
 
 You currently have a {{ tier_name_capitalized }} account for http://{{ site.domain }}.
 You can find your features listed at http://{{ site.domain }}{% url localtv_admin_tier %}.
 
-Get directions for setting up a custom domain here:
-http://develop.participatoryculture.org/index.php/MiroCommunity/CustomDomain
-
-Find out more about custom themeing here [link to wiki page on themeing:
-http://develop.participatoryculture.org/index.php/MiroCommunity/Theming
-
 Learn more about how to use Miro Community at:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
+
+{% if tier_obj.permits_custom_domain %}To set up a custom domain, follow the directions here:
+http://develop.participatoryculture.org/index.php/MiroCommunity/CustomDomain
+{% endif %}
+
+{% if tier_obj.permit_custom_template %}Learn about customizing your theme here:
+http://develop.participatoryculture.org/index.php/MiroCommunity/Theming
+{% endif %}
 
 Still have questions? Don't hesitate to get in touch -
 support@mirocommunity.org.

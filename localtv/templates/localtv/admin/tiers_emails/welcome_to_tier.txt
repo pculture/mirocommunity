@@ -9,18 +9,19 @@ as your account is open. You can upgrade, downgrade, or cancel any time at
 http://{{ site.domain }}{% url localtv_admin_tier}}.
 
 {% endif %}
-Your new account level is {{ tier_name_capitalized}}. You can read more about your tier on
+Your new account level is {{ tier_name_capitalized}}. You can read more about the features on
 your account page.
 
-{% if tier_obj.permits_custom_domain %}Get directions for setting up a custom domain here:
+Learn more about how to use Miro Community at:
+http://develop.participatoryculture.org/index.php/MiroCommunityManual
+
+{% if tier_obj.permits_custom_domain %}To set up a custom domain, follow the directions here:
 http://develop.participatoryculture.org/index.php/MiroCommunity/CustomDomain
 {% endif %}
 
-Find out more about custom themeing here [link to wiki page on themeing:
+{% if tier_obj.permit_custom_template %}Learn about customizing your theme here:
 http://develop.participatoryculture.org/index.php/MiroCommunity/Theming
-
-Learn more about how to use Miro Community:
-http://develop.participatoryculture.org/index.php/MiroCommunityManual
+{% endif %}
 
 Still have questions? Don't hesitate to get in touch  -
 questions@mirocommunity.org.

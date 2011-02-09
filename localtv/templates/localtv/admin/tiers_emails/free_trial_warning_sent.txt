@@ -8,11 +8,11 @@ People will want to visit your video site because they can easily find material
 they're looking for. If you follow these guides in the Miro Community manual,
 your site will stay fresh and easy to navigate:
 
-* Featuring good content: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Featuring_Videos
+* Featuring good content: http://develop.participatoryculture.org/index.php/MiroCommunityManual/GettingStarted#Featuring_Videos
 
-* Adding categories: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Categories
+* Adding categories: http://develop.participatoryculture.org/index.php/MiroCommunityManual/Organize#Categories
 
-* Making playlists: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Playlists
+* Making playlists: http://develop.participatoryculture.org/index.php/MiroCommunityManual/Organize#Playlists
 
 
 Spread the Word
@@ -20,7 +20,7 @@ Spread the Word
 Ask other websites within your community to add a widget to their sites - they'll
 get an influx of community videos and you'll get great exposure.
 
-  More on widgets: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Widgets
+  More on widgets: http://develop.participatoryculture.org/index.php/MiroCommunityManual/Outreach#Widgets
 
 
 Build a Community
@@ -29,9 +29,9 @@ Encourage users to build their profiles and add videos of their own, if
 appropriate. You can look for other relevant videos using the Search
 for Videos button on the Manage Sources page.
 
-  More on profiles: https://develop.participatoryculture.org/index.php/MiroCommunityManual#Authors
+  More on profiles: http://develop.participatoryculture.org/index.php/MiroCommunityManual/Organize#Authors
   
-  More on search: http://develop.participatoryculture.org/index.php/MiroCommunityManual#Search_for_Videos
+  More on search: http://develop.participatoryculture.org/index.php/MiroCommunityManual/GettingStarted#Search_for_Videos
   
 That's it for now! Have any questions, ideas, or a great story to share about your site? 
 Email questions@mirocommunity.org.
