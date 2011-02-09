@@ -74,7 +74,27 @@ def get_display_content(request, model_instance, field_name,
         template.RequestContext(request,
             {'instance': model_instance}))
 
-@register.simple_tag
+from django import template
+def do_editable_widget(parser, token):
+    try:
+        tag_name, model_instance, field_name = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires a single argument" % token.contents.split()[0]
+    
+    if not (field_name[0] == field_name[-1] and field_name[0] in ('"', "'")):
+        raise template.TemplateSyntaxError, "%r tag's field name argument should be in quotes" % tag_name
+
+    return EditableWidgetNode(model_instance, field_name)
+
+class EditableWidgetNode(template.Node):
+    def __init__(self, model_instance, field_name):
+        self.model_instance = model_instance
+        self.field_name = field_name
+    def render(self, context):
+        return editable_widget(context['request'], self.model_instance, self.field_name)
+
+register.tag('editable_widget', do_editable_widget)
+
 def editable_widget(request, model_instance, field_name, display_template_name=None,
                     form=None):
     try:
