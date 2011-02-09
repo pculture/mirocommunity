@@ -377,7 +377,10 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         else:
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
 
-    if current_tier_name != new_tier_name:
+    current_tier_obj = Tier(current_tier_name)
+    new_tier_name = Tier(new_tier_name)
+
+    if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
         # Send an email about the transition
         template_name = 'localtv/admin/tiers_emails/welcome_to_tier.txt'
         subject = '%s has been upgraded!' % (current_siteloc.site.name or current_siteloc.site.domain)
