@@ -387,19 +387,6 @@ class SiteLocation(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
-    def properly_initialized(self):
-        if not self.tier_name:
-            return True
-
-        if not self.get_tier().dollar_cost:
-            return True
-
-        # Hmm, we are in a tier that requires paying money. Well, so long
-        # as we set the payment_due_date once, we're okay.
-        if self.payment_due_date:
-            return True
-        return False
-
     @staticmethod
     def enforce_tiers(override_setting=None):
         '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
