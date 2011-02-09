@@ -127,6 +127,7 @@ urlpatterns += patterns('localtv.admin.tiers',
     (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
     (r'^change_tier/$',             'change_tier', {}, 'localtv_admin_change_tier'),
     (r'^downgrade_confirm/$',             'downgrade_confirm', {}, 'localtv_admin_downgrade_confirm'),
+    (r'^do_it/$',             'user_is_okay_with_payment_so_we_can_really_switch_tier', {}, 'localtv_admin_downgrade_confirm_do_it'),
     (r'^confirmed_change_tier/$',             'confirmed_change_tier', {}, 'localtv_admin_confirmed_change_tier'),
 )
 
