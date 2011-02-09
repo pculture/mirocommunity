@@ -32,7 +32,7 @@ from localtv.playlists.models import (Playlist, PlaylistItem,
                                       PLAYLIST_STATUS_PUBLIC)
 
 def index(request):
-    if not request.sitelocation.properly_initialized():
+    if not request.user_is_admin and not request.sitelocation.properly_initialized():
         return HttpResponse("An admin has to log in to properly initialize the site.")
 
     featured_videos = models.Video.objects.filter(
