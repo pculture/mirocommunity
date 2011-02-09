@@ -278,7 +278,7 @@ margin: 0 auto;
     </div>
     {% endif %}
     {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}
-    <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">
+    <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
       <select name="playlist" id="id_playlist">
         <option value="">Add video to your playlist</option>
         {% for playlist in playlists %}
