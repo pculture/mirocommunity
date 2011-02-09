@@ -29,6 +29,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% else %}
   <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button feature_video"><span>Feature this video</span></a></p>
   {% endif %}
-  {% editable_widget request current_video "thumbnail" %}
+  {% editable_widget current_video "thumbnail" %}
   <br clear="all"/>
 </div>

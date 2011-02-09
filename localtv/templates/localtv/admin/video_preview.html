@@ -26,7 +26,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <div class="vid_title">
   {% if not current_video.metasearch_vid %}
-  {% editable_widget request current_video "name" %}
+  {% editable_widget current_video "name" %}
   {% else %}
   <h3>
     {% if current_video.name %}
@@ -40,8 +40,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <div class="date">
     {% if not current_video.metasearch_vid %}
-    {% editable_widget request current_video "authors" %}
-    {% editable_widget request current_video "when_published" %}
+    {% editable_widget current_video "authors" %}
+    {% editable_widget current_video "when_published" %}
     {% else %}
     {% with current_video as instance %}
     {% include "localtv/inline_edit/video_when_published.html" %}
@@ -57,11 +57,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
 </div>
 <div id="thumbnail">
-  {% editable_widget request current_video "thumbnail" %}
+  {% editable_widget current_video "thumbnail" %}
 </div>
 
  {% if not current_video.metasearch_vid %}
- {% editable_widget request current_video "description" %}
+ {% editable_widget current_video "description" %}
  {% else %}
  <div class="description">
    {{ current_video.description|sanitize }}
@@ -72,15 +72,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <ul class="meta_listing">
     {% if not current_video.metasearch_vid %}
     <li class="item">
-      {% editable_widget request current_video "categories" %}
+      {% editable_widget current_video "categories" %}
     </li>
     <li class="item">
-      {% editable_widget request current_video "tags" %}
+      {% editable_widget current_video "tags" %}
     </li>
     {% endif %}
     <li class="item">
       {% if not current_video.metasearch_vid %}
-      {% editable_widget request current_video "website_url" %}
+      {% editable_widget current_video "website_url" %}
       {% else %}
       {% with current_video as instance %}
       {% include "localtv/inline_edit/video_website_url.html" %}
