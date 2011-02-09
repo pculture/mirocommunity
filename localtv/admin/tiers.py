@@ -129,7 +129,7 @@ def _create_recurring_payment(sitelocation, token, amount, startdate):
     success = (result.get('PROFILESTATUS', [''])[0].lower() == 'activeprofile' and
                result.get('ACK', [''])[0].lower() == 'success')
     if success:
-        sitelocation.payment_secret = result.get('PROFILEID')[0]
+        sitelocation.current_paypal_profile_id = result.get('PROFILEID')[0]
         sitelocation.payment_due_date = startdate
         sitelocation.save()
     else:

@@ -324,6 +324,7 @@ class SiteLocation(Thumbnailable):
      - tier_name: A short string representing the class of site. This relates to paid extras.
      - payment_secret: A base64-encoded string that is a shared secret between us and the payment
                        processing service.
+     - current_paypal_profile_id: The PayPal identifier of the current recurring payment profile.
      - payment_due_date: A datetime object that represents when the next payment is due. Can be
                          None if the current tier does not require any payment at all.
      - free_trial_available: A boolean indicating if you have a free trial remaining.
@@ -349,6 +350,7 @@ class SiteLocation(Thumbnailable):
     free_trial_available = models.BooleanField(default=True)
     in_free_trial = models.BooleanField(default=False)
     payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
     video_allotment_warning_sent = models.BooleanField(default=False)
     free_trial_warning_sent = models.BooleanField(default=False)
     already_sent_welcome_email = models.BooleanField(default=False)
