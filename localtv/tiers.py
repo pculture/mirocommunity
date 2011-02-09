@@ -378,7 +378,7 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
             instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
 
     current_tier_obj = Tier(current_tier_name)
-    new_tier_name = Tier(new_tier_name)
+    new_tier_obj= Tier(new_tier_name)
 
     if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
         # Send an email about the transition
