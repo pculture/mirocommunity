@@ -161,7 +161,7 @@ def confirmed_change_tier(request, override_tier = None):
     # Does this tier require payment? If not, we can just jump straight into it.
     # Note that this does not change anything about the free trial status. That's okay.
     if not target_tier_obj.dollar_cost():
-        return user_is_okay_with_payment_so_we_can_really_switch_tier(request)
+        return _actually_switch_tier(request, target_tier_name)
 
     # What about free trial? FIXME
 
