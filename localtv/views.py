@@ -19,7 +19,7 @@ import datetime
 from django.contrib import comments
 from django.core.urlresolvers import resolve, Resolver404
 from django.db.models import Q
-from django.http import Http404, HttpResponsePermanentRedirect
+from django.http import Http404, HttpResponsePermanentRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
