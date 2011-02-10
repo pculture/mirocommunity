@@ -42,8 +42,10 @@ def nightly_warnings():
 
 def get_main_site_admin():
     superusers = django.contrib.auth.models.User.objects.filter(is_superuser=True)
-    first_one = superusers.order_by('pk')[0]
-    return first_one
+    first_ones = superusers.order_by('pk')
+    if first_ones:
+        return first_ones[0]
+    return None # eek, any callers had better check for this.
 
 def should_send_inactive_site_warning(sitelocation, current_tier):
     # If we have already sent the warning, refuse to send it again.
@@ -53,7 +55,10 @@ def should_send_inactive_site_warning(sitelocation, current_tier):
     # Grab the time the main site admin last logged in. If it is greater
     # than six weeks, then yup, the admin gets a warning.
     SIX_WEEKS = datetime.timedelta(days=7 * 6)
-    if (datetime.datetime.utcnow() - get_main_site_admin().last_login) > SIX_WEEKS:
+    main_site_admin = get_main_site_admin()
+    if not main_site_admin:
+        raise ValueError, "Uh, this site has no admin. Something has gone horribly wrong."
+    if (datetime.datetime.utcnow() - main_site_admin.last_login) > SIX_WEEKS:
         return True
 
 def should_send_video_allotment_warning(sitelocation, current_tier):
@@ -442,6 +447,9 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
 def send_tiers_related_email(subject, template_name, sitelocation, override_to=None):
     # Send it to the site superuser with the lowest ID
     first_one = get_main_site_admin()
+    if not first_one:
+        logging.error("Hah, there is no site admin. Screw email.")
+        return
 
     if sitelocation.payment_due_date:
         next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
