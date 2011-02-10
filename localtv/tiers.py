@@ -451,6 +451,10 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
         logging.error("Hah, there is no site admin. Screw email.")
         return
 
+    if not first_one.email:
+        logging.error("Hah, there is a site admin, but that person has no email address set. Email is hopeless.")
+        return
+
     if sitelocation.payment_due_date:
         next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
     else:
