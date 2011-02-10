@@ -160,13 +160,19 @@ def confirmed_change_tier(request, override_tier = None):
     
     # Does this tier require payment? If not, we can just jump straight into it.
     # Note that this does not change anything about the free trial status. That's okay.
+    use_paypal = True
     if not target_tier_obj.dollar_cost():
+        use_paypal = False
+
+    if getattr(settings, "LOCALTV_SKIP_PAYPAL", None):
+        use_paypal = False
+
+    if use_paypal:
+        # Normally, the user has to permit us to charge them, first.
+        return _generate_paypal_redirect(request, target_tier_name)
+    else:
+        # Sometimes we skip that step.
         return _actually_switch_tier(request, target_tier_name)
-
-    # What about free trial? FIXME
-
-    # Otherwise, the user has to permit us to charge them, first.
-    return _generate_paypal_redirect(request, target_tier_name)
 
 def _generate_paypal_redirect(request, target_tier_name):
     target_tier_obj = localtv.tiers.Tier(target_tier_name)
