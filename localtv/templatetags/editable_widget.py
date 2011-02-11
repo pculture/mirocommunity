@@ -84,14 +84,17 @@ def do_editable_widget(parser, token):
     if not (field_name[0] == field_name[-1] and field_name[0] in ('"', "'")):
         raise template.TemplateSyntaxError, "%r tag's field name argument should be in quotes" % tag_name
 
-    return EditableWidgetNode(model_instance, field_name)
+    return EditableWidgetNode(model_instance, field_name[1:-1])
 
 class EditableWidgetNode(template.Node):
     def __init__(self, model_instance, field_name):
         self.model_instance = model_instance
         self.field_name = field_name
     def render(self, context):
-        return editable_widget(context['request'], self.model_instance, self.field_name)
+        if (self.model_instance in context and
+            'request' in context):
+            return editable_widget(context['request'], context[self.model_instance], self.field_name)
+        return '' # um oops
 
 register.tag('editable_widget', do_editable_widget)
 
