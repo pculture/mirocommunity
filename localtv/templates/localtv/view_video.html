@@ -288,7 +288,7 @@ margin: 0 auto;
       </select>
       <input type="submit" value="Add"/>
     </form>
-    <form method="POST" action="{% url localtv_playlist_index %}">
+    <form method="POST" action="{% url localtv_playlist_index %}"> {% csrf_token %}
       <input type="text" name="name" />
       <input type="hidden" name="video" value="{{ current_video.pk }}">
       <input type="submit" value="Add New Playlist">
