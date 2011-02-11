@@ -22,6 +22,10 @@ body#tier #upgrade_title p strong {
   font-weight: bold;
 }
 
+/*
+Basic Plan
+*/
+
 body#tier #basic_plan {
   width: 941px;
   height: 49px;
@@ -53,21 +57,56 @@ body#tier #basic_plan p {
   text-shadow: 0 1px 0 #ffffcf;
 }
 
-body#tier #basic_plan a#btn_started {
+/*
+Switch to basic
+*/
+
+body#tier #switchbasic {
+  width: 941px;
+  height: 49px;
+  background: transparent url(/images/admin/switch_basic_bg.png) 0 0 no-repeat;
+  display: block;
+  margin: 0 0 0 0;
+}
+
+body#tier #switchbasic h1 {
+  font-family: Helvetica, Arial, sans-serif;
+  color: #FFF;
+  margin: 13px 0 0 25px;
+  font-size: 21px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 -1px 0 #000;
+  float: left;
+}
+
+body#tier #switchbasic h1 strong {
+  font-weight: bold;
+}
+
+body#tier #switchbasic p {
+  color: #555;
+  float: left;
+  margin: 18px 0 0 45px;
+  font-size: 15px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 0 #FFF;
+}
+
+body#tier #switchbasic a#btn_switchbasic {
   float: right;
   display: block;
   width: 155px;
   height: 35px;
-  background: transparent url(/images/admin/btn_upgrade_today.png) 0 0 no-repeat;
+  background: transparent url(/images/admin/btn_switch_basic.png) 0 0 no-repeat;
   text-indent: -9999px;
   margin: 8px 8px 0 0;
 }
 
-body#tier #basic_plan a:hover#btn_started {
+body#tier #switchbasic a:hover#btn_switchbasic {
   background-position: 0 -35px;
 }
 
-body#tier #basic_plan a:active#btn_started {
+body#tier #switchbasic a:active#btn_switchbasic {
   background-position: 0 -70px;
 }
 
@@ -112,7 +151,11 @@ body#tier .selected .hdr h2 {
   color: #FFF;
   text-shadow: 0 1px 0 #333;
   letter-spacing: -1px;
-  padding: 53px 0 0 0;
+  padding: 60px 0 0 0;
+  text-align: center;
+  float: none;
+  display: block;
+  
 }
 
 body#tier .selected .ft {
@@ -123,17 +166,43 @@ body#tier .selected .ft a {
   display: none;
 }
 
-body#tier .ft a {
+body#tier .ft p {
+  display: none;
+}
+
+body#tier .selected .ft p {
   color: #FFF;
   font-weight: bold;
-  font-size: 20px;
+  font-size: 30px;
   padding: 0 0 5px 0;
   text-decoration: none;
   display: block;
-  float: left;
+  text-align: center;
   position: relative;
-  top: 20px;
-  left: 37px;
+  top: 18px;
+  left: -5px;
+  text-shadow: 0 -1px 0 #000;
+}
+
+body#tier .ft a {
+  color: rgba(255,255,255, 0.3);
+  font-weight: bold;
+  font-size: 20px;
+  padding: 0;
+  text-decoration: underline;
+  display: block;
+  text-align: center;
+  float: none;
+  position: relative;
+  top: 23px;
+  left: 0;
+  border: 0;
+  -moz-box-shadow: inset 0 0 0 #377454;
+  -webkit-box-shadow: inset 0 0 0 #377454;
+}
+
+body#tier .ft a em {
+  color: #FFF;
 }
 
 #signup_form #error_container {
@@ -191,4 +260,31 @@ body#tier form h1#account {
 
 #signup_form .msg {
   width: 900px;
+}
+
+body.downgrade_confirm h1 {
+  background: #910000;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  padding: 10px;
+  color: #FFF !important;
+  float: left;
+  font-size: 14px !important;
+}
+
+body.downgrade_confirm h2 {
+  padding: 9px 0 0 10px;
+  color: #910000 !important;
+}
+
+body.downgrade_confirm h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+body.downgrade_confirm p {
+  font-size: 16px;
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 24px;
+  color: #333;
 }

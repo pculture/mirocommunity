@@ -41,27 +41,41 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <p>All <strong>new</strong> monthly subscribers get a <strong>free 30 day</strong> trial.</p> 
   </div><!-- // upgrade_title -->
   
-
+{% ifequal site_location.tier_name 'basic' %}
 <div id="basic_plan" class="clear">
-  {% ifequal site_location.tier_name 'basic' %}
     <h1>Your current plan: <strong>basic</strong></h1>
-  {% else %}
-    <h1 id="downgrade_basic">Downgrade to <strong>basic</strong></h1>
-  {% endifequal %}
-  <p>  {% ifequal site_location.tier_name 'basic' %}
-{% if site_location.basic_trial_available %}
-Easily upgrade to receive a free 30 day trial. Only takes seconds.
-{% else %}
-To upgrade, make a choice below.
-{% endif %}
-{% else %}
-You can always downgrade to the basic plan.
-{% endifequal %}
-</p>
-{% ifnotequal site_location.tier_name 'basic' %}
-  <a id="btn_started" href="{% url localtv_admin_change_tier %}?tier_name=basic">Switch to basic</a>
-{% endifnotequal %}
+    <p>{% ifequal site_location.tier_name 'basic' %}
+      {% if site_location.basic_trial_available %}
+        Easily upgrade to receive a free 30 day trial. Only takes seconds.
+      {% else %}
+        To upgrade, make a choice below.
+      {% endif %}
+      {% else %}
+        You can always downgrade to the basic plan.
+      {% endifequal %}
+    </p>
+
 </div><!-- // basic_plan -->
+
+{% else %}
+
+<div id="switchbasic" class="clear">
+  <h1>Basic <strong>Free</strong></h1>
+    <p>{% ifequal site_location.tier_name 'basic' %}
+      {% if site_location.basic_trial_available %}
+        Easily upgrade to receive a free 30 day trial. Only takes seconds.
+      {% else %}
+        To upgrade, make a choice below.
+      {% endif %}
+      {% else %}
+        500 videos, your own logo and background.
+      {% endifequal %}
+    </p>
+    {% ifnotequal site_location.tier_name 'basic' %}
+      <a id="btn_switchbasic" href="{% url localtv_admin_change_tier %}?tier_name=basic">Switch to basic</a>
+    {% endifnotequal %}
+</div><!-- // basic_plan -->
+{% endifequal %}
 
 <div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
   <div class="hdr">
@@ -76,7 +90,8 @@ You can always downgrade to the basic plan.
     <li><strong>5</strong> Administrator Accounts</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=plus" class="start_trial">{{ switch_messages.plus }}</a>
+    <a href="{% url localtv_admin_change_tier %}?tier_name=plus" class="start_trial"><em>{{ switch_messages.plus }}</em></a>
+    <p>Plus</p>
   </div><!-- // ft -->
 </div><!-- // starter_pack -->
 
@@ -94,7 +109,8 @@ You can always downgrade to the basic plan.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=premium" class="start_trial">{{ switch_messages.premium }}</a>
+    <a href="{% url localtv_admin_change_tier %}?tier_name=premium" class="start_trial"><em>{{ switch_messages.premium }}</em></a>
+    <p>Premium</p>
   </div><!-- // ft -->
 </div><!-- // value_added -->
 
@@ -113,7 +129,8 @@ You can always downgrade to the basic plan.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=max" class="start_trial">Upgrade Your Account</a>
+    <a href="{% url localtv_admin_change_tier %}?tier_name=max" class="start_trial"><em>Upgrade Your Account</em></a>
+    <p>Max</p>
   </div><!-- // ft -->
 </div><!-- // delcisious_plan -->
 </div><!-- // clear -->

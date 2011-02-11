@@ -66,12 +66,22 @@
   font-family: Helvetica, Arial, sans-serif;
   margin: 0;
   text-align: center;
+  font-size: 25px !important;
+  float: none;
+  display: block;
+  padding: 25px 0 0 0 !important;
 }
 
 .plan h2 {
   font-family: Helvetica, Arial, sans-serif;
   margin: 0;
   text-align: center;
+  font-size: 30px !important;
+  float: none;
+  display: block;
+  margin: 0;
+  position: relative;
+  top: -10px;
 }
 
 .plan a.start_trial {
@@ -139,15 +149,12 @@
 
 #starter_pack .hdr h1 {
   font-family: Helvetica, Arial, sans-serif;
-  padding: 25px 0 8px 0;
   color: #bad8e3;
-  font-size: 20px;
   text-shadow: 0 1px 0 #223841;
 }
 
 #starter_pack .hdr h2 {
   font-weight: bold;
-  font-size: 30px;
   color: #dae3e9;
   text-shadow: 0 1px 0 #223841;
   letter-spacing: -1px;
@@ -170,15 +177,13 @@
 
 #value_added .hdr h1 {
   font-family: Helvetica, Arial, sans-serif;
-  padding: 25px 0 8px 0;
+  
   color: #e1a4c4;
-  font-size: 20px;
   text-shadow: 0 1px 0 #683652;
 }
 
 #value_added .hdr h2 {
   font-weight: bold;
-  font-size: 30px;
   color: #e9dae2;
   text-shadow: 0 1px 0 #683652;
   letter-spacing: -1px;
@@ -201,15 +206,12 @@
 
 #delicious_plan .hdr h1 {
   font-family: Helvetica, Arial, sans-serif;
-  padding: 25px 0 8px 0;
   color: #98d8bb;
-  font-size: 20px;
   text-shadow: 0 1px 0 #376853;
 }
 
 #delicious_plan .hdr h2 {
   font-weight: bold;
-  font-size: 30px;
   color: #dae8e1;
   text-shadow: 0 1px 0 #203f30;
   letter-spacing: -1px;
