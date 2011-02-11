@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 <div class="floatleft">
-  <h3>Website{% if not sitelocation %}
+  <h3>Website{% if rendered_within_get_display_content %}
 <a href="#" class="edit_link"><span>Edit</span></a>
 {% endif %}</h3>
   <span class="url">{{ instance.website_url|urlize }}</span>
