@@ -72,7 +72,8 @@ def get_display_content(request, model_instance, field_name,
             field_name))
     return display_template.render(
         template.RequestContext(request,
-            {'instance': model_instance}))
+            {'instance': model_instance,
+             'rendered_within_get_display_content': True}))
 
 from django import template
 def do_editable_widget(parser, token):
