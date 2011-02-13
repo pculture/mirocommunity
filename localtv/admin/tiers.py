@@ -111,11 +111,11 @@ def user_is_okay_with_payment_so_we_can_really_switch_tier(request):
         request.sitelocation.free_trial_available = False
         request.sitelocation.payment_secret = ''
         request.sitelocation.save()
-    success = _create_recurring_payment(request.sitelocation, request.GET.get('token', ''), amount, startdate)
+    success = _create_recurring_payment(request, request.GET.get('token', ''), amount, startdate)
     # FIXME: Look at the return code at some point.
     return _actually_switch_tier(request, target_tier_name)
 
-def _create_recurring_payment(sitelocation, token, amount, startdate):
+def _create_recurring_payment(request, token, amount, startdate):
     p = localtv.paypal_snippet.PayPal(
         settings.PAYPAL_WPP_USER,
         settings.PAYPAL_WPP_PASSWORD,
@@ -129,9 +129,11 @@ def _create_recurring_payment(sitelocation, token, amount, startdate):
     success = (result.get('PROFILESTATUS', [''])[0].lower() == 'activeprofile' and
                result.get('ACK', [''])[0].lower() == 'success')
     if success:
-        sitelocation.current_paypal_profile_id = result.get('PROFILEID')[0]
-        sitelocation.payment_due_date = startdate
-        sitelocation.save()
+        request.sitelocation.current_paypal_profile_id = result.get('PROFILEID')[0]
+        request.sitelocation.payment_due_date = startdate
+        request.sitelocation.save()
+        request.tier_info.user_has_successfully_performed_a_paypal_transaction = True
+        request.tier_info.save()
     else:
         raise ValueError, "Um, that sucked. PayPal broke on us. FIXME."
 

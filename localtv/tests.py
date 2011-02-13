@@ -2063,4 +2063,10 @@ class TestWmodeFilter(BaseTestCase):
         self.assertEqual(output,
                          localtv.templatetags.filters.wmode_transparent(input))
                 
-        
+class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
+    def test_unit(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+        tier_info = models.TierInfo.objects.get_current()
+        tier_info.user_has_successfully_performed_a_paypal_transaction = True
+        tier_info.save()
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=True))

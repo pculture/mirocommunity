@@ -295,6 +295,18 @@ class SiteLocationManager(models.Manager):
 
 ### FIXME: Move Tiers info to a separate Model. That way, it does not
 ### show up in the SiteLocation model form.
+class TierInfoManager(models.Manager):
+    def get_current(self):
+        sid = settings.SITE_ID
+        current_site_location = SiteLocation.objects.get_current()
+        tier_info, _ = TierInfo.objects.get_or_create(
+            sitelocation = current_site_location)
+        return tier_info
+
+class TierInfo(models.Model):
+    user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
+    sitelocation = models.OneToOneField('SiteLocation')
+    objects = TierInfoManager()
 
 class SiteLocation(Thumbnailable):
     """
@@ -395,6 +407,17 @@ class SiteLocation(Thumbnailable):
             disabled = getattr(settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
         else:
             disabled = override_setting
+
+        if disabled:
+            # Well, hmm. If the site admin participated in a PayPal transaction, then we
+            # actually will enforce the tiers.
+            #
+            # Go figure.
+            tierdata = TierInfo.objects.get_current()
+            if tierdata.user_has_successfully_performed_a_paypal_transaction:
+                return True # enforce it.
+
+        # Generally, we just negate the "disabled" boolean.
         return not disabled
 
     def user_is_admin(self, user):
