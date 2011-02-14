@@ -3936,8 +3936,31 @@ class NightlyTiersEmails(BaseTestCase):
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()
         self.assertEquals(len(mail.outbox), 0)
+        self.admin = localtv.tiers.get_main_site_admin()
+        self.admin.last_login = datetime.datetime.utcnow()
+        self.admin.save()
+
         from localtv.management.commands import nightly_tiers_events
         self.tiers_cmd = nightly_tiers_events.Command()
+
+    def test_inactive_site_warning(self):
+        # Set up the admin so that the last login was 90 days ago (which should be
+        # long enough ago that the site is "inactive")
+        self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
+        self.admin.save()
+        self.assertFalse(self.site_location.inactive_site_warning_sent)
+        
+        # Make sure it sends an email...
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # And make sure the SiteLocation knows that the email was sent...
+        self.assertTrue(self.site_location.inactive_site_warning_sent)
+
+        # ..so that the next time, it doesn't send any email.
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
 
     @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
     def test_video_allotment(self):
