@@ -1,7 +1,7 @@
 You have just exceeded 2/3 of your video allotment - upgrade for more!
 
 Right now, you have {{ video_count }} videos on your site, http://{{site.domain}}/.
-Once you reach {{ tier.videos_limit }} videos, you will no longer be able to add new videos to your site
+Once you reach {{ tier_obj.videos_limit }} videos, you will no longer be able to add new videos to your site
 until you remove some.
 
 To get more space for videos, as well as increased features, you can upgrade now:
