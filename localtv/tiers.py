@@ -467,7 +467,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
                  'tier_obj': sitelocation.get_tier(),
                  'tier_name_capitalized': sitelocation.tier_name.title(),
                  'site_name': sitelocation.site.name or sitelocation.site.domain,
-                 'video_count': current_videos_that_count_toward_limit(),
+                 'video_count': current_videos_that_count_toward_limit().count(),
                  'short_name': first_one.first_name or first_one.username,
                  'next_payment_due_date': next_payment_due_date,
                  })
