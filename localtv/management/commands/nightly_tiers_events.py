@@ -31,6 +31,8 @@ class Command(BaseCommand):
                 'localtv/admin/tiers_emails/video_allotment.txt', 'Upgrade your Miro Community site to store more video'),
             'free_trial_warning_sent': (
                 'localtv/admin/tiers_emails/free_trial_warning_sent.txt', 'Only five more days left in your Miro Community free trial'),
+            'inactive_site_warning_sent': (
+                'localtv/admin/tiers_emails/inactive_site_warning_sent.txt', 'Your Miro Community site has been inactive, come back!')
             }
         for site_location_column in localtv.tiers.nightly_warnings():
             # Save a note saying we sent the notice

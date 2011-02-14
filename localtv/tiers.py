@@ -36,8 +36,10 @@ def nightly_warnings():
         ret.add('video_allotment_warning_sent')
     if should_send_five_day_free_trial_warning(sitelocation):
         ret.add('free_trial_warning_sent')
-    if should_send_inactive_site_warning(sitelocation, current_tier):
-        ret.add('inactive_site_warning_sent')
+    #if should_send_inactive_site_warning(sitelocation, current_tier):
+    #    ret.add('inactive_site_warning_sent')
+    # NOTE: Commented out the inactive site warning because the
+    # text is not fully-baked.
     return ret
 
 def get_main_site_admin():
