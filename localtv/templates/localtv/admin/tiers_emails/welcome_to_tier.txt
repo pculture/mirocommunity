@@ -10,7 +10,7 @@ http://{{ site.domain }}{% url localtv_admin_tier}}.
 
 {% endif %}
 Your new account level is {{ tier_name_capitalized}}. You can read more about the features on
-your account page.
+your account page: http://{{ site.domain }}{% url localtv_admin_tier}}.
 
 Learn more about how to use Miro Community at:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
