@@ -348,19 +348,22 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     if not current_sitelocs:
         return
 
+    tier_info = localtv.models.TierInfo.objects.get_current()
+
     current_siteloc = current_sitelocs[0]
     current_tier_name = current_siteloc.tier_name
     new_tier_name = instance.tier_name
     if (current_tier_name == 'basic') and (new_tier_name != 'basic'):
         # There should be no due date, because we used to be in 'basic' mode. If there was,
         # log an error.
-        if instance.payment_due_date:
+        if tier_info.payment_due_date:
             logging.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
         # If the user can use a free trial, then the due date is a month from now
-        if not current_siteloc.free_trial_available:
-            instance.payment_due_date = datetime.datetime.utcnow()
+        if not tier_info.free_trial_available:
+            tier_info.payment_due_date = datetime.datetime.utcnow()
         else:
-            instance.payment_due_date = add_a_month(datetime.datetime.utcnow())
+            tier_info.payment_due_date = add_a_month(datetime.datetime.utcnow())
+        tier_info.save()
 
     current_tier_obj = Tier(current_tier_name)
     new_tier_obj= Tier(new_tier_name)
@@ -421,7 +424,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
         logging.error("Hah, there is a site admin, but that person has no email address set. Email is hopeless.")
         return
 
-    if sitelocation.payment_due_date:
+    if tier_info.payment_due_date:
         next_payment_due_date = tier_info.payment_due_date.strftime('%Y-%m-%d')
     else:
         next_payment_due_date = None
@@ -429,7 +432,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     # Generate the email
     t = loader.get_template(template_name)
     data = {'site': sitelocation.site,
-            'in_free_trial': sitelocation.in_free_trial,
+            'in_free_trial': tier_info.in_free_trial,
             'tier_obj': sitelocation.get_tier(),
             'tier_name_capitalized': sitelocation.tier_name.title(),
             'site_name': sitelocation.site.name or sitelocation.site.domain,
