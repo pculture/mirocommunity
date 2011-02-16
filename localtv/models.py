@@ -305,6 +305,7 @@ class TierInfoManager(models.Manager):
 
 class TierInfo(models.Model):
     user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
+    already_sent_tiers_compliance_email = models.BooleanField(default=False)
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
 

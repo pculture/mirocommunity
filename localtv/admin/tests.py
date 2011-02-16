@@ -4026,8 +4026,15 @@ class TestTiersComplianceEmail(BaseTestCase):
     def test_email_when_over_video_limit(self):
         for n in range(1000):
             models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        # The first time round, we should get an email.
         self.cmd.handle()
         self.assertEqual(1,
+                         len(mail.outbox))
+        # Clear the outbox. When we run the command again, we should not
+        # get an email.
+        mail.outbox = []
+        self.cmd.handle()
+        self.assertEqual(0,
                          len(mail.outbox))
 
     def test_no_email_when_within_limits(self):

@@ -23,10 +23,16 @@ import localtv.models
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        ti = localtv.models.TierInfo.objects.get_current()
+        if ti.already_sent_tiers_compliance_email:
+            return
+
         sitelocation = localtv.models.SiteLocation.objects.get_current()
         if localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name):
             localtv.tiers.send_tiers_related_email(
                 'Whoa, this is a warning',
                 'localtv/admin/tiers_emails/too_big_for_your_tier.txt',
                 sitelocation)
+            ti.already_sent_tiers_compliance_email = True
+            ti.save()
 
