@@ -26,7 +26,8 @@ class Command(BaseCommand):
         # We send this email to the person who owns the site. So we use
         # the tiers system's ability to send email.
         site_location = localtv.models.SiteLocation.objects.get_current()
-        if site_location.already_sent_welcome_email:
+        tiers_info = localtv.models.TierInfo.objects.get_current()
+        if tiers_info.already_sent_welcome_email:
             return
 
         # If we haven't sent it, prepare the email
