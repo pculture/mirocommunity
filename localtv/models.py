@@ -302,6 +302,15 @@ class TierInfoManager(models.Manager):
         return tier_info
 
 class TierInfo(models.Model):
+    payment_due_date = models.DateTimeField(null=True, blank=True)
+    free_trial_available = models.BooleanField(default=True)
+    in_free_trial = models.BooleanField(default=False)
+    payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    video_allotment_warning_sent = models.BooleanField(default=False)
+    free_trial_warning_sent = models.BooleanField(default=False)
+    already_sent_welcome_email = models.BooleanField(default=False)
+    inactive_site_warning_sent = models.BooleanField(default=False)
     user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
     already_sent_tiers_compliance_email = models.BooleanField(default=False)
     sitelocation = models.OneToOneField('SiteLocation')
