@@ -447,7 +447,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
 
-def send_tiers_related_email(subject, template_name, sitelocation, override_to=None):
+def send_tiers_related_email(subject, template_name, sitelocation, override_to=None, extra_context=None):
     # Send it to the site superuser with the lowest ID
     first_one = get_main_site_admin()
     if not first_one:
@@ -465,15 +465,19 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
 
     # Generate the email
     t = loader.get_template(template_name)
-    c = Context({'site': sitelocation.site,
-                 'in_free_trial': sitelocation.in_free_trial,
-                 'tier_obj': sitelocation.get_tier(),
-                 'tier_name_capitalized': sitelocation.tier_name.title(),
-                 'site_name': sitelocation.site.name or sitelocation.site.domain,
-                 'video_count': current_videos_that_count_toward_limit().count(),
-                 'short_name': first_one.first_name or first_one.username,
-                 'next_payment_due_date': next_payment_due_date,
-                 })
+    data = {'site': sitelocation.site,
+            'in_free_trial': sitelocation.in_free_trial,
+            'tier_obj': sitelocation.get_tier(),
+            'tier_name_capitalized': sitelocation.tier_name.title(),
+            'site_name': sitelocation.site.name or sitelocation.site.domain,
+            'video_count': current_videos_that_count_toward_limit().count(),
+            'short_name': first_one.first_name or first_one.username,
+            'next_payment_due_date': next_payment_due_date,
+            }
+    if extra_context:
+        data.update(extra_context)
+
+    c = Context(data)
     message = t.render(c)
 
     recipient_list = [first_one.email]
