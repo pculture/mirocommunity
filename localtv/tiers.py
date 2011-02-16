@@ -409,6 +409,8 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
 
 def send_tiers_related_email(subject, template_name, sitelocation, override_to=None, extra_context=None):
+    tier_info = localtv.models.TierInfo.objects.get_current()
+
     # Send it to the site superuser with the lowest ID
     first_one = get_main_site_admin()
     if not first_one:
@@ -420,7 +422,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
         return
 
     if sitelocation.payment_due_date:
-        next_payment_due_date = sitelocation.payment_due_date.strftime('%Y-%m-%d')
+        next_payment_due_date = tier_info.payment_due_date.strftime('%Y-%m-%d')
     else:
         next_payment_due_date = None
 
