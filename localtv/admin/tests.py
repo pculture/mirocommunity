@@ -4043,7 +4043,15 @@ class TestTiersComplianceEmail(BaseTestCase):
                          len(mail.outbox))
 
     def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
-        pass
+        ti = models.TierInfo.objects.get_current()
+        ti.already_sent_tiers_compliance_email = True
+        ti.save()
+
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
 
 class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
     fixtures = BaseTestCase.fixtures
