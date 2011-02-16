@@ -4018,11 +4018,17 @@ class TestDisableEnforcement(BaseTestCase):
 class TestTiersComplianceEmail(BaseTestCase):
     def setUp(self):
         super(TestTiersComplianceEmail, self).setUp()
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
         from localtv.management.commands import send_tiers_compliance_email
         self.cmd = send_tiers_compliance_email.Command()
 
     def test_email_when_over_video_limit(self):
-        pass
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        self.cmd.handle()
+        self.assertEqual(1,
+                         len(mail.outbox))
 
     def test_no_email_when_within_limits(self):
         self.cmd.handle()
