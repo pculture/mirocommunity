@@ -293,8 +293,6 @@ class SiteLocationManager(models.Manager):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
 
-### FIXME: Move Tiers info to a separate Model. That way, it does not
-### show up in the SiteLocation model form.
 class TierInfoManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
