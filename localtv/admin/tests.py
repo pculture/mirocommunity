@@ -4015,12 +4015,19 @@ class TestDisableEnforcement(BaseTestCase):
     def testFalse(self):
         self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
 
-class TestEmailSiteAdminWhenTiersIsEnabled(BaseTestCase):
+class TestTiersComplianceEmail(BaseTestCase):
+    def setUp(self):
+        super(TestTiersComplianceEmail, self).setUp()
+        from localtv.management.commands import send_tiers_compliance_email
+        self.cmd = send_tiers_compliance_email.Command()
+
     def test_email_when_over_video_limit(self):
         pass
 
     def test_no_email_when_within_limits(self):
-        pass
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
 
     def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
         pass
