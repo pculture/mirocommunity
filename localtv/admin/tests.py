@@ -3438,55 +3438,6 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(FlatPage.objects.count(), 2)
 
 ### Class tier payment tests
-class TestPaymentFailures(BaseTestCase):
-    def setUp(self):
-        super(TestPaymentFailures, self).setUp()
-        self.site_location.payment_secret = 'sekrit'
-        self.site_location.free_trial_available = False
-        self.site_location.save()
-        self.NOW = datetime.datetime.utcnow()
-        self.IN_FOUR_DAYS = self.NOW + datetime.timedelta(days=4)
-        self.IN_A_MONTH = self.NOW + datetime.timedelta(days=30)
-        self.EVEN_LATER = self.IN_A_MONTH + datetime.timedelta(days=4)
-
-    def test_bad_secret(self):
-        self.assertRaises(localtv.tiers.WrongPaymentSecret,
-                          localtv.tiers.process_payment, 0, 'wrong secret', self.NOW)
-
-    def test_infer_amount(self):
-        # No exception
-        localtv.tiers.process_payment(15, 'sekrit', self.NOW)
-        # Exception, due to invalid payment amount
-        self.assertRaises(
-            localtv.tiers.WrongAmount,
-            localtv.tiers.process_payment, 3, 'sekrit', self.NOW)
-
-    def test_start_date_without_free_trial(self):
-        # No exception
-        localtv.tiers.process_payment(15, 'sekrit', self.NOW)
-
-        # Error -- bad start date
-        self.assertRaises(
-            localtv.tiers.WrongStartDate,
-            localtv.tiers.process_payment, 15, 'sekrit', self.IN_FOUR_DAYS)
-                          
-    def test_start_date_with_free_trial(self):
-        self.site_location.free_trial_available = True
-        self.site_location.save()
-
-        # No exception
-        localtv.tiers.process_payment(15, 'sekrit', self.IN_A_MONTH)
-        self.assertFalse(self.site_location.free_trial_available)
-
-    def test_bad_start_date_with_free_trial(self):
-        self.site_location.free_trial_available = True
-        self.site_location.save()
-
-        # Error -- bad start date
-        self.assertRaises(
-            localtv.tiers.WrongStartDate,
-            localtv.tiers.process_payment, 15, 'sekrit', self.EVEN_LATER)
-                          
 class TierPaymentTests(BaseTestCase):
     def test_change_to_non_basic_tier_creates_payment_due_date(self):
         return # FIXME
