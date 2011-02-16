@@ -149,7 +149,10 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
 
     disabled_this_many = 0
     disable_these_videos = current_videos_that_count_toward_limit().order_by('-pk')[:count]
+    disable_these_pks = disable_these_videos.values_list('id', flat=True)
+
     # Use a bulk .update() call so it's all done in one SQL query.
+    disable_these_videos = localtv.models.Video.objects.filter(pk__in=disable_these_pks)
     disable_these_videos.update(status=localtv.models.VIDEO_STATUS_UNAPPROVED)
     return disable_these_videos.count()
 
