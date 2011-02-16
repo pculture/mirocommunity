@@ -70,6 +70,7 @@ class BaseTestCase(TestCase):
         settings.SITE_ID = 1
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
+        self.tier_info = models.TierInfo.objects.get_current()
 
         # By default, tests run on an 'max' account.
         self.site_location.tier_name = 'max'
