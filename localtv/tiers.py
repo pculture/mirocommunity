@@ -327,45 +327,6 @@ class WrongAmount(PaymentException):
 class WrongStartDate(PaymentException):
     pass
 
-def process_payment(dollars, payment_secret, start_date):
-    site_location = localtv.models.SiteLocation.objects.get_current()
-    if payment_secret != site_location.payment_secret:
-        raise WrongPaymentSecret()
-
-    # Reverse the NAME_TO_COST dictionary to grab the name from
-    # the cost.
-    cost2name = dict(map(reversed, Tier.NAME_TO_COST.items()))
-    if dollars in cost2name:
-        target_tier_name = cost2name[dollars]
-    else:
-        raise WrongAmount()
-
-    # Check the start_date. It should be within a day of right now
-    # (if there is a free trial available, we push NOW forward
-    # by 30 days)
-    NOW = datetime.datetime.utcnow()
-    if site_location.free_trial_available:
-        NOW += datetime.timedelta(days=30)
-    difference = NOW - start_date
-    # If the delta is too large, raise WrongStartDate
-    if abs(difference) > datetime.timedelta(days=1):
-        pass # raise WrongStartDate()
-
-    target_tier = Tier(target_tier_name)
-                     
-    amount_due = target_tier.dollar_cost()
-    if (amount_due > 0) and (
-        dollars == amount_due):
-        site_location.payment_due_date = add_a_month(
-            site_location.payment_due_date or
-            NOW)
-        site_location.free_trial_available = False
-        site_location.save()
-    else:
-        logging.error("Weird, the user paid %f but owed %f" % (
-            dollars, amount_due))
-
-
 def add_a_month(date):
     month = date.month
     new_date = None
