@@ -32,9 +32,9 @@ def nightly_warnings():
     sitelocation = localtv.models.SiteLocation.objects.get_current()
     current_tier = sitelocation.get_tier()
     ret = set()
-    if should_send_video_allotment_warning(sitelocation, current_tier):
+    if should_send_video_allotment_warning(current_tier):
         ret.add('video_allotment_warning_sent')
-    if should_send_five_day_free_trial_warning(sitelocation):
+    if should_send_five_day_free_trial_warning():
         ret.add('free_trial_warning_sent')
     #if should_send_inactive_site_warning(sitelocation, current_tier):
     #    ret.add('inactive_site_warning_sent')
@@ -49,9 +49,10 @@ def get_main_site_admin():
         return first_ones[0]
     return None # eek, any callers had better check for this.
 
-def should_send_inactive_site_warning(sitelocation, current_tier):
+def should_send_inactive_site_warning(current_tier):
+    tier_info = localtv.models.TierInfo.objects.get_current()
     # If we have already sent the warning, refuse to send it again.
-    if sitelocation.inactive_site_warning_sent:
+    if tier_info.inactive_site_warning_sent:
         return False
 
     # Grab the time the main site admin last logged in. If it is greater
@@ -63,19 +64,22 @@ def should_send_inactive_site_warning(sitelocation, current_tier):
     if (datetime.datetime.utcnow() - main_site_admin.last_login) > SIX_WEEKS:
         return True
 
-def should_send_video_allotment_warning(sitelocation, current_tier):
+def should_send_video_allotment_warning(current_tier):
+    tier_info = localtv.models.TierInfo.objects.get_current()
     # Check for the video warning having already been sent
-    if sitelocation.video_allotment_warning_sent:
+    if tier_info.video_allotment_warning_sent:
         return False
 
     if current_tier.remaining_videos_as_proportion() < (1/3.0):
         return True
 
-def should_send_five_day_free_trial_warning(sitelocation):
-    time_remaining = sitelocation.time_until_free_trial_expires()
+def should_send_five_day_free_trial_warning():
+    tier_info = localtv.models.TierInfo.objects.get_current()
+
+    time_remaining = tier_info.time_until_free_trial_expires()
     if time_remaining is None:
         return False
-    if sitelocation.free_trial_warning_sent:
+    if tier_info.free_trial_warning_sent:
         return False
     if time_remaining <= datetime.timedelta(days=5):
         return True

@@ -3865,12 +3865,12 @@ class NightlyTiersEmails(BaseTestCase):
         self.tiers_cmd.handle()
         self.assertEquals(len(mail.outbox), 0)
 
-    @mock.patch('localtv.models.SiteLocation.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
     def test_free_trial_nearly_up_notification_false(self):
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 0)
 
-    @mock.patch('localtv.models.SiteLocation.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=5)))
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=5)))
     def test_free_trial_nearly_up_notification_true(self):
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 1)

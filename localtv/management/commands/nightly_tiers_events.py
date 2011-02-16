@@ -34,11 +34,13 @@ class Command(BaseCommand):
             'inactive_site_warning_sent': (
                 'localtv/admin/tiers_emails/inactive_site_warning_sent.txt', 'Your Miro Community site has been inactive, come back!')
             }
-        for site_location_column in localtv.tiers.nightly_warnings():
-            # Save a note saying we sent the notice
-            sitelocation = localtv.models.SiteLocation.objects.get_current()
-            setattr(sitelocation, site_location_column, True)
-            sitelocation.save()
+        sitelocation = localtv.models.SiteLocation.objects.get_current()
 
-            template_name, subject = column2template[site_location_column] 
+        for tier_info_column in localtv.tiers.nightly_warnings():
+            # Save a note saying we sent the notice
+            tier_info = localtv.models.TierInfo.objects.get_current()
+            setattr(tier_info, tier_info_column, True)
+            tier_info.save()
+
+            template_name, subject = column2template[tier_info_column] 
             localtv.tiers.send_tiers_related_email(subject, template_name, sitelocation)

@@ -316,6 +316,14 @@ class TierInfo(models.Model):
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
 
+    def time_until_free_trial_expires(self):
+        if not self.in_free_trial:
+            return None
+        if not self.payment_due_date:
+            return None
+
+        return (self.datetime.datetime.utcnow() - self.payment_due_date)
+
 class SiteLocation(Thumbnailable):
     """
     An extension to the django.contrib.sites site model, providing
@@ -431,14 +439,6 @@ class SiteLocation(Thumbnailable):
 
     def get_tier(self):
         return localtv.tiers.Tier(self.tier_name)
-
-    def time_until_free_trial_expires(self):
-        if not self.in_free_trial:
-            return None
-        if not self.payment_due_date:
-            return None
-
-        return (self.datetime.datetime.utcnow() - self.payment_due_date)
 
     def get_css_for_display_if_permitted(self):
         '''This function checks the site tier, and if permitted, returns the
