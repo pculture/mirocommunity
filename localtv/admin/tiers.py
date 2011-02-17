@@ -285,11 +285,5 @@ def begin_free_trial(request):
         # Refuse to switch tier this way.
         return HttpResponse("Something went wrong giving your site a free trial. Please send an email to questions@mirocommunity.org if you saw this in error.")
 
-    # NOTE: The incoming IPN message will override the start date
-    # we set below, *except* in the case that the user is trying
-    # to trick us into giving the site a free trial that it should not have.
-    request.
-
     # Switch the tier!
     return _actually_switch_tier(request, target_tier_name)
-    
