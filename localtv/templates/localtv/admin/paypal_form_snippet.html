@@ -28,6 +28,7 @@ value="http://{{ site.domain }}/admin/ipn_endpoint">
   <input type="hidden" name="invoice" value="{{ target_tier_name }}">
   <input type="hidden" name="custom" value="{{ target_tier_name }} for {{ site.domain }}">
   <input type="submit"
-	 name="stubmit">
+	 name="stubmit"
+	 value="{{ message }}">
 </form>
 {% endwith %}
