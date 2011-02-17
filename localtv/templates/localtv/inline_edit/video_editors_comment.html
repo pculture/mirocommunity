@@ -25,6 +25,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {{ editors_comment.comment|safe }}
 </div>
 {% endif %}
-{% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
+{% if rendered_within_get_display_content %}{# sitelocation is not present if we're rendering a widget #}
 <a href="#" class="edit_link">{% if editors_comment %}Edit{% else %}Add Editors Comment{% endif %} </a>
 {% endif %}

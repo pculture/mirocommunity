@@ -1,0 +1,100 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/css/admin/signup.css" />
+<link rel="stylesheet" type="text/css" href="/css/admin/upgrade.css" />
+{% endblock extrahead %}
+
+{% block body_class %}downgrade_confirm{% endblock body_class %}
+
+{% load pagetabs i18n %}
+
+{% block title %}{{ block.super }} - {% block name %}{% trans "Admin - Confirm downgrade" %}{% endblock %}{% endblock %}
+
+{% block content %}
+<h1>Warning!</h1>
+    <h2>Downgrading to {{tier_name}} will cause the following changes:</h2>
+    <br class="clear" />
+    {% if would_lose_admin_usernames %}
+    <h3>Limit of {{ target_tier_obj.admins_limit }} admins</h3>
+    <br class="clear" />
+    <p>The following current administrators will become regular users:</p>
+    <ul>
+      {% for username in would_lose_admin_usernames %}
+      <li>{{ username }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if videos_nag %}
+    <h3>Limit of {{ target_tier_obj.videos_limit }} videos</h3>
+    <br class="clear" />
+    <p>Since you are {{ videos_over_limit}} video{{videos_over_limit|pluralize}}
+      over this limit, you will no longer be able to publish
+      new videos. Videos submitted by users and videos from sources will go into your
+      review queue, but you will not be able to approve them until you are within the
+      limit.</p>
+
+    <p>When you downgrade to {{ tier_name }}, the oldest {{ videos_over_limit }}
+      videos will be unapproved
+      and will return to the review queue. When you delete enough videos on the site
+      to be under {{ target_tier_obj.videos_limit}}, you will be able to re-approve these videos.</p>
+    {% endif %}
+    {% if css_nag %}
+    <h3>Custom CSS</h3>
+    <br class="clear" />
+    <p>Any custom CSS you have entered will no longer be applied to
+      your site, and you will not be able to edit the Custom CSS. If you
+      upgrade back to a premium site, your Custom CSS will be preserved and
+      applied.</p>
+    {% endif %}
+    {% if advertising_nag %}
+    <h3>Advertising</h3>
+    <br class="clear" />
+    <p>Advertising is only allowed on sites with a Premium or Max
+      account level. If you downgrade to {{ tier_name }} and continue to run
+      advertising for more than two weeks, we reserve the right to shut
+      down your site.</p>
+    {% endif %}
+    {% if customdomain_nag %}
+    <h3>Custom domain</h3>
+    <br class="clear" />
+    <p>Custom domains are only allowed with paid accounts. If you switch to
+      a Basic account, we will revert your site to a domain within
+      mirocommunity.org.</p>
+    {% endif %}
+    {% if customtheme_nag %}
+    <h3>Custom Themes</h3>
+    <br class="clear" />
+    <p>You will no longer be able to add custom themes. Custom themes that have
+previously been uploaded will be saved, but cannot be activated.</p>
+    
+    {% if new_theme_name %}
+    <p>You currently have a custom theme activated, so when you click "Yes," the theme will switch back to the default
+      {{new_theme_name}} theme.</p>
+    {% endif %}
+    {% endif %}
+    <br class="clear" />
+    <form method="POST" action="{% url localtv_admin_confirmed_change_tier %}">{% csrf_token %}
+      <input type="hidden" name="tier_name" value="{{ tier_name }}" />
+      <button class="approve_button" name="confirm" value="yes"><span>Yes, do it</span></button>
+      <a class="reject_button" href="{% url localtv_admin_tier %}"><span>Cancel</span></a>
+    </form>
+{% endblock content %}

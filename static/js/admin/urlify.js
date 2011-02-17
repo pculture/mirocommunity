@@ -1,3 +1,21 @@
+/*
+# This file is part of Miro Community.
+# Copyright (C) 2010 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var LATIN_MAP = {
     'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE', 'Ç':
     'C', 'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ì': 'I', 'Í': 'I', 'Î': 'I',
@@ -8,10 +26,10 @@ var LATIN_MAP = {
     'ì': 'i', 'í': 'i', 'î': 'i', 'ï': 'i', 'ð': 'd', 'ñ': 'n', 'ò': 'o', 'ó':
     'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ő': 'o', 'ø': 'o', 'ù': 'u', 'ú': 'u',
     'û': 'u', 'ü': 'u', 'ű': 'u', 'ý': 'y', 'þ': 'th', 'ÿ': 'y'
-}
+};
 var LATIN_SYMBOLS_MAP = {
     '©':'(c)'
-}
+};
 var GREEK_MAP = {
     'α':'a', 'β':'b', 'γ':'g', 'δ':'d', 'ε':'e', 'ζ':'z', 'η':'h', 'θ':'8',
     'ι':'i', 'κ':'k', 'λ':'l', 'μ':'m', 'ν':'n', 'ξ':'3', 'ο':'o', 'π':'p',
@@ -23,11 +41,11 @@ var GREEK_MAP = {
     'Ρ':'R', 'Σ':'S', 'Τ':'T', 'Υ':'Y', 'Φ':'F', 'Χ':'X', 'Ψ':'PS', 'Ω':'W',
     'Ά':'A', 'Έ':'E', 'Ί':'I', 'Ό':'O', 'Ύ':'Y', 'Ή':'H', 'Ώ':'W', 'Ϊ':'I',
     'Ϋ':'Y'
-}
+};
 var TURKISH_MAP = {
     'ş':'s', 'Ş':'S', 'ı':'i', 'İ':'I', 'ç':'c', 'Ç':'C', 'ü':'u', 'Ü':'U',
     'ö':'o', 'Ö':'O', 'ğ':'g', 'Ğ':'G'
-}
+};
 var RUSSIAN_MAP = {
     'а':'a', 'б':'b', 'в':'v', 'г':'g', 'д':'d', 'е':'e', 'ё':'yo', 'ж':'zh',
     'з':'z', 'и':'i', 'й':'j', 'к':'k', 'л':'l', 'м':'m', 'н':'n', 'о':'o',
@@ -39,62 +57,60 @@ var RUSSIAN_MAP = {
     'П':'P', 'Р':'R', 'С':'S', 'Т':'T', 'У':'U', 'Ф':'F', 'Х':'H', 'Ц':'C',
     'Ч':'Ch', 'Ш':'Sh', 'Щ':'Sh', 'Ъ':'', 'Ы':'Y', 'Ь':'', 'Э':'E', 'Ю':'Yu',
     'Я':'Ya'
-}
+};
 var UKRAINIAN_MAP = {
     'Є':'Ye', 'І':'I', 'Ї':'Yi', 'Ґ':'G', 'є':'ye', 'і':'i', 'ї':'yi', 'ґ':'g'
-}
+};
 var CZECH_MAP = {
     'č':'c', 'ď':'d', 'ě':'e', 'ň': 'n', 'ř':'r', 'š':'s', 'ť':'t', 'ů':'u',
     'ž':'z', 'Č':'C', 'Ď':'D', 'Ě':'E', 'Ň': 'N', 'Ř':'R', 'Š':'S', 'Ť':'T',
     'Ů':'U', 'Ž':'Z'
-}
+};
 
 var POLISH_MAP = {
     'ą':'a', 'ć':'c', 'ę':'e', 'ł':'l', 'ń':'n', 'ó':'o', 'ś':'s', 'ź':'z',
     'ż':'z', 'Ą':'A', 'Ć':'C', 'Ę':'e', 'Ł':'L', 'Ń':'N', 'Ó':'o', 'Ś':'S',
     'Ź':'Z', 'Ż':'Z'
-}
+};
 
 var LATVIAN_MAP = {
     'ā':'a', 'č':'c', 'ē':'e', 'ģ':'g', 'ī':'i', 'ķ':'k', 'ļ':'l', 'ņ':'n',
     'š':'s', 'ū':'u', 'ž':'z', 'Ā':'A', 'Č':'C', 'Ē':'E', 'Ģ':'G', 'Ī':'i',
     'Ķ':'k', 'Ļ':'L', 'Ņ':'N', 'Š':'S', 'Ū':'u', 'Ž':'Z'
-}
+};
 
-var ALL_DOWNCODE_MAPS=new Array()
-ALL_DOWNCODE_MAPS[0]=LATIN_MAP
-ALL_DOWNCODE_MAPS[1]=LATIN_SYMBOLS_MAP
-ALL_DOWNCODE_MAPS[2]=GREEK_MAP
-ALL_DOWNCODE_MAPS[3]=TURKISH_MAP
-ALL_DOWNCODE_MAPS[4]=RUSSIAN_MAP
-ALL_DOWNCODE_MAPS[5]=UKRAINIAN_MAP
-ALL_DOWNCODE_MAPS[6]=CZECH_MAP
-ALL_DOWNCODE_MAPS[7]=POLISH_MAP
-ALL_DOWNCODE_MAPS[8]=LATVIAN_MAP
+var ALL_DOWNCODE_MAPS=[];
+ALL_DOWNCODE_MAPS[0]=LATIN_MAP;
+ALL_DOWNCODE_MAPS[1]=LATIN_SYMBOLS_MAP;
+ALL_DOWNCODE_MAPS[2]=GREEK_MAP;
+ALL_DOWNCODE_MAPS[3]=TURKISH_MAP;
+ALL_DOWNCODE_MAPS[4]=RUSSIAN_MAP;
+ALL_DOWNCODE_MAPS[5]=UKRAINIAN_MAP;
+ALL_DOWNCODE_MAPS[6]=CZECH_MAP;
+ALL_DOWNCODE_MAPS[8]=LATVIAN_MAP;
 
-var Downcoder = new Object();
+var Downcoder = {};
 Downcoder.Initialize = function()
 {
-    if (Downcoder.map) // already made
+    if (Downcoder.map) { // already made
         return ;
-    Downcoder.map ={}
+    }
+    Downcoder.map ={};
     Downcoder.chars = '' ;
-    for(var i in ALL_DOWNCODE_MAPS)
-    {
-        var lookup = ALL_DOWNCODE_MAPS[i]
-        for (var c in lookup)
-        {
+    for(var i in ALL_DOWNCODE_MAPS) {
+        var lookup = ALL_DOWNCODE_MAPS[i];
+        for (var c in lookup) {
             Downcoder.map[c] = lookup[c] ;
             Downcoder.chars += c ;
         }
      }
     Downcoder.regex = new RegExp('[' + Downcoder.chars + ']|[^' + Downcoder.chars + ']+','g') ;
-}
+};
 
 downcode= function( slug )
 {
     Downcoder.Initialize() ;
-    var downcoded =""
+    var downcoded ="";
     var pieces = slug.match(Downcoder.regex);
     if(pieces)
     {
@@ -103,7 +119,7 @@ downcode= function( slug )
             if (pieces[i].length == 1)
             {
                 var mapped = Downcoder.map[pieces[i]] ;
-                if (mapped != null)
+                if (mapped !== null)
                 {
                     downcoded+=mapped;
                     continue ;
@@ -117,7 +133,7 @@ downcode= function( slug )
         downcoded = slug;
     }
     return downcoded;
-}
+};
 
 
 function URLify(s, num_chars) {

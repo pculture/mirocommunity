@@ -18,6 +18,7 @@
 import urlparse
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 
 from localtv import models
 
@@ -46,13 +47,18 @@ class SiteLocationMiddleware(object):
     uses it.
     """
     def process_request(self, request):
+        # Either the app is set up properly, in which case we can just get
+        # the current SiteLocation:
         try:
             request.sitelocation = models.SiteLocation.objects.get_current()
+            request.tier_info = models.TierInfo.objects.get_current()
             request.user_is_admin = request.sitelocation.user_is_admin(
                 request.user)
         except models.SiteLocation.DoesNotExist:
-            request.sitelocation = None
-            request.user_is_admin = False
+            # Or, for some reason, the SiteLocation does not yet exist. That
+            # is okay; we can create it.
+            models.SiteLocation.objects.create(site=Site.objects.get_current())
+            return self.process_request(request)
 
 def context_processor(request):
     sitelocation = request.sitelocation

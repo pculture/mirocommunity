@@ -1,3 +1,19 @@
+# This file is part of Miro Community.
+# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 
 from south.db import db
 from django.conf import settings
@@ -12,12 +28,16 @@ class Migration:
     def forwards(self, orm):
         "Write your forwards migration here"
 
-        sitelocation = orm['localtv.SiteLocation'].objects.get(
-            site__pk=settings.SITE_ID)
         site = Site.objects.get(pk=settings.SITE_ID)
         widgetsettings = WidgetSettings.objects.create(
             site=site,
             title='Watch Videos on %s' % site.name)
+        if orm['localtv.SiteLocation'].objects.all():
+            sitelocation = orm['localtv.SiteLocation'].objects.get(
+                site__pk=settings.SITE_ID)
+        else:
+            return
+
         if sitelocation.logo:
             sitelocation.logo.open()
             widgetsettings.logo = sitelocation.logo

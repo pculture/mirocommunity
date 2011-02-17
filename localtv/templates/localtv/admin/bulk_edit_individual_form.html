@@ -1,0 +1,80 @@
+{% comment %}
+Copyright 2011 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+            <div class="{% if not skip_individual_form %}simple_overlay {% endif %}bulk_edit editing{% if form.errors %} errors{% endif %}">
+            <h2>Editing</h2>
+              {% block quick-edit %}
+              <div class="input_field">
+                {% block quick-edit-fields %}
+                <ul>
+                  <li class="title_edit">
+                    <label>Title</label>
+                    {{ form.name.errors }}
+                    {{ form.name }}
+                  </li>
+                  <li class="title_edit">
+                    <label>Video URL</label>
+                    {{ form.file_url.errors }}
+                    {{ form.file_url }}
+                  </li>
+                  <li class="thumb_edit">
+                    <label>Thumb URL</label>
+                    {{ form.thumbnail_url.errors }}{{ form.thumbnail.errors }}
+                    {{  form.thumbnail_url }}
+                    <div style="float: right; width: 286px;">
+                      or <a href="#" onclick="$(this).next().show(); return false;">upload</a> a new thumbnail
+                      <span style="display: none;">{{ form.thumbnail }}</span>
+                    </div>
+                  </li>
+                  <li class="date_edit">
+                    <label>Date</label>
+                    {{ form.when_published.errors }}
+                    {{ form.when_published }}
+                    <div style="float: left; padding-left: 110px;">{{ form.when_published.help_text }}</div>
+                  </li>
+                  <li class="description_edit">
+                    <label class="floatnone">Description</label>
+                    {{ form.description.errors }}
+                    {{ form.description }}
+                  </li>
+                  <li class="tags_edit">
+                    <label class="floatnone">Embed Code</label>
+                    {{ form.embed_code }}
+                    {{ form.tags.errors }}
+                  </li>
+                  <li class="tags_edit">
+                    <label class="floatnone">Tags</label>
+                    {{ form.tags.errors }}
+                    {{ form.tags }}
+                  </li>
+                  <li class="categories_edit scrollable">
+                    <label class="padding">Categories</label>
+                    {{ form.categories.errors }}
+                    {{ form.categories }}
+                  </li>
+                  <li class="users_edit scrollable right">
+                    <label class="padding">Users</label>
+                    {{ form.authors.errors }}
+                    {{ form.authors }}
+                  </li>
+                </ul>
+                {% endblock %}
+              </div>
+              <button type="submit" class="approve_button" name="submit" value="Save"><span>Save Changes</span></button>
+              {% endblock %}
+	    </div>

@@ -21,7 +21,7 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'UTC'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -75,6 +75,7 @@ UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
+UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteLocation.objects.get_current().get_tier().permit_custom_template()
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -90,7 +91,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.comments',
     'django.contrib.flatpages',
-    #'south',
+    'south',
     'djpagetabs',
     'djvideo',
     'localtv',
@@ -108,7 +109,8 @@ INSTALLED_APPS = (
     'celery',
     'notification',
     'socialauth',
-    'openid_consumer'
+    'openid_consumer',
+    'paypal',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

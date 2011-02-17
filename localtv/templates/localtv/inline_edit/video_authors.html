@@ -28,6 +28,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
   {% endif %}
 {% endif %}
-  {% if not sitelocation %}{# sitelocation is not present if we're rendering a widget #}
+  {% if rendered_within_get_display_content %}
   <a href="#" class="edit_link">Edit {% if not instance.authors.count and not instance.feed and not instance.video_service_user %}Attribution{% endif %}</a>
   {% endif %}

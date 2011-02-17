@@ -1,3 +1,19 @@
+# This file is part of Miro Community.
+# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 
 from south.db import db
 from django.db import models
@@ -28,7 +44,11 @@ class Migration:
     
     def forwards(self, orm):
         "Write your forwards migration here"
-        sitelocation = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sitelocation = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         if sitelocation.comments_email_admins:
             add_notice_for_admins(sitelocation, 'admin_new_comment')
 
@@ -40,7 +60,11 @@ class Migration:
     
     def backwards(self, orm):
         "Write your backwards migration here"
-        sitelocation = SiteLocation.objects.get_current()
+        if orm['localtv.SiteLocation'].objects.all():
+            sitelocation = orm['localtv.SiteLocation'].objects.get_current()
+        else:
+            return
+
         sitelocation.comments_email_admins = notice_has_admins(sitelocation,
                                                                'admin_new_comment')
         sitelocation.email_on_new_video = notice_has_admins(sitelocation,

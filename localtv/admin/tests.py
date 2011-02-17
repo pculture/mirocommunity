@@ -1,3 +1,19 @@
+# This file is part of Miro Community.
+# Copyright (C) 2009, 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 
 from django.core.files.base import File
@@ -13,6 +29,10 @@ from django.utils.encoding import force_unicode
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
+import mock
+import localtv.tiers
+
+import uploadtemplate
 
 import vidscraper
 from notification import models as notification
@@ -169,6 +189,24 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is None)
 
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_approve_fails_when_over_limit(self):
+        """
+        A GET request to the approve_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_approve_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
+
     def test_GET_approve_email(self):
         """
         If the video is approved, and the submitter has the 'video_approved'
@@ -272,6 +310,25 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is not None)
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_feature_fails_outside_video_limit(self):
+        """
+        A GET request to the feature_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  If the video is unapproved, it should become
+        approved.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_feature_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
 
     def test_GET_unfeature(self):
         """
@@ -421,7 +478,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_approve_reject')))
 
         # all the unapproved videos are now rejected
@@ -626,7 +683,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -662,7 +719,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -697,7 +754,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -744,7 +801,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -787,7 +844,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         feed = models.Feed.objects.get(pk=3) # form 0
@@ -841,7 +898,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -890,7 +947,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -959,7 +1016,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for v in models.Video.objects.order_by('pk')[:3]:
@@ -1172,7 +1229,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_manage_page')))
 
         self.assertEquals(models.Feed.objects.count(), 0)
@@ -1193,7 +1250,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_feed_add_done', args=[1])))
 
         feed = models.Feed.objects.get()
@@ -1221,7 +1278,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertTrue(response['Location'].startswith(
                 'http://%s%s?task_id=' % (
-                    self.site_location.site.domain,
+                    'testserver',
                     reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
@@ -1594,7 +1651,6 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
         self.assertFalse(saved_search.auto_approve)
 
-
 # -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
@@ -1673,7 +1729,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1709,7 +1765,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1752,7 +1808,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_users, User.objects.values()):
@@ -1792,7 +1848,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 4) # no one got added
@@ -1847,13 +1903,53 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 3) # one user got removed
 
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
+
+    def test_POST_delete_nonhuman_user(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  If form-*-DELETE is
+        present, that user should be removed, unless that user is a superuser.
+        """
+        # Take the user called "user" and give the user an unusable password
+        # this should simulate the person being a nonhuman user.
+        
+        u = User.objects.get(username='user')
+        u.set_unusable_password()
+        u.save()
+        self.assertEqual(
+            3,
+            User.objects.filter(localtv.admin.user_views._filter_just_humans()).count())
+       
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url + "?show=all")
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        # form-0 is admin (3)
+        # form-1 is superuser (2)
+        # form-2 is user (1)
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                'testserver',
+                self.url))
+
+        self.assertEquals(User.objects.count(), 3) # one user got removed
+
+        self.assertEquals(User.objects.filter(username='user').count(), 0)
 
 
 # -----------------------------------------------------------------------------
@@ -2012,7 +2108,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = models.Category.objects.order_by('-id')[0]
@@ -2052,7 +2148,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_categories, models.Category.objects.values()):
@@ -2082,7 +2178,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(models.Category.objects.count(), 5) # no one got
@@ -2123,7 +2219,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three categories got removed
@@ -2155,7 +2251,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
@@ -2390,9 +2486,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         POST_data_invalid = POST_data.copy()
-        del POST_data_invalid['form-0-name'] # don't include some mandatory
-                                             # fields
-        del POST_data_invalid['form-1-name']
+        POST_data_invalid['form-0-name']='' # don't include some mandatory
+                                            # fields
+        POST_data_invalid['form-1-name']=''
 
         POST_response = c.post(self.url, POST_data_invalid)
         self.assertStatusCodeEquals(POST_response, 200)
@@ -2430,7 +2526,49 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has been updated
+        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEquals(video1.name, POST_data['form-0-name'])
+        self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
+        self.assertEquals(video1.embed_code, POST_data['form-0-embed_code'])
+
+        video2 = models.Video.objects.get(
+            pk=POST_data['form-1-id'])
+        self.assertEquals(video2.description,
+                          POST_data['form-1-description'])
+        self.assertEquals(video2.embed_code,
+                          POST_data['form-1-embed_code'])
+
+    def test_POST_succeed_when_name_is_missing(self):
+        """
+        A POST request to the bulk_edit view with a valid formset should
+        save the updated models and redirect to the same URL with a
+        'successful' field in the GET query.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data.update({
+                'form-0-name': 'new name!',
+                'form-0-file_url': 'http://pculture.org/',
+                'form-1-description': 'localtv',
+                'form-1-embed_code': 'new embed code'
+                })
+        del POST_data['form-1-name']
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2465,7 +2603,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2486,7 +2624,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2507,7 +2645,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2550,7 +2688,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2603,7 +2741,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2644,7 +2782,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2675,7 +2813,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2706,7 +2844,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2741,7 +2879,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2752,6 +2890,94 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is None)
 
+# ----------------------------------
+# Administration tests with tiers
+# ----------------------------------
+
+def naysayer(*args, **kwargs):
+    return False
+
+class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_settings')
+
+    def setUp(self):
+        AdministrationBaseTestCase.setUp(self)
+        self.POST_data = {
+            'title': self.site_location.site.name,
+            'tagline': self.site_location.tagline,
+            'about_html': self.site_location.about_html,
+            'sidebar_html': self.site_location.sidebar_html,
+            'footer_html': self.site_location.footer_html,
+            'css': self.site_location.css}
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_failure(self):
+        """
+        When CSS is not permitted, the POST should fail with a validation error.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data['css'] = 'new css'
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/admin/edit_settings.html')
+        self.assertFalse(POST_response.context['form'].is_valid())
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_succeeds_when_same_as_db_contents(self):
+        """
+        When CSS is not permitted, but we send the same CSS as what
+        is in the database, the form should be valid.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, self.POST_data)
+
+        # We know from the HTTP 302 that it worked.
+        self.assertStatusCodeEquals(POST_response, 302)
+
+class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
+    url = reverse('localtv_admin_users')
+
+    def test_POST_rejects_first_admin_beyond_superuser(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Add' and a
+        successful form should create a new user and redirect the user back to
+        the management page.  If the password isn't specified,
+        User.has_unusable_password() should be True.
+        """
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertFalse(response.context['add_user_form'].is_valid())
+
+        # but with 'premium' it works
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
 
 # -----------------------------------------------------------------------------
 # Design administration tests
@@ -2843,7 +3069,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2883,7 +3109,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2904,7 +3130,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2930,7 +3156,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2951,7 +3177,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3036,7 +3262,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = FlatPage.objects.order_by('-id')[0]
@@ -3114,7 +3340,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_flatpages, FlatPage.objects.values()):
@@ -3142,7 +3368,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(FlatPage.objects.count(), 5) # no one got added
@@ -3176,7 +3402,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three flatpages got removed
@@ -3204,9 +3430,544 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
         # three flatpages got removed
         self.assertEquals(FlatPage.objects.count(), 2)
+
+### Class tier payment tests
+class TierPaymentTests(BaseTestCase):
+    def test_change_to_non_basic_tier_creates_payment_due_date(self):
+        return # FIXME
+
+    def test_handle_one_payment(self):
+        return # FIXME
+
+    def test_user_cannot_jump_from_trial_to_trial(self):
+        return # FIXME
+
+def videos_limit_of_two(*args, **kwargs):
+    return 2
+
+class CannotApproveVideoIfLimitExceeded(BaseTestCase):
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Let there be one video already approved
+        models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        # Create two in the queue
+        for k in range(2):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_UNAPPROVED)
+
+        first_video_id, second_video_id = [v.id for v in
+                                           models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED)]
+
+        # Try to activate all of them, but that would take us over the limit.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_all'),
+                         {'page': '1'})
+        self.assertStatusCodeEquals(response, 402)
+
+        # Try to activate the first one -- should work fine.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(first_video_id)})
+        self.assertStatusCodeEquals(response, 200)
+
+        # Try to activate the second one -- you're past the limit.
+        # HTTP 402: Payment Required
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(second_video_id)})
+        self.assertStatusCodeEquals(response, 402)
+
+class DowngradingDisablesThings(BaseTestCase):
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Create two videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_within_new_limit(self):
+        # Create just one video
+        models.Video.objects.create(site_id=self.site_location.site_id)
+        self.assertTrue('videos' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
+    def test_go_to_basic_from_max_warn_about_css_loss(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Add some CSS to the sitelocation
+        self.site_location.css = '* { display: none; }'
+        self.site_location.save()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'css' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_skip_warn_about_css_loss(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Because there is no custom CSS, a transition to 'basic' would not
+        # generate a warning.
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'css' not in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_lose_advertising(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'advertising' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_plus_no_advertising_msg(self):
+        # Start out in Plus
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will no 'advertising' message
+        self.assertTrue(
+            'advertising' not in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_lose_custom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be myawesomesite.example.com
+        self.site_location.site.domain = 'myawesomesite.example.com'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertTrue(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_from_max_with_a_noncustom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be within mirocommunity.org
+        self.site_location.site.domain = 'myawesomesite.mirocommunity.org'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertFalse(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_with_one_admin(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Now we have 1 admin, namely the super-user
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assert_(
+            'admins' not in localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Try pushing the number of admins down to 1, which should change nothing.
+        self.assertFalse(localtv.tiers.push_number_of_admins_down(1))
+        # Still one admin.
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+
+    def test_go_to_basic_with_two_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Well, good -- that means we have to deal with them.
+        # Run a function that 
+        # Try pushing the number of admins down to 1, which should change nothing.
+        usernames = localtv.tiers.push_number_of_admins_down(1)
+        self.assertEqual(set(['admin']), usernames)
+        # Still two admins -- the above does a dry-run by default.
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # Re-do it for real.
+        usernames = localtv.tiers.push_number_of_admins_down(1, actually_demote_people=True)
+        self.assertEqual(set(['admin']), usernames)
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+        
+    def test_non_active_users_do_not_count_as_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # If we make the 'admin' person not is_active, now there is only "1" admin
+        u = User.objects.get(username='admin')
+        u.is_active = False
+        u.save()
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+        
+    def test_go_to_basic_with_a_custom_theme(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' in 
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
+        # For now, the default theme is still the bundled one.
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+        # "Transition" from max to max, to make sure the theme stays
+        self.site_location.save()
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+        # Now, force the transition
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        # Check that the user is now on a bundled theme
+        self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should only be two active videos now
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(2,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos_but_do_not_enforce(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should still be three videos because enforcement is disabled
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
+        '''Even if the custom themes are not the default ones, if they exist, we should
+        let the user know that it won't be accessible anymore.'''
+
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_max_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='max'))
+        
+class AdminDashboardLoadsWithoutError(BaseTestCase):
+    url = reverse('localtv_admin_index')
+
+    def test(self):
+        """
+        This view should have status code 200 for an admin.
+
+        (This is there to make sure we at least *cover* the index view.)
+        """
+        self.assertRequiresAuthentication(self.url)
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+
+        
+
+class DowngradingSevenAdmins(BaseTestCase):
+    fixtures = BaseTestCase.fixtures + ['five_more_admins']
+
+    def test_go_to_plus_with_seven_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the plus account type only permits 5
+        self.assertEqual(5, localtv.tiers.Tier('plus').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Well, good -- that means we have to deal with them.
+        # Run a function that 
+        # Try pushing the number of admins down to 1, which should change nothing.
+        usernames = localtv.tiers.push_number_of_admins_down(5)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        # Still two admins -- the above does a dry-run by default.
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Re-do it for real.
+        usernames = localtv.tiers.push_number_of_admins_down(5, actually_demote_people=True)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
+
+class NightlyTiersEmails(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def setUp(self):
+        super(NightlyTiersEmails, self).setUp()
+        self.assertEquals(len(mail.outbox), 0)
+        self.admin = localtv.tiers.get_main_site_admin()
+        self.admin.last_login = datetime.datetime.utcnow()
+        self.admin.save()
+
+        from localtv.management.commands import nightly_tiers_events
+        self.tiers_cmd = nightly_tiers_events.Command()
+
+    def test_inactive_site_warning(self):
+        return # FIXME: Disabling for now.
+        # Set up the admin so that the last login was 90 days ago (which should be
+        # long enough ago that the site is "inactive")
+        self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
+        self.admin.save()
+        self.assertFalse(self.site_location.inactive_site_warning_sent)
+        
+        # Make sure it sends an email...
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # And make sure the SiteLocation knows that the email was sent...
+        self.assertTrue(self.site_location.inactive_site_warning_sent)
+
+        # ..so that the next time, it doesn't send any email.
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
+
+    @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
+    def test_video_allotment(self):
+        # First, it sends an email. But it saves a note in the SiteLocation...
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # ..so that the next time, it doesn't send any email.
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
+    def test_free_trial_nearly_up_notification_false(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=5)))
+    def test_free_trial_nearly_up_notification_true(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # Make sure it does not want to send it again
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+class EmailSwitchTests(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        self.assertEqual(len(mail.outbox), 0)
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
+        self.assertEqual(len(mail.outbox), 1)
+
+class SendWelcomeEmailTest(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        from localtv.management.commands import send_welcome_email
+        cmd = send_welcome_email.Command()
+        cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+
+class TestDisableEnforcement(BaseTestCase):
+
+    def testTrue(self):
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=False))
+
+    def testFalse(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+
+class TestTiersComplianceEmail(BaseTestCase):
+    def setUp(self):
+        super(TestTiersComplianceEmail, self).setUp()
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        from localtv.management.commands import send_tiers_compliance_email
+        self.cmd = send_tiers_compliance_email.Command()
+
+    def test_email_when_over_video_limit(self):
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        # The first time round, we should get an email.
+        self.cmd.handle()
+        self.assertEqual(1,
+                         len(mail.outbox))
+        # Clear the outbox. When we run the command again, we should not
+        # get an email.
+        mail.outbox = []
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+    def test_no_email_when_within_limits(self):
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+    def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.already_sent_tiers_compliance_email = True
+        ti.save()
+
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Give the site a custom domain
+        site = self.site_location.site
+        site.domain = 'custom.example.com'
+        site.save()
+
+        # Make sure it stuck
+        self.assertEqual(self.site_location.site.domain,
+                         'custom.example.com')
+
+        # There are no emails in the outbox yet
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+        # Bump down to 'basic'.
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        support_ticket_emails = [msg for msg in mail.outbox
+                                 if msg.to[0] == 'support@mirocommunity.org']
+        self.assertEqual(1, len(support_ticket_emails))

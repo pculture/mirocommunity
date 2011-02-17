@@ -57,7 +57,6 @@ def approve_reject(request):
     except EmptyPage:
         page = video_paginator.page(video_paginator.num_pages)
 
-
     current_video = None
     if page.object_list:
         current_video = page.object_list[0]
@@ -91,6 +90,13 @@ def approve_video(request):
         models.Video,
         id=request.GET['video_id'],
         site=request.sitelocation.site)
+
+    # If the site would exceed its video allotment, then fail
+    # with a HTTP 403 and a clear message about why.
+    if (models.SiteLocation.enforce_tiers() and
+        request.sitelocation.get_tier().remaining_videos() < 1):
+        return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
+
     current_video.status = models.VIDEO_STATUS_ACTIVE
     current_video.when_approved = datetime.datetime.now()
 
@@ -135,6 +141,9 @@ def feature_video(request):
     current_video = get_object_or_404(
         models.Video, pk=video_id, site=request.sitelocation.site)
     if current_video.status != models.VIDEO_STATUS_ACTIVE:
+        if (models.SiteLocation.enforce_tiers() and
+            request.sitelocation.get_tier().remaining_videos() < 1):
+            return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
         current_video.status = models.VIDEO_STATUS_ACTIVE
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
@@ -186,6 +195,16 @@ def approve_all(request):
     except EmptyPage:
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
+
+    if models.SiteLocation.enforce_tiers():
+        tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
+        if len(page.object_list) > tier_remaining_videos:
+            return HttpResponse(content="You only have " +
+                                str(tier_remaining_videos) + 
+                                "videos remaining, but you need " +
+                                str(len(page.object_list)) +
+                                "to be able to approve all these videos. " +
+                                "You can upgrade to get more.", status=402)
 
     for video in page.object_list:
         video.status = models.VIDEO_STATUS_ACTIVE

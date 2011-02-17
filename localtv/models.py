@@ -1,4 +1,3 @@
-
 # Copyright 2009 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
@@ -17,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import email.utils
 import httplib
 import re
 import urllib
@@ -27,6 +27,7 @@ try:
 except ImportError:
     import Image
 import StringIO
+import time
 from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
 
@@ -54,6 +55,7 @@ import tagging
 
 from localtv.templatetags.filters import sanitize
 from localtv import util
+import localtv.tiers
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
@@ -109,6 +111,8 @@ class BitLyWrappingURLField(models.URLField):
         except bitly.BitlyError:
             return unicode(value)[:self.max_length]
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 class Thumbnailable(models.Model):
     """
@@ -289,6 +293,36 @@ class SiteLocationManager(models.Manager):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
 
+class TierInfoManager(models.Manager):
+    def get_current(self):
+        sid = settings.SITE_ID
+        current_site_location = SiteLocation.objects.get_current()
+        tier_info, _ = TierInfo.objects.get_or_create(
+            sitelocation = current_site_location)
+        return tier_info
+
+class TierInfo(models.Model):
+    payment_due_date = models.DateTimeField(null=True, blank=True)
+    free_trial_available = models.BooleanField(default=True)
+    in_free_trial = models.BooleanField(default=False)
+    payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    video_allotment_warning_sent = models.BooleanField(default=False)
+    free_trial_warning_sent = models.BooleanField(default=False)
+    already_sent_welcome_email = models.BooleanField(default=False)
+    inactive_site_warning_sent = models.BooleanField(default=False)
+    user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
+    already_sent_tiers_compliance_email = models.BooleanField(default=False)
+    sitelocation = models.OneToOneField('SiteLocation')
+    objects = TierInfoManager()
+
+    def time_until_free_trial_expires(self):
+        if not self.in_free_trial:
+            return None
+        if not self.payment_due_date:
+            return None
+
+        return (self.datetime.datetime.utcnow() - self.payment_due_date)
 
 class SiteLocation(Thumbnailable):
     """
@@ -317,6 +351,7 @@ class SiteLocation(Thumbnailable):
        actually can though)
      - submission_requires_login: whether or not users need to log in to submit
        videos.
+     - tier_name: A short string representing the class of site. This relates to paid extras.
     """
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
@@ -334,6 +369,8 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
+    hide_get_started = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -363,6 +400,27 @@ class SiteLocation(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
+    @staticmethod
+    def enforce_tiers(override_setting=None):
+        '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
+        then this function returns False. Otherwise, it returns True.'''
+        if override_setting is None:
+            disabled = getattr(settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
+        else:
+            disabled = override_setting
+
+        if disabled:
+            # Well, hmm. If the site admin participated in a PayPal transaction, then we
+            # actually will enforce the tiers.
+            #
+            # Go figure.
+            tierdata = TierInfo.objects.get_current()
+            if tierdata.user_has_successfully_performed_a_paypal_transaction:
+                return True # enforce it.
+
+        # Generally, we just negate the "disabled" boolean.
+        return not disabled
+
     def user_is_admin(self, user):
         """
         Return True if the given User is an admin for this SiteLocation.
@@ -379,6 +437,21 @@ class SiteLocation(Thumbnailable):
         SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
 
+    def get_tier(self):
+        return localtv.tiers.Tier(self.tier_name)
+
+    def get_css_for_display_if_permitted(self):
+        '''This function checks the site tier, and if permitted, returns the
+        custom CSS the admin has set.
+
+        If that is not permitted, it returns the empty unicode string.'''
+        if self.get_tier().permit_custom_css():
+            # Sweet.
+            return self.css
+        else:
+            # Silenced.
+            return u''
+
 
 class WidgetSettings(Thumbnailable):
     """
@@ -387,7 +460,7 @@ class WidgetSettings(Thumbnailable):
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
-    title_editable = models.BooleanField(default=False)
+    title_editable = models.BooleanField(default=True)
 
     icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
     icon_editable = models.BooleanField(default=False)
@@ -409,6 +482,45 @@ class WidgetSettings(Thumbnailable):
         (140, 110, False),
         (222, 169, False),
         ]
+
+    def get_title_or_reasonable_default(self):
+        # Is the title worth using? If so, use that.
+        use_title = True
+        if self.title.endswith('example.com'):
+            use_title = False
+        if not self.title:
+            use_title = False
+
+        # Okay, so either we return the title, or a sensible default
+        if use_title:
+            return self.title
+        return self.generate_reasonable_default_title()
+
+    def generate_reasonable_default_title(self):
+        prefix = 'Watch Videos on %s'
+
+        # Now, work on calculating what goes at the end.
+        site = Site.objects.get_current()
+
+        # The default suffix is a self-link. If the site name and
+        # site domain are plausible, do that.
+        if ((site.name and site.name.lower() != 'example.com') and
+            (site.domain and site.domain.lower() != 'example.com')):
+            suffix = '<a href="http://%s/">%s</a>' % (
+                site.domain, site.name)
+
+        # First, we try the site name, if that's a nice string.
+        elif site.name and site.name.lower() != 'example.com':
+            suffix = site.name
+
+        # Else, we try the site domain, if that's not example.com
+        elif site.domain.lower() != 'example.com':
+            suffix = site.domain
+
+        else:
+            suffix = 'our video site'
+
+        return prefix % suffix
 
 class Source(Thumbnailable):
     """
@@ -498,7 +610,7 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        if self.auto_approve:
+        if self.auto_approve and not localtv.tiers.Tier.get().over_videos_limit():
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
@@ -877,6 +989,243 @@ class SavedSearch(Source):
         return u'Search'
 
 
+class VideoBase(models.Model):
+    """
+    Base class between Video and OriginalVideo.  It would be simple enough to
+    duplicate these fields, but this way it's easier to add more points of
+    duplication in the future.
+    """
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(
+        verify_exists=False, blank=True, max_length=400)
+
+    class Meta:
+        abstract = True
+
+class OriginalVideo(VideoBase):
+    video = models.OneToOneField('Video', related_name='original')
+    thumbnail_updated = models.DateTimeField(blank=True)
+    remote_video_was_deleted = models.BooleanField(default=False)
+    remote_thumbnail_hash = models.CharField(max_length=64, default='')
+
+    def changed_fields(self, override_vidscraper_result=None):
+        """
+        Check our video for new data.
+        """
+        video = self.video
+        if not video.website_url:
+            # we shouldn't have been created, but either way we can't do
+            # anything here
+            self.delete()
+            return {}
+
+        remote_video_was_deleted = False
+
+        if override_vidscraper_result is not None:
+            scraped_data = override_vidscraper_result
+        else:
+            try:
+                scraped_data = vidscraper.auto_scrape(video.website_url,
+                                                      fields=['title', 'description',
+                                                              'tags', 'thumbnail_url'])
+            except vidscraper.errors.VideoDeleted, e:
+                remote_video_was_deleted = True
+
+        # Now that we have the "scraped_data", analyze it: does it look like
+        # a skeletal video, with no data? Then we infer it was deleted.
+        if remote_video_was_deleted or all([x is None for x in scraped_data.values()]):
+            remote_video_was_deleted = True
+
+        # If the scraped_data has all None values, then infer that the remote video was
+        # deleted.
+
+        if remote_video_was_deleted:
+            if self.remote_video_was_deleted:
+                return {} # We already notified the admins of the deletion.
+            else:
+                return {'deleted': True}
+
+        changed_fields = {}
+        if 'title' in scraped_data:
+            scraped_data['name'] = scraped_data['title']
+            del scraped_data['title']
+
+        for field in scraped_data:
+            if field == 'tags': # special case tag checking
+                if scraped_data['tags'] is None:
+                    # failed to get tags, so don't send a spurious change
+                    # message
+                    continue
+                new = util.unicode_set(scraped_data['tags'])
+                if settings.FORCE_LOWERCASE_TAGS:
+                    new = util.unicode_set(name.lower() for name in new)
+                old = util.unicode_set(self.tags)
+                if new != old:
+                    changed_fields[field] = new
+            elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
+                changed_fields[field] = scraped_data[field]
+            elif field == 'thumbnail_url':
+                right_now = datetime.datetime.utcnow()
+                if self._remote_thumbnail_appears_changed():
+                    changed_fields['thumbnail_updated'] = right_now
+
+        return changed_fields
+
+    def originals_for_changed_fields(self, changed_fields):
+        '''The OriginalVideo emails need to say not just the new data, but also
+        provide the value that was in the OriginalVideo object just before the
+        email is sent.
+
+        This function takes a changed_fields dictionary, and uses its keys to
+        figure out what relevant snapshotted information would help the user
+        contextualize the changed_fields data.'''
+        old_fields = {}
+
+        if 'deleted' in changed_fields:
+            return old_fields
+
+        for key in changed_fields:
+            old_fields[key] = getattr(self, key)
+
+        return old_fields
+
+    def _remote_thumbnail_appears_changed(self):
+        '''This private method checks if the remote thumbnail has been updated.
+
+        It takes no arguments, because you are only supposed to call it
+        when the remote video service did not give us a new thumbnail URL.
+
+        It returns a boolean. True, if and only if the remote video has:
+        
+        * a Last-Modified header indicating it has been modified, and
+        * HTTP response body that hashes to a different SHA1 than the
+          one we stored.
+
+        It treats "self" as read-only.'''
+        # because the data might have changed, check to see if the
+        # thumbnail has been modified
+        made_time = time.mktime(self.thumbnail_updated.utctimetuple())
+        # we take made_time literally, because the localtv app MUST
+        # be storing UTC time data in the column.
+        modified = email.utils.formatdate(made_time,
+                                          usegmt=True)
+        request = urllib2.Request(self.thumbnail_url)
+        request.add_header('If-Modified-Since', modified)
+        try:
+            response = urllib2.build_opener().open(request)
+        except urllib2.HTTPError:
+            # We get this for 304, but we'll just ignore all the other
+            # errors too
+            return False
+        else:
+            if response.info().get('Last-modified', modified) == \
+                    modified:
+                # hasn't really changed, or doesn't exist
+                return False
+
+        # If we get here, then the remote server thinks that the file is fresh.
+        # We should check its SHA1 hash against the one we have stored.
+        new_sha1 = util.hash_file_obj(response)
+
+        if new_sha1 == self.remote_thumbnail_hash:
+            # FIXME: Somehow alert downstream layers that it is safe to update
+            # the modified-date in the database.
+            return False # bail out early, empty -- the image is the same
+
+        # Okay, so the hashes do not match; the remote image truly has changed.
+        # Let's report the timestamp as having a Last-Modified date of right now.
+        return True
+
+    def send_deleted_notification(self):
+        from localtv.util import send_notice, get_or_create_tags
+        t = loader.get_template('localtv/admin/video_deleted.txt')
+        c = Context({'video': self.video})
+        subject = '[%s] Video Deleted: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+        # Update the OriginalVideo to show that we sent this notification
+        # out.
+        self.remote_video_was_deleted = True
+        self.save()
+
+    def update(self, override_vidscraper_result = None):
+        from localtv.util import get_or_create_tags
+
+        changed_fields = self.changed_fields(override_vidscraper_result)
+        if not changed_fields:
+            return # don't need to do anything
+
+        # Was the remote video deleted?
+        if changed_fields.get('deleted', None):
+            # Have we already sent the notification
+            # Mark inside the OriginalVideo that the video has been deleted.
+            # Yes? Uh oh.
+            self.send_deleted_notification()
+            return # Stop processing here.
+
+        original_values = self.originals_for_changed_fields(changed_fields)
+
+        changed_model = False
+        for field in changed_fields.copy():
+            if field == 'tags': # special case tag equality
+                if set(self.tags) == set(self.video.tags):
+                    self.tags = self.video.tags = get_or_create_tags(
+                        changed_fields.pop('tags'))
+            elif field in ('thumbnail_url', 'thumbnail_updated'):
+                if self.thumbnail_url == self.video.thumbnail_url:
+                    value = changed_fields.pop(field)
+                    if field == 'thumbnail_url':
+                        self.thumbnail_url = self.video.thumbnail_url = value
+                    changed_model = True
+                    self.video.save_thumbnail()
+            elif getattr(self, field) == getattr(self.video, field):
+                value = changed_fields.pop(field)
+                setattr(self, field, value)
+                setattr(self.video, field, value)
+                changed_model = True
+
+        if changed_model:
+            self.save()
+            self.video.save()
+
+        if not changed_fields: # modified them all
+            return
+
+        self.send_updated_notification(changed_fields, originals_for_changed_fields)
+
+    def send_updated_notification(self, changed_fields, originals_for_changed_fields):
+        from localtv.util import send_notice, get_or_create_tags
+
+        # Create a custom hodge-podge of changed fields and the original values
+        hodge_podge = {}
+        for key in changed_fields:
+            hodge_podge[key] = (
+                changed_fields[key],
+                originals_for_changed_fields.get(key, None))
+
+        t = loader.get_template('localtv/admin/video_updated.txt')
+        c = Context({'video': self.video,
+                     'original': self,
+                     'changed_fields': hodge_podge})
+        subject = '[%s] Video Updated: "%s"' % (
+            self.video.site.name, self.video.name)
+        message = t.render(c)
+        send_notice('admin_video_updated', subject, message,
+                    sitelocation=SiteLocation.objects.get(
+                site=self.video.site))
+
+        # And update the self instance to reflect the changes.
+        for field in changed_fields:
+            if field == 'tags':
+                self.tags = get_or_create_tags(changed_fields[field])
+            else:
+                setattr(self, field, changed_fields[field])
+        self.save()
+
 class VideoManager(models.Manager):
 
     def new(self, **kwargs):
@@ -947,7 +1296,7 @@ localtv_watch.timestamp > %s"""},
                                  )
 
 
-class Video(Thumbnailable):
+class Video(Thumbnailable, VideoBase):
     """
     Fields:
      - name: Name of this video
@@ -990,9 +1339,7 @@ class Video(Thumbnailable):
        info
      - notes: a free-text field to add notes about the video
     """
-    name = models.CharField(max_length=250)
     site = models.ForeignKey(Site)
-    description = models.TextField(blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
@@ -1016,8 +1363,6 @@ class Video(Thumbnailable):
     flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
                                                 blank=True)
     guid = models.CharField(max_length=250, blank=True)
-    thumbnail_url = models.URLField(
-        verify_exists=False, blank=True, max_length=400)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
     video_service_user = models.CharField(max_length=250, blank=True,
@@ -1255,6 +1600,7 @@ admin.site.register(SavedSearch)
 admin.site.register(Watch)
 
 tagging.register(Video)
+tagging.register(OriginalVideo)
 
 def finished(sender, **kwargs):
     SiteLocation.objects.clear_cache()
@@ -1318,14 +1664,18 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     'A daily e-mail of the queue status',
                                     default=1,
                                     verbosity=verbosity)
+    notification.create_notice_type('admin_video_updated',
+                                    'Video Updated',
+                                    'A video from a service was updated',
+                                    default=1,
+                                    verbosity=verbosity)
     notification.create_notice_type('admin_new_playlist',
                                     'Request for Playlist Moderation',
                                     'A new playlist asked to be public',
                                     default=2,
                                     verbosity=verbosity)
 
-models.signals.post_syncdb.connect(create_email_notices,
-                                   sender=notification)
+models.signals.post_syncdb.connect(create_email_notices)
 
 def delete_comments(sender, instance, **kwargs):
     from django.contrib.comments import get_model
@@ -1335,3 +1685,48 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
+
+### register pre-save handler for Tiers and payment due dates
+models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
+                                sender=SiteLocation)
+models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
+                                sender=SiteLocation)
+
+def create_original_video(sender, instance=None, created=False, **kwargs):
+    if not created:
+        return # don't care about saving
+    if not instance.website_url:
+        # we don't know how to scrape this, so ignore it
+        return
+    new_data = dict(
+        (field.name, getattr(instance, field.name))
+        for field in VideoBase._meta.fields)
+    OriginalVideo.objects.create(
+        video=instance,
+        thumbnail_updated=datetime.datetime.now(),
+        **new_data)
+
+def save_original_tags(sender, instance, created=False, **kwargs):
+    if not created:
+        # not a new tagged item
+        return
+    if not isinstance(instance.object, Video):
+        # not a video
+        return
+    if (instance.object.when_submitted - datetime.datetime.now() >
+        datetime.timedelta(seconds=10)):
+        return
+    try:
+        original = instance.object.original
+    except OriginalVideo.DoesNotExist:
+        return
+    tagging.models.Tag.objects.add_tag(original,
+                                       '"%s"' % instance.tag)
+
+ENABLE_ORIGINAL_VIDEO = not getattr(settings, 'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY', None)
+
+if ENABLE_ORIGINAL_VIDEO:
+    models.signals.post_save.connect(create_original_video,
+                                     sender=Video)
+    models.signals.post_save.connect(save_original_tags,
+                                     sender=tagging.models.TaggedItem)

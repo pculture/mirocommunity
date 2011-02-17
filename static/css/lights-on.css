@@ -1980,13 +1980,14 @@ line-height: 1.4em;
 }
 
 #about_page #main h2 {
-padding: 50px 0 7px 0px;
+padding: 30px 0 7px 0px;
 }
 
 #about_page .logo {
 max-width: 470px;
 float: right;
-margin: 100px 50px;
+margin: 50px;
+margin-bottom: 20px;
 }
 
 

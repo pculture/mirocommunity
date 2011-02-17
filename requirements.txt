@@ -7,13 +7,21 @@
 BeautifulSoup==3.0.7a
 Django==1.2.1
 http://effbot.org/downloads/Imaging-1.1.6.tar.gz#egg=Imaging
+<<<<<<< HEAD
 #South==0.6.2
 feedparser==4.1
 flup==1.0.2
 lxml==2.2.7
 python-memcached==1.45
+=======
+South>=0.7
+-e svn+http://feedparser.googlecode.com/svn/trunk/#egg=feedparser
+flup>=1.0.2
+lxml==2.1.5
+python-memcached==1.44
+>>>>>>> 5eeb80e0c968c3961156b50b64ab221f4923bfd5
 python-openid==2.2.4
-python-yadis==1.1.0
+http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
 simplejson==1.9.2
 wsgiref==0.1.2
 django-tagging==0.3
@@ -24,7 +32,18 @@ django-haystack==1.0.1-final
 celery==1.0.0
 -e git+http://git.participatoryculture.org/python-bitly@8cd21ba16601f587c607738e80b18a3e1a378c65#egg=python_bitly-trunk-py2.6-dev
 django-notification==0.1.5
+<<<<<<< HEAD
 -e hg+http://bitbucket.org/ubernostrum/django-registration/@aa82571c69c819dfbcf721d0758ebe1d98fe2d49#egg=django_registration-tip
 oauth2==1.2.0
 -e git+http://github.com/paulswartz/Django-Socialauth.git@d1bb2d5c295ae46036f7ee44c66c5c948c374bb5#egg=django-socialauth-0.1.2c-py2.6-dev
 facebook-python-sdk==0.1
+=======
+-e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration
+oauth2
+-e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
+-e git+http://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
+oauth
+-e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
+mock
+django-storages
+>>>>>>> 5eeb80e0c968c3961156b50b64ab221f4923bfd5

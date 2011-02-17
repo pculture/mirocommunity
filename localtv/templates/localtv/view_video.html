@@ -278,7 +278,7 @@ margin: 0 auto;
     </div>
     {% endif %}
     {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}
-    <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">
+    <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
       <select name="playlist" id="id_playlist">
         <option value="">Add video to your playlist</option>
         {% for playlist in playlists %}
@@ -288,7 +288,7 @@ margin: 0 auto;
       </select>
       <input type="submit" value="Add"/>
     </form>
-    <form method="POST" action="{% url localtv_playlist_index %}">
+    <form method="POST" action="{% url localtv_playlist_index %}"> {% csrf_token %}
       <input type="text" name="name" />
       <input type="hidden" name="video" value="{{ current_video.pk }}">
       <input type="submit" value="Add New Playlist">

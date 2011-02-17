@@ -21,6 +21,8 @@ import shutil
 import tempfile
 from urllib import quote_plus, urlencode
 
+import mock
+
 import feedparser
 import vidscraper
 
@@ -41,10 +43,13 @@ from django.test.client import Client
 
 from haystack.query import SearchQuerySet
 
+import localtv.templatetags.filters
 from localtv import models
 from localtv import util
+from localtv import tiers
 
 from notification import models as notification
+from tagging.models import Tag
 
 Profile = util.get_profile_model()
 
@@ -65,12 +70,18 @@ class BaseTestCase(TestCase):
         settings.SITE_ID = 1
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
+        self.tier_info = models.TierInfo.objects.get_current()
+
+        # By default, tests run on an 'max' account.
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.tmpdir
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
+        mail.outbox = [] # reset any email at the start of the suite
 
     def tearDown(self):
         TestCase.tearDown(self)
@@ -135,7 +146,7 @@ class BaseTestCase(TestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?next=%s' %
-                          (self.site_location.site.domain,
+                          ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
 
@@ -177,6 +188,20 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+
+    @mock.patch('localtv.tiers.Tier.over_videos_limit', lambda *args: True)
+    def test_auto_approve_True_when_user_past_video_limit(self):
+        """
+        If Feed.auto_approve is True, but the site is past the video limit,
+        the imported videos should be marked as unapproved.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.auto_approve = True
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 5)
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
         """
@@ -724,7 +749,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
         response = c.get(reverse('localtv_view_video',
@@ -732,7 +757,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
     def test_view_video_category(self):
@@ -768,9 +793,9 @@ class ViewTestCase(BaseTestCase):
 
         c = Client()
         response = c.get(video.get_absolute_url(),
-                         HTTP_HOST=self.site_location.site.domain,
+                         HTTP_HOST='testserver',
                          HTTP_REFERER='http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
@@ -1527,6 +1552,87 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
             self.assertFalse(storage.default_storage.exists(path),
                              '%s was not deleted' % path)
 
+    def test_original_video_created(self):
+        """
+        When an Video object is a created, an OriginalVideo object should also
+        be created with the data from that video.
+        """
+        v = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Test Name',
+            description='Test Description',
+            website_url='http://www.youtube.com/'
+            )
+        v.tags = 'foo bar "baz bum"'
+        self.assertFalse(v.original is None)
+        self.assertEquals(v.original.name, v.name)
+        self.assertEquals(v.original.description, v.description)
+        self.assertTrue(v.original.thumbnail_updated -
+                        datetime.datetime.now() <
+                        datetime.timedelta(seconds=15))
+        self.assertEquals(set(v.tags), set(Tag.objects.filter(
+                    name__in=('foo', 'bar', 'baz bum'))))
+
+    def test_no_original_video_without_website_url(self):
+        """
+        If we don't know have a website URL for the video, don't bother
+        creating an OriginalVideo object.
+        """
+        v = models.Video.objects.create(
+            site=self.site_location.site,
+            name='Test Name',
+            description='Test Description',
+            )
+        self.assertRaises(models.OriginalVideo.DoesNotExist,
+                          lambda: v.original)
+
+# -----------------------------------------------------------------------------
+# Site tier tests
+# -----------------------------------------------------------------------------
+class SiteTierTests(BaseTestCase):
+    def test_basic_account(self):
+        # Create a SiteLocation whose site_tier is set to 'basic'
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(0, tier.dollar_cost())
+        self.assertEqual(500, tier.videos_limit())
+        self.assertEqual(1, tier.admins_limit())
+        self.assertFalse(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_plus_account(self):
+        # Create a SiteLocation whose site_tier is set to 'plus'
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(15, tier.dollar_cost())
+        self.assertEqual(1000, tier.videos_limit())
+        self.assertEqual(5, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_premium_account(self):
+        # Create a SiteLocation whose site_tier is set to 'premium'
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(35, tier.dollar_cost())
+        self.assertEqual(5000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_max_account(self):
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(75, tier.dollar_cost())
+        self.assertEqual(25000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertTrue(tier.permit_custom_template())
+
 # -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
@@ -1646,3 +1752,322 @@ class SavedSearchModelTestCase(BaseTestCase):
                           'http://www.youtube.com/user/dpikop')
         self.assertEquals(list(video.authors.all()), [user])
 
+class OriginalVideoModelTestCase(BaseTestCase):
+
+    BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
+    BASE_DATA = {
+        'name': u'Miro appreciates the support of our sponsors',
+        'description': u"""<div><br><p>Miro is a non-profit project working \
+to build a better media future as television moves online. We provide our \
+software free to our users and other developers, despite the significant \
+cost of developing the software. This work is made possible in part by the \
+support of our sponsors. Please watch this video for a message from our \
+sponsors. </p><p>If you wish to support Miro yourself, please \
+<a href="http://www.getmiro.com/about/donate?ref=blipfeed">donate $10 \
+today</a>.</p></div>""",
+        'tags': u'"Default Category"',
+        'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
+                          'MiroAppreciatesTheSupportOfOurSponsors478.png'),
+        'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
+        }
+
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.video = models.Video.objects.create(
+            site=self.site_location.site,
+            website_url=self.BASE_URL,
+            name=self.BASE_DATA['name'],
+            description=self.BASE_DATA['description'],
+            thumbnail_url=self.BASE_DATA['thumbnail_url'])
+        self.video.tags = self.BASE_DATA['tags']
+        self.original = self.video.original
+        self.original.thumbnail_updated = self.BASE_DATA['thumbnail_updated']
+        self.original.save()
+        notice_type = notification.NoticeType.objects.get(
+            label='admin_video_updated')
+        for username in 'admin', 'superuser':
+            user = User.objects.get(username=username)
+            setting = notification.get_notification_setting(user, notice_type,
+                                                            "1")
+            setting.send = True
+            setting.save()
+
+    def test_normalize_newlines_backslash_r(self):
+        dos_style = 'hello\r\nthere'
+        unix_style = 'hello\nthere'
+        self.assertEqual(
+            util.normalize_newlines(dos_style),
+            util.normalize_newlines(unix_style))
+
+    def test_normalize_newlines_weird_input(self):
+        self.assert_(util.normalize_newlines(None)
+                     is None)
+        self.assert_(util.normalize_newlines(True) is True)
+
+    def test_no_changes(self):
+        """
+        If nothing has changed, then OriginalVideo.changed_fields() should
+        return an empty dictionary.
+        """
+        self.assertEquals(self.original.changed_fields(), {})
+
+    def test_name_change(self):
+        """
+        If the name has changed, OriginalVideo.changed_fields() should return
+        the new name.
+        """
+        self.original.name = 'Different Name'
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'name': self.BASE_DATA['name']})
+
+    def test_description_change(self):
+        """
+        If the description has changed, OriginalVideo.changed_fields() should
+        return the new description.
+        """
+        self.original.description = \
+            'Different Description'
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'description': self.BASE_DATA['description']})
+
+    def test_tags_change(self):
+        """
+        If the tags have changed, OriginalVideo.changed_fields() should return
+        the new tags.
+        """
+        self.original.tags = ['Different', 'Tags']
+        self.original.save()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'tags': set((tag,))})
+
+    def test_thumbnail_url_change(self):
+        """
+        If the thumbnail_url has changed, OriginalVideo.changed_fields() should
+        return the new thumbnail_url.
+        """
+        self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.original.save()
+
+        self.assertEquals(self.original.changed_fields(),
+                          {'thumbnail_url': self.BASE_DATA['thumbnail_url']})
+
+    def test_thumbnail_updated_change(self):
+        """
+        If the date on the thumbnail has changed,
+        OriginalVideo.changed_fields() should return the new thumbnail date.
+        """
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1197'
+        self.original.thumbnail_updated = datetime.datetime.min
+        self.original.save()
+
+        time_at_start_of_test = datetime.datetime.utcnow()
+        changed_fields = self.original.changed_fields()
+        self.assertTrue('thumbnail_updated' in changed_fields)
+        new_thumbnail_timestamp = changed_fields['thumbnail_updated']
+        self.assertTrue(new_thumbnail_timestamp >=
+                        time_at_start_of_test)
+
+    def test_thumbnail_change_ignored_if_hash_matches(self):
+        self.original.thumbnail_updated = datetime.datetime.min
+        self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
+        self.original.save()
+
+        changed_fields = self.original.changed_fields()
+        self.assertFalse('thumbnail_updated' in changed_fields)
+
+    def test_update_no_updates(self):
+        """
+        If nothing has been updated, OriginalVideo.update() should not send any
+        e-mails.
+        """
+        self.original.update()
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_update_modified(self):
+        """
+        If there have been updates to a modified video, send an e-mail to
+        anyone with the 'admin_video_updated' notification option.  It should
+        also update the OriginalVideo object to the current data.
+        """
+        self.original.name = 'Different Name'
+        self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.original.tags = 'foo bar'
+        self.original.save()
+
+        self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.thumbnail_url,
+                          self.video.thumbnail_url) # didn't change
+        self.assertEquals(set(original.video.tags),
+                          set(self.video.tags))
+
+    def test_update_unmodified(self):
+        """
+        If there have been updates to an unmodified video, no e-mail should be
+        sent; the video should simply be changed.
+        """
+        self.video.name = self.original.name = 'Different Name'
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.tags = self.original.tags = 'foo bar'
+        self.video.save()
+        self.original.save()
+
+        self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(len(mail.outbox), 0)
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.name,
+                          original.name)
+        self.assertEquals(original.video.thumbnail_url,
+                          original.thumbnail_url)
+        self.assertEquals(set(original.video.tags),
+                          set(original.tags))
+
+    def test_update_both(self):
+        """
+        If there are some fields that are modified in the video, and others
+        that aren't, the modified fields should have an e-mail sent and the
+        other should just be modified.
+        """
+        self.video.name = self.original.name = 'Different Name'
+        self.original.description = 'Different Description'
+        self.video.thumbnail_url = self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.video.tags = self.original.tags = 'foo bar'
+        self.video.save()
+        self.original.save()
+
+        self.original.update()
+
+        tag = 'Default Category'
+        if settings.FORCE_LOWERCASE_TAGS:
+            tag = tag.lower()
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        self.assertEquals(original.name,
+                          self.BASE_DATA['name'])
+        self.assertEquals(original.thumbnail_url,
+                          self.BASE_DATA['thumbnail_url'])
+        self.assertEquals(set(tag.name for tag in original.tags),
+                          set((tag,)))
+        self.assertEquals(original.video.name,
+                          original.name)
+        self.assertEquals(original.video.thumbnail_url,
+                          original.thumbnail_url)
+        self.assertEquals(set(original.video.tags),
+                          set(original.tags))
+
+    def test_remote_video_deletion(self):
+        """
+        If the remote video is deleted, send a special message along those
+        lines (rather than crash).
+        """
+        # For vimeo, at least, this is what remote video deletion looks like:
+        vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
+
+        self.original.update(override_vidscraper_result=vidscraper_result)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          ['admin@testserver.local',
+                           'superuser@testserver.local'])
+        self.assert_(u'Deleted' in unicode(mail.outbox[0].message()))
+        # Now, imagine a day goes by.
+        # Clear the outbox, and do the same query again.
+        mail.outbox = []
+        self.original.update(override_vidscraper_result=vidscraper_result)
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_remote_video_newline_fiddling(self):
+        """
+        YouTube's descriptions sometimes come back with \r\n as the line
+        ending, and sometimes with \n.
+
+        When comparing descriptions that are the same except for that, consider
+        them equivalent.
+        """
+        # Set up the Original Video to have the \n-based line breaks
+        self.original.description = 'Something with some\nline breaks'
+        self.original.save()
+
+        # and set up the user's modified video to have a totally different description
+        self.original.video.description = 'Something chosen by the user'
+        self.original.video.save()
+
+        # Now, do a refresh, simulating the remote response having \r\n line endings
+        vidscraper_result =  {'description': self.original.description.replace('\n', '\r\n'),
+                              'thumbnail_url': self.BASE_DATA['thumbnail_url'],
+                              'title': self.BASE_DATA['name'],
+                              'tags': None, # skip tag check
+                              }
+        changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
+        self.assertFalse(changes)
+
+class TestWmodeFilter(BaseTestCase):
+    def test_add_transparent_wmode_to_object(self):
+        input = "<object></object>"
+        output = '<object><param name="wmode" value="transparent"></object>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
+
+    def test_add_transparent_wmode_to_two_objects(self):
+        input = "<object></object>"
+        output = '<object><param name="wmode" value="transparent"></object>'
+        self.assertEqual(output + output,
+                         localtv.templatetags.filters.wmode_transparent(input + input))
+
+    def test_add_transparent_wmode_to_embed(self):
+        input = '<embed type="application/x-shockwave-flash"></embed>'
+        output = '<embed type="application/x-shockwave-flash" wmode="transparent"></embed>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
+                
+class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
+    def test_unit(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+        tier_info = models.TierInfo.objects.get_current()
+        tier_info.user_has_successfully_performed_a_paypal_transaction = True
+        tier_info.save()
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=True))

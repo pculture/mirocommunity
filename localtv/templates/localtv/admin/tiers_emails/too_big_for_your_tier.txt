@@ -1,0 +1,26 @@
+Thanks for using Miro Community! As part of rolling out support for
+site levels, we wanted to let you know that we are limiting site features
+for free accounts so that we can keep the service running.
+
+You are quite welcome to stay on the service without paying. As a free user,
+you'll need to pay attention to the following limits:
+
+* 500 published videos
+* 1 site admin
+* No custom CSS
+
+The limits you are in excess-of are:
+
+{% if "admins" in warnings %}
+* You have more admins than one. Unless you upgrade, we will 
+{% endif %}{% if "videos" in warnings %}
+* You have {{ video_count }} published video{{ video_count|pluralize}}. Unless you upgrade, we will unpublish the oldest videos to keep you within the limit of 500.{% endif %}
+
+We want your site to be successful. We have some tips on how to use your site in the manual:
+http://develop.participatoryculture.org/index.php/MiroCommunityManual
+
+Yay you,
+
+The Miro Community Team
+
+P.S. If you have questions, get in touch with us: email questions@mirocommunity.org.

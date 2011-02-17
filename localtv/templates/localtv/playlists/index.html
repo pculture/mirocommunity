@@ -1,4 +1,22 @@
 {% extends "localtv/admin/bulk_edit.html" %}
+{% comment %}
+# This file is part of Miro Community.
+# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
 {% load filters %}
 {% block body_id %}goodies{% endblock body_id %}
 {% block body_class %}playlists{% endblock body_class %}
@@ -21,6 +39,22 @@
 {% block pre-labels %}
 <h2>Goodies | Playlists</h2>
 <a href="#" class="add" rel="#label_sidebar"><span>Add Playlist</span></a>
+
+{% block helpful %}
+   <div class="helpful rounded">
+     <p>This page lists all the playlists you have created. Once you create a
+       playlist, you will need to go to the page of the video you want to add in order
+       to add it to that playlist. There is no way to add videos to playlists in bulk
+       at this time. Playlists are private by default. Users can request that their
+       playlists be made public by clicking the "Public" link under "Status" in the
+       list below.</p>
+     <p>If you are an administrator, you can also see all playlists on the site and
+       those awaiting moderation by clicking the given links at the top of the list.</p>
+     
+   </div>
+{% endblock %}
+
+
 <div id="label_sidebar" class="simple_overlay displaynone {% if form.errors %}errors{% endif %}">
   <div class="close"></div>
   <h2>Add a Playlist</h2>

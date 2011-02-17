@@ -1,6 +1,24 @@
+/*
+# This file is part of Miro Community.
+# Copyright (C) 2010 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 function insert_and_activate_action_buttons(obj) {
     if (!obj.children('.done').length) {
-        button_code = '<button type="submit" class="done"><span>Save Changes</span></button>'
+        button_code = '<button type="submit" class="done"><span>Save Changes</span></button>';
         if (obj.find('.checklist').length) {
             obj.prepend(button_code);
         } else {

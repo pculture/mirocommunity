@@ -19,6 +19,7 @@ import hashlib
 import re
 import string
 import urllib
+import types
 
 from django.conf import settings
 from django.core.cache import cache
@@ -149,6 +150,19 @@ def get_or_create_tags(tag_list):
         tag_set.add(tag)
     return tagging.utils.edit_string_for_tags(list(tag_set))
 
+def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
+    hasher = hash_constructor()
+    for chunk in iter(lambda: file_obj.read(4096), ''):
+        hasher.update(chunk)
+    if close_it:
+        file_obj.close()
+    return hasher.hexdigest()
+
+def unicode_set(iterable):
+    output = set()
+    for thing in iterable:
+        output.add(force_unicode(thing, strings_only=True))
+    return output
 
 def get_scraped_data(url):
     cache_key = 'vidscraper_data-' + url
@@ -167,6 +181,11 @@ def get_scraped_data(url):
         cache.add(cache_key, scraped_data)
 
     return scraped_data
+
+def normalize_newlines(s):
+    if type(s) in types.StringTypes:
+        s = s.replace('\r\n', '\n')
+    return s
 
 def send_notice(notice_label, subject, message, fail_silently=True,
                 sitelocation=None):
@@ -374,3 +393,24 @@ SAFE_URL_CHARACTERS = string.ascii_letters + string.punctuation
 
 def quote_unicode_url(url):
     return urllib.quote(url, safe=SAFE_URL_CHARACTERS)
+
+try:
+    import backends
+except ImportError:
+    import storages.backends as backends
+
+try:
+    import backends.s3
+except (AttributeError, ImportError):
+    pass
+else:
+    class SimplerS3Storage(backends.s3.S3Storage):
+        '''This is just like the normal S3Storage backend, only
+        we override the get_available_name method so that we permit
+        ourselves to overwrite files. By default, the core of Django's
+        storage layer refuses to overwrite files.'''
+
+        def get_available_name(self, name):
+            """ Overwrite existing file with the same name. """
+            name = self._clean_name(name)
+            return name

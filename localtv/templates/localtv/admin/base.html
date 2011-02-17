@@ -21,69 +21,79 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-
+    <link rel="stylesheet" type="text/css" href="/css/admin/reset.css" />
     <link rel="StyleSheet" type="text/css" href="/css/admin.css" />
+    <link rel="StyleSheet" type="text/css" href="/css/admin/new_admin.css" />
     <link rel="StyleSheet" type="text/css" href="/css/overlay.css" />
 <!--[if lt IE 8]>
    <link rel="StyleSheet" type="text/css" href="/css/msie7.css" />
 <![endif]-->
     <script src="http://cdn.jquerytools.org/1.1.2/full/jquery.tools.min.js"></script>
-    <script src="/js/extern/jquery.form.js"
-            type="text/javascript">
-    </script>
-    <script src="/js/miro_community.js"
-            type="text/javascript">
-    </script>
+    <script src="/js/extern/jquery.form.js" type="text/javascript"></script>
+    <script src="/js/miro_community.js" type="text/javascript"></script>
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
+    {% block extrahead %}
+    {% endblock extrahead %}
     {% block head %}{% endblock head %}
   </head>
   {% endif %}
   <body id="{% block body_id %}admin{% endblock body_id %}" class="{% block body_class %}{% endblock %}">
     {% block next_link %}<a id="next" href="{{ request.path }}"></a>{% endblock %}
     {% if not request.is_ajax %}
-    {% if user_is_admin %}<p class="help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email Anne Jonas: <a href="mailto:anne@pculture.org">anne@pculture.org</a></p>{% endif %}
     <!--[if IE]><p class="internet_explorer">
-      Administrative content is not optimized for the Internet Explorer.
+      Administrative content is not optimized for Internet Explorer.
       We recommend upgrading to a <a href="http://www.firefox.com/">better browser</a> if you are experiencing problems.
     </p><![endif]-->
 
-    <div id="wrapper" style="{% block wrapper-style-extra %}width: 85%; min-width: 960px;{% endblock %}">
+    
       <div id="header">
+        <div class="clear">
+          <div id="user_panel">
+            {% if request.user.is_authenticated %}
+              <span>logged in as <em>{{ request.user.username }}</em></span>
+              <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Sign Out</a>
+              {% else %}
+              <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" rel="#overlay" title="Please Sign In"><span>Sign In</span></a>
+            {% endif %}
+          </div><!-- // user_pane -->
         <div id="logo">
           {% url localtv_index as localtv_index %}
-          <a href="{{ localtv_index }}">
-            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
-          </a>
-          <h1 style="text-decoration: none;">
             <a href="{{ localtv_index }}">
-              {{ sitelocation.site.name }}
+              <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
+              <span class="site_name">{{ sitelocation.site.name }}</span>
             </a>
-            <span class="tagline">{{ sitelocation.tagline|safe }}</span>
-			<br class="clear" />
-          </h1>
-        </div>
-        <ul class="login">
-          <li>
-            <a class="nick show_main med_button" href="{{ localtv_index }}"><span>View Main Site</span></a>
-          </li>
-        </ul>
-
-      {% block nav %}{% include "localtv/admin/header.html" %}{% endblock %}
-      </div>
-
+        </div><!-- // logo -->
+        </div><!-- // clear -->
+      </div><!-- // header -->
+      <div id="wrapper">
+      {% block nav %}{% include "localtv/admin/new_header.html" %}{% endblock %}
       <div id="content">
       {% endif %}
         {% block content %}
         {% endblock content %}
       {% if not request.is_ajax %}
-        <br class="clear">
-      </div>
-    </div>
-	<!-- overlayed element --> 
+      </div><!-- // content -->
+      <div class="clear"></div>
+    </div><!-- // wrapper -->
+    <div class="clear"></div>
+    <div id="admin_footer">
+      <ul class="clear">
+        <li><a target="_blank" href="http://pculture.org/pcf/websites-privacy/">Privacy Policy</a></li>
+        <li><a href="http://mirocommunity.org/terms">Terms of Service</a></li>
+        <li><a href="http://mirocommunity.org/faq/">FAQ</a></li>
+        <li><a href="https://develop.participatoryculture.org/index.php/MiroCommunityManual">Miro Community Manual</a></li>
+      </ul>
+      {% if user_is_admin %}
+        <p id="footer_help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email the support team: <a href="mailto:questions@mirocommunity.org">questions@mirocommunity.org</a></p>
+      {% endif %}
+    </div><!-- // admin_footer -->
+    
+    
+<!-- overlayed element --> 
 <div class="overlay" id="overlay"> 
-	<!-- the external content is loaded inside this tag --> 
-	<div class="contentWrap"></div> 
-</div>
+<!-- the external content is loaded inside this tag --> 
+<div class="contentWrap"></div> 
+</div><!-- // overlay -->
 
       {% if settings.GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
