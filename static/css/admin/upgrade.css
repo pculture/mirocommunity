@@ -202,12 +202,14 @@ body#tier .ft button {
   top: 23px;
   left: 0;
   border: 0;
+  width: 300px;
   -moz-box-shadow: inset 0 0 0 #377454;
   -webkit-box-shadow: inset 0 0 0 #377454;
 }
 
 body#tier .ft button em {
-  color: #FFF;
+    margin: 0 auto;
+    color: #FFF;
 }
 
 #signup_form #error_container {
