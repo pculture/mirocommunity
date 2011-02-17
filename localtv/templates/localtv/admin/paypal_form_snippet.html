@@ -27,12 +27,12 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_begin_free_tria
   <input type="hidden" name="rm" value="1">
   <input type="hidden" name="invoice" value="{{ target_tier_name }}">
   <input type="hidden" name="custom" value="{{ target_tier_name }} for {{ sitelocation.site.domain }}">
-  <span class="buttons_like_links">
+  <div class="buttons_like_links">
     <button
        type="submit"
-       name="stubmit">{{ message }}
+       name="stubmit"><em>{{ message }}</em>
     </button>
-  </span>
+  </div>
 
   
 </form>

@@ -184,8 +184,13 @@ body#tier .selected .ft p {
   text-shadow: 0 -1px 0 #000;
 }
 
-body#tier .ft a {
+body#tier .ft div.buttons_like_links {
+    text-align: center;
+}
+
+body#tier .ft button {
   color: rgba(255,255,255, 0.3);
+  background-color: inherit;
   font-weight: bold;
   font-size: 20px;
   padding: 0;
@@ -201,7 +206,7 @@ body#tier .ft a {
   -webkit-box-shadow: inset 0 0 0 #377454;
 }
 
-body#tier .ft a em {
+body#tier .ft button em {
   color: #FFF;
 }
 
