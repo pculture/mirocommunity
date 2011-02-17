@@ -290,14 +290,14 @@ margin: 5px 0 30px;
 display: none;
 }
 
-.add{
-float: right;
-text-decoration: none;
-color: #fff;
-margin-left: 10px;
-margin-bottom: 25px;
-padding-right: 18px;
-background: url(../images/admin_sprites.png) right -34px no-repeat;
+.add {
+	float: right;
+	text-decoration: none;
+	color: #fff;
+	margin-left: 10px;
+	margin-bottom: 25px;
+	padding-right: 18px;
+	background: url(../images/admin_sprites.png) right -34px no-repeat;
 }
 
 button.add{
@@ -316,11 +316,11 @@ button.add span{
 padding-bottom: 6px
 }
 
-.add span{
-padding: 9px 0px 7px 35px;
-float: right;
-background: url(../images/admin_sprites.png) 0 0px no-repeat;
-text-shadow: 0 1px 1px rgba(0,0,0,1);
+.add span {
+	padding: 9px 0px 9px 35px;
+	float: right;
+	background: url(../images/admin_sprites.png) 0 0px no-repeat;
+	text-shadow: 0 1px 1px rgba(0,0,0,1);
 }
 
 
@@ -362,11 +362,11 @@ button.reject_button:hover {
     background-position: right -407px;
 }
 
-.reject_button span{
-padding: 9px 0px 7px 35px;
-float: right;
-text-shadow: 0 1px 1px rgba(0,0,0,1);
-background: url(../images/admin_sprites.png) left -297px no-repeat;
+.reject_button span {
+	padding: 9px 0px 9px 35px;
+	float: right;
+	text-shadow: 0 1px 1px rgba(0,0,0,1);
+	background: url(../images/admin_sprites.png) left -297px no-repeat;
 }
 
 
@@ -379,20 +379,20 @@ background: url(../images/admin_sprites.png) left -374px no-repeat;
 
 
 
-.approve_button{
-float: left;
-text-decoration: none;
-color: #fff;
-margin-left: 10px;
-margin-bottom: 25px;
-padding-right: 18px;
-background: url(../images/admin_sprites.png) right -185px no-repeat;
+.approve_button {
+	float: left;
+	text-decoration: none;
+	color: #fff;
+	margin-left: 10px;
+	margin-bottom: 25px;
+	padding-right: 18px;
+	background: url(../images/admin_sprites.png) right -185px no-repeat;	
 }
 
 
 
 button.approve_button{
-background: url(../images/admin_sprites.png) right -184px no-repeat;
+background: url(../images/admin_sprites.png) right -183px no-repeat;
 padding-right: 14px;
 border: 0;
 cursor: pointer;
@@ -410,7 +410,7 @@ padding: 8px 4px 8px 35px;
 
 button.approve_button:hover{
 curosor: pointer !important;
-background: url(../images/admin_sprites.png) right -261px no-repeat;
+background: url(../images/admin_sprites.png) right -260px no-repeat;
 }
 
 .approve_button:hover{
@@ -419,11 +419,11 @@ background: url(../images/admin_sprites.png) right -262px no-repeat;
 
 
 
-.approve_button span{
-padding: 9px 0px 7px 35px;
-float: right;
-text-shadow: 0 1px 1px rgba(0,0,0,1);
-background: url(../images/admin_sprites.png) left -151px no-repeat;
+.approve_button span {
+	padding: 9px 0px 9px 35px;
+	float: right;
+	text-shadow: 0 1px 1px rgba(0,0,0,1);
+	background: url(../images/admin_sprites.png) left -151px no-repeat;
 }
 
 
@@ -456,10 +456,10 @@ background: url(../images/admin_sprites.png) right -554px no-repeat;
 }
 
 
-.plain_button span{
-padding: 9px 0px 7px 20px;
-float: right;
-background: url(../images/admin_sprites.png) 0 -443px no-repeat;
+.plain_button span {
+	padding: 9px 0px 9px 20px;
+	float: right;
+	background: url(../images/admin_sprites.png) 0 -443px no-repeat;
 }
 
 
@@ -1052,23 +1052,24 @@ cursor: default;
 display: block;
 }
 
-#admin_videolisting_row .video .title_desc{
-padding: 10px 0 0 0px;
-height: 90px;
-overflow: hidden;
-margin-bottom: 7px;
+#admin_videolisting_row .video .title_desc {
+	padding: 10px 0 0 0px;
+	height: 90px;
+	overflow: hidden;
+	margin-bottom: 7px;
 }
 
-#admin_videolisting_row .video .title_desc h3{
-margin: 0 0 3px;
+#admin_videolisting_row .video .title_desc h3 {
+	margin: 0 0 3px;
+	font-weight: bold;
 }
 
-#admin_videolisting_row .video .title_desc h3 a{
-text-decoration: none;
-overflow: hidden;
-max-height: 50px;
-line-height: 1.4em;
-display: block;
+#admin_videolisting_row .video .title_desc h3 a {
+	text-decoration: none;
+	overflow: hidden;
+	max-height: 50px;
+	line-height: 1.4em;
+	display: block;
 }
 
 #admin_videolisting_row .video .desc{
@@ -1143,10 +1144,10 @@ background: #45c638;
 //////////////////////////////////////*/
 
 
-.pag{
-margin: 0;
-float: left;
-padding: 0 10px 10px;
+.pag {
+	margin: 10px 0 0 0;
+	float: left;
+	padding: 0 10px 10px;
 }
 
 .pag li{
@@ -1158,20 +1159,20 @@ padding: 0;
 }
 
 
-.pag li a{
-list-style: none;
-float: left;
-text-decoration: none;
-background: #fafafa;
-padding: 4px 8px 3px;
-border-top: 1px solid #ccc;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-border-right: 1px solid #ccc;
-border-top: 1px solid #ddd;
-font-size: 10px;
-border-left: 1px solid #ccc;
-border-bottom: 1px solid #999;
+.pag li a {
+	list-style: none;
+	float: left;
+	text-decoration: none;
+	background: #fafafa;
+	padding: 4px 8px 3px 8px;
+	border-top: 1px solid #ccc;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-right: 1px solid #ccc;
+	border-top: 1px solid #ddd;
+	font-size: 10px;
+	border-left: 1px solid #ccc;
+	border-bottom: 1px solid #999;
 }
 
 .pag li a:hover{
