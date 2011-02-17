@@ -90,8 +90,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li><strong>5</strong> Administrator Accounts</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=plus" class="start_trial"><em>{{ switch_messages.plus }}</em></a>
+    <!-- <a href="{% url localtv_admin_change_tier %}?tier_name=plus" class="start_trial"><em>{{ switch_messages.plus }}</em></a> -->
     <p>Plus</p>
+    <p>{% with "15" as amount %}{% with "plus" as target_tier_name %}
+      {% include 'localtv/admin/paypal_form_snippet.html' %}
+      {% endwith %}{% endwith %}
+      </p>
+
   </div><!-- // ft -->
 </div><!-- // starter_pack -->
 
@@ -109,7 +114,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=premium" class="start_trial"><em>{{ switch_messages.premium }}</em></a>
+<!--    <a href="{% url localtv_admin_change_tier %}?tier_name=premium" class="start_trial"><em>{{ switch_messages.premium }}</em></a>-->
+{% with "35" as amount %}{% with "premium" as target_tier_name %}
+      {% include 'localtv/admin/paypal_form_snippet.html' %}
+      {% endwith %}{% endwith %}
     <p>Premium</p>
   </div><!-- // ft -->
 </div><!-- // value_added -->
@@ -129,7 +137,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-    <a href="{% url localtv_admin_change_tier %}?tier_name=max" class="start_trial"><em>Upgrade Your Account</em></a>
+{% with "75" as amount %}{% with "max" as target_tier_name %}
+      {% include 'localtv/admin/paypal_form_snippet.html' %}
+      {% endwith %}{% endwith %}
+<!--    <a href="{% url localtv_admin_change_tier %}?tier_name=max" class="start_trial"><em>Upgrade Your Account</em></a> -->
     <p>Max</p>
   </div><!-- // ft -->
 </div><!-- // delcisious_plan -->
