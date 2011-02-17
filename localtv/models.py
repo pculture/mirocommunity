@@ -22,6 +22,8 @@ import re
 import urllib
 import urllib2
 import urlparse
+import base64
+import os
 try:
     from PIL import Image
 except ImportError:
@@ -304,8 +306,9 @@ class TierInfoManager(models.Manager):
 class TierInfo(models.Model):
     payment_due_date = models.DateTimeField(null=True, blank=True)
     free_trial_available = models.BooleanField(default=True)
+    free_trial_started_on = models.DateTimeField(null=True, blank=True)
     in_free_trial = models.BooleanField(default=False)
-    payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    payment_secret = models.CharField(max_length=255, default='',blank=True) # This is part of payment URLs.
     current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
     video_allotment_warning_sent = models.BooleanField(default=False)
     free_trial_warning_sent = models.BooleanField(default=False)
@@ -315,6 +318,15 @@ class TierInfo(models.Model):
     already_sent_tiers_compliance_email = models.BooleanField(default=False)
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
+
+    def get_payment_secret(self):
+        '''The secret had better be non-empty. So we make it non-empty right here.'''
+        if self.payment_secret:
+            return self.payment_secret
+        # Guess we had better fill it.
+        self.payment_secret = base64.b64encode(os.urandom(16))
+        self.save()
+        return self.payment_secret
 
     def time_until_free_trial_expires(self):
         if not self.in_free_trial:

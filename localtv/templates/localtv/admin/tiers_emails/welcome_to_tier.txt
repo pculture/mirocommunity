@@ -6,7 +6,7 @@ you don't want to continue using Miro Community, just cancel before the trial
 ends and you won't be charged (we'll email you 5 days before the trial ends to
 remind you). Otherwise, you'll pay just ${{ tier_obj.dollar_cost }}/month for the service as long
 as your account is open. You can upgrade, downgrade, or cancel any time at
-http://{{ site.domain }}{% url localtv_admin_tier}}.
+http://{{ site.domain }}{% url localtv_admin_tier %}.
 
 {% endif %}
 Your new account level is {{ tier_name_capitalized}}. You can read more about the features on

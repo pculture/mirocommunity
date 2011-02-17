@@ -22,7 +22,8 @@ import urllib
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.db import transaction
+from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
@@ -44,21 +45,22 @@ def upgrade(request):
     SWITCH_TO = 'Switch to this'
     UPGRADE = 'Upgrade Your Account'
 
-    siteloc = models.SiteLocation.objects.get_current()
     switch_messages = {}
-    if siteloc.tier_name in ('premium', 'max'):
+    if request.sitelocation.tier_name in ('premium', 'max'):
         switch_messages['plus'] = SWITCH_TO
     else:
         switch_messages['plus'] = UPGRADE
 
-    if siteloc.tier_name == 'max':
+    if request.sitelocation.tier_name == 'max':
         switch_messages['premium'] = SWITCH_TO
     else:
         switch_messages['premium'] = UPGRADE
 
     data = {}
-    data['site_location'] = siteloc
+    data['site_location'] = request.sitelocation
     data['switch_messages'] = switch_messages
+    data['payment_secret'] = request.tier_info.get_payment_secret()
+    data['offer_free_trial'] = request.tier_info.free_trial_available
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
@@ -248,3 +250,49 @@ def downgrade_confirm(request):
             
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
+@csrf_exempt
+def ipn_endpoint(request, payment_secret):
+    if payment_secret != request.tier_info.payment_secret:
+        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
+#<QueryDict: {u'last_name': [u'User'], u'receiver_email': [u'paypal_1297893164_biz@s.asheesh.org'], u'residence_country': [u'US'], u'mc_amount1': [u'0.00'], u'invoice': [u'premium'], u'payer_status': [u'verified'], u'txn_type': [u'subscr_signup'], u'first_name': [u'Test'], u'item_name': [u'Miro Community subscription (premium)'], u'charset': [u'windows-1252'], u'custom': [u'premium for rose.makesad.us'], u'notify_version': [u'3.0'], u'recurring': [u'1'], u'test_ipn': [u'1'], u'business': [u'paypal_1297893164_biz@s.asheesh.org'], u'payer_id': [u'SQRR5KCD7Z266'], u'period3': [u'1 M'], u'period1': [u'30 D'], u'verify_sign': [u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B'], u'subscr_id': [u'I-MEBGA2YXPNJK'], u'amount3': [u'35.00'], u'amount1': [u'0.00'], u'mc_amount3': [u'35.00'], u'mc_currency': [u'USD'], u'subscr_date': [u'12:06:48 Feb 17, 2011 PST'], u'payer_email': [u'paypal_1297894110_per@s.asheesh.org'], u'reattempt': [u'1']}>
+    import pdb
+    pdb.set_trace()
+    return HttpResponse("OK")
+
+@csrf_exempt
+@require_site_admin
+def begin_free_trial(request, payment_secret):
+    '''This is where PayPal sends the user, if they are going to begin a free trial.
+
+    At this stage, we do not know what tier the user wanted to opt into. That should be stored
+    in the ?target_tier_name=... GET parameter.
+
+    If it is some nonsense, we should show an obscure error message and tell them to email
+    questions@MC if they got it.
+
+    If it what we expect, then:
+
+    * For now, trust that the IPN process will happen in the background,
+
+    * Declare the free trial in-use, and
+
+    * Switch the tier.'''
+    if payment_secret != request.tier_info.payment_secret:
+        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
+    target_tier_name = request.GET.get('target_tier_name', '')
+    if target_tier_name not in dict(localtv.tiers.CHOICES):
+        return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
+
+    # This is so that we can detect sites that start a free trial, but never generate
+    # the IPN event.
+    if request.tier_info.free_trial_started_on is None:
+        request.tier_info.free_trial_started_on = datetime.datetime.utcnow()
+
+    # Set the free trial to be in-use.
+    if request.tier_info.free_trial_available:
+        request.tier_info.free_trial_available = False
+        request.tier_info.save()
+
+    # Switch the tier!
+    return _actually_switch_tier(request, target_tier_name)

@@ -58,3 +58,4 @@ def hide_get_started(request):
     site_location.hide_get_started = True
     site_location.save()
     return HttpResponse("OK")
+    
