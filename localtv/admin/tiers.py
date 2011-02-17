@@ -45,20 +45,19 @@ def upgrade(request):
     SWITCH_TO = 'Switch to this'
     UPGRADE = 'Upgrade Your Account'
 
-    siteloc = models.SiteLocation.objects.get_current()
     switch_messages = {}
-    if siteloc.tier_name in ('premium', 'max'):
+    if request.sitelocation.tier_name in ('premium', 'max'):
         switch_messages['plus'] = SWITCH_TO
     else:
         switch_messages['plus'] = UPGRADE
 
-    if siteloc.tier_name == 'max':
+    if request.sitelocation.tier_name == 'max':
         switch_messages['premium'] = SWITCH_TO
     else:
         switch_messages['premium'] = UPGRADE
 
     data = {}
-    data['site_location'] = siteloc
+    data['site_location'] = request.sitelocation
     data['switch_messages'] = switch_messages
     data['payment_secret'] = request.tier_info.get_payment_secret()
 
