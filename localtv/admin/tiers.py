@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
@@ -60,6 +60,7 @@ def upgrade(request):
     data = {}
     data['site_location'] = siteloc
     data['switch_messages'] = switch_messages
+    data['payment_secret'] = request.tier_info.get_payment_secret()
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
@@ -250,9 +251,18 @@ def downgrade_confirm(request):
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
+@csrf_exempt
+def ipn_endpoint(request, payment_secret):
+    if payment_secret != request.tier_info.payment_secret:
+        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
+#<QueryDict: {u'last_name': [u'User'], u'receiver_email': [u'paypal_1297893164_biz@s.asheesh.org'], u'residence_country': [u'US'], u'mc_amount1': [u'0.00'], u'invoice': [u'premium'], u'payer_status': [u'verified'], u'txn_type': [u'subscr_signup'], u'first_name': [u'Test'], u'item_name': [u'Miro Community subscription (premium)'], u'charset': [u'windows-1252'], u'custom': [u'premium for rose.makesad.us'], u'notify_version': [u'3.0'], u'recurring': [u'1'], u'test_ipn': [u'1'], u'business': [u'paypal_1297893164_biz@s.asheesh.org'], u'payer_id': [u'SQRR5KCD7Z266'], u'period3': [u'1 M'], u'period1': [u'30 D'], u'verify_sign': [u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B'], u'subscr_id': [u'I-MEBGA2YXPNJK'], u'amount3': [u'35.00'], u'amount1': [u'0.00'], u'mc_amount3': [u'35.00'], u'mc_currency': [u'USD'], u'subscr_date': [u'12:06:48 Feb 17, 2011 PST'], u'payer_email': [u'paypal_1297894110_per@s.asheesh.org'], u'reattempt': [u'1']}>
+    import pdb
+    pdb.set_trace()
+    return HttpResponse("OK")
+
+@csrf_exempt
 @require_site_admin
-@transaction.commit_manually
-def begin_free_trial(request):
+def begin_free_trial(request, payment_secret):
     '''This is where PayPal sends the user, if they are going to begin a free trial.
 
     At this stage, we do not know what tier the user wanted to opt into. That should be stored
@@ -268,6 +278,8 @@ def begin_free_trial(request):
     * Declare the free trial in-use, and
 
     * Switch the tier.'''
+    if payment_secret != request.tier_info.payment_secret:
+        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
     target_tier_name = request.GET.get('target_tier_name', '')
     if target_tier_name not in dict(localtv.tiers.CHOICES):
         return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
@@ -281,9 +293,6 @@ def begin_free_trial(request):
     if request.tier_info.free_trial_available:
         request.tier_info.free_trial_available = False
         request.tier_info.save()
-    else:
-        # Refuse to switch tier this way.
-        return HttpResponse("Something went wrong giving your site a free trial. Please send an email to questions@mirocommunity.org if you saw this in error.")
 
     # Switch the tier!
     return _actually_switch_tier(request, target_tier_name)
