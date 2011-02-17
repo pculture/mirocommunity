@@ -38,7 +38,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div class="clear">
   <div id="upgrade_title">
     <h1>Upgrade Your Site</h1>
+    {% if offer_free_trial %}
     <p>All <strong>new</strong> monthly subscribers get a <strong>free 30 day</strong> trial.</p> 
+    {% endif %}
   </div><!-- // upgrade_title -->
   
 {% ifequal site_location.tier_name 'basic' %}

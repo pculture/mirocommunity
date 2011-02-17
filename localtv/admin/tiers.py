@@ -60,6 +60,7 @@ def upgrade(request):
     data['site_location'] = request.sitelocation
     data['switch_messages'] = switch_messages
     data['payment_secret'] = request.tier_info.get_payment_secret()
+    data['offer_free_trial'] = request.tier_info.free_trial_available
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
