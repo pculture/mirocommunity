@@ -7,12 +7,12 @@
 value="http://www.mirocommunity.org/images/mc_logo.png">
   <input type="hidden" name="no_shipping" value="1">
   <input type="hidden" name="cancel_return"
-value="http://{{ site.domain }}{% url localtv_admin_tier %}">
+value="http://{{ sitelocation.site.domain }}{% url localtv_admin_tier %}">
   <input type="hidden" name="notify_url"
-value="http://{{ site.domain }}/admin/ipn_endpoint">
+value="http://{{ sitelocation.site.domain }}/admin/ipn_endpoint">
   {% if not skip_free_trial %}
   <input type="hidden" name="return"
-value="http://{{ site.domain }}{% url localtv_admin_begin_free_trial %}?target_tier_name={{ target_tier_name }}">
+value="http://{{ sitelocation.site.domain }}{% url localtv_admin_begin_free_trial %}?target_tier_name={{ target_tier_name }}">
   <input type="hidden" name="a1" value="0">
   <input type="hidden" name="p1" value="30">
   <input type="hidden" name="t1" value="D">
@@ -26,7 +26,7 @@ value="http://{{ site.domain }}{% url localtv_admin_begin_free_trial %}?target_t
   <input type="hidden" name="no_note" value="1">
   <input type="hidden" name="rm" value="1">
   <input type="hidden" name="invoice" value="{{ target_tier_name }}">
-  <input type="hidden" name="custom" value="{{ target_tier_name }} for {{ site.domain }}">
+  <input type="hidden" name="custom" value="{{ target_tier_name }} for {{ sitelocation.site.domain }}">
   <input type="submit"
 	 name="stubmit"
 	 value="{{ message }}">
