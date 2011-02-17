@@ -22,6 +22,7 @@ import urllib
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
@@ -248,3 +249,47 @@ def downgrade_confirm(request):
             
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
+@require_site_admin
+@transaction.commit_manually
+def begin_free_trial(request):
+    '''This is where PayPal sends the user, if they are going to begin a free trial.
+
+    At this stage, we do not know what tier the user wanted to opt into. That should be stored
+    in the ?target_tier_name=... GET parameter.
+
+    If it is some nonsense, we should show an obscure error message and tell them to email
+    questions@MC if they got it.
+
+    If it what we expect, then:
+
+    * For now, trust that the IPN process will happen in the background,
+
+    * Declare the free trial in-use, and
+
+    * Switch the tier.'''
+    target_tier_name = request.GET.get('target_tier_name', '')
+    if target_tier_name not in dict(localtv.tiers.CHOICES):
+        return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
+
+    # This is so that we can detect sites that start a free trial, but never generate
+    # the IPN event.
+    if request.tier_info.free_trial_started_on is None:
+        request.tier_info.free_trial_started_on = datetime.datetime.utcnow()
+
+    # Set the free trial to be in-use.
+    if request.tier_info.free_trial_available:
+        request.tier_info.free_trial_available = False
+        request.tier_info.save()
+    else:
+        # Refuse to switch tier this way.
+        return HttpResponse("Something went wrong giving your site a free trial. Please send an email to questions@mirocommunity.org if you saw this in error.")
+
+    # NOTE: The incoming IPN message will override the start date
+    # we set below, *except* in the case that the user is trying
+    # to trick us into giving the site a free trial that it should not have.
+    request.
+
+    # Switch the tier!
+    return _actually_switch_tier(request, target_tier_name)
+    

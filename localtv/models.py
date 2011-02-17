@@ -304,6 +304,7 @@ class TierInfoManager(models.Manager):
 class TierInfo(models.Model):
     payment_due_date = models.DateTimeField(null=True, blank=True)
     free_trial_available = models.BooleanField(default=True)
+    free_trial_started_on = models.DateTimeField(null=True, blank=True)
     in_free_trial = models.BooleanField(default=False)
     payment_secret = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
     current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
