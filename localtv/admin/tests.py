@@ -25,6 +25,7 @@ from django.contrib.flatpages.models import FlatPage
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
+from django.conf import settings
 
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
@@ -3971,3 +3972,65 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
         support_ticket_emails = [msg for msg in mail.outbox
                                  if msg.to[0] == 'support@mirocommunity.org']
         self.assertEqual(1, len(support_ticket_emails))
+
+class IpnIntegration(AdministrationBaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def setUp(self):
+        # Call superclass setUp()
+        super(IpnIntegration, self).setUp()
+
+        # Set current tier to 'basic'
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        # At the start of this test, we have no current recurring payment profile
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+
+        # Make sure there is a free trial available
+        self.tier_info.free_trial_available = True
+        self.tier_info.free_trial_started_on = None
+        self.tier_info.save()
+        self.c = Client()
+        self.c.login(username='superuser', password='superuser')
+
+    def upgrade_and_submit_ipn(self):
+        # POST to the begin_free_trial element...
+        url = reverse('localtv_admin_begin_free_trial',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+        response = self.c.get(url,
+                               {'target_tier_name': 'plus'})
+
+        # Make sure we switched
+        self.assertEquals('plus', self.site_location.tier_name)
+
+        # Discover that we still have no paypal profile, because PayPal took a few sec to submit the IPN...
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+        # Now what? Well, that's up to the caller.
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_success(self):
+        self.upgrade_and_submit_ipn()
+        tier_info = models.TierInfo.objects.get_current()
+        self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='FAILURE'))
+    def test_failure(self):
+        tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(tier_info.current_paypal_profile_id) # Should be false at the start
+
+        self.upgrade_and_submit_ipn()
+        tier_info = models.TierInfo.objects.get_current()
+
+        # Because the IPN submitted was invalid, the payment profile ID has not changed.
+        self.assertFalse(tier_info.current_paypal_profile_id)

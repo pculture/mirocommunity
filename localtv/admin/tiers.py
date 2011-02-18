@@ -31,6 +31,8 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+import paypal.standard.ipn.views
+
 from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.util import SortHeaders, MockQueryset
@@ -253,12 +255,27 @@ def downgrade_confirm(request):
 
 @csrf_exempt
 def ipn_endpoint(request, payment_secret):
-    if payment_secret != request.tier_info.payment_secret:
-        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
-#<QueryDict: {u'last_name': [u'User'], u'receiver_email': [u'paypal_1297893164_biz@s.asheesh.org'], u'residence_country': [u'US'], u'mc_amount1': [u'0.00'], u'invoice': [u'premium'], u'payer_status': [u'verified'], u'txn_type': [u'subscr_signup'], u'first_name': [u'Test'], u'item_name': [u'Miro Community subscription (premium)'], u'charset': [u'windows-1252'], u'custom': [u'premium for rose.makesad.us'], u'notify_version': [u'3.0'], u'recurring': [u'1'], u'test_ipn': [u'1'], u'business': [u'paypal_1297893164_biz@s.asheesh.org'], u'payer_id': [u'SQRR5KCD7Z266'], u'period3': [u'1 M'], u'period1': [u'30 D'], u'verify_sign': [u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B'], u'subscr_id': [u'I-MEBGA2YXPNJK'], u'amount3': [u'35.00'], u'amount1': [u'0.00'], u'mc_amount3': [u'35.00'], u'mc_currency': [u'USD'], u'subscr_date': [u'12:06:48 Feb 17, 2011 PST'], u'payer_email': [u'paypal_1297894110_per@s.asheesh.org'], u'reattempt': [u'1']}>
-    import pdb
-    pdb.set_trace()
-    return HttpResponse("OK")
+    # PayPal sends data to this function via POST.
+    #
+    # At this point in processing, the data might be fake. Let's pass it to
+    # the django-paypal code and ask it to verify it for us.
+    if payment_secret == request.tier_info.payment_secret:
+        response = paypal.standard.ipn.views.ipn(request)
+        return response
+    return HttpResponseForbidden("You submitted something invalid to this IPN handler.")
+
+from paypal.standard.ipn.signals import subscription_signup
+def handle_recurring_profile_start(sender, **kwargs):
+    ipn_obj = sender
+
+    # If the thing is invalid, do not process any further.
+    if ipn_obj.flag:
+        return
+
+    tier_info = localtv.models.TierInfo.objects.get_current()
+    tier_info.current_paypal_profile_id = ipn_obj.subscr_id
+    tier_info.save()
+subscription_signup.connect(handle_recurring_profile_start)
 
 @csrf_exempt
 @require_site_admin
