@@ -58,8 +58,17 @@ def upgrade(request):
     else:
         switch_messages['premium'] = UPGRADE
 
+    # Would you lose anything?
+    would_lose = {}
+    for tier_name in ['basic', 'plus', 'premium', 'max']:
+        if tier_name == request.sitelocation.tier_name:
+            would_lose[tier_name] = False
+        else:
+            would_lose[tier_name] = localtv.tiers.user_warnings_for_downgrade(tier_name)
+
     data = {}
     data['site_location'] = request.sitelocation
+    data['would_lose_for_tier'] = would_lose
     data['switch_messages'] = switch_messages
     data['payment_secret'] = request.tier_info.get_payment_secret()
     data['offer_free_trial'] = request.tier_info.free_trial_available

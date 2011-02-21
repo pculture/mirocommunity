@@ -74,9 +74,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endifequal %}
     </p>
     {% ifnotequal site_location.tier_name 'basic' %}{# Note: all changes to "basic" are downgrades #}
-    {% with "Switch to basic" as message %}{% with "basic" as target_tier_name %}
+    {% with "Switch to basic" as message %}{% with "basic" as target_tier_name %}{% with would_lose_for_tier.basic as go_to_warnings %}
     {% include 'localtv/admin/downgrade_snippet.html' %}
-    {% endwith %}{% endwith %}
+    {% endwith %}{% endwith %}{% endwith %}
     {% endifnotequal %}
 </div><!-- // basic_plan -->
 {% endifequal %}
@@ -96,9 +96,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="ft">
     <!-- <a href="{% url localtv_admin_change_tier %}?tier_name=plus" class="start_trial"><em>{{ switch_messages.plus }}</em></a> -->
     <p>Plus</p>
-    {% ifnotequal site_location.tier_name 'plus' %}{% with "15" as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}
+    {% ifnotequal site_location.tier_name 'plus' %}{% with "15" as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
       </p>
 
   </div><!-- // ft -->
@@ -119,9 +119,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
   <div class="ft">
 <!--    <a href="{% url localtv_admin_change_tier %}?tier_name=premium" class="start_trial"><em>{{ switch_messages.premium }}</em></a>-->
-{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}
+{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 
     <p>Premium</p>
   </div><!-- // ft -->
@@ -142,9 +142,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-{% ifnotequal sitelocation.tier_name "max" %}{% with "75" as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}
+{% ifnotequal sitelocation.tier_name "max" %}{% with "75" as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 <!--    <a href="{% url localtv_admin_change_tier %}?tier_name=max" class="start_trial"><em>Upgrade Your Account</em></a> -->
     <p>Max</p>
   </div><!-- // ft -->
