@@ -333,7 +333,7 @@ def ipn_endpoint(request, payment_secret):
         return response
     return HttpResponseForbidden("You submitted something invalid to this IPN handler.")
 
-from paypal.standard.ipn.signals import subscription_signup
+from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot
 def handle_recurring_profile_start(sender, **kwargs):
     ipn_obj = sender
 
@@ -345,6 +345,26 @@ def handle_recurring_profile_start(sender, **kwargs):
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.save()
 subscription_signup.connect(handle_recurring_profile_start)
+
+def on_subscription_cancel_switch_to_basic(sender, **kwargs):
+    ipn_obj = sender
+
+    # If the thing is invalid, do not process any further.
+    if ipn_obj.flag:
+        return
+
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    sitelocation.tier_name = 'basic'
+    sl.save()
+
+    # Delete the current paypal subscription ID
+    tier_info = localtv.models.TierInfo.objects.get_current()
+    tier_info.current_paypal_profile_id = ''
+    tier_info.payment_due_date = None
+    tier_info.save()
+subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
+subscription_eot.connect(on_subscription_cancel_switch_to_basic)
+
 
 @csrf_exempt
 @require_site_admin
