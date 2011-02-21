@@ -39,6 +39,16 @@ class PayPal:
     signature_values = {}
     API_ENDPOINT = ""
     PAYPAL_URL = ""
+
+    @staticmethod
+    def get_with_django_settings():
+        # FIXME: Use sandbox sometimes, or not
+        from django.conf import settings
+        p = PayPal(
+            settings.PAYPAL_WPP_USER,
+            settings.PAYPAL_WPP_PASSWORD,
+            settings.PAYPAL_WPP_SIGNATURE)
+        return p
     
     def __init__(self, api_username, api_password, api_signature):
         ## Sandbox values

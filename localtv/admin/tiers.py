@@ -177,7 +177,13 @@ def _create_recurring_payment(request, token, amount, startdate):
         raise ValueError, "Um, that sucked. PayPal broke on us. FIXME."
 
 def get_monthly_amount_of_paypal_subscription(subscription_id):
-    return 15 # FIXME: Implement with PayPal NVP API
+    signups = paypal.standard.ipn.modelsPayPalIPN.objects.filter(
+        subscr_id=ti.current_paypal_profile_id, flag=False, txn_type='subscr_signup')
+    if signups:
+        signup = signups.order_by('-pk')[0]
+        amount = float(signup.amount3)
+        return amount
+    raise ValueError, "Um, there is no current profile ID."
 
 def downgrade_paypal_monthly_subscription(tier_info, target_amount):
     # FIXME: If the target amount is zero, cancel it
