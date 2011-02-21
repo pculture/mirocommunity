@@ -259,7 +259,9 @@ def _generate_paypal_redirect(request, target_tier_name):
 
 @require_site_admin
 def downgrade_confirm(request):
-    target_tier_name = request.POST.get('target_tier_name', None)
+    target_tier_name = request.GET.get('tier_name', '')
+    if not target_tier_name:
+        target_tier_name = request.POST.get('target_tier_name', None)
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
         target_tier_obj = localtv.tiers.Tier(target_tier_name)
