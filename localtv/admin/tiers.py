@@ -177,6 +177,7 @@ def _create_recurring_payment(request, token, amount, startdate):
         raise ValueError, "Um, that sucked. PayPal broke on us. FIXME."
 
 def get_monthly_amount_of_paypal_subscription(subscription_id):
+    ti = localtv.models.TierInfo.objects.get_current()
     signups = paypal.standard.ipn.models.PayPalIPN.objects.filter(
         subscr_id=ti.current_paypal_profile_id, flag=False, txn_type='subscr_signup')
     if signups:
