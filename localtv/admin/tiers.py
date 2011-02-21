@@ -41,6 +41,31 @@ from localtv.admin import forms
 import localtv.tiers
 import localtv.paypal_snippet
 
+@csrf_exempt
+def paypal_return(request):
+    '''This view is where PayPal sends users to upon success. Some things to note:
+
+    * PayPal sends us an "auth" parameter that we cannot validate.
+    * This should be a POST so that cross-site scripting can't just upgrade people's sites.
+    * This is not as secure as I would like.
+
+    Suggested improvements:
+    * The view that sends people to PayPal should store some state in the database
+      that this view checks. It only permits an upgrade in that situation.
+    * That could be the internal "payment_secret" to prevent CSRF.
+    * A tricky site admin could still try POST the right data to this view, which would
+      trigger the tier change.
+
+    If you want to exploit a MC site and change its tier, and you can cause an admin
+    with a cookie that's logged-in to visit pages you want, and you can get that admin
+    to do a POST, you still have to POST a value for the "auth" key. Note that this is
+    why we do a sanity-check of tier+payment status every night; we will catch funny
+    business within a day or so.'''
+    auth = request.POST.get('auth', None)
+    if not auth:
+        return HttpResponseForbidden("You failed to submit an 'auth' token.")
+    return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
 @require_site_admin
 @csrf_protect
 def upgrade(request):
