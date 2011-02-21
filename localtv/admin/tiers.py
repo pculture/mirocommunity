@@ -141,12 +141,40 @@ def _create_recurring_payment(request, token, amount, startdate):
     else:
         raise ValueError, "Um, that sucked. PayPal broke on us. FIXME."
 
+def get_monthly_amount_of_paypal_subscription(subscription_id):
+    return 15 # FIXME: Implement with PayPal NVP API
+
+def downgrade_paypal_monthly_subscription(tier_info, target_amount):
+    # FIXME: If the target amount is zero, cancel it
+    return True # FIXME: Implement with PayPal NVP API
+
 def _actually_switch_tier(request, target_tier_name):
-    ## Well, by this point, all payment validation has taken place. So we just
-    ## switch the tier.
+    # Is there a monthly payment going on? If so, we should make sure its amount
+    # is appropriate.
+    target_tier_obj = localtv.tiers.Tier(target_tier_name)
+
+    target_amount = target_tier_obj.dollar_cost()
+
+    current_amount = get_monthly_amount_of_paypal_subscription(request.tier_info.current_paypal_profile_id)
+
+    if target_amount > current_amount:
+        # Eek -- in this case, we cannot proceed.
+        raise ValueError, "The existing PayPal ID needs to be upgraded."
+
+    if target_amount < current_amount:
+        if getattr(settings, "LOCALTV_SKIP_PAYPAL", False):
+            pass
+        else:
+            # Downgrade the payment thing
+            downgrade_paypal_monthly_subscription(request.tier_info, target_amount)
+
+    # Okay, the money downgrade worked. Thank heavens.
+    #
+    # Now it's safe to proceed with the internal tier switch.
     sl = request.sitelocation
     sl.tier_name = target_tier_name
     sl.save()
+
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
