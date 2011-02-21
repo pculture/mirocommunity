@@ -277,6 +277,7 @@ def downgrade_confirm(request):
             data['videos_nag'] = ('videos' in would_lose)
             data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
             data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
+            data['payment_secret'] = request.tier_info.get_payment_secret()
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))
         else:
