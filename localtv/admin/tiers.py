@@ -358,7 +358,7 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
 
     sitelocation = localtv.models.SiteLocation.objects.get_current()
     sitelocation.tier_name = 'basic'
-    sl.save()
+    sitelocation.save()
 
     # Delete the current paypal subscription ID
     tier_info = localtv.models.TierInfo.objects.get_current()
