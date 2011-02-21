@@ -301,6 +301,8 @@ def downgrade_confirm(request):
         if would_lose:
             data = {}
             data['tier_name'] = target_tier_name
+            data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
+            data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
             data['target_tier_obj'] = target_tier_obj
             data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
             data['customtheme_nag'] = ('customtheme' in would_lose)
