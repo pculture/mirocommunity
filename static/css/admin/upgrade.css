@@ -92,21 +92,21 @@ body#tier #switchbasic p {
   text-shadow: 0 1px 0 #FFF;
 }
 
-body#tier #switchbasic a#btn_switchbasic {
+body#tier #switchbasic .buttons_like_links button {
   float: right;
   display: block;
-  width: 155px;
+  width: 164px;
   height: 35px;
   background: transparent url(/images/admin/btn_switch_basic.png) 0 0 no-repeat;
   text-indent: -9999px;
   margin: 8px 8px 0 0;
 }
 
-body#tier #switchbasic a:hover#btn_switchbasic {
+body#tier #switchbasic .buttons_like_links button:hover {
   background-position: 0 -35px;
 }
 
-body#tier #switchbasic a:active#btn_switchbasic {
+body#tier #switchbasic .buttons_like_links button:active {
   background-position: 0 -70px;
 }
 

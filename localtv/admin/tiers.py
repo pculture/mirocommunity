@@ -222,7 +222,7 @@ def _generate_paypal_redirect(request, target_tier_name):
 
 @require_site_admin
 def downgrade_confirm(request):
-    target_tier_name = request.GET.get('tier_name', '')
+    target_tier_name = request.POST.get('target_tier_name', None)
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
         target_tier_obj = localtv.tiers.Tier(target_tier_name)
@@ -243,14 +243,10 @@ def downgrade_confirm(request):
             return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                       context_instance=RequestContext(request))
         else:
-            # Well, see, the point of this page is to show you what
-            # you would lose.
-            #
-            # If you would lose nothing, you shouldn't even be here.
-            # Sending you back to the tiers editing page...
-            pass
+            # Okay! You clicked it. You're getting a real downgrade.
+            return _actually_switch_tier(target_tier_name)
             
-    # Always redirect back to tiers page
+    # In some weird error case, redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
 @csrf_exempt
