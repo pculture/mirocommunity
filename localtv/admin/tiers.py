@@ -61,7 +61,7 @@ def paypal_return(request):
     to do a POST, you still have to POST a value for the "auth" key. Note that this is
     why we do a sanity-check of tier+payment status every night; we will catch funny
     business within a day or so.'''
-    auth = request.POST.get('auth', None)
+    auth = request.POST.get('auth', None) or request.GET.get('auth', None)
     if not auth:
         return HttpResponseForbidden("You failed to submit an 'auth' token.")
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
