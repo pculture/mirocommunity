@@ -1,5 +1,10 @@
 {% with "paypal_1297893164_biz@s.asheesh.org" as paypal_email_acct %}
+{% if skip_paypal %}
+<form action="{% url localtv_admin_confirmed_change_tier %}" method="POST"> {% csrf_token %}
+<input type="hidden" name="tier_name" value="{{ target_tier_name }}">
+{% else %}
 <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post">
+{% endif %}
   <input type="hidden" name="cmd" value="_xclick-subscriptions">
   <input type="hidden" name="business" value="{{ paypal_email_acct}}">
   <input type="hidden" name="item_name" value="Miro Community subscription ({{ target_tier_name }})">

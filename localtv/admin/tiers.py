@@ -63,6 +63,7 @@ def upgrade(request):
     data['switch_messages'] = switch_messages
     data['payment_secret'] = request.tier_info.get_payment_secret()
     data['offer_free_trial'] = request.tier_info.free_trial_available
+    data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
@@ -153,19 +154,18 @@ def _actually_switch_tier(request, target_tier_name):
     # is appropriate.
     target_tier_obj = localtv.tiers.Tier(target_tier_name)
 
-    target_amount = target_tier_obj.dollar_cost()
+    if getattr(settings, "LOCALTV_SKIP_PAYPAL", False):
+        pass
+    else:
+        target_amount = target_tier_obj.dollar_cost()
 
-    current_amount = get_monthly_amount_of_paypal_subscription(request.tier_info.current_paypal_profile_id)
+        current_amount = get_monthly_amount_of_paypal_subscription(request.tier_info.current_paypal_profile_id)
 
-    if target_amount > current_amount:
-        # Eek -- in this case, we cannot proceed.
-        raise ValueError, "The existing PayPal ID needs to be upgraded."
+        if target_amount > current_amount:
+            # Eek -- in this case, we cannot proceed.
+            raise ValueError, "The existing PayPal ID needs to be upgraded."
 
-    if target_amount < current_amount:
-        if getattr(settings, "LOCALTV_SKIP_PAYPAL", False):
-            pass
-        else:
-            # Downgrade the payment thing
+        if target_amount < current_amount:
             downgrade_paypal_monthly_subscription(request.tier_info, target_amount)
 
     # Okay, the money downgrade worked. Thank heavens.
