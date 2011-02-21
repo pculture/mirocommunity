@@ -199,16 +199,17 @@ def _actually_switch_tier(request, target_tier_name):
     if getattr(settings, "LOCALTV_SKIP_PAYPAL", False):
         pass
     else:
-        target_amount = target_tier_obj.dollar_cost()
+        if False:
+            target_amount = target_tier_obj.dollar_cost()
+            
+            current_amount = get_monthly_amount_of_paypal_subscription(request.tier_info.current_paypal_profile_id)
 
-        current_amount = get_monthly_amount_of_paypal_subscription(request.tier_info.current_paypal_profile_id)
+            if target_amount > current_amount:
+                # Eek -- in this case, we cannot proceed.
+                raise ValueError, "The existing PayPal ID needs to be upgraded."
 
-        if target_amount > current_amount:
-            # Eek -- in this case, we cannot proceed.
-            raise ValueError, "The existing PayPal ID needs to be upgraded."
-
-        if target_amount < current_amount:
-            downgrade_paypal_monthly_subscription(request.tier_info, target_amount)
+            if target_amount < current_amount:
+                downgrade_paypal_monthly_subscription(request.tier_info, target_amount)
 
     # Okay, the money downgrade worked. Thank heavens.
     #
