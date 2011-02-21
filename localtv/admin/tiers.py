@@ -347,6 +347,18 @@ def handle_recurring_profile_start(sender, **kwargs):
     tier_info = localtv.models.TierInfo.objects.get_current()
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.save()
+
+    # If we get the IPN, and we have not yet adjusted the tier name
+    # to be at that level, now is a *good* time to do so.
+    amount = float(ipn_obj.amount3)
+    if site_location.get_tier().dollar_cost() == amount:
+        pass
+    else:
+        # Find the right tier to move to
+        tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        site_location.tier_name = tier_name
+        site_location.save()
+
 subscription_signup.connect(handle_recurring_profile_start)
 
 def on_subscription_cancel_switch_to_basic(sender, **kwargs):
@@ -367,7 +379,6 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     tier_info.save()
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
-
 
 @csrf_exempt
 @require_site_admin

@@ -274,6 +274,14 @@ class Tier(object):
                 logging.warn("Eek, we have no tier set.")
             return DEFAULT
 
+    @staticmethod
+    def get_by_cost(cost):
+        cost = int(cost)
+        reverse_mapping = dict([(value, key) for (key, value) in Tier.NAME_TO_COST.items()])
+        if cost in reverse_mapping:
+            return reverse_mapping[cost]
+        raise ValueError, "Hmm, no such cost."
+
     def permits_advertising(self):
         special_cases = {'premium': True,
                          'max': True}
