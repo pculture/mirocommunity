@@ -74,9 +74,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% endifequal %}
     </p>
     {% ifnotequal site_location.tier_name 'basic' %}{# Note: all changes to "basic" are downgrades #}
-    {% with "Switch to basic" as message %}{% with "basic" as target_tier_name %}{% with would_lose_for_tier.basic as go_to_warnings %}
+    {% with "Switch to basic" as message %}{% with "basic" as target_tier_name %}{% with "basic" as tier_name %}{% with would_lose_for_tier.basic as go_to_warnings %}
     {% include 'localtv/admin/downgrade_snippet.html' %}
-    {% endwith %}{% endwith %}{% endwith %}
+    {% endwith %}{% endwith %}{% endwith %}{% endwith %}
     {% endifnotequal %}
 </div><!-- // basic_plan -->
 {% endifequal %}
