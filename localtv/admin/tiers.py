@@ -351,13 +351,14 @@ def handle_recurring_profile_start(sender, **kwargs):
     # If we get the IPN, and we have not yet adjusted the tier name
     # to be at that level, now is a *good* time to do so.
     amount = float(ipn_obj.amount3)
-    if site_location.get_tier().dollar_cost() == amount:
+    sitelocation = SiteLocation.objects.get_current()
+    if sitelocation.get_tier().dollar_cost() == amount:
         pass
     else:
         # Find the right tier to move to
         tier_name = localtv.tiers.Tier.get_by_cost(amount)
-        site_location.tier_name = tier_name
-        site_location.save()
+        sitelocation.tier_name = tier_name
+        sitelocation.save()
 
 subscription_signup.connect(handle_recurring_profile_start)
 
