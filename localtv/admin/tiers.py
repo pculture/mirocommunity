@@ -351,7 +351,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     # If we get the IPN, and we have not yet adjusted the tier name
     # to be at that level, now is a *good* time to do so.
     amount = float(ipn_obj.amount3)
-    sitelocation = SiteLocation.objects.get_current()
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
     if sitelocation.get_tier().dollar_cost() == amount:
         pass
     else:
