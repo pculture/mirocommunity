@@ -7,8 +7,8 @@ Also, this template could use a refactoring.
 {% with "paypal_1297893164_biz@s.asheesh.org" as paypal_email_acct %}
 
 {% if go_to_warnings %}
-<form action="{% url localtv_admin_downgrade_confirm %}" method="GET">
-<input type="hidden" name="tier_name" value="{{ target_tier_name }}">
+<form action="{% url localtv_admin_downgrade_confirm %}" method="POST"> {% csrf_token %}
+<input type="hidden" name="target_tier_name" value="{{ target_tier_name }}">
 {% else %}
 {% if skip_paypal %}
 <form action="{% url localtv_admin_confirmed_change_tier %}" method="POST"> {% csrf_token %}

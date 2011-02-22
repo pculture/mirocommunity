@@ -277,36 +277,30 @@ def _generate_paypal_redirect(request, target_tier_name):
 
 @require_site_admin
 def downgrade_confirm(request):
-    target_tier_name = request.GET.get('tier_name', '')
-    if not target_tier_name:
-        target_tier_name = request.POST.get('target_tier_name', None)
+    target_tier_name = request.POST.get('target_tier_name', None)
     # validate
     if target_tier_name in dict(localtv.tiers.CHOICES):
         target_tier_obj = localtv.tiers.Tier(target_tier_name)
 
         would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
-        if would_lose:
-            data = {}
-            data['tier_name'] = target_tier_name
-            data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
-            p = localtv.paypal_snippet.PayPal.get_with_django_settings()
-            data['paypal_url'] = p.PAYPAL_URL
-            data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
-            data['target_tier_obj'] = target_tier_obj
-            data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
-            data['customtheme_nag'] = ('customtheme' in would_lose)
-            data['advertising_nag'] = ('advertising' in would_lose)
-            data['customdomain_nag'] = ('customdomain' in would_lose)
-            data['css_nag'] = ('css' in would_lose)
-            data['videos_nag'] = ('videos' in would_lose)
-            data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
-            data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
-            data['payment_secret'] = request.tier_info.get_payment_secret()
-            return render_to_response('localtv/admin/downgrade_confirm.html', data,
-                                      context_instance=RequestContext(request))
-        else:
-            # Okay! You clicked it. You're getting a real downgrade.
-            return _actually_switch_tier(target_tier_name)
+        data = {}
+        data['tier_name'] = target_tier_name
+        data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
+        p = localtv.paypal_snippet.PayPal.get_with_django_settings()
+        data['paypal_url'] = p.PAYPAL_URL
+        data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
+        data['target_tier_obj'] = target_tier_obj
+        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
+        data['customtheme_nag'] = ('customtheme' in would_lose)
+        data['advertising_nag'] = ('advertising' in would_lose)
+        data['customdomain_nag'] = ('customdomain' in would_lose)
+        data['css_nag'] = ('css' in would_lose)
+        data['videos_nag'] = ('videos' in would_lose)
+        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
+        data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
+        data['payment_secret'] = request.tier_info.get_payment_secret()
+        return render_to_response('localtv/admin/downgrade_confirm.html', data,
+                                  context_instance=RequestContext(request))
             
     # In some weird error case, redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
