@@ -105,24 +105,6 @@ def upgrade(request):
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
 
-@require_site_admin
-# FIXME: Needs csrf protect; but that means that the preceding page has to be a form.
-def change_tier(request):
-    target_tier_name = request.GET.get('tier_name', '')
-    # validation
-    # First, is this a valid tier name? If not, just send the user right back to the upgrade page.
-    if target_tier_name not in dict(localtv.tiers.CHOICES):
-        return HttpResponseRedirect(reverse('localtv_admin_tier'))
-
-    # If the user would lose features through this downgrade, then give the
-    # user a chance to stop the transition.
-    would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
-    if would_lose:
-        return HttpResponseRedirect(reverse('localtv_admin_downgrade_confirm') + '?tier_name=' + target_tier_name)
-
-    # Otherwise, let it be handled by the following view.
-    return confirmed_change_tier(request, override_tier=target_tier_name)
-
 def user_is_okay_with_payment_so_we_can_really_switch_tier(request):
     '''The way this view works is that it does *not* require admin privileges.
 

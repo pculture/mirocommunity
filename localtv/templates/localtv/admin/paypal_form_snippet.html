@@ -17,7 +17,7 @@ Also, this template could use a refactoring.
 <form action="{{ paypal_url }}" method="post">
   <input type="hidden" name="cmd" value="_xclick-subscriptions">
   <input type="hidden" name="business" value="{{ paypal_email_acct}}">
-  <input type="hidden" name="item_name" value="Miro Community subscription ({{ target_tier_name }})">
+  <input type="hidden" name="item_name" value="Miro Community subscription ({{ target_tier_name }} on {{ sitelocation.site.domain }})">
   <input type="hidden" name="image_url"
 value="http://www.mirocommunity.org/images/mc_logo.png">
   <input type="hidden" name="no_shipping" value="1">
