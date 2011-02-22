@@ -3704,6 +3704,10 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(2,
                          models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
 
+        # Make sure it's video 3 which is disabled
+        self.assertEqual(models.VIDEO_STATUS_UNAPPROVED,
+                         models.Video.objects.all().order_by('-pk')[0].status)
+
     @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_go_to_basic_with_too_many_videos_but_do_not_enforce(self):
