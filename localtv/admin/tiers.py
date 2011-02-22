@@ -236,6 +236,7 @@ def handle_recurring_profile_start(sender, **kwargs):
 
     tier_info = localtv.models.TierInfo.objects.get_current()
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
+    tier_info.user_has_successfully_performed_a_paypal_transaction = True
     tier_info.save()
 
     # If we get the IPN, and we have not yet adjusted the tier name
