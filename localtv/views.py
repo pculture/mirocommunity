@@ -60,10 +60,10 @@ def index(request):
 
     return render_to_response(
         'localtv/index.html',
-        {'featured_videos': list(featured_videos[:50]),
-         'popular_videos': list(popular_videos[:50]),
-         'new_videos': list(new_videos[:50]),
-         'comments': list(recent_comments[:50])},
+        {'featured_videos': featured_videos,
+         'popular_videos': popular_videos,
+         'new_videos': new_videos,
+         'comments': recent_comments},
         context_instance=RequestContext(request))
 
 
