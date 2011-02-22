@@ -42,7 +42,6 @@ class PayPal:
 
     @staticmethod
     def get_with_django_settings():
-        # FIXME: Use sandbox sometimes, or not
         from django.conf import settings
         p = PayPal(
             api_username=settings.PAYPAL_WPP_USER,

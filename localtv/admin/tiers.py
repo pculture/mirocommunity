@@ -287,7 +287,6 @@ def _generate_paypal_redirect(request, target_tier_name):
     request.sitelocation.payment_secret = target_tier_name
     request.sitelocation.save()
 
-    # FIXME: Make sure PAYPAL_URL changes based on if we ar ein the sandbox or not
     url = p.PAYPAL_URL + urllib.quote(token)
     return HttpResponseRedirect(url)
 
