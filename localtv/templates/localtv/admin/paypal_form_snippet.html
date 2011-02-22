@@ -26,8 +26,7 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_tier %}">
   <input type="hidden" name="notify_url"
 value="http://{{ sitelocation.site.domain }}{% url localtv_admin_ipn_endpoint payment_secret=payment_secret %}">
   {% if offer_free_trial %}
-  <input type="hidden" name="return"
-value="http://{{ sitelocation.site.domain }}{% url localtv_admin_begin_free_trial payment_secret=payment_secret %}?target_tier_name={{ target_tier_name }}">
+  <input type="hidden" name="return" value="http://{{ sitelocation.site.domain }}{% url localtv_admin_begin_free_trial payment_secret=payment_secret %}?target_tier_name={{ target_tier_name }}">
   <input type="hidden" name="a1" value="0">
   <input type="hidden" name="p1" value="30">
   <input type="hidden" name="t1" value="D">
