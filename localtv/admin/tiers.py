@@ -217,10 +217,6 @@ def ipn_endpoint(request, payment_secret):
 ### ----------------------------------------------------------------------
 ### These are helper functions.
 
-def downgrade_paypal_monthly_subscription(tier_info, target_amount):
-    # FIXME: If the target amount is zero, cancel it
-    return True # FIXME: Implement with PayPal NVP API
-
 def _actually_switch_tier(request, target_tier_name):
     # Proceed with the internal tier switch.
     sl = request.sitelocation
