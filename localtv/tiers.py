@@ -467,3 +467,14 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     from django.conf import settings
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  recipient_list).send(fail_silently=False)
+
+def get_monthly_amount_of_paypal_subscription(subscription_id):
+    # FIXME: Get this covered with a test.
+    ti = localtv.models.TierInfo.objects.get_current()
+    signups = paypal.standard.ipn.models.PayPalIPN.objects.filter(
+        subscr_id=ti.current_paypal_profile_id, flag=False, txn_type='subscr_signup')
+    if signups:
+        signup = signups.order_by('-pk')[0]
+        amount = float(signup.amount3)
+        return amount
+    raise ValueError, "Um, there is no current profile ID."
