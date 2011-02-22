@@ -1,0 +1,23 @@
+Hello support team!
+
+There's a Miro Community site that needs you to disable an old
+PayPal recurring payment profile. This is because the site admin
+downgraded, and we have no way of automatically cancelling the old
+recurring payment.
+
+So you have to log into PayPal and disable it.
+
+You're using this email address with PayPal:
+    {{ paypal_email_address }}
+
+The old recurring payment profile is:
+    {{ old_profile }}
+
+The site has a new subscription now:
+    {{ new_profile }}
+
+The new subscription will help it stay in the {{ tier_name }} tier.
+
+Sincerely,
+
+A robot.

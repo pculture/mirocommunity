@@ -21,10 +21,11 @@ import urllib
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
+import django.core.mail
 from django.db.models import Q
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render_to_string
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -235,6 +236,20 @@ def handle_recurring_profile_start(sender, **kwargs):
         return
 
     tier_info = localtv.models.TierInfo.objects.get_current()
+
+    if tier_info.current_paypal_profile_id:
+        # then we had better email support@mirocommunity.org indicating that the old one
+        # should be cancelled.
+        message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
+                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                         'old_profile': tier_info.current_paypal_profile_id,
+                                         'new_profile': ipn_obj.subscr_id})
+        django.core.mail.send_mail(subject="Eek, you should cancel a recurring payment profile",
+                                   messsage=message_body,
+                                   recipient_list=['support@mirocommunity.org'],
+                                   fail_silently=False) # this MUST get sent before the transition can occur
+
+    # Okay. Now it's save to overwrite the subscription ID that is the current one.
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.user_has_successfully_performed_a_paypal_transaction = True
     tier_info.save()
@@ -264,11 +279,12 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     sitelocation.tier_name = 'basic'
     sitelocation.save()
 
-    # Delete the current paypal subscription ID
+    # Delete the current paypal subscription ID, if it is the active one
     tier_info = localtv.models.TierInfo.objects.get_current()
-    tier_info.current_paypal_profile_id = ''
-    tier_info.payment_due_date = None
-    tier_info.save()
+    if tier_info.current_paypal_profile_id == ipn_obj.subscr_id:
+        tier_info.current_paypal_profile_id = ''
+        tier_info.payment_due_date = None
+        tier_info.save()
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
 subscription_modify.connect(handle_recurring_profile_start)
