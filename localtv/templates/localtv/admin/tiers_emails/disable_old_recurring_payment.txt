@@ -7,6 +7,9 @@ recurring payment.
 
 So you have to log into PayPal and disable it.
 
+The site's domain:
+    {{ site_domain }}
+
 You're using this email address with PayPal:
     {{ paypal_email_address }}
 

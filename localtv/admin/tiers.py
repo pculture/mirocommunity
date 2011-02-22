@@ -267,6 +267,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
                                          'old_profile': tier_info.current_paypal_profile_id,
+                                         'site_domain': SiteLocation.objects.get_current().site.domain,
                                          'new_profile': ipn_obj.subscr_id})
         django.core.mail.send_mail(subject="Eek, you should cancel a recurring payment profile",
                                    messsage=message_body,
