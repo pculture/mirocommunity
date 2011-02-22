@@ -217,28 +217,6 @@ def ipn_endpoint(request, payment_secret):
 ### ----------------------------------------------------------------------
 ### These are helper functions.
 
-def _create_recurring_payment(request, token, amount, startdate):
-    p = localtv.paypal_snippet.PayPal(
-        settings.PAYPAL_WPP_USER,
-        settings.PAYPAL_WPP_PASSWORD,
-        settings.PAYPAL_WPP_SIGNATURE)
-    result = p.CreateRecurringPaymentsProfile(
-        token, startdate=startdate.isoformat(),
-        desc='Miro Community subscription',
-        period='Month',
-        freq='1',
-        amt='%d.00' % amount)
-    success = (result.get('PROFILESTATUS', [''])[0].lower() == 'activeprofile' and
-               result.get('ACK', [''])[0].lower() == 'success')
-    if success:
-        request.sitelocation.current_paypal_profile_id = result.get('PROFILEID')[0]
-        request.sitelocation.payment_due_date = startdate
-        request.sitelocation.save()
-        request.tier_info.user_has_successfully_performed_a_paypal_transaction = True
-        request.tier_info.save()
-    else:
-        raise ValueError, "Um, that sucked. PayPal broke on us. FIXME."
-
 def get_monthly_amount_of_paypal_subscription(subscription_id):
     # FIXME: Get this covered with a test.
     ti = localtv.models.TierInfo.objects.get_current()
