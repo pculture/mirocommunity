@@ -39,6 +39,7 @@ class PayPal:
     signature_values = {}
     API_ENDPOINT = ""
     PAYPAL_URL = ""
+    PAYPAL_FORM_SUBMISSION_URL = ""
 
     @staticmethod
     def get_with_django_settings():
@@ -61,9 +62,11 @@ class PayPal:
         if use_sandbox:
             self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp' # Sandbox URL, not production
             self.PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr&cmd=_express-checkout&token='
+            self.PAYPAL_FORM_SUBMISSION_URL = 'https://www.sandbox.paypal.com/cgi-bin/webscr'
         else: # Live API!
             self.API_ENDPOINT = 'https://api.paypal.com/nvp'
             self.PAYPAL_URL = 'https://www.paypal.com/webscr&cmd=_express-checkout&token='
+            self.PAYPAL_FORM_SUBMISSION_URL = 'https://www.paypal.com/cgi-bin/webscr'
 
         self.signature = urllib.urlencode(self.signature_values) + "&"
 

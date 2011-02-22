@@ -75,7 +75,7 @@ def downgrade_confirm(request):
         data['tier_name'] = target_tier_name
         data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
         p = localtv.paypal_snippet.PayPal.get_with_django_settings()
-        data['paypal_url'] = p.PAYPAL_URL
+        data['paypal_url'] = p.PAYPAL_FORM_SUBMISSION_URL
         data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
         data['target_tier_obj'] = target_tier_obj
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
@@ -127,7 +127,7 @@ def upgrade(request):
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
     if not data['skip_paypal']:
         p = localtv.paypal_snippet.PayPal.get_with_django_settings()
-        data['paypal_url'] = p.PAYPAL_URL
+        data['paypal_url'] = p.PAYPAL_FORM_SUBMISSION_URL
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
