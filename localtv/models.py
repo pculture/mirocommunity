@@ -1303,10 +1303,7 @@ localtv_watch.timestamp > %s"""},
                                             120 * 60 # 120 minutes
                                             ))
         keys = [key for key in kwargs if '__' not in key]
-        return util.MockQueryset(ids, self.model,
-                                 dict((key, kwargs[key]) for key in keys)
-                                 )
-
+        return self.model.objects.filter(id__in=ids)
 
 class Video(Thumbnailable, VideoBase):
     """
