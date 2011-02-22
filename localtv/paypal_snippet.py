@@ -45,12 +45,13 @@ class PayPal:
         # FIXME: Use sandbox sometimes, or not
         from django.conf import settings
         p = PayPal(
-            settings.PAYPAL_WPP_USER,
-            settings.PAYPAL_WPP_PASSWORD,
-            settings.PAYPAL_WPP_SIGNATURE)
+            api_username=settings.PAYPAL_WPP_USER,
+            api_password=settings.PAYPAL_WPP_PASSWORD,
+            api_signature=settings.PAYPAL_WPP_SIGNATURE,
+            use_sandbox=getattr(settings, 'PAYPAL_TEST', False))
         return p
     
-    def __init__(self, api_username, api_password, api_signature):
+    def __init__(self, api_username, api_password, api_signature, use_sandbox):
         ## Sandbox values
         self.signature_values = {
         'USER' : api_username,
@@ -58,8 +59,13 @@ class PayPal:
         'SIGNATURE' : api_signature,
         'VERSION' : '54.0',
         }
-        self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp' # Sandbox URL, not production
-        self.PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr&cmd=_express-checkout&token='
+        if use_sandbox:
+            self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp' # Sandbox URL, not production
+            self.PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr&cmd=_express-checkout&token='
+        else: # Live API!
+            self.API_ENDPOINT = 'https://api.paypal.com/nvp'
+            self.PAYPAL_URL = 'https://www.paypal.com/webscr&cmd=_express-checkout&token='
+
         self.signature = urllib.urlencode(self.signature_values) + "&"
 
     # API METHODS
