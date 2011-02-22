@@ -95,9 +95,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
   <div class="ft">
     <p>Plus</p>
-    {% ifnotequal site_location.tier_name 'plus' %}{% with "15" as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}
+    {% ifnotequal site_location.tier_name 'plus' %}{% with "15" as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}{% with can_modify_mapping.plus as can_modify %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
       </p>
 
   </div><!-- // ft -->
@@ -117,9 +117,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}
+{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 
     <p>Premium</p>
   </div><!-- // ft -->
@@ -140,9 +140,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-{% ifnotequal sitelocation.tier_name "max" %}{% with "75" as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}
+{% ifnotequal sitelocation.tier_name "max" %}{% with "75" as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}{% with can_modify_mapping.max as can_modify %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
     <p>Max</p>
   </div><!-- // ft -->
 </div><!-- // delcisious_plan -->

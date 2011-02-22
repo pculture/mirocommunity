@@ -25,7 +25,8 @@ import django.core.mail
 from django.db.models import Q
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render_to_response, get_object_or_404, render_to_string
+from django.shortcuts import render_to_response, get_object_or_404
+from django.template.loader import render_to_string
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -62,7 +63,7 @@ def confirmed_change_tier(request):
         # Always redirect back to tiers page
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
-    return _actually_switch_tier(target_tier_name)
+    return _actually_switch_tier(request, target_tier_name)
 
 @require_site_admin
 def downgrade_confirm(request):
@@ -76,6 +77,7 @@ def downgrade_confirm(request):
         data['tier_name'] = target_tier_name
         data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
         p = localtv.paypal_snippet.PayPal.get_with_django_settings()
+        data['can_modify'] = _generate_can_modify()[target_tier_name]
         data['paypal_url'] = p.PAYPAL_FORM_SUBMISSION_URL
         data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
         data['target_tier_obj'] = target_tier_obj
@@ -120,6 +122,7 @@ def upgrade(request):
             would_lose[tier_name] = localtv.tiers.user_warnings_for_downgrade(tier_name)
 
     data = {}
+    data['can_modify_mapping'] = _generate_can_modify()
     data['site_location'] = request.sitelocation
     data['would_lose_for_tier'] = would_lose
     data['switch_messages'] = switch_messages
@@ -226,6 +229,27 @@ def _actually_switch_tier(request, target_tier_name):
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
+def _generate_can_modify():
+    # This dictionary maps from the target_tier_name to the value of can_modify
+    # In the PayPal API, you cannot modify your subscription in the following circumstances:
+    # - you are permitting a free trial
+    # - you are upgrading tier
+    tier_info = localtv.models.TierInfo.objects.get_current()
+    current_tier_price = localtv.models.SiteLocation.objects.get_current().get_tier().dollar_cost()
+
+    can_modify_mapping = {}
+    for target_tier_name in ['basic', 'plus', 'premium', 'max']:
+        if tier_info.free_trial_available:
+            can_modify_mapping[target_tier_name] = False
+            continue
+        target_tier_obj = localtv.tiers.Tier(target_tier_name) 
+        if target_tier_obj.dollar_cost() > current_tier_price:
+            can_modify_mapping[target_tier_name] = False
+            continue
+        can_modify_mapping[target_tier_name] = True
+
+    return can_modify_mapping
 
 from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot, subscription_modify
 def handle_recurring_profile_start(sender, **kwargs):

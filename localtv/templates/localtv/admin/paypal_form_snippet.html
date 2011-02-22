@@ -33,10 +33,7 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_ipn_endpoint pa
   {% else %}
   <input type="hidden" name="return" value="http://{{ sitelocation.site.domain }}{% url localtv_admin_paypal_return %}">
   {% endif %}
-  {% if not offer_free_trial %}
-  {% comment %} NOTE: The PayPal API doesn't let you offer a free trial while at the same time letting people
-                modify an existing subscription. So we have this conditional.
-  {% endcomment %}
+  {% if can_modify %}
   <input type="hidden" name="modify" value="1">
   {% endif %}
   <input type="hidden" name="a3" value="{{ amount }}">
