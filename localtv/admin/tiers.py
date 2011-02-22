@@ -105,40 +105,6 @@ def upgrade(request):
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
 
-def user_is_okay_with_payment_so_we_can_really_switch_tier(request):
-    '''The way this view works is that it does *not* require admin privileges.
-
-    This is an unprivileged GET that can change HUGE things in the site, so it's really
-    important that we keep it safe.
-
-    For that reason, it only does the following things:
-
-    * Looks up the target tier in the SiteLocation.payment_secret, which is a field that stores validated
-      input from the admin site as to what tier the site wants to transition into.
-
-    * It validates the token that PayPal passes to us. If the token is valid, it completes the tier transition process.
-
-    Therefore, it is not valid to call this function if the tier does not cost money.'''
-    target_tier_name = request.sitelocation.payment_secret
-    target_tier_obj = localtv.tiers.Tier(target_tier_name)
-    needs_valid_token = bool(target_tier_obj.dollar_cost())
-    assert needs_valid_token
-    
-    # Create the recurring payment first.
-    amount = target_tier_obj.dollar_cost()
-    startdate = datetime.datetime.utcnow()
-    # If there is a free trial permitted, push the start date of the recurring payment
-    # forward by a month, and mark the free trial as used.
-    used_free_trial = False
-    if request.sitelocation.free_trial_available:
-        startdate = localtv.tiers.add_a_month(startdate)
-        request.sitelocation.free_trial_available = False
-        request.sitelocation.payment_secret = ''
-        request.sitelocation.save()
-    success = _create_recurring_payment(request, request.GET.get('token', ''), amount, startdate)
-    # FIXME: Look at the return code at some point.
-    return _actually_switch_tier(request, target_tier_name)
-
 def _create_recurring_payment(request, token, amount, startdate):
     p = localtv.paypal_snippet.PayPal(
         settings.PAYPAL_WPP_USER,
@@ -231,49 +197,10 @@ def confirmed_change_tier(request, override_tier = None):
 
     if use_paypal:
         # Normally, the user has to permit us to charge them, first.
-        return _generate_paypal_redirect(request, target_tier_name)
+        # FIXME return _generate_paypal_redirect(request, target_tier_name)
     else:
         # Sometimes we skip that step.
-        return _actually_switch_tier(request, target_tier_name)
-
-def _generate_paypal_redirect(request, target_tier_name):
-    target_tier_obj = localtv.tiers.Tier(target_tier_name)
-    assert target_tier_obj.dollar_cost() > 0
-
-    # The sitelocation.payment_secret is where we store the PayPal token
-    # that we temporarily use during this PayPal redirect process.
-    #
-    # It is only valid for three hours (according to PayPal), and moreover, it's
-    # not really supposed to be kept a secret (since e.g. PayPal lets us pass it
-    # over HTTP).
-
-    # Assumption: The user has no current recurring transaction with us through PayPal.
-    # We need to create one. To do this, we have to get authorization from PayPal.
-
-    # The way that works is that the user has to go to PayPal to tell PayPal
-    # that the user is okay with us drawing money from their account.
-    #
-    # We create a PayPal URL here for the user to go to. There, the user agrees to the
-    # generic idea that we could do that.
-    #
-    # Once the user comes back, we actually create the recurring payment. That's handled
-    # by user_is_okay_with_payment_so_we_can_really_switch_tier().
-    p = localtv.paypal_snippet.PayPal(
-        settings.PAYPAL_WPP_USER,
-        settings.PAYPAL_WPP_PASSWORD,
-        settings.PAYPAL_WPP_SIGNATURE)
-    token = p.SetExpressCheckout(
-        amount=0,
-        return_url=request.build_absolute_uri(reverse(user_is_okay_with_payment_so_we_can_really_switch_tier)),
-        cancel_url=request.build_absolute_uri(reverse(upgrade)),
-        L_BILLINGTYPE0='RecurringPayments',
-        L_BILLINGAGREEMENTDESCRIPTION0='Miro Community subscription',
-        MAXAMT=target_tier_obj.dollar_cost())
-    request.sitelocation.payment_secret = target_tier_name
-    request.sitelocation.save()
-
-    url = p.PAYPAL_URL + urllib.quote(token)
-    return HttpResponseRedirect(url)
+        return _actually_switch_tier(target_tier_name)
 
 @require_site_admin
 def downgrade_confirm(request):
