@@ -174,33 +174,21 @@ def _actually_switch_tier(request, target_tier_name):
 
 @require_site_admin
 @csrf_protect
-def confirmed_change_tier(request, override_tier = None):
-    if override_tier:
-        target_tier_name = override_tier
-    else:
-        target_tier_name = request.POST.get('tier_name', '')
+def confirmed_change_tier(request):
+    '''The point of this function is to provide somewhere for the PayPal form to POST
+    to -- instead of PayPal. So we start by asserting that PayPal is skipped, and then
+    we simply change the tier, and redirect back to the site level admin page.'''
+    skip_paypal = getattr(settings, "LOCALTV_SKIP_PAYPAL", False)
+    assert skip_paypal
+
+    target_tier_name = request.POST.get('target_tier_name', '')
+
     # validate
     if target_tier_name not in dict(localtv.tiers.CHOICES):
         # Always redirect back to tiers page
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
-    target_tier_obj = localtv.tiers.Tier(target_tier_name)
-    
-    # Does this tier require payment? If not, we can just jump straight into it.
-    # Note that this does not change anything about the free trial status. That's okay.
-    use_paypal = True
-    if not target_tier_obj.dollar_cost():
-        use_paypal = False
-
-    if getattr(settings, "LOCALTV_SKIP_PAYPAL", None):
-        use_paypal = False
-
-    if use_paypal:
-        # Normally, the user has to permit us to charge them, first.
-        # FIXME return _generate_paypal_redirect(request, target_tier_name)
-    else:
-        # Sometimes we skip that step.
-        return _actually_switch_tier(target_tier_name)
+    return _actually_switch_tier(target_tier_name)
 
 @require_site_admin
 def downgrade_confirm(request):

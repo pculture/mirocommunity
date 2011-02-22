@@ -12,7 +12,7 @@ Also, this template could use a refactoring.
 {% else %}
 {% if skip_paypal %}
 <form action="{% url localtv_admin_confirmed_change_tier %}" method="POST"> {% csrf_token %}
-<input type="hidden" name="tier_name" value="{{ target_tier_name }}">
+<input type="hidden" name="target_tier_name" value="{{ target_tier_name }}">
 {% else %}
 <form action="{{ paypal_url }}" method="post">
   <input type="hidden" name="cmd" value="_xclick-subscriptions">
