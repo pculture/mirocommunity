@@ -204,10 +204,6 @@ def begin_free_trial(request, payment_secret):
     # the IPN event.
     if request.tier_info.free_trial_started_on is None:
         request.tier_info.free_trial_started_on = datetime.datetime.utcnow()
-
-    # Set the free trial to be in-use.
-    if request.tier_info.free_trial_available:
-        request.tier_info.free_trial_available = False
         request.tier_info.save()
 
     # Switch the tier!
@@ -276,9 +272,6 @@ def _actually_switch_tier(target_tier_name):
     if sl.tierinfo.free_trial_available:
         # Well, we are switching tier. That means we must be using up the trial.
         sl.tierinfo.free_trial_available = False
-        sl.tierinfo.in_free_trial = True
-    else:
-        sl.tierinfo.in_free_trial = False
     sl.tierinfo.save()
 
     # Always redirect back to tiers page
@@ -330,6 +323,8 @@ def handle_recurring_profile_start(sender, **kwargs):
                                    fail_silently=False) # this MUST get sent before the transition can occur
 
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
+    if tier_info.free_trial_available:
+        tier_info.free_trial_available = False
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.user_has_successfully_performed_a_paypal_transaction = True
     tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
