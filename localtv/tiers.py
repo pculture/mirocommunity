@@ -339,15 +339,6 @@ class WrongAmount(PaymentException):
 class WrongStartDate(PaymentException):
     pass
 
-def add_a_month(date):
-    month = date.month
-    new_date = None
-    if 1 < month < 11:
-        new_date = date.replace(month=month+1)
-    else:
-        new_date = date.replace(month=1, year=date.year+1)
-    return new_date
-
 ### Here, we listen for changes in the SiteLocation
 ### As it changes, we make sure we adjust the payment due date stored in the SiteLocation.
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
@@ -374,7 +365,7 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         if not tier_info.free_trial_available:
             tier_info.payment_due_date = datetime.datetime.utcnow()
         else:
-            tier_info.payment_due_date = add_a_month(datetime.datetime.utcnow())
+            tier_info.payment_due_date = datetime.datetime.utcnow() + datetime.timedelta(days=30)
         tier_info.save()
 
     current_tier_obj = Tier(current_tier_name)
