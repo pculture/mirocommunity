@@ -15,15 +15,14 @@ upgrade your account or you will lose the following features.
 
 {% if "admins" in warnings %}
 * You have more than one administrator. If you choose to remain at the Basic
-account level, the following administrators will lose admin privileges:
- {% for admin_username in list_of_admins_we_will_lose %} {{ admin_username }} {% endfor %}
+account level, the following administrators will lose admin privileges: {{ would_lose_admin_usernames:join:" " }
  
-{% endif %}{% if "videos" in warnings %}
+{% if "videos" in warnings %}
 
 * You have {{ video_count }} published video{{ video_count|pluralize}}. 
 If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %}{% endif %}
 
-{% if css_nag %}
+{% if "css" in warnings %}
 * The custom CSS you have entered will no longer be applied to your site, 
 and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.
 {% endif %}
@@ -38,5 +37,3 @@ http://develop.participatoryculture.org/index.php/MiroCommunityManual
 Have questions? Please get in touch: email questions@mirocommunity.org.
 
 --The Miro Community Team
-
-
