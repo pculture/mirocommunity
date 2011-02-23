@@ -121,7 +121,18 @@ def upgrade(request):
         else:
             would_lose[tier_name] = localtv.tiers.user_warnings_for_downgrade(tier_name)
 
+    upgrade_extra_payments = {}
+    for target_tier_name in ['basic', 'plus', 'premium', 'max']:
+        if ((localtv.tiers.Tier(tier_name).dollar_cost() <= request.sitelocation.get_tier().dollar_cost()) or
+            not request.sitelocation.tierinfo.payment_due_date):
+            upgrade_extra_payments[target_tier_name] = None
+            continue
+        upgrade_extra_payments[target_tier_name] = generate_payment_amount_for_upgrade(
+            request.sitelocation.tier_name, target_tier_name,
+            request.sitelocation.tierinfo.payment_due_date)
+
     data = {}
+    data['upgrade_extra_payments'] = upgrade_extra_payments
     data['can_modify_mapping'] = _generate_can_modify()
     data['site_location'] = request.sitelocation
     data['would_lose_for_tier'] = would_lose
@@ -230,7 +241,9 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
     
     days_difference = (current_payment_due_date - todays_date).days # note: this takes the floor() automatically
     if days_difference < 0:
-        raise ValueError, "Um, the difference is less than zero. That's crazy."
+        import logging
+        logging.error("Um, the difference is less than zero. That's crazy.")
+        days_difference = 0
     if days_difference == 0:
         return {'recurring': target_tier_obj.dollar_cost(),
                 'daily_amount': 0,
