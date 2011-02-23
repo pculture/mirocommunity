@@ -3438,17 +3438,6 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         # three flatpages got removed
         self.assertEquals(FlatPage.objects.count(), 2)
 
-### Class tier payment tests
-class TierPaymentTests(BaseTestCase):
-    def test_change_to_non_basic_tier_creates_payment_due_date(self):
-        return # FIXME
-
-    def test_handle_one_payment(self):
-        return # FIXME
-
-    def test_user_cannot_jump_from_trial_to_trial(self):
-        return # FIXME
-
 def videos_limit_of_two(*args, **kwargs):
     return 2
 
