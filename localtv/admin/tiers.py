@@ -277,11 +277,12 @@ def handle_recurring_profile_start(sender, **kwargs):
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
                                          'old_profile': tier_info.current_paypal_profile_id,
-                                         'site_domain': SiteLocation.objects.get_current().site.domain,
+                                         'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'new_profile': ipn_obj.subscr_id})
-        django.core.mail.send_mail(subject="Eek, you should cancel a recurring payment profile",
-                                   messsage=message_body,
-                                   recipient_list=['support@mirocommunity.org'],
+        django.core.mail.send_mail("Eek, you should cancel a recurring payment profile",
+                                   message_body,
+                                   'robot@mirocommunity.org', # FIXME: Choose better email addres
+                                   ['support@mirocommunity.org'],
                                    fail_silently=False) # this MUST get sent before the transition can occur
 
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
