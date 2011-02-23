@@ -310,16 +310,25 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     if ipn_obj.flag:
         return
 
+    # If the IPN object refers to a subscription ID other than the one that is ours,
+    # stop immediately. This could happen if, say, they create a new subscription ID
+    # (due to upgrading tier) and then cancelling the old one.
+    #
+    # That's exactly how we ask people to upgrade between tiers. Luckily, this
+    # transition case is covered by the test suite.
+    tier_info = localtv.models.TierInfo.objects.get_current()
+    if tier_info.current_paypal_profile_id != ipn_obj.subscr_id:
+        return
+
     sitelocation = localtv.models.SiteLocation.objects.get_current()
     sitelocation.tier_name = 'basic'
     sitelocation.save()
 
-    # Delete the current paypal subscription ID, if it is the active one
-    tier_info = localtv.models.TierInfo.objects.get_current()
-    if tier_info.current_paypal_profile_id == ipn_obj.subscr_id:
-        tier_info.current_paypal_profile_id = ''
-        tier_info.payment_due_date = None
-        tier_info.save()
+    # Delete the current paypal subscription ID
+    tier_info.current_paypal_profile_id = ''
+    tier_info.payment_due_date = None
+    tier_info.save()
+
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
 subscription_modify.connect(handle_recurring_profile_start)
