@@ -340,12 +340,7 @@ class WrongStartDate(PaymentException):
     pass
 
 ### Here, we listen for changes in the SiteLocation
-### As it changes, we make sure we adjust the payment due date stored in the SiteLocation.
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
-    ## FIXME: this has to be changed, based on the new handling of Paypal and free trials.
-    # If transitioning from 'basic' tier to something else,
-    # set the payment_due_date to be now plus thirty days.
-
     # Right here, we do a direct filter() call to evade the SiteLocation cache.
     current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
     if not current_sitelocs:

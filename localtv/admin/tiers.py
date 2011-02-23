@@ -200,12 +200,6 @@ def begin_free_trial(request, payment_secret):
     if target_tier_name not in dict(localtv.tiers.CHOICES):
         return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
 
-    # This is so that we can detect sites that start a free trial, but never generate
-    # the IPN event.
-    if request.tier_info.free_trial_started_on is None:
-        request.tier_info.free_trial_started_on = datetime.datetime.utcnow()
-        request.tier_info.save()
-
     # Switch the tier!
     return _actually_switch_tier(target_tier_name)
 
@@ -268,11 +262,18 @@ def _actually_switch_tier(target_tier_name):
     sl.tier_name = target_tier_name
     sl.save()
 
-    # Handle free trial state changes
-    if sl.tierinfo.free_trial_available:
-        # Well, we are switching tier. That means we must be using up the trial.
+    # If the user has never started a free trial, then they are clearly in one now.
+    if sl.tierinfo.free_trial_started_on is None:
+        sl.tierinfo.free_trial_started_on = datetime.datetime.utcnow()
+        sl.tierinfo.in_free_trial = True
         sl.tierinfo.free_trial_available = False
-    sl.tierinfo.save()
+        sl.tierinfo.save()
+
+    # If the user *has* started a free trial, and this is an actual *change* in tier name,
+    # then the trial must be over.
+    if sl.tierinfo.free_trial_started_on and sl.tierinfo.in_free_trial and target_tier_name != models.SiteLocation.objects.get_current().tier_name:
+        sl.tierinfo.in_free_trial = False
+        sl.tierinfo.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
