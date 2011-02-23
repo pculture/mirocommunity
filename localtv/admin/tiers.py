@@ -194,8 +194,10 @@ def begin_free_trial(request, payment_secret):
     * Declare the free trial in-use, and
 
     * Switch the tier.'''
-    if payment_secret != request.tier_info.payment_secret:
-        raise HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
+    # FIXME: This doesn't check the payment secret anymore.
+    # That will be okay once we turn on PDT.
+    #if payment_secret != request.tier_info.payment_secret:
+    #    return HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
     target_tier_name = request.GET.get('target_tier_name', '')
     if target_tier_name not in dict(localtv.tiers.CHOICES):
         return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
