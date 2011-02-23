@@ -221,6 +221,31 @@ def ipn_endpoint(request, payment_secret):
 ### ----------------------------------------------------------------------
 ### These are helper functions.
 
+def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, current_payment_due_date, todays_date=None):
+    target_tier_obj = localtv.tiers.Tier(target_tier_name)
+    start_tier_obj = localtv.tiers.Tier(start_tier_name)
+
+    if todays_date is None:
+        todays_date = datetime.datetime.utcnow()
+    
+    days_difference = (current_payment_due_date - todays_date).days # note: this takes the floor() automatically
+    if days_difference < 0:
+        raise ValueError, "Um, the difference is less than zero. That's crazy."
+    if days_difference == 0:
+        return {'recurring': target_tier_obj.dollar_cost(),
+                'daily_amount': 0,
+                'num_days': 0}
+
+    # Okay, so we have some days.
+    # If it were the full price...
+    price_difference = target_tier_obj.dollar_cost() - start_tier_obj.dollar_cost()
+    # ...but we need to multiply by the proportion of the pay period this represents.
+    # ...how much is that, anyway? Well, it's days_difference / days_in_the_pay_period
+    # ...since our pay period is 30 days, that's easy.
+    return {'recurring': target_tier_obj.dollar_cost(),
+            'daily_amount': int(price_difference * (days_difference / 30.0)),
+            'num_days': days_difference}
+
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
     sl = localtv.models.SiteLocation.objects.get_current()

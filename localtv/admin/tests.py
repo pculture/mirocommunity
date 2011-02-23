@@ -4098,3 +4098,20 @@ class IpnIntegration(BaseTestCase):
 
         # Because the IPN submitted was invalid, the payment profile ID has not changed.
         self.assertFalse(tier_info.current_paypal_profile_id)
+
+class TestMidMonthPaymentAmounts(BaseTestCase):
+    def test_start_of_month(self):
+        data = localtv.admin.tiers.generate_payment_amount_for_upgrade(
+            start_tier_name='plus', target_tier_name='premium',
+            current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
+            todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
+        expected = {'recurring': 35, 'daily_amount': 18, 'num_days': 28}
+        self.assertEqual(data, expected)
+
+    def test_end_of_month(self):
+        data = localtv.admin.tiers.generate_payment_amount_for_upgrade(
+            start_tier_name='plus', target_tier_name='premium',
+            current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
+            todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
+        expected = {'recurring': 35, 'daily_amount': 0, 'num_days': 0}
+        self.assertEqual(data, expected)
