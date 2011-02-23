@@ -356,17 +356,15 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     current_siteloc = current_sitelocs[0]
     current_tier_name = current_siteloc.tier_name
     new_tier_name = instance.tier_name
-    if (current_tier_name == 'basic') and (new_tier_name != 'basic'):
-        # There should be no due date, because we used to be in 'basic' mode. If there was,
-        # log an error.
-        if tier_info.payment_due_date:
-            logging.error("Yikes, there should have been no due date in free mode. But there was. Creepy.")
-        # If the user can use a free trial, then the due date is a month from now
-        if not tier_info.free_trial_available:
-            tier_info.payment_due_date = datetime.datetime.utcnow()
-        else:
-            tier_info.payment_due_date = datetime.datetime.utcnow() + datetime.timedelta(days=30)
-        tier_info.save()
+    ### FIXME: Add this sanity check to tiers test suite:
+    #if (current_tier_name == 'basic') and (new_tier_name != 'basic'):
+    #    if getattr(settings, 'LOCALTV_SKIP_PAYPAL', False):
+    #        pass
+    #    else:
+    #        # The tier_info should have a due date. Warn if not.
+    #        if not tier_info.payment_due_date:
+    #            logging.error("Um, we are now in a paid tier with no due date. Spooky.")
+    #    tier_info.save()
 
     current_tier_obj = Tier(current_tier_name)
     new_tier_obj= Tier(new_tier_name)

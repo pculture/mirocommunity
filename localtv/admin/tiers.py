@@ -262,18 +262,24 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
     sl = localtv.models.SiteLocation.objects.get_current()
+
+    if target_tier_name == 'basic':
+        # Delete the current paypal subscription ID
+        sl.tierinfo.current_paypal_profile_id = ''
+        sl.tierinfo.payment_due_date = None
+        sl.tierinfo.save()
+
     sl.tier_name = target_tier_name
     sl.save()
 
     # Handle free trial state changes
-    tier_info = sl.tierinfo
-    if tier_info.free_trial_available:
+    if sl.tierinfo.free_trial_available:
         # Well, we are switching tier. That means we must be using up the trial.
-        tier_info.free_trial_available = False
-        tier_info.in_free_trial = True
+        sl.tierinfo.free_trial_available = False
+        sl.tierinfo.in_free_trial = True
     else:
-        tier_info.in_free_trial = False
-    tier_info.save()
+        sl.tierinfo.in_free_trial = False
+    sl.tierinfo.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
@@ -326,6 +332,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.user_has_successfully_performed_a_paypal_transaction = True
+    tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
     tier_info.save()
 
     # If we get the IPN, and we have not yet adjusted the tier name
@@ -358,14 +365,7 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     if tier_info.current_paypal_profile_id != ipn_obj.subscr_id:
         return
 
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
-    sitelocation.tier_name = 'basic'
-    sitelocation.save()
-
-    # Delete the current paypal subscription ID
-    tier_info.current_paypal_profile_id = ''
-    tier_info.payment_due_date = None
-    tier_info.save()
+    _actually_switch_tier('basic')
 
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
