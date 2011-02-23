@@ -3977,9 +3977,7 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
                                  if msg.to[0] == 'support@mirocommunity.org']
         self.assertEqual(1, len(support_ticket_emails))
 
-class IpnIntegration(AdministrationBaseTestCase):
-    fixtures = BaseTestCase.fixtures
-
+class IpnIntegration(BaseTestCase):
     def setUp(self):
         # Call superclass setUp()
         super(IpnIntegration, self).setUp()
@@ -4020,7 +4018,32 @@ class IpnIntegration(AdministrationBaseTestCase):
 
         Client().post(url,
                       ipn_data)
-        # Now what? Well, that's up to the caller.
+
+        # Make sure SiteLocation recognizes we are in 'plus'
+        self.assertEqual(self.site_location.tier_name, 'plus')
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_upgrade_and_submit_ipn_skipping_free_trial_post(self):
+        # If the user upgrades but neglects to POST to the begin_free_trial handler
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+        self.assertFalse(new_tier_info.in_free_trial)
+        self.assertTrue(new_tier_info.free_trial_available)
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+
+        # Make sure SiteLocation recognizes we are in 'plus'
+        self.assertEqual(self.site_location.tier_name, 'plus')
+        # Make sure we are in a free trial, etc.
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertTrue(new_tier_info.in_free_trial)
+        self.assertFalse(new_tier_info.free_trial_available)
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_success(self):

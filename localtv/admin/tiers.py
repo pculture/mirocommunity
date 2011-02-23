@@ -63,7 +63,7 @@ def confirmed_change_tier(request):
         # Always redirect back to tiers page
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
-    return _actually_switch_tier(request, target_tier_name)
+    return _actually_switch_tier(target_tier_name)
 
 @require_site_admin
 def downgrade_confirm(request):
@@ -200,7 +200,7 @@ def begin_free_trial(request, payment_secret):
         request.tier_info.save()
 
     # Switch the tier!
-    return _actually_switch_tier(request, target_tier_name)
+    return _actually_switch_tier(target_tier_name)
 
 ### Below this line
 ### --------------------------------------------------------------------------------------------
@@ -221,11 +221,21 @@ def ipn_endpoint(request, payment_secret):
 ### ----------------------------------------------------------------------
 ### These are helper functions.
 
-def _actually_switch_tier(request, target_tier_name):
+def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
-    sl = request.sitelocation
+    sl = localtv.models.SiteLocation.objects.get_current()
     sl.tier_name = target_tier_name
     sl.save()
+
+    # Handle free trial state changes
+    tier_info = sl.tierinfo
+    if tier_info.free_trial_available:
+        # Well, we are switching tier. That means we must be using up the trial.
+        tier_info.free_trial_available = False
+        tier_info.in_free_trial = True
+    else:
+        tier_info.in_free_trial = False
+    tier_info.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
@@ -287,9 +297,8 @@ def handle_recurring_profile_start(sender, **kwargs):
         pass
     else:
         # Find the right tier to move to
-        tier_name = localtv.tiers.Tier.get_by_cost(amount)
-        sitelocation.tier_name = tier_name
-        sitelocation.save()
+        target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        _actually_switch_tier(target_tier_name)
 
 subscription_signup.connect(handle_recurring_profile_start)
 
