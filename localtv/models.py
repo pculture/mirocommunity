@@ -102,7 +102,7 @@ class CannotOpenImageUrl(Error): pass
 
 class BitLyWrappingURLField(models.URLField):
     def get_db_prep_value(self, value):
-        if not settings.BITLY_LOGIN:
+        if not getattr(settings, 'BITLY_LOGIN'):
             return value
         if len(value) <= self.max_length: # short enough to save
             return value
@@ -1070,7 +1070,7 @@ class OriginalVideo(VideoBase):
                     # message
                     continue
                 new = util.unicode_set(scraped_data['tags'])
-                if settings.FORCE_LOWERCASE_TAGS:
+                if getattr(settings, 'FORCE_LOWERCASE_TAGS'):
                     new = util.unicode_set(name.lower() for name in new)
                 old = util.unicode_set(self.tags)
                 if new != old:
