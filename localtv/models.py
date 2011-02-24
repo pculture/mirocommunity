@@ -850,9 +850,17 @@ def _feed__calculate_source_type(feed):
         return u'User: %s' % video_service
 
 def pre_save_set_calculated_source_type(instance, **kwargs):
-    if instance.calculated_source_type:
-        return
+    # Always save the calculated_source_type
     instance.calculated_source_type = _feed__calculate_source_type(instance)
+    # Plus, if the name changed, we have to recalculate all the Videos that depend on us.
+    try:
+        v = Feed.objects.get(id=instance.id)
+    except Feed.DoesNotExist:
+        return instance
+    if v.name != instance.name:
+        # recalculate all the sad little videos' calculated_source_type
+        for vid in instance.video_set.all():
+            vid.save()
     return instance
 models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
@@ -1463,23 +1471,6 @@ class Video(Thumbnailable, VideoBase):
         else:
             self.save_thumbnail_from_file(content_thumb)
 
-    def source_type(self):
-        if self.search:
-            return u'Search: %s' % self.search
-        elif self.feed:
-            if self.feed.video_service():
-                return u'User: %s: %s' % (
-                    self.feed.video_service(),
-                    self.feed)
-            else:
-                return 'Feed: %s' % self.feed
-        elif self.video_service_user:
-            return u'User: %s: %s' % (
-                self.video_service(),
-                self.video_service_user)
-        else:
-            return ''
-
     def submitter(self):
         """
         Return the user that submitted this video.  If necessary, use the
@@ -1505,6 +1496,12 @@ class Video(Thumbnailable, VideoBase):
             return self.when_published
         return self.when_approved or self.when_submitted
 
+    def source_type(self):
+        return video__source_type(self)
+
+    def video_service(self):
+        return video__video_service(self)
+
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
@@ -1517,15 +1514,40 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
-    def video_service(self):
-        if not self.website_url:
-            return
+def video__source_type(self):
+    '''This is not a method of the Video so that we can can call it from South.'''
+    if self.search:
+        return u'Search: %s' % self.search
+    elif self.feed:
+        if feed__video_service(self.feed):
+            return u'User: %s: %s' % (
+                feed__video_service(self.feed),
+                self.feed.name)
+        else:
+            return 'Feed: %s' % self.feed.name
+    elif self.video_service_user:
+        return u'User: %s: %s' % (
+            video__video_service(self),
+            self.video_service_user)
+    else:
+        return ''
 
-        url = self.website_url
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, url, re.I):
-                return service
+def pre_save_video_set_calculated_source_type(instance, **kwargs):
+    # Always recalculate the source_type field.
+    instance.calculated_source_type = video__source_type(instance)
+    return instance
+models.signals.pre_save.connect(pre_save_video_set_calculated_source_type,
+                                sender=Video)
 
+def video__video_service(self):
+    '''This is not a method of Video so we can call it from a South migration.'''
+    if not self.website_url:
+        return
+
+    url = self.website_url
+    for service, regexp in VIDEO_SERVICE_REGEXES:
+        if re.search(regexp, url, re.I):
+            return service
 
 class VideoAdmin(admin.ModelAdmin):
     list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
