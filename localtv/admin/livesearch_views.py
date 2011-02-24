@@ -163,8 +163,7 @@ def livesearch(request):
 @require_site_admin
 @get_search_video
 def approve(request, search_video):
-    if (models.SiteLocation.enforce_tiers() and
-        request.sitelocation.get_tier().remaining_videos() < 1):
+    if not request.sitelocation.get_tier().can_add_more_videos():
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
     video = search_video.generate_video_model(request.sitelocation.site)

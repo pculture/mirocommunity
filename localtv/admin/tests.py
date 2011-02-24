@@ -1470,7 +1470,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         removed from subsequent search listings.
         """
         c = Client()
-        c.login(username='admin', password='admin')
+        self.assert_(c.login(username='admin', password='admin'))
         response = c.get(self.url,
                          {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
@@ -1504,6 +1504,26 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'query': 'search string'})
         self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
                           metasearch_video2.id)
+
+    @mock.patch('localtv.tiers.Tier.can_add_more_videos', mock.Mock(return_value=False))
+    def test_GET_approve_refuses_when_limit_exceeded(self):
+        """
+        A GET request to the approve view should create a new video object from
+        the search and redirect back to the referrer.  The video should be
+        removed from subsequent search listings.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        metasearch_video = response.context[2]['page_obj'].object_list[0]
+        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
+
+        response = c.get(reverse('localtv_admin_search_video_approve'),
+                         {'query': 'search string',
+                          'video_id': metasearch_video.id},
+                         HTTP_REFERER="http://www.getmiro.com/")
+        self.assertStatusCodeEquals(response, 402)
 
     def test_GET_approve_authentication(self):
         """
