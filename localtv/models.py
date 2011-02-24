@@ -1402,7 +1402,7 @@ class Video(Thumbnailable, VideoBase):
     contact = models.CharField(max_length=250, blank=True,
                                default='')
     notes = models.TextField(blank=True)
-
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
 
