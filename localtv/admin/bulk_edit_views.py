@@ -29,7 +29,7 @@ from django.views.decorators.csrf import csrf_protect
 from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.admin import forms
-from localtv.util import SortHeaders, MockQueryset
+from localtv.util import SortHeaders
 
 try:
     from operator import methodcaller
@@ -116,10 +116,7 @@ def bulk_edit(request):
         reverse = sort.startswith('-')
         videos = videos.extra(select={
                 'name_lower':'LOWER(localtv_video.name)'})
-        videos = MockQueryset(
-            sorted(videos.order_by(sort.replace('source', 'name_lower')),
-                   reverse=reverse,
-                   key=methodcaller('source_type')))
+        videos = videos.order_by(sort.replace('source', 'calculated_source_type'))
     elif sort.endswith('name'):
         videos = videos.extra(select={
                 'name_lower':'LOWER(localtv_video.name)'}).order_by(
