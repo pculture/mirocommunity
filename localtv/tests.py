@@ -189,7 +189,7 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
 
-    @mock.patch('localtv.tiers.Tier.over_videos_limit', lambda *args: True)
+    @mock.patch('localtv.tiers.Tier.can_add_more_videos', lambda *args: False)
     def test_auto_approve_True_when_user_past_video_limit(self):
         """
         If Feed.auto_approve is True, but the site is past the video limit,

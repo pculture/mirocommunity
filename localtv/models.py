@@ -622,7 +622,7 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        if self.auto_approve and not localtv.tiers.Tier.get().over_videos_limit():
+        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
@@ -970,7 +970,7 @@ class SavedSearch(Source):
             [result for result in raw_results if result is not None],
             self.site)
 
-        if self.auto_approve:
+        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
             initial_status = VIDEO_STATUS_ACTIVE
         else:
             initial_status = VIDEO_STATUS_UNAPPROVED

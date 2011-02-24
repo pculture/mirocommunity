@@ -298,8 +298,17 @@ class Tier(object):
                          'max': 25000}
         return special_cases[self.tier_name]
 
-    def over_videos_limit(self):
-        return (self.remaining_videos < 0)
+    def can_add_more_videos(self):
+        '''Returns True if tiers enforcement is disabled, or if we have fewer videos than
+        the tier limits us to.
+
+        Returns False if it is *not* okay to add more videos to the site.'''
+        enforce = localtv.models.SiteLocation.enforce_tiers()
+        if not enforce:
+            return True
+
+        remaining_video_count = self.remaining_videos()
+        return (remaining_video_count > 0)
 
     def remaining_videos(self):
         return self.videos_limit() - current_videos_that_count_toward_limit().count()
