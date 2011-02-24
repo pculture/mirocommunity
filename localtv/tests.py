@@ -2071,3 +2071,23 @@ class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
         tier_info.user_has_successfully_performed_a_paypal_transaction = True
         tier_info.save()
         self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=True))
+
+class TierMethodsTests(BaseTestCase):
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
+    def test_can_add_more_videos(self):
+        # This is true because enforcement is off.
+        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
+    def test_can_add_more_videos_returns_false(self):
+        # This is False because the number of videos remaining is zero.
+        self.assertFalse(localtv.tiers.Tier.get().can_add_more_videos())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=1))
+    def test_can_add_video_lets_you_add_final_video(self):
+        # This is False because the number of videos remaining is zero.
+        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
