@@ -383,11 +383,9 @@ class BulkEditVideoForm(EditVideoForm):
 
         # cache the querysets so that we don't hit the DB for each form
         if self.__class__._categories_queryset is None:
-            self.__class__._categories_queryset = util.MockQueryset(
-                models.Category.objects.filter(site=site))
+            self.__class__._categories_queryset = models.Category.objects.filter(site=site)
         if self.__class__._authors_queryset is None:
-            self.__class__._authors_queryset = util.MockQueryset(
-                User.objects.order_by('username'))
+            self.__class__._authors_queryset = User.objects.order_by('username')
         self.fields['categories'].queryset = \
             self.__class__._categories_queryset
         self.fields['authors'].queryset = \
