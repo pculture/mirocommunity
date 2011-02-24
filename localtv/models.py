@@ -587,6 +587,7 @@ class Feed(Source):
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         unique_together = (
@@ -824,17 +825,37 @@ class Feed(Source):
         self.save()
 
     def source_type(self):
-        video_service = self.video_service()
-        if video_service is None:
-            return u'Feed'
-        else:
-            return u'User: %s' % video_service
+        return self.calculated_source_type
+
+    def _calculate_source_type(self):
+        return _feed__calculate_source_type(self)
 
     def video_service(self):
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, self.feed_url, re.I):
-                return service
+        return feed__video_service(self)
 
+def feed__video_service(feed):
+    # This implements the video_service method. It's outside the Feed class
+    # so we can use it safely from South.
+    for service, regexp in VIDEO_SERVICE_REGEXES:
+        if re.search(regexp, feed.feed_url, re.I):
+            return service
+
+def _feed__calculate_source_type(feed):
+    # This implements the _calculate_source_type method. It's outside the Feed
+    # class so we can use it safely from South.
+    video_service = feed__video_service(feed)
+    if video_service is None:
+        return u'Feed'
+    else:
+        return u'User: %s' % video_service
+
+def pre_save_set_calculated_source_type(instance, **kwargs):
+    if instance.calculated_source_type:
+        return
+    instance.calculated_source_type = _feed__calculate_source_type(instance)
+    return instance
+models.signals.pre_save.connect(pre_save_set_calculated_source_type,
+                                sender=Feed)
 
 class Category(models.Model):
     """
