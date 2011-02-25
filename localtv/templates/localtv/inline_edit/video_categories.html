@@ -20,7 +20,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% if rendered_within_get_display_content %}
 {% endif %}
 <div class="floatleft">
-  <h4>Category{% if rendered_within_get_display_content %}<a href="#" id="add_cat" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
   {% if instance.categories.count %}
   <ul>
     {% for category in instance.categories.all %}
