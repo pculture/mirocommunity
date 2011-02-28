@@ -4052,6 +4052,9 @@ class IpnIntegration(BaseTestCase):
 
         self.upgrade_and_submit_ipn_skipping_free_trial_post()
 
+        # Make sure SiteLocation recognizes we are in 'plus'
+        self.assertEqual(self.site_location.tier_name, 'plus')
+
         # Make sure we are in a free trial, etc.
         new_tier_info = models.TierInfo.objects.get_current()
         self.assertTrue(new_tier_info.in_free_trial)
@@ -4072,9 +4075,6 @@ class IpnIntegration(BaseTestCase):
         response = Client().post(url,
                       ipn_data)
         self.assertEqual('OKAY', response.content.strip())
-
-        # Make sure SiteLocation recognizes we are in 'plus'
-        self.assertEqual(self.site_location.tier_name, 'plus')
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_upgrade_between_paid_tiers(self):
@@ -4292,4 +4292,25 @@ class TestUpgradePage(BaseTestCase):
         self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '35.00')
         mail.outbox = [] # remove "Congratulations" email
 
-        self.assertEqual(self.sitelocation.tier_name, 'premium')
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+
+        # We are in 'premium'. Let's consider what happens when
+        # we want to downgrade to 'plus'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be True because PayPal will permit us to modify a recurring
+        # payment to decrease it.
+        self.assertTrue(response.context['can_modify_mapping']['plus'])
+
+        # There should be no upgrade_extra_payments value, because we are
+        # in a free trial.
+        self.assertFalse(response.context['upgrade_extra_payments']['plus'])
