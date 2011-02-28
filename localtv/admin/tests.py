@@ -4135,3 +4135,15 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
         expected = {'recurring': 35, 'daily_amount': 0, 'num_days': 0}
         self.assertEqual(data, expected)
+
+class TestUpgradePage(BaseTestCase):
+    ### State transition helpers
+    def setUp(self):
+        super(TestUpgradePage, self).setUp()
+        # Always start in 'basic' with a free trial
+        import localtv.management.commands.clear_tiers_state
+        c = localtv.management.commands.clear_tiers_state.Command()
+        c.handle_noargs()
+
+    def test_initial_site_creation(self):
+        pass
