@@ -4145,6 +4145,19 @@ class TestUpgradePage(BaseTestCase):
         c = localtv.management.commands.clear_tiers_state.Command()
         c.handle_noargs()
 
+    def tearDown(self):
+        # Note: none of these tests should cause email to be sent.
+        self.assertEqual([],
+                         mail.outbox)
+
+    ## assertion helpers
+    def _assert_modify_always_false(self, response):
+        self.assertEqual({'basic': False,
+                          'plus': False,
+                          'premium': False,
+                          'max': False},
+                         response.context['can_modify_mapping'])
+
     ## Action helpers
     def _log_in_as_superuser(self):
         c = Client()
@@ -4157,3 +4170,4 @@ class TestUpgradePage(BaseTestCase):
         c = self._log_in_as_superuser()
         response = c.get(reverse('localtv_admin_tier'))
         self.assertTrue(response.context['offer_free_trial'])
+        self._assert_modify_always_false(response)
