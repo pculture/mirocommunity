@@ -295,7 +295,7 @@ def _generate_can_modify():
             can_modify_mapping[target_tier_name] = False
             continue
         target_tier_obj = localtv.tiers.Tier(target_tier_name) 
-        if target_tier_obj.dollar_cost() > current_tier_price:
+        if target_tier_obj.dollar_cost() >= current_tier_price:
             can_modify_mapping[target_tier_name] = False
             continue
         can_modify_mapping[target_tier_name] = True

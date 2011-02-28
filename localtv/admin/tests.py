@@ -4171,3 +4171,12 @@ class TestUpgradePage(BaseTestCase):
         response = c.get(reverse('localtv_admin_tier'))
         self.assertTrue(response.context['offer_free_trial'])
         self._assert_modify_always_false(response)
+
+    def test_upgrade_when_no_free_trial(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.free_trial_available = False
+        ti.save()
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+        self._assert_modify_always_false(response)
