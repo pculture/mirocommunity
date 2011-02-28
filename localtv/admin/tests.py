@@ -4175,11 +4175,11 @@ class TestUpgradePage(BaseTestCase):
                           'max': False},
                          response.context['can_modify_mapping'])
 
-    def _run_method_from_ipn_integration_test_case(self, methodname):
+    def _run_method_from_ipn_integration_test_case(self, methodname, *args):
         if self.ipn_integration is None:
             self.ipn_integration = IpnIntegration(methodname)
             self.ipn_integration.setUp()
-        getattr(self.ipn_integration, methodname)()
+        getattr(self.ipn_integration, methodname)(*args)
 
     ## Action helpers
     def _log_in_as_superuser(self):
@@ -4244,3 +4244,52 @@ class TestUpgradePage(BaseTestCase):
         # old payment.
         sl = models.SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
+
+    def test_upgrade_when_not_within_a_free_trial(self):
+        # We start in 'basic' with a free trial.
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+
+        # We are in 'plus'. Let's consider what happens when
+        # we want to upgrade to 'premium'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False because PayPal will not let us substantially
+        # increase a recurring payment amount.
+        self.assertFalse(response.context['can_modify_mapping']['premium'])
+
+        # There should be no upgrade_extra_payments value, because we are
+        # in a free trial.
+        self.assertFalse(response.context['upgrade_extra_payments']['premium'])
+
+        # Actually do the upgrade
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+
+        # The above method checks that we successfully send an email to
+        # support@ suggesting that the user cancel the old payment.
+        #
+        # It also simulates a support staff person actually cancelling the
+        # old payment.
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+
+    def test_downgrade_to_paid_during_a_trial(self):
+        # The test gets initialized in 'basic' with a free trial available.
+        # First, switch into a free trial of 'plus'.
+        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '35.00')
+        mail.outbox = [] # remove "Congratulations" email
+
+        self.assertEqual(self.sitelocation.tier_name, 'premium')
