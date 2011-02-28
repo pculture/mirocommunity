@@ -3611,14 +3611,24 @@ h2.page_title .private, h2.page_title .private a{
     font-size: 0.9em;
 }
 
-div.description ul {
-    list-style: disc outside none;
-    margin-left: 18px;
+#main .description ul {
+    display: block;
+    margin-left: 20px;
     margin-bottom: 18px;
 }
 
-div.description ol {
-    list-style: decimal outside none;
-    margin-left: 18px;
+#main .description ul li {
+    display: list-item;
+    list-style-type: disc;
+}
+
+#main .description ol {
+    display: block;
+    margin-left: 20px;
     margin-bottom: 18px;
+}
+
+#main .description ol li {
+    display: list-item;
+    list-style-type: decimal;
 }
