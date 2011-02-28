@@ -47,7 +47,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="basic_plan" class="clear">
     <h1>Your current plan: <strong>basic</strong></h1>
     <p>{% ifequal site_location.tier_name 'basic' %}
-      {% if site_location.basic_trial_available %}
+      {% if offer_free_trial %}
         Easily upgrade to receive a free 30 day trial. Only takes seconds.
       {% else %}
         To upgrade, make a choice below.
@@ -64,7 +64,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="switchbasic" class="clear">
   <h1>Basic <strong>Free</strong></h1>
     <p>{% ifequal site_location.tier_name 'basic' %}
-      {% if site_location.basic_trial_available %}
+      {% if offer_free_trial %}
         Easily upgrade to receive a free 30 day trial. Only takes seconds.
       {% else %}
         To upgrade, make a choice below.
