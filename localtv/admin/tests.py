@@ -4158,13 +4158,18 @@ class TestUpgradePage(BaseTestCase):
                           'max': False},
                          response.context['can_modify_mapping'])
 
+    def _run_method_from_ipn_integration_test_case(self, methodname):
+        obj = IpnIntegration(methodname)
+        obj.setUp()
+        getattr(obj, methodname)()
+
     ## Action helpers
     def _log_in_as_superuser(self):
         c = Client()
         self.assertTrue(c.login(username='superuser', password='superuser'))
         return c
 
-    ## Integration tests
+    ## Tests of various cases of the upgrade page
     def test_first_upgrade(self):
         self.assertTrue(self.site_location.tierinfo.free_trial_available)
         c = self._log_in_as_superuser()
@@ -4180,3 +4185,13 @@ class TestUpgradePage(BaseTestCase):
         response = c.get(reverse('localtv_admin_tier'))
         self.assertFalse(response.context['offer_free_trial'])
         self._assert_modify_always_false(response)
+
+    def test_upgrade_when_within_a_free_trial(self):
+        # We start in 'basic' with a free trial.
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
