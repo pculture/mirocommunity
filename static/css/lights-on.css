@@ -3610,3 +3610,15 @@ h2.page_title .private, h2.page_title .private a{
     color: red;
     font-size: 0.9em;
 }
+
+div.description ul {
+    list-style: disc outside none;
+    margin-left: 18px;
+    margin-bottom: 18px;
+}
+
+div.description ol {
+    list-style: decimal outside none;
+    margin-left: 18px;
+    margin-bottom: 18px;
+}
