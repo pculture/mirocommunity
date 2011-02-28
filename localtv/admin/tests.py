@@ -4145,5 +4145,15 @@ class TestUpgradePage(BaseTestCase):
         c = localtv.management.commands.clear_tiers_state.Command()
         c.handle_noargs()
 
-    def test_initial_site_creation(self):
-        pass
+    ## Action helpers
+    def _log_in_as_superuser(self):
+        c = Client()
+        self.assertTrue(c.login(username='superuser', password='superuser'))
+        return c
+
+    ## Integration tests
+    def test_first_upgrade(self):
+        self.assertTrue(self.site_location.tierinfo.free_trial_available)
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertTrue(response.context['offer_free_trial'])
