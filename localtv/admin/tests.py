@@ -4354,5 +4354,5 @@ class TestUpgradePage(BaseTestCase):
         self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00')
         ti = models.TierInfo.objects.get_current()
         self.assertEqual(old_profile, ti.current_paypal_profile_id)
-        print ''.join([str(x.body) for x in mail.outbox])
+        self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)
