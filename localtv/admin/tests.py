@@ -4343,12 +4343,13 @@ class TestUpgradePage(BaseTestCase):
         response = c.get(reverse('localtv_admin_tier'))
         self.assertFalse(response.context['offer_free_trial'])
 
-        # This should be True because PayPal will permit us to modify a recurring
-        # payment to decrease it.
-        self.assertTrue(response.context['can_modify_mapping']['plus'])
+        # This should be False. The idea is that we cancel the old, trial-based
+        # subscription. We will create a new subscription so that it can start
+        # immediately.
+        self.assertFalse(response.context['can_modify_mapping']['plus'])
 
-        # There should be no upgrade_extra_payments value, because we are
-        # in a free trial.
+        # There should be no upgrade_extra_payments value. This is a very simple
+        # "Create new subscription" case.
         self.assertFalse(response.context['upgrade_extra_payments']['plus'])
 
         self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00')
