@@ -330,6 +330,19 @@ def handle_recurring_profile_start(sender, **kwargs):
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
     if tier_info.free_trial_available:
         tier_info.free_trial_available = False
+    else:
+        if not tier_info.in_free_trial:
+            # sanity-check that there is no period1 or period2 value
+            paypal_event_contains_free_trial = ipn_obj.period1 or ipn_obj.period2
+            if paypal_event_contains_free_trial:
+                django.core.mail.send_mail(
+                    "Eek, the user tried to create a free trial incorrectly",
+                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site",
+                    'robot@mirocommunity.org',
+                    ['support@mirocommunity.org'],
+                    fail_silently=False)
+                return
+
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.user_has_successfully_performed_a_paypal_transaction = True
     tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
