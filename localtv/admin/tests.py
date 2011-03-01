@@ -4166,7 +4166,7 @@ class IpnIntegration(BaseTestCase):
         self.submit_ipn_subscription_modify('15.00')
 
         # Make sure it worked
-        self.assertEqual('plus', self.site_location.tier_name)
+        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
         tierinfo = models.TierInfo.objects.get_current()
         self.assertFalse(tierinfo.in_free_trial)
 
