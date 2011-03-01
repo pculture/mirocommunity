@@ -391,6 +391,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
                                    'robot@mirocommunity.org', # FIXME: Choose better email addres
                                    ['support@mirocommunity.org'],
                                    fail_silently=False) # this MUST get sent before the transition can occur
+        return
 
     # Okay, well at this point, we need to adjust the site tier to match.
     amount = float(ipn_obj.amount3)
@@ -399,7 +400,22 @@ def handle_recurring_profile_modify(sender, **kwargs):
         pass
     else:
         # Find the right tier to move to
-        target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        try:
+            target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        except ValueError:
+            # then we had better email support@mirocommunity.org indicating that the amount
+            # is bizarre.
+            message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
+                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                         'profile_on_file': tier_info.current_paypal_profile_id,
+                                         'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
+                                         'surprising_profile': ipn_obj.subscr_id})
+            django.core.mail.send_mail("Eek, you should check on this MC site",
+                                       message_body,
+                                       'robot@mirocommunity.org', # FIXME: Choose better email addres
+                                       ['support@mirocommunity.org'],
+                                       fail_silently=False) # this MUST get sent before the transition can occur
+            return
         _actually_switch_tier(target_tier_name)
 
 subscription_modify.connect(handle_recurring_profile_modify)
