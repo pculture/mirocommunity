@@ -4135,6 +4135,14 @@ class IpnIntegration(BaseTestCase):
         # Because the IPN submitted was invalid, the payment profile ID has not changed.
         self.assertFalse(tier_info.current_paypal_profile_id)
 
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_downgrade_during_free_trial(self):
+        # First, upgrade to 'premium' during the free trial.
+        self.upgrade_and_submit_ipn_skipping_free_trial_post('35.00')
+
+        # Make sure it worked
+        self.assertEqual('premium', self.site_location.tier_name)
+
 class TestMidMonthPaymentAmounts(BaseTestCase):
     def test_start_of_month(self):
         data = localtv.admin.tiers.generate_payment_amount_for_upgrade(

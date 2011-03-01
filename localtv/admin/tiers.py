@@ -368,4 +368,47 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
 
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
-subscription_modify.connect(handle_recurring_profile_start)
+
+def handle_recurring_profile_modify(sender, **kwargs):
+    ipn_obj = sender
+
+    # If the thing is invalid, do not process any further.
+    if ipn_obj.flag:
+        return
+
+    tier_info = localtv.models.TierInfo.objects.get_current()
+
+    if tier_info.current_paypal_profile_id:
+        # then we had better email support@mirocommunity.org indicating that the old one
+        # should be cancelled.
+        message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
+                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                         'old_profile': tier_info.current_paypal_profile_id,
+                                         'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
+                                         'new_profile': ipn_obj.subscr_id})
+        django.core.mail.send_mail("Eek, you should cancel a recurring payment profile",
+                                   message_body,
+                                   'robot@mirocommunity.org', # FIXME: Choose better email addres
+                                   ['support@mirocommunity.org'],
+                                   fail_silently=False) # this MUST get sent before the transition can occur
+
+    # Okay. Now it's save to overwrite the subscription ID that is the current one.
+    if tier_info.free_trial_available:
+        tier_info.free_trial_available = False
+    tier_info.current_paypal_profile_id = ipn_obj.subscr_id
+    tier_info.user_has_successfully_performed_a_paypal_transaction = True
+    tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
+    tier_info.save()
+
+    # If we get the IPN, and we have not yet adjusted the tier name
+    # to be at that level, now is a *good* time to do so.
+    amount = float(ipn_obj.amount3)
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    if sitelocation.get_tier().dollar_cost() == amount:
+        pass
+    else:
+        # Find the right tier to move to
+        target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        _actually_switch_tier(target_tier_name)
+
+subscription_modify.connect(handle_recurring_profile_modify)
