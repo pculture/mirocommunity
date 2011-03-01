@@ -255,6 +255,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
     sl = localtv.models.SiteLocation.objects.get_current()
+    old_tier_name = sl.tier_name
 
     if target_tier_name == 'basic':
         # Delete the current paypal subscription ID
@@ -271,12 +272,12 @@ def _actually_switch_tier(target_tier_name):
         sl.tierinfo.in_free_trial = True
         sl.tierinfo.free_trial_available = False
         sl.tierinfo.save()
-
     # If the user *has* started a free trial, and this is an actual *change* in tier name,
     # then the trial must be over.
-    if sl.tierinfo.free_trial_started_on and sl.tierinfo.in_free_trial and target_tier_name != models.SiteLocation.objects.get_current().tier_name:
-        sl.tierinfo.in_free_trial = False
-        sl.tierinfo.save()
+    else:
+        if sl.tierinfo.in_free_trial and old_tier_name != target_tier_name:
+            sl.tierinfo.in_free_trial = False
+            sl.tierinfo.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
