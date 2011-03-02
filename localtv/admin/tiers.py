@@ -335,7 +335,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     # Is this an upgrade that required an initial payment period?
     elif (tier_info.current_paypal_profile_id and
           float(ipn_obj.amount3) != current_tier_obj.dollar_cost() and
-          float(ipn_obj.amount1)):
+          ipn_obj.amount1 and float(ipn_obj.amount1)):
         # Validate the IPN: time period
         num, format = ipn_obj.period1.split(' ')
         num = int(num)
