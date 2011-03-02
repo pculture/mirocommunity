@@ -124,7 +124,7 @@ def upgrade(request):
     upgrade_extra_payments = {}
     for target_tier_name in ['basic', 'plus', 'premium', 'max']:
         if (request.sitelocation.tierinfo.in_free_trial or 
-            localtv.tiers.Tier(tier_name).dollar_cost() <= request.sitelocation.get_tier().dollar_cost() or
+            (localtv.tiers.Tier(target_tier_name).dollar_cost() <= request.sitelocation.get_tier().dollar_cost()) or
             not request.sitelocation.tierinfo.payment_due_date):
             upgrade_extra_payments[target_tier_name] = None
             continue

@@ -4077,14 +4077,19 @@ class IpnIntegration(BaseTestCase):
         self.assertEqual('OKAY', response.content.strip())
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
-    def submit_ipn_subscription_modify(self, override_amount3=None):
+    def submit_ipn_subscription_modify(self, override_amount3=None, override_subscr_id=None):
         if override_amount3:
             amount3 = override_amount3
         else:
             amount3 = u'15.00'
 
+        if override_subscr_id:
+            subscr_id = override_subscr_id
+        else:
+            subscr_id = u'I-MEBGA2YXPNJK'
+
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_modify', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_modify', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4334,8 +4339,8 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(ti.current_paypal_profile_id)
         old_profile = ti.current_paypal_profile_id
 
-        # We are in 'premium'. Let's consider what happens when
-        # we want to downgrade to 'plus'
+        # We are in 'max'. Let's consider what happens when
+        # we want to downgrade to 'premium'
         sl = models.SiteLocation.objects.get_current()
         self.assertEqual('max', sl.tier_name)
 
@@ -4354,3 +4359,40 @@ class TestUpgradePage(BaseTestCase):
         self.assertNotEqual(old_profile, ti.current_paypal_profile_id)
         self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)
+
+    def test_downgrade_to_paid_not_during_a_trial(self):
+        # Let's say the user started at 'max' and free trial, and then switched down to 'premium'
+        # which ended the trial.
+        self.test_downgrade_to_paid_during_a_trial()
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertFalse(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+        old_profile = ti.current_paypal_profile_id
+
+        # We are in 'premium'. Let's consider what happens when
+        # we want to downgrade to 'plus'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False. There is no reason to provide extra payment data; we're just
+        # going to modify the subscription amount.
+        self.assertFalse(response.context['upgrade_extra_payments']['plus'])
+
+        # This should be True. This is a simple PayPal subscription modification case.
+        self.assertTrue(response.context['can_modify_mapping']['plus'])
+
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00', old_profile)
+
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(old_profile, ti.current_paypal_profile_id)
+        self.assertEqual([], mail.outbox)
+        self.assertFalse(ti.in_free_trial)
+        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
+
