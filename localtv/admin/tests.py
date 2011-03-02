@@ -4306,7 +4306,7 @@ class TestUpgradePage(BaseTestCase):
         sl = models.SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
 
-    def test_upgrade_when_not_within_a_free_trial(self):
+    def test_upgrade_from_basic_when_not_within_a_free_trial(self):
         # The pre-requisite for this test is that we have transitioned into a tier.
         # So borrow a method from IpnIntegration
         self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
