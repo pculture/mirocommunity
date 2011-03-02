@@ -4098,6 +4098,22 @@ class IpnIntegration(BaseTestCase):
         self.assertEqual('OKAY', response.content.strip())
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def submit_ipn_subscription_cancel(self, override_subscr_id=None):
+        if override_subscr_id:
+            subscr_id = override_subscr_id
+        else:
+            subscr_id = u'I-MEBGA2YXPNJK'
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount1': u'0.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_upgrade_between_paid_tiers(self):
         self.test_success()
         self.assertEqual(self.site_location.tier_name, 'plus')
@@ -4286,7 +4302,6 @@ class TestUpgradePage(BaseTestCase):
         self.assertEqual('premium', sl.tier_name)
 
     def test_upgrade_when_not_within_a_free_trial(self):
-        # We start in 'basic' with a free trial.
         # The pre-requisite for this test is that we have transitioned into a tier.
         # So borrow a method from IpnIntegration
         self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
@@ -4298,33 +4313,22 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
 
-        # We are in 'plus'. Let's consider what happens when
-        # we want to upgrade to 'premium'
+        # Cancelling the subscription should put empty out the current paypal ID.
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_cancel', ti.current_paypal_profile_id)
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertFalse(ti.in_free_trial)
+        self.assertFalse(ti.current_paypal_profile_id)
+        # We are in 'basic' now.
         sl = models.SiteLocation.objects.get_current()
-        self.assertEqual('plus', sl.tier_name)
+        self.assertEqual('basic', sl.tier_name)
 
+        # If we upgrade to a paid tier...
         c = self._log_in_as_superuser()
         response = c.get(reverse('localtv_admin_tier'))
         self.assertFalse(response.context['offer_free_trial'])
-
-        # This should be False because PayPal will not let us substantially
-        # increase a recurring payment amount.
-        self.assertFalse(response.context['can_modify_mapping']['premium'])
-
-        # There should be no upgrade_extra_payments value, because we are
-        # in a free trial.
-        self.assertFalse(response.context['upgrade_extra_payments']['premium'])
-
-        # Actually do the upgrade
-        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
-
-        # The above method checks that we successfully send an email to
-        # support@ suggesting that the user cancel the old payment.
-        #
-        # It also simulates a support staff person actually cancelling the
-        # old payment.
-        sl = models.SiteLocation.objects.get_current()
-        self.assertEqual('premium', sl.tier_name)
+        self._assert_modify_always_false(response)
 
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
