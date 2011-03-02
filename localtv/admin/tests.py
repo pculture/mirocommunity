@@ -4224,6 +4224,11 @@ class TestUpgradePage(BaseTestCase):
                          mail.outbox)
 
     ## assertion helpers
+    def _assert_upgrade_extra_payments_always_false(self, response):
+        extras = response.context['upgrade_extra_payments']
+        for thing in extras:
+            self.assertFalse(extras[thing])
+
     def _assert_modify_always_false(self, response):
         self.assertEqual({'basic': False,
                           'plus': False,
@@ -4329,6 +4334,7 @@ class TestUpgradePage(BaseTestCase):
         response = c.get(reverse('localtv_admin_tier'))
         self.assertFalse(response.context['offer_free_trial'])
         self._assert_modify_always_false(response)
+        self._assert_upgrade_extra_payments_always_false(response)
 
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
