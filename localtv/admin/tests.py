@@ -16,6 +16,11 @@
 
 import datetime
 
+class Fakedatetime(datetime.datetime):
+    @classmethod
+    def utcnow(cls):
+        return cls(2011, 2, 20, 12, 35, 0)
+
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core import mail
@@ -4077,6 +4082,16 @@ class IpnIntegration(BaseTestCase):
         self.assertEqual('OKAY', response.content.strip())
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def upgrade_including_prorated_duration_and_amount(self, amount1, amount3, period1):
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': amount1, u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'prorated change', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': period1, u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': amount1, u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 20, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def submit_ipn_subscription_modify(self, override_amount3=None, override_subscr_id=None):
         if override_amount3:
             amount3 = override_amount3
@@ -4365,6 +4380,47 @@ class TestUpgradePage(BaseTestCase):
         self.assertEqual('premium', sl.tier_name)
         ti = sl.tierinfo
         self.assertNotEqual(ti.current_paypal_profile_id, first_profile)
+
+    def test_upgrade_from_paid_when_not_within_a_free_trial(self):
+        # First, upgrade and downgrade...
+        self.test_downgrade_to_paid_not_during_a_trial()
+
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        # Travel to the future
+        with mock.patch('datetime.datetime', Fakedatetime):
+            # Now, we have some crazy prorating stuff.
+            c = self._log_in_as_superuser()
+            response = c.get(reverse('localtv_admin_tier'))
+
+        self.assertFalse(response.context['offer_free_trial'])
+        # For the prorating...
+        extras = response.context['upgrade_extra_payments']
+        premium = extras['premium']
+        # The adjusted due date is, like, about 1 day different.
+        self.assertTrue(abs((Fakedatetime.utcnow() - (sl.tierinfo.payment_due_date - datetime.timedelta(premium['num_days']))).days) <= 1)
+        # The one-time money bump is more than 2/3 of the difference.
+        entire_difference = (localtv.tiers.Tier('premium').dollar_cost() - localtv.tiers.Tier('plus').dollar_cost())
+        self.assertTrue(premium['daily_amount'] >= (0.667 * entire_difference))
+        self._assert_modify_always_false(response) # no modify possible from 'plus'
+
+        # Let's try paying.
+        # NOTE: We don't check here what happens if you pay with the wrong
+        # pro-rating amount.
+        with mock.patch('datetime.datetime', Fakedatetime):
+            self._run_method_from_ipn_integration_test_case(
+                'upgrade_including_prorated_duration_and_amount', 
+                '%d.00' % premium['daily_amount'],
+                '35.00',
+                '%d D' % premium['num_days'])
+            sl = models.SiteLocation.objects.get_current()
+            self.assertEqual('premium', sl.tier_name)
+            # Also, no emails.
+            self.assertEqual(set(['support@mirocommunity.org',
+                                  'superuser@testserver.local']),
+                             set([x.to[0] for x in mail.outbox]))
+            mail.outbox = []
 
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.

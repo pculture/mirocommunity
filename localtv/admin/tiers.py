@@ -290,8 +290,8 @@ def _generate_can_modify():
     tier_info = localtv.models.TierInfo.objects.get_current()
     current_tier_price = localtv.models.SiteLocation.objects.get_current().get_tier().dollar_cost()
 
-    can_modify_mapping = {}
-    for target_tier_name in ['basic', 'plus', 'premium', 'max']:
+    can_modify_mapping = {'basic': False}
+    for target_tier_name in ['plus', 'premium', 'max']:
         if (tier_info.free_trial_available or tier_info.in_free_trial):
             can_modify_mapping[target_tier_name] = False
             continue
@@ -312,6 +312,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         return
 
     tier_info = localtv.models.TierInfo.objects.get_current()
+    current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
 
     if tier_info.current_paypal_profile_id:
         # then we had better email support@mirocommunity.org indicating that the old one
@@ -327,10 +328,29 @@ def handle_recurring_profile_start(sender, **kwargs):
                                    ['support@mirocommunity.org'],
                                    fail_silently=False) # this MUST get sent before the transition can occur
 
+    expected_due_date = None
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
     if tier_info.free_trial_available:
         tier_info.free_trial_available = False
+    # Is this an upgrade that required an initial payment period?
+    elif (tier_info.current_paypal_profile_id and
+          float(ipn_obj.amount3) != current_tier_obj.dollar_cost() and
+          float(ipn_obj.amount1)):
+        # Validate the IPN: time period
+        num, format = ipn_obj.period1.split(' ')
+        num = int(num)
+        if format.upper() != 'D':
+            raise ValueError
+        expected_due_date = ipn_obj.subscr_date + datetime.timedelta(days=num)
+        if abs( (expected_due_date - tier_info.payment_due_date).days) > 1:
+            raise ValueError
+        # Validate the IPN: payment amount
+        total_diff = float(ipn_obj.amount3) - current_tier_obj.dollar_cost()
+        prorated_diff = (num / 30.0) * total_diff
+        if int(ipn_obj.amount1) < int(prorated_diff):
+            raise ValueError, "Monkey business."
     else:
+        # Validate that there isn't a "trial" for no reason.
         if not tier_info.in_free_trial:
             # sanity-check that there is no period1 or period2 value
             paypal_event_contains_free_trial = ipn_obj.period1 or ipn_obj.period2
@@ -345,7 +365,10 @@ def handle_recurring_profile_start(sender, **kwargs):
 
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
     tier_info.user_has_successfully_performed_a_paypal_transaction = True
-    tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
+    if expected_due_date:
+        tier_info.payment_due_date = expected_due_date
+    else:
+        tier_info.payment_due_date = datetime.timedelta(days=30) + ipn_obj.subscr_date
     tier_info.save()
 
     # If we get the IPN, and we have not yet adjusted the tier name
