@@ -4323,8 +4323,8 @@ class TestUpgradePage(BaseTestCase):
 
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
-        # First, switch into a free trial of 'plus'.
-        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '35.00')
+        # First, switch into a free trial of 'max'.
+        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '75.00')
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
@@ -4337,7 +4337,7 @@ class TestUpgradePage(BaseTestCase):
         # We are in 'premium'. Let's consider what happens when
         # we want to downgrade to 'plus'
         sl = models.SiteLocation.objects.get_current()
-        self.assertEqual('premium', sl.tier_name)
+        self.assertEqual('max', sl.tier_name)
 
         c = self._log_in_as_superuser()
         response = c.get(reverse('localtv_admin_tier'))
@@ -4346,14 +4346,11 @@ class TestUpgradePage(BaseTestCase):
         # This should be False. The idea is that we cancel the old, trial-based
         # subscription. We will create a new subscription so that it can start
         # immediately.
-        self.assertFalse(response.context['can_modify_mapping']['plus'])
+        self.assertFalse(response.context['can_modify_mapping']['premium'])
 
-        # There should be no upgrade_extra_payments value. This is a very simple
-        # "Create new subscription" case.
-        self.assertFalse(response.context['upgrade_extra_payments']['plus'])
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
 
-        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00')
         ti = models.TierInfo.objects.get_current()
-        self.assertEqual(old_profile, ti.current_paypal_profile_id)
+        self.assertNotEqual(old_profile, ti.current_paypal_profile_id)
         self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)

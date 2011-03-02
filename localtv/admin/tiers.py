@@ -292,7 +292,7 @@ def _generate_can_modify():
 
     can_modify_mapping = {}
     for target_tier_name in ['basic', 'plus', 'premium', 'max']:
-        if tier_info.free_trial_available:
+        if (tier_info.free_trial_available or tier_info.in_free_trial):
             can_modify_mapping[target_tier_name] = False
             continue
         target_tier_obj = localtv.tiers.Tier(target_tier_name) 
