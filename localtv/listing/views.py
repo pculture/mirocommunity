@@ -208,7 +208,7 @@ def category(request, slug=None, count=None, sort=None):
             extra_context={'category': category})
 
 @get_args
-def author(request, id=None, count=None, sort=None):
+def author(request, id=None, count=None, sort=True):
     count = count_or_default(count)
 
     if id is None:
@@ -227,6 +227,10 @@ def author(request, id=None, count=None, sort=None):
             Q(authors=author) | Q(user=author),
             site=request.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
+        # Calls to DISTINCT in SQL can mess up the ordering. So,
+        # if sorting is enabled, re-do the sort at the last minute.
+        if sort:
+            videos = videos.order_by('-best_date')
         return object_list(request=request, queryset=videos,
                            paginate_by=count,
                            template_name='localtv/author.html',
