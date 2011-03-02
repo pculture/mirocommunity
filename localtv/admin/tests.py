@@ -4336,6 +4336,36 @@ class TestUpgradePage(BaseTestCase):
         self._assert_modify_always_false(response)
         self._assert_upgrade_extra_payments_always_false(response)
 
+    def test_upgrade_from_paid_when_within_a_free_trial(self):
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+        first_profile = ti.current_paypal_profile_id
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        # If we want to upgrade... let's look at the upgrade page state:
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+        self._assert_upgrade_extra_payments_always_false(response)
+        self._assert_modify_always_false(response) # no modify possible from 'plus'
+
+        # This means that if someone changes the payment amount to $35/mo
+        # we will be at 'premium'.
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+        ti = sl.tierinfo
+        self.assertNotEqual(ti.current_paypal_profile_id, first_profile)
+
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
         # First, switch into a free trial of 'max'.
