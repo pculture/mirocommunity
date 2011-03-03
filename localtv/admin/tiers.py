@@ -315,7 +315,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
 
     if tier_info.current_paypal_profile_id:
-        # then we had better email support@mirocommunity.org indicating that the old one
+        # then we had better email mirocommunity@pculture.org indicating that the old one
         # should be cancelled.
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
@@ -325,7 +325,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         django.core.mail.send_mail("Eek, you should cancel a recurring payment profile",
                                    message_body,
                                    'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                   ['support@mirocommunity.org'],
+                                   ['mirocommunity@pculture.org'],
                                    fail_silently=False) # this MUST get sent before the transition can occur
 
     expected_due_date = None
@@ -359,7 +359,7 @@ def handle_recurring_profile_start(sender, **kwargs):
                     "Eek, the user tried to create a free trial incorrectly",
                     "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site",
                     'robot@mirocommunity.org',
-                    ['support@mirocommunity.org'],
+                    ['mirocommunity@pculture.org'],
                     fail_silently=False)
                 return
 
@@ -416,7 +416,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
     tier_info = localtv.models.TierInfo.objects.get_current()
 
     if tier_info.current_paypal_profile_id != sender.subscr_id:
-        # then we had better email support@mirocommunity.org indicating that the old one
+        # then we had better email mirocommunity@pculture.org indicating that the old one
         # should be cancelled.
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
@@ -426,7 +426,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
         django.core.mail.send_mail("Eek, you should check on this MC site",
                                    message_body,
                                    'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                   ['support@mirocommunity.org'],
+                                   ['mirocommunity@pculture.org'],
                                    fail_silently=False) # this MUST get sent before the transition can occur
         return
 
@@ -440,7 +440,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
         try:
             target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
         except ValueError:
-            # then we had better email support@mirocommunity.org indicating that the amount
+            # then we had better email mirocommunity@pculture.org indicating that the amount
             # is bizarre.
             message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
@@ -450,7 +450,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
             django.core.mail.send_mail("Eek, you should check on this MC site",
                                        message_body,
                                        'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                       ['support@mirocommunity.org'],
+                                       ['mirocommunity@pculture.org'],
                                        fail_silently=False) # this MUST get sent before the transition can occur
             return
         _actually_switch_tier(target_tier_name)

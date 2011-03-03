@@ -408,7 +408,7 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
         send_tiers_related_email(subject="Remove custom domain for %s" % instance.site.domain,
                                  template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
                                  sitelocation=instance,
-                                 override_to=['support@mirocommunity.org'])
+                                 override_to=['mirocommunity@pculture.org'])
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)

@@ -3988,7 +3988,7 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
         self.site_location.save()
 
         support_ticket_emails = [msg for msg in mail.outbox
-                                 if msg.to[0] == 'support@mirocommunity.org']
+                                 if msg.to[0] == 'mirocommunity@pculture.org']
         self.assertEqual(1, len(support_ticket_emails))
 
 class IpnIntegration(BaseTestCase):
@@ -4417,7 +4417,7 @@ class TestUpgradePage(BaseTestCase):
             sl = models.SiteLocation.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
             # Also, no emails.
-            self.assertEqual(set(['support@mirocommunity.org',
+            self.assertEqual(set(['mirocommunity@pculture.org',
                                   'superuser@testserver.local']),
                              set([x.to[0] for x in mail.outbox]))
             mail.outbox = []
