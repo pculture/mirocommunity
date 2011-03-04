@@ -117,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.plus as specific_payment_override %}
+{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.premium as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
       {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 
