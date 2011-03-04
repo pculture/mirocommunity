@@ -257,15 +257,6 @@ def _actually_switch_tier(target_tier_name):
     sl = localtv.models.SiteLocation.objects.get_current()
     old_tier_name = sl.tier_name
 
-    if target_tier_name == 'basic':
-        # Delete the current paypal subscription ID
-        sl.tierinfo.current_paypal_profile_id = ''
-        sl.tierinfo.payment_due_date = None
-        sl.tierinfo.save()
-
-    sl.tier_name = target_tier_name
-    sl.save()
-
     # If the user has never started a free trial, then they are clearly in one now.
     if sl.tierinfo.free_trial_started_on is None:
         sl.tierinfo.free_trial_started_on = datetime.datetime.utcnow()
@@ -278,6 +269,15 @@ def _actually_switch_tier(target_tier_name):
         if sl.tierinfo.in_free_trial and old_tier_name != target_tier_name:
             sl.tierinfo.in_free_trial = False
             sl.tierinfo.save()
+
+    if target_tier_name == 'basic':
+        # Delete the current paypal subscription ID
+        sl.tierinfo.current_paypal_profile_id = ''
+        sl.tierinfo.payment_due_date = None
+        sl.tierinfo.save()
+
+    sl.tier_name = target_tier_name
+    sl.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
