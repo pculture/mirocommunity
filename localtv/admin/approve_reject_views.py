@@ -199,12 +199,12 @@ def approve_all(request):
     if models.SiteLocation.enforce_tiers():
         tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
         if len(page.object_list) > tier_remaining_videos:
-            return HttpResponse(content="You only have " +
-                                str(tier_remaining_videos) + 
-                                "videos remaining, but you need " +
-                                str(len(page.object_list)) +
-                                "to be able to approve all these videos. " +
-                                "You can upgrade to get more.", status=402)
+            remaining = str(tier_remaining_videos)
+            need = str(len(page.object_list))
+            return HttpResponse(content=(
+                    ("You are trying to approve %s videos at a time. " % need) +
+                    ("However, you can approve only %s more videos under your video limit. " % remaining) +
+                    ("Please upgrade your account to increase your limit, or unapprove some older videos to make space for newer ones.")), status=402)
 
     for video in page.object_list:
         video.status = models.VIDEO_STATUS_ACTIVE
