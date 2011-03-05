@@ -3613,8 +3613,8 @@ h2.page_title .private, h2.page_title .private a{
 
 #main .description ul {
     display: block;
-    margin-left: 20px;
     margin-bottom: 18px;
+    list-style-position: inside;
 }
 
 #main .description ul li {
@@ -3624,8 +3624,8 @@ h2.page_title .private, h2.page_title .private a{
 
 #main .description ol {
     display: block;
-    margin-left: 20px;
     margin-bottom: 18px;
+    list-style-position: inside;
 }
 
 #main .description ol li {
