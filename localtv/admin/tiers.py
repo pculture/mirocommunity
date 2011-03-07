@@ -315,18 +315,16 @@ def handle_recurring_profile_start(sender, **kwargs):
     current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
 
     if tier_info.current_paypal_profile_id:
-        # then we had better email mirocommunity@pculture.org indicating that the old one
-        # should be cancelled.
+        # then we had better notify staff that the old one should be
+        # cancelled.
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
                                          'old_profile': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'new_profile': ipn_obj.subscr_id})
-        django.core.mail.send_mail("Eek, you should cancel a recurring payment profile",
-                                   message_body,
-                                   'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                   ['mirocommunity@pculture.org'],
-                                   fail_silently=False) # this MUST get sent before the transition can occur
+        import localtv.zendesk
+        localtv.zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
+                                      message_body)
 
     expected_due_date = None
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
@@ -355,12 +353,10 @@ def handle_recurring_profile_start(sender, **kwargs):
             # sanity-check that there is no period1 or period2 value
             paypal_event_contains_free_trial = ipn_obj.period1 or ipn_obj.period2
             if paypal_event_contains_free_trial:
-                django.core.mail.send_mail(
+                import localtv.zendesk
+                localtv.zendesk.create_ticket(
                     "Eek, the user tried to create a free trial incorrectly",
-                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site",
-                    'robot@mirocommunity.org',
-                    ['mirocommunity@pculture.org'],
-                    fail_silently=False)
+                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site")
                 return
 
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
@@ -416,18 +412,16 @@ def handle_recurring_profile_modify(sender, **kwargs):
     tier_info = localtv.models.TierInfo.objects.get_current()
 
     if tier_info.current_paypal_profile_id != sender.subscr_id:
-        # then we had better email mirocommunity@pculture.org indicating that the old one
+        # then we had better notify staff indicating that the old one
         # should be cancelled.
+        import localtv.zendesk
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
                                          'profile_on_file': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
-        django.core.mail.send_mail("Eek, you should check on this MC site",
-                                   message_body,
-                                   'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                   ['mirocommunity@pculture.org'],
-                                   fail_silently=False) # this MUST get sent before the transition can occur
+        localtv.zendesk.create_ticket("Eek, you should check on this MC site",
+                                      message_body)
         return
 
     # Okay, well at this point, we need to adjust the site tier to match.
@@ -440,18 +434,16 @@ def handle_recurring_profile_modify(sender, **kwargs):
         try:
             target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
         except ValueError:
-            # then we had better email mirocommunity@pculture.org indicating that the amount
-            # is bizarre.
+            # then we had better notify staff indicating that the
+            # amount is bizarre.
+            import localtv.zendesk
             message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
                                         {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
                                          'profile_on_file': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
-            django.core.mail.send_mail("Eek, you should check on this MC site",
-                                       message_body,
-                                       'robot@mirocommunity.org', # FIXME: Choose better email addres
-                                       ['mirocommunity@pculture.org'],
-                                       fail_silently=False) # this MUST get sent before the transition can occur
+            localtv.zendesk.create_ticket("Eek, you should check on this MC site",
+                                          message_body)
             return
         _actually_switch_tier(target_tier_name)
 
