@@ -33,6 +33,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <h1>Warning!</h1>
     <h2>Downgrading to {{tier_name}} will cause the following changes:</h2>
     <br class="clear" />
+    {% if target_tier_name == 'basic' %}
+    <h3>Cancel your Subscription</h3>
+    <br class="clear" />
+    <p>In order to stop your payments, you will need to cancel your subscription in Paypal. Please note that this change will be effective immediately, and cannot be reversed.</p><p>To cancel your current subscription:</p>
+<ol><li>Click "Yes, Do It" button below. </li>
+<li> On PayPal account management page, log in if prompted to do so.</li>
+<li> Click "Details" link for your current payment. </li>
+<li> On the Transactions Details page, click "View Details" link.</li>
+<li> On Subscription Details page, click "Cancel" link.</li>
+</ol>
+    {% endif %}
     {% if would_lose_admin_usernames %}
     <h3>Limit of {{ target_tier_obj.admins_limit }} admins</h3>
     <br class="clear" />
