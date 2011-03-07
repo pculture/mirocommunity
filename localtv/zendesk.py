@@ -59,16 +59,17 @@ def create_ticket(subject, body, requester_email='paulproteus+robot@pculture.org
         raise ValueError, "Cannot create ticket because Zendesk not configured. Bailing out now."
 
     # Prepare kwargs for HTTP request
-    kwargs = dict(headers={'Content-Type': 'application/xml'},
-                  body=(generate_ticket_body(subject, body, requester_email)))
+    ticket_body_kwargs = {'subject': subject, 'body': body, 'requester_email': requester_email}
 
     # If we are inside the test suite, just create an "outbox" and push things onto it
     # Detect the test suite by looking at the email backend
     if settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend':
-        outbox.append(kwargs)
+        outbox.append(ticket_body_kwargs)
         return True
 
     # Oh, so we're in real mode? Okay, then let's actually do the HTTP game.
+    kwargs = dict(headers={'Content-Type': 'application/xml'},
+                  body=(generate_ticket_body(**ticket_body_kwargs)))
     response = h.request("http://mirocommunity.zendesk.com/tickets.xml", "POST", **kwargs)
     if response[0]['status'] == '201':
         return True

@@ -4215,8 +4215,10 @@ class IpnIntegration(BaseTestCase):
 
         self.assertEqual(fresh_site_location.tierinfo.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
         self.assert_(fresh_site_location.tierinfo.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
-        self.assertEqual(len([msg for msg in mail.outbox
-                              if 'cancel a recurring payment profile' in msg.subject]), 1)
+        import localtv.zendesk
+        self.assertEqual(len([msg for msg in localtv.zendesk.outbox
+                              if 'cancel a recurring payment profile' in msg['subject']]), 1)
+        localtv.zendesk.outbox = [] 
         mail.outbox = []
 
         # PayPal eventually sends us the IPN cancelling the old subscription, because someone
@@ -4293,6 +4295,8 @@ class TestUpgradePage(BaseTestCase):
         # Always start in 'basic' with a free trial
         import localtv.management.commands.clear_tiers_state
         c = localtv.management.commands.clear_tiers_state.Command()
+        import localtv.zendesk
+        localtv.zendesk.outbox = []
         c.handle_noargs()
 
     def tearDown(self):
@@ -4479,9 +4483,9 @@ class TestUpgradePage(BaseTestCase):
             sl = models.SiteLocation.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
             # Also, no emails.
-            self.assertEqual(set(['mirocommunity@pculture.org',
-                                  'superuser@testserver.local']),
+            self.assertEqual(set(['superuser@testserver.local']),
                              set([x.to[0] for x in mail.outbox]))
+            self.assertEqual(1, len(localtv.zendesk.outbox))
             mail.outbox = []
 
     def test_downgrade_to_paid_during_a_trial(self):
