@@ -219,7 +219,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                   <li class="users_edit scrollable right">
                     <label class="padding">Users</label>
                     {{ form.authors.errors }}
+		    {% comment %}
                     {{ form.authors }}
+		    {% endcomment %}
                   </li>
                 </ul>
                 {% endblock %}
