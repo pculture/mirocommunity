@@ -362,6 +362,9 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     authors = BulkChecklistField(User.objects,
                                  required=False)
+    skip_authors = forms.BooleanField(required=False,
+                                      initial=True,
+                                      widget=forms.HiddenInput)
     when_published = forms.DateTimeField(
         required=False,
         help_text='Format: yyyy-mm-dd hh:mm:ss',
@@ -372,7 +375,7 @@ class BulkEditVideoForm(EditVideoForm):
         model = models.Video
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
-                  'embed_code')
+                  'embed_code', 'skip_authors')
 
     _categories_queryset = None
     _authors_queryset = None
@@ -395,6 +398,18 @@ class BulkEditVideoForm(EditVideoForm):
         if self.instance.pk and not self.cleaned_data.get('name'):
             raise forms.ValidationError('This field is required.')
         return self.cleaned_data['name']
+
+    def clean_skip_authors(self):
+        # The idea here is that if the 'skip_authors' field is true,
+        # then -- even if there are no authors submitted --
+        # we keep the authors ID list the same.
+        if self.cleaned_data['skip_authors']:
+            if self.instance.pk:
+                if self.instance.authors.all():
+                    self._restore_authors()
+
+    def _restore_authors(self):
+        self.cleaned_data['authors'] = [unicode(x.id) for x in self.instance.authors.all()]
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,

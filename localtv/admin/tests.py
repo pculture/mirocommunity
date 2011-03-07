@@ -2628,11 +2628,15 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
-        # make sure the data has been updated
+        # make sure the data remains the same: in the form...
         video = models.Video.objects.get(
             pk=POST_data['form-11-id'])
-        self.assertEquals([x.id for x in video.authors.all()],
+        self.assertEquals([unicode(x.id) for x in video.authors.all()],
                           original_POST_data['form-11-authors'])
+
+        # ...in the database
+        self.assertEqual([3],
+                         [x.id for x in video.authors.all()])
 
     def test_POST_succeed_when_name_is_missing(self):
         """
