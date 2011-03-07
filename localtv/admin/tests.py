@@ -2601,6 +2601,39 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video.description,
                           POST_data['form-11-description'])
 
+    def test_POST_change_just_one_video_without_authors(self):
+        """
+        Here, we POST to the bulk edit view with a valid
+        formset, and we change the name of just one video
+        using its particular form.
+
+        This time we fail to submit any author data. We want to
+        make sure that the video still has the same authors list.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        original_POST_data = self._POST_data_from_formset(formset)
+
+        POST_data = original_POST_data.copy()
+        del POST_data['form-11-authors']
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has been updated
+        video = models.Video.objects.get(
+            pk=POST_data['form-11-id'])
+        self.assertEquals([x.id for x in video.authors.all()],
+                          original_POST_data['form-11-authors'])
+
     def test_POST_succeed_when_name_is_missing(self):
         """
         A POST request to the bulk_edit view with a valid formset should
