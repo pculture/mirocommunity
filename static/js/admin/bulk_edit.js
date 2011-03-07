@@ -26,12 +26,9 @@ function resetOverlay() {
     });
 }
 function showEdit(obj) {
-    /* If the overlay div exists, great -- show that in the overlay: */
     overlay_elm = $(obj).parents('tr').find('.simple_overlay');
-    if (overlay_elm.length > 0) {
-	overlay_elm.overlay({api: true,
-			     onClose: resetOverlay}).load();
-    }
+    overlay_elm.overlay({api: true,
+                     onClose: resetOverlay}).load();
     return false;
 }
 

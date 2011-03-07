@@ -25,7 +25,6 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
-from django.utils.encoding import force_unicode
 
 from localtv.decorators import require_site_admin
 from localtv import models
@@ -136,51 +135,8 @@ def bulk_edit(request):
         page = video_paginator.page(video_paginator.num_pages)
 
     if request.method == 'POST':
-        # We use an optimization where the template does not actually
-        # print all the form fields into the document. The result of this
-        # is that Django's request.POST will come back to us with only the
-        # IDs for objects where we have made no edits.
-        #
-        # Django form validation hates this -- it will complain, for example,
-        # that the required 'name' field is missing for every video.
-        #
-        # So, we loop through the POST data here and check every form. If there are
-        # fields missing, we enrich the POST data by copying the values into the POST
-        # dictionary. That way, when the VideoFormSet comes around to check on the POST,
-        # it is as if the user submitted all those values.
-        #
-        # It's a pretty weird strategy, I realize.
-        database_id_to_form_prefix = {}
-        for key in request.POST:
-            if key.endswith('-id'):
-                prefix = key[:-len('-id')]
-                value = int(request.POST[key])
-                database_id_to_form_prefix[value] = prefix
-
-        # For each such object, instantiate its form
-        for database_id, form_prefix in database_id_to_form_prefix.items():
-            video = models.Video.objects.filter(pk=database_id)
-            if not video:
-                continue # skip this one, I guess. Maybe it got deleted in a race condition.
-            form = forms.BulkEditVideoForm(instance=video[0], prefix=form_prefix)
-            for name, field in form.fields.items():
-                prefixed = form.add_prefix(name)
-                if prefixed in request.POST:
-                    continue # skip this one.
-
-                data = form.initial.get(name, field.initial)
-                if callable(data):
-                    data = data()
-                if isinstance(data, (list, tuple)):
-                    data = [force_unicode(item) for item in data]
-                elif data:
-                    data = force_unicode(data)
-                if data:
-                    request.POST[prefixed] = data
-
         formset = forms.VideoFormSet(request.POST, request.FILES,
                                      queryset=page.object_list)
-
         if formset.is_valid():
             tier_prevented_some_action = False
             tier = request.sitelocation.get_tier()
@@ -264,16 +220,12 @@ def bulk_edit(request):
     else:
         formset = forms.VideoFormSet(queryset=page.object_list)
 
-    template_data = {'formset': formset,
-                     'headers': headers,
-                     'skip_individual_form': True,
-                     'search_string': search_string,
-                     'page': page,
-                     'categories': models.Category.objects.filter(
-            site=request.sitelocation.site),
-                     'users': User.objects.order_by('username')}
-    template = 'localtv/admin/bulk_edit.html'
-
-    return render_to_response(template,
-                              template_data,
+    return render_to_response('localtv/admin/bulk_edit.html',
+                              {'formset': formset,
+                               'headers': headers,
+                               'search_string': search_string,
+                               'page': page,
+                               'categories': models.Category.objects.filter(
+                site=request.sitelocation.site),
+                               'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

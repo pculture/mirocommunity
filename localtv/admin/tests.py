@@ -2512,9 +2512,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         POST_data_invalid = POST_data.copy()
-        POST_data_invalid['form-0-name']='' # don't include some mandatory
-                                            # fields
-        POST_data_invalid['form-1-name']=''
+        del POST_data_invalid['form-0-name'] # don't include some mandatory
+                                             # fields
+        del POST_data_invalid['form-1-name']
 
         POST_response = c.post(self.url, POST_data_invalid)
         self.assertStatusCodeEquals(POST_response, 200)

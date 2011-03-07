@@ -1560,14 +1560,6 @@ clear: both;
 ~ Modals
 
 //////////////////////////////////////*/
-.contentWrap .simple_overlay {
-    display: block;
-}
-
-.contentWrap .simple_overlay * {
-    display: block;
-}
-
 .simple_overlay{
 display: none;
 padding: 20px;
