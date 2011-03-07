@@ -36,9 +36,6 @@ from django.conf import settings
 import paypal.standard.ipn.views
 
 from localtv.decorators import require_site_admin
-from localtv import models
-from localtv.util import SortHeaders, MockQueryset
-from localtv.admin import forms
 
 import localtv.tiers
 import localtv.paypal_snippet
@@ -254,6 +251,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
 
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
+    import localtv.models
     sl = localtv.models.SiteLocation.objects.get_current()
     old_tier_name = sl.tier_name
 
@@ -287,6 +285,7 @@ def _generate_can_modify():
     # In the PayPal API, you cannot modify your subscription in the following circumstances:
     # - you are permitting a free trial
     # - you are upgrading tier
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
     current_tier_price = localtv.models.SiteLocation.objects.get_current().get_tier().dollar_cost()
 
@@ -311,6 +310,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     if ipn_obj.flag:
         return
 
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
     current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
 
@@ -393,6 +393,7 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     #
     # That's exactly how we ask people to upgrade between tiers. Luckily, this
     # transition case is covered by the test suite.
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
     if tier_info.current_paypal_profile_id != ipn_obj.subscr_id:
         return
@@ -409,6 +410,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
     if ipn_obj.flag:
         return
 
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
     if tier_info.current_paypal_profile_id != sender.subscr_id:
