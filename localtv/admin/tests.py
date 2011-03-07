@@ -2638,48 +2638,6 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual([3],
                          [x.id for x in video.authors.all()])
 
-    def test_POST_succeed_when_name_is_missing(self):
-        """
-        A POST request to the bulk_edit view with a valid formset should
-        save the updated models and redirect to the same URL with a
-        'successful' field in the GET query.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url)
-        formset = response.context['formset']
-        POST_data = self._POST_data_from_formset(formset)
-
-        POST_data.update({
-                'form-0-name': 'new name!',
-                'form-0-file_url': 'http://pculture.org/',
-                'form-1-description': 'localtv',
-                'form-1-embed_code': 'new embed code'
-                })
-        del POST_data['form-1-name']
-
-        POST_response = c.post(self.url, POST_data,
-                               follow=True)
-        self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
-                          [('http://%s%s?successful' % (
-                        'testserver',
-                        self.url), 302)])
-        self.assertFalse(POST_response.context['formset'].is_bound)
-
-        # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        self.assertEquals(video1.name, POST_data['form-0-name'])
-        self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
-        self.assertEquals(video1.embed_code, POST_data['form-0-embed_code'])
-
-        video2 = models.Video.objects.get(
-            pk=POST_data['form-1-id'])
-        self.assertEquals(video2.description,
-                          POST_data['form-1-description'])
-        self.assertEquals(video2.embed_code,
-                          POST_data['form-1-embed_code'])
-
     def test_POST_succeed_with_page(self):
         """
         A POST request to the bulk_edit view with a valid formset should
