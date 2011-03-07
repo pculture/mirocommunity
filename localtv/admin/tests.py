@@ -4049,9 +4049,9 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
         self.site_location.tier_name = 'basic'
         self.site_location.save()
 
-        support_ticket_emails = [msg for msg in mail.outbox
-                                 if msg.to[0] == 'mirocommunity@pculture.org']
-        self.assertEqual(1, len(support_ticket_emails))
+        self.assertEqual([], mail.outbox)
+        import localtv.zendesk
+        self.assertEqual(1, len(localtv.zendesk.outbox))
 
 class IpnIntegration(BaseTestCase):
     def setUp(self):

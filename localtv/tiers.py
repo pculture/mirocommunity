@@ -22,11 +22,10 @@ import django.contrib.auth.models
 from django.core.mail import EmailMessage
 from django.template import Context, loader
 
-import localtv.models
-
 import uploadtemplate.models
 
 def nightly_warnings():
+    import localtv.models
     '''This returns a dictionary, mapping English-language reasons to
     localtv.admin.tiers functions to call.'''
     sitelocation = localtv.models.SiteLocation.objects.get_current()
@@ -50,6 +49,7 @@ def get_main_site_admin():
     return None # eek, any callers had better check for this.
 
 def should_send_inactive_site_warning(current_tier):
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
     # If we have already sent the warning, refuse to send it again.
     if tier_info.inactive_site_warning_sent:
@@ -65,6 +65,7 @@ def should_send_inactive_site_warning(current_tier):
         return True
 
 def should_send_video_allotment_warning(current_tier):
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
     # Check for the video warning having already been sent
     if tier_info.video_allotment_warning_sent:
@@ -74,6 +75,7 @@ def should_send_video_allotment_warning(current_tier):
         return True
 
 def should_send_five_day_free_trial_warning():
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
     time_remaining = tier_info.time_until_free_trial_expires()
@@ -86,6 +88,7 @@ def should_send_five_day_free_trial_warning():
     return False
 
 def user_warnings_for_downgrade(new_tier_name):
+    import localtv.models
     warnings = set()
 
     sitelocation = localtv.models.SiteLocation.objects.get_current()
@@ -137,9 +140,11 @@ def user_warnings_for_downgrade(new_tier_name):
 ### XXX Merge all these functions into one tidy little thing.
 
 def current_videos_that_count_toward_limit():
+    import localtv.models
     return localtv.models.Video.objects.filter(status=localtv.models.VIDEO_STATUS_ACTIVE)
 
 def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
+    import localtv.models
     new_limit = future_tier_obj.videos_limit()
     current_count = current_videos_that_count_toward_limit().count()
     if current_count <= new_limit:
@@ -161,6 +166,7 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     return disable_these_videos.count()
 
 def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
+    import localtv.models
     if uploadtemplate.models.Theme.objects.filter(default=True):
         current_theme = uploadtemplate.models.Theme.objects.get_default()
         if not current_theme.bundled:
@@ -178,6 +184,7 @@ def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False
                     return None
 
 def push_number_of_admins_down(new_limit, actually_demote_people=False):
+    import localtv.models
     '''Return a list of usernames that will be demoted.
 
     If you pass actually_demote_people in as True, then the function will actually
@@ -215,6 +222,7 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     
 
 def number_of_admins_including_superuser():
+    import localtv.models
     if not localtv.models.SiteLocation.objects.all():
         return 0
 
@@ -249,6 +257,7 @@ class Tier(object):
 
     @staticmethod
     def get(log_warnings=False):
+        import localtv.models
         DEFAULT = None
 
         # Iterative sanity checks
@@ -299,6 +308,7 @@ class Tier(object):
         return special_cases[self.tier_name]
 
     def can_add_more_videos(self):
+        import localtv.models
         '''Returns True if tiers enforcement is disabled, or if we have fewer videos than
         the tier limits us to.
 
@@ -350,6 +360,7 @@ class WrongStartDate(PaymentException):
 
 ### Here, we listen for changes in the SiteLocation
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
+    import localtv.models
     # Right here, we do a direct filter() call to evade the SiteLocation cache.
     current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
     if not current_sitelocs:
@@ -382,6 +393,7 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         send_tiers_related_email(subject, template_name, sitelocation=instance)
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
+    import localtv.models
     ### Check if tiers enforcement is disabled. If so, bail out now.
     if not localtv.models.SiteLocation.enforce_tiers():
         return
@@ -405,10 +417,15 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # and if the user had a custom domain, then this website should automatically
     # file a support request to have the site's custom domain disabled.
     if 'customdomain' in user_warnings_for_downgrade(new_tier_name):
-        send_tiers_related_email(subject="Remove custom domain for %s" % instance.site.domain,
-                                 template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
-                                 sitelocation=instance,
-                                 override_to=['mirocommunity@pculture.org'])
+        message = send_tiers_related_email(
+            subject="Remove custom domain for %s" % instance.site.domain,
+            template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
+            sitelocation=instance,
+            override_to=['mirocommunity@pculture.org'],
+            just_rendered_body=True)
+        import localtv.zendesk
+        localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
+                                      message)
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)
@@ -416,7 +433,8 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
 
-def send_tiers_related_email(subject, template_name, sitelocation, override_to=None, extra_context=None):
+def send_tiers_related_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False):
+    import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
     # Send it to the site superuser with the lowest ID
@@ -450,6 +468,8 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
 
     c = Context(data)
     message = t.render(c)
+    if just_rendered_body:
+        return message
 
     recipient_list = [first_one.email]
     if override_to:
@@ -462,6 +482,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
                  recipient_list).send(fail_silently=False)
 
 def get_monthly_amount_of_paypal_subscription(subscription_id):
+    import localtv.models
     # FIXME: Get this covered with a test.
     ti = localtv.models.TierInfo.objects.get_current()
     signups = paypal.standard.ipn.models.PayPalIPN.objects.filter(
