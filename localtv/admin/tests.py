@@ -2638,6 +2638,41 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual([3],
                          [x.id for x in video.authors.all()])
 
+    def test_POST_change_just_one_video_actually_change_authors(self):
+        """
+        Here, we POST to the bulk edit view with a valid
+        formset, and we change the name of just one video
+        using its particular form.
+
+        This time we fail to submit any author data. We also remove
+        the skip_authors field, which means that the form
+        should process this change.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        original_POST_data = self._POST_data_from_formset(formset)
+
+        POST_data = original_POST_data.copy()
+        del POST_data['form-11-skip_authors']
+        del POST_data['form-11-authors']
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has changed in the DB
+        video = models.Video.objects.get(
+            pk=POST_data['form-11-id'])
+        self.assertEqual([],
+                         [x.id for x in video.authors.all()])
+
     def test_POST_succeed_with_page(self):
         """
         A POST request to the bulk_edit view with a valid formset should
