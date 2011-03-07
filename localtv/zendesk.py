@@ -45,21 +45,31 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
     ticket.appendChild(description)
 
     return doc.toxml()
-    
 
+outbox = []    
 
 def create_ticket(subject, body, requester_email='paulproteus+robot@pculture.org'):
+    global outbox
+
     h= httplib2.Http("/tmp/.cache")
     if getattr(settings, "ZENDESK_USERNAME"):
         h.add_credentials(getattr(settings, 'ZENDESK_USERNAME'),
                           getattr(settings, 'ZENDESK_PASSWORD'))
     else:
         raise ValueError, "Cannot create ticket because Zendesk not configured. Bailing out now."
-    response = h.request("http://mirocommunity.zendesk.com/tickets.xml", "POST", 
-              headers={'Content-Type': 'application/xml'},
-              body=(generate_ticket_body(subject, body, requester_email)))
+
+    # Prepare kwargs for HTTP request
+    kwargs = dict(headers={'Content-Type': 'application/xml'},
+                  body=(generate_ticket_body(subject, body, requester_email)))
+
+    # If we are inside the test suite, just create an "outbox" and push things onto it
+    # Detect the test suite by looking at the email backend
+    if settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend':
+        outbox.append(kwargs)
+        return True
+
+    # Oh, so we're in real mode? Okay, then let's actually do the HTTP game.
+    response = h.request("http://mirocommunity.zendesk.com/tickets.xml", "POST", **kwargs)
     if response[0]['status'] == '201':
         return True
-    if settings.DEBUG:
-        raise ValueError, "Um, eek"
     return False
