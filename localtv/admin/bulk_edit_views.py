@@ -42,15 +42,14 @@ except ImportError:
 @require_site_admin
 @csrf_protect
 def bulk_edit(request):
-    if ('just_the_form' in request.GET and 'video_id' in request.GET):
+    if ('just_the_author_field' in request.GET and 'video_id' in request.GET):
         # generate just the particular form that the user wants
         template_data = {}
-        form_prefix = request.GET['just_the_form']
+        form_prefix = request.GET['just_the_author_field']
         video = get_object_or_404(models.Video, pk=int(request.GET['video_id']))
         form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
         template_data['form'] = form
-        template_data['skip_individual_form'] = True
-        template = 'localtv/admin/bulk_edit_individual_form.html'
+        template = 'localtv/admin/bulk_edit_author_widget.html'
         return render_to_response(template,
                                   template_data,
                                   context_instance=RequestContext(request))
