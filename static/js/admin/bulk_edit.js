@@ -82,3 +82,27 @@ $(document).ready(function() {
                         onClose: resetOverlay}).load();
     }
 });
+
+$.generateId = function() {
+    return arguments.callee.prefix + arguments.callee.count++;
+};
+$.generateId.prefix = 'jq_';
+$.generateId.count = 0;
+
+$.fn.generateId = function() {
+    return this.each(function() {
+	this.id = $.generateId();
+    });
+};
+
+$('.replace_with_href').live('click', function() {
+    $this = $(this);
+    var elt = $("<span>Loading...</span>");
+    elt.generateId();
+    $this.parent().append(elt);
+    $this.css('display', 'none');
+    $.get($this.attr('href'), function(data) {
+	$("#" + elt.attr('id')).html(data);
+    });
+    return false;
+});
