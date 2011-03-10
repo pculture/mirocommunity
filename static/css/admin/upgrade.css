@@ -289,7 +289,7 @@ body.downgrade_confirm h3 {
   font-weight: bold;
 }
 
-body.downgrade_confirm p {
+body.downgrade_confirm p, body.downgrade_confirm ol {
   font-size: 16px;
   font-family: Helvetica, Arial, sans-serif;
   line-height: 24px;
@@ -334,4 +334,9 @@ body.downgrade_confirm p {
     border:none;
     width:16px;
     height:16px;
+}
+
+body.downgrade_confirm ol {
+    list-style: decimal;
+    margin-left: 3em;
 }
