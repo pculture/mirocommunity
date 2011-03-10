@@ -4546,6 +4546,13 @@ class TestUpgradePage(BaseTestCase):
         # This should be True. This is a simple PayPal subscription modification case.
         self.assertTrue(response.context['can_modify_mapping']['plus'])
 
+        # Go to the Downgrade Confirm page
+        response = c.post(reverse('localtv_admin_downgrade_confirm'),
+                          {'target_tier_name': 'plus'})
+
+        self.assertTrue(response.context['can_modify'])
+        self.assertTrue('"modify" value="1"' in response.content)
+
         self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00', old_profile)
 
         ti = models.TierInfo.objects.get_current()
