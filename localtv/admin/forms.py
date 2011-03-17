@@ -497,7 +497,8 @@ class EditSettingsForm(forms.ModelForm):
         css = self.cleaned_data.get('css')
         # Does thes SiteLocation permit CSS modifications? If so,
         # return the data the user inputted.
-        if localtv.tiers.Tier.get().permit_custom_css():
+        if (not localtv.models.SiteLocation.objects.get_current().enforce_tiers() or
+            localtv.tiers.Tier.get().permit_custom_css()):
             return css # no questions asked
 
         # We permit the value if it's the same as self.instance has:
