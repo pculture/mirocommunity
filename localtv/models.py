@@ -457,7 +457,8 @@ class SiteLocation(Thumbnailable):
         custom CSS the admin has set.
 
         If that is not permitted, it returns the empty unicode string.'''
-        if self.get_tier().permit_custom_css():
+        if (not self.enforce_tiers() or
+            self.get_tier().permit_custom_css()):
             # Sweet.
             return self.css
         else:
