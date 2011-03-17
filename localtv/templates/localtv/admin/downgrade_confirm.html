@@ -106,9 +106,9 @@ previously been uploaded will be saved, but cannot be activated.</p>
     {% ifequal tier_name "basic" %}
     {% include 'localtv/admin/paypal_unsubscribe_link.html' %}
     {% else %}
-    {% with target_tier_obj.dollar_cost as amount %}{% with tier_name as target_tier_name %}{% with "Yes, do it" as message %}{% with False as go_to_warnings %}{% with "approve_button" as button_class %}
+    {% with target_tier_obj.dollar_cost as amount %}{% with tier_name as target_tier_name %}{% with "Yes, do it" as message %}{% with False as go_to_warnings %}{% with "approve_button" as button_class %}{% with 'Yes' as skip_div_class %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
-      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}
+      {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}
     {% endifequal %}
     <a class="reject_button" href="{% url localtv_admin_tier %}"><span>Cancel</span></a>
 {% endblock content %}

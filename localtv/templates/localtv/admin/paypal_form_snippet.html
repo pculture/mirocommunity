@@ -52,8 +52,17 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_ipn_endpoint pa
   <input type="hidden" name="custom" value="{{ target_tier_name }} for {{ sitelocation.site.domain }}">
 {% endif %}
 {% endif %}
-  <div>
-    <button class="{{ button_class }}" type="submit"><span>{{ message }}</span></button>
+  <div {% if not skip_div_class %} class="buttons_like_links" {% endif %}>
+    <button
+       class="{{ button_class }}"
+       type="submit"
+       >
+        <span>
+        {% if not skip_div_class %}<em>{% endif %}
+            {{ message }}
+        {% if not skip_div_class %}</em>{% endif %}
+        </span>
+    </button>
   </div>
 
   
