@@ -1,10 +1,7 @@
 {% extends 'localtv/admin/paypal_form_snippet.html' %}
 <form action="{% url localtv_admin_downgrade_confirm %}" method="post">{% csrf_token %}
   <input type="hidden" name="target_tier_name" value="{{ target_tier_name }}">
-  <div class="buttons_like_links">
-    <button
-       type="submit"
-       ><em>{{ message }}</em>
-    </button>
+  <div>
+    <button class="approve_button" type="submit"><span>{{ message }}</span></button>
   </div>
 </form>
