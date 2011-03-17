@@ -40,6 +40,10 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
     requester.appendChild(doc.createTextNode(requester_email_text))
     ticket.appendChild(requester)
 
+    requester = doc.createElement('group-id')
+    requester.appendChild(doc.createTextNode('85845'))
+    ticket.appendChild(requester)
+
     description = doc.createElement('description')
     description.appendChild(doc.createTextNode(body_text))
     ticket.appendChild(description)
