@@ -3852,7 +3852,9 @@ class DowngradingDisablesThings(BaseTestCase):
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' not in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='max'))
-        
+
+
+
 class AdminDashboardLoadsWithoutError(BaseTestCase):
     url = reverse('localtv_admin_index')
 
@@ -3869,7 +3871,15 @@ class AdminDashboardLoadsWithoutError(BaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
 
-        
+class NoEnforceMode(BaseTestCase):
+    def test_theme_uploading_with_enforcement(self):
+        permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
+        self.assertFalse(permit)
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    def test_theme_uploading_without_enforcement(self):
+        permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
+        self.assertTrue(permit)
 
 class DowngradingSevenAdmins(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['five_more_admins']

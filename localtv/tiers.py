@@ -342,6 +342,13 @@ class Tier(object):
         default = False
         return special_cases.get(self.tier_name, default)
 
+    def enforce_permit_custom_template(self):
+        import localtv.models
+        sl = localtv.models.SiteLocation.objects.get_current()
+        if not sl.enforce_tiers():
+            return True
+        return self.permit_custom_template()
+
     def dollar_cost(self):
         special_cases = self.NAME_TO_COST
         return special_cases[self.tier_name]
