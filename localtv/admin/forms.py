@@ -729,6 +729,9 @@ class AuthorForm(user_profile_forms.ProfileForm):
             self.fields['role'].help_text = message
 
     def clean_role(self):
+        if not localtv.models.SiteLocation.objects.get_current().enforce_tiers():
+            return self.cleaned_data['role']
+
         # If the user tried to create an admin, but the tier does not
         # permit creating another admin, raise an error.
         permitted_admins = localtv.tiers.Tier.get().admins_limit()
