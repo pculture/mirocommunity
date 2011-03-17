@@ -473,7 +473,8 @@ class EditSettingsForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if localtv.tiers.Tier.get().permit_custom_css():
+        if (not localtv.models.SiteLocation.objects.get_current().enforce_tiers()
+            or localtv.tiers.Tier.get().permit_custom_css()):
             pass # Sweet, CSS is permitted.
         else:
             # Uh-oh: custom CSS is not permitted!
