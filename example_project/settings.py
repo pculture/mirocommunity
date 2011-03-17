@@ -75,7 +75,7 @@ UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
-UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteLocation.objects.get_current().get_tier().permit_custom_template()
+UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteLocation.objects.get_current().get_tier().enforce_permit_custom_template()
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
