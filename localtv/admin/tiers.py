@@ -340,8 +340,8 @@ def handle_recurring_profile_start(sender, **kwargs):
         if format.upper() != 'D':
             raise ValueError
         expected_due_date = ipn_obj.subscr_date + datetime.timedelta(days=num)
-        if abs( (expected_due_date - tier_info.payment_due_date).days) > 1:
-            raise ValueError
+        if abs( (expected_due_date - tier_info.payment_due_date).days) > 2:
+            raise ValueError, "There is something weird going on with the due date of the new subscription."
         # Validate the IPN: payment amount
         total_diff = float(ipn_obj.amount3) - current_tier_obj.dollar_cost()
         prorated_diff = (num / 30.0) * total_diff
