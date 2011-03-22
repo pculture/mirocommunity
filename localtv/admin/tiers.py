@@ -150,7 +150,7 @@ def upgrade(request):
 ### These functions are resquest handlers that actually switch tier.
 
 @csrf_exempt
-def paypal_return(request):
+def paypal_return(request, target_tier_name=''):
     '''This view is where PayPal sends users to upon success. Some things to note:
 
     * PayPal sends us an "auth" parameter that we cannot validate.
