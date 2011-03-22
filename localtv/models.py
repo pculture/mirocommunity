@@ -1517,20 +1517,23 @@ class Video(Thumbnailable, VideoBase):
 
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''
-    if self.search:
-        return u'Search: %s' % self.search
-    elif self.feed:
-        if feed__video_service(self.feed):
+    try:
+        if self.search:
+            return u'Search: %s' % self.search
+        elif self.feed:
+            if feed__video_service(self.feed):
+                return u'User: %s: %s' % (
+                    feed__video_service(self.feed),
+                    self.feed.name)
+            else:
+                return 'Feed: %s' % self.feed.name
+        elif self.video_service_user:
             return u'User: %s: %s' % (
-                feed__video_service(self.feed),
-                self.feed.name)
+                video__video_service(self),
+                self.video_service_user)
         else:
-            return 'Feed: %s' % self.feed.name
-    elif self.video_service_user:
-        return u'User: %s: %s' % (
-            video__video_service(self),
-            self.video_service_user)
-    else:
+            return ''
+    except Feed.DoesNotExist, e:
         return ''
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
