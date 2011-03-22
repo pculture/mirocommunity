@@ -2293,9 +2293,46 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 # Bulk edit administration tests
 # -----------------------------------------------------------------------------
 
+class BulkEditVideoFormTestCase(BaseTestCase):
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'feeds', 'videos', 'categories']
+
+    def _form2POST(self, form):
+        POST_data = {}
+        for name, field in form.fields.items():
+            data = form.initial.get(name, field.initial)
+            if callable(data):
+                data = data()
+            if isinstance(data, (list, tuple)):
+                data = [force_unicode(item) for item in data]
+            elif data:
+                data = force_unicode(data)
+            if data:
+                POST_data[form.add_prefix(name)] = data
+        return POST_data
+
+    @mock.patch('localtv.models.Video.save_thumbnail')
+    def test_save_thumbnail_false(self, mock_save_thumbnail):
+        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        import localtv.admin.forms
+        data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
+        form = localtv.admin.forms.EditVideoForm(data, instance=vid)
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertFalse(mock_save_thumbnail.called)
+
+    @mock.patch('localtv.models.Video.save_thumbnail')
+    def test_save_thumbnail_true(self, mock_save_thumbnail):
+        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        import localtv.admin.forms
+        data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
+        data['thumbnail_url'] = 'http://www.google.com/logos/2011/persiannewyear11-hp.jpg'
+        form = localtv.admin.forms.EditVideoForm(data, instance=vid)
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertTrue(mock_save_thumbnail.called)
 
 class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
-
     fixtures = AdministrationBaseTestCase.fixtures + [
         'feeds', 'videos', 'categories']
 
