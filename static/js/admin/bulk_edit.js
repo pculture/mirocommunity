@@ -96,13 +96,30 @@ $.fn.generateId = function() {
 };
 
 $('.replace_with_href').live('click', function() {
+    /* Take the "this" that we are passed, and jQuery-ify it */
     $this = $(this);
+    var link_url = $this.attr('href');
+    var form_plus_id = link_url.split(/.*just_the_author_field=(.*?)&/)[1];
+
+    /* Temporarily, say that we are loading...
+       Then do an asynchronous GET to render this form field */
     var elt = $("<span>Loading...</span>");
     elt.generateId();
     $this.parent().append(elt);
     $this.css('display', 'none');
     $.get($this.attr('href'), function(data) {
+	/* When we get the form contents, replace the Loading... message with the data */
 	$("#" + elt.attr('id')).html(data);
+	/* The backend will ignore this data if it sees the hidden "skip_authors" field
+	   set to True. So we have to remove that field.
+
+	   It has an ID like:
+	   id_form-7-skip_authors. The number 7 is the ID of this object, related to the
+	   Django formset we have rendered.
+
+	   To find that number, we look at the URL of the link we clicked.
+	*/
+	$('#id_' + form_plus_id + '-skip_authors').remove();
     });
     return false;
 });
