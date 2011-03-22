@@ -257,6 +257,8 @@ def _actually_switch_tier(target_tier_name):
 
     # If the user has never started a free trial, then they are clearly in one now.
     if sl.tierinfo.free_trial_started_on is None:
+        if sl.tierinfo.payment_due_date is None:
+            sl.tierinfo.payment_due_date = datetime.datetime.utcnow() + datetime.timedelta(days=30)
         sl.tierinfo.free_trial_started_on = datetime.datetime.utcnow()
         sl.tierinfo.in_free_trial = True
         sl.tierinfo.free_trial_available = False
