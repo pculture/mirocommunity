@@ -22,12 +22,13 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
 from localtv.models import Category
+from localtv.util import MockQueryset
 from localtv.admin import forms
 
 @require_site_admin
 @csrf_protect
 def categories(request):
-    categories = Category.in_order(request.sitelocation.site)
+    categories = MockQueryset(Category.in_order(request.sitelocation.site))
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
