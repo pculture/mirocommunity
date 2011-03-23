@@ -316,6 +316,7 @@ class TierInfo(models.Model):
     inactive_site_warning_sent = models.BooleanField(default=False)
     user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
     already_sent_tiers_compliance_email = models.BooleanField(default=False)
+    fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
 
@@ -451,6 +452,14 @@ class SiteLocation(Thumbnailable):
 
     def get_tier(self):
         return localtv.tiers.Tier(self.tier_name)
+
+    def get_fully_confirmed_tier(self):
+        # If we are in a transitional state, then we would have stored
+        # the last fully confirmed tier name in an unusual column.
+        if self.tierinfo and self.tierinfo.fully_confirmed_tier_name:
+            return localtv.tiers.Tier(self.tierinfo.fully_confirmed_tier_name)
+        # Otherwise, things are normal:
+        return self.get_tier()
 
     def get_css_for_display_if_permitted(self):
         '''This function checks the site tier, and if permitted, returns the
