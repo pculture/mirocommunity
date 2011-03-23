@@ -276,6 +276,13 @@ def _actually_switch_tier(target_tier_name):
         sl.tierinfo.payment_due_date = None
         sl.tierinfo.save()
 
+    # Sometimes, we let people jump forward before we detect the relevant IPN message.
+    # When we do that, we stash the previous tier name into a TierInfo column called
+    # fully_confirmed_tier_name. We only call _actually_switch_tier() when we
+    # have confirmed a payment, so now is a good time to clear that column.
+    if sl.tierinfo.fully_confirmed_tier_name:
+        sl.tierinfo.fully_confirmed_tier_name = ''
+
     sl.tier_name = target_tier_name
     sl.save()
 
