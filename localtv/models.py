@@ -456,10 +456,10 @@ class SiteLocation(Thumbnailable):
     def get_fully_confirmed_tier(self):
         # If we are in a transitional state, then we would have stored
         # the last fully confirmed tier name in an unusual column.
-        if self.tierinfo and self.tierinfo.fully_confirmed_tier_name:
-            return localtv.tiers.Tier(self.tierinfo.fully_confirmed_tier_name)
-        # Otherwise, things are normal:
-        return self.get_tier()
+        tierdata = TierInfo.objects.get_current()
+        if tierdata.fully_confirmed_tier_name:
+            return localtv.tiers.Tier(tierdata.fully_confirmed_tier_name)
+        return None
 
     def get_css_for_display_if_permitted(self):
         '''This function checks the site tier, and if permitted, returns the

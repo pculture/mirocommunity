@@ -331,7 +331,11 @@ def handle_recurring_profile_start(sender, **kwargs):
 
     import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
-    current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
+    current_confirmed_tier_obj = localtv.models.SiteLocation.objects.get_current().get_fully_confirmed_tier()
+    if current_confirmed_tier_obj:
+        current_tier_obj = current_confirmed_tier_obj
+    else:
+        current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
 
     if tier_info.current_paypal_profile_id:
         # then we had better notify staff that the old one should be
