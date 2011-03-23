@@ -51,4 +51,5 @@ class Command(NoArgsCommand):
         tier_info.inactive_site_warning_sent = False
         tier_info.user_has_successfully_performed_a_paypal_transaction = False
         tier_info.already_sent_tiers_compliance_email = False
+        tier_info.fully_confirmed_tier_name = ''
         tier_info.save()
