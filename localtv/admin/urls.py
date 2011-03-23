@@ -125,7 +125,6 @@ urlpatterns += patterns(
 
 urlpatterns += patterns('localtv.admin.tiers',
     (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
-    (r'^paypal_return/$',             'paypal_return', {}, 'localtv_admin_paypal_return'),
     (r'^paypal_return/(?P<target_tier_name>.+?)/$',             'paypal_return', {}, 'localtv_admin_paypal_return'),
     (r'^begin_free_trial/(?P<payment_secret>.+?)/$',             'begin_free_trial', {}, 'localtv_admin_begin_free_trial'),
     (r'^downgrade_confirm/$',             'downgrade_confirm', {}, 'localtv_admin_downgrade_confirm'),
