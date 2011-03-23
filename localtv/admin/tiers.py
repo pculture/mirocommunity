@@ -172,6 +172,16 @@ def paypal_return(request, target_tier_name=''):
     auth = request.POST.get('auth', None) or request.GET.get('auth', None)
     if not auth:
         return HttpResponseForbidden("You failed to submit an 'auth' token.")
+    # This view always changes the tier_name stored in the SiteLocation.
+    # This is to that changes appear to happen immediately.
+    #
+    # However, it does not adjust the tierinfo.fully_confirmed_tier_name value.
+    # That is only done by the IPN handlers.
+    if target_tier_name:
+        request.sitelocation.tierinfo.fully_confirmed_tier_name = request.sitelocation.tier_name
+        request.sitelocation.tierinfo.save()
+        request.sitelocation.tier_name = target_tier_name
+        request.sitelocation.save()
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
 @csrf_exempt
