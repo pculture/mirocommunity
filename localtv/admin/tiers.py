@@ -273,6 +273,15 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
     import localtv.models
+
+    # Sometimes, we let people jump forward before we detect the relevant IPN message.
+    # When we do that, we stash the previous tier name into a TierInfo column called
+    # fully_confirmed_tier_name. We only call _actually_switch_tier() when we
+    # have confirmed a payment, so now is a good time to clear that column.
+    ti = localtv.models.TierInfo.objects.get_current()
+    ti.fully_confirmed_tier_name = '' # because we are setting it to this tier.
+    ti.save()
+
     sl = localtv.models.SiteLocation.objects.get_current()
     old_tier_name = sl.tier_name
 
@@ -296,13 +305,6 @@ def _actually_switch_tier(target_tier_name):
         sl.tierinfo.current_paypal_profile_id = ''
         sl.tierinfo.payment_due_date = None
         sl.tierinfo.save()
-
-    # Sometimes, we let people jump forward before we detect the relevant IPN message.
-    # When we do that, we stash the previous tier name into a TierInfo column called
-    # fully_confirmed_tier_name. We only call _actually_switch_tier() when we
-    # have confirmed a payment, so now is a good time to clear that column.
-    if sl.tierinfo.fully_confirmed_tier_name:
-        sl.tierinfo.fully_confirmed_tier_name = ''
 
     sl.tier_name = target_tier_name
     sl.save()
@@ -405,7 +407,7 @@ def handle_recurring_profile_start(sender, **kwargs):
     # to be at that level, now is a *good* time to do so.
     amount = float(ipn_obj.amount3)
     sitelocation = localtv.models.SiteLocation.objects.get_current()
-    if sitelocation.get_tier().dollar_cost() == amount:
+    if current_tier_obj.dollar_cost() == amount:
         pass
     else:
         # Find the right tier to move to

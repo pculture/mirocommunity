@@ -4425,6 +4425,12 @@ class TestUpgradePage(BaseTestCase):
         # in a free trial.
         self.assertFalse(response.context['upgrade_extra_payments']['premium'])
 
+        # Okay, so go through the PayPal dance.
+        localtv.admin.tiers._paypal_return('premium')
+        self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('plus', ti.fully_confirmed_tier_name)
+
         # Actually do the upgrade
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
 
@@ -4435,6 +4441,8 @@ class TestUpgradePage(BaseTestCase):
         # old payment.
         sl = models.SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('', ti.fully_confirmed_tier_name)
 
     def test_upgrade_from_basic_when_not_within_a_free_trial(self):
         # The pre-requisite for this test is that we have transitioned into a tier.
