@@ -4008,15 +4008,6 @@ class NightlyTiersEmails(BaseTestCase):
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 0)
 
-class EmailSwitchTests(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
-
-    def test(self):
-        self.assertEqual(len(mail.outbox), 0)
-        self.site_location.tier_name = 'max'
-        self.site_location.save()
-        self.assertEqual(len(mail.outbox), 1)
-
 class SendWelcomeEmailTest(BaseTestCase):
     fixtures = BaseTestCase.fixtures
 
