@@ -455,7 +455,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
         return
 
     if tier_info.payment_due_date:
-        next_payment_due_date = tier_info.payment_due_date.strftime('%Y-%m-%d')
+        next_payment_due_date = tier_info.payment_due_date.strftime('%B %e, %Y')
     else:
         next_payment_due_date = None
 
