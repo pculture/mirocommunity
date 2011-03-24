@@ -4253,8 +4253,9 @@ class IpnIntegration(BaseTestCase):
         fresh_site_location = models.SiteLocation.objects.get_current()
         self.assertEqual(fresh_site_location.tier_name, 'premium')
 
-        self.assertEqual(fresh_site_location.tierinfo.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
-        self.assert_(fresh_site_location.tierinfo.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(ti.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
+        self.assert_(ti.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
         import localtv.zendesk
         self.assertEqual(len([msg for msg in localtv.zendesk.outbox
                               if 'cancel a recurring payment profile' in msg['subject']]), 1)

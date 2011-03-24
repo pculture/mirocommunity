@@ -311,29 +311,32 @@ def _actually_switch_tier(target_tier_name):
     # fully_confirmed_tier_name. We only call _actually_switch_tier() when we
     # have confirmed a payment, so now is a good time to clear that column.
     ti = localtv.models.TierInfo.objects.get_current()
+    fully_confirmed_tier_name = ti.fully_confirmed_tier_name
     ti.fully_confirmed_tier_name = '' # because we are setting it to this tier.
     ti.save()
 
     sl = localtv.models.SiteLocation.objects.get_current()
     old_tier_name = sl.tier_name
 
-    if sl.tierinfo.free_trial_started_on is None:
+    if ti.free_trial_started_on is None:
         _start_free_trial_for_real(target_tier_name)
     # If the user *has* started a free trial, and this is an actual *change* in tier name,
     # then the trial must be over.
     else:
-        if sl.tierinfo.in_free_trial and old_tier_name != target_tier_name:
-            sl.tierinfo.in_free_trial = False
-            sl.tierinfo.save()
+        if ((ti.in_free_trial and ((old_tier_name != target_tier_name) or
+                                   (fully_confirmed_tier_name and (fully_confirmed_tier_name != target_tier_name))))):
+            ti.in_free_trial = False
+            ti.save()
 
     if target_tier_name == 'basic':
         # Delete the current paypal subscription ID
-        sl.tierinfo.current_paypal_profile_id = ''
-        sl.tierinfo.payment_due_date = None
-        sl.tierinfo.save()
+        ti.current_paypal_profile_id = ''
+        ti.payment_due_date = None
+        ti.save()
 
-    sl.tier_name = target_tier_name
-    sl.save()
+    if target_tier_name != sl.tier_name:
+        sl.tier_name = target_tier_name
+        sl.save()
 
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
