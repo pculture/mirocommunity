@@ -222,7 +222,7 @@ def begin_free_trial(request, payment_secret):
         return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
 
     # Switch the tier!
-    return _actually_switch_tier(target_tier_name)
+    return _start_free_trial_unconfirmed(target_tier_name)
 
 ### Below this line
 ### --------------------------------------------------------------------------------------------
