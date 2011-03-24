@@ -4628,7 +4628,7 @@ class TestUpgradePage(BaseTestCase):
 
 class TestFreeTrial(BaseTestCase):
 
-    @mock.patch('localtv.admin.tiers._start_free_trial_unconfirmed_for_real')
+    @mock.patch('localtv.admin.tiers._start_free_trial_for_real')
     def test_does_nothing_if_already_in_free_trial(self, m):
         # If we are already in a free trial, then we refuse to continue:
         ti = models.TierInfo.objects.get_current()

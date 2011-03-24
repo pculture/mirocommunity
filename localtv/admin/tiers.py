@@ -281,12 +281,26 @@ def _start_free_trial_unconfirmed(target_tier_name):
     # This might happen if the IPN event fires *extremely* quickly.
     if ti.in_free_trial:
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
-    return _start_free_trial_unconfirmed_for_real(target_tier_name)
+    return _start_free_trial_for_real(target_tier_name)
 
-def _start_free_trial_unconfirmed_for_real(target_tier_name):
+def _start_free_trial_for_real(target_tier_name):
     import localtv.models
     sitelocation = localtv.models.SiteLocation.objects.get_current()
     ti = localtv.models.TierInfo.objects.get_current()
+    # The point of this function is to set up the free trial, but to make
+    # sure that when the IPN comes in, we still accept the information.
+    if ti.payment_due_date is None:
+        ti.payment_due_date = datetime.datetime.utcnow() + datetime.timedelta(days=30)
+    ti.free_trial_started_on = datetime.datetime.utcnow()
+    ti.in_free_trial = True
+    ti.free_trial_available = False
+    ti.save()
+    ## Okay, so now we need to store the new tier name in the SiteLocation object.
+    ## This will cause an email to go out welcoming the person to the free trial,
+    ## even though the PayPal IPN has not actually come in yet.
+    sitelocation.tier_name = target_tier_name
+    sitelocation.save()
+    return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
@@ -303,14 +317,8 @@ def _actually_switch_tier(target_tier_name):
     sl = localtv.models.SiteLocation.objects.get_current()
     old_tier_name = sl.tier_name
 
-    # If the user has never started a free trial, then they are clearly in one now.
     if sl.tierinfo.free_trial_started_on is None:
-        if sl.tierinfo.payment_due_date is None:
-            sl.tierinfo.payment_due_date = datetime.datetime.utcnow() + datetime.timedelta(days=30)
-        sl.tierinfo.free_trial_started_on = datetime.datetime.utcnow()
-        sl.tierinfo.in_free_trial = True
-        sl.tierinfo.free_trial_available = False
-        sl.tierinfo.save()
+        _start_free_trial_for_real(target_tier_name)
     # If the user *has* started a free trial, and this is an actual *change* in tier name,
     # then the trial must be over.
     else:
