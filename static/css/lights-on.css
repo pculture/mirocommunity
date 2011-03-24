@@ -3640,3 +3640,20 @@ a em.icon {
        are actually icons. */
     display: none;
 }
+
+/* This is a quick hack so the thumbnail edit link looks
+   mostly normal.
+
+   We should probably normalize things so that this block
+   is not necessary.*/
+.display_data a.thumbnail_icon {
+    -moz-background-clip:border;
+    -moz-background-inline-policy:continuous;
+    -moz-background-origin:padding;
+    background:transparent url(../images/med_left.png) no-repeat scroll 0 0;
+    color:#333333 !important;
+    display:block;
+    line-height:24px;
+    padding:0 8px 1px 14px;
+    float: right;
+}
