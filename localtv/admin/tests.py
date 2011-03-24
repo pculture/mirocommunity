@@ -4417,10 +4417,18 @@ class TestUpgradePage(BaseTestCase):
         self.assertFalse(response.context['upgrade_extra_payments']['premium'])
 
         # Okay, so go through the PayPal dance.
+
+        # First, pretend the user went to the paypal_return view, and adjusted
+        # the tier name, but without actually receiving the IPN.
         localtv.admin.tiers._paypal_return('premium')
         self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
         ti = models.TierInfo.objects.get_current()
         self.assertEqual('plus', ti.fully_confirmed_tier_name)
+        # The tier name is updated, so the backend updates its state.
+        # That means we sent a "Congratulations" email:
+        message, = [str(k.body) for k in mail.outbox]
+        self.assertTrue('Congratulations' in message)
+        mail.outbox = []
 
         # Actually do the upgrade
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
