@@ -270,6 +270,24 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
             'daily_amount': int(price_difference * (days_difference / 30.0)),
             'num_days': days_difference}
 
+def _start_free_trial_unconfirmed(target_tier_name):
+    '''We call this function from within the unconfirmed PayPal return
+    handler, if you are just now starting a free trial.'''
+    import localtv.models
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    ti = localtv.models.TierInfo.objects.get_current()
+
+    # If you already are in a free trial, just do a redirect back to the upgrade page.
+    # This might happen if the IPN event fires *extremely* quickly.
+    if ti.in_free_trial:
+        return HttpResponseRedirect(reverse('localtv_admin_tier'))
+    return _start_free_trial_unconfirmed_for_real(target_tier_name)
+
+def _start_free_trial_unconfirmed_for_real(target_tier_name):
+    import localtv.models
+    sitelocation = localtv.models.SiteLocation.objects.get_current()
+    ti = localtv.models.TierInfo.objects.get_current()
+
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
     import localtv.models

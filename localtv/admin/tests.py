@@ -4626,3 +4626,13 @@ class TestUpgradePage(BaseTestCase):
         self.assertFalse(ti.in_free_trial)
         self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
 
+class TestFreeTrial(BaseTestCase):
+
+    @mock.patch('localtv.admin.tiers._start_free_trial_unconfirmed_for_real')
+    def test_does_nothing_if_already_in_free_trial(self, m):
+        # If we are already in a free trial, then we refuse to continue:
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.save()
+        localtv.admin.tiers._start_free_trial_unconfirmed('basic')
+        self.assertFalse(m.called)
