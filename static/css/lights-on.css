@@ -3632,3 +3632,11 @@ h2.page_title .private, h2.page_title .private a{
     display: list-item;
     list-style-type: decimal;
 }
+
+a em.icon {
+    /* These "icon" links are leftovers from the new theme.
+       In the future, there will be an awesome CSS file that
+       specifies an awesome font file to use, so that these icons
+       are actually icons. */
+    display: none;
+}
