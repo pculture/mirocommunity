@@ -4429,6 +4429,8 @@ class TestUpgradePage(BaseTestCase):
         message, = [str(k.body) for k in mail.outbox]
         self.assertTrue('Congratulations' in message)
         mail.outbox = []
+        ti = models.TierInfo.objects.get_current()
+        self.assertTrue(ti.in_free_trial)
 
         # Actually do the upgrade
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
@@ -4442,6 +4444,9 @@ class TestUpgradePage(BaseTestCase):
         self.assertEqual('premium', sl.tier_name)
         ti = models.TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
+
+        # Now, make sure the backend knows that we are not in a free trial
+        self.assertFalse(ti.in_free_trial)
 
     def test_upgrade_from_basic_when_not_within_a_free_trial(self):
         # The pre-requisite for this test is that we have transitioned into a tier.
