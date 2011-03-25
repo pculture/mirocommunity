@@ -18,7 +18,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load filters %}
-<h4 style="display: none;" class="meta_title">Description <a href="#" class="edit_link">Edit</a></h4>
+
+
+<h4 class="meta_title">Description <a href="#" class="edit_link">Edit</a></h4>
+
+
 <div class="description">
-  {{ instance.description|sanitize }} <a href="#" class="edit_link"><em class="icon">p</em> Edit</a>
+  {{ instance.description|sanitize }}
 </div>

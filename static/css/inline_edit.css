@@ -4,7 +4,6 @@ width: 100%;
 margin: 0 0 15px;
 padding: 0 0 13px;
 border-bottom: 1px solid #ddd;
-
 }
 
 .editable .simple_overlay .approve_button{
@@ -99,7 +98,6 @@ float: none !important;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
 overflow: inherit !important;
-
 }
 
 .editable .simple_overlay *{

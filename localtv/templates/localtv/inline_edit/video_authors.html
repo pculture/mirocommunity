@@ -21,10 +21,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     By {% for user in instance.authors.all %}<a href="{% url localtv_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
 {% else %}
   {% if instance.feed %}
-  By <a href="{% url localtv_list_feed instance.feed.pk %}">{{ instance.feed.name }}</a>
+  Posted by <a href="{% url localtv_list_feed instance.feed.pk %}">{{ instance.feed.name }}</a>
   {% else %}
     {% if instance.video_service_user %}
-    By {{ instance.video_service_user }}
+    Posted by {{ instance.video_service_user }}
     {% endif %}
   {% endif %}
 {% endif %}

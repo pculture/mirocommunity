@@ -18,14 +18,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load editable_widget %}
+<div id="edit_video_wrapper" class="rounded">
   {% ifnotequal current_video.status VIDEO_STATUS_REJECTED %}
-  <a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button reject_video"><span>Reject this video</span></a>
+  <p><a href="{% url localtv_admin_reject_video %}?video_id={{ current_video.id }}" class="med_button reject_video"><span>Reject this video</span></a></p>
   {%else %}
-  <a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button approve_video"><span>Approve this video</span></a>
+  <p><a href="{% url localtv_admin_approve_video %}?video_id={{ current_video.id }}" class="med_button approve_video"><span>Approve this video</span></a></p>
   {% endifnotequal %}
   {% if current_video.last_featured %}
-  <a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button unfeature_video"><span>Unfeature this video</span></a></p>
+  <p><a href="{% url localtv_admin_unfeature_video %}?video_id={{ current_video.id }}" class="med_button unfeature_video"><span>Unfeature this video</span></a></p>
   {% else %}
-  <a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button feature_video"><span>Feature this video</span></a>
+  <p><a href="{% url localtv_admin_feature_video %}?video_id={{ current_video.id }}" class="med_button feature_video"><span>Feature this video</span></a></p>
   {% endif %}
   {% editable_widget current_video "thumbnail" %}
+  <br clear="all"/>
+</div>

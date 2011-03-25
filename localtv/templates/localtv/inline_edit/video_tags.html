@@ -20,8 +20,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% if rendered_within_get_display_content %}
 {% endif %}
 <div class="floatleft">
-  <h4 style="display: none;">Tags{% if rendered_within_get_display_content %}{% endif %}</h4>
-  <div><a href="#" id="add_tag" class="edit_link"><em class="icon">p</em> Edit</a></div>
+  <h4>Tags{% if rendered_within_get_display_content %}<a href="#" id="add_tag" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
   {% if instance.tags.count %}
   <ul>
     {% for tag in instance.tags.all %}
