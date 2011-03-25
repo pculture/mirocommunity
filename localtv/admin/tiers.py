@@ -38,7 +38,6 @@ import paypal.standard.ipn.views
 from localtv.decorators import require_site_admin
 
 import localtv.tiers
-import localtv.paypal_snippet
 
 ### Below this line
 ### ----------------------------------------------------------------------
@@ -73,9 +72,8 @@ def downgrade_confirm(request):
         data = {}
         data['tier_name'] = target_tier_name
         data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
-        p = localtv.paypal_snippet.PayPal.get_with_django_settings()
         data['can_modify'] = _generate_can_modify()[target_tier_name]
-        data['paypal_url'] = p.PAYPAL_FORM_SUBMISSION_URL
+        data['paypal_url'] = get_paypal_form_submission_url()
         data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
         data['target_tier_obj'] = target_tier_obj
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
@@ -139,8 +137,7 @@ def upgrade(request):
     data['offer_free_trial'] = request.tier_info.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
     if not data['skip_paypal']:
-        p = localtv.paypal_snippet.PayPal.get_with_django_settings()
-        data['paypal_url'] = p.PAYPAL_FORM_SUBMISSION_URL
+        data['paypal_url'] = get_paypal_form_submission_url()
 
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
@@ -242,6 +239,13 @@ def ipn_endpoint(request, payment_secret):
 ### Below this line
 ### ----------------------------------------------------------------------
 ### These are helper functions.
+
+def get_paypal_form_submission_url():
+    use_sandbox = getattr(settings, 'PAYPAL_TEST', False)
+    if use_sandbox:
+        return 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+    else: # Live API!
+        return 'https://www.paypal.com/cgi-bin/webscr'
 
 def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, current_payment_due_date, todays_date=None):
     target_tier_obj = localtv.tiers.Tier(target_tier_name)
