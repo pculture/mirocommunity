@@ -75,6 +75,7 @@ def downgrade_confirm(request):
         data['can_modify'] = _generate_can_modify()[target_tier_name]
         data['paypal_url'] = get_paypal_form_submission_url()
         data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
+        data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
         data['target_tier_obj'] = target_tier_obj
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
         data['customtheme_nag'] = ('customtheme' in would_lose)
@@ -136,6 +137,7 @@ def upgrade(request):
     data['payment_secret'] = request.tier_info.get_payment_secret()
     data['offer_free_trial'] = request.tier_info.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
+    data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
     if not data['skip_paypal']:
         data['paypal_url'] = get_paypal_form_submission_url()
 

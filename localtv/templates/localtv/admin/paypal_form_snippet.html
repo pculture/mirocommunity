@@ -4,7 +4,6 @@ is a GET to an admin page explaining what the admin would lose.
 
 Also, this template could use a refactoring.
 {% endcomment %}
-{% with "paypal_1297893164_biz@s.asheesh.org" as paypal_email_acct %}
 
 {% if go_to_warnings %}
 <form action="{% url localtv_admin_downgrade_confirm %}" method="POST"> {% csrf_token %}
@@ -67,4 +66,3 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_ipn_endpoint pa
 
   
 </form>
-{% endwith %}
