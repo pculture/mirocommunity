@@ -149,29 +149,25 @@ def upgrade(request):
 ### These functions are resquest handlers that actually switch tier.
 
 @csrf_exempt
-def paypal_return(request, target_tier_name):
+def paypal_return(request, payment_secret, target_tier_name):
     '''This view is where PayPal sends users to upon success. Some things to note:
 
     * PayPal sends us an "auth" parameter that we cannot validate.
     * This should be a POST so that cross-site scripting can't just upgrade people's sites.
-    * This is not as secure as I would like.
 
-    Suggested improvements:
-    * The view that sends people to PayPal should store some state in the database
-      that this view checks. It only permits an upgrade in that situation.
-    * That could be the internal "payment_secret" to prevent CSRF.
-    * A tricky site admin could still try POST the right data to this view, which would
-      trigger the tier change.
+    Therefore:
+
+    * We use the payment_secret internal state as an anti-csrf value.
+    * It is a GET for simplicity from PayPal.
+    * A tricky site admin can exploit this, but that would just cause fully_confirmed_tier_name
+      and tier_name to disagree, which is caught by our nightly checks.
 
     If you want to exploit a MC site and change its tier, and you can cause an admin
-    with a cookie that's logged-in to visit pages you want, and you can get that admin
-    to do a POST, you still have to POST a value for the "auth" key. Note that this is
-    why we do a sanity-check of tier+payment status every night; we will catch funny
-    business within a day or so.'''
-    auth = request.POST.get('auth', None) or request.GET.get('auth', None)
-    if not auth:
-        return HttpResponseForbidden("You failed to submit an 'auth' token.")
-    return _paypal_return(target_tier_name)
+    with a cookie that's logged-in to visit pages you want, and you can steal the csrf value,
+    your exploit will get caught during the nightly check for fully_confirmed_tier_name != tier_name.'''
+    if payment_secret == request.tier_info.payment_secret:
+        return _paypal_return(target_tier_name)
+    return HttpResponseForbidden("You submitted something invalid to this paypal return URL. If you are surprised to see this message, contact support@mirocommunity.org.")
 
 def _paypal_return(target_tier_name):
     # This view always changes the tier_name stored in the SiteLocation.
