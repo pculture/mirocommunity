@@ -413,6 +413,16 @@ class SiteLocation(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
+    def add_queued_mail(self, data):
+        if not hasattr(self, '_queued_mail'):
+            self._queued_mail = []
+        self._queued_mail.append(data)
+
+    def get_queued_mail_destructively(self):
+        ret = getattr(self, '_queued_mail', [])
+        self._queued_mail = []
+        return ret
+
     @staticmethod
     def enforce_tiers(override_setting=None):
         '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
@@ -1756,6 +1766,8 @@ models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
                                 sender=SiteLocation)
 models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
                                 sender=SiteLocation)
+models.signals.post_save.connect(localtv.tiers.post_save_send_queued_mail,
+                                 sender=SiteLocation)
 
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:

@@ -392,12 +392,21 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     new_tier_obj= Tier(new_tier_name)
 
     if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
-        # Send an email about the transition
+        # Plan to send an email about the transition
+        # but leave it queued up in the instance. We will send it post-save.
+        # This eliminates a large source of possible latency.
+        #
+        # In theory, we should hold a lock on the SiteLocation object.
         template_name = 'localtv/admin/tiers_emails/welcome_to_tier.txt'
         subject = '%s has been upgraded!' % (current_siteloc.site.name or current_siteloc.site.domain)
 
         # Pass in the new, modified sitelocation instance. That way, it has the new tier.
-        send_tiers_related_email(subject, template_name, sitelocation=instance)
+        instance.add_queued_mail(
+            ((subject, template_name), {'sitelocation': instance}))
+
+def post_save_send_queued_mail(sender, instance, **kwargs):
+    for (args, kwargs) in instance.get_queued_mail_destructively():
+        send_tiers_related_email(*args, **kwargs)
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     import localtv.models
