@@ -4343,7 +4343,7 @@ class TestUpgradePage(BaseTestCase):
     def tearDown(self):
         # Note: none of these tests should cause email to be sent.
         self.assertEqual([],
-                         mail.outbox)
+                         [str(k.body) for k in mail.outbox])
 
     ## assertion helpers
     def _assert_upgrade_extra_payments_always_false(self, response):
