@@ -44,6 +44,12 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
     requester.appendChild(doc.createTextNode('85845'))
     ticket.appendChild(requester)
 
+    if getattr(settings, "ZENDESK_ASSIGN_TO_USER_ID"):
+        value = getattr(settings, "ZENDESK_ASSIGN_TO_USER_ID")
+        assignee = doc.createElement('assignee-id')
+        assignee.appendChild(doc.createTextNode(unicode(value))
+        ticket.appendChild(assignee)
+
     description = doc.createElement('description')
     description.appendChild(doc.createTextNode(body_text))
     ticket.appendChild(description)
