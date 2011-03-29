@@ -21,9 +21,13 @@ If you do not upgrade your account, we will unpublish the oldest videos to keep 
 
 {% endif %}{% if "css" in warnings %}* The custom CSS you have entered will no longer be applied to your site,
 and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.
-{% endif %}
 
-Upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}
+{% endif %}{% if "customdomain" in warnings %}* You will need to upgrade to keep your custom domain:  <http://{{site.domain}}/>.
+Custom domains are not supported in the Basic site level.
+
+{% endif %}{% if "customtheme" in warnings %}* Your site's custom theme will switch to one of our bundled themes.
+
+{% endif %}Upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}
 
 You can see information about your current site status at the new admin dashboard:
 http://{{site.domain}}{% url localtv_admin_index %}
