@@ -29,15 +29,14 @@ class Command(BaseCommand):
 
         sitelocation = localtv.models.SiteLocation.objects.get_current()
         warnings = localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name)
-        if warnings:
-            data = {'warnings': warnings}
-            data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
-            data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
-            data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
-            localtv.tiers.send_tiers_related_email(
-                'Changes in your Miro Community site',
-                'localtv/admin/tiers_emails/too_big_for_your_tier.txt',
-                sitelocation,
-                extra_context=data)
-            ti.already_sent_tiers_compliance_email = True
-            ti.save()
+        data = {'warnings': warnings}
+        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(sitelocation.get_tier().admins_limit())
+        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
+        data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
+        localtv.tiers.send_tiers_related_email(
+            'Changes in your Miro Community site',
+            'localtv/admin/tiers_emails/too_big_for_your_tier.txt',
+            sitelocation,
+            extra_context=data)
+        ti.already_sent_tiers_compliance_email = True
+        ti.save()

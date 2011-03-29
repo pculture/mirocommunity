@@ -1,7 +1,7 @@
 Hi,
 
-We have just upgraded http://{{site.domain}}/ to the latest version of Miro Community.
-From here forward, we're asking our heaviest users to help support 
+We have just upgraded http://{{site.domain}}/ to the latest version of Miro
+Community. From here forward, we're asking our heaviest users to help support 
 ongoing software development by upgrading to a paid account, which is very easy to do!
 
 With a free account, you get:
@@ -10,26 +10,23 @@ With a free account, you get:
 * 1 site admin
 * Your Own logo and Background
 
-This release limits some features you currently use. You will have 2 weeks to
+{% if warnings %}This release limits some features you currently use. You will have 2 weeks to
 upgrade your account or you will lose the following features.
 
-{% if "admins" in warnings %}
-* You have more than one administrator. If you choose to remain at the Basic
-account level, the following administrators will lose admin privileges: {{ would_lose_admin_usernames:join:" " }
+{% else %}You currently have a free account.{% endif %}{% if "admins" in warnings %}* You have more than one administrator. If you choose to remain at the Basic
+account level, the following administrators will lose admin privileges: {{ would_lose_admin_usernames|join:" " }}
  
-{% if "videos" in warnings %}
+{% endif %}{% if "videos" in warnings %}* You have {{ video_count }} published video{{ video_count|pluralize}}.
+If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %}
 
-* You have {{ video_count }} published video{{ video_count|pluralize}}. 
-If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %}{% endif %}
-
-{% if "css" in warnings %}
-* The custom CSS you have entered will no longer be applied to your site, 
+{% endif %}{% if "css" in warnings %}* The custom CSS you have entered will no longer be applied to your site,
 and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.
 {% endif %}
 
 Upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}
 
-You can see information about your current site status at the new admin dashboard: http://{{site.domain}}{% url localtv_admin_index %}
+You can see information about your current site status at the new admin dashboard:
+http://{{site.domain}}{% url localtv_admin_index %}
 
 Check out the Miro Community Manual for more information and tips:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
