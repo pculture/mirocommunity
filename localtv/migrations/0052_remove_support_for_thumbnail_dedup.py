@@ -26,19 +26,19 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Deleting field 'Video.sha1_of_last_image_we_thumbnailed'
-        db.delete_column('localtv_video', 'sha1_of_last_image_we_thumbnailed')
+        db.delete_column('localtv_video', 'sha1_of_last_image_we_thumbnailed', ignore_constraints=True)
 
         # Deleting field 'SavedSearch.sha1_of_last_image_we_thumbnailed'
-        db.delete_column('localtv_savedsearch', 'sha1_of_last_image_we_thumbnailed')
+        db.delete_column('localtv_savedsearch', 'sha1_of_last_image_we_thumbnailed', ignore_constraints=True)
 
         # Deleting field 'SiteLocation.sha1_of_last_image_we_thumbnailed'
-        db.delete_column('localtv_sitelocation', 'sha1_of_last_image_we_thumbnailed')
+        db.delete_column('localtv_sitelocation', 'sha1_of_last_image_we_thumbnailed',ignore_constraints=True)
 
         # Deleting field 'Feed.sha1_of_last_image_we_thumbnailed'
-        db.delete_column('localtv_feed', 'sha1_of_last_image_we_thumbnailed')
+        db.delete_column('localtv_feed', 'sha1_of_last_image_we_thumbnailed', ignore_constraints=True)
 
         # Deleting field 'WidgetSettings.sha1_of_last_image_we_thumbnailed'
-        db.delete_column('localtv_widgetsettings', 'sha1_of_last_image_we_thumbnailed')
+        db.delete_column('localtv_widgetsettings', 'sha1_of_last_image_we_thumbnailed', ignore_constraints=True)
 
 
     def backwards(self, orm):
