@@ -1,4 +1,3 @@
--e git+http://git.participatoryculture.org/localtv@bf8bbb7b1c5aff9ca188284e36ccbb4e59c07a90#egg=Miro_Community-1.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/djpagetabs@55df7e22ee3c797b64982f51f5244b5611561187#egg=djpagetabs-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/djvideo@423e9e17145ff11a81a8db4b3c71e0dabe6f85ac#egg=djvideo-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/vidscraper@c6dc5f784d16af1ed6be644de2a0478b14c46960#egg=vidscraper-0.0.1-py2.6-dev
