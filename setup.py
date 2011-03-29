@@ -7,6 +7,6 @@ setup(name="Miro Community",
       packages=find_packages(),
       author='Participatory Culture Foundation',
       license='AGPLv3',
-      install_requires=['django==1.2.1'])
+      install_requires=['django==1.2.5'])
 
 
