@@ -1,6 +1,6 @@
 Hi,
 
-We have just upgraded http://{{site.domain}}/ to the latest version of Miro
+We have just migrated http://{{site.domain}}/ to the latest version of Miro
 Community. From here forward, we're asking our heaviest users to help support 
 ongoing software development by upgrading to a paid account, which is very easy to do!
 
