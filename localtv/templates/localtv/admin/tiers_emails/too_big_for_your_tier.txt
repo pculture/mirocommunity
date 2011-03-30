@@ -14,7 +14,9 @@ With a free account, you get:
 upgrade your account or you will lose the following features.
 
 {% else %}You currently have a free account.{% endif %}{% if "admins" in warnings %}* You have more than one administrator. If you choose to remain at the Basic
-account level, the following administrators will lose admin privileges: {{ would_lose_admin_usernames|join:" " }}
+account level, the following administrators will lose admin privileges:
+{% for admin in would_lose_admin_usernames %}{{ admin }}
+{% endfor %}
  
 {% endif %}{% if "videos" in warnings %}* You have {{ video_count }} published video{{ video_count|pluralize}}.
 If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %}
