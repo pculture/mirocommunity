@@ -34,7 +34,7 @@ class Command(BaseCommand):
         data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
         data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
         localtv.tiers.send_tiers_related_email(
-            'Changes in your Miro Community site',
+            'Changes to your Miro Community site',
             'localtv/admin/tiers_emails/too_big_for_your_tier.txt',
             sitelocation,
             extra_context=data)
