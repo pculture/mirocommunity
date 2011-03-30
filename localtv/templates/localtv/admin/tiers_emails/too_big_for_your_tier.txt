@@ -2,7 +2,8 @@ Hi,
 
 We have just migrated http://{{site.domain}}/ to the latest version of Miro
 Community. From here forward, we're asking our heaviest users to help support 
-ongoing software development by upgrading to a paid account, which is very easy to do!
+ongoing software development and server costs by upgrading to a paid account,
+which is very easy to do!
 
 With a free account, you get:
 
