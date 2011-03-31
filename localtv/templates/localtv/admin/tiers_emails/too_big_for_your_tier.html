@@ -44,7 +44,7 @@ video limit. We have moved to this model to better support software development 
 
 <p>This release limits some features you currently use. You will have 2 weeks to upgrade your account or you will no longer be able to use the following features.</p>
 
-{% if "admins" in warnings %}<p>* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }}{% endfor %}<br /></p>{% endif %}
+{% if "admins" in warnings %}<p>* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }} {% endfor %}<br /></p>{% endif %}
 
 {% if "videos" in warnings %}<p>* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at <a href="http://{{site.domain}}{% url localtv_admin_bulk_edit %}">http://{{site.domain}}{% url localtv_admin_bulk_edit %}</a> </p>{% endif %}
 
