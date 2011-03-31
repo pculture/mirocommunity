@@ -36,18 +36,19 @@
 
 <p>This release limits some features you currently use. You will have 2 weeks to upgrade your account or you will no longer be able to use the following features.</p>
 
-<p>{% if "admins" in warnings %}* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }}{% endfor %}<br /></p>{% endif %}
+{% if "admins" in warnings %}<p>* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }}{% endfor %}<br /></p>{% endif %}
 
-<p>{% if "videos" in warnings %}* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %} <br />
+{% if "videos" in warnings %}<p>* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %} </p>{% endif %}
 
-<br />{% endif %}{% if "css" in warnings %}* You currently use custom CSS. If you remain at a free account level, the custom CSS you have entered will no longer be applied to your site, and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.<br />
+{% if "css" in warnings %}<p>* You currently use custom CSS. If you remain at a free account level, the custom CSS you have entered will no longer be applied to your site, and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.</p>{% endif %}
 
-<br />{% endif %}{% if "customdomain" in warnings %}* You will need to upgrade to keep your custom domain: &lt;http://{{site.domain}}/&gt;. Custom domains are not supported in the Basic site account.</p>
-{% endif %}{% if "customtheme" in warnings %}* You currently have a custom theme, which will only remain available at the Max account level. If you stay at the Basic level, your site's custom theme will switch 
-to one of our default themes.<br />{% endif %}<br />
+{% if "customdomain" in warnings %}<p>* You will need to upgrade to keep your custom domain: &lt;http://{{site.domain}}/&gt;. Custom domains are not supported in the Basic site account.</p>{% endif %}
+
+{% if "customtheme" in warnings %}<p>* You currently have a custom theme, which will only remain available at the Max account level. If you stay at the Basic level, your site's custom theme will switch 
+to one of our default themes.</p>{% endif %}
 
 {% else %}
-You currently have a free account. With a free account, you get:
+<p>You currently have a free account. With a free account, you get:</p>
 
 <ul>
 <li> 500 published videos</li>
