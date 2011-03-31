@@ -30,7 +30,7 @@
 <p style="margin-top: 0; padding-top: 0;"><span style="font-size: 17px; font-weight: bold; color: #323738; font-family: Tahoma, Geneva, sans-serif; line-height: 110%; margin-top: 15px;"></span>Hi,</p>
 <div class="entry">
 
-<p>We have just migrated http://{{site.domain}}/ to the latest version of Miro Community. From here forward, we're asking our heaviest users to help support ongoing software development and server costs by upgrading to a paid account, which is very easy to do!</p>
+<p>We have just migrated <a href="http://{{site.domain}}/">http://{{site.domain}}/</a> to the latest version of Miro Community. From here forward, we're asking our heaviest users to help support ongoing software development and server costs by upgrading to a paid account, which is very easy to do!</p>
 
 {% if warnings %} 
 
@@ -38,11 +38,11 @@
 
 {% if "admins" in warnings %}<p>* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }}{% endfor %}<br /></p>{% endif %}
 
-{% if "videos" in warnings %}<p>* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at http://{{site.domain}}{% url localtv_admin_bulk_edit %} </p>{% endif %}
+{% if "videos" in warnings %}<p>* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at <a href="http://{{site.domain}}{% url localtv_admin_bulk_edit %}">http://{{site.domain}}{% url localtv_admin_bulk_edit %}</a> </p>{% endif %}
 
 {% if "css" in warnings %}<p>* You currently use custom CSS. If you remain at a free account level, the custom CSS you have entered will no longer be applied to your site, and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.</p>{% endif %}
 
-{% if "customdomain" in warnings %}<p>* You will need to upgrade to keep your custom domain: &lt;http://{{site.domain}}/&gt;. Custom domains are not supported in the Basic site account.</p>{% endif %}
+{% if "customdomain" in warnings %}<p>* You will need to upgrade to keep your custom domain: &lt;<a href="http://{{site.domain}}/">http://{{ site.domain }}/</a>&gt;. Custom domains are not supported in the Basic site account.</p>{% endif %}
 
 {% if "customtheme" in warnings %}<p>* You currently have a custom theme, which will only remain available at the Max account level. If you stay at the Basic level, your site's custom theme will switch 
 to one of our default themes.</p>{% endif %}
@@ -55,17 +55,17 @@ to one of our default themes.</p>{% endif %}
 <li> 1 site admin </li>
 <li> Your Own logo and Background</li></ul>
 {% endif %}
-<br />See other features and upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}<br />
+<br />See other features and upgrade at any time on your new account page: <a href="http://{{site.domain}}{% url localtv_admin_tier %}">http://{{site.domain}}{% url localtv_admin_tier %}</a><br />
 
-<br />You can see information about your current site status at the new admin dashboard: http://{{site.domain}}{% url localtv_admin_index %}<br />
+<br />You can see information about your current site status at the new admin dashboard: <a href="http://{{site.domain}}{% url localtv_admin_index %}">http://{{site.domain}}{% url localtv_admin_index %}</a><br />
 
 <br />Discounts are available for some non-profit and hyper-local projects - get in touch at questions@mirocommunity.org.<br />
 
-<br />Check out the Miro Community Wiki for more information and tips: http://develop.participatoryculture.org/index.php/MiroCommunityManual <br />
+<br />Check out the Miro Community Wiki for more information and tips: <a href="http://develop.participatoryculture.org/index.php/MiroCommunityManual">http://develop.participatoryculture.org/index.php/MiroCommunityManual</a> <br />
 
-<br />Have questions? Please get in touch: email questions@mirocommunity.org.<br />
+<br />Have questions? Please get in touch: email <a href="mailto:questions@mirocommunity.org">questions@mirocommunity.org</a>.<br />
 
-<p>Sincerely,<br /> Anne Jonas &amp; the Miro Community Team<a href="https://twitter.com/#!/mirocommunity"><img style="float: right;" title="Twtr" alt="Twtr" src="http://pcf8.pculture.org/interspire/admin/temp/templates/2/twitter_32.png" height="32" width="32" /></a></p>
+<p>Sincerely,<br /> Anne Jonas &amp; the Miro Community Team <a href="https://twitter.com/#!/mirocommunity"><img style="float: right;" title="Twtr" alt="Twtr" src="http://pcf8.pculture.org/interspire/admin/temp/templates/2/twitter_32.png" height="32" width="32" /></a></p>
 </div>
 </td>
 </tr>
