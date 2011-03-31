@@ -79,6 +79,7 @@ def context_processor(request):
         cache_invalidator = None
 
     return  {
+        'mc_version': '1.2',
         'sitelocation': sitelocation,
         'request': request,
         'user_is_admin': request.user_is_admin,

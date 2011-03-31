@@ -19,7 +19,7 @@
 
 {% block extrahead %}
 <link rel="stylesheet" type="text/css" href="/css/admin/dashboard.css" />
-<script type="text/javascript" src="/js/admin/disable_get_started.js"></script>
+<script type="text/javascript" src="/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
 {% endblock extrahead %}
 {% block body_class %}admin_dash {% if sitelocation.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
 {% block content %}

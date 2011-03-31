@@ -24,7 +24,7 @@
 {% block head %}
   {{ block.super }}
   {% include "localtv/inline_edit/header.html" %}
-  <script type="text/javascript" src="/js/admin/urlify.js"></script>
+  <script type="text/javascript" src="/js/admin/urlify.js?version={{ mc_version }}"></script>
   </script>
   <script type="text/javascript">
       $(document).ready(function() {
