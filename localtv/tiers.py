@@ -19,7 +19,7 @@ import datetime
 
 from django.conf import settings
 import django.contrib.auth.models
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.template import Context, loader
 
 import uploadtemplate.models
