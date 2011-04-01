@@ -497,6 +497,60 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  recipient_list).send(fail_silently=False)
 
+def send_tiers_related_multipart_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False):
+    import localtv.models
+    tier_info = localtv.models.TierInfo.objects.get_current()
+
+    # Send it to the site superuser with the lowest ID
+    first_one = get_main_site_admin()
+    if not first_one:
+        logging.error("Hah, there is no site admin. Screw email.")
+        return
+
+    if not first_one.email:
+        logging.error("Hah, there is a site admin, but that person has no email address set. Email is hopeless.")
+        return
+
+    if tier_info.payment_due_date:
+        next_payment_due_date = tier_info.payment_due_date.strftime('%B %e, %Y')
+    else:
+        next_payment_due_date = None
+
+    # Generate the email
+    t = loader.get_template(template_name)
+    data = {'site': sitelocation.site,
+            'in_free_trial': tier_info.in_free_trial,
+            'tier_obj': sitelocation.get_tier(),
+            'tier_name_capitalized': sitelocation.tier_name.title(),
+            'site_name': sitelocation.site.name or sitelocation.site.domain,
+            'video_count': current_videos_that_count_toward_limit().count(),
+            'short_name': first_one.first_name or first_one.username,
+            'next_payment_due_date': next_payment_due_date,
+            }
+    if extra_context:
+        data.update(extra_context)
+
+    c = Context(data)
+    message = t.render(c)
+    if just_rendered_body:
+        return message
+
+    recipient_list = [first_one.email]
+    if override_to:
+        assert type(override_to) in (list, tuple)
+        recipient_list = override_to
+
+    # So, let's jam the baove text into a multipart email. Soon, we'll render an HTML
+    # version of the same template and stick that into the message.
+    msg = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL,
+            recipient_list)
+
+    html_t = loader.get_template(template_name.replace('.txt', '.html'))
+    message_html = html_t.render(c)
+    msg.attach_alternative(message_html, "text/html")
+    # FIXME: Attach attachments.
+    msg.send(fail_silently=False)
+
 def get_monthly_amount_of_paypal_subscription(subscription_id):
     import localtv.models
     # FIXME: Get this covered with a test.

@@ -33,7 +33,7 @@ class Command(BaseCommand):
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(sitelocation.get_tier().admins_limit())
         data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
         data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
-        localtv.tiers.send_tiers_related_email(
+        localtv.tiers.send_tiers_related_multipart_email(
             'Changes to your Miro Community site',
             'localtv/admin/tiers_emails/too_big_for_your_tier.txt',
             sitelocation,
