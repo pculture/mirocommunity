@@ -38,6 +38,13 @@ class Command(BaseCommand):
         if default_non_bundled_themes:
             warnings.add('customtheme')
 
+        ### Hack
+        ### override the customdomain warning, too
+        if (sitelocation.site.domain
+            and not sitelocation.site.domain.endswith('mirocommunity.org')
+            and not sitelocation.get_tier().permits_custom_domain()):
+            warnings.add('customdomain')
+
         data = {'warnings': warnings}
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(sitelocation.get_tier().admins_limit())
         data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
