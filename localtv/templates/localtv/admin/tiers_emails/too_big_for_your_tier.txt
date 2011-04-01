@@ -34,8 +34,8 @@ and you will not be able to edit it. If you upgrade, your Custom CSS will be pre
 Custom domains are not supported in the Basic site level.
 
 {% endif %}{% if "customtheme" in warnings %}* Your site's custom theme will switch to one of our bundled themes.
-
-{% endif %}Upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}
+{% endif %}
+Upgrade at any time on your new account page: http://{{site.domain}}{% url localtv_admin_tier %}
 
 You can see information about your current site status at the new admin dashboard:
 http://{{site.domain}}{% url localtv_admin_index %}
