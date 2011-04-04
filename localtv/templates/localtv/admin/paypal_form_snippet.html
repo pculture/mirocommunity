@@ -6,14 +6,14 @@ Also, this template could use a refactoring.
 {% endcomment %}
 
 {% if go_to_warnings %}
-<form action="{% url localtv_admin_downgrade_confirm %}" method="POST"> {% csrf_token %}
+<form class="target_tier_name_{{target_tier_name}}" action="{% url localtv_admin_downgrade_confirm %}" method="POST"> {% csrf_token %}
 <input type="hidden" name="target_tier_name" value="{{ target_tier_name }}">
 {% else %}
 {% if skip_paypal %}
-<form action="{% url localtv_admin_confirmed_change_tier %}" method="POST"> {% csrf_token %}
+<form class="target_tier_name_{{target_tier_name}}" action="{% url localtv_admin_confirmed_change_tier %}" method="POST"> {% csrf_token %}
 <input type="hidden" name="target_tier_name" value="{{ target_tier_name }}">
 {% else %}
-<form action="{{ paypal_url }}" method="post">
+<form class="target_tier_name_{{target_tier_name}}" action="{{ paypal_url }}" method="post">
   <input type="hidden" name="cmd" value="_xclick-subscriptions">
   <input type="hidden" name="business" value="{{ paypal_email_acct}}">
   <input type="hidden" name="item_name" value="Miro Community subscription ({{ target_tier_name }} on {{ sitelocation.site.domain }})">
