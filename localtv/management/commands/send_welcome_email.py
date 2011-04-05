@@ -38,7 +38,7 @@ class Command(BaseCommand):
             template = 'localtv/admin/tiers_emails/welcome_to_your_site_basic.txt'
         else:
             template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
-        localtv.tiers.send_tiers_related_email(subject, template, site_location)
+        localtv.tiers.send_tiers_related_multipart_email(subject, template, site_location)
         
         # Finally, save a note saying we sent it.
         tier_info.already_sent_welcome_email = True
