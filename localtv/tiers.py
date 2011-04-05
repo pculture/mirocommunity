@@ -391,6 +391,23 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     current_tier_obj = Tier(current_tier_name)
     new_tier_obj= Tier(new_tier_name)
 
+    # Two cases, here:
+    # 1. The site was created, hoping to be set to a tier, and this is the
+    # IPN event that makes that possible.
+    #
+    # 2. The site has been around a while, and we send an email because it
+    # is an upgrade.
+
+    # Case 1 (this field is set by the site creation scripts)
+    if tier_info.should_send_welcome_email_on_paypal_event:
+        instance.add_queued_mail(
+            ('send_welcome_email_hack', {}))
+        # If we are sending the welcome email now, then we quit here.
+        tier_info.should_send_welcome_email_on_paypal_event = False
+        tier_info.save()
+        return
+
+    # Case 2: Normal operation
     if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
         # Plan to send an email about the transition
         # but leave it queued up in the instance. We will send it post-save.
@@ -406,7 +423,13 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
 
 def post_save_send_queued_mail(sender, instance, **kwargs):
     for (args, kwargs) in instance.get_queued_mail_destructively():
-        send_tiers_related_email(*args, **kwargs)
+        ### Epic hack :-(
+        if args == 'send_welcome_email_hack':
+            import localtv.management.commands.send_welcome_email
+            cmd = localtv.management.commands.send_welcome_email.Command()
+            cmd.handle()
+        else:
+            send_tiers_related_email(*args, **kwargs)
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     import localtv.models
