@@ -15,6 +15,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import urllib
+import logging
 
 from django.core.mail import EmailMessage
 from django.template import mark_safe, Context, loader
@@ -89,6 +90,14 @@ signals.post_save.connect(facebookuserprofile_created,
 def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=False, **kwargs):
     if not created:
         return # We only care about *new* users.
+
+    # If this is the only user, then skip the email sending.
+    if User.objects.all().count() <= 1:
+        # The user had better be a superuser...
+        if not instance.is_superuser:
+            logging.error("Uh, yikes, the first user you created wasn't a superuser. Bizarre.")
+        # Either way, we stop right here, and refuse to send email.
+        return
 
     # Note: We're extra careful here: if the user does not have a login-able password,
     # perhaps because the user was created through OpenID or Twitter or Facebook,
