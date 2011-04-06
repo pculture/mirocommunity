@@ -1,6 +1,11 @@
 Congratulations, {{ short_name }}!
 
-Your new Miro Community site is ready to go at http://{{ site.domain }}/.
+You have created a Miro Community site site:
+http://{{ site.domain }}/
+
+As soon as you arrive, log in and visit the admin dashboard
+to get started with building your site.
+http://{{site.domain}}{% url localtv_admin_index %}
 
 Remember that your username and password are case sensitive.
 
@@ -10,14 +15,25 @@ You have created a free site, which includes:
     * Up to 500 videos
     * 1 Administrator Account
 
-For more features and a larger video limit, you can upgrade at any time at
-http://{{ site.domain }}{% url localtv_admin_tier %}.
+Get the Most Out of Your Site
 
-To get started, log in to your site and check out the admin dashboard,
-at: http://{{ site.domain }}{% url localtv_admin_index %}
+To get more features, such as:
 
-Learn more about how to use Miro Community in the manual:
+* A custom URL (e.g. <http://ondemand.duke.edu>)
+* Higher video limit
+* Custom templates (e.g. <http://pittsburghonvideo.org>)
+
+Upgrade at any time:
+http://{{site.domain}}{% url localtv_admin_tier %}.
+
+Learn more about Miro Community and get info on tips and tricks:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
 
-Still have questions? Don't hesitate to get in touch  -
+Have questions? Please get in touch:
 questions@mirocommunity.org.
+
+Sincerely,
+
+Anne Jonas & the Miro Community Team
+
+Follow Us on Twitter: https://twitter.com/#!/mirocommunity
