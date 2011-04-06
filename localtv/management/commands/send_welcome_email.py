@@ -31,7 +31,8 @@ class Command(BaseCommand):
             return
 
         if 'temporarily_override_payment_due_date' in options:
-            extra_context = {'next_payment_due_date': options['temporarily_override_payment_due_date']}
+            extra_context = {'next_payment_due_date': options['temporarily_override_payment_due_date'].strftime('%B %e, %Y'),
+                             'in_free_trial': True}
         else:
             extra_context = {}
 
