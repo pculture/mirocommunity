@@ -427,7 +427,7 @@ def post_save_send_queued_mail(sender, instance, **kwargs):
         if args == 'send_welcome_email_hack':
             import localtv.management.commands.send_welcome_email
             cmd = localtv.management.commands.send_welcome_email.Command()
-            cmd.handle()
+            cmd.handle(temporarily_override_payment_due_date=datetime.datetime.utcnow() + datetime.timedelta(days=30))
         else:
             send_tiers_related_email(*args, **kwargs)
 

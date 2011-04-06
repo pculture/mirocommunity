@@ -30,6 +30,11 @@ class Command(BaseCommand):
         if tier_info.already_sent_welcome_email:
             return
 
+        if 'temporarily_override_payment_due_date' in options:
+            extra_context = {'next_payment_due_date': options['temporarily_override_payment_due_date']}
+        else:
+            extra_context = {}
+
         # If we haven't sent it, prepare the email
 
         # Now send the sucker
@@ -38,7 +43,7 @@ class Command(BaseCommand):
             template = 'localtv/admin/tiers_emails/welcome_to_your_site_basic.txt'
         else:
             template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
-        localtv.tiers.send_tiers_related_multipart_email(subject, template, site_location)
+        localtv.tiers.send_tiers_related_multipart_email(subject, template, site_location, extra_context=extra_context)
         
         # Finally, save a note saying we sent it.
         tier_info.already_sent_welcome_email = True
