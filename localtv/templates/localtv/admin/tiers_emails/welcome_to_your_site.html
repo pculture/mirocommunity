@@ -38,7 +38,11 @@
 <ul>
 <li>Your site with the logo &amp; background of your choice</li>
 <li>Up to {{ tier_obj.videos_limit }} videos</li>
+{% if tier_obj.admins_limit %}
 <li>{{ tier_obj.admins_limit }} Administrator Account{{tier_obj.admins_limit|pluralize}}</li>
+{% else %}
+<li>Unlimited Administrator Accounts</li>
+{% endif %}
 {% if tier_obj.permits_custom_domain %}
 <li>A Custom Domain (e.g. <a href="http://ondemand.duke.edu/">ondemand.duke.edu</a>)</li>
 {% endif %}
