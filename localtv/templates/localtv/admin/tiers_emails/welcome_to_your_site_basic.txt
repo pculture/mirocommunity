@@ -14,7 +14,7 @@ For more features and a larger video limit, you can upgrade at any time at
 http://{{ site.domain }}{% url localtv_admin_tier %}.
 
 To get started, log in to your site and check out the admin dashboard,
-at: http://{{ site.domain }}{% reverse localtv_admin_index %}
+at: http://{{ site.domain }}{% url localtv_admin_index %}
 
 Learn more about how to use Miro Community in the manual:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
