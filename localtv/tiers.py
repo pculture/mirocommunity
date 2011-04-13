@@ -520,7 +520,8 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  recipient_list).send(fail_silently=False)
 
-def send_tiers_related_multipart_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False):
+def send_tiers_related_multipart_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False,
+                                       override_text_template=None, override_html_template=None):
     import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
@@ -540,7 +541,11 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
         next_payment_due_date = None
 
     # Generate the email
-    t = loader.get_template(template_name)
+    if override_text_template:
+        t = override_text_template
+    else:
+        t = loader.get_template(template_name)
+
     data = {'site': sitelocation.site,
             'in_free_trial': tier_info.in_free_trial,
             'tier_obj': sitelocation.get_tier(),
@@ -568,7 +573,11 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
     msg = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL,
             recipient_list)
 
-    html_t = loader.get_template(template_name.replace('.txt', '.html'))
+    if override_html_template:
+        html_t = override_html_template
+    else:
+        html_t = loader.get_template(template_name.replace('.txt', '.html'))
+
     message_html = html_t.render(c)
     msg.attach_alternative(message_html, "text/html")
     # FIXME: Attach attachments.
