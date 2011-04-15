@@ -71,12 +71,20 @@ def submit_lock(func):
 @request_passes_test(_check_submit_permissions)
 @csrf_protect
 def submit_video(request):
+#    import pdb; pdb.set_trace()
     if not (request.user_is_admin or \
                 request.sitelocation.display_submit_button):
         raise Http404
+
+    # Extract construction hint, if it exists.
+    # This is a hint that plugins can use to slightly change the behavior
+    # of the video submission forms.
+    construction_hint = (request.POST.get('construction_hint', None) or
+                         request.GET.get('construction_hint', None))
+
     url = request.POST.get('url') or request.GET.get('url', '')
     if request.method == "GET" and not url:
-        submit_form = forms.SubmitVideoForm()
+        submit_form = forms.SubmitVideoForm(construction_hint=construction_hint)
         return render_to_response(
             'localtv/submit_video/submit.html',
             {'form': submit_form},
@@ -113,7 +121,8 @@ def submit_video(request):
                         video = None
                     return render_to_response(
                         'localtv/submit_video/submit.html',
-                        {'form': forms.SubmitVideoForm(),
+                        {'form': forms.SubmitVideoForm(
+                                construction_hint=construction_hint),
                          'was_duplicate': True,
                          'video': video},
                         context_instance=RequestContext(request))
@@ -122,6 +131,8 @@ def submit_video(request):
                 submit_form.cleaned_data['url'])
 
             get_dict = {'url': submit_form.cleaned_data['url']}
+            if 'construction_hint':
+                get_dict['construction_hint'] = construction_hint
             if 'bookmarklet' in request.GET:
                 get_dict['bookmarklet'] = '1'
             get_params = urllib.urlencode(get_dict)
