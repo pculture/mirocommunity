@@ -790,8 +790,8 @@ class Feed(Source):
             if not video_data['description']:
                 description = entry.get('summary', '')
                 for content in entry.get('content', []):
-                    type = content.get('type', '')
-                    if 'html' in type:
+                    content_type = content.get('type', '')
+                    if 'html' in content_type:
                         description = content.value
                         break
                 video_data['description'] = description
