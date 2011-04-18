@@ -24,6 +24,7 @@ import urllib2
 import urlparse
 import base64
 import os
+import types
 try:
     from PIL import Image
 except ImportError:
@@ -827,9 +828,20 @@ class Feed(Source):
 
             if entry.get('tags') or tags:
                 if not tags:
-                    tags = set(
-                        tag['term'] for tag in entry['tags']
-                        if tag.get('term'))
+                    # Sometimes, entry.tags is just a lousy old
+                    # string. In that case, do our best to undo the
+                    # delimiting. For now, all I have seen is
+                    # space-separated values, so that's what I'm going
+                    # to go with.
+                    if type(entry.tags) in types.StringTypes:
+                        tags = set(tag.strip() for tag in entry.tags.split())
+
+                    else:
+                        # Usually, entry.tags is a list of dicts. If so, flatten them out into
+                        tags = set(
+                            tag['term'] for tag in entry['tags']
+                            if tag.get('term'))
+
                 if tags:
                     video.tags = util.get_or_create_tags(tags)
 
