@@ -695,7 +695,7 @@ class Feed(Source):
             tags = []
             authors = self.auto_authors.all()
 
-            if 'updated_parsed' in entry:
+            if entry.get('updated_parsed', None):
                 video_data['when_published'] = datetime.datetime(
                     *entry.updated_parsed[:6])
 
