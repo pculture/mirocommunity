@@ -54,15 +54,17 @@ def get_extended_init_callable_for_class_name(class_name):
     # This is a hacky implementation of plugins.
     #
     # If the settings.LOCALTV_SUBMISSION_EXTRA_INIT option is defined,
-    # and it it has a key whose name is 
-    # we try calling that function at the end of initializing this form.
+    # then we look for a key equal to class_name.
+    #
+    # If that exists, we try calling importing that string and treating it as
+    # a Python name to import, probably a callable. We return it!
     #
     # This helps us permit sites to have site-specific behavior on top of what
-    # this class does, even if 
-    # and it is set to a callable, then we call it
+    # the SubmitVideoForm and friends do, without directly modifying this file.
     if getattr(settings, 'LOCALTV_SUBMISSION_EXTRA_INIT', None):
         if class_name in settings.LOCALTV_SUBMISSION_EXTRA_INIT:
-            name_of_thing_to_call = settings.LOCALTV_SUBMISSION_EXTRA_INIT[class_name]
+            name_of_thing_to_call = settings.LOCALTV_SUBMISSION_EXTRA_INIT[
+                class_name]
             module_name, entry = name_of_thing_to_call.rsplit('.', 1)
             module = importlib.import_module(module_name)
             return getattr(module, entry)
@@ -70,34 +72,40 @@ def get_extended_init_callable_for_class_name(class_name):
     # Otherwise, return a silly function that does nothing.
     silly_function = lambda *args, **kwargs: None
     return silly_function
-    
+
 class SubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True)
 
     def __init__(self, *args, **kwargs):
-        # By convention, when you create this form, you pass in a construction_hint,
-        # so that the "extra_init" system can examine the request and see if it
-        # should act differently.
+        # By convention, when you call this form's constructor, you
+        # pass a keyword argument called construction_hint.
+        #
+        # This form can be constructed without it, so it's optional.
+        #
+        # We pass the construction_hint information through to the
+        # "extra_init" system (which is a hacky form of plugins; see
+        # get_extended_init_callable_for_class_name above) so that the "plugin"
+        # can possibly alter the fields in the SubmitVideoForm.
         #
         # This is important so that the the form can be initialized differently
         # based on subtle differences in the request.GET. It's kind of hackish,
         # I realize.
-        #
-        # We extract that now, and remove it, so that the superclass constructor
-        # is not shocked when it finds it.
+
+        # First, we copy the data out and remove the keyword argument to avoid
+        # scaring the superclass constructor:
         if 'construction_hint' in kwargs:
             construction_hint = kwargs['construction_hint']
             del kwargs['construction_hint']
         else:
             construction_hint = None
-            
+
         super(SubmitVideoForm, self).__init__(*args, **kwargs)
 
         # Okay, now put the construction_hint back on.
         kwargs['construction_hint'] = construction_hint
         kwargs['self'] = self
         get_extended_init_callable_for_class_name('SubmitVideoForm')(
-            *args, 
+            *args,
              **kwargs)
 
 
