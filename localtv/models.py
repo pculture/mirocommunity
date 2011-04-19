@@ -1268,7 +1268,7 @@ class OriginalVideo(VideoBase):
         if not changed_fields: # modified them all
             return
 
-        self.send_updated_notification(changed_fields, originals_for_changed_fields)
+        self.send_updated_notification(changed_fields, original_values)
 
     def send_updated_notification(self, changed_fields, originals_for_changed_fields):
         from localtv.util import send_notice, get_or_create_tags
