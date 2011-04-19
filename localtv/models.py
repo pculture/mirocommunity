@@ -298,7 +298,6 @@ class SiteLocationManager(models.Manager):
 
 class TierInfoManager(models.Manager):
     def get_current(self):
-        sid = settings.SITE_ID
         current_site_location = SiteLocation.objects.get_current()
         tier_info, _ = TierInfo.objects.get_or_create(
             sitelocation = current_site_location)
