@@ -1170,7 +1170,7 @@ class OriginalVideo(VideoBase):
         when the remote video service did not give us a new thumbnail URL.
 
         It returns a boolean. True, if and only if the remote video has:
-        
+
         * a Last-Modified header indicating it has been modified, and
         * HTTP response body that hashes to a different SHA1 than the
           one we stored.
