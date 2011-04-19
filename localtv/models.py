@@ -1102,7 +1102,7 @@ class OriginalVideo(VideoBase):
                 scraped_data = vidscraper.auto_scrape(video.website_url,
                                                       fields=['title', 'description',
                                                               'tags', 'thumbnail_url'])
-            except vidscraper.errors.VideoDeleted, e:
+            except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
 
         # Now that we have the "scraped_data", analyze it: does it look like
