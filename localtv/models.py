@@ -1566,7 +1566,7 @@ def video__source_type(self):
                 self.video_service_user)
         else:
             return ''
-    except Feed.DoesNotExist, e:
+    except Feed.DoesNotExist:
         return ''
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
