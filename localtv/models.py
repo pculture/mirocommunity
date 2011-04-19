@@ -1211,7 +1211,7 @@ class OriginalVideo(VideoBase):
         return True
 
     def send_deleted_notification(self):
-        from localtv.util import send_notice, get_or_create_tags
+        from localtv.util import send_notice
         t = loader.get_template('localtv/admin/video_deleted.txt')
         c = Context({'video': self.video})
         subject = '[%s] Video Deleted: "%s"' % (
