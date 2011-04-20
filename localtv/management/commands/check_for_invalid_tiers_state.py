@@ -1,0 +1,46 @@
+# Copyright 2011 - Participatory Culture Foundation
+# 
+# This file is part of Miro Community.
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
+from django.core.management.base import BaseCommand
+
+import localtv.tiers
+import localtv.models
+
+class Command(BaseCommand):
+
+    def handle(self, *args, **options):
+        # Is the site in a paid tier?
+        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        in_paid_tier = (sitelocation.tier_name and
+                        sitelocation.tier_name != 'basic')
+
+        # Is the free trial used up?
+        # Note that premium sites have *not* used up their free trial.
+        if (in_paid_tier and
+            sitelocation.tierinfo.free_trial_available and
+            sitelocation.tier_name == 'max'):
+            print "Marking as subsidized: ", sitelocation.site.domain
+            sitelocation.tierinfo.current_paypal_profile_id = 'subsidized'
+            sitelocation.tierinfo.save()
+            return
+
+        # Is there something stored in the
+        # tier_info.current_paypal_profile_id? If so, great.
+        if (in_paid_tier and
+            not sitelocation.tierinfo.current_paypal_profile_id and
+            not sitelocation.tierinfo.free_trial_available):
+            print 'This site looks delinquent: ', sitelocation.site.domain
