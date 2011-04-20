@@ -66,6 +66,10 @@ class Command(BaseCommand):
             sys.exit(1)
 
         sitelocation = localtv.models.SiteLocation.objects.get_current()
+
+        if sitelocation.tier_name.current_paypal_profile_id == 'subsidized':
+            print >> sys.stderr, "Seems the site is subsidized. Skipping."
+
         warnings = localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name)
         ### Hack
         ### Override the customtheme warning for this email with custom code
