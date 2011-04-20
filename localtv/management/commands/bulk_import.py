@@ -37,7 +37,7 @@ class Command(BaseCommand):
         bulk_feed = bulk_import(feed.feed_url)
         try:
             verbose = (int(options['verbosity']) > 1)
-        except ValueError:
+        except (KeyError, ValueError):
             verbose = False
 
         stats = {
