@@ -44,13 +44,8 @@ class Command(BaseCommand):
             sitelocation.tierinfo.free_trial_available and
             sitelocation.tier_name == 'max'):
 
-            if sitelocation.tierinfo.current_paypal_profile_id:
-                print "UM YIKES"
-                return
-
-            print "Marking as subsidized: ", sitelocation.site.domain
-            sitelocation.tierinfo.current_paypal_profile_id = 'subsidized'
-            sitelocation.tierinfo.save()
+            print ("UM YIKES, I THOUGHT THE SITE SHOULD BE SUBSIDIZED",
+                   sitelocation.site.domain)
             return
 
         # Is there something stored in the
