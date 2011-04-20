@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 from django.core.management.base import BaseCommand
 
 import localtv.tiers
@@ -56,4 +58,14 @@ class Command(BaseCommand):
         if (in_paid_tier and
             not sitelocation.tierinfo.current_paypal_profile_id and
             not sitelocation.tierinfo.free_trial_available):
-            print 'This site looks delinquent: ', sitelocation.site.domain
+            # So, one reason this could happen is that PayPal is being really
+            # slow to send us data over PDT.
+            #
+            # Maybe that's what's happening. Let's sleep for a few seconds.
+            time.sleep(10)
+
+            # Then re-do the check. If it still looks bad, then print a warning.
+            if (in_paid_tier and
+                not sitelocation.tierinfo.current_paypal_profile_id and
+                not sitelocation.tierinfo.free_trial_available):
+                print 'This site looks delinquent: ', sitelocation.site.domain
