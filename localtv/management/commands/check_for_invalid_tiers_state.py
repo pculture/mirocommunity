@@ -25,6 +25,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Is the site in a paid tier?
         sitelocation = localtv.models.SiteLocation.objects.get_current()
+
+        # First of all: If the site is 'subsidized', then we skip the
+        # rest of these checks.
+        if sitelocation.tierinfo.current_paypal_profile_id == 'subsidized':
+            return
+
+        # Okay. Well, the point of this isto check if the site is in a
+        # paid tier but should not be.
         in_paid_tier = (sitelocation.tier_name and
                         sitelocation.tier_name != 'basic')
 
@@ -33,6 +41,11 @@ class Command(BaseCommand):
         if (in_paid_tier and
             sitelocation.tierinfo.free_trial_available and
             sitelocation.tier_name == 'max'):
+
+            if sitelocation.tierinfo.current_paypal_profile_id:
+                print "UM YIKES"
+                return
+
             print "Marking as subsidized: ", sitelocation.site.domain
             sitelocation.tierinfo.current_paypal_profile_id = 'subsidized'
             sitelocation.tierinfo.save()
