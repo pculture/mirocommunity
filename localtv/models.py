@@ -330,6 +330,13 @@ class TierInfo(models.Model):
         self.save()
         return self.payment_secret
 
+    def site_is_subsidized(self):
+        return (self.current_paypal_profile_id == 'subsidized')
+
+    def set_to_subsidized(self):
+        assert not self.current_paypal_profile_id
+        self.current_paypal_profile_id = 'subsidized'
+
     def time_until_free_trial_expires(self):
         if not self.in_free_trial:
             return None
