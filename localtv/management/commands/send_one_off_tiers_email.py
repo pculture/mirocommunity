@@ -68,6 +68,14 @@ class Command(BaseCommand):
         sitelocation = localtv.models.SiteLocation.objects.get_current()
         warnings = localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name)
         ### Hack
+        ### Override the customtheme warning for this email with custom code
+        if 'customtheme' in warnings:
+            warnings.remove('customtheme')
+        default_non_bundled_themes = uploadtemplate.models.Theme.objects.filter(default=True, bundled=False)
+        if default_non_bundled_themes:
+            warnings.add('customtheme')
+
+        ### Hack
         ### override the customdomain warning, too
         if (sitelocation.site.domain
             and not sitelocation.site.domain.endswith('mirocommunity.org')
