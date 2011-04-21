@@ -117,7 +117,7 @@ class Command(BaseCommand):
                 disable_these_videos = localtv.tiers.current_videos_that_count_toward_limit().order_by('pk')[:count]
                 disable_these_pks = list(disable_these_videos.values_list('id', flat=True))
                 as_json = simplejson.dumps(disable_these_pks)
-                filename = os.path.join('/var/tmp/', 'videos-disabled-' + hashlib.sha(sitelocation.site.domain).hexdigest() + '.json')
+                filename = os.path.join('/var/tmp/', 'videos-disabled-' + hashlib.sha1(sitelocation.site.domain).hexdigest() + '.json')
                 file_obj = open(filename, 'w')
                 file_obj.write(as_json)
                 file_obj.close()
