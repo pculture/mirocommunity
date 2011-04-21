@@ -26,7 +26,6 @@ import django.template
 
 import localtv.tiers
 import localtv.models
-import uploadtemplate.models
 
 ## This is some horrifying hackish copy-paste between send_one_off_tiers_email
 ## and send_tiers_compliance_email.
