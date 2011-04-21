@@ -19,6 +19,7 @@ import sys
 import hashlib
 import os.path
 import re
+import simplejson
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -102,6 +103,26 @@ class Command(BaseCommand):
                                                          extra_context=data)
             # Well, there were warnings. That means that, sadly, it is time
             # to squish the site down to size.
+
+            # Will we unpublish videos? If so, save a quick note about them.
+            new_limit = sitelocation.get_tier().videos_limit()
+            current_count = localtv.tiers.current_videos_that_count_toward_limit(
+                ).count()
+            if current_count <= new_limit:
+                count = 0
+            count = (current_count - new_limit)
+
+            if count > 0:
+                # Okay, so we're going to squish the video count down.
+                disable_these_videos = localtv.tiers.current_videos_that_count_toward_limit().order_by('pk')[:count]
+                disable_these_pks = list(disable_these_videos.values_list('id', flat=True))
+                as_json = simplejson.dumps(disable_these_pks)
+                filename = os.path.join('/var/tmp/', 'videos-disabled-' + hashlib.sha(sitelocation.site.domain).hexdigest() + '.json')
+                file_obj = open(filename, 'w')
+                file_obj.write(as_json)
+                file_obj.close()
+
+            # Okay. Now actually squish the site down to size.
             localtv.tiers.pre_save_adjust_resource_usage(sitelocation, signal=None)
 
         else:
