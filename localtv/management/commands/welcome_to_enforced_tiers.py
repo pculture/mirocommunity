@@ -75,6 +75,11 @@ class Command(BaseCommand):
             print >> sys.stderr, "Enforcement is disabled. Bailing out now!"
             return
 
+        if sitelocation.tier_name != 'basic':
+            print >> sys.stderr, "Um um um the site should really be in basic."
+            print >> sys.stderr, "Bailing out."
+            return
+
         if sitelocation.tierinfo.site_is_subsidized():
             print >> sys.stderr, "Seems the site is subsidized. Skipping."
             self.mark_as_sent(html_template_name)
