@@ -48,7 +48,8 @@ class Command(BaseCommand):
         try:
             for i in feed._update_items_generator(verbose=verbose,
                                                   parsed_feed=bulk_feed,
-                                                  clear_rejected=True):
+                                                  clear_rejected=True,
+                                                  actually_save_thumbnails=False):
                 if not models.Feed.objects.filter(pk=feed.pk).count():
                     # someone deleted the feed, quit
                     break
