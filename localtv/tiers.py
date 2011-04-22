@@ -433,17 +433,15 @@ def post_save_send_queued_mail(sender, instance, **kwargs):
 
 def pre_save_adjust_resource_usage(instance, signal, **kwargs):
     import localtv.models
-    ### Check if tiers enforcement is disabled. If so, bail out now.
-    if not localtv.models.SiteLocation.enforce_tiers():
-        return
-
     # Check if there is an existing SiteLocation. If not, we should bail
     # out now.
     current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
     if not current_sitelocs:
         return
-    # This dance defeats the SiteLocation cache.
-    current_siteloc = current_sitelocs[0]
+
+    ### Check if tiers enforcement is disabled. If so, bail out now.
+    if not localtv.models.SiteLocation.enforce_tiers():
+        return
 
     # When transitioning between any two site tiers, make sure that
     # the number of admins there are on the site is within the tier.
