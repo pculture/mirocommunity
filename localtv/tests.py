@@ -2009,6 +2009,13 @@ today</a>.</p></div>""",
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
+        self.assertTrue(self.original.remote_video_was_deleted)
+        self.assertEquals(len(mail.outbox), 0) # not e-mailed yet
+
+        # second try sends the e-mail
+        self.original.update(override_vidscraper_result=vidscraper_result)
+
+        self.assertTrue(self.original.remote_video_was_deleted)
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
@@ -2018,6 +2025,29 @@ today</a>.</p></div>""",
         # Clear the outbox, and do the same query again.
         mail.outbox = []
         self.original.update(override_vidscraper_result=vidscraper_result)
+        self.assertEquals(len(mail.outbox), 0)
+
+    def test_remote_video_spurious_delete(self):
+        """
+        If the remote video pretends to be deleted, then don't send an e-mail
+        and reset the remote_video_was_deleted flag.
+        """
+        # For vimeo, at least, this is what remote video deletion looks like:
+        vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
+
+        self.original.update(override_vidscraper_result=vidscraper_result)
+
+        self.assertTrue(self.original.remote_video_was_deleted)
+        self.assertEquals(len(mail.outbox), 0) # not e-mailed yet
+
+        # second try sends the e-mail
+        self.original.update(override_vidscraper_result={
+                'name': self.video.name,
+                'description': self.video.description,
+                'tags': list(self.video.tags),
+                'thumbnail_url': self.video.thumbnail_url})
+
+        self.assertFalse(self.original.remote_video_was_deleted)
         self.assertEquals(len(mail.outbox), 0)
 
     def test_remote_video_newline_fiddling(self):
