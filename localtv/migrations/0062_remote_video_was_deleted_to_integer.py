@@ -9,13 +9,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Changing field 'OriginalVideo.remote_video_was_deleted'
-        db.alter_column('localtv_originalvideo', 'remote_video_was_deleted', self.gf('django.db.models.fields.IntegerField')())
+        db.alter_column('localtv_originalvideo', 'remote_video_was_deleted', self.gf('django.db.models.fields.IntegerField')(), ignore_constraints=True)
 
 
     def backwards(self, orm):
         
         # Changing field 'OriginalVideo.remote_video_was_deleted'
-        db.alter_column('localtv_originalvideo', 'remote_video_was_deleted', self.gf('django.db.models.fields.BooleanField')())
+        db.alter_column('localtv_originalvideo', 'remote_video_was_deleted', self.gf('django.db.models.fields.BooleanField')(), ignore_constraints=True)
 
 
     models = {
