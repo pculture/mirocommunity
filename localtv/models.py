@@ -895,9 +895,12 @@ class VideoBase(models.Model):
         abstract = True
 
 class OriginalVideo(VideoBase):
+
+    VIDEO_ACTIVE, VIDEO_DELETED, VIDEO_DELETE_PENDING = range(3)
+
     video = models.OneToOneField('Video', related_name='original')
     thumbnail_updated = models.DateTimeField(blank=True)
-    remote_video_was_deleted = models.BooleanField(default=False)
+    remote_video_was_deleted = models.IntegerField(default=VIDEO_ACTIVE)
     remote_thumbnail_hash = models.CharField(max_length=64, default='')
 
     def changed_fields(self, override_vidscraper_result=None):
@@ -932,7 +935,7 @@ class OriginalVideo(VideoBase):
         # deleted.
 
         if remote_video_was_deleted:
-            if self.remote_video_was_deleted:
+            if self.remote_video_was_deleted == OriginalVideo.VIDEO_DELETED:
                 return {} # We already notified the admins of the deletion.
             else:
                 return {'deleted': True}
@@ -1011,18 +1014,21 @@ class OriginalVideo(VideoBase):
         return True
 
     def send_deleted_notification(self):
-        from localtv.util import send_notice, get_or_create_tags
-        t = loader.get_template('localtv/admin/video_deleted.txt')
-        c = Context({'video': self.video})
-        subject = '[%s] Video Deleted: "%s"' % (
-            self.video.site.name, self.video.name)
-        message = t.render(c)
-        send_notice('admin_video_updated', subject, message,
-                    sitelocation=SiteLocation.objects.get(
-                site=self.video.site))
-        # Update the OriginalVideo to show that we sent this notification
-        # out.
-        self.remote_video_was_deleted = True
+        if self.remote_video_was_deleted == OriginalVideo.VIDEO_DELETE_PENDING:
+            from localtv.util import send_notice
+            t = loader.get_template('localtv/admin/video_deleted.txt')
+            c = Context({'video': self.video})
+            subject = '[%s] Video Deleted: "%s"' % (
+                self.video.site.name, self.video.name)
+            message = t.render(c)
+            send_notice('admin_video_updated', subject, message,
+                        sitelocation=SiteLocation.objects.get(
+                    site=self.video.site))
+            # Update the OriginalVideo to show that we sent this notification
+            # out.
+            self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETED
+        else:
+            self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETE_PENDING
         self.save()
 
     def update(self, override_vidscraper_result = None):
@@ -1058,6 +1064,10 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, value)
                 setattr(self.video, field, value)
                 changed_model = True
+
+        if self.remote_video_was_deleted:
+            self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
+            changed_model = True
 
         if changed_model:
             self.save()
