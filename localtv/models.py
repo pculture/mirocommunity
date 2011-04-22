@@ -651,215 +651,223 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
+        if parsed_feed is None:
+            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+
+        for index, entry in enumerate(parsed_feed['entries'][::-1]):
+            yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
+
+        self._mark_bulk_import_as_done(parsed_feed)
+
+    def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
+                                           actually_save_thumbnails=True):
+        # Check that if we want to add an active
         if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
 
-        if parsed_feed is None:
-            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+        skip = False
+        guid = entry.get('guid', '')
+        if guid and Video.objects.filter(
+            feed=self, guid=guid).count():
+            skip = 'duplicate guid'
+        link = entry.get('link', '')
+        for possible_link in entry.links:
+            if possible_link.get('rel') == 'via':
+                # original URL
+                link = possible_link['href']
+                break
+        if link:
+            if clear_rejected:
+                for video in Video.objects.filter(
+                    status=VIDEO_STATUS_REJECTED,
+                    website_url=link):
+                    video.delete()
+            if Video.objects.filter(
+                website_url=link).count():
+                skip = 'duplicate link'
 
-        for index, entry in enumerate(parsed_feed['entries'][::-1]):
-            skip = False
-            guid = entry.get('guid', '')
-            if guid and Video.objects.filter(
-                feed=self, guid=guid).count():
-                skip = 'duplicate guid'
-            link = entry.get('link', '')
-            for possible_link in entry.links:
-                if possible_link.get('rel') == 'via':
-                    # original URL
-                    link = possible_link['href']
-                    break
-            if link:
-                if clear_rejected:
-                    for video in Video.objects.filter(
-                        status=VIDEO_STATUS_REJECTED,
-                        website_url=link):
-                        video.delete()
-                if Video.objects.filter(
-                    website_url=link).count():
-                    skip = 'duplicate link'
+        video_data = {
+            'name': unescape(entry['title']),
+            'guid': guid,
+            'site': self.site,
+            'description': '',
+            'file_url': '',
+            'file_url_length': None,
+            'file_url_mimetype': '',
+            'embed_code': '',
+            'flash_enclosure_url': '',
+            'when_submitted': datetime.datetime.now(),
+            'when_approved': (
+                self.auto_approve and datetime.datetime.now() or None),
+            'status': initial_video_status,
+            'when_published': None,
+            'feed': self,
+            'website_url': link}
 
-            video_data = {
-                'name': unescape(entry['title']),
-                'guid': guid,
-                'site': self.site,
-                'description': '',
-                'file_url': '',
-                'file_url_length': None,
-                'file_url_mimetype': '',
-                'embed_code': '',
-                'flash_enclosure_url': '',
-                'when_submitted': datetime.datetime.now(),
-                'when_approved': (
-                    self.auto_approve and datetime.datetime.now() or None),
-                'status': initial_video_status,
-                'when_published': None,
-                'feed': self,
-                'website_url': link}
+        tags = []
+        authors = self.auto_authors.all()
 
-            tags = []
-            authors = self.auto_authors.all()
+        if entry.get('updated_parsed', None):
+            video_data['when_published'] = datetime.datetime(
+                *entry.updated_parsed[:6])
 
-            if entry.get('updated_parsed', None):
-                video_data['when_published'] = datetime.datetime(
-                    *entry.updated_parsed[:6])
+        thumbnail_url = util.get_thumbnail_url(entry) or ''
+        if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
+            thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
+                                             thumbnail_url)
+        video_data['thumbnail_url'] = thumbnail_url
 
-            thumbnail_url = util.get_thumbnail_url(entry) or ''
-            if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
-                thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                 thumbnail_url)
-            video_data['thumbnail_url'] = thumbnail_url
+        video_enclosure = util.get_first_video_enclosure(entry)
+        if video_enclosure:
+            file_url = video_enclosure.get('url')
+            if file_url:
+                file_url = unescape(file_url)
+                if not urlparse.urlparse(file_url)[0]:
+                    file_url = urlparse.urljoin(parsed_feed.feed.link,
+                                                file_url)
+                video_data['file_url'] = file_url
 
-            video_enclosure = util.get_first_video_enclosure(entry)
-            if video_enclosure:
-                file_url = video_enclosure.get('url')
-                if file_url:
-                    file_url = unescape(file_url)
-                    if not urlparse.urlparse(file_url)[0]:
-                        file_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                    file_url)
-                    video_data['file_url'] = file_url
-
-                    try:
-                        file_url_length = int(
-                            video_enclosure.get('filesize') or
-                            video_enclosure.get('length'))
-                    except (ValueError, TypeError):
-                        file_url_length = None
-                    video_data['file_url_length'] = file_url_length
-
-                    video_data['file_url_mimetype'] = video_enclosure.get(
-                        'type')
-
-            if link and not skip:
                 try:
-                    scraped_data = vidscraper.auto_scrape(
-                        link,
-                        fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date', 'thumbnail_url', 'link',
-                                'file_url_is_flaky', 'user', 'user_url',
-                                'tags', 'description'])
-                    if not video_data['file_url']:
-                        if not scraped_data.get('file_url_is_flaky'):
-                            video_data['file_url'] = scraped_data.get(
-                                'file_url') or ''
-                    video_data['embed_code'] = scraped_data.get('embed')
-                    video_data['flash_enclosure_url'] = scraped_data.get(
-                        'flash_enclosure_url', '')
-                    video_data['when_published'] = scraped_data.get(
-                        'publish_date')
-                    video_data['description'] = scraped_data.get(
-                        'description', '')
-                    if scraped_data['thumbnail_url']:
-                        video_data['thumbnail_url'] = scraped_data.get(
-                            'thumbnail_url')
+                    file_url_length = int(
+                        video_enclosure.get('filesize') or
+                        video_enclosure.get('length'))
+                except (ValueError, TypeError):
+                    file_url_length = None
+                video_data['file_url_length'] = file_url_length
 
-                    if scraped_data.get('link'):
-                        if (Video.objects.filter(
-                                website_url=scraped_data['link']).count()):
-                            skip = 'duplicate link (vidscraper)'
-                        else:
-                            video_data['website_url'] = scraped_data['link']
+                video_data['file_url_mimetype'] = video_enclosure.get(
+                    'type')
 
-                    tags = scraped_data.get('tags', [])
+        if link and not skip:
+            try:
+                scraped_data = vidscraper.auto_scrape(
+                    link,
+                    fields=['file_url', 'embed', 'flash_enclosure_url',
+                            'publish_date', 'thumbnail_url', 'link',
+                            'file_url_is_flaky', 'user', 'user_url',
+                            'tags', 'description'])
+                if not video_data['file_url']:
+                    if not scraped_data.get('file_url_is_flaky'):
+                        video_data['file_url'] = scraped_data.get(
+                            'file_url') or ''
+                video_data['embed_code'] = scraped_data.get('embed')
+                video_data['flash_enclosure_url'] = scraped_data.get(
+                    'flash_enclosure_url', '')
+                video_data['when_published'] = scraped_data.get(
+                    'publish_date')
+                video_data['description'] = scraped_data.get(
+                    'description', '')
+                if scraped_data['thumbnail_url']:
+                    video_data['thumbnail_url'] = scraped_data.get(
+                        'thumbnail_url')
 
-                    if not authors.count() and scraped_data.get('user'):
-                        author, created = User.objects.get_or_create(
-                            username=scraped_data.get('user'),
-                            defaults={'first_name': scraped_data.get('user')})
-                        if created:
-                            author.set_unusable_password()
-                            author.save()
-                            util.get_profile_model().objects.create(
-                                user=author,
-                                website=scraped_data.get('user_url'))
-                        authors = [author]
-
-                except vidscraper.errors.Error, e:
-                    if verbose:
-                        print "Vidscraper error: %s" % e
-
-            if not skip:
-                if not (video_data['file_url'] or video_data['embed_code']):
-                    skip = 'invalid'
-
-            if skip:
-                if verbose:
-                    print "Skipping %s: %s" % (entry['title'], skip)
-                yield {'index': index,
-                       'total': len(parsed_feed.entries),
-                       'video': None,
-                       'skip': skip}
-                continue
-
-            if not video_data['description']:
-                description = entry.get('summary', '')
-                for content in entry.get('content', []):
-                    content_type = content.get('type', '')
-                    if 'html' in content_type:
-                        description = content.value
-                        break
-                video_data['description'] = description
-
-            if video_data['description']:
-                soup = BeautifulSoup(video_data['description'])
-                for tag in soup.findAll(
-                    'div', {'class': "miro-community-description"}):
-                    video_data['description'] = tag.renderContents()
-                    break
-                video_data['description'] = sanitize(video_data['description'],
-                                                     extra_filters=['img'])
-
-            if entry.get('media_player'):
-                player = entry['media_player']
-                if isinstance(player, basestring):
-                    video_data['embed_code'] = unescape(player)
-                elif player.get('content'):
-                    video_data['embed_code'] = unescape(player['content'])
-                elif 'url' in player and not video_data['embed_code']:
-                    video_data['embed_code'] = '<embed src="%(url)s">' % player
-
-            video = Video.objects.create(**video_data)
-            if verbose:
-                    print 'Made video %i: %s' % (video.pk, video.name)
-
-            if actually_save_thumbnails:
-                try:
-                    video.save_thumbnail()
-                except CannotOpenImageUrl:
-                    if verbose:
-                        print "Can't get the thumbnail for %s at %s" % (
-                            video.id, video.thumbnail_url)
-
-            if entry.get('tags') or tags:
-                if not tags:
-                    # Sometimes, entry.tags is just a lousy old
-                    # string. In that case, do our best to undo the
-                    # delimiting. For now, all I have seen is
-                    # space-separated values, so that's what I'm going
-                    # to go with.
-                    if type(entry.tags) in types.StringTypes:
-                        tags = set(tag.strip() for tag in entry.tags.split())
-
+                if scraped_data.get('link'):
+                    if (Video.objects.filter(
+                            website_url=scraped_data['link']).count()):
+                        skip = 'duplicate link (vidscraper)'
                     else:
-                        # Usually, entry.tags is a list of dicts. If so, flatten them out into
-                        tags = set(
-                            tag['term'] for tag in entry['tags']
-                            if tag.get('term'))
+                        video_data['website_url'] = scraped_data['link']
 
-                if tags:
-                    video.tags = util.get_or_create_tags(tags)
+                tags = scraped_data.get('tags', [])
 
-            video.categories = self.auto_categories.all()
-            video.authors = authors
-            video.save()
+                if not authors.count() and scraped_data.get('user'):
+                    author, created = User.objects.get_or_create(
+                        username=scraped_data.get('user'),
+                        defaults={'first_name': scraped_data.get('user')})
+                    if created:
+                        author.set_unusable_password()
+                        author.save()
+                        util.get_profile_model().objects.create(
+                            user=author,
+                            website=scraped_data.get('user_url'))
+                    authors = [author]
 
-            yield {'index': index,
+            except vidscraper.errors.Error, e:
+                if verbose:
+                    print "Vidscraper error: %s" % e
+
+        if not skip:
+            if not (video_data['file_url'] or video_data['embed_code']):
+                skip = 'invalid'
+
+        if skip:
+            if verbose:
+                print "Skipping %s: %s" % (entry['title'], skip)
+            return {'index': index,
                    'total': len(parsed_feed.entries),
-                   'video': video}
+                   'video': None,
+                   'skip': skip}
 
+
+        if not video_data['description']:
+            description = entry.get('summary', '')
+            for content in entry.get('content', []):
+                content_type = content.get('type', '')
+                if 'html' in content_type:
+                    description = content.value
+                    break
+            video_data['description'] = description
+
+        if video_data['description']:
+            soup = BeautifulSoup(video_data['description'])
+            for tag in soup.findAll(
+                'div', {'class': "miro-community-description"}):
+                video_data['description'] = tag.renderContents()
+                break
+            video_data['description'] = sanitize(video_data['description'],
+                                                 extra_filters=['img'])
+
+        if entry.get('media_player'):
+            player = entry['media_player']
+            if isinstance(player, basestring):
+                video_data['embed_code'] = unescape(player)
+            elif player.get('content'):
+                video_data['embed_code'] = unescape(player['content'])
+            elif 'url' in player and not video_data['embed_code']:
+                video_data['embed_code'] = '<embed src="%(url)s">' % player
+
+        video = Video.objects.create(**video_data)
+        if verbose:
+                print 'Made video %i: %s' % (video.pk, video.name)
+
+        if actually_save_thumbnails:
+            try:
+                video.save_thumbnail()
+            except CannotOpenImageUrl:
+                if verbose:
+                    print "Can't get the thumbnail for %s at %s" % (
+                        video.id, video.thumbnail_url)
+
+        if entry.get('tags') or tags:
+            if not tags:
+                # Sometimes, entry.tags is just a lousy old
+                # string. In that case, do our best to undo the
+                # delimiting. For now, all I have seen is
+                # space-separated values, so that's what I'm going
+                # to go with.
+                if type(entry.tags) in types.StringTypes:
+                    tags = set(tag.strip() for tag in entry.tags.split())
+
+                else:
+                    # Usually, entry.tags is a list of dicts. If so, flatten them out into
+                    tags = set(
+                        tag['term'] for tag in entry['tags']
+                        if tag.get('term'))
+
+            if tags:
+                video.tags = util.get_or_create_tags(tags)
+
+        video.categories = self.auto_categories.all()
+        video.authors = authors
+        video.save()
+
+        return {'index': index,
+               'total': len(parsed_feed.entries),
+               'video': video}
+            
+    def _mark_bulk_import_as_done(self, parsed_feed):
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
         self.save()
