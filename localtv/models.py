@@ -642,7 +642,7 @@ class Feed(Source):
             pass
 
     def _update_items_generator(self, verbose=False, parsed_feed=None,
-                                clear_rejected=False):
+                                clear_rejected=False, actually_save_thumbnails=True):
         """
         Fetch and import new videos from this field.  After each imported
         video, we yield a dictionary:
@@ -825,12 +825,13 @@ class Feed(Source):
             if verbose:
                     print 'Made video %i: %s' % (video.pk, video.name)
 
-            try:
-                video.save_thumbnail()
-            except CannotOpenImageUrl:
-                if verbose:
-                    print "Can't get the thumbnail for %s at %s" % (
-                        video.id, video.thumbnail_url)
+            if actually_save_thumbnails:
+                try:
+                    video.save_thumbnail()
+                except CannotOpenImageUrl:
+                    if verbose:
+                        print "Can't get the thumbnail for %s at %s" % (
+                            video.id, video.thumbnail_url)
 
             if entry.get('tags') or tags:
                 if not tags:
