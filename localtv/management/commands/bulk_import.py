@@ -67,6 +67,7 @@ class Command(BaseCommand):
             return self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed, verbose)
 
 
+    @transaction.commit_on_success
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed, verbose):
         httplib2 = eventlet.import_patched('httplib2')
 
@@ -84,7 +85,6 @@ class Command(BaseCommand):
             'skipped': 0
             }
 
-        @transaction.commit_on_success()
         def handle_one_sub_feed(feed_contents):
             print 'ho'
             parsed_feed = feedparser.parse(feed_contents)
