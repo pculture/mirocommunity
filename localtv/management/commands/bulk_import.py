@@ -71,9 +71,8 @@ class Command(BaseCommand):
             return self.use_old_bulk_import(parsed_feed, feed)
         else:
             self.celery_tasks = {}
-            video_ids = self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
-            self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
-
+            self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
+            self.enqueue_celery_tasks_for_thumbnail_fetches(feed)
 
     @transaction.commit_manually
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
@@ -208,11 +207,21 @@ class Command(BaseCommand):
                 future_status))
         self.celery_tasks[video_id] = task
 
-    def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
-        for video_id in video_ids:
-            if video_id in self.celery_tasks:
+    def enqueue_celery_tasks_for_thumbnail_fetches(self, feed):
+        # Make sure that any videos from the feed with
+        # status=models.VIDEO_STATUS_PENDING_THUMBNAIL have tasks.
+        all_feed_items_pending_thumbnail = feed.video_set.filter(
+            status=models.VIDEO_STATUS_PENDING_THUMBNAIL)
+
+        for video in all_feed_items_pending_thumbnail:
+            if video.id in self.celery_tasks:
                 continue
-            self._enqueue_one_celery_task_for_thumbnail_fetch(video_id)
+            # Eek. It seems we have to grab a thumbnail for a video
+            # where we misplaced the celery task. In that case, we
+            # have to look at the feed to see what status videos
+            # should get.
+            self._enqueue_one_celery_task_for_thumbnail_fetch(
+                video.id, feed.default_video_status())
 
         if self.verbose:
             print 'Enqueued all thumbnail fetches.'

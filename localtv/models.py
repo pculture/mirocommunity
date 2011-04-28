@@ -610,13 +610,17 @@ class Feed(Source):
 
         self._mark_bulk_import_as_done(parsed_feed)
 
-    def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
-                                           actually_save_thumbnails=True):
+    def default_video_status(self):
         # Check that if we want to add an active
         if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
             initial_video_status = VIDEO_STATUS_ACTIVE
         else:
             initial_video_status = VIDEO_STATUS_UNAPPROVED
+        return initial_video_status
+
+    def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
+                                           actually_save_thumbnails=True):
+        initial_video_status = self.default_video_status()
 
         skip = False
         guid = entry.get('guid', '')
