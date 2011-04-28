@@ -17,6 +17,7 @@
 import os
 import simplejson
 import sys
+import multiprocessing
 
 from importlib import import_module
 
@@ -35,6 +36,19 @@ import localtv.util
 import localtv.tasks
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
+
+def function_for_fork_worker(data_tuple):
+    video_id, future_status = data_tuple
+    import localtv.management.commands.update_one_thumbnail
+    cmd = localtv.management.commands.update_one_thumbnail.Command()
+    try:
+        cmd.handle(video_id, future_status)
+    except models.Video.DoesNotExist:
+        import logging
+        logging.warn("For some reason, we failed to find the model with ID %d" % (
+                video_id, ))
+        return False # Aww, shucks. Maybe after a retry this will work.
+    return True
 
 class Command(BaseCommand):
 
@@ -71,6 +85,8 @@ class Command(BaseCommand):
             return self.use_old_bulk_import(parsed_feed, feed)
         else:
             self.forked_tasks = {}
+            self.forked_task_worker_pool =  multiprocessing.Pool(processes=8)
+            # start 8 worker processes. That should be fine, right?
             self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
             self.enqueue_forked_tasks_for_thumbnail_fetches(feed)
 
@@ -194,17 +210,8 @@ class Command(BaseCommand):
         if self.verbose:
             print 'Starting thumbnail fetches for', video_id
 
-        mod = import_module(settings.SETTINGS_MODULE)
-        manage_py = os.path.abspath(os.path.join(
-                os.path.dirname(mod.__file__),
-                'manage.py'))
-
-        task = localtv.tasks.check_call.delay((
-                getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
-                manage_py,
-                'update_one_thumbnail',
-                video_id,
-                future_status))
+        task = self.forked_task_worker_pool.apply_async(
+            function_for_fork_worker, [(video_id, future_status)])
         self.forked_tasks[video_id] = task
 
     def enqueue_forked_tasks_for_thumbnail_fetches(self, feed):
@@ -229,7 +236,15 @@ class Command(BaseCommand):
         # Finally, wait for them all to finish
         for video_id in self.forked_tasks:
             task = self.forked_tasks[video_id]
-            task.get()
+            success = task.get()
+            if not success:
+                # Re-enqueue it. :-(
+                self._enqueue_one_forked_task_for_thumbnail_fetch(
+                    video_id, feed.default_video_status())
+
+        for video_id in self.forked_tasks:
+            task = self.forked_tasks[video_id]
+            success = task.get()
 
         if self.verbose:
             print 'Finished thumbnail fetches.'
