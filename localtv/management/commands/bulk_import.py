@@ -164,10 +164,15 @@ class Command(BaseCommand):
                 video_id))
             celery_tasks.append(task)
 
-        # FIXME: Wait for them all to finish
-        if self.verbose > 1:
+        if self.verbose:
+            print 'Enqueued all thumbnail fetches.'
+
+        # Finally, wait for them all to finish
+        for task in celery_tasks:
+            task.get()
+
+        if self.verbose:
             print 'Finished thumbnail fetches.'
-        return
 
     def use_old_bulk_import(self, parsed_feed, feed):
         bulk_feed = bulk_import(feed_url=None, parsed_feed=parsed_feed)
