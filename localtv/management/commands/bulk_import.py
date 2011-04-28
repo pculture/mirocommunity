@@ -70,9 +70,9 @@ class Command(BaseCommand):
         if type(feed_urls) != list: # hack.
             return self.use_old_bulk_import(parsed_feed, feed)
         else:
-            self.celery_tasks = {}
+            self.forked_tasks = {}
             self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
-            self.enqueue_celery_tasks_for_thumbnail_fetches(feed)
+            self.enqueue_forked_tasks_for_thumbnail_fetches(feed)
 
     @transaction.commit_manually
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
@@ -158,12 +158,12 @@ class Command(BaseCommand):
             try:
                 results.extend(result)
                 # Now that handle_one_sub_feed has finished, it is
-                # safe to spawn celery tasks to do thumbnail fetching.
+                # safe to spawn forked tasks to do thumbnail fetching.
                 for i in result:
                     video = i['video']
                     if video:
                         future_status = i['future_status']
-                        self._enqueue_one_celery_task_for_thumbnail_fetch(
+                        self._enqueue_one_forked_task_for_thumbnail_fetch(
                             video.id, future_status)
             except:
                 transaction.rollback()
@@ -190,7 +190,7 @@ class Command(BaseCommand):
         print simplejson.dumps(stats),
         return return_me
 
-    def _enqueue_one_celery_task_for_thumbnail_fetch(self, video_id, future_status):
+    def _enqueue_one_forked_task_for_thumbnail_fetch(self, video_id, future_status):
         if self.verbose:
             print 'Starting thumbnail fetches for', video_id
 
@@ -205,30 +205,30 @@ class Command(BaseCommand):
                 'update_one_thumbnail',
                 video_id,
                 future_status))
-        self.celery_tasks[video_id] = task
+        self.forked_tasks[video_id] = task
 
-    def enqueue_celery_tasks_for_thumbnail_fetches(self, feed):
+    def enqueue_forked_tasks_for_thumbnail_fetches(self, feed):
         # Make sure that any videos from the feed with
         # status=models.VIDEO_STATUS_PENDING_THUMBNAIL have tasks.
         all_feed_items_pending_thumbnail = feed.video_set.filter(
             status=models.VIDEO_STATUS_PENDING_THUMBNAIL)
 
         for video in all_feed_items_pending_thumbnail:
-            if video.id in self.celery_tasks:
+            if video.id in self.forked_tasks:
                 continue
             # Eek. It seems we have to grab a thumbnail for a video
-            # where we misplaced the celery task. In that case, we
+            # where we misplaced the forked task. In that case, we
             # have to look at the feed to see what status videos
             # should get.
-            self._enqueue_one_celery_task_for_thumbnail_fetch(
+            self._enqueue_one_forked_task_for_thumbnail_fetch(
                 video.id, feed.default_video_status())
 
         if self.verbose:
             print 'Enqueued all thumbnail fetches.'
 
         # Finally, wait for them all to finish
-        for video_id in self.celery_tasks:
-            task = self.celery_tasks[video_id]
+        for video_id in self.forked_tasks:
+            task = self.forked_tasks[video_id]
             task.get()
 
         if self.verbose:
