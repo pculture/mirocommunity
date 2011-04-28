@@ -75,6 +75,7 @@ class Command(BaseCommand):
             self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
 
 
+    @transaction.commit_manually
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
         # This asynchronous bulk_import is a parallelism monster.
 
@@ -106,7 +107,6 @@ class Command(BaseCommand):
             'skipped': 0
             }
 
-        @transaction.commit_on_success
         def handle_one_sub_feed(feed_contents):
             parsed_feed = feedparser.parse(feed_contents)
             # For each feed entry in this small sub-feed, handle the item.
@@ -133,13 +133,22 @@ class Command(BaseCommand):
 
         results = []
         for (response, content) in pool.imap(get_url, feed_urls):
-            result = handle_one_sub_feed(content)
+            try:
+                # We make it a list so that we can iterate across
+                # it more than once.
+                result = list(handle_one_sub_feed(content))
+            except:
+                transaction.rollback()
+                raise RuntimeError, "Well, huh. The transaction failed to commit."
+            else:
+                transaction.commit()
+
             results.extend(result)
             # Now that handle_one_sub_feed has finished, it is
             # safe to spawn celery tasks to do thumbnail fetching.
-            for video_id in [i['video'].id for i in result if i['video']]:
-                if video_id:
-                    self._enqueue_one_celery_task_for_thumbnail_fetch(video_id)
+            for video in [i['video'] for i in result]:
+                if video:
+                    self._enqueue_one_celery_task_for_thumbnail_fetch(video.id)
 
         # Get all the thumbnail URLs, and once you have them
         pool.waitall() # wait for the thumbnails
