@@ -39,15 +39,19 @@ DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 
 def function_for_fork_worker(data_tuple):
     video_id, future_status = data_tuple
+    import logging
     import localtv.management.commands.update_one_thumbnail
     cmd = localtv.management.commands.update_one_thumbnail.Command()
     try:
         cmd.handle(video_id, future_status)
     except models.Video.DoesNotExist:
-        import logging
         logging.warn("For some reason, we failed to find the model with ID %d" % (
                 video_id, ))
         return False # Aww, shucks. Maybe after a retry this will work.
+    except Exception, e:
+        logging.warn("uh, bizarre -- the task fell over. Maybe it will work on a retry.")
+        logging.exception(e)
+        return False
     return True
 
 class Command(BaseCommand):
