@@ -160,7 +160,7 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb=None):
+    def resize_thumbnail(self, thumb):
         """
         Creates resized versions of the video's thumbnail image
         """
