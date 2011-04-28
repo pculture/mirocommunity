@@ -70,6 +70,7 @@ class Command(BaseCommand):
         if type(feed_urls) != list: # hack.
             return self.use_old_bulk_import(parsed_feed, feed)
         else:
+            self.celery_tasks = {}
             video_ids = self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
             self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
 
@@ -134,6 +135,11 @@ class Command(BaseCommand):
         for (response, content) in pool.imap(get_url, feed_urls):
             result = handle_one_sub_feed(content)
             results.extend(result)
+            # Now that handle_one_sub_feed has finished, it is
+            # safe to spawn celery tasks to do thumbnail fetching.
+            for video_id in [i['video'].id for i in result if i['video']]:
+                if video_id:
+                    self._enqueue_one_celery_task_for_thumbnail_fetch(video_id)
 
         # Get all the thumbnail URLs, and once you have them
         pool.waitall() # wait for the thumbnails
@@ -147,28 +153,34 @@ class Command(BaseCommand):
         print simplejson.dumps(stats),
         return [i['video'].id for i in results if i['video']]
 
-    def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
+    def _enqueue_one_celery_task_for_thumbnail_fetch(self, video_id):
         if self.verbose:
-            print 'Starting thumbnail fetches for', video_ids
-        celery_tasks = []
-        for video_id in video_ids:
-            mod = import_module(settings.SETTINGS_MODULE)
-            manage_py = os.path.abspath(os.path.join(
+            print 'Starting thumbnail fetches for', video_id
+
+        mod = import_module(settings.SETTINGS_MODULE)
+        manage_py = os.path.abspath(os.path.join(
                 os.path.dirname(mod.__file__),
                 'manage.py'))
 
-            task = localtv.tasks.check_call.delay((
+        task = localtv.tasks.check_call.delay((
                 getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
                 manage_py,
                 'update_one_thumbnail',
                 video_id))
-            celery_tasks.append(task)
+        self.celery_tasks[video_id] = task
+
+    def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
+        for video_id in video_ids:
+            if video_id in self.celery_tasks:
+                continue
+            self._enqueue_one_celery_task_for_thumbnail_fetch(video_id)
 
         if self.verbose:
             print 'Enqueued all thumbnail fetches.'
 
         # Finally, wait for them all to finish
-        for task in celery_tasks:
+        for video_id in self.celery_tasks:
+            task = self.celery_tasks[video_id]
             task.get()
 
         if self.verbose:
