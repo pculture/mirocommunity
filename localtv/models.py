@@ -60,6 +60,10 @@ from localtv.templatetags.filters import sanitize
 from localtv import util
 import localtv.tiers
 
+def delete_if_exists(path):
+    if default_storage.exists(path):
+        default_storage.delete(path)
+
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
@@ -138,7 +142,7 @@ class Thumbnailable(models.Model):
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        default_storage.delete(
+        delete_if_exists(
             self.get_original_thumb_storage_path())
 
         self.thumbnail_extension = pil_image.format.lower()
@@ -172,7 +176,7 @@ class Thumbnailable(models.Model):
                 thumb, self.THUMB_SIZES)
         for ( (width, height), cf_image) in resized_images:
             # write file, deleting old thumb if it exists
-            default_storage.delete(
+            delete_if_exists(
                 self.get_resized_thumb_storage_path(width, height))
             default_storage.save(
                 self.get_resized_thumb_storage_path(width, height),
@@ -197,10 +201,6 @@ class Thumbnailable(models.Model):
             self.id, width, height)
 
     def delete_thumbnails(self):
-        def delete_if_exists(path):
-            if default_storage.exists(path):
-                default_storage.delete(path)
-
         self.has_thumbnail = False
         delete_if_exists(self.get_original_thumb_storage_path())
         for size in self.THUMB_SIZES:
