@@ -160,15 +160,16 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb):
+    def resize_thumbnail(self, thumb, resized_images=None):
         """
         Creates resized versions of the video's thumbnail image
         """
         if not thumb:
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
-        resized_images = localtv.util.resize_image_returning_list_of_content_files(
-            thumb, self.THUMB_SIZES)
+        if resized_images is None:
+            resized_images = localtv.util.resize_image_returning_list_of_content_files(
+                thumb, self.THUMB_SIZES)
         for ( (width, height), cf_image) in resized_images:
             # write file, deleting old thumb if it exists
             default_storage.delete(
