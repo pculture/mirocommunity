@@ -139,28 +139,41 @@ class Command(BaseCommand):
                 result = list(handle_one_sub_feed(content))
             except:
                 transaction.rollback()
-                raise RuntimeError, "Well, huh. The transaction failed to commit."
+                raise
             else:
                 transaction.commit()
 
-            results.extend(result)
-            # Now that handle_one_sub_feed has finished, it is
-            # safe to spawn celery tasks to do thumbnail fetching.
-            for video in [i['video'] for i in result]:
-                if video:
-                    self._enqueue_one_celery_task_for_thumbnail_fetch(video.id)
+            try:
+                results.extend(result)
+                # Now that handle_one_sub_feed has finished, it is
+                # safe to spawn celery tasks to do thumbnail fetching.
+                for video in [i['video'] for i in result]:
+                    if video:
+                        self._enqueue_one_celery_task_for_thumbnail_fetch(video.id)
+            except:
+                transaction.rollback()
+                raise
+            else:
+                transaction.commit()
 
         # Get all the thumbnail URLs, and once you have them
         pool.waitall() # wait for the thumbnails
 
-        # Finish marking the Feed as imported.
-        feed._mark_bulk_import_as_done(original_parsed_feed)
+        try:
+            # Finish marking the Feed as imported.
+            feed._mark_bulk_import_as_done(original_parsed_feed)
 
-        feed.status = models.FEED_STATUS_ACTIVE
-        feed.save()
+            feed.status = models.FEED_STATUS_ACTIVE
+            feed.save()
+            return_me = [i['video'].id for i in results if i['video']]
+        except:
+            transaction.rollback()
+            raise
+        else:
+            transaction.commit()
 
         print simplejson.dumps(stats),
-        return [i['video'].id for i in results if i['video']]
+        return return_me
 
     def _enqueue_one_celery_task_for_thumbnail_fetch(self, video_id):
         if self.verbose:
