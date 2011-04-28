@@ -76,7 +76,7 @@ class Command(BaseCommand):
         # rather than threads or subprocesses.
         httplib2 = eventlet.import_patched('httplib2')
 
-        httppool = eventlet.pools.Pool(max_size=10)
+        httppool = eventlet.pools.Pool(max_size=200)
         httppool.create = lambda: httplib2.Http(DEFAULT_HTTPLIB_CACHE_PATH)
 
         pool = eventlet.GreenPool(100)
