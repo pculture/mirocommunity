@@ -28,6 +28,7 @@ from django.core.management.base import BaseCommand, CommandError
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
 from localtv import models
+import localtv.util
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 
@@ -86,11 +87,9 @@ class Command(BaseCommand):
                 resp, content = http.request(url, 'GET')
                 return (resp, content)
 
-        def get_thumbnail_for_video_and_resize(video, url):
+        def cache_thumbnail_url(url):
             with httppool.item() as http:
-                resp, content = http.request(url, 'GET')
-                cf_image = ContentFile(content)
-                video.save_thumbnail_from_file(cf_image)
+                localtv.util.cache_downloaded_file(url, http)
 
         stats = {
             'total': 0,
@@ -112,9 +111,8 @@ class Command(BaseCommand):
                 v = i['video']
                 thumbnail_url = v.thumbnail_url
                 if thumbnail_url:
-                    pool.spawn(
-                        lambda url: get_thumbnail_for_video_and_resize(v, url),
-                        thumbnail_url)
+                    cache_thumbnail_url(thumbnail_url)
+                    pool.spawn(cache_thumbnail_url, thumbnail_url)
 
             stats['total'] += 1
             if i['video'] is not None:
