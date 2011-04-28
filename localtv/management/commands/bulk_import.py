@@ -132,7 +132,7 @@ class Command(BaseCommand):
             return i
 
         results = []
-        for (response, content) in pool.imap(get_url, feed_urls[:3]):
+        for (response, content) in pool.imap(get_url, feed_urls):
             result = handle_one_sub_feed(content)
             results.extend(result)
 
