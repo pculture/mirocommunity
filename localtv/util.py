@@ -429,6 +429,12 @@ DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 OUR_CACHE_DIR = os.path.join(DEFAULT_HTTPLIB_CACHE_PATH,
                              '.cache_downloaded_file')
 def cache_downloaded_file(url, http_getter):
+    if not os.path.exists(DEFAULT_HTTPLIB_CACHE_PATH):
+        os.mkdir(DEFAULT_HTTPLIB_CACHE_PATH, 0700)
+
+    if not os.path.exists(OUR_CACHE_DIR):
+        os.mkdir(OUR_CACHE_DIR, 0700)
+
     response, content = http_getter.request(url, 'GET')
     file_obj = file(os.path.join(OUR_CACHE_DIR,
                                  hashlib.sha1(url).hexdigest()), 'w')
