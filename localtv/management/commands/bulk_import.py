@@ -23,6 +23,7 @@ import eventlet
 import eventlet.pools
 
 from django.db import transaction
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
@@ -74,10 +75,18 @@ class Command(BaseCommand):
         httppool = eventlet.pools.Pool(max_size=10)
         httppool.create = lambda: httplib2.Http(DEFAULT_HTTPLIB_CACHE_PATH)
 
+        pool = eventlet.GreenPool(100)
+
         def get_url(url):
             with httppool.item() as http:
                 resp, content = http.request(url, 'GET')
                 return (resp, content)
+
+        def get_thumbnail_for_video_and_resize(video, url):
+            with httppool.item() as http:
+                resp, content = http.request(url, 'GET')
+                cf_image = ContentFile(content)
+                video.save_thumbnail_from_file(cf_image)
 
         stats = {
             'total': 0,
@@ -86,25 +95,38 @@ class Command(BaseCommand):
             }
 
         def handle_one_sub_feed(feed_contents):
-            print 'ho'
             parsed_feed = feedparser.parse(feed_contents)
             # For each feed entry in this small sub-feed, handle the item.
             for index, entry in enumerate(parsed_feed['entries'][::-1]):
-                handle_one_item(index, parsed_feed, entry)
+                yield handle_one_item(index, parsed_feed, entry)
 
         def handle_one_item(index, parsed_feed, entry):
-            print 'hee'
             i = feed._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=False,
                                                         actually_save_thumbnails=False)
+            # Enqueue the work to download the thumbnail
+            if i['video']:
+                v = i['video']
+                thumbnail_url = v.thumbnail_url
+                if thumbnail_url:
+                    pool.spawn(
+                        lambda url: get_thumbnail_for_video_and_resize(v, url),
+                        thumbnail_url)
+
             stats['total'] += 1
             if i['video'] is not None:
                 stats['imported'] += 1
             else:
                 stats['skipped'] += 1
 
-        pool = eventlet.GreenPool(100)
+            return i
+
+        results = []
         for (response, content) in pool.imap(get_url, feed_urls):
-            handle_one_sub_feed(content)
+            result = handle_one_sub_feed(content)
+            results.extend(result)
+
+        # Get all the thumbnail URLs, and once you have them
+        pool.waitall() # wait for the thumbnails
 
         # Finish marking the Feed as imported.
         feed._mark_bulk_import_as_done(original_parsed_feed)
