@@ -37,7 +37,12 @@ class Command(BaseCommand):
     def actually_update_thumb(self, video):
         thumbnail_data = None
         if video.thumbnail_url:
-            thumbnail_data = localtv.util.pull_downloaded_file_from_cache(video.thumbnail_url)
+            try:
+                thumbnail_data = localtv.util.pull_downloaded_file_from_cache(video.thumbnail_url)
+            except IOError:
+                pass # Aw well, we can't have nice things.
+
+        if thumbnail_data is not None:
             # wrap it in a Django ContentFile, and pass it through.
             cf_image = ContentFile(thumbnail_data)
             video.save_thumbnail_from_file(cf_image)
