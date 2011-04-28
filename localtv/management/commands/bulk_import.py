@@ -162,8 +162,8 @@ class Command(BaseCommand):
                 # safe to spawn celery tasks to do thumbnail fetching.
                 for i in result:
                     video = i['video']
-                    future_status = i['future_status']
                     if video:
+                        future_status = i['future_status']
                         self._enqueue_one_celery_task_for_thumbnail_fetch(
                             video.id, future_status)
             except:
