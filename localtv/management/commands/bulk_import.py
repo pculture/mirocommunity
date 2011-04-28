@@ -123,6 +123,19 @@ class Command(BaseCommand):
                 if thumbnail_url:
                     cache_thumbnail_url(thumbnail_url)
 
+                # The _handle_one_bulk_import_feed_entry() method gave the
+                # video a status, but we have to take that back for now.
+                #
+                # We set the status to VIDEO_STATUS_PENDING_THUMBNAIL so that
+                # no one can see the video until the thumbnailing process is
+                # complete.
+                #
+                # We pass the thumbnailer the status that the video should get
+                # so that it can set that once it is ready.
+                i['future_status'] = v.status
+                v.status = models.VIDEO_STATUS_PENDING_THUMBNAIL
+                v.save()
+
             stats['total'] += 1
             if i['video'] is not None:
                 stats['imported'] += 1
@@ -147,9 +160,12 @@ class Command(BaseCommand):
                 results.extend(result)
                 # Now that handle_one_sub_feed has finished, it is
                 # safe to spawn celery tasks to do thumbnail fetching.
-                for video in [i['video'] for i in result]:
+                for i in result:
+                    video = i['video']
+                    future_status = i['future_status']
                     if video:
-                        self._enqueue_one_celery_task_for_thumbnail_fetch(video.id)
+                        self._enqueue_one_celery_task_for_thumbnail_fetch(
+                            video.id, future_status)
             except:
                 transaction.rollback()
                 raise
@@ -175,7 +191,7 @@ class Command(BaseCommand):
         print simplejson.dumps(stats),
         return return_me
 
-    def _enqueue_one_celery_task_for_thumbnail_fetch(self, video_id):
+    def _enqueue_one_celery_task_for_thumbnail_fetch(self, video_id, future_status):
         if self.verbose:
             print 'Starting thumbnail fetches for', video_id
 
@@ -188,7 +204,8 @@ class Command(BaseCommand):
                 getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
                 manage_py,
                 'update_one_thumbnail',
-                video_id))
+                video_id,
+                future_status))
         self.celery_tasks[video_id] = task
 
     def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):

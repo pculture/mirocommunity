@@ -25,16 +25,17 @@ class Command(BaseCommand):
     args = '[video primary key]'
 
     def handle(self, *args, **options):
-        if len(args) != 1:
-            raise CommandError('update_one_thumbnail takes one argument: '
+        if len(args) != 2:
+            raise CommandError('update_one_thumbnail takes two arguments: '
                                '%i argument(s) given' % len(args))
         try:
             video = models.Video.objects.get(pk=args[0])
+            future_status = int(args[1])
         except models.Feed.DoesNotExist:
             raise CommandError('Video with pk %s does not exist' % args[0])
-        self.actually_update_thumb(video)
+        self.actually_update_thumb(video, future_status)
 
-    def actually_update_thumb(self, video):
+    def actually_update_thumb(self, video, future_status):
         thumbnail_data = None
         if video.thumbnail_url:
             try:
@@ -49,3 +50,12 @@ class Command(BaseCommand):
         else:
             video.save_thumbnail()
 
+        # Set the status.
+        # However, if the video wants to become ACTIVE but we may not make it
+        # ACTIVE, make it UNAPPROVED instead.
+        if future_status == models.VIDEO_STATUS_ACTIVE:
+            if not models.SiteLocation.objects.get().get_tier().can_add_more_videos():
+                future_status = models.VIDEO_STATUS_UNAPPROVED
+
+        video.status = future_status
+        video.save()
