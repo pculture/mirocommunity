@@ -20,12 +20,18 @@ import re
 import string
 import urllib
 import types
+import Image
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
 from django.utils.encoding import force_unicode
+from django.core.files.base import ContentFile
 
 import tagging
 import vidscraper
@@ -414,3 +420,71 @@ else:
             """ Overwrite existing file with the same name. """
             name = self._clean_name(name)
             return name
+
+def resize_image_returning_list_of_content_files(original_image,
+                                                 THUMB_SIZES):
+    ret = []
+    # Hackishly copying this constant in for now.
+    FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
+
+    for size in THUMB_SIZES:
+        if len(size) == 2:
+            (width, height), force_height = size, FORCE_HEIGHT_CROP
+        else:
+            width, height, force_height = size
+        resized_image = original_image.copy()
+        if resized_image.size != (width, height):
+            width_scale = float(resized_image.size[0]) / width
+            if force_height:
+                height_scale = float(resized_image.size[1]) / height
+                if force_height == FORCE_HEIGHT_CROP:
+                    # make the resized_image have one side the same as the
+                    # thumbnail, and the other bigger so we can crop it
+                    if width_scale < height_scale:
+                        new_height = int(resized_image.size[1] /
+                                         width_scale)
+                        new_width = width
+                    else:
+                        new_width = int(resized_image.size[0] /
+                                        height_scale)
+                        new_height = height
+                else: # FORCE_HEIGHT_PADDING
+                    if width_scale < height_scale:
+                        new_width = int(resized_image.size[0] /
+                                        height_scale)
+                        new_height = height
+                    else:
+                        new_height = int(resized_image.size[1] /
+                                         width_scale)
+                        new_width = width
+                resized_image = resized_image.resize(
+                    (new_width, new_height),
+                    Image.ANTIALIAS)
+                if resized_image.size != (width, height):
+                    x = y = 0
+                    if force_height == FORCE_HEIGHT_CROP:
+                        if resized_image.size[1] > height:
+                            y = int((height - resized_image.size[1]) / 2)
+                        else:
+                            x = int((width - resized_image.size[0]) / 2)
+                    else: # FORCE_HEIGHT_PADDING:
+                        if resized_image.size[1] == height:
+                            x = int((width - resized_image.size[0]) / 2)
+                        else:
+                            y = int((height - resized_image.size[1]) / 2)
+                    new_image = Image.new('RGBA',
+                                          (width, height), (0, 0, 0, 0))
+                    new_image.paste(resized_image, (x, y))
+                    resized_image = new_image
+            elif width_scale > 1:
+                # resize the width, keep the height aspect ratio the same
+                new_height = int(resized_image.size[1] / width_scale)
+                resized_image = resized_image.resize((width, new_height),
+                                                     Image.ANTIALIAS)
+        sio_img = StringIO.StringIO()
+        resized_image.save(sio_img, 'png')
+        sio_img.seek(0)
+        ret.append(
+            ((width, height),
+             ContentFile(sio_img.read())))
+    return ret
