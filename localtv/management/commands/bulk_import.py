@@ -131,6 +131,11 @@ class Command(BaseCommand):
         # Finish marking the Feed as imported.
         feed._mark_bulk_import_as_done(original_parsed_feed)
 
+        feed.status = models.FEED_STATUS_ACTIVE
+        feed.save()
+
+        print simplejson.dumps(stats),
+
     def use_old_bulk_import(self, parsed_feed, feed, verbose):
         bulk_feed = bulk_import(feed_url=None, parsed_feed=parsed_feed)
 
