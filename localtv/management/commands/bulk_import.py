@@ -51,9 +51,9 @@ class Command(BaseCommand):
             raise CommandError('Feed with pk %s does not exist' % args[0])
 
         try:
-            verbose = (int(options['verbosity']) > 1)
+            self.verbose = (int(options['verbosity']) > 1)
         except (KeyError, ValueError):
-            verbose = False
+            self.verbose = False
 
         httplib2 = eventlet.import_patched('httplib2')
 
@@ -69,14 +69,14 @@ class Command(BaseCommand):
         # if the importer supports bulk_import_url_list.
         feed_urls = bulk_import_url_list(parsed_feed=parsed_feed)
         if type(feed_urls) != list: # hack.
-            return self.use_old_bulk_import(parsed_feed, feed, verbose)
+            return self.use_old_bulk_import(parsed_feed, feed)
         else:
-            video_ids = self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed, verbose)
+            video_ids = self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
             self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
 
 
     @transaction.commit_on_success
-    def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed, verbose):
+    def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
         # This asynchronous bulk_import is a parallelism monster.
 
         # We do as much network I/O as we can using eventlet,
@@ -112,7 +112,7 @@ class Command(BaseCommand):
                 yield handle_one_item(index, parsed_feed, entry)
 
         def handle_one_item(index, parsed_feed, entry):
-            i = feed._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=False,
+            i = feed._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=self.verbose, clear_rejected=False,
                                                         actually_save_thumbnails=False)
             # Enqueue the work to download the thumbnail
             if i['video']:
@@ -164,7 +164,7 @@ class Command(BaseCommand):
         # FIXME: Wait for them all to finish
         return
 
-    def use_old_bulk_import(self, parsed_feed, feed, verbose):
+    def use_old_bulk_import(self, parsed_feed, feed):
         bulk_feed = bulk_import(feed_url=None, parsed_feed=parsed_feed)
 
         stats = {
@@ -173,7 +173,7 @@ class Command(BaseCommand):
             'skipped': 0
             }
         try:
-            for i in feed._update_items_generator(verbose=verbose,
+            for i in feed._update_items_generator(verbose=self.verbose,
                                                   parsed_feed=bulk_feed,
                                                   clear_rejected=True,
                                                   actually_save_thumbnails=True):
