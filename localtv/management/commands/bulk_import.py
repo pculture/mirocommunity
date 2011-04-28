@@ -153,9 +153,9 @@ class Command(BaseCommand):
         celery_tasks = []
         for video_id in video_ids:
             mod = import_module(settings.SETTINGS_MODULE)
-            manage_py = os.path.join(
+            manage_py = os.path.abspath(os.path.join(
                 os.path.dirname(mod.__file__),
-                'manage.py')
+                'manage.py'))
 
             task = localtv.tasks.check_call.delay((
                 getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
