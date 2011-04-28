@@ -20,6 +20,9 @@ import re
 import string
 import urllib
 import types
+import os
+import os.path
+
 import Image
 try:
     import cStringIO as StringIO
@@ -421,6 +424,24 @@ else:
             name = self._clean_name(name)
             return name
 
+DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
+# We save data inside the httplib cache, but in a hidden directory
+OUR_CACHE_DIR = os.path.join(DEFAULT_HTTPLIB_CACHE_PATH,
+                             '.cache_downloaded_file')
+def cache_downloaded_file(url, http_getter):
+    response, content = http_getter.request(url, 'GET')
+    file_obj = file(os.path.join(OUR_CACHE_DIR,
+                                 hashlib.sha1(url).hexdigest()), 'w')
+    file_obj.write(content)
+    file_obj.close()
+
+def pull_downloaded_file_from_cache(url):
+    file_obj = file(os.path.join(OUR_CACHE_DIR,
+                                 hashlib.sha1(url).hexdigest()))
+    data = file_obj.read()
+    file_obj.close()
+    return data
+
 def resize_image_returning_list_of_content_files(original_image,
                                                  THUMB_SIZES):
     ret = []
@@ -488,3 +509,4 @@ def resize_image_returning_list_of_content_files(original_image,
             ((width, height),
              ContentFile(sio_img.read())))
     return ret
+
