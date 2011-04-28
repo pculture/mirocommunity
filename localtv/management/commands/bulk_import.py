@@ -90,13 +90,15 @@ class Command(BaseCommand):
 
         def get_url(url):
             with httppool.item() as http:
-                print 'getting', url
+                if self.verbose > 1:
+                    print 'getting', url
                 resp, content = http.request(url, 'GET')
                 return (resp, content)
 
         def cache_thumbnail_url(url):
             with httppool.item() as http:
-                print 'getting thumb', url
+                if self.verbose > 1:
+                    print 'getting thumb', url
                 localtv.util.cache_downloaded_file(url, http)
 
         stats = {
@@ -147,6 +149,8 @@ class Command(BaseCommand):
         return [i['video'].id for i in results if i['video']]
 
     def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
+        if self.verbose > 1:
+            print 'Starting thumbnail fetches for', video_ids
         celery_tasks = []
         for video_id in video_ids:
             mod = import_module(settings.SETTINGS_MODULE)
@@ -162,6 +166,8 @@ class Command(BaseCommand):
             celery_tasks.append(task)
 
         # FIXME: Wait for them all to finish
+        if self.verbose > 1:
+            print 'Finished thumbnail fetches.'
         return
 
     def use_old_bulk_import(self, parsed_feed, feed):
