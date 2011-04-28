@@ -16,6 +16,9 @@
 
 import os
 import simplejson
+import sys
+
+from importlib import import_module
 
 import feedparser
 
@@ -25,10 +28,12 @@ import eventlet.pools
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
 from localtv import models
 import localtv.util
+import localtv.tasks
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 
@@ -66,7 +71,8 @@ class Command(BaseCommand):
         if type(feed_urls) != list: # hack.
             return self.use_old_bulk_import(parsed_feed, feed, verbose)
         else:
-            return self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed, verbose)
+            video_ids = self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed, verbose)
+            self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
 
 
     @transaction.commit_on_success
@@ -84,11 +90,13 @@ class Command(BaseCommand):
 
         def get_url(url):
             with httppool.item() as http:
+                print 'getting', url
                 resp, content = http.request(url, 'GET')
                 return (resp, content)
 
         def cache_thumbnail_url(url):
             with httppool.item() as http:
+                print 'getting thumb', url
                 localtv.util.cache_downloaded_file(url, http)
 
         stats = {
@@ -112,7 +120,6 @@ class Command(BaseCommand):
                 thumbnail_url = v.thumbnail_url
                 if thumbnail_url:
                     cache_thumbnail_url(thumbnail_url)
-                    pool.spawn(cache_thumbnail_url, thumbnail_url)
 
             stats['total'] += 1
             if i['video'] is not None:
@@ -123,7 +130,7 @@ class Command(BaseCommand):
             return i
 
         results = []
-        for (response, content) in pool.imap(get_url, feed_urls):
+        for (response, content) in pool.imap(get_url, feed_urls[:3]):
             result = handle_one_sub_feed(content)
             results.extend(result)
 
@@ -137,6 +144,25 @@ class Command(BaseCommand):
         feed.save()
 
         print simplejson.dumps(stats),
+        return [i['video'].id for i in results if i['video']]
+
+    def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
+        celery_tasks = []
+        for video_id in video_ids:
+            mod = import_module(settings.SETTINGS_MODULE)
+            manage_py = os.path.join(
+                os.path.dirname(mod.__file__),
+                'manage.py')
+
+            task = localtv.tasks.check_call.delay((
+                getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
+                manage_py,
+                'update_one_thumbnail',
+                video_id))
+            celery_tasks.append(task)
+
+        # FIXME: Wait for them all to finish
+        return
 
     def use_old_bulk_import(self, parsed_feed, feed, verbose):
         bulk_feed = bulk_import(feed_url=None, parsed_feed=parsed_feed)
