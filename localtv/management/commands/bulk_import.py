@@ -90,14 +90,14 @@ class Command(BaseCommand):
 
         def get_url(url):
             with httppool.item() as http:
-                if self.verbose > 1:
+                if self.verbose:
                     print 'getting', url
                 resp, content = http.request(url, 'GET')
                 return (resp, content)
 
         def cache_thumbnail_url(url):
             with httppool.item() as http:
-                if self.verbose > 1:
+                if self.verbose:
                     print 'getting thumb', url
                 localtv.util.cache_downloaded_file(url, http)
 
@@ -149,7 +149,7 @@ class Command(BaseCommand):
         return [i['video'].id for i in results if i['video']]
 
     def enqueue_celery_tasks_for_thumbnail_fetches(self, video_ids):
-        if self.verbose > 1:
+        if self.verbose:
             print 'Starting thumbnail fetches for', video_ids
         celery_tasks = []
         for video_id in video_ids:
