@@ -74,7 +74,6 @@ class Command(BaseCommand):
             self.enqueue_celery_tasks_for_thumbnail_fetches(video_ids)
 
 
-    @transaction.commit_on_success
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
         # This asynchronous bulk_import is a parallelism monster.
 
@@ -106,6 +105,7 @@ class Command(BaseCommand):
             'skipped': 0
             }
 
+        @transaction.commit_on_success
         def handle_one_sub_feed(feed_contents):
             parsed_feed = feedparser.parse(feed_contents)
             # For each feed entry in this small sub-feed, handle the item.
