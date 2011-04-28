@@ -70,6 +70,10 @@ class Command(BaseCommand):
 
     @transaction.commit_on_success
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed, verbose):
+        # This asynchronous bulk_import is a parallelism monster.
+
+        # We do as much network I/O as we can using eventlet,
+        # rather than threads or subprocesses.
         httplib2 = eventlet.import_patched('httplib2')
 
         httppool = eventlet.pools.Pool(max_size=10)
