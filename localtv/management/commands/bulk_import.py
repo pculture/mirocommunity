@@ -80,15 +80,17 @@ class Command(BaseCommand):
 
         # Try to work asynchronously, calling feedparser ourselves. We can do that
         # if the importer supports bulk_import_url_list.
-        feed_urls = bulk_import_url_list(parsed_feed=parsed_feed)
-        if type(feed_urls) != list: # hack.
+        try:
+            feed_urls = bulk_import_url_list(parsed_feed=parsed_feed)
+        except ValueError:
             return self.use_old_bulk_import(parsed_feed, feed)
-        else:
-            self.forked_tasks = {}
-            self.forked_task_worker_pool =  multiprocessing.Pool(processes=8)
-            # start 8 worker processes. That should be fine, right?
-            self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
-            self.enqueue_forked_tasks_for_thumbnail_fetches(feed)
+        # Okay, good, we either got the feed_url list, or we passed the work
+        # off the old-style function. Proceed.
+        self.forked_tasks = {}
+        self.forked_task_worker_pool =  multiprocessing.Pool(processes=8)
+        # start 8 worker processes. That should be fine, right?
+        self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
+        self.enqueue_forked_tasks_for_thumbnail_fetches(feed)
 
     @transaction.commit_manually
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
