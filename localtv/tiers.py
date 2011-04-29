@@ -245,8 +245,6 @@ CHOICES = [
     ('max', 'Max account')]
 
 class Tier(object):
-    __slots__ = ['tier_name', 'NAME_TO_COST']
-
     NAME_TO_COST = {'basic': 0,
                     'plus': 15,
                     'premium': 35,
