@@ -229,7 +229,8 @@ def ipn_endpoint(request, payment_secret):
     #
     # At this point in processing, the data might be fake. Let's pass it to
     # the django-paypal code and ask it to verify it for us.
-    if payment_secret == request.tier_info.payment_secret:
+    if (payment_secret == request.tier_info.payment_secret or
+        payment_secret == request.tier_info.payment_secret.replace('/', '', 1)):
         response = paypal.standard.ipn.views.ipn(request)
         return response
     return HttpResponseForbidden("You submitted something invalid to this IPN handler.")
