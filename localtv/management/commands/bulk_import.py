@@ -16,10 +16,7 @@
 
 import os
 import simplejson
-import sys
 import multiprocessing
-
-from importlib import import_module
 
 import feedparser
 
@@ -28,7 +25,6 @@ import eventlet.pools
 
 from django.db import transaction
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
 from localtv import models
