@@ -248,11 +248,34 @@ class Tier(object):
 
     @staticmethod
     def NAME_TO_COST():
-        normally = {'basic': 0,
+        prices = {'basic': 0,
                    'plus': 15,
                    'premium': 35,
                    'max': 75}
-        return normally
+        overrides = getattr(settings, "LOCALTV_COST_OVERRIDE", None)
+        if overrides:
+            for key in overrides:
+                # So, uh, don't override the price of
+                # 'basic'. Assumptions that 'basic' is the
+                # free-of-cost tier might be sprinkled through the
+                # code.
+                assert key != 'basic'
+
+                # Okay, great. Accept the override.
+                prices[key] = overrides[key]
+
+        # Note: the prices dict should really be a one-to-one mapping,
+        # and all the values should be integers. Anything else is crazy,
+        # so I will take this moment to assert these properties.
+        for key in prices:
+            # Make sure the value is an integer.
+            assert type(prices[key]) == int
+
+        prices_as_sorted_list = sorted(list(prices.values()))
+        prices_as_sorted_dedup = sorted(set(prices.values()))
+        assert prices_as_sorted_dedup == prices_as_sorted_list
+
+        return prices
 
     def __init__(self, tier_name):
         self.tier_name = tier_name
