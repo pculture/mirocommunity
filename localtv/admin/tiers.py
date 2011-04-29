@@ -138,6 +138,7 @@ def upgrade(request):
     data['offer_free_trial'] = request.tier_info.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
     data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
+    data['tier_to_price'] = localtv.tiers.Tier.NAME_TO_COST()
     if not data['skip_paypal']:
         data['paypal_url'] = get_paypal_form_submission_url()
 
