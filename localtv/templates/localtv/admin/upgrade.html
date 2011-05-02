@@ -84,7 +84,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
   <div class="hdr">
     <h1>Plus</h1>
-    <h2>$15/month</h2>
+    <h2>${{ tier_to_price.plus }}/month</h2>
   </div><!-- // hdr -->
   <ul>
     <li>Your site, logo &amp; background</li>
@@ -95,7 +95,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
   <div class="ft">
     <p>Plus</p>
-    {% ifnotequal site_location.tier_name 'plus' %}{% with "15" as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}{% with can_modify_mapping.plus as can_modify %}{% with upgrade_extra_payments.plus as specific_payment_override %}
+    {% ifnotequal site_location.tier_name 'plus' %}{% with tier_to_price.plus as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}{% with can_modify_mapping.plus as can_modify %}{% with upgrade_extra_payments.plus as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
     {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
       </p>
@@ -106,7 +106,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="value_added" class="{% ifequal site_location.tier_name 'premium'%}selected {% endifequal %}plan">
   <div class="hdr">
     <h1>Premium</h1>
-    <h2>$35/month</h2>
+    <h2>${{ tier_to_price.premium}}/month</h2>
   </div><!-- // hdr -->
   <ul>
     <li>Your site, logo &amp; background</li>
@@ -117,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-{% ifnotequal "premium" site_location.tier_name %}{% with "35" as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.premium as specific_payment_override %}
+{% ifnotequal "premium" site_location.tier_name %}{% with tier_to_price.premium as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.premium as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
       {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 
@@ -128,7 +128,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <div id="delicious_plan" class="{% ifequal site_location.tier_name 'max' %}selected {% endifequal %}last plan">
   <div class="hdr">
     <h1>Max</h1>
-    <h2>$75/month</h2>
+    <h2>${{ tier_to_price.max }}/month</h2>
   </div><!-- // hdr -->
   <ul>
     <li>Your site, logo &amp; background</li>
@@ -140,7 +140,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-{% ifnotequal sitelocation.tier_name "max" %}{% with "75" as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}{% with can_modify_mapping.max as can_modify %}{% with upgrade_extra_payments.max as specific_payment_override %}
+{% ifnotequal sitelocation.tier_name "max" %}{% with tier_to_price.max as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}{% with can_modify_mapping.max as can_modify %}{% with upgrade_extra_payments.max as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
       {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
     <p>Max</p>

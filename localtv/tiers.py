@@ -245,12 +245,37 @@ CHOICES = [
     ('max', 'Max account')]
 
 class Tier(object):
-    __slots__ = ['tier_name', 'NAME_TO_COST']
 
-    NAME_TO_COST = {'basic': 0,
-                    'plus': 15,
-                    'premium': 35,
-                    'max': 75}
+    @staticmethod
+    def NAME_TO_COST():
+        prices = {'basic': 0,
+                   'plus': 15,
+                   'premium': 35,
+                   'max': 75}
+        overrides = getattr(settings, "LOCALTV_COST_OVERRIDE", None)
+        if overrides:
+            for key in overrides:
+                # So, uh, don't override the price of
+                # 'basic'. Assumptions that 'basic' is the
+                # free-of-cost tier might be sprinkled through the
+                # code.
+                assert key != 'basic'
+
+                # Okay, great. Accept the override.
+                prices[key] = overrides[key]
+
+        # Note: the prices dict should really be a one-to-one mapping,
+        # and all the values should be integers. Anything else is crazy,
+        # so I will take this moment to assert these properties.
+        for key in prices:
+            # Make sure the value is an integer.
+            assert type(prices[key]) == int
+
+        prices_as_sorted_list = sorted(list(prices.values()))
+        prices_as_sorted_dedup = sorted(set(prices.values()))
+        assert prices_as_sorted_dedup == prices_as_sorted_list
+
+        return prices
 
     def __init__(self, tier_name):
         self.tier_name = tier_name
@@ -286,7 +311,7 @@ class Tier(object):
     @staticmethod
     def get_by_cost(cost):
         cost = int(cost)
-        reverse_mapping = dict([(value, key) for (key, value) in Tier.NAME_TO_COST.items()])
+        reverse_mapping = dict([(value, key) for (key, value) in Tier.NAME_TO_COST().items()])
         if cost in reverse_mapping:
             return reverse_mapping[cost]
         raise ValueError, "Hmm, no such cost."
@@ -350,7 +375,7 @@ class Tier(object):
         return self.permit_custom_template()
 
     def dollar_cost(self):
-        special_cases = self.NAME_TO_COST
+        special_cases = self.NAME_TO_COST()
         return special_cases[self.tier_name]
 
 class PaymentException(Exception):
