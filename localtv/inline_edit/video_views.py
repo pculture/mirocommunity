@@ -46,6 +46,6 @@ def editors_comment(request, id):
         Response = HttpResponseForbidden
 
     return Response(
-        editable_widget(obj, 'editors_comment',
+        editable_widget(request, obj, 'editors_comment',
                         form=edit_form))
 
