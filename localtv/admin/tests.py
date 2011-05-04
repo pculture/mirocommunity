@@ -4025,6 +4025,60 @@ class SendWelcomeEmailTest(BaseTestCase):
         cmd.handle()
         self.assertEqual(len(mail.outbox), 0) # zero this time.
 
+    @mock.patch('localtv.management.commands.send_welcome_email.Command.actually_send')
+    def test_delayed_welcome_email_with_flag_with_successful_upgrade(self, mock_send):
+        # When we create a site in a paid tier, we set the
+        # should_send_welcome_email_on_paypal_event flag to True.
+        #
+        # This signifies that we are waiting for the user to go to
+        # PayPal before we send the welcome email. So there are two
+        # cases:
+        #
+        # This test method tests the case where the user successfully gets
+        # through the process and calls the _paypal_return admin view.
+        #
+        # (Note that, in theory, the user could rig things carefully so
+        # that _paypal_return() gets called, since we don't validate the
+        # IPN stuff through _paypal_return(). But the IPN/subscription
+        # validation stuff is handled in a separate part of code.)
+
+        # We mock out send_welcome_email's .handle() so that we know if it
+        # gets called.
+
+        # No call yet.
+        self.assertFalse(mock_send.called)
+
+        # Pre-requisite:
+        ti = models.TierInfo.objects.get_current()
+        ti.should_send_welcome_email_on_paypal_event = True
+        ti.save()
+
+        # No call yet.
+        self.assertFalse(mock_send.called)
+
+        # Whatever changes the user makes to the SiteLocation should not
+        # cause sending, so long as they don't adjust the tier_name.
+        site_location = models.SiteLocation.objects.get_current()
+        site_location.tagline = 'my site rules'
+        site_location.save()
+        # No call yet.
+        self.assertFalse(mock_send.called)
+
+        # Now, call _paypal_return() as if the user got there from PayPal.
+        localtv.admin._paypal_return('plus')
+
+        # Make sure the email got sent
+        self.assertTrue(mock_send.called)
+        # Make sure the tier_name is plus, really, and that the flag is
+        # now set to False.
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', site_location.tier_name)
+        self.assertFalse(site_location.tierinfo.should_send_welcome_email_on_paypal_event)
+
+    def test_delayed_welcome_email_with_flag_with_unsuccessful_upgrade(self):
+        pass
+
+
 class TestDisableEnforcement(BaseTestCase):
 
     def testTrue(self):
