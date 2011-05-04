@@ -4017,6 +4017,14 @@ class SendWelcomeEmailTest(BaseTestCase):
         cmd.handle()
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_do_not_send_twice(self):
+        self.test()
+        mail.outbox = []
+        from localtv.management.commands import send_welcome_email
+        cmd = send_welcome_email.Command()
+        cmd.handle()
+        self.assertEqual(len(mail.outbox), 0) # zero this time.
+
 class TestDisableEnforcement(BaseTestCase):
 
     def testTrue(self):
