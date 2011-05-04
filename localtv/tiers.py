@@ -456,7 +456,10 @@ def post_save_send_queued_mail(sender, instance, **kwargs):
         else:
             send_tiers_related_email(*args, **kwargs)
 
-def pre_save_adjust_resource_usage(instance, signal, **kwargs):
+def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
+    if raw: # if we are loading data from a fixture, skip these checks
+        return
+
     import localtv.models
     # Check if there is an existing SiteLocation. If not, we should bail
     # out now.
