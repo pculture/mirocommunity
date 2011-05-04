@@ -29,12 +29,14 @@ class Command(BaseCommand):
         tier_info = localtv.models.TierInfo.objects.get_current()
         if tier_info.already_sent_welcome_email:
             return
-
         if 'temporarily_override_payment_due_date' in options:
             extra_context = {'next_payment_due_date': options['temporarily_override_payment_due_date'].strftime('%B %e, %Y'),
                              'in_free_trial': True}
         else:
             extra_context = {}
+        self.actually_send(site_location, tier_info, extra_context)
+
+    def actually_send(self, site_location, tier_info, extra_context):
 
         # If we haven't sent it, prepare the email
 
