@@ -273,6 +273,7 @@ class TierInfo(models.Model):
     already_sent_tiers_compliance_email = models.BooleanField(default=False)
     fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
     should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
+    waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
 
