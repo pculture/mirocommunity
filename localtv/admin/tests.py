@@ -43,6 +43,8 @@ import uploadtemplate
 import vidscraper
 from notification import models as notification
 
+import localtv.management.commands.check_frequently_for_invalid_tiers_state
+
 Profile = util.get_profile_model()
 
 class AdministrationBaseTestCase(BaseTestCase):
@@ -4086,9 +4088,67 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         self.assertFalse(models.TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
 
-    def test_delayed_welcome_email_with_flag_with_unsuccessful_upgrade(self):
-        pass
+    @mock.patch('localtv.management.commands.send_welcome_email.Command.actually_send')
+    def test_delayed_welcome_email_with_flag_with_unsuccessful_upgrade(self,
+                                                                       mock_send):
+        # Okay, so let's say that you thought you were going to sign
+        # up for a 'plus' account.
+        #
+        # But then you go to PayPal and realize you forgot your password.
+        # "Whatever," you figure, and you log in and use the new MC site.
+        #
+        # What should happen is:
+        # - Your site got created as 'basic' at the start.
+        # - We don't send you the welcome email because we hoped you would
+        #   finish the sign-up process in a non-basic tier.
+        # - Then the twice-an-hour cron job runs.
+        # - First, it runs when the time delta is less than 30 minutes, in which
+        #   case we're still hoping that you will finish up with PayPal.
+        # - Then it runs again, and it's more than 30 minutes. So we send you
+        #   a welcome email for the tier you are in (basic), and we remove the
+        #   flag that says we are expecting you to finish the PayPal process.
 
+        # Setup
+        # Pre-requisite:
+        NOW = datetime.datetime.utcnow()
+        PLUS_THIRTY_MIN = NOW + datetime.timedelta(minutes=30)
+        ti = models.TierInfo.objects.get_current()
+        ti.should_send_welcome_email_on_paypal_event = True
+        ti.waiting_on_payment_until = PLUS_THIRTY_MIN
+        ti.save()
+
+        self.assertFalse(mock_send.called)
+        self.assertEqual(models.SiteLocation.objects.get_current().tier_name,
+                         'basic')
+
+        # Whatever changes the user makes to the SiteLocation should not
+        # cause sending, so long as they don't adjust the tier_name.
+        site_location = models.SiteLocation.objects.get_current()
+        site_location.tagline = 'my site rules'
+        site_location.save()
+        # No call yet. Tier Info still retains the flag.
+        self.assertFalse(mock_send.called)
+        self.assertTrue(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('basic', site_location.tier_name)
+
+        PLUS_TEN_MIN = NOW + datetime.timedelta(minutes=10)
+        PLUS_FORTY_MIN = NOW + datetime.timedelta(minutes=40)
+
+        cmd = localtv.management.commands.check_frequently_for_invalid_tiers_state.Command()
+        cmd.stop_waiting_if_we_have_to(PLUS_TEN_MIN)
+
+        # Should be no change + no email
+        self.assertFalse(mock_send.called)
+
+        # re-call even later
+        cmd.stop_waiting_if_we_have_to(PLUS_FORTY_MIN)
+        self.assertTrue(mock_send.called)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).waiting_on_payment_until)
 
 class TestDisableEnforcement(BaseTestCase):
 
