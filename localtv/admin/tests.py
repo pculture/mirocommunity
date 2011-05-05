@@ -4071,6 +4071,8 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         self.assertFalse(mock_send.called)
         self.assertTrue(models.TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('basic', site_location.tier_name)
 
         # Now, call _paypal_return() as if the user got there from PayPal.
         localtv.admin.tiers._paypal_return('plus')
