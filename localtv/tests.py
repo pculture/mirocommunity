@@ -55,6 +55,7 @@ Profile = util.get_profile_model()
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
+    target_tier_name = 'max'
 
     def run(self, *args, **kwargs):
         # hack to prevent the test runner from treating abstract classes as
@@ -72,9 +73,7 @@ class BaseTestCase(TestCase):
         self.site_location = models.SiteLocation.objects.get_current()
         self.tier_info = models.TierInfo.objects.get_current()
 
-        # By default, tests run on an 'max' account.
-        self.site_location.tier_name = 'max'
-        self.site_location.save()
+        self._switch_into_tier()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -82,6 +81,12 @@ class BaseTestCase(TestCase):
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
         mail.outbox = [] # reset any email at the start of the suite
+
+    def _switch_into_tier(self):
+        # By default, tests run on an 'max' account.
+        if self.site_location.tier_name != self.target_tier_name:
+            self.site_location.tier_name = self.target_tier_name
+            self.site_location.save()
 
     def tearDown(self):
         TestCase.tearDown(self)
