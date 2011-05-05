@@ -4009,7 +4009,6 @@ class NightlyTiersEmails(BaseTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 class SendWelcomeEmailTest(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
 
     def test(self):
         from localtv.management.commands import send_welcome_email
