@@ -25,6 +25,8 @@ import urlparse
 import base64
 import os
 import types
+import logging
+
 try:
     from PIL import Image
 except ImportError:
@@ -250,8 +252,10 @@ class SiteLocationManager(models.Manager):
 class TierInfoManager(models.Manager):
     def get_current(self):
         current_site_location = SiteLocation.objects.get_current()
-        tier_info, _ = TierInfo.objects.get_or_create(
+        tier_info, created = TierInfo.objects.get_or_create(
             sitelocation = current_site_location)
+        if created:
+            logging.info("Created TierInfo.")
         return tier_info
 
 class TierInfo(models.Model):
