@@ -51,6 +51,7 @@ import django.dispatch
 from django.core.validators import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
+import django.utils.html
 
 import bitly
 import feedparser
@@ -489,7 +490,7 @@ class WidgetSettings(Thumbnailable):
 
         # Okay, so either we return the title, or a sensible default
         if use_title:
-            return self.title
+            return django.utils.html.escape(self.title)
         return self.generate_reasonable_default_title()
 
     def generate_reasonable_default_title(self):
@@ -503,7 +504,7 @@ class WidgetSettings(Thumbnailable):
         if ((site.name and site.name.lower() != 'example.com') and
             (site.domain and site.domain.lower() != 'example.com')):
             suffix = '<a href="http://%s/">%s</a>' % (
-                site.domain, site.name)
+                site.domain, django.utils.html.escape(site.name))
 
         # First, we try the site name, if that's a nice string.
         elif site.name and site.name.lower() != 'example.com':
