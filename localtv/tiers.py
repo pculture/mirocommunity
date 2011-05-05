@@ -423,17 +423,22 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     # 2. The site has been around a while, and we send an email because it
     # is an upgrade.
 
-    # Case 1 (this field is set by the site creation scripts)
-    if tier_info.should_send_welcome_email_on_paypal_event:
-        instance.add_queued_mail(
-            ('send_welcome_email_hack', {}))
-        # If we are sending the welcome email now, then we quit here.
-        tier_info.should_send_welcome_email_on_paypal_event = False
-        tier_info.save()
-        return
+    # Either way, we only trigger any email sending if the tier cost is
+    # changing.
 
-    # Case 2: Normal operation
     if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
+        # Case 1 (this field is set by the site creation scripts)
+        if tier_info.should_send_welcome_email_on_paypal_event:
+            # Reset the flag...
+            tier_info.should_send_welcome_email_on_paypal_event = False
+            tier_info.save()
+            # ...enqueue the mail
+            instance.add_queued_mail(
+                ('send_welcome_email_hack', {}))
+            # ...and stop processing at this point
+            return
+
+        # Case 2: Normal operation
         # Plan to send an email about the transition
         # but leave it queued up in the instance. We will send it post-save.
         # This eliminates a large source of possible latency.
