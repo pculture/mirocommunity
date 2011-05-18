@@ -609,5 +609,4 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
 
     message_html = html_t.render(c)
     msg.attach_alternative(message_html, "text/html")
-    # FIXME: Attach attachments.
     msg.send(fail_silently=False)
