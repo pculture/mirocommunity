@@ -83,6 +83,10 @@ def should_send_five_day_free_trial_warning():
         return False
     if tier_info.free_trial_warning_sent:
         return False
+
+    if time_remaining < datetime.timedelta():
+        raise ValueError, "Well, that sucks, the trial is negative."
+
     if time_remaining <= datetime.timedelta(days=5):
         return True
     return False

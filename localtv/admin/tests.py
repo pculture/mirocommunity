@@ -4010,6 +4010,12 @@ class NightlyTiersEmails(BaseTestCase):
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 0)
 
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=-1)))
+    def test_free_trial_negative(self):
+        self.assertRaises(ValueError, self.tiers_cmd.handle, ())
+        self.assertEqual(len(mail.outbox), 0)
+        mail.outbox = []
+
 class SendWelcomeEmailTest(BaseTestCase):
 
     def test(self):
