@@ -3971,7 +3971,7 @@ class NightlyTiersEmails(BaseTestCase):
         self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
         self.admin.save()
         self.assertFalse(self.site_location.inactive_site_warning_sent)
-        
+
         # Make sure it sends an email...
         self.tiers_cmd.handle()
         self.assertEquals(len(mail.outbox), 1)
