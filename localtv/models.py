@@ -300,7 +300,7 @@ class TierInfo(models.Model):
         if not self.payment_due_date:
             return None
 
-        return (datetime.datetime.utcnow() - self.payment_due_date)
+        return (self.payment_due_date - datetime.datetime.utcnow())
 
 class SiteLocation(Thumbnailable):
     """
