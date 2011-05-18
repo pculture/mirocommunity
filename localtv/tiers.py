@@ -156,7 +156,6 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     if count <= 0:
         return
 
-    disabled_this_many = 0
     disable_these_videos = current_videos_that_count_toward_limit().order_by('pk')[:count]
     disable_these_pks = list(disable_these_videos.values_list('id', flat=True))
 
@@ -166,7 +165,6 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     return disable_these_videos.count()
 
 def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
-    import localtv.models
     if uploadtemplate.models.Theme.objects.filter(default=True):
         current_theme = uploadtemplate.models.Theme.objects.get_default()
         if not current_theme.bundled:
@@ -200,7 +198,7 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     # grab hold of the current SiteLocation
     try:
         sitelocation = localtv.models.SiteLocation.objects.get_current()
-    except localtv.models.SiteLocation.DoesNotExist, e:
+    except localtv.models.SiteLocation.DoesNotExist:
         return # well okay, there is no current SiteLocation.
 
     # We have this many right now
