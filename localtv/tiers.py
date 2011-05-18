@@ -217,7 +217,7 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
         for demotee in demotees:
             sitelocation.admins.remove(demotee)
     return demotee_usernames
-    
+
 
 def number_of_admins_including_superuser():
     import localtv.models
