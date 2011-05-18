@@ -113,7 +113,7 @@ def user_warnings_for_downgrade(new_tier_name):
 
     # If the old tier permitted advertising, and the new one does not,
     # then let the user know about that change.
-    if (current_tier.permits_advertising() and 
+    if (current_tier.permits_advertising() and
         not future_tier.permits_advertising()):
         warnings.add('advertising')
 
