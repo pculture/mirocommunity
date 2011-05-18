@@ -611,15 +611,3 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
     msg.attach_alternative(message_html, "text/html")
     # FIXME: Attach attachments.
     msg.send(fail_silently=False)
-
-def get_monthly_amount_of_paypal_subscription(subscription_id):
-    import localtv.models
-    # FIXME: Get this covered with a test.
-    ti = localtv.models.TierInfo.objects.get_current()
-    signups = paypal.standard.ipn.models.PayPalIPN.objects.filter(
-        subscr_id=ti.current_paypal_profile_id, flag=False, txn_type='subscr_signup')
-    if signups:
-        signup = signups.order_by('-pk')[0]
-        amount = float(signup.amount3)
-        return amount
-    raise ValueError, "Um, there is no current profile ID."
