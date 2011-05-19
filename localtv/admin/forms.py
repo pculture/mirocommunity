@@ -800,7 +800,7 @@ class AddFeedForm(forms.Form):
         (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
                     r'(?P<name>\w+)'),
          'youtube'),
-        (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
+        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
         (re.compile(
                 r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
          'vimeo'),
@@ -828,13 +828,13 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         value = self.cleaned_data['feed_url']
         for regexp, service in self.SERVICE_PROFILES:
-            match = regexp.match(value)
+            match = regexp.search(value)
             if match:
-                username = match.group('name')
-                service_feed_generator = self.SERVICE_FEEDS[service] % username
+                service_feed_generator = self.SERVICE_FEEDS[service]
                 if callable(service_feed_generator):
                     value = service_feed_generator(value)
                 else:
+                    username = match.group('name')
                     value = service_feed_generator % username
                 break
 
