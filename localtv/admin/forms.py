@@ -43,6 +43,7 @@ from localtv import util
 import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
+import vidscraper.sites.blip
 
 Profile = util.get_profile_model()
 
@@ -790,7 +791,6 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-
 class AddFeedForm(forms.Form):
     SERVICE_PROFILES = (
         (re.compile(
@@ -812,7 +812,7 @@ class AddFeedForm(forms.Form):
     SERVICE_FEEDS = {
         'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
                     'uploads?alt=rss&v=2&orderby=published'),
-        'blip': 'http://%s.blip.tv/rss',
+        'blip': vidscraper.sites.blip._blip_feedify,
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
         'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
         }
@@ -831,7 +831,11 @@ class AddFeedForm(forms.Form):
             match = regexp.match(value)
             if match:
                 username = match.group('name')
-                value = self.SERVICE_FEEDS[service] % username
+                service_feed_generator = self.SERVICE_FEEDS[service] % username
+                if callable(service_feed_generator):
+                    value = service_feed_generator(value)
+                else:
+                    value = service_feed_generator % username
                 break
 
         site = Site.objects.get_current()
