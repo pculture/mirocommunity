@@ -5,13 +5,12 @@
 -e git+http://git.participatoryculture.org/django-uploadtemplate@db144765894f10f0211b4deb16f9f3f948a5e173#egg=django_uploadtemplate-0.0.1-py2.6-dev
 BeautifulSoup==3.0.7a
 Django==1.2.1
-http://effbot.org/downloads/Imaging-1.1.6.tar.gz#egg=Imaging
+PIL==1.1.7
 lxml==2.2.7
 python-memcached==1.45
 South>=0.7
 -e svn+http://feedparser.googlecode.com/svn/trunk/#egg=feedparser
 flup>=1.0.2
-lxml==2.1.5
 python-openid==2.2.4
 http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
 simplejson==1.9.2
