@@ -137,7 +137,7 @@ def submit_video(request):
                 get_dict['bookmarklet'] = '1'
             get_params = urllib.urlencode(get_dict)
             if scraped_data:
-                if 'link' in scraped_data and \
+                if scraped_data.get('link', None) and \
                         scraped_data['link'] != get_dict['url']:
                     request.POST = {
                         'url': scraped_data['link'].encode('utf8')}
