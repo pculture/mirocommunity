@@ -302,6 +302,17 @@ class TierInfo(models.Model):
 
         return (self.payment_due_date - datetime.datetime.utcnow())
 
+    def use_zendesk(self):
+        '''If the site is configured to, we can send notifications of
+        tiers-related changes to ZenDesk, the customer support ticketing
+        system used by PCF.
+
+        A non-PCF deployment of localtv would not want to set the
+        LOCALTV_USE_ZENDESK setting. Then this method will return False,
+        and the parts of the tiers system that check it will avoid
+        making calls out to ZenDesk.'''
+        return getattr(settings, 'LOCALTV_USE_ZENDESK', False)
+
 class SiteLocation(Thumbnailable):
     """
     An extension to the django.contrib.sites site model, providing

@@ -495,9 +495,18 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
             sitelocation=instance,
             override_to=['mirocommunity@pculture.org'],
             just_rendered_body=True)
-        import localtv.zendesk
-        localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
-                                      message)
+
+        # If the site is configured to, we can send notifications of
+        # tiers-related changes to ZenDesk, the customer support ticketing
+        # system used by PCF.
+        #
+        # A non-PCF deployment of localtv would not want to set the
+        # LOCALTV_USE_ZENDESK setting.
+        use_zendesk = getattr(settings, 'LOCALTV_USE_ZENDESK', False)
+        if use_zendesk:
+            import localtv.zendesk
+            localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
+                                          message)
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)
