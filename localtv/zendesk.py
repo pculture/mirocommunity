@@ -20,7 +20,6 @@
 ###
 
 import httplib2
-import urllib
 from xml.dom.minidom import Document
 
 from django.conf import settings
