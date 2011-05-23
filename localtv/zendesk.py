@@ -55,7 +55,7 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
 
     return doc.toxml()
 
-outbox = []    
+outbox = []
 
 def create_ticket(subject, body, requester_email='paulproteus+robot@pculture.org'):
     global outbox
