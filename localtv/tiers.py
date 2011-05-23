@@ -506,7 +506,8 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
         if use_zendesk:
             import localtv.zendesk
             localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
-                                          message)
+                                          message,
+                                          use_configured_assignee=False)
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)

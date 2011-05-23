@@ -394,7 +394,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         if tier_info.use_zendesk():
             import localtv.zendesk
             localtv.zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
-                                          message_body)
+                                          message_body, use_configured_assignee=True)
 
     expected_due_date = None
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
@@ -426,7 +426,8 @@ def handle_recurring_profile_start(sender, **kwargs):
                 import localtv.zendesk
                 localtv.zendesk.create_ticket(
                     "Eek, the user tried to create a free trial incorrectly",
-                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site")
+                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site",
+                    use_configured_assignee=False)
                 return
 
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
@@ -493,7 +494,8 @@ def handle_recurring_profile_modify(sender, **kwargs):
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
         localtv.zendesk.create_ticket("Eek, you should check on this MC site",
-                                      message_body)
+                                      message_body,
+                                      use_configured_assignee=False)
         return
 
     # Okay, well at this point, we need to adjust the site tier to match.
@@ -516,7 +518,8 @@ def handle_recurring_profile_modify(sender, **kwargs):
                                                  'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                                  'surprising_profile': ipn_obj.subscr_id})
                 localtv.zendesk.create_ticket("Eek, you should check on this MC site",
-                                              message_body)
+                                              message_body,
+                                              use_configured_assignee=False)
             return
         _actually_switch_tier(target_tier_name)
 
