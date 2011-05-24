@@ -254,7 +254,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
     if days_difference == 0:
         return {'recurring': target_tier_obj.dollar_cost(),
                 'daily_amount': 0,
-                'num_days': 0}
+                'days_covered_by_prorating': 0}
 
     # Okay, so we have some days.
     # If it were the full price...
@@ -264,7 +264,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
     # ...since our pay period is 30 days, that's easy.
     return {'recurring': target_tier_obj.dollar_cost(),
             'daily_amount': int(price_difference * (days_difference / 30.0)),
-            'num_days': days_difference}
+            'days_covered_by_prorating': days_difference}
 
 def _start_free_trial_unconfirmed(target_tier_name):
     '''We call this function from within the unconfirmed PayPal return
