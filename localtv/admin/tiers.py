@@ -270,7 +270,6 @@ def _start_free_trial_unconfirmed(target_tier_name):
     '''We call this function from within the unconfirmed PayPal return
     handler, if you are just now starting a free trial.'''
     import localtv.models
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
     ti = localtv.models.TierInfo.objects.get_current()
 
     # If you already are in a free trial, just do a redirect back to the upgrade page.
@@ -433,7 +432,6 @@ def handle_recurring_profile_start(sender, **kwargs):
     # If we get the IPN, and we have not yet adjusted the tier name
     # to be at that level, now is a *good* time to do so.
     amount = float(ipn_obj.amount3)
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
     if current_tier_obj.dollar_cost() == amount:
         pass
     else:
