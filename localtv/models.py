@@ -354,7 +354,7 @@ class SiteLocation(Thumbnailable):
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
-    tagline = models.CharField(max_length=250, blank=True)
+    tagline = models.CharField(max_length=4096, blank=True)
     css = models.TextField(blank=True)
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)

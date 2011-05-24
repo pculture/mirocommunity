@@ -426,7 +426,7 @@ class EditSettingsForm(forms.ModelForm):
     """
     title = forms.CharField(label="Site Title", max_length=50)
     tagline = forms.CharField(label="Site Tagline", required=False,
-                              max_length=250,
+                              max_length=4096,
                               help_text="Your title and tagline "
                               "define your site, both for humans and search "
                               "engines. Consider including key words so that "
