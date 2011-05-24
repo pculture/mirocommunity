@@ -4473,7 +4473,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
-        expected = {'recurring': 35, 'daily_amount': 18, 'days_covered_by_prorating': 28}
+        expected = {'recurring': 35, 'cost_for_prorated_period': 18, 'days_covered_by_prorating': 28}
         self.assertEqual(data, expected)
 
     def test_end_of_month(self):
@@ -4481,7 +4481,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
-        expected = {'recurring': 35, 'daily_amount': 0, 'days_covered_by_prorating': 0}
+        expected = {'recurring': 35, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
         self.assertEqual(data, expected)
 
 class TestUpgradePage(BaseTestCase):
@@ -4748,7 +4748,7 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(abs((Fakedatetime.utcnow() - (sl.tierinfo.payment_due_date - datetime.timedelta(premium['days_covered_by_prorating']))).days) <= 1)
         # The one-time money bump is more than 2/3 of the difference.
         entire_difference = (localtv.tiers.Tier('premium').dollar_cost() - localtv.tiers.Tier('plus').dollar_cost())
-        self.assertTrue(premium['daily_amount'] >= (0.667 * entire_difference))
+        self.assertTrue(premium['cost_for_prorated_period'] >= (0.667 * entire_difference))
         self._assert_modify_always_false(response) # no modify possible from 'plus'
 
         # Let's try paying.
@@ -4757,7 +4757,7 @@ class TestUpgradePage(BaseTestCase):
         with mock.patch('datetime.datetime', Fakedatetime):
             self._run_method_from_ipn_integration_test_case(
                 'upgrade_including_prorated_duration_and_amount', 
-                '%d.00' % premium['daily_amount'],
+                '%d.00' % premium['cost_for_prorated_period'],
                 '35.00',
                 '%d D' % premium['days_covered_by_prorating'])
             sl = models.SiteLocation.objects.get_current()

@@ -253,7 +253,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
         days_difference = 0
     if days_difference == 0:
         return {'recurring': target_tier_obj.dollar_cost(),
-                'daily_amount': 0,
+                'cost_for_prorated_period': 0,
                 'days_covered_by_prorating': 0}
 
     # Okay, so we have some days.
@@ -263,7 +263,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
     # ...how much is that, anyway? Well, it's days_difference / days_in_the_pay_period
     # ...since our pay period is 30 days, that's easy.
     return {'recurring': target_tier_obj.dollar_cost(),
-            'daily_amount': int(price_difference * (days_difference / 30.0)),
+            'cost_for_prorated_period': int(price_difference * (days_difference / 30.0)),
             'days_covered_by_prorating': days_difference}
 
 def _start_free_trial_unconfirmed(target_tier_name):
