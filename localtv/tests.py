@@ -2126,3 +2126,26 @@ class TierMethodsTests(BaseTestCase):
     def test_can_add_video_lets_you_add_final_video(self):
         # This is False because the number of videos remaining is zero.
         self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
+
+    def test_time_until_free_trial_expires_none_when_not_in_free_trial(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = False
+        ti.save()
+        self.assertEqual(None, ti.time_until_free_trial_expires())
+
+    def test_time_until_free_trial_expires_none_when_no_payment_due(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.payment_due_date = None # Note that this is a kind of insane state.
+        ti.save()
+        self.assertEqual(None, ti.time_until_free_trial_expires())
+
+    def test_time_until_free_trial_expires(self):
+        now = datetime.datetime(2011, 5, 24, 23, 44, 30)
+        a_bit_in_the_future = now + datetime.timedelta(hours=5)
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.payment_due_date = a_bit_in_the_future
+        ti.save()
+        self.assertEqual(datetime.timedelta(hours=5),
+                         ti.time_until_free_trial_expires(now=now))

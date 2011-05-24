@@ -293,13 +293,15 @@ class TierInfo(models.Model):
         assert not self.current_paypal_profile_id
         self.current_paypal_profile_id = 'subsidized'
 
-    def time_until_free_trial_expires(self):
+    def time_until_free_trial_expires(self, now = None):
         if not self.in_free_trial:
             return None
         if not self.payment_due_date:
             return None
 
-        return (self.payment_due_date - datetime.datetime.utcnow())
+        if now is None:
+            now = datetime.datetime.utcnow()
+        return (self.payment_due_date - now)
 
     def use_zendesk(self):
         '''If the site is configured to, we can send notifications of
