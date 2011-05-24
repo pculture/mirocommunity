@@ -837,7 +837,7 @@ class Feed(Source):
         return {'index': index,
                'total': len(parsed_feed.entries),
                'video': video}
-            
+
     def _mark_bulk_import_as_done(self, parsed_feed):
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
