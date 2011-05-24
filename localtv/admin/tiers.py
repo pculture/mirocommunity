@@ -15,20 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import datetime
-import urllib
 
-from django.contrib.auth.models import User
-from django.core.paginator import Paginator, InvalidPage
-import django.core.mail
-from django.db.models import Q
-from django.db import transaction
-from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.template.loader import render_to_string
+from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
