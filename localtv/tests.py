@@ -46,7 +46,9 @@ from haystack.query import SearchQuerySet
 import localtv.templatetags.filters
 from localtv import models
 from localtv import util
+import localtv.feeds.views
 from localtv import tiers
+import localtv.feeds.views
 
 from notification import models as notification
 from tagging.models import Tag
@@ -2149,3 +2151,26 @@ class TierMethodsTests(BaseTestCase):
         ti.save()
         self.assertEqual(datetime.timedelta(hours=5),
                          ti.time_until_free_trial_expires(now=now))
+
+class FeedViewTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos']
+
+    def test_feed_views_respect_count_when_set(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '10'}
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        self.assertEqual(10, len(feed.items()))
+
+    def test_feed_views_ignore_count_when_nonsense(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': 'nonsense'}
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        # 23, because that's the number of videos in the fixture
+        self.assertEqual(23, len(feed.items()))
+
+    def test_feed_views_ignore_count_when_empty(self):
+        fake_request = mock.Mock()
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        # 23, because that's the number of videos in the fixture
+        self.assertEqual(23, len(feed.items()))
