@@ -60,10 +60,10 @@ def moderation_queue(request):
         page_range
             Range of page numbers
 
-    Copied from Django 1.1, since it was removed in Django 1.2.
+    Originally copied from Django 1.1, since it was removed in Django 1.2.
     """
     qs = get_comment_model().objects.filter(is_public=False, is_removed=False)
-    paginator = Paginator(qs, 100)
+    paginator = Paginator(qs, 30)
 
     try:
         page = int(request.GET.get("page", 1))
@@ -87,5 +87,6 @@ def moderation_queue(request):
         'previous': page - 1,
         'pages': paginator.num_pages,
         'hits' : paginator.count,
-        'page_range' : paginator.page_range
+        'page_range' : paginator.page_range,
+        'page_obj': comments_per_page,
     }, context_instance=template.RequestContext(request))

@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters comments %}
+{% load i18n filters comments pagetabs %}
 {% block body_class %}comments{% endblock %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
@@ -44,6 +44,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
  <h2>Comments</h2>
  
   <div class="module" id="labels">
+    {% if page_obj %}
+    <div class="pag">
+      {% pagetabs page_obj %}
+    </div>
+    {% endif %}
+
     <table cellspacing="0" class="rounded">
       <thead>
         <tr>
