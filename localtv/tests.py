@@ -2154,7 +2154,7 @@ class TierMethodsTests(BaseTestCase):
 
 class FeedViewTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['videos', 'categories']
 
     def test_feed_views_respect_count_when_set(self):
         fake_request = mock.Mock()
@@ -2174,3 +2174,11 @@ class FeedViewTestCase(BaseTestCase):
         feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
         # 23, because that's the number of videos in the fixture
         self.assertEqual(23, len(feed.items()))
+
+    def test_category_feed_renders_at_all(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '10'}
+        fake_request.META = {}
+        response = localtv.feeds.views.feed_view(
+            localtv.feeds.views.CategoryVideosFeed)(fake_request, None, 'linux')
+        self.assertEqual(200, response.status_code)

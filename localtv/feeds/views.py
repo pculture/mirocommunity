@@ -91,10 +91,7 @@ class ItemCountMixin(object):
     either the number requested in self.request.GET['count'] or
     LOCALTV_FEED_LENGTH.'''
 
-    def items(self, items=None, *args, **kwargs):
-        if items is None:
-            items = self.all_items(*args, **kwargs)
-
+    def slice_items(self, items):
         try:
             length = int(self.request.GET.get('count', None))
         except (ValueError, TypeError):
@@ -260,10 +257,6 @@ class BaseVideosFeed(Feed, ItemCountMixin):
         else:
             return ""
 
-    def all_items(self):
-        '''You have to implement this in a subclass.'''
-        raise NotImplementedError
-
 class NewVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_new')
@@ -272,11 +265,11 @@ class NewVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('New Videos'))
 
-    def all_items(self):
+    def items(self):
         videos = models.Video.objects.new(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos
+        return self.slice_items(videos)
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
@@ -287,24 +280,24 @@ class FeaturedVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('Featured Videos'))
 
-    def all_items(self):
+    def items(self):
         videos = models.Video.objects.filter(
             site=self.sitelocation.site,
             last_featured__isnull=False,
             status=models.VIDEO_STATUS_ACTIVE)
         videos = videos.order_by(
             '-last_featured', '-when_approved','-when_submitted')
-        return videos
+        return self.slice_items(videos)
 
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_popular')
 
-    def all_items(self):
+    def items(self):
         videos = models.Video.objects.popular_since(
             datetime.timedelta(days=7), self.sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos
+        return self.slice_items(videos)
 
     def title(self):
         return "%s: %s" % (
@@ -319,8 +312,8 @@ class CategoryVideosFeed(BaseVideosFeed):
     def link(self, category):
         return category.get_absolute_url()
 
-    def all_items(self, category):
-        return category.approved_set.all()
+    def items(self, category):
+        return self.slice_items(category.approved_set.all())
 
     def title(self, category):
         return "%s: %s" % (
@@ -333,12 +326,12 @@ class AuthorVideosFeed(BaseVideosFeed):
     def link(self, author):
         return reverse('localtv_author', args=[author.pk])
 
-    def all_items(self, author):
+    def items(self, author):
         videos = models.Video.objects.filter(
             Q(authors=author) | Q(user=author),
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
-        return videos
+        return self.slice_items(videos)
 
     def title(self, author):
         return "%s: %s" % (
@@ -352,11 +345,11 @@ class TagVideosFeed(BaseVideosFeed):
     def link(self, tag):
         return reverse('localtv_list_tag', args=[tag.name])
 
-    def all_items(self, tag):
+    def items(self, tag):
         videos = models.Video.tagged.with_all(tag).filter(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos
+        return self.slice_items(videos)
 
     def title(self, tag):
         return "%s: %s" % (
@@ -372,7 +365,7 @@ class SearchVideosFeed(BaseVideosFeed):
             args['sort'] = 'latest'
         return reverse('localtv_search') + '?' + urllib.urlencode(args)
 
-    def all_items(self, search):
+    def items(self, search):
         form = VideoSearchForm({'q': search})
         if not form.is_valid():
             raise FeedDoesNotExist(search)
@@ -383,7 +376,7 @@ class SearchVideosFeed(BaseVideosFeed):
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=[result.pk for result in results if result])
             return self.slice_items(videos)
-        return [result.object for result in self.items(items=results)
+        return [result.object for result in self.slice_items(results)
                 if result.object]
 
     def title(self, search):
@@ -397,11 +390,11 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def link(self, playlist):
         return playlist.get_absolute_url()
 
-    def all_items(self, playlist):
+    def items(self, playlist):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
             videos = videos.order_by('-playlistitem___order')
-        return videos
+        return self.slice_items(videos)
 
     def title(self, playlist):
         return "%s: %s" % (
