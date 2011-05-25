@@ -23,8 +23,6 @@ django-haystack==1.0.1-final
 celery==1.0.0
 -e git+http://git.participatoryculture.org/python-bitly@8cd21ba16601f587c607738e80b18a3e1a378c65#egg=python_bitly-trunk-py2.6-dev
 oauth2==1.2.0
-#-e git+http://github.com/paulswartz/Django-Socialauth.git@d1bb2d5c295ae46036f7ee44c66c5c948c374bb5#egg=django-socialauth-0.1.2c-py2.6-dev
-#facebook-python-sdk==0.1
 -e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration
 -e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
 -e git+http://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
