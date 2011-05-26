@@ -1,0 +1,30 @@
+{% extends "localtv/video_listing.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% load i18n %}
+
+{% block page_title %}Videos published this week{% endblock %}
+
+{% block rss_url %}{% url localtv_feeds_new %}{% endblock %}
+
+{% block title %}{{ block.super }} - {% trans "Videos published this week" %}{% endblock %}
+
+{% block body_id %}video_listing_new{% endblock body_id %}

@@ -21,6 +21,7 @@ urlpatterns = patterns(
     'localtv.listing.views',
     (r'^$', 'index', {}, 'localtv_list_index'),
     (r'^new/$', 'new_videos', {}, 'localtv_list_new'),
+    (r'^this-week/$', 'this_week_videos', {}, 'localtv_list_this_week'),
     (r'^popular/$', 'popular_videos', {}, 'localtv_list_popular'),
     (r'^featured/$', 'featured_videos', {}, 'localtv_list_featured'),
     (r'^tag/(.+)/$', 'tag_videos', {}, 'localtv_list_tag'),
