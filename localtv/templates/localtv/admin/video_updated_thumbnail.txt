@@ -1,0 +1,1 @@
+Thumbnail URL: {{ item.1.0 }}

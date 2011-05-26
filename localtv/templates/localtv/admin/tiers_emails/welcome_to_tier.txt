@@ -1,0 +1,27 @@
+Congratulations, {{ short_name }}! You have upgraded your Miro Community account
+for {{ site_name }} to {{ tier_name_capitalized }}.
+
+{% if in_free_trial %}Your 30-day free trial lasts until midnight on {{ next_payment_due_date }}. If
+you don't want to continue using Miro Community, just cancel before the trial
+ends and you won't be charged (we'll email you 5 days before the trial ends to
+remind you). Otherwise, you'll pay just ${{ tier_obj.dollar_cost }}/month for the service as long
+as your account is open. You can upgrade, downgrade, or cancel any time at
+http://{{ site.domain }}{% url localtv_admin_tier %}.
+
+{% endif %}
+Your new account level is {{ tier_name_capitalized}}. You can read more about the features on
+your account page: http://{{ site.domain }}{% url localtv_admin_tier %}.
+
+Learn more about how to use Miro Community at:
+http://develop.participatoryculture.org/index.php/MiroCommunityManual
+
+{% if tier_obj.permits_custom_domain %}To set up a custom domain, follow the directions here:
+http://develop.participatoryculture.org/index.php/MiroCommunity/CustomDomain
+{% endif %}
+
+{% if tier_obj.permit_custom_template %}Learn about customizing your theme here:
+http://develop.participatoryculture.org/index.php/MiroCommunity/Theming
+{% endif %}
+
+Still have questions? Don't hesitate to get in touch  -
+questions@mirocommunity.org.

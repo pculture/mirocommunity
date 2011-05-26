@@ -43,6 +43,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       name of your community or organization, so that people can easily find your
       site.
     </div>
+    {% if form.non_field_errors %}
+    <div class="helpful" style="background-color: #e30;">
+      <ul>
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
     <div class="form_container">
       <p>
         <span class="form_error">{{ form.title.errors }}</span>

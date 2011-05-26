@@ -1980,13 +1980,14 @@ line-height: 1.4em;
 }
 
 #about_page #main h2 {
-padding: 50px 0 7px 0px;
+padding: 30px 0 7px 0px;
 }
 
 #about_page .logo {
 max-width: 470px;
 float: right;
-margin: 100px 50px;
+margin: 50px;
+margin-bottom: 20px;
 }
 
 
@@ -3608,4 +3609,26 @@ h3.playlist_title {
 h2.page_title .private, h2.page_title .private a{
     color: red;
     font-size: 0.9em;
+}
+
+#main .description ul {
+    display: block;
+    margin-bottom: 18px;
+    list-style-position: inside;
+}
+
+#main .description ul li {
+    display: list-item;
+    list-style-type: disc;
+}
+
+#main .description ol {
+    display: block;
+    margin-bottom: 18px;
+    list-style-position: inside;
+}
+
+#main .description ol li {
+    display: list-item;
+    list-style-type: decimal;
 }

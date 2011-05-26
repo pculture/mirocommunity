@@ -23,6 +23,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
+import localtv.models
 
 @require_site_admin
 @csrf_protect
@@ -49,7 +50,9 @@ def edit_settings(request):
 @csrf_protect
 def widget_settings(request):
     form = forms.WidgetSettingsForm(
-        instance=request.sitelocation.site.widgetsettings)
+        instance=request.sitelocation.site.widgetsettings,
+        initial={'title': 
+                 localtv.models.WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
     if request.method == 'POST':
         form = forms.WidgetSettingsForm(

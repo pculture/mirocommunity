@@ -35,13 +35,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% autoescape off %}
       {{ sitelocation.about_html }}
     {% endautoescape %}
-<br />
+    <br style="clear: both;" />
+  <img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>
+
     <h2>{% trans "About Miro Community" %}</h2>
     <p>
       {% blocktrans %}
-      <a href="http://www.mirocommunity.org">Miro Community</a> helps
-      communities gather their videos into one place. It's a project of the <a
-      href="http://pculture.org">Participatory Culture Foundation</a>.
+      <a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet.
+      {% endblocktrans %}
+      </p><p>
+      {% blocktrans %}
+      Sites are free and take less than a minute to start:
+      <a href="http://mirocommunity.org/signup/">http://mirocommunity.org/signup/</a>. Miro Community is developed by the <a href="http://pculture.org">Participatory Culture Foundation</a>.
       {% endblocktrans %}
     </p>
   </div>

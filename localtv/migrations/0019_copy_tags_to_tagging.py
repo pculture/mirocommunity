@@ -1,7 +1,25 @@
+# This file is part of Miro Community.
+# Copyright (C) 2009, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 
 from south.db import db
 from django.db import models
 from localtv.models import *
+
+import django.contrib.contenttypes.models
 
 class Migration:
 
@@ -13,8 +31,13 @@ class Migration:
             orm['tagging.Tag'].objects.get_or_create(
                 name=tag.name)
 
-        content_type = orm['contenttypes.ContentType'].objects.get(
+        content_types = orm['contenttypes.ContentType'].objects.filter(
             app_label='localtv', model='video')
+        if content_types:
+            content_type = content_types[0]
+        else:
+            return
+
         for video in orm.Video.objects.all():
             for tag in video.tags.all():
                 orm['tagging.TaggedItem'].objects.get_or_create(

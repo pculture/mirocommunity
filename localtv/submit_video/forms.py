@@ -20,6 +20,7 @@ try:
 except ImportError:
     import Image
 import urllib
+import importlib
 
 from django import forms
 from django.contrib.auth.models import User
@@ -49,8 +50,64 @@ class ImageURLField(forms.URLField):
             content_thumb.seek(0)
             return content_thumb
 
+def get_extended_init_callable_for_class_name(class_name):
+    # This is a hacky implementation of plugins.
+    #
+    # If the settings.LOCALTV_SUBMISSION_EXTRA_INIT option is defined,
+    # then we look for a key equal to class_name.
+    #
+    # If that exists, we try calling importing that string and treating it as
+    # a Python name to import, probably a callable. We return it!
+    #
+    # This helps us permit sites to have site-specific behavior on top of what
+    # the SubmitVideoForm and friends do, without directly modifying this file.
+    if getattr(settings, 'LOCALTV_SUBMISSION_EXTRA_INIT', None):
+        if class_name in settings.LOCALTV_SUBMISSION_EXTRA_INIT:
+            name_of_thing_to_call = settings.LOCALTV_SUBMISSION_EXTRA_INIT[
+                class_name]
+            module_name, entry = name_of_thing_to_call.rsplit('.', 1)
+            module = importlib.import_module(module_name)
+            return getattr(module, entry)
+
+    # Otherwise, return a silly function that does nothing.
+    silly_function = lambda *args, **kwargs: None
+    return silly_function
+
 class SubmitVideoForm(forms.Form):
     url = forms.URLField(verify_exists=True)
+
+    def __init__(self, *args, **kwargs):
+        # By convention, when you call this form's constructor, you
+        # pass a keyword argument called construction_hint.
+        #
+        # This form can be constructed without it, so it's optional.
+        #
+        # We pass the construction_hint information through to the
+        # "extra_init" system (which is a hacky form of plugins; see
+        # get_extended_init_callable_for_class_name above) so that the "plugin"
+        # can possibly alter the fields in the SubmitVideoForm.
+        #
+        # This is important so that the the form can be initialized differently
+        # based on subtle differences in the request.GET. It's kind of hackish,
+        # I realize.
+
+        # First, we copy the data out and remove the keyword argument to avoid
+        # scaring the superclass constructor:
+        if 'construction_hint' in kwargs:
+            construction_hint = kwargs['construction_hint']
+            del kwargs['construction_hint']
+        else:
+            construction_hint = None
+
+        super(SubmitVideoForm, self).__init__(*args, **kwargs)
+
+        # Okay, now put the construction_hint back on.
+        kwargs['construction_hint'] = construction_hint
+        kwargs['self'] = self
+        get_extended_init_callable_for_class_name('SubmitVideoForm')(
+            *args,
+             **kwargs)
+
 
 REQUIRE_EMAIL = getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', None)
 if REQUIRE_EMAIL:
@@ -86,6 +143,8 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         if self.sitelocation:
             self.instance.site = self.sitelocation.site
         self.instance.status = models.VIDEO_STATUS_UNAPPROVED
+        kwargs['self'] = self
+        get_extended_init_callable_for_class_name('SecondStepSubmitVideoForm')(*args, **kwargs)
 
     def save(self, **kwargs):
         commit = kwargs.get('commit', True)
@@ -94,7 +153,9 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         if self.user.is_authenticated():
             video.user = self.user
         if self.sitelocation.user_is_admin(self.user):
-            video.status = models.VIDEO_STATUS_ACTIVE
+            if (not self.sitelocation.enforce_tiers() or
+                self.sitelocation.get_tier().remaining_videos() >= 1):
+                video.status = models.VIDEO_STATUS_ACTIVE
         old_m2m = self.save_m2m
         def save_m2m():
             video = self.instance

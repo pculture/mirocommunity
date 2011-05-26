@@ -1,4 +1,25 @@
+# This file is part of Miro Community.
+# Copyright (C) 2009, 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
+
+class Fakedatetime(datetime.datetime):
+    @classmethod
+    def utcnow(cls):
+        return cls(2011, 2, 20, 12, 35, 0)
 
 from django.core.files.base import File
 from django.core.paginator import Page
@@ -9,10 +30,15 @@ from django.contrib.flatpages.models import FlatPage
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
+from django.conf import settings
 
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
+import mock
+import localtv.tiers
+
+import uploadtemplate
 
 import vidscraper
 from notification import models as notification
@@ -169,6 +195,24 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is None)
 
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_approve_fails_when_over_limit(self):
+        """
+        A GET request to the approve_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_approve_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
+
     def test_GET_approve_email(self):
         """
         If the video is approved, and the submitter has the 'video_approved'
@@ -272,6 +316,25 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is not None)
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', mock.Mock(return_value=2))
+    def test_GET_feature_fails_outside_video_limit(self):
+        """
+        A GET request to the feature_video view should approve the video and
+        redirect back to the referrer.  The video should be specified by
+        GET['video_id'].  If the video is unapproved, it should become
+        approved.
+        """
+        video = models.Video.objects.filter(
+            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        url = reverse('localtv_admin_feature_video')
+        self.assertRequiresAuthentication(url, {'video_id': video.pk})
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(url, {'video_id': str(video.pk)},
+                         HTTP_REFERER='http://referer.com')
+        self.assertStatusCodeEquals(response, 402)
 
     def test_GET_unfeature(self):
         """
@@ -421,7 +484,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_approve_reject')))
 
         # all the unapproved videos are now rejected
@@ -626,7 +689,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -662,7 +725,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -697,7 +760,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -744,7 +807,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -787,7 +850,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         feed = models.Feed.objects.get(pk=3) # form 0
@@ -841,7 +904,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -890,7 +953,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(
@@ -959,7 +1022,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for v in models.Video.objects.order_by('pk')[:3]:
@@ -1172,7 +1235,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_manage_page')))
 
         self.assertEquals(models.Feed.objects.count(), 0)
@@ -1193,7 +1256,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_admin_feed_add_done', args=[1])))
 
         feed = models.Feed.objects.get()
@@ -1221,7 +1284,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertTrue(response['Location'].startswith(
                 'http://%s%s?task_id=' % (
-                    self.site_location.site.domain,
+                    'testserver',
                     reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
@@ -1412,7 +1475,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         removed from subsequent search listings.
         """
         c = Client()
-        c.login(username='admin', password='admin')
+        self.assert_(c.login(username='admin', password='admin'))
         response = c.get(self.url,
                          {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
@@ -1446,6 +1509,26 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'query': 'search string'})
         self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
                           metasearch_video2.id)
+
+    @mock.patch('localtv.tiers.Tier.can_add_more_videos', mock.Mock(return_value=False))
+    def test_GET_approve_refuses_when_limit_exceeded(self):
+        """
+        A GET request to the approve view should create a new video object from
+        the search and redirect back to the referrer.  The video should be
+        removed from subsequent search listings.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url,
+                         {'query': 'search string'})
+        metasearch_video = response.context[2]['page_obj'].object_list[0]
+        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
+
+        response = c.get(reverse('localtv_admin_search_video_approve'),
+                         {'query': 'search string',
+                          'video_id': metasearch_video.id},
+                         HTTP_REFERER="http://www.getmiro.com/")
+        self.assertStatusCodeEquals(response, 402)
 
     def test_GET_approve_authentication(self):
         """
@@ -1594,7 +1677,6 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
         self.assertFalse(saved_search.auto_approve)
 
-
 # -----------------------------------------------------------------------------
 # User administration tests
 # -----------------------------------------------------------------------------
@@ -1673,7 +1755,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1709,7 +1791,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = User.objects.order_by('-id')[0]
@@ -1752,7 +1834,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_users, User.objects.values()):
@@ -1792,7 +1874,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 4) # no one got added
@@ -1847,13 +1929,53 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(User.objects.count(), 3) # one user got removed
 
         self.assertEquals(User.objects.filter(username='user').count(), 0)
         self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
+
+    def test_POST_delete_nonhuman_user(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Save' and a
+        successful formset should update the users data.  If form-*-DELETE is
+        present, that user should be removed, unless that user is a superuser.
+        """
+        # Take the user called "user" and give the user an unusable password
+        # this should simulate the person being a nonhuman user.
+        
+        u = User.objects.get(username='user')
+        u.set_unusable_password()
+        u.save()
+        self.assertEqual(
+            3,
+            User.objects.filter(localtv.admin.user_views._filter_just_humans()).count())
+       
+        c = Client()
+        c.login(username="admin", password="admin")
+
+        GET_response = c.get(self.url + "?show=all")
+        formset = GET_response.context['formset']
+        POST_data = self._POST_data_from_formset(formset,
+                                                 submit='Save')
+
+        # form-0 is admin (3)
+        # form-1 is superuser (2)
+        # form-2 is user (1)
+        POST_data['form-2-DELETE'] = 'yes'
+
+        POST_response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(POST_response, 302)
+        self.assertEquals(POST_response['Location'],
+                          'http://%s%s' % (
+                'testserver',
+                self.url))
+
+        self.assertEquals(User.objects.count(), 3) # one user got removed
+
+        self.assertEquals(User.objects.filter(username='user').count(), 0)
 
 
 # -----------------------------------------------------------------------------
@@ -2012,7 +2134,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = models.Category.objects.order_by('-id')[0]
@@ -2052,7 +2174,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_categories, models.Category.objects.values()):
@@ -2082,7 +2204,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(models.Category.objects.count(), 5) # no one got
@@ -2123,7 +2245,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three categories got removed
@@ -2155,7 +2277,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
@@ -2171,9 +2293,46 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 # Bulk edit administration tests
 # -----------------------------------------------------------------------------
 
+class BulkEditVideoFormTestCase(BaseTestCase):
+    fixtures = AdministrationBaseTestCase.fixtures + [
+        'feeds', 'videos', 'categories']
+
+    def _form2POST(self, form):
+        POST_data = {}
+        for name, field in form.fields.items():
+            data = form.initial.get(name, field.initial)
+            if callable(data):
+                data = data()
+            if isinstance(data, (list, tuple)):
+                data = [force_unicode(item) for item in data]
+            elif data:
+                data = force_unicode(data)
+            if data:
+                POST_data[form.add_prefix(name)] = data
+        return POST_data
+
+    @mock.patch('localtv.models.Video.save_thumbnail')
+    def test_save_thumbnail_false(self, mock_save_thumbnail):
+        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        import localtv.admin.forms
+        data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
+        form = localtv.admin.forms.EditVideoForm(data, instance=vid)
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertFalse(mock_save_thumbnail.called)
+
+    @mock.patch('localtv.models.Video.save_thumbnail')
+    def test_save_thumbnail_true(self, mock_save_thumbnail):
+        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        import localtv.admin.forms
+        data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
+        data['thumbnail_url'] = 'http://www.google.com/logos/2011/persiannewyear11-hp.jpg'
+        form = localtv.admin.forms.EditVideoForm(data, instance=vid)
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertTrue(mock_save_thumbnail.called)
 
 class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
-
     fixtures = AdministrationBaseTestCase.fixtures + [
         'feeds', 'videos', 'categories']
 
@@ -2430,7 +2589,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2446,6 +2605,110 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                           POST_data['form-1-description'])
         self.assertEquals(video2.embed_code,
                           POST_data['form-1-embed_code'])
+
+    def test_POST_change_just_one_video(self):
+        """
+        Here, we POST to the bulk edit view with a valid
+        formset, and we change the name of just one video
+        using its particular form.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        POST_data = self._POST_data_from_formset(formset)
+
+        POST_data.update({
+                'form-11-description': 'new description',
+                })
+
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has been updated
+        video = models.Video.objects.get(
+            pk=POST_data['form-11-id'])
+        self.assertEquals(video.description,
+                          POST_data['form-11-description'])
+
+    def test_POST_change_just_one_video_without_authors(self):
+        """
+        Here, we POST to the bulk edit view with a valid
+        formset, and we change the name of just one video
+        using its particular form.
+
+        This time we fail to submit any author data. We want to
+        make sure that the video still has the same authors list.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        original_POST_data = self._POST_data_from_formset(formset)
+
+        POST_data = original_POST_data.copy()
+        del POST_data['form-11-authors']
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data remains the same: in the form...
+        video = models.Video.objects.get(
+            pk=POST_data['form-11-id'])
+        self.assertEquals([unicode(x.id) for x in video.authors.all()],
+                          original_POST_data['form-11-authors'])
+
+        # ...in the database
+        self.assertEqual([3],
+                         [x.id for x in video.authors.all()])
+
+    def test_POST_change_just_one_video_actually_change_authors(self):
+        """
+        Here, we POST to the bulk edit view with a valid
+        formset, and we change the name of just one video
+        using its particular form.
+
+        This time we fail to submit any author data. We also remove
+        the skip_authors field, which means that the form
+        should process this change.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        formset = response.context['formset']
+        original_POST_data = self._POST_data_from_formset(formset)
+
+        POST_data = original_POST_data.copy()
+        del POST_data['form-11-skip_authors']
+        del POST_data['form-11-authors']
+
+        POST_response = c.post(self.url, POST_data,
+                               follow=True)
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.redirect_chain,
+                          [('http://%s%s?successful' % (
+                        'testserver',
+                        self.url), 302)])
+        self.assertFalse(POST_response.context['formset'].is_bound)
+
+        # make sure the data has changed in the DB
+        video = models.Video.objects.get(
+            pk=POST_data['form-11-id'])
+        self.assertEqual([],
+                         [x.id for x in video.authors.all()])
 
     def test_POST_succeed_with_page(self):
         """
@@ -2465,7 +2728,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2486,7 +2749,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertEquals(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
-                        self.site_location.site.domain,
+                        'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
@@ -2507,7 +2770,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2550,7 +2813,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2603,7 +2866,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2644,7 +2907,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2675,7 +2938,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2706,7 +2969,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2741,7 +3004,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # make sure the data has been updated
@@ -2752,6 +3015,94 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is None)
 
+# ----------------------------------
+# Administration tests with tiers
+# ----------------------------------
+
+def naysayer(*args, **kwargs):
+    return False
+
+class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
+
+    url = reverse('localtv_admin_settings')
+
+    def setUp(self):
+        AdministrationBaseTestCase.setUp(self)
+        self.POST_data = {
+            'title': self.site_location.site.name,
+            'tagline': self.site_location.tagline,
+            'about_html': self.site_location.about_html,
+            'sidebar_html': self.site_location.sidebar_html,
+            'footer_html': self.site_location.footer_html,
+            'css': self.site_location.css}
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_failure(self):
+        """
+        When CSS is not permitted, the POST should fail with a validation error.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data['css'] = 'new css'
+        POST_response = c.post(self.url, self.POST_data)
+
+        self.assertStatusCodeEquals(POST_response, 200)
+        self.assertEquals(POST_response.template[0].name,
+                          'localtv/admin/edit_settings.html')
+        self.assertFalse(POST_response.context['form'].is_valid())
+
+    @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
+    def test_POST_css_succeeds_when_same_as_db_contents(self):
+        """
+        When CSS is not permitted, but we send the same CSS as what
+        is in the database, the form should be valid.
+        """
+        c = Client()
+        c.login(username='admin', password='admin')
+        POST_response = c.post(self.url, self.POST_data)
+
+        # We know from the HTTP 302 that it worked.
+        self.assertStatusCodeEquals(POST_response, 302)
+
+class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
+    url = reverse('localtv_admin_users')
+
+    def test_POST_rejects_first_admin_beyond_superuser(self):
+        """
+        A POST to the users view with a POST['submit'] of 'Add' and a
+        successful form should create a new user and redirect the user back to
+        the management page.  If the password isn't specified,
+        User.has_unusable_password() should be True.
+        """
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertFalse(response.context['add_user_form'].is_valid())
+
+        # but with 'premium' it works
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+
+        c = Client()
+        c.login(username="admin", password="admin")
+        POST_data = {
+            'submit': 'Add',
+            'username': 'new',
+            'email': 'new@testserver.local',
+            'role': 'admin',
+            }
+        response = c.post(self.url, POST_data)
+        self.assertStatusCodeEquals(response, 302)
 
 # -----------------------------------------------------------------------------
 # Design administration tests
@@ -2843,7 +3194,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2883,7 +3234,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2904,7 +3255,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2930,7 +3281,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -2951,7 +3302,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         site_location = models.SiteLocation.objects.get(
@@ -3036,7 +3387,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         new = FlatPage.objects.order_by('-id')[0]
@@ -3114,7 +3465,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         for old, new in zip(old_flatpages, FlatPage.objects.values()):
@@ -3142,7 +3493,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         self.assertEquals(FlatPage.objects.count(), 5) # no one got added
@@ -3176,7 +3527,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
         # three flatpages got removed
@@ -3204,9 +3555,1143 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
         self.assertEquals(POST_response['Location'],
                           'http://%s%s?successful' % (
-                self.site_location.site.domain,
+                'testserver',
                 self.url))
 
 
         # three flatpages got removed
         self.assertEquals(FlatPage.objects.count(), 2)
+
+def videos_limit_of_two(*args, **kwargs):
+    return 2
+
+class CannotApproveVideoIfLimitExceeded(BaseTestCase):
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Let there be one video already approved
+        models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        # Create two in the queue
+        for k in range(2):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_UNAPPROVED)
+
+        first_video_id, second_video_id = [v.id for v in
+                                           models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED)]
+
+        # Try to activate all of them, but that would take us over the limit.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_all'),
+                         {'page': '1'})
+        self.assertStatusCodeEquals(response, 402)
+
+        # Try to activate the first one -- should work fine.
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(first_video_id)})
+        self.assertStatusCodeEquals(response, 200)
+
+        # Try to activate the second one -- you're past the limit.
+        # HTTP 402: Payment Required
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(reverse('localtv_admin_approve_video'),
+                         {'video_id': str(second_video_id)})
+        self.assertStatusCodeEquals(response, 402)
+
+class DowngradingDisablesThings(BaseTestCase):
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_over_new_limit(self):
+        # Create two videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_videos_within_new_limit(self):
+        # Create just one video
+        models.Video.objects.create(site_id=self.site_location.site_id)
+        self.assertTrue('videos' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+    
+    def test_go_to_basic_from_max_warn_about_css_loss(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Add some CSS to the sitelocation
+        self.site_location.css = '* { display: none; }'
+        self.site_location.save()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'css' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_skip_warn_about_css_loss(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Because there is no custom CSS, a transition to 'basic' would not
+        # generate a warning.
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'css' not in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_lose_advertising(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will see an 'advertising' message
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue(
+            'advertising' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_plus_no_advertising_msg(self):
+        # Start out in Plus
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Go to basic, noting that we will no 'advertising' message
+        self.assertTrue(
+            'advertising' not in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_basic_from_max_lose_custom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be myawesomesite.example.com
+        self.site_location.site.domain = 'myawesomesite.example.com'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertTrue(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_from_max_with_a_noncustom_domain(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Make our site.domain be within mirocommunity.org
+        self.site_location.site.domain = 'myawesomesite.mirocommunity.org'
+        self.site_location.site.save()
+
+        # Get warnings for downgrade.
+        self.assertFalse(
+            'customdomain' in
+            localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+    def test_go_to_basic_with_one_admin(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Delete user #2 so that we have only 1 admin, the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+        User.objects.get(username='admin').delete()
+
+        # Now we have 1 admin, namely the super-user
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assert_(
+            'admins' not in localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Try pushing the number of admins down to 1, which should change nothing.
+        self.assertFalse(localtv.tiers.push_number_of_admins_down(1))
+        # Still one admin.
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+
+    def test_go_to_basic_with_two_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the basic account type only permits 1
+        self.assertEqual(1, localtv.tiers.Tier('basic').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Well, good -- that means we have to deal with them.
+        # Run a function that 
+        # Try pushing the number of admins down to 1, which should change nothing.
+        usernames = localtv.tiers.push_number_of_admins_down(1)
+        self.assertEqual(set(['admin']), usernames)
+        # Still two admins -- the above does a dry-run by default.
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # Re-do it for real.
+        usernames = localtv.tiers.push_number_of_admins_down(1, actually_demote_people=True)
+        self.assertEqual(set(['admin']), usernames)
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+        
+    def test_non_active_users_do_not_count_as_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
+
+        # If we make the 'admin' person not is_active, now there is only "1" admin
+        u = User.objects.get(username='admin')
+        u.is_active = False
+        u.save()
+        self.assertEqual(1, localtv.tiers.number_of_admins_including_superuser())
+        
+    def test_go_to_basic_with_a_custom_theme(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' in 
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
+        # For now, the default theme is still the bundled one.
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+        # "Transition" from max to max, to make sure the theme stays
+        self.site_location.save()
+        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+        # Now, force the transition
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        # Check that the user is now on a bundled theme
+        self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
+
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should only be two active videos now
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(2,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Make sure it's video 0 that is disabled
+        self.assertEqual(models.VIDEO_STATUS_UNAPPROVED,
+                         models.Video.objects.all().order_by('pk')[0].status)
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
+    def test_go_to_basic_with_too_many_videos_but_do_not_enforce(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create three published videos
+        for k in range(3):
+            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        self.assertTrue('videos' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # We can find 'em all, right?
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+        # Do the downgrade -- there should still be three videos because enforcement is disabled
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        self.assertEqual(3,
+                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
+        '''Even if the custom themes are not the default ones, if they exist, we should
+        let the user know that it won't be accessible anymore.'''
+
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Create two themes -- one bundled, and one not.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
+        
+    def test_go_to_basic_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+        
+    def test_go_to_max_with_a_custom_theme_that_is_not_enabled_from_a_plan_without_custom_themes(self):
+        '''If the custom themes are not the default ones, and if the
+        current tier does not permit custom themes, then do not bother
+        telling the user that they may not use them.'''
+        # Start out in Plus, where default themes are disabled.
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+
+        # Create two themes -- one bundled, and one not. Default is bundled.
+        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        
+        # Now, make sure that the downgrade helper notices and complains
+        self.assertTrue('customtheme' not in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='max'))
+
+
+
+class AdminDashboardLoadsWithoutError(BaseTestCase):
+    url = reverse('localtv_admin_index')
+
+    def test(self):
+        """
+        This view should have status code 200 for an admin.
+
+        (This is there to make sure we at least *cover* the index view.)
+        """
+        self.assertRequiresAuthentication(self.url)
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+
+class NoEnforceMode(BaseTestCase):
+    def test_theme_uploading_with_enforcement(self):
+        permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
+        self.assertFalse(permit)
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    def test_theme_uploading_without_enforcement(self):
+        permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
+        self.assertTrue(permit)
+
+class DowngradingSevenAdmins(BaseTestCase):
+    fixtures = BaseTestCase.fixtures + ['five_more_admins']
+
+    def test_go_to_plus_with_seven_admins(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Verify that we started with 2 admins, including the super-user
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Verify that the plus account type only permits 5
+        self.assertEqual(5, localtv.tiers.Tier('plus').admins_limit())
+
+        # Now check what messages we would generate if we dropped down
+        # to basic.
+        self.assertTrue('admins' in
+                        localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
+
+        # Well, good -- that means we have to deal with them.
+        # Run a function that 
+        # Try pushing the number of admins down to 1, which should change nothing.
+        usernames = localtv.tiers.push_number_of_admins_down(5)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        # Still two admins -- the above does a dry-run by default.
+        self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
+
+        # Re-do it for real.
+        usernames = localtv.tiers.push_number_of_admins_down(5, actually_demote_people=True)
+        self.assertEqual(set(['admin8', 'admin9']), usernames)
+        self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
+
+class NightlyTiersEmails(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def setUp(self):
+        super(NightlyTiersEmails, self).setUp()
+        self.assertEquals(len(mail.outbox), 0)
+        self.admin = localtv.tiers.get_main_site_admin()
+        self.admin.last_login = datetime.datetime.utcnow()
+        self.admin.save()
+
+        from localtv.management.commands import nightly_tiers_events
+        self.tiers_cmd = nightly_tiers_events.Command()
+
+    def test_inactive_site_warning(self):
+        return # FIXME: Disabling for now.
+        # Set up the admin so that the last login was 90 days ago (which should be
+        # long enough ago that the site is "inactive")
+        self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
+        self.admin.save()
+        self.assertFalse(self.site_location.inactive_site_warning_sent)
+        
+        # Make sure it sends an email...
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # And make sure the SiteLocation knows that the email was sent...
+        self.assertTrue(self.site_location.inactive_site_warning_sent)
+
+        # ..so that the next time, it doesn't send any email.
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
+
+    @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
+    def test_video_allotment(self):
+        # First, it sends an email. But it saves a note in the SiteLocation...
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # ..so that the next time, it doesn't send any email.
+        self.tiers_cmd.handle()
+        self.assertEquals(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
+    def test_free_trial_nearly_up_notification_false(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=5)))
+    def test_free_trial_nearly_up_notification_true(self):
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+        mail.outbox = []
+
+        # Make sure it does not want to send it again
+        self.tiers_cmd.handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+class SendWelcomeEmailTest(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        from localtv.management.commands import send_welcome_email
+        cmd = send_welcome_email.Command()
+        cmd.handle()
+        self.assertEqual(len(mail.outbox), 1)
+
+class TestDisableEnforcement(BaseTestCase):
+
+    def testTrue(self):
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=False))
+
+    def testFalse(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+
+class TestTiersComplianceEmail(BaseTestCase):
+    def setUp(self):
+        super(TestTiersComplianceEmail, self).setUp()
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        from localtv.management.commands import send_tiers_compliance_email
+        self.cmd = send_tiers_compliance_email.Command()
+
+    def test_email_when_over_video_limit(self):
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        # The first time round, we should get an email.
+        self.cmd.handle()
+        self.assertEqual(1,
+                         len(mail.outbox))
+        # Clear the outbox. When we run the command again, we should not
+        # get an email.
+        mail.outbox = []
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+    def test_no_email_when_within_limits(self):
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+    def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.already_sent_tiers_compliance_email = True
+        ti.save()
+
+        for n in range(1000):
+            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+        self.cmd.handle()
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
+    fixtures = BaseTestCase.fixtures
+
+    def test(self):
+        # Start out in Executive mode, by default
+        self.assertEqual(self.site_location.tier_name, 'max')
+
+        # Give the site a custom domain
+        site = self.site_location.site
+        site.domain = 'custom.example.com'
+        site.save()
+
+        # Make sure it stuck
+        self.assertEqual(self.site_location.site.domain,
+                         'custom.example.com')
+
+        # There are no emails in the outbox yet
+        self.assertEqual(0,
+                         len(mail.outbox))
+
+        # Bump down to 'basic'.
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        self.assertEqual([], mail.outbox)
+        import localtv.zendesk
+        self.assertEqual(1, len(localtv.zendesk.outbox))
+
+class IpnIntegration(BaseTestCase):
+    def setUp(self):
+        # Call superclass setUp()
+        super(IpnIntegration, self).setUp()
+
+        # Set current tier to 'basic'
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+
+        # At the start of this test, we have no current recurring payment profile
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+
+        # Make sure there is a free trial available
+        self.tier_info.free_trial_available = True
+        self.tier_info.free_trial_started_on = None
+        self.tier_info.save()
+
+        self.c = Client()
+        self.c.login(username='superuser', password='superuser')
+
+    def upgrade_and_submit_ipn(self):
+        self.assertTrue(models.TierInfo.objects.get_current().free_trial_available)
+
+        # POST to the begin_free_trial element...
+        url = reverse('localtv_admin_begin_free_trial',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+        response = self.c.get(url,
+                               {'target_tier_name': 'plus'})
+
+        # Make sure we switched
+        self.assertEquals('plus', self.site_location.tier_name)
+
+        # Discover that we still have no paypal profile, because PayPal took a few sec to submit the IPN...
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+
+        # Check that we are in a free trial (should be!)
+        self.assertTrue(new_tier_info.in_free_trial)
+        self.assertFalse(new_tier_info.free_trial_available)
+        message = mail.outbox[0].body
+        self.assertFalse('until midnight on None' in message)
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+
+        # Make sure SiteLocation recognizes we are in 'plus'
+        self.assertEqual(self.site_location.tier_name, 'plus')
+
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertTrue(new_tier_info.in_free_trial)
+        self.assertFalse(new_tier_info.free_trial_available)
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_upgrade_and_submit_ipn_skipping_free_trial_post(self):
+        # If the user upgrades but neglects to POST to the begin_free_trial handler
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(new_tier_info.current_paypal_profile_id)
+        self.assertFalse(new_tier_info.in_free_trial)
+        self.assertTrue(new_tier_info.free_trial_available)
+
+        self.upgrade_and_submit_ipn_skipping_free_trial_post()
+
+        # Make sure SiteLocation recognizes we are in 'plus'
+        self.assertEqual(self.site_location.tier_name, 'plus')
+
+        # Make sure we are in a free trial, etc.
+        new_tier_info = models.TierInfo.objects.get_current()
+        self.assertTrue(new_tier_info.in_free_trial)
+        self.assertFalse(new_tier_info.free_trial_available)
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def upgrade_and_submit_ipn_skipping_free_trial_post(self, override_amount3=None):
+        if override_amount3:
+            amount3 = override_amount3
+        else:
+            amount3 = u'15.00'
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def upgrade_including_prorated_duration_and_amount(self, amount1, amount3, period1):
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': amount1, u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'prorated change', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': period1, u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': amount1, u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 20, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def submit_ipn_subscription_modify(self, override_amount3=None, override_subscr_id=None):
+        if override_amount3:
+            amount3 = override_amount3
+        else:
+            amount3 = u'15.00'
+
+        if override_subscr_id:
+            subscr_id = override_subscr_id
+        else:
+            subscr_id = u'I-MEBGA2YXPNJK'
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_modify', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def submit_ipn_subscription_cancel(self, override_subscr_id=None):
+        if override_subscr_id:
+            subscr_id = override_subscr_id
+        else:
+            subscr_id = u'I-MEBGA2YXPNJK'
+
+        # Now, PayPal sends us the IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount1': u'0.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        response = Client().post(url,
+                      ipn_data)
+        self.assertEqual('OKAY', response.content.strip())
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_upgrade_between_paid_tiers(self):
+        self.test_success()
+        self.assertEqual(self.site_location.tier_name, 'plus')
+
+        self.upgrade_between_paid_tiers()
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def upgrade_between_paid_tiers(self):
+        # Now, we get an IPN for $35, which should move us to 'premium'
+        # Now, PayPal sends us the IPN.
+        mail.outbox = []
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJR', u'amount3': u'35.00', u'amount1': u'0.00', u'mc_amount3': u'35.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+
+        # Make sure SiteLocation recognizes we are in 'premium'
+        fresh_site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual(fresh_site_location.tier_name, 'premium')
+
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(ti.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
+        self.assert_(ti.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
+        import localtv.zendesk
+        self.assertEqual(len([msg for msg in localtv.zendesk.outbox
+                              if 'cancel a recurring payment profile' in msg['subject']]), 1)
+        localtv.zendesk.outbox = [] 
+        mail.outbox = []
+
+        # PayPal eventually sends us the IPN cancelling the old subscription, because someone
+        # in the MC team ends it.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+
+        # Make sure SiteLocation still recognizes we are in 'premium'
+        fresh_site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual(fresh_site_location.tier_name, 'premium')
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_success(self):
+        self.upgrade_and_submit_ipn()
+        tier_info = models.TierInfo.objects.get_current()
+        self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='FAILURE'))
+    def test_failure(self):
+        tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(tier_info.current_paypal_profile_id) # Should be false at the start
+
+        self.upgrade_and_submit_ipn()
+        tier_info = models.TierInfo.objects.get_current()
+
+        # Because the IPN submitted was invalid, the payment profile ID has not changed.
+        self.assertFalse(tier_info.current_paypal_profile_id)
+
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_downgrade_during_free_trial(self):
+        # First, upgrade to 'premium' during the free trial.
+        self.upgrade_and_submit_ipn_skipping_free_trial_post('35.00')
+
+        # Make sure it worked
+        tierinfo = models.TierInfo.objects.get_current()
+        self.assertEqual('premium', self.site_location.tier_name)
+        self.assertTrue(tierinfo.in_free_trial)
+
+        # Now, submit an IPN event for changing the payment amount to '15.00'
+        # This should move us down to 'plus'
+        self.submit_ipn_subscription_modify('15.00')
+
+        # Make sure it worked
+        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
+        tierinfo = models.TierInfo.objects.get_current()
+        self.assertFalse(tierinfo.in_free_trial)
+
+class TestMidMonthPaymentAmounts(BaseTestCase):
+    def test_start_of_month(self):
+        data = localtv.admin.tiers.generate_payment_amount_for_upgrade(
+            start_tier_name='plus', target_tier_name='premium',
+            current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
+            todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
+        expected = {'recurring': 35, 'daily_amount': 18, 'num_days': 28}
+        self.assertEqual(data, expected)
+
+    def test_end_of_month(self):
+        data = localtv.admin.tiers.generate_payment_amount_for_upgrade(
+            start_tier_name='plus', target_tier_name='premium',
+            current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
+            todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
+        expected = {'recurring': 35, 'daily_amount': 0, 'num_days': 0}
+        self.assertEqual(data, expected)
+
+class TestUpgradePage(BaseTestCase):
+    ### State transition helpers
+    def setUp(self):
+        self.ipn_integration = None
+        super(TestUpgradePage, self).setUp()
+        # Always start in 'basic' with a free trial
+        import localtv.management.commands.clear_tiers_state
+        c = localtv.management.commands.clear_tiers_state.Command()
+        import localtv.zendesk
+        localtv.zendesk.outbox = []
+        c.handle_noargs()
+
+    def tearDown(self):
+        # Note: none of these tests should cause email to be sent.
+        self.assertEqual([],
+                         [str(k.body) for k in mail.outbox])
+
+    ## assertion helpers
+    def _assert_upgrade_extra_payments_always_false(self, response):
+        extras = response.context['upgrade_extra_payments']
+        for thing in extras:
+            self.assertFalse(extras[thing])
+
+    def _assert_modify_always_false(self, response):
+        self.assertEqual({'basic': False,
+                          'plus': False,
+                          'premium': False,
+                          'max': False},
+                         response.context['can_modify_mapping'])
+
+    def _run_method_from_ipn_integration_test_case(self, methodname, *args):
+        if self.ipn_integration is None:
+            self.ipn_integration = IpnIntegration(methodname)
+            self.ipn_integration.setUp()
+        getattr(self.ipn_integration, methodname)(*args)
+
+    ## Action helpers
+    def _log_in_as_superuser(self):
+        c = Client()
+        self.assertTrue(c.login(username='superuser', password='superuser'))
+        return c
+
+    ## Tests of various cases of the upgrade page
+    def test_first_upgrade(self):
+        self.assertTrue(self.site_location.tierinfo.free_trial_available)
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertTrue(response.context['offer_free_trial'])
+        self._assert_modify_always_false(response)
+
+    def test_upgrade_when_no_free_trial(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.free_trial_available = False
+        ti.save()
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+        self._assert_modify_always_false(response)
+
+    def test_upgrade_when_within_a_free_trial(self):
+        # We start in 'basic' with a free trial.
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+
+        # We are in 'plus'. Let's consider what happens when
+        # we want to upgrade to 'premium'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False because PayPal will not let us substantially
+        # increase a recurring payment amount.
+        self.assertFalse(response.context['can_modify_mapping']['premium'])
+
+        # There should be no upgrade_extra_payments value, because we are
+        # in a free trial.
+        self.assertFalse(response.context['upgrade_extra_payments']['premium'])
+
+        # Okay, so go through the PayPal dance.
+
+        # First, pretend the user went to the paypal_return view, and adjusted
+        # the tier name, but without actually receiving the IPN.
+        localtv.admin.tiers._paypal_return('premium')
+        self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('plus', ti.fully_confirmed_tier_name)
+        # The tier name is updated, so the backend updates its state.
+        # That means we sent a "Congratulations" email:
+        message, = [str(k.body) for k in mail.outbox]
+        self.assertTrue('Congratulations' in message)
+        mail.outbox = []
+        ti = models.TierInfo.objects.get_current()
+        self.assertTrue(ti.in_free_trial)
+
+        # Actually do the upgrade
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+
+        # The above method checks that we successfully send an email to
+        # support@ suggesting that the user cancel the old payment.
+        #
+        # It also simulates a support staff person actually cancelling the
+        # old payment.
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('', ti.fully_confirmed_tier_name)
+
+        # Now, make sure the backend knows that we are not in a free trial
+        self.assertFalse(ti.in_free_trial)
+
+    def test_upgrade_when_within_a_free_trial_with_super_quick_ipn(self):
+        # We start in 'basic' with a free trial.
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+
+        # We are in 'plus'. Let's consider what happens when
+        # we want to upgrade to 'premium'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False because PayPal will not let us substantially
+        # increase a recurring payment amount.
+        self.assertFalse(response.context['can_modify_mapping']['premium'])
+
+        # There should be no upgrade_extra_payments value, because we are
+        # in a free trial.
+        self.assertFalse(response.context['upgrade_extra_payments']['premium'])
+
+        # Okay, so go through the PayPal dance.
+
+        # Actually do the upgrade
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+
+        # The above method checks that we successfully send an email to
+        # support@ suggesting that the user cancel the old payment.
+        #
+        # It also simulates a support staff person actually cancelling the
+        # old payment.
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('', ti.fully_confirmed_tier_name)
+
+        # First, pretend the user went to the paypal_return view, and adjusted
+        # the tier name, but without actually receiving the IPN.
+        localtv.admin.tiers._paypal_return('premium')
+        self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual('', ti.fully_confirmed_tier_name)
+        # The tier name was already updated, so the backend need not update its state.
+        # Therefore, we do a "Congratulations" email:
+        self.assertEqual([], mail.outbox)
+
+        # Now, make sure the backend knows that we are not in a free trial
+        self.assertFalse(ti.in_free_trial)
+
+    def test_upgrade_from_basic_when_not_within_a_free_trial(self):
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+
+        # Cancelling the subscription should put empty out the current paypal ID.
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_cancel', ti.current_paypal_profile_id)
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertFalse(ti.in_free_trial)
+        self.assertFalse(ti.current_paypal_profile_id)
+        # We are in 'basic' now.
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('basic', sl.tier_name)
+
+        # If we upgrade to a paid tier...
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+        self._assert_modify_always_false(response)
+        self._assert_upgrade_extra_payments_always_false(response)
+
+    def test_upgrade_from_paid_when_within_a_free_trial(self):
+        # The pre-requisite for this test is that we have transitioned into a tier.
+        # So borrow a method from IpnIntegration
+        self._run_method_from_ipn_integration_test_case('test_upgrade_and_submit_ipn_skipping_free_trial_post')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+        first_profile = ti.current_paypal_profile_id
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        # If we want to upgrade... let's look at the upgrade page state:
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+        self._assert_upgrade_extra_payments_always_false(response)
+        self._assert_modify_always_false(response) # no modify possible from 'plus'
+
+        # This means that if someone changes the payment amount to $35/mo
+        # we will be at 'premium'.
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+        ti = sl.tierinfo
+        self.assertNotEqual(ti.current_paypal_profile_id, first_profile)
+
+    def test_upgrade_from_paid_when_not_within_a_free_trial(self):
+        # First, upgrade and downgrade...
+        self.test_downgrade_to_paid_not_during_a_trial()
+
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', sl.tier_name)
+
+        # Travel to the future
+        with mock.patch('datetime.datetime', Fakedatetime):
+            # Now, we have some crazy prorating stuff.
+            c = self._log_in_as_superuser()
+            response = c.get(reverse('localtv_admin_tier'))
+
+        self.assertFalse(response.context['offer_free_trial'])
+        # For the prorating...
+        extras = response.context['upgrade_extra_payments']
+        premium = extras['premium']
+        # The adjusted due date is, like, about 1 day different.
+        self.assertTrue(abs((Fakedatetime.utcnow() - (sl.tierinfo.payment_due_date - datetime.timedelta(premium['num_days']))).days) <= 1)
+        # The one-time money bump is more than 2/3 of the difference.
+        entire_difference = (localtv.tiers.Tier('premium').dollar_cost() - localtv.tiers.Tier('plus').dollar_cost())
+        self.assertTrue(premium['daily_amount'] >= (0.667 * entire_difference))
+        self._assert_modify_always_false(response) # no modify possible from 'plus'
+
+        # Let's try paying.
+        # NOTE: We don't check here what happens if you pay with the wrong
+        # pro-rating amount.
+        with mock.patch('datetime.datetime', Fakedatetime):
+            self._run_method_from_ipn_integration_test_case(
+                'upgrade_including_prorated_duration_and_amount', 
+                '%d.00' % premium['daily_amount'],
+                '35.00',
+                '%d D' % premium['num_days'])
+            sl = models.SiteLocation.objects.get_current()
+            self.assertEqual('premium', sl.tier_name)
+            # Also, no emails.
+            self.assertEqual(set(['superuser@testserver.local']),
+                             set([x.to[0] for x in mail.outbox]))
+            self.assertEqual(1, len(localtv.zendesk.outbox))
+            mail.outbox = []
+
+    def test_downgrade_to_paid_during_a_trial(self):
+        # The test gets initialized in 'basic' with a free trial available.
+        # First, switch into a free trial of 'max'.
+        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '75.00')
+        mail.outbox = [] # remove "Congratulations" email
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertTrue(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+        old_profile = ti.current_paypal_profile_id
+
+        # We are in 'max'. Let's consider what happens when
+        # we want to downgrade to 'premium'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('max', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False. The idea is that we cancel the old, trial-based
+        # subscription. We will create a new subscription so that it can start
+        # immediately.
+        self.assertFalse(response.context['can_modify_mapping']['premium'])
+
+        self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
+
+        ti = models.TierInfo.objects.get_current()
+        self.assertNotEqual(old_profile, ti.current_paypal_profile_id)
+        self.assertEqual([], mail.outbox)
+        self.assertFalse(ti.in_free_trial)
+
+    def test_downgrade_to_paid_not_during_a_trial(self):
+        # Let's say the user started at 'max' and free trial, and then switched down to 'premium'
+        # which ended the trial.
+        self.test_downgrade_to_paid_during_a_trial()
+
+        # Sanity-check the free trial state.
+        ti = models.TierInfo.objects.get_current()
+        self.assertFalse(ti.free_trial_available)
+        self.assertFalse(ti.in_free_trial)
+        self.assertTrue(ti.current_paypal_profile_id)
+        old_profile = ti.current_paypal_profile_id
+
+        # We are in 'premium'. Let's consider what happens when
+        # we want to downgrade to 'plus'
+        sl = models.SiteLocation.objects.get_current()
+        self.assertEqual('premium', sl.tier_name)
+
+        c = self._log_in_as_superuser()
+        response = c.get(reverse('localtv_admin_tier'))
+        self.assertFalse(response.context['offer_free_trial'])
+
+        # This should be False. There is no reason to provide extra payment data; we're just
+        # going to modify the subscription amount.
+        self.assertFalse(response.context['upgrade_extra_payments']['plus'])
+
+        # This should be True. This is a simple PayPal subscription modification case.
+        self.assertTrue(response.context['can_modify_mapping']['plus'])
+
+        # Go to the Downgrade Confirm page
+        response = c.post(reverse('localtv_admin_downgrade_confirm'),
+                          {'target_tier_name': 'plus'})
+
+        self.assertTrue(response.context['can_modify'])
+        self.assertTrue('"modify" value="1"' in response.content)
+
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00', old_profile)
+
+        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(old_profile, ti.current_paypal_profile_id)
+        self.assertEqual([], mail.outbox)
+        self.assertFalse(ti.in_free_trial)
+        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
+
+class TestFreeTrial(BaseTestCase):
+
+    @mock.patch('localtv.admin.tiers._start_free_trial_for_real')
+    def test_does_nothing_if_already_in_free_trial(self, m):
+        # If we are already in a free trial, then we refuse to continue:
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.save()
+        localtv.admin.tiers._start_free_trial_unconfirmed('basic')
+        self.assertFalse(m.called)

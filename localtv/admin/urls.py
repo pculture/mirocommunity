@@ -19,7 +19,8 @@ from django.conf.urls.defaults import patterns
 
 urlpatterns = patterns(
     'localtv.admin.views',
-    (r'^$', 'index', {}, 'localtv_admin_index'))
+    (r'^$', 'index', {}, 'localtv_admin_index'),
+    (r'^hide_get_started$', 'hide_get_started', {}, 'localtv_admin_hide_get_started'))
 
 urlpatterns += patterns(
     'localtv.admin.approve_reject_views',
@@ -121,3 +122,12 @@ urlpatterns += patterns(
      'localtv_admin_feed_unapproved'),
     (r'^feeds/(\S+)/unapproved_user$', 'unapproved_user', {},
      'localtv_admin_feed_unapproved_user'))
+
+urlpatterns += patterns('localtv.admin.tiers',
+    (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
+    (r'^paypal_return/(?P<payment_secret>.+)/(?P<target_tier_name>[a-z_]+?)/$',             'paypal_return', {}, 'localtv_admin_paypal_return'),
+    (r'^begin_free_trial/(?P<payment_secret>.+?)/$',             'begin_free_trial', {}, 'localtv_admin_begin_free_trial'),
+    (r'^downgrade_confirm/$',             'downgrade_confirm', {}, 'localtv_admin_downgrade_confirm'),
+    (r'^confirmed_change_tier/$',             'confirmed_change_tier', {}, 'localtv_admin_confirmed_change_tier'),
+    (r'^ipn_endpoint/(?P<payment_secret>.+?)/$',             'ipn_endpoint', {}, 'localtv_admin_ipn_endpoint'),
+)

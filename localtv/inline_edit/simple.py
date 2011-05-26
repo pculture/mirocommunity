@@ -42,5 +42,5 @@ def edit_field(request, id, model=None, field=None):
     else:
         Response = HttpResponseForbidden
 
-    widget = editable_widget(obj, field, form=edit_form)
+    widget = editable_widget(request, obj, field, form=edit_form)
     return Response(widget, content_type='text/html')

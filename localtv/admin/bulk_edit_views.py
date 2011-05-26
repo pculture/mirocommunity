@@ -22,14 +22,14 @@ from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
 from localtv import models
 from localtv.admin import forms
-from localtv.util import SortHeaders, MockQueryset
+from localtv.util import SortHeaders
 
 try:
     from operator import methodcaller
@@ -42,6 +42,18 @@ except ImportError:
 @require_site_admin
 @csrf_protect
 def bulk_edit(request):
+    if ('just_the_author_field' in request.GET and 'video_id' in request.GET):
+        # generate just the particular form that the user wants
+        template_data = {}
+        form_prefix = request.GET['just_the_author_field']
+        video = get_object_or_404(models.Video, pk=int(request.GET['video_id']))
+        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
+        template_data['form'] = form
+        template = 'localtv/admin/bulk_edit_author_widget.html'
+        return render_to_response(template,
+                                  template_data,
+                                  context_instance=RequestContext(request))
+
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
         site=request.sitelocation.site)
@@ -103,10 +115,7 @@ def bulk_edit(request):
         reverse = sort.startswith('-')
         videos = videos.extra(select={
                 'name_lower':'LOWER(localtv_video.name)'})
-        videos = MockQueryset(
-            sorted(videos.order_by(sort.replace('source', 'name_lower')),
-                   reverse=reverse,
-                   key=methodcaller('source_type')))
+        videos = videos.order_by(sort.replace('source', 'calculated_source_type'))
     elif sort.endswith('name'):
         videos = videos.extra(select={
                 'name_lower':'LOWER(localtv_video.name)'}).order_by(
@@ -125,6 +134,10 @@ def bulk_edit(request):
         formset = forms.VideoFormSet(request.POST, request.FILES,
                                      queryset=page.object_list)
         if formset.is_valid():
+            tier_prevented_some_action = False
+            tier = request.sitelocation.get_tier()
+            videos_approved_so_far = 0
+
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
                 form.instance.status = models.VIDEO_STATUS_REJECTED
@@ -147,13 +160,26 @@ def bulk_edit(request):
                                 form.instance.status = \
                                     models.VIDEO_STATUS_REJECTED
                             elif value == 'approve':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_ACTIVE
+                                if (request.sitelocation.enforce_tiers() and
+                                    tier.remaining_videos() <= videos_approved_so_far):
+                                    tier_prevented_some_action = True
+                                else:
+                                    form.instance.status = \
+                                        models.VIDEO_STATUS_ACTIVE
+                                    videos_approved_so_far += 1
                             elif value == 'unapprove':
                                 form.instance.status = \
                                     models.VIDEO_STATUS_UNAPPROVED
                             elif value == 'feature':
-                                form.instance.last_featured = datetime.now()
+                                if form.instance.status != models.VIDEO_STATUS_ACTIVE:
+                                    if (request.sitelocation.enforce_tiers() and
+                                        tier.remaining_videos() <= videos_approved_so_far):
+                                        tier_prevented_some_action = True
+                                    else:
+                                        form.instance.status = \
+                                            models.VIDEO_STATUS_ACTIVE
+                                if form.instance.status == models.VIDEO_STATUS_ACTIVE:
+                                    form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None
                         elif key == 'tags':
@@ -171,14 +197,22 @@ def bulk_edit(request):
                                                   # edit form
             formset.can_delete = False
             formset.save()
+            path_with_success = None
             if 'successful' in request.GET:
-                return HttpResponseRedirect(request.get_full_path())
+                path_with_success = request.get_full_path()
             else:
                 path = request.get_full_path()
                 if '?' in path:
-                    return HttpResponseRedirect(path + '&successful')
+                    path_with_success =  path + '&successful'
                 else:
-                    return HttpResponseRedirect(path + '?successful')
+                    path_with_success = path + '?successful'
+
+            if tier_prevented_some_action:
+                path = path_with_success + '&not_all_actions_done'
+            else:
+                path = path_with_success
+
+            return HttpResponseRedirect(path)
     else:
         formset = forms.VideoFormSet(queryset=page.object_list)
 

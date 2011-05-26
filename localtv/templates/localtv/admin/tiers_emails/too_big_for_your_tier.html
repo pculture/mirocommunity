@@ -1,0 +1,85 @@
+<html><head></head><body><style><!--
+ .headerTop { background-color:#FFCC66; border-top:0px solid #000000; border-bottom:1px solid #ecf6f6; text-align:center; }
+ .adminText { font-size:10px; color:#323738; line-height:200%; font-family:Tahoma, Geneva, sans-serif; text-decoration:none; }
+ .headerBar { background-color:#ecf6f6; border-top:0px solid #333333; border-bottom:10px solid #ecf6f6; }
+ .title { font-size:17px; font-weight:bold; color:#323738; font-family:Tahoma, Geneva, sans-serif; line-height:110%; }
+ .subTitle { font-size:11px; font-weight:normal; color:#323738; font-style:italic; font-family:Tahoma, Geneva, sans-serif; }
+ .defaultText { font-size:12px; color:#323738; line-height:150%; font-family:Tahoma, Geneva, sans-serif; }
+ .footerRow { background-color:#FFFFCC; border-top:10px solid #d3e9; }
+ .footerText { font-size:10px; color:#f9feff; line-height:100%; font-family:Tahoma, Geneva, sans-serif; }
+ a { color:#3196AD; color:#3196AD; color:#3196AD; }
+--></style>
+<table class="backgroundTable" bgcolor="#ffffff" cellpadding="10" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td align="center" valign="top">
+<table cellpadding="0" cellspacing="0" width="625">
+<tbody>
+<tr>
+<td style="margin-bottom: 0; padding-bottom: 0; background-color: #ecf6f6; border-top: 1px solid #b7bdbc; border-left: 1px solid #b7bdbc; border-right: 1px solid #b7bdbc;"><center style="margin-bottom: 0; padding-bottom: 0;"><img style="margin-bottom: 0; padding-bottom: 0;" alt="Miro Community logo" title="Miro Community" src="http://pcf8.pculture.org/interspire/admin/temp/templates/2/mc_logo%20(1).png" height="97" width="625" /></center></td>
+</tr>
+</tbody>
+</table>
+<table style="margin-top: 0;" bgcolor="#ecf6f6" cellpadding="20" cellspacing="0" width="627">
+<tbody style="margin-top: 0;">
+<tr style="margin-top: 0; padding-top: 0;">
+<td style="margin-top: 0; padding-top: 0; font-size: 14px; color: #323738; line-height: 150%; font-family: Tahoma, Geneva, sans-serif; border-left: 1px solid #b7bdbc; border-right: 1px solid #b7bdbc;" bgcolor="#ecf6f6" valign="top">
+
+<p style="margin-top: 0; padding-top: 0;"><span style="font-size: 17px; font-weight: bold; color: #323738; font-family: Tahoma,Geneva,sans-serif; line-height: 110%; margin-top: 15px;">Your Site is Now Running Miro Community 1.2!</span></p>
+
+<p style="margin-top: 0; padding-top: 0;"><span style="font-size: 17px; font-weight: bold; color: #323738; font-family: Tahoma, Geneva, sans-serif; line-height: 110%; margin-top: 15px;"></span>Hi,</p>
+<div class="entry">
+
+<p>We have just migrated <a href="http://{{site.domain}}/">http://{{site.domain}}/</a> to the latest version of Miro Community.
+
+{% if warnings %}
+ From here forward, we're asking our heaviest users to help support ongoing software development and server costs by upgrading to a paid account, which is very easy to do!
+{% else %}
+ From here forward, you can sign up for a paid account through your site to receive additional features, such as a custom domain or custom templating, and a higher
+video limit. We have moved to this model to better support software development and server costs.
+{% endif %}
+</p>
+
+{% if warnings %} 
+
+<p>This release limits some features you currently use. You will have 2 weeks to upgrade your account or you will no longer be able to use the following features.</p>
+
+{% if "admins" in warnings %}<p>* You have more than one administrator. If you choose to remain at the Basic account level, the following administrators will lose admin privileges: {% for admin in would_lose_admin_usernames %}{{ admin }} {% endfor %}<br /></p>{% endif %}
+
+{% if "videos" in warnings %}<p>* You have {{ video_count }} published video{{ video_count|pluralize}}. If you do not upgrade your account, we will unpublish the oldest videos to keep you within the 500 video limit. You can also cull videos you no longer want at <a href="http://{{site.domain}}{% url localtv_admin_bulk_edit %}">http://{{site.domain}}{% url localtv_admin_bulk_edit %}</a> </p>{% endif %}
+
+{% if "css" in warnings %}<p>* You currently use custom CSS. If you remain at a free account level, the custom CSS you have entered will no longer be applied to your site, and you will not be able to edit it. If you upgrade, your Custom CSS will be preserved and applied.</p>{% endif %}
+
+{% if "customdomain" in warnings %}<p>* You will need to upgrade to keep your custom domain: &lt;<a href="http://{{site.domain}}/">http://{{ site.domain }}/</a>&gt;. Custom domains are not supported in the Basic site account.</p>{% endif %}
+
+{% if "customtheme" in warnings %}<p>* You currently have a custom theme, which will only remain available at the Max account level. If you stay at the Basic level, your site's custom theme will switch 
+to one of our default themes.</p>{% endif %}
+
+{% else %}
+<p>You currently have a free account. With a free account, you get:</p>
+
+<ul>
+<li> 500 published videos</li>
+<li> 1 site admin </li>
+<li> Your Own logo and Background</li></ul>
+{% endif %}
+<br />See other features and upgrade at any time on your new account page: <a href="http://{{site.domain}}{% url localtv_admin_tier %}">http://{{site.domain}}{% url localtv_admin_tier %}</a><br />
+
+<br />You can see information about your current site status at the new admin dashboard: <a href="http://{{site.domain}}{% url localtv_admin_index %}">http://{{site.domain}}{% url localtv_admin_index %}</a><br />
+
+<br />Discounts are available for some non-profit and hyper-local projects - get in touch at <a href="mailto:questions@mirocommunity.org">questions@mirocommunity.org</a>.<br />
+
+<br />Check out the Miro Community Wiki for more information and tips: <a href="http://develop.participatoryculture.org/index.php/MiroCommunityManual">http://develop.participatoryculture.org/index.php/MiroCommunityManual</a> <br />
+
+<br />Have questions? Please get in touch: email <a href="mailto:questions@mirocommunity.org">questions@mirocommunity.org</a>.<br />
+
+<p>Sincerely,<br /> Anne Jonas &amp; the Miro Community Team <a href="https://twitter.com/#!/mirocommunity"><img style="float: right;" title="Twtr" alt="Twtr" src="http://pcf8.pculture.org/interspire/admin/temp/templates/2/twitter_32.png" height="32" width="32" /></a></p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table></body></html>
