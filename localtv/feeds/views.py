@@ -334,9 +334,13 @@ class AuthorVideosFeed(BaseVideosFeed):
         return self.slice_items(videos)
 
     def title(self, author):
+        name_or_username = author.get_full_name()
+        if not name_or_username.strip():
+            name_or_username = author.username
+
         return "%s: %s" % (
             self.sitelocation.site.name,
-            _('Author: %s') % author.get_full_name())
+            _('Author: %s') % name_or_username)
 
 class TagVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
