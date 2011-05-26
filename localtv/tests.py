@@ -46,7 +46,9 @@ from haystack.query import SearchQuerySet
 import localtv.templatetags.filters
 from localtv import models
 from localtv import util
+import localtv.feeds.views
 from localtv import tiers
+import localtv.feeds.views
 
 from notification import models as notification
 from tagging.models import Tag
@@ -55,6 +57,7 @@ Profile = util.get_profile_model()
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
+    target_tier_name = 'max'
 
     def run(self, *args, **kwargs):
         # hack to prevent the test runner from treating abstract classes as
@@ -72,9 +75,7 @@ class BaseTestCase(TestCase):
         self.site_location = models.SiteLocation.objects.get_current()
         self.tier_info = models.TierInfo.objects.get_current()
 
-        # By default, tests run on an 'max' account.
-        self.site_location.tier_name = 'max'
-        self.site_location.save()
+        self._switch_into_tier()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -82,6 +83,12 @@ class BaseTestCase(TestCase):
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
         mail.outbox = [] # reset any email at the start of the suite
+
+    def _switch_into_tier(self):
+        # By default, tests run on an 'max' account.
+        if self.site_location.tier_name != self.target_tier_name:
+            self.site_location.tier_name = self.target_tier_name
+            self.site_location.save()
 
     def tearDown(self):
         TestCase.tearDown(self)
@@ -2121,3 +2128,57 @@ class TierMethodsTests(BaseTestCase):
     def test_can_add_video_lets_you_add_final_video(self):
         # This is False because the number of videos remaining is zero.
         self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
+
+    def test_time_until_free_trial_expires_none_when_not_in_free_trial(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = False
+        ti.save()
+        self.assertEqual(None, ti.time_until_free_trial_expires())
+
+    def test_time_until_free_trial_expires_none_when_no_payment_due(self):
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.payment_due_date = None # Note that this is a kind of insane state.
+        ti.save()
+        self.assertEqual(None, ti.time_until_free_trial_expires())
+
+    def test_time_until_free_trial_expires(self):
+        now = datetime.datetime(2011, 5, 24, 23, 44, 30)
+        a_bit_in_the_future = now + datetime.timedelta(hours=5)
+        ti = models.TierInfo.objects.get_current()
+        ti.in_free_trial = True
+        ti.payment_due_date = a_bit_in_the_future
+        ti.save()
+        self.assertEqual(datetime.timedelta(hours=5),
+                         ti.time_until_free_trial_expires(now=now))
+
+class FeedViewTestCase(BaseTestCase):
+
+    fixtures = BaseTestCase.fixtures + ['videos', 'categories']
+
+    def test_feed_views_respect_count_when_set(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '10'}
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        self.assertEqual(10, len(feed.items()))
+
+    def test_feed_views_ignore_count_when_nonsense(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': 'nonsense'}
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        # 23, because that's the number of videos in the fixture
+        self.assertEqual(23, len(feed.items()))
+
+    def test_feed_views_ignore_count_when_empty(self):
+        fake_request = mock.Mock()
+        feed = localtv.feeds.views.NewVideosFeed(None, fake_request, json=False)
+        # 23, because that's the number of videos in the fixture
+        self.assertEqual(23, len(feed.items()))
+
+    def test_category_feed_renders_at_all(self):
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '10'}
+        fake_request.META = {}
+        response = localtv.feeds.views.feed_view(
+            localtv.feeds.views.CategoryVideosFeed)(fake_request, None, 'linux')
+        self.assertEqual(200, response.status_code)

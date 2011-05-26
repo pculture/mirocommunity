@@ -43,6 +43,7 @@ from localtv import util
 import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
+import vidscraper.sites.blip
 
 Profile = util.get_profile_model()
 
@@ -425,7 +426,7 @@ class EditSettingsForm(forms.ModelForm):
     """
     title = forms.CharField(label="Site Title", max_length=50)
     tagline = forms.CharField(label="Site Tagline", required=False,
-                              max_length=250,
+                              max_length=4096,
                               help_text="Your title and tagline "
                               "define your site, both for humans and search "
                               "engines. Consider including key words so that "
@@ -790,7 +791,6 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-
 class AddFeedForm(forms.Form):
     SERVICE_PROFILES = (
         (re.compile(
@@ -800,7 +800,7 @@ class AddFeedForm(forms.Form):
         (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
                     r'(?P<name>\w+)'),
          'youtube'),
-        (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
+        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
         (re.compile(
                 r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
          'vimeo'),
@@ -812,7 +812,7 @@ class AddFeedForm(forms.Form):
     SERVICE_FEEDS = {
         'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
                     'uploads?alt=rss&v=2&orderby=published'),
-        'blip': 'http://%s.blip.tv/rss',
+        'blip': vidscraper.sites.blip._blip_feedify,
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
         'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
         }
@@ -828,10 +828,14 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         value = self.cleaned_data['feed_url']
         for regexp, service in self.SERVICE_PROFILES:
-            match = regexp.match(value)
+            match = regexp.search(value)
             if match:
-                username = match.group('name')
-                value = self.SERVICE_FEEDS[service] % username
+                service_feed_generator = self.SERVICE_FEEDS[service]
+                if callable(service_feed_generator):
+                    value = service_feed_generator(value)
+                else:
+                    username = match.group('name')
+                    value = service_feed_generator % username
                 break
 
         site = Site.objects.get_current()

@@ -20,12 +20,12 @@
 ###
 
 import httplib2
-import urllib
 from xml.dom.minidom import Document
 
 from django.conf import settings
 
-def generate_ticket_body(subject_text, body_text, requester_email_text):
+def generate_ticket_body(subject_text, body_text, requester_email_text,
+                         use_configured_assignee=True):
     doc = Document()
     # Create the outer ticket element
     ticket = doc.createElement("ticket")
@@ -44,7 +44,8 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
     requester.appendChild(doc.createTextNode('86020'))
     ticket.appendChild(requester)
 
-    if getattr(settings, "ZENDESK_ASSIGN_TO_USER_ID", None):
+    if (use_configured_assignee and
+        getattr(settings, "ZENDESK_ASSIGN_TO_USER_ID", None)):
         value = getattr(settings, "ZENDESK_ASSIGN_TO_USER_ID")
         assignee = doc.createElement('assignee-id')
         assignee.appendChild(doc.createTextNode(unicode(value)))
@@ -56,7 +57,7 @@ def generate_ticket_body(subject_text, body_text, requester_email_text):
 
     return doc.toxml()
 
-outbox = []    
+outbox = []
 
 def create_ticket(subject, body, requester_email='paulproteus+robot@pculture.org'):
     global outbox

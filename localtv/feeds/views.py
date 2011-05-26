@@ -84,6 +84,20 @@ def feed_view(klass):
         return response
     return wrapper
 
+class ItemCountMixin(object):
+    '''This class contains just an items method.
+
+    It dispatches to self.all_items(), and slices that to match
+    either the number requested in self.request.GET['count'] or
+    LOCALTV_FEED_LENGTH.'''
+
+    def slice_items(self, items):
+        try:
+            length = int(self.request.GET.get('count', None))
+        except (ValueError, TypeError):
+            length = LOCALTV_FEED_LENGTH
+        return items[:length]
+
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
     def root_attributes(self):
@@ -157,7 +171,7 @@ class JSONGenerator(feedgenerator.SyndicationFeed):
         json_items.append(json_item)
 
 
-class BaseVideosFeed(Feed):
+class BaseVideosFeed(Feed, ItemCountMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
@@ -243,7 +257,6 @@ class BaseVideosFeed(Feed):
         else:
             return ""
 
-
 class NewVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_new')
@@ -256,7 +269,7 @@ class NewVideosFeed(BaseVideosFeed):
         videos = models.Video.objects.new(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
@@ -274,8 +287,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
             status=models.VIDEO_STATUS_ACTIVE)
         videos = videos.order_by(
             '-last_featured', '-when_approved','-when_submitted')
-        return videos[:LOCALTV_FEED_LENGTH]
-
+        return self.slice_items(videos)
 
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
@@ -285,7 +297,7 @@ class PopularVideosFeed(BaseVideosFeed):
         videos = models.Video.objects.popular_since(
             datetime.timedelta(days=7), self.sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self):
         return "%s: %s" % (
@@ -301,7 +313,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return category.get_absolute_url()
 
     def items(self, category):
-        return category.approved_set.all()[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(category.approved_set.all())
 
     def title(self, category):
         return "%s: %s" % (
@@ -319,12 +331,16 @@ class AuthorVideosFeed(BaseVideosFeed):
             Q(authors=author) | Q(user=author),
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, author):
+        name_or_username = author.get_full_name()
+        if not name_or_username.strip():
+            name_or_username = author.username
+
         return "%s: %s" % (
             self.sitelocation.site.name,
-            _('Author: %s') % author.get_full_name())
+            _('Author: %s') % name_or_username)
 
 class TagVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
@@ -337,7 +353,7 @@ class TagVideosFeed(BaseVideosFeed):
         videos = models.Video.tagged.with_all(tag).filter(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, tag):
         return "%s: %s" % (
@@ -363,8 +379,8 @@ class SearchVideosFeed(BaseVideosFeed):
                 site=self.sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=[result.pk for result in results if result])
-            return videos[:LOCALTV_FEED_LENGTH]
-        return [result.object for result in results[:LOCALTV_FEED_LENGTH]
+            return self.slice_items(videos)
+        return [result.object for result in self.slice_items(results)
                 if result.object]
 
     def title(self, search):
@@ -382,7 +398,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
             videos = videos.order_by('-playlistitem___order')
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, playlist):
         return "%s: %s" % (

@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters %}
+{% load i18n filters comments pagetabs %}
 {% block body_class %}comments{% endblock %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
@@ -44,6 +44,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
  <h2>Comments</h2>
  
   <div class="module" id="labels">
+    {% if page_obj %}
+    <div class="pag">
+      {% pagetabs page_obj %}
+    </div>
+    {% endif %}
+
     <table cellspacing="0" class="rounded">
       <thead>
         <tr>
@@ -54,6 +60,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           <th><span>{% trans "Authenticated?" %}</span></th>
           <th><span>{% trans "IP Address" %}</span></th>
           <th class="sorted desc"><span>{% trans "Date posted" %}</span></th>
+          <th><span>{% trans "Video" %}</span></th>
         </tr>
     </thead>
     <tbody>
@@ -80,6 +87,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </td>
           <td>{{ comment.ip_address }}</td>
           <td>{{ comment.submit_date|date:"F j, P" }}</td>
+          <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td> 
         </tr>
       {% endfor %}
     </tbody>

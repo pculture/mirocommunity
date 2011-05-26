@@ -1,17 +1,16 @@
--e git+http://git.participatoryculture.org/djpagetabs@55df7e22ee3c797b64982f51f5244b5611561187#egg=djpagetabs-0.0.1-py2.6-dev
--e git+http://git.participatoryculture.org/djvideo@423e9e17145ff11a81a8db4b3c71e0dabe6f85ac#egg=djvideo-0.0.1-py2.6-dev
+-e git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs-0.0.1-py2.6-dev
+-e git+http://git.participatoryculture.org/djvideo@master#egg=djvideo-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/vidscraper@c6dc5f784d16af1ed6be644de2a0478b14c46960#egg=vidscraper-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-email-share/@5ba2d02a6c44d3cb16c579911f72cf150bd1df6e#egg=django_email_share-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-uploadtemplate@db144765894f10f0211b4deb16f9f3f948a5e173#egg=django_uploadtemplate-0.0.1-py2.6-dev
-BeautifulSoup==3.0.7a
+BeautifulSoup
 Django==1.2.1
-http://effbot.org/downloads/Imaging-1.1.6.tar.gz#egg=Imaging
+PIL==1.1.6
 lxml==2.2.7
 python-memcached==1.45
 South>=0.7
 -e svn+http://feedparser.googlecode.com/svn/trunk/#egg=feedparser
 flup>=1.0.2
-lxml==2.1.5
 python-openid==2.2.4
 http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
 simplejson==1.9.2
@@ -24,10 +23,7 @@ django-haystack==1.0.1-final
 celery==1.0.0
 -e git+http://git.participatoryculture.org/python-bitly@8cd21ba16601f587c607738e80b18a3e1a378c65#egg=python_bitly-trunk-py2.6-dev
 oauth2==1.2.0
--e git+http://github.com/paulswartz/Django-Socialauth.git@d1bb2d5c295ae46036f7ee44c66c5c948c374bb5#egg=django-socialauth-0.1.2c-py2.6-dev
-facebook-python-sdk==0.1
 -e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration
-oauth2
 -e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
 -e git+http://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
 oauth

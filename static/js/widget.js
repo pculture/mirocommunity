@@ -173,7 +173,7 @@ if (typeof MiroCommunity === 'undefined') {
                 if (this.opts.text) {
                     title.style.color = this.opts.text;
                 }
-                title.innerText = title.textContent = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
+                title.innerHTML = this.opts.title ? this.opts.title : 'Watch Videos from Miro Community';
                 div.appendChild(title);
                 ul = MiroCommunity.createElement('ul', {className: "mc-loading"});
                 div.appendChild(ul);
