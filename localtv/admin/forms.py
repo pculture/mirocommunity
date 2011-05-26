@@ -382,21 +382,42 @@ class BulkEditVideoForm(EditVideoForm):
     _categories_queryset = None
     _authors_queryset = None
 
-    def __init__(self, *args, **kwargs):
+    def fill_cache(self, cache_for_form_optimization):
+        if cache_for_form_optimization is None:
+            cache_for_form_optimization = {}
+
+        # Great. Fill the cache.
+        if 'categories_qs' not in cache:
+            cache_for_form_optimization['categories_qs'] = util.MockQueryset(
+                models.Category.objects.filter(site=Site.objects.get_current()))
+        if 'authors_qs' not in cache_for_form_optimization:
+            cache_for_form_optimization['authors_qs'] = util.MockQueryset(
+                User.objects.order_by('username'))
+
+        return cache_for_form_optimization
+
+    def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
+        # The cache_for_form_optimization is an object that is
+        # optionally created by the request that calls
+        # BulkEditForm. One difficulty with BulkEditForms is that the
+        # forms generate similar data over and over again; we can
+        # avoid some database hits by running some queries just once
+        # (at BulkEditForm instantiation time), rather than once per
+        # sub-form.
+        #
+        # However, it is unsafe to cache data in the BulkEditForm
+        # class because that persists for as long as the Python
+        # process does (meaning that subsequent requests will use the
+        # same cache).
         EditVideoForm.__init__(self, *args, **kwargs)
-        site = Site.objects.get_current()
 
         # cache the querysets so that we don't hit the DB for each form
-        if self.__class__._categories_queryset is None:
-            self.__class__._categories_queryset = util.MockQueryset(
-                models.Category.objects.filter(site=site))
-        if self.__class__._authors_queryset is None:
-            self.__class__._authors_queryset = util.MockQueryset(
-                User.objects.order_by('username'))
-        self.fields['categories'].queryset = \
-            self.__class__._categories_queryset
-        self.fields['authors'].queryset = \
-            self.__class__._authors_queryset
+        cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
+
+        self.fields['categories'].queryset = cache_for_form_optimization[
+            'categories_qs']
+        self.fields['authors'].queryset = cache_for_form_optimization[
+            'authors_qs']
 
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
