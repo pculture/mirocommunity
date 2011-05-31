@@ -75,8 +75,7 @@ class BaseModerateFormSet(BaseModelFormSet):
     @property
     def bulk_forms(self):
         for form in self.initial_forms:
-            if form.cleaned_data['BULK'] and \
-                    not self._should_delete_form(form):
+            if form.cleaned_data['BULK']:
                 yield form
 
 BulkModerateFormSet = modelformset_factory(Comment,

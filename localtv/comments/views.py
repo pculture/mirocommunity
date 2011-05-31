@@ -18,6 +18,8 @@ from django import template
 from django.contrib.auth.decorators import permission_required
 from django.contrib.comments import get_model as get_comment_model
 from django.contrib.comments.views import comments
+from django.contrib.comments.views.moderation import (perform_approve,
+                                                      perform_delete)
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -83,6 +85,16 @@ def moderation_queue(request):
                                       request=request)
         if formset.is_valid():
             formset.save()
+            if request.POST.get('bulk_action'):
+                bulk_action = request.POST['bulk_action']
+                perform = None
+                if bulk_action == 'approve':
+                    perform = perform_approve
+                elif bulk_action == 'remove':
+                    perform = perform_delete
+                if perform:
+                    for form in formset.bulk_forms:
+                        perform(request, form.instance)
             return HttpResponseRedirect(request.path)
     else:
         formset = BulkModerateFormSet(queryset=comments_per_page.object_list)
