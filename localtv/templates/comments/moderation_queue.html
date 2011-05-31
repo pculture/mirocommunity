@@ -39,7 +39,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% if empty %}
 <p id="nocomments">{% trans "No comments to moderate" %}.</p>
     {% if request.GET.undo %}
-    <form method="POST" action="{% url comments-moderation-undo %}">
+    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
       <input type="hidden" name="actions" value="{{ request.GET.undo }}">
       <input type="submit" value="Undo">
     </form>
@@ -57,12 +57,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     {% endif %}
     {% if request.GET.undo %}
-    <form method="POST" action="{% url comments-moderation-undo %}">
+    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
       <input type="hidden" name="actions" value="{{ request.GET.undo }}">
       <input type="submit" value="Undo">
     </form>
     {% endif %}
-    <form method="POST" action="">
+    <form method="POST" action="">{% csrf_token %}
       <div class="bulkedit_controls">
         <select id="bulk_action_selector" class="behave" name="bulk_action">
           <option value="">Bulk Actions</option>
