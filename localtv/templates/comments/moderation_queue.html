@@ -49,10 +49,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% pagetabs page_obj %}
     </div>
     {% endif %}
-
+    <form method="POST" action="">
     <table cellspacing="0" class="rounded">
       <thead>
         <tr>
+          <th><input id="id_select_all" type="checkbox"></th>
           <th><span>{% trans "Name" %}</span></th>
           <th><span>{% trans "Comment" %}</span></th>
           <th><span>{% trans "Email" %}</span></th>
@@ -64,19 +65,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </tr>
     </thead>
     <tbody>
-      {% for comment in comments %}
+      {{ formset.management_form }}
+      {{ formset.non_form_errors }}
+      {% for form in formset.forms %}
         <tr class="{% cycle 'row1' 'row2' %}">
+          <td>{{ form.id }}{{ form.BULK }}{{ form.non_field_errors }}</td>
+          {% with form.instance as comment %}
           <td>
             {{ comment.name }}
             <div class="actions">
-              <form action="{% url comments-approve comment.pk %}" method="post">{% csrf_token %}
-                <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
-                <input class="approve submit" type="submit" name="submit" value="{% trans "Approve" %}" />
-              </form>
-              <form action="{% url comments-delete comment.pk %}" method="post">{% csrf_token %}
-                <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
-                <input class="remove submit" type="submit" name="submit" value="{% trans "Remove" %}" />
-              </form>
+                <input class="approve submit" type="submit" name="{{ form.prefix }}-APPROVE" value="{% trans "Approve" %}" />
+                <input class="remove submit" type="submit" name="{{ form.prefix }}-REMOVE" value="{% trans "Remove" %}" />
             </div>
           </td>
           <td>{{ comment.comment|sanitize }}</td>
@@ -87,12 +86,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </td>
           <td>{{ comment.ip_address }}</td>
           <td>{{ comment.submit_date|date:"F j, P" }}</td>
-          <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td> 
+          <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td>
+          {% endwith %}
         </tr>
       {% endfor %}
     </tbody>
     </table>
+    </form>
   </div>
 </div>
 {% endif %}
+<script type="text/javascript">
+  $("#id_select_all").click(function() {
+  $("input.bulk").attr('checked', this.checked);
+  });
+</script>
 {% endblock %}

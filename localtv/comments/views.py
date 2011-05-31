@@ -19,9 +19,11 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.comments import get_model as get_comment_model
 from django.contrib.comments.views import comments
 from django.core.paginator import Paginator, InvalidPage
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_protect
+
+from localtv.comments.forms import BulkModerateFormSet
 
 def post_comment(request, next=None):
     POST = request.POST.copy()
@@ -75,6 +77,17 @@ def moderation_queue(request):
     except InvalidPage:
         raise Http404
 
+    if request.method == 'POST':
+        formset = BulkModerateFormSet(request.POST,
+                                      queryset=comments_per_page.object_list,
+                                      request=request)
+        if formset.is_valid():
+            formset.save()
+            return HttpResponseRedirect(request.path)
+    else:
+        formset = BulkModerateFormSet(queryset=comments_per_page.object_list)
+
+
     return render_to_response("comments/moderation_queue.html", {
         'comments' : comments_per_page.object_list,
         'empty' : page == 1 and paginator.count == 0,
@@ -89,4 +102,5 @@ def moderation_queue(request):
         'hits' : paginator.count,
         'page_range' : paginator.page_range,
         'page_obj': comments_per_page,
+        'formset': formset,
     }, context_instance=template.RequestContext(request))
