@@ -98,7 +98,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endif %}
 <script type="text/javascript">
   $("#id_select_all").click(function() {
-  $("input.bulk").attr('checked', this.checked);
+  $("input[type=checkbox]").attr('checked', this.checked);
   });
 </script>
 {% endblock %}
