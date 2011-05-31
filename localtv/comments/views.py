@@ -17,12 +17,14 @@
 from django import template
 from django.contrib.auth.decorators import permission_required
 from django.contrib.comments import get_model as get_comment_model
+from django.contrib.comments.models import CommentFlag
 from django.contrib.comments.views import comments
 from django.contrib.comments.views.moderation import (perform_approve,
                                                       perform_delete)
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.comments.forms import BulkModerateFormSet
@@ -95,7 +97,12 @@ def moderation_queue(request):
                 if perform:
                     for form in formset.bulk_forms:
                         perform(request, form.instance)
-            return HttpResponseRedirect(request.path)
+                        formset.actions.add(form.instance)
+            path = request.path
+            undo = '-'.join(str(instance.pk) for instance in formset.actions)
+            if undo:
+                path = '%s?undo=%s' % (path, undo)
+            return HttpResponseRedirect(path)
     else:
         formset = BulkModerateFormSet(queryset=comments_per_page.object_list)
 
@@ -116,3 +123,18 @@ def moderation_queue(request):
         'page_obj': comments_per_page,
         'formset': formset,
     }, context_instance=template.RequestContext(request))
+
+@csrf_protect
+@permission_required("comments.can_moderate")
+def undo(request):
+    if request.method == 'POST' and 'actions' in request.POST:
+        pks = request.POST['actions'].split('-')
+        comments = get_comment_model().objects.filter(pk__in=pks)
+        # hide the comments
+        comments.update(is_public=False)
+        # remove flags
+        CommentFlag.objects.filter(
+            flag__in=(CommentFlag.MODERATOR_DELETION,
+                      CommentFlag.MODERATOR_APPROVAL),
+            comment__in=comments).delete()
+    return HttpResponseRedirect(reverse('comments-moderation-queue'))

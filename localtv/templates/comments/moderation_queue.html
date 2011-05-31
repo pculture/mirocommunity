@@ -38,6 +38,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 {% if empty %}
 <p id="nocomments">{% trans "No comments to moderate" %}.</p>
+    {% if request.GET.undo %}
+    <form method="POST" action="{% url comments-moderation-undo %}">
+      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
+      <input type="submit" value="Undo">
+    </form>
+    {% endif %}
+
 {% else %}
 <div id="content-main">
  
@@ -48,6 +55,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div class="pag">
       {% pagetabs page_obj %}
     </div>
+    {% endif %}
+    {% if request.GET.undo %}
+    <form method="POST" action="{% url comments-moderation-undo %}">
+      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
+      <input type="submit" value="Undo">
+    </form>
     {% endif %}
     <form method="POST" action="">
       <div class="bulkedit_controls">
