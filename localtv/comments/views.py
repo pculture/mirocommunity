@@ -131,7 +131,7 @@ def undo(request):
         pks = request.POST['actions'].split('-')
         comments = get_comment_model().objects.filter(pk__in=pks)
         # hide the comments
-        comments.update(is_public=False)
+        comments.update(is_public=False, is_removed=False)
         # remove flags
         CommentFlag.objects.filter(
             flag__in=(CommentFlag.MODERATOR_DELETION,
