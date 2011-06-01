@@ -59,10 +59,13 @@ def feed_view(klass):
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
-                feed = klass(None, request, json=json).get_feed(*args)
+                instance = klass(None, request, json=json)
+                feed = instance.get_feed(*args)
             except FeedDoesNotExist:
                 raise Http404
             else:
+                if hasattr(instance, 'opensearch_data'):
+                    feed.opensearch_data = instance.opensearch_data
                 mime_type = feed.mime_type
                 output = feed.writeString('utf-8')
                 cache.cache.set(cache_key, (mime_type, output))
@@ -87,9 +90,22 @@ def feed_view(klass):
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
+    def add_root_elements(self, handler):
+        # First. let the superclass add its own essential root elements.
+        super(ThumbnailFeedGenerator, self).add_root_elements(handler)
+
+        # Second, add the necessary information for this feed to be identified
+        # as an OpenSearch feed.
+        if hasattr(self, 'opensearch_data'):
+            for key in self.opensearch_data:
+                name = 'opensearch:' + key
+                value = unicode(self.opensearch_data[key])
+                handler.addQuickElement(name, value)
+
     def root_attributes(self):
         attrs = feedgenerator.Atom1Feed.root_attributes(self)
         attrs['xmlns:media'] = 'http://search.yahoo.com/mrss/'
+        attrs['xmlns:opensearch'] = 'http://a9.com/-/spec/opensearch/1.1/'
         return attrs
 
     def add_item_elements(self, handler, item):
@@ -169,6 +185,7 @@ class BaseVideosFeed(Feed):
                 self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get_current()
+        self.opensearch_data = {}
 
     def slice_items(self, items):
         '''slice_items() is a method that can be used to filter a list
@@ -201,6 +218,11 @@ class BaseVideosFeed(Feed):
             startIndex = startPage * LOCALTV_FEED_LENGTH
 
         end = startIndex + count
+
+        self.opensearch_data = {'startindex': startIndex,
+                                'itemsperpage': LOCALTV_FEED_LENGTH,
+                                'totalresults': len(items)}
+
         return items[startIndex:end]
 
     def _get_int_from_querystring(self, parameter_name, default=0,
