@@ -342,6 +342,32 @@ class AuthorVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name,
             _('Author: %s') % name_or_username)
 
+class FeedVideosFeed(BaseVideosFeed):
+    # This class can be a bit confusing:
+    #
+    # It is the Miro Community feed that represents all
+    # the videos that we have imported from a remote video source.
+    #
+    # To avoid end-users getting confused, the URL does not say "feed"
+    # twice, but talks about video sources.
+    def get_object(self, bits):
+        return models.Feed.objects.get(pk=bits[0])
+
+    def link(self, feed):
+        return reverse('localtv_list_feed', args=[feed.pk])
+
+    def items(self, feed):
+        videos = models.Video.objects.filter(
+            feed=feed,
+            site=self.sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE).distinct()
+        return self.slice_items(videos)
+
+    def title(self, feed):
+        return "%s: Videos imported from %s" % (
+            self.sitelocation.site.name,
+            feed.name or '')
+
 class TagVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
         return Tag.objects.get(name=bits[0])
@@ -412,3 +438,4 @@ author = feed_view(AuthorVideosFeed)
 tag = feed_view(TagVideosFeed)
 search = feed_view(SearchVideosFeed)
 playlist = feed_view(PlaylistVideosFeed)
+feed = feed_view(FeedVideosFeed)
