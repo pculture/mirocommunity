@@ -85,12 +85,19 @@ def feed_view(klass):
     return wrapper
 
 class ItemCountMixin(object):
-    '''This class contains just an items method.
+    '''This class contains just an slice_items method.
 
-    It dispatches to self.all_items(), and slices that to match
-    either the number requested in self.request.GET['count'] or
-    LOCALTV_FEED_LENGTH.'''
+    slice_items() is a method that can be used to filter a list
+    (or queryset) of objects and return just the ones that the
+    user requested.
 
+    We respect the four OpenSearch query string parameters:
+    * count
+    * searchTerms
+    * startIndex
+    * startPage
+
+    More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters'''
     def slice_items(self, items):
         try:
             length = int(self.request.GET.get('count', None))
