@@ -101,12 +101,13 @@ class ItemCountMixin(object):
     As for searchTerms, well, maybe one day we'll respect that, too.'''
     def slice_items(self, items):
         try:
-            length = int(self.request.GET.get('count', None))
+            count = int(self.request.GET.get('count', None))
         except (ValueError, TypeError):
-            length = LOCALTV_FEED_LENGTH
-        if length < 0:
-            length = LOCALTV_FEED_LENGTH
-        return items[:length]
+            count = LOCALTV_FEED_LENGTH
+        if count < 0:
+            count = LOCALTV_FEED_LENGTH
+
+        return items[:count]
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
