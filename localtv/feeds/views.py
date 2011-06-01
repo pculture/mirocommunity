@@ -105,7 +105,20 @@ class ItemCountMixin(object):
             default=LOCALTV_FEED_LENGTH,
             insist_non_negative=True)
 
-        return items[:count]
+        startIndex = self._get_int_from_querystring('startIndex')
+        # The spec allows negative values, but that seems useless to me,
+        # so we will insist on non-negative values.
+
+        # We only check for startPage if there is no startIndex. This mailing
+        # list discussion indicates that startPage and startIndex conflict:
+        # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
+
+        if not startIndex:
+            startPage = self._get_int_from_querystring('startPage')
+            startIndex = startPage * LOCALTV_FEED_LENGTH
+
+        end = startIndex + count
+        return items[startIndex:end]
 
     def _get_int_from_querystring(self, parameter_name, default=0,
                                   insist_non_negative=True):
