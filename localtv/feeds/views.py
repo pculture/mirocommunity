@@ -103,6 +103,8 @@ class ItemCountMixin(object):
             length = int(self.request.GET.get('count', None))
         except (ValueError, TypeError):
             length = LOCALTV_FEED_LENGTH
+        if length < 0:
+            length = LOCALTV_FEED_LENGTH
         return items[:length]
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
