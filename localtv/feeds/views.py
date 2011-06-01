@@ -91,13 +91,14 @@ class ItemCountMixin(object):
     (or queryset) of objects and return just the ones that the
     user requested.
 
-    We respect the four OpenSearch query string parameters:
+    We respect the three indexing-related OpenSearch query string parameters:
     * count
-    * searchTerms
     * startIndex
     * startPage
 
-    More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters'''
+    More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
+
+    As for searchTerms, well, maybe one day we'll respect that, too.'''
     def slice_items(self, items):
         try:
             length = int(self.request.GET.get('count', None))
