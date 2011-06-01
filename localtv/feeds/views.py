@@ -84,54 +84,6 @@ def feed_view(klass):
         return response
     return wrapper
 
-class ItemCountMixin(object):
-    '''This class contains just an slice_items method.
-
-    slice_items() is a method that can be used to filter a list
-    (or queryset) of objects and return just the ones that the
-    user requested.
-
-    We respect the three indexing-related OpenSearch query string parameters:
-    * count
-    * startIndex
-    * startPage
-
-    More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
-
-    As for searchTerms, well, maybe one day we'll respect that, too.'''
-    def slice_items(self, items):
-        count = self._get_int_from_querystring(
-            parameter_name='count',
-            default=LOCALTV_FEED_LENGTH,
-            insist_non_negative=True)
-
-        startIndex = self._get_int_from_querystring('startIndex')
-        # The spec allows negative values, but that seems useless to me,
-        # so we will insist on non-negative values.
-
-        # We only check for startPage if there is no startIndex. This mailing
-        # list discussion indicates that startPage and startIndex conflict:
-        # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
-
-        if not startIndex:
-            startPage = self._get_int_from_querystring('startPage')
-            startIndex = startPage * LOCALTV_FEED_LENGTH
-
-        end = startIndex + count
-        return items[startIndex:end]
-
-    def _get_int_from_querystring(self, parameter_name, default=0,
-                                  insist_non_negative=True):
-        try:
-            value = int(self.request.GET.get(parameter_name, None))
-        except (ValueError, TypeError):
-            value = default
-
-        if insist_non_negative:
-            if value < 0:
-                value = default
-
-        return value
 
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
 
@@ -206,7 +158,7 @@ class JSONGenerator(feedgenerator.SyndicationFeed):
         json_items.append(json_item)
 
 
-class BaseVideosFeed(Feed, ItemCountMixin):
+class BaseVideosFeed(Feed):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
@@ -217,6 +169,52 @@ class BaseVideosFeed(Feed, ItemCountMixin):
                 self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get_current()
+
+    def slice_items(self, items):
+        '''slice_items() is a method that can be used to filter a list
+        (or queryset) of objects and return just the ones that the
+        user requested.
+
+        We respect the three indexing-related OpenSearch query string parameters:
+        * count
+        * startIndex
+        * startPage
+
+        More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
+
+        As for searchTerms, well, maybe one day we'll respect that, too.'''
+        count = self._get_int_from_querystring(
+            parameter_name='count',
+            default=LOCALTV_FEED_LENGTH,
+            insist_non_negative=True)
+
+        startIndex = self._get_int_from_querystring('startIndex')
+        # The spec allows negative values, but that seems useless to me,
+        # so we will insist on non-negative values.
+
+        # We only check for startPage if there is no startIndex. This mailing
+        # list discussion indicates that startPage and startIndex conflict:
+        # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
+
+        if not startIndex:
+            startPage = self._get_int_from_querystring('startPage')
+            startIndex = startPage * LOCALTV_FEED_LENGTH
+
+        end = startIndex + count
+        return items[startIndex:end]
+
+    def _get_int_from_querystring(self, parameter_name, default=0,
+                                  insist_non_negative=True):
+        try:
+            value = int(self.request.GET.get(parameter_name, None))
+        except (ValueError, TypeError):
+            value = default
+
+        if insist_non_negative:
+            if value < 0:
+                value = default
+
+        return value
 
     def item_pubdate(self, video):
         if video.status != models.VIDEO_STATUS_ACTIVE:
