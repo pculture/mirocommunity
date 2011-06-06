@@ -5,7 +5,7 @@
 -e git+http://git.participatoryculture.org/django-uploadtemplate@db144765894f10f0211b4deb16f9f3f948a5e173#egg=django_uploadtemplate-0.0.1-py2.6-dev
 BeautifulSoup
 Django==1.2.1
-PIL==1.1.6
+PIL>=1.1.6
 lxml==2.2.7
 python-memcached==1.45
 South>=0.7
