@@ -187,7 +187,7 @@ class BaseVideosFeed(Feed):
         self.sitelocation = models.SiteLocation.objects.get_current()
         self.opensearch_data = {}
 
-    def slice_items(self, items):
+    def slice_items(self, items, default_items_per_page=None):
         '''slice_items() is a method that can be used to filter a list
         (or queryset) of objects and return just the ones that the
         user requested.
@@ -200,9 +200,12 @@ class BaseVideosFeed(Feed):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         As for searchTerms, well, maybe one day we'll respect that, too.'''
+        if default_items_per_page is None:
+            default_items_per_page = LOCALTV_FEED_LENGTH
+
         count = self._get_int_from_querystring(
             parameter_name='count',
-            default=LOCALTV_FEED_LENGTH,
+            default=default_items_per_page,
             insist_non_negative=True)
 
         startIndex = self._get_int_from_querystring('startIndex')
@@ -215,12 +218,12 @@ class BaseVideosFeed(Feed):
 
         if not startIndex:
             startPage = self._get_int_from_querystring('startPage')
-            startIndex = startPage * LOCALTV_FEED_LENGTH
+            startIndex = startPage * count
 
         end = startIndex + count
 
         self.opensearch_data = {'startindex': startIndex,
-                                'itemsperpage': LOCALTV_FEED_LENGTH,
+                                'itemsperpage': count,
                                 'totalresults': len(items)}
 
         return items[startIndex:end]
