@@ -30,3 +30,4 @@ oauth
 -e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
 django-storages
+-e git+git://git.pculture.org/localtv@master#egg=miro-community
