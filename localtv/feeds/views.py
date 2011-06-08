@@ -208,7 +208,11 @@ class BaseVideosFeed(Feed):
             default=default_items_per_page,
             insist_non_negative=True)
 
-        startIndex = self._get_int_from_querystring('startIndex')
+        # The spec says to use startIndex, but vidscraper seems to send out
+        # start-index. I don't really know what's up with that.
+        startIndex = self._get_int_from_querystring('startIndex', default=None)
+        if startIndex is None:
+            startIndex = self._get_int_from_querystring('start-index')
         # The spec allows negative values, but that seems useless to me,
         # so we will insist on non-negative values.
 

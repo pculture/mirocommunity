@@ -2154,7 +2154,7 @@ class TierMethodsTests(BaseTestCase):
 
 class FeedViewTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'categories']
+    fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
     def test_feed_views_respect_count_when_set(self):
         fake_request = mock.Mock()
@@ -2182,3 +2182,35 @@ class FeedViewTestCase(BaseTestCase):
         response = localtv.feeds.views.feed_view(
             localtv.feeds.views.CategoryVideosFeed)(fake_request, None, 'linux')
         self.assertEqual(200, response.status_code)
+
+    def test_feed_views_respect_count_when_set_integration(self):
+        # Put 3 videos into the Linux category
+        linux_category = models.Category.objects.get(slug='linux')
+        three_vids = models.Video.objects.new()[:3]
+
+        for vid in three_vids:
+            vid.categories.add(linux_category)
+            vid.status = models.VIDEO_STATUS_ACTIVE
+            vid.save()
+
+        # Do a GET for the first 2 in the feed
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '2'}
+        fake_request.META = {}
+        response = localtv.feeds.views.feed_view(
+            localtv.feeds.views.CategoryVideosFeed)(fake_request, None, 'linux')
+        self.assertEqual(200, response.status_code)
+        parsed = feedparser.parse(response.content)
+        items_from_first_GET = parsed['items']
+        self.assertEqual(2, len(items_from_first_GET))
+
+        # Do a GET for the next "2" (just 1 left)
+        fake_request = mock.Mock()
+        fake_request.GET = {'count': '2', 'start-index': '2'}
+        fake_request.META = {}
+        response = localtv.feeds.views.feed_view(
+            localtv.feeds.views.CategoryVideosFeed)(fake_request, None, 'linux')
+        self.assertEqual(200, response.status_code)
+        parsed = feedparser.parse(response.content)
+        items_from_second_GET = parsed['items']
+        self.assertEqual(1, len(items_from_second_GET))
