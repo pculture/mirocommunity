@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'SiteLocation.tagline'
-        db.alter_column('localtv_sitelocation', 'tagline', self.gf('django.db.models.fields.CharField')(max_length=4096))
+        db.alter_column('localtv_sitelocation', 'tagline', self.gf('django.db.models.fields.CharField')(max_length=4096), ignore_constraints=True)
 
 
     def backwards(self, orm):
