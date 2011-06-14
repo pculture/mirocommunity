@@ -51,7 +51,7 @@ class SiteLocationMiddleware(object):
         # the current SiteLocation:
         try:
             request.sitelocation = models.SiteLocation.objects.get_current()
-            request.tier_info = models.TierInfo.objects.get_current()
+            request.tier_info = request.sitelocation.tierinfo
             request.user_is_admin = request.sitelocation.user_is_admin(
                 request.user)
         except models.SiteLocation.DoesNotExist:
