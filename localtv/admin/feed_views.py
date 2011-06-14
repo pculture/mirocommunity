@@ -91,7 +91,7 @@ def add_feed(request):
         if form.is_valid():
             feed, created = models.Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=request.sitelocation.site,
+                site=request.sitelocation().site,
                 defaults=defaults)
 
             if not created:
@@ -185,7 +185,7 @@ def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
         models.Feed,
         id=feed_id,
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

@@ -35,9 +35,9 @@ from localtv.playlists.models import (Playlist, PLAYLIST_STATUS_PRIVATE,
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        if not request.sitelocation.playlists_enabled:
+        if not request.sitelocation().playlists_enabled:
             raise Http404
-        if request.sitelocation.playlists_enabled == 2 and \
+        if request.sitelocation().playlists_enabled == 2 and \
                 not request.user_is_admin:
             raise Http404
         return func(request, *args, **kwargs)

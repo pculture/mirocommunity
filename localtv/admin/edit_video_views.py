@@ -29,7 +29,7 @@ from localtv.admin import forms
 def edit_video(request):
     video_id = request.GET.get('video_id') or request.POST.get('video_id')
     video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation().site)
 
     if request.method == 'GET':
         edit_video_form = forms.EditVideoForm(instance=video)

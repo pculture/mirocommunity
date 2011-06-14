@@ -91,12 +91,12 @@ def upgrade(request):
     UPGRADE = 'Upgrade Your Account'
 
     switch_messages = {}
-    if request.sitelocation.tier_name in ('premium', 'max'):
+    if request.sitelocation().tier_name in ('premium', 'max'):
         switch_messages['plus'] = SWITCH_TO
     else:
         switch_messages['plus'] = UPGRADE
 
-    if request.sitelocation.tier_name == 'max':
+    if request.sitelocation().tier_name == 'max':
         switch_messages['premium'] = SWITCH_TO
     else:
         switch_messages['premium'] = UPGRADE
@@ -104,26 +104,26 @@ def upgrade(request):
     # Would you lose anything?
     would_lose = {}
     for tier_name in ['basic', 'plus', 'premium', 'max']:
-        if tier_name == request.sitelocation.tier_name:
+        if tier_name == request.sitelocation().tier_name:
             would_lose[tier_name] = False
         else:
             would_lose[tier_name] = localtv.tiers.user_warnings_for_downgrade(tier_name)
 
     upgrade_extra_payments = {}
     for target_tier_name in ['basic', 'plus', 'premium', 'max']:
-        if (request.sitelocation.tierinfo.in_free_trial or 
-            (localtv.tiers.Tier(target_tier_name).dollar_cost() <= request.sitelocation.get_tier().dollar_cost()) or
-            not request.sitelocation.tierinfo.payment_due_date):
+        if (request.sitelocation().tierinfo.in_free_trial or 
+            (localtv.tiers.Tier(target_tier_name).dollar_cost() <= request.sitelocation().get_tier().dollar_cost()) or
+            not request.sitelocation().tierinfo.payment_due_date):
             upgrade_extra_payments[target_tier_name] = None
             continue
         upgrade_extra_payments[target_tier_name] = generate_payment_amount_for_upgrade(
-            request.sitelocation.tier_name, target_tier_name,
-            request.sitelocation.tierinfo.payment_due_date)
+            request.sitelocation().tier_name, target_tier_name,
+            request.sitelocation().tierinfo.payment_due_date)
 
     data = {}
     data['upgrade_extra_payments'] = upgrade_extra_payments
     data['can_modify_mapping'] = _generate_can_modify()
-    data['site_location'] = request.sitelocation
+    data['site_location'] = request.sitelocation()
     data['would_lose_for_tier'] = would_lose
     data['switch_messages'] = switch_messages
     data['payment_secret'] = request.tier_info.get_payment_secret()

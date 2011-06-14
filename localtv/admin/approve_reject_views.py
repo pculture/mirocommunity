@@ -49,7 +49,7 @@ def get_video_paginator(sitelocation):
 @require_site_admin
 @csrf_protect
 def approve_reject(request):
-    video_paginator = get_video_paginator(request.sitelocation)
+    video_paginator = get_video_paginator(request.sitelocation())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -76,7 +76,7 @@ def preview_video(request):
         models.Video,
         id=request.GET['video_id'],
         status=models.VIDEO_STATUS_UNAPPROVED,
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': current_video},
@@ -89,12 +89,12 @@ def approve_video(request):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
 
     # If the site would exceed its video allotment, then fail
     # with a HTTP 403 and a clear message about why.
     if (models.SiteLocation.enforce_tiers() and
-        request.sitelocation.get_tier().remaining_videos() < 1):
+        request.sitelocation().get_tier().remaining_videos() < 1):
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
     current_video.status = models.VIDEO_STATUS_ACTIVE
@@ -128,7 +128,7 @@ def reject_video(request):
     current_video = get_object_or_404(
         models.Video,
         id=request.GET['video_id'],
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
     current_video.status = models.VIDEO_STATUS_REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
@@ -139,10 +139,10 @@ def reject_video(request):
 def feature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation().site)
     if current_video.status != models.VIDEO_STATUS_ACTIVE:
         if (models.SiteLocation.enforce_tiers() and
-            request.sitelocation.get_tier().remaining_videos() < 1):
+            request.sitelocation().get_tier().remaining_videos() < 1):
             return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
         current_video.status = models.VIDEO_STATUS_ACTIVE
         current_video.when_approved = datetime.datetime.now()
@@ -157,7 +157,7 @@ def feature_video(request):
 def unfeature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation.site)
+        models.Video, pk=video_id, site=request.sitelocation().site)
     current_video.last_featured = None
     current_video.save()
 
@@ -168,7 +168,7 @@ def unfeature_video(request):
 @require_site_admin
 @csrf_protect
 def reject_all(request):
-    video_paginator = get_video_paginator(request.sitelocation)
+    video_paginator = get_video_paginator(request.sitelocation())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -187,7 +187,7 @@ def reject_all(request):
 @require_site_admin
 @csrf_protect
 def approve_all(request):
-    video_paginator = get_video_paginator(request.sitelocation)
+    video_paginator = get_video_paginator(request.sitelocation())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -197,7 +197,7 @@ def approve_all(request):
             'Page number request exceeded available pages')
 
     if models.SiteLocation.enforce_tiers():
-        tier_remaining_videos = request.sitelocation.get_tier().remaining_videos()
+        tier_remaining_videos = request.sitelocation().get_tier().remaining_videos()
         if len(page.object_list) > tier_remaining_videos:
             remaining = str(tier_remaining_videos)
             need = str(len(page.object_list))
@@ -217,7 +217,7 @@ def approve_all(request):
 @csrf_protect
 def clear_all(request):
     videos = models.Video.objects.filter(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_UNAPPROVED)
     if request.POST.get('confirm') == 'yes':
         for video in videos:

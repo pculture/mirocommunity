@@ -62,7 +62,7 @@ def new_videos(request, count=None, sort=None):
     count = count_or_default(count)
 
     videos = models.Video.objects.new(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_ACTIVE)
     return object_list(
         request=request, queryset=videos,
@@ -91,7 +91,7 @@ def popular_videos(request, count=None, sort=None):
 
     period = datetime.timedelta(days=7)
     videos = models.Video.objects.popular_since(
-        period, request.sitelocation,
+        period, request.sitelocation(),
         watch__timestamp__gte=datetime.datetime.now() - period,
         status=models.VIDEO_STATUS_ACTIVE,
         )
@@ -106,7 +106,7 @@ def featured_videos(request, count=None, sort=None):
     count = count_or_default(count)
 
     kwargs = {
-        'site': request.sitelocation.site,
+        'site': request.sitelocation().site,
         'last_featured__isnull': False,
         'status': models.VIDEO_STATUS_ACTIVE}
     if sort == 'latest':
@@ -128,7 +128,7 @@ def tag_videos(request, tag_name, count=None, sort=None):
 
     tag = get_object_or_404(Tag, name=tag_name)
     videos = models.Video.tagged.with_all(tag).filter(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_ACTIVE)
     videos = videos.order_by(
         '-when_approved', '-when_published', '-when_submitted')
@@ -144,8 +144,8 @@ def feed_videos(request, feed_id, count=None, sort=None):
     count = count_or_default(count)
 
     feed = get_object_or_404(models.Feed, pk=feed_id,
-                             site=request.sitelocation.site)
-    videos = models.Video.objects.new(site=request.sitelocation.site,
+                             site=request.sitelocation().site)
+    videos = models.Video.objects.new(site=request.sitelocation().site,
                                       feed=feed,
                                       status=models.VIDEO_STATUS_ACTIVE)
     return object_list(
@@ -181,12 +181,12 @@ def video_search(request, count=None, sort=None):
         queryset = models.Video.objects.none()
     elif sort == 'latest':
         queryset = models.Video.objects.new(
-            site=request.sitelocation.site,
+            site=request.sitelocation().site,
             status=models.VIDEO_STATUS_ACTIVE,
             pk__in=pks)
     else:
         queryset = models.Video.objects.filter(
-                site=request.sitelocation.site,
+                site=request.sitelocation().site,
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=pks).order_by()
         order = ['-localtv_video.id = %i' % int(pk) for pk in pks]
@@ -204,7 +204,7 @@ def category(request, slug=None, count=None, sort=None):
 
     if slug is None:
         categories = models.Category.objects.filter(
-            site=request.sitelocation.site,
+            site=request.sitelocation().site,
             parent=None)
 
         return object_list(
@@ -214,7 +214,7 @@ def category(request, slug=None, count=None, sort=None):
             allow_empty=True, template_object_name='category')
     else:
         category = get_object_or_404(models.Category, slug=slug,
-                                     site=request.sitelocation.site)
+                                     site=request.sitelocation().site)
         return object_list(
             request=request, queryset=category.approved_set.all(),
             paginate_by=count,
@@ -240,7 +240,7 @@ def author(request, id=None, count=None, sort=True):
             videos = models.Video.objects.all()
         videos = videos.filter(
             Q(authors=author) | Q(user=author),
-            site=request.sitelocation.site,
+            site=request.sitelocation().site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
         # Calls to DISTINCT in SQL can mess up the ordering. So,
         # if sorting is enabled, re-do the sort at the last minute.

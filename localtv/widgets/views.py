@@ -39,7 +39,7 @@ def widget(func):
 @widget
 def featured(request):
     featured_videos = models.Video.objects.filter(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
@@ -50,13 +50,13 @@ def featured(request):
 @widget
 def new(request):
     new_videos = models.Video.objects.new(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_ACTIVE)
     return new_videos
 
 @widget
 def popular(request):
     popular_videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation=request.sitelocation,
+        datetime.timedelta(days=7), sitelocation=request.sitelocation(),
         status=models.VIDEO_STATUS_ACTIVE)
     return popular_videos
