@@ -33,3 +33,4 @@ django-storages
 django-notification
 -e git+git://git.pculture.org/localtv@master#egg=miro-community
 whoosh
+django-voting

@@ -113,6 +113,13 @@ INSTALLED_APPS = (
     'paypal',
 )
 
+try:
+    import voting
+except ImportError:
+    pass
+else:
+    INSTALLED_APPS = INSTALLED_APPS + ('voting',)
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.auth",
     "django.core.context_processors.debug",
