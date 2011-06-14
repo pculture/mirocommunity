@@ -42,7 +42,7 @@ def request_passes_test(test_func):
     return decorate
 
 
-require_site_admin = request_passes_test(lambda request: request.user_is_admin)
+require_site_admin = request_passes_test(lambda request: request.user_is_admin())
 
 def referrer_redirect(view_func):
     def new_view_func(request, *args, **kwargs):

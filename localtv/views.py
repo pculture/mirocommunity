@@ -79,7 +79,7 @@ def view_video(request, video_id, slug=None):
                               site=request.sitelocation().site)
 
     if video.status != models.VIDEO_STATUS_ACTIVE and \
-            not request.user_is_admin:
+            not request.user_is_admin():
         raise Http404
 
     if slug is not None and request.path != video.get_absolute_url():
@@ -88,7 +88,7 @@ def view_video(request, video_id, slug=None):
     context = {'current_video': video,
                # set edit_video_form to True if the user is an admin for
                # backwards-compatibility
-               'edit_video_form': request.user_is_admin}
+               'edit_video_form': request.user_is_admin()}
 
     if video.categories.count():
         category_obj = None
@@ -135,13 +135,13 @@ def view_video(request, video_id, slug=None):
     if request.sitelocation().playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
-            if request.user_is_admin or \
+            if request.user_is_admin() or \
                     request.sitelocation().playlists_enabled == 1:
                 # user can add videos to playlists
                 context['playlists'] = Playlist.objects.filter(
                     user=request.user)
 
-        if request.user_is_admin:
+        if request.user_is_admin():
             # show all playlists
             context['playlistitem_set'] = video.playlistitem_set.all()
         elif request.user.is_authenticated():
@@ -161,7 +161,7 @@ def view_video(request, video_id, slug=None):
                 pass
             else:
                 if playlist.status == PLAYLIST_STATUS_PUBLIC or \
-                        request.user_is_admin or \
+                        request.user_is_admin() or \
                         request.user.is_authenticated() and \
                         playlist.user_id == request.user.pk:
                     try:

@@ -77,7 +77,7 @@ def context_processor(request):
         'mc_version': '1.2',
         'sitelocation': sitelocation,
         'request': request,
-        'user_is_admin': request.user_is_admin,
+        'user_is_admin': request.user_is_admin(),
         'categories':  models.Category.objects.filter(site=sitelocation.site,
                                                       parent=None),
         'cache_invalidator': cache_invalidator,

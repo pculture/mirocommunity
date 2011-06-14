@@ -38,7 +38,7 @@ def playlist_enabled(func):
         if not request.sitelocation().playlists_enabled:
             raise Http404
         if request.sitelocation().playlists_enabled == 2 and \
-                not request.user_is_admin:
+                not request.user_is_admin():
             raise Http404
         return func(request, *args, **kwargs)
     return wrapper
@@ -46,7 +46,7 @@ def playlist_enabled(func):
 def playlist_authorized(func):
     def wrapper(request, playlist_pk, *args, **kwargs):
         playlist = get_object_or_404(Playlist, pk=playlist_pk)
-        if request.user_is_admin or \
+        if request.user_is_admin() or \
                 playlist.user == request.user:
             return func(request, playlist, *args, **kwargs)
         else:
@@ -66,7 +66,7 @@ def index(request):
     if not request.user.is_authenticated():
         return redirect_to_login(request.get_full_path())
 
-    if request.user_is_admin and request.GET.get(
+    if request.user_is_admin() and request.GET.get(
         'show', None) in ('all', 'waiting'):
         headers = SortHeaders(request, (
                 ('Playlist', 'name'),
@@ -107,7 +107,7 @@ def index(request):
                     for form in formset.bulk_forms:
                         form.instance.delete()
                 elif request.POST.get('bulk_action') == 'public':
-                    if request.user_is_admin:
+                    if request.user_is_admin():
                         new_status = PLAYLIST_STATUS_PUBLIC
                     else:
                         new_status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
@@ -156,7 +156,7 @@ def view(request, pk, slug=None, count=15):
     playlist = get_object_or_404(Playlist,
                                  pk=pk)
     if playlist.status != PLAYLIST_STATUS_PUBLIC:
-        if not request.user_is_admin and \
+        if not request.user_is_admin() and \
                 request.user != playlist.user:
             raise Http404
     if request.path != playlist.get_absolute_url():
@@ -208,7 +208,7 @@ def add_video(request, video_pk):
         raise Http404
     video = get_object_or_404(Video, pk=video_pk)
     playlist = get_object_or_404(Playlist, pk=request.POST['playlist'])
-    if request.user_is_admin or \
+    if request.user_is_admin() or \
             playlist.user == request.user:
         playlist.add_video(video)
         return HttpResponseRedirect('%s?playlist=%i' % (
@@ -219,13 +219,13 @@ def add_video(request, video_pk):
 @playlist_authorized
 def public(request, playlist):
     if playlist.status != PLAYLIST_STATUS_PUBLIC:
-        if request.user_is_admin:
+        if request.user_is_admin():
             playlist.status = PLAYLIST_STATUS_PUBLIC
         else:
             playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
         playlist.save()
     next = reverse('localtv_playlist_index')
-    if request.user_is_admin:
+    if request.user_is_admin():
         next = next + '?show=all'
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))
 
@@ -236,6 +236,6 @@ def private(request, playlist):
     playlist.status = PLAYLIST_STATUS_PRIVATE
     playlist.save()
     next = reverse('localtv_playlist_index')
-    if request.user_is_admin:
+    if request.user_is_admin():
         next = next + '?show=all'
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', next))

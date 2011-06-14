@@ -44,7 +44,7 @@ def _check_submit_permissions(request):
         if request.sitelocation().display_submit_button:
             return request.user.is_authenticated() and request.user.is_active
         else:
-            return request.user_is_admin
+            return request.user_is_admin()
 
 
 def submit_lock(func):
@@ -72,7 +72,7 @@ def submit_lock(func):
 @csrf_protect
 def submit_video(request):
 #    import pdb; pdb.set_trace()
-    if not (request.user_is_admin or \
+    if not (request.user_is_admin() or \
                 request.sitelocation().display_submit_button):
         raise Http404
 
@@ -99,7 +99,7 @@ def submit_video(request):
                 site=request.sitelocation().site)
             existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
             if existing.count():
-                if request.user_is_admin:
+                if request.user_is_admin():
                     # even if the video was rejected, an admin submitting it
                     # should make it approved
                     for v in existing.exclude(
@@ -298,7 +298,7 @@ def directlink_submit_video(request):
 
 
 def submit_thanks(request, video_id=None):
-    if request.user_is_admin and video_id:
+    if request.user_is_admin() and video_id:
         context = {
             'video': models.Video.objects.get(pk=video_id)
             }
