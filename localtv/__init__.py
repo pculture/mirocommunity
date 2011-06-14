@@ -50,6 +50,9 @@ class SiteLocationMiddleware(object):
         # Either the app is set up properly, in which case we can just get
         # the current SiteLocation:
         request.sitelocation = models.SiteLocation.objects.get_current
+        def user_is_admin(request=request):
+            return request.sitelocation.user_is_admin(request.user)
+        request.user_is_admin = user_is_admin
         return self.process_request(request)
 
 def context_processor(request):
