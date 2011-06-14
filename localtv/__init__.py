@@ -49,16 +49,8 @@ class SiteLocationMiddleware(object):
     def process_request(self, request):
         # Either the app is set up properly, in which case we can just get
         # the current SiteLocation:
-        try:
-            request.sitelocation = models.SiteLocation.objects.get_current()
-            request.tier_info = request.sitelocation.tierinfo
-            request.user_is_admin = request.sitelocation.user_is_admin(
-                request.user)
-        except models.SiteLocation.DoesNotExist:
-            # Or, for some reason, the SiteLocation does not yet exist. That
-            # is okay; we can create it.
-            models.SiteLocation.objects.create(site=Site.objects.get_current())
-            return self.process_request(request)
+        request.sitelocation = models.SiteLocation.objects.get_current
+        return self.process_request(request)
 
 def context_processor(request):
     sitelocation = request.sitelocation
