@@ -53,7 +53,7 @@ class SiteLocationMiddleware(object):
         return self.process_request(request)
 
 def context_processor(request):
-    sitelocation = request.sitelocation
+    sitelocation = request.sitelocation()
 
     display_submit_button = sitelocation.display_submit_button
     if display_submit_button:
