@@ -47,15 +47,28 @@ class SiteLocationMiddleware(object):
     uses it.
     """
     def process_request(self, request):
-        # Either the app is set up properly, in which case we can just get
-        # the current SiteLocation:
-        request.sitelocation = models.SiteLocation.objects.get_current
+        # These attributes on the request are helpers for view functions
+        # that want easy access to some data.
+        #
+        # They are functions rather than actual results so that, in case we
+        # cache an entire page, we can avoid ever executing the database
+        # query.
+        #
+        # Performance-wise, that does mean that when a view uses this data,
+        # it has to go through one or more function calls.
+
+        # First, create a user_is_admin function that can easily determine
+        # if the logged-in user is an admin.
         def user_is_admin(request=request, cache=[]):
             if cache:
                 return cache[0]
             cache = [request.sitelocation.user_is_admin(request.user)]
             return cache[0]
+
+        # Then tack that helper on, along with a SiteLocation getter.
         request.user_is_admin = user_is_admin
+        request.sitelocation = models.SiteLocation.objects.get_current
+        # Keep processing the request.
         return self.process_request(request)
 
 def context_processor(request):
