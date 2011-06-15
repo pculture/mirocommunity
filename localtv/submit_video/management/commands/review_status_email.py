@@ -42,8 +42,7 @@ class Command(NoArgsCommand):
 
         queue_videos = models.Video.objects.filter(
             site=sitelocation.site,
-            status=models.VIDEO_STATUS_UNAPPROVED,
-            feed=None, search=None)
+            status=models.VIDEO_STATUS_UNAPPROVED)
         new_videos = queue_videos.filter(when_submitted__gte=previous)
 
         if new_videos.count():
