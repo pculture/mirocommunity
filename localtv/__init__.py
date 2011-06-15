@@ -68,8 +68,9 @@ class SiteLocationMiddleware(object):
         # Then tack that helper on, along with a SiteLocation getter.
         request.user_is_admin = user_is_admin
         request.sitelocation = models.SiteLocation.objects.get_current
-        # Keep processing the request.
-        return self.process_request(request)
+
+        # We fall off the end, implicitly returning None, so Django
+        # continues processing the request.
 
 def context_processor(request):
     sitelocation = request.sitelocation()
