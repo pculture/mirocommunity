@@ -827,6 +827,15 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         self.assertEquals(video.file_url_mimetype, 'video/mp4')
         self.assertEquals(video.embed_code, '')
 
+    def test_POST_succeed_bad_mimetype(self):
+        """
+        If the URL submitted doesn't give us a good MIME type back, guess a
+        better one.
+        """
+        self.POST_data['url'] = ('http://mpegmedia.abc.net.au/tv/catalyst/'
+                                 'catalyst_s12_ep16_DeepSeaMining.mp4')
+        video = SecondStepSubmitBaseTestCase.test_POST_succeed(self)
+        self.assertEquals(video.file_url_mimetype, 'video/mp4')
 
     def test_GET_existing_file_url(self):
         """
