@@ -22,6 +22,7 @@ import re
 import urllib
 import urllib2
 import urlparse
+import mimetypes
 try:
     from PIL import Image
 except ImportError:
@@ -1284,6 +1285,11 @@ class Video(Thumbnailable, VideoBase):
         else:
             self.file_url_length = http_file.headers.get('content-length')
             self.file_url_mimetype = http_file.headers.get('content-type', '')
+            if self.file_url_mimetype in ('application/octet-stream', ''):
+                # We got a not-useful MIME type; guess!
+                guess = mimetypes.guess_type(self.file_url)
+                if guess[0] is not None:
+                    self.file_url_mimetype = guess[0]
 
     def save_thumbnail(self):
         """
