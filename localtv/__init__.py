@@ -59,11 +59,11 @@ class SiteLocationMiddleware(object):
 
         # First, create a user_is_admin function that can easily determine
         # if the logged-in user is an admin.
-        def user_is_admin(request=request, cache=[]):
-            if cache:
-                return cache[0]
-            cache = [request.sitelocation.user_is_admin(request.user)]
-            return cache[0]
+        def user_is_admin(request=request):
+            if getattr(request, '_user_is_admin_cache'):
+                return request._user_is_admin_cache
+            request._user_is_admin_cache = request.sitelocation.user_is_admin(request.user)
+            return request._user_is_admin_cache
 
         # Then tack that helper on, along with a SiteLocation getter.
         request.user_is_admin = user_is_admin
