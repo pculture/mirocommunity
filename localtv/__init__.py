@@ -62,7 +62,7 @@ class SiteLocationMiddleware(object):
         def user_is_admin(request=request):
             if getattr(request, '_user_is_admin_cache', None):
                 return request._user_is_admin_cache
-            request._user_is_admin_cache = request.sitelocation.user_is_admin(request.user)
+            request._user_is_admin_cache = request.sitelocation().user_is_admin(request.user)
             return request._user_is_admin_cache
 
         # Then tack that helper on, along with a SiteLocation getter.
