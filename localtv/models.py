@@ -1575,6 +1575,10 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
+    if voting:
+        def voting_enabled(self):
+            return self.categories.filter(contest_mode__isnull=False).exists()
+
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''
     try:
