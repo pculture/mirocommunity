@@ -58,6 +58,10 @@ import feedparser
 import vidscraper
 from notification import models as notification
 import tagging
+try:
+    import voting
+except:
+    voting = None
 
 from localtv.templatetags.filters import sanitize
 from localtv import util
@@ -944,6 +948,10 @@ class Category(models.Model):
         verbose_name='Category Parent',
         help_text=("Categories, unlike tags, can have a "
                    "hierarchy."))
+    if voting:
+        contest_mode = models.DateTimeField('Turn on Contest',
+                                            null=True,
+                                            default=None)
 
     class Meta:
         ordering = ['name']
