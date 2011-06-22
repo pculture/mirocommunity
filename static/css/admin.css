@@ -1087,7 +1087,8 @@ margin: 0 0 10px;
 }
 
 
-#admin_videolisting_row .video span.video_id{
+#admin_videolisting_row .video span.video_id,
+#admin_videolisting_row .video span.video_preview {
 display: none;
 }
 

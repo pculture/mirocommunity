@@ -26,12 +26,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
        class="video hoverable unselected"
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
-  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;"
+  <span class="video_preview">
+    {# http://{{ sitelocation.site.domain #}
      {% if video.metasearch_vid %}
-       href="{% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
+       {% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}
      {% else %}
-       href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
-     {% endif %}>
+       {% url localtv_admin_preview_video %}?video_id={{ video.id }}
+     {% endif %}
+  </span>
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;" href="#">
     <span>
     </span>
   </a>
@@ -39,12 +42,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
    
   <div class="title_desc">
     <h3>
-      <a class="click_to_display"
-         {% if video.metasearch_vid %}
-           href="{% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
-         {% else %}
-           href="{% url localtv_admin_preview_video %}?video_id={{ video.id }}"
-         {% endif %}>
+      <a class="click_to_display" href="#">
         {% if video.name %}
           {{ video.name }}
         {% else %}
