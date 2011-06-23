@@ -139,6 +139,22 @@ def view_video(request, video_id, slug=None):
             sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
+    if voting:
+        user_can_vote = True
+        if request.user.is_authenticated():
+            MAX_VOTES_PER_CATEGORY = getattr(settings,
+                                             'MAX_VOTES_PER_CATEGORY',
+                                             3)
+            max_votes = video.categories.filter(
+                contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
+            votes = voting.models.Vote.objects.filter(
+                content_type=ContentType.objects.get_for_model(models.Video),
+                user=request.user).count()
+            if votes >= max_votes:
+                user_can_vote = False
+        context['user_can_vote'] = user_can_vote
+            
+
     if request.sitelocation().playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
@@ -204,7 +220,6 @@ def video_vote(request, object_id, direction, **kwargs):
         votes = voting.models.Vote.objects.filter(
             content_type=ContentType.objects.get_for_model(models.Video),
             user=request.user).count()
-        print max_votes, votes
         if votes >= max_votes:
             return HttpResponseRedirect(video.get_absolute_url())
     return voting.views.vote_on_object(request, models.Video,
