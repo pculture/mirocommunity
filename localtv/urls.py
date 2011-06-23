@@ -60,16 +60,15 @@ urlpatterns += patterns(
     (r'^playlists/', include('localtv.playlists.urls')))
 
 try:
-    from voting.views import vote_on_object
+    import voting
 except ImportError:
     pass # ignore voting
 else:
-    from localtv.models import Video
     urlpatterns += patterns(
-        '',
+        'localtv.views',
         (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
-         vote_on_object, dict(model=Video,
-                              template_object_name='video',
-                              template_name='localtv/video_vote_confirm.html',
-                              allow_xmlhttprequest=True),
+         'video_vote', dict(
+                template_object_name='video',
+                template_name='localtv/video_vote_confirm.html',
+                allow_xmlhttprequest=True),
          'localtv_video_vote'))

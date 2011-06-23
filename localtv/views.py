@@ -17,13 +17,20 @@
 
 import datetime
 from django.contrib import comments
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve, Resolver404
+from django.conf import settings
 from django.db.models import Q
-from django.http import Http404, HttpResponsePermanentRedirect, HttpResponse
+from django.http import (Http404, HttpResponsePermanentRedirect,
+                         HttpResponseRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
+try:
+    import voting.views
+except ImportError:
+    voting = None
 
 from localtv import models
 from localtv.listing import views as listing_views
@@ -184,3 +191,23 @@ def share_email(request, content_type_pk, object_id):
                               'sitelocation': request.sitelocation()},
                              form_class = forms.ShareMultipleEmailForm
                              )
+
+def video_vote(request, object_id, direction, **kwargs):
+    if not voting:
+        raise Http404
+    if request.user.is_authenticated():
+        video = get_object_or_404(models.Video, pk=object_id)
+        MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
+                                         3)
+        max_votes = video.categories.filter(
+            contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
+        votes = voting.models.Vote.objects.filter(
+            content_type=ContentType.objects.get_for_model(models.Video),
+            user=request.user).count()
+        print max_votes, votes
+        if votes >= max_votes:
+            return HttpResponseRedirect(video.get_absolute_url())
+    return voting.views.vote_on_object(request, models.Video,
+                                       direction=direction,
+                                       object_id=object_id,
+                                       **kwargs)
