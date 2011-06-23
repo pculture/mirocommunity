@@ -211,7 +211,7 @@ def share_email(request, content_type_pk, object_id):
 def video_vote(request, object_id, direction, **kwargs):
     if not voting:
         raise Http404
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() and direction != 'clear':
         video = get_object_or_404(models.Video, pk=object_id)
         MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
                                          3)
