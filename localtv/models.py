@@ -471,6 +471,18 @@ class SiteLocation(Thumbnailable):
             # Silenced.
             return u''
 
+    def should_show_dashboard(self):
+        '''On /admin/, most sites will see a dashboard that gives them
+        information at a glance about the site, including its tier status.
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
+
+        In that case (in the default theme) the left-hand navigation
+        will omit the link to the Dashboard, and also the dashboard itself
+        will be an empty page with a META REFRESH that points to
+        /admin/approve_reject/.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 
 class WidgetSettings(Thumbnailable):
     """
