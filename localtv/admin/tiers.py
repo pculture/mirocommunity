@@ -77,7 +77,7 @@ def downgrade_confirm(request):
         data['videos_nag'] = ('videos' in would_lose)
         data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
         data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
-        data['payment_secret'] = request.tier_info.get_payment_secret()
+        data['payment_secret'] = request.sitelocation().tierinfo.get_payment_secret()
         return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                   context_instance=RequestContext(request))
 
@@ -126,8 +126,8 @@ def upgrade(request):
     data['site_location'] = request.sitelocation()
     data['would_lose_for_tier'] = would_lose
     data['switch_messages'] = switch_messages
-    data['payment_secret'] = request.tier_info.get_payment_secret()
-    data['offer_free_trial'] = request.tier_info.free_trial_available
+    data['payment_secret'] = request.sitelocation().tierinfo.get_payment_secret()
+    data['offer_free_trial'] = request.sitelocation().tierinfo.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
     data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
     data['tier_to_price'] = localtv.tiers.Tier.NAME_TO_COST()
@@ -158,7 +158,7 @@ def paypal_return(request, payment_secret, target_tier_name):
     If you want to exploit a MC site and change its tier, and you can cause an admin
     with a cookie that's logged-in to visit pages you want, and you can steal the csrf value,
     your exploit will get caught during the nightly check for fully_confirmed_tier_name != tier_name.'''
-    if payment_secret == request.tier_info.payment_secret:
+    if payment_secret == request.sitelocation().tierinfo.payment_secret:
         return _paypal_return(target_tier_name)
     return HttpResponseForbidden("You submitted something invalid to this paypal return URL. If you are surprised to see this message, contact support@mirocommunity.org.")
 
@@ -203,7 +203,7 @@ def begin_free_trial(request, payment_secret):
     * Switch the tier.'''
     # FIXME: This doesn't check the payment secret anymore.
     # That will be okay once we turn on PDT.
-    #if payment_secret != request.tier_info.payment_secret:
+    #if payment_secret != request.sitelocation().tierinfo.payment_secret:
     #    return HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
     target_tier_name = request.GET.get('target_tier_name', '')
     if target_tier_name not in dict(localtv.tiers.CHOICES):
@@ -222,8 +222,8 @@ def ipn_endpoint(request, payment_secret):
     #
     # At this point in processing, the data might be fake. Let's pass it to
     # the django-paypal code and ask it to verify it for us.
-    if (payment_secret == request.tier_info.payment_secret or
-        payment_secret == request.tier_info.payment_secret.replace('/', '', 1)):
+    if (payment_secret == request.sitelocation().tierinfo.payment_secret or
+        payment_secret == request.sitelocation().tierinfo.payment_secret.replace('/', '', 1)):
         response = paypal.standard.ipn.views.ipn(request)
         return response
     return HttpResponseForbidden("You submitted something invalid to this IPN handler.")

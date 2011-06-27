@@ -471,6 +471,29 @@ class SiteLocation(Thumbnailable):
             # Silenced.
             return u''
 
+    def should_show_dashboard(self):
+        '''On /admin/, most sites will see a dashboard that gives them
+        information at a glance about the site, including its tier status.
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
+
+        In that case (in the default theme) the left-hand navigation
+        will omit the link to the Dashboard, and also the dashboard itself
+        will be an empty page with a META REFRESH that points to
+        /admin/approve_reject/.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
+
+    def should_show_account_level(self):
+        '''On /admin/upgrade/, most sites will see an info page that
+        shows how to change their account level (AKA site tier).
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL variable to False.
+
+        This simply removes the link from the sidebar; if you visit the
+        /admin/upgrade/ page, it renders as usual.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
 
 class WidgetSettings(Thumbnailable):
     """
