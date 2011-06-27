@@ -112,7 +112,7 @@ function update_widget() {
     } else if (widget_size == 'large') {
         $("#widget-example").width(242).addClass('mc-widget-large');
     }
-    $('#widget-example .mc-widget-title').text(widget_title);
+    $('#widget-example .mc-widget-title').html(widget_title);
     $('#widget-example ul').empty();
     if (widget_logo) {
         a = $("<a/>");
@@ -145,7 +145,7 @@ $(document).ready(function () {
   <h2>Goodies | Widget</h2>
   <div style="clear: both"><div/>
   {% if not sitelocation.site.widgetsettings.title_editable %}
-  <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
+  <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.get_title_or_reasonable_default }}" />
   {% endif %}
   {% if not sitelocation.site.widgetsettings.css_editable and sitelocation.site.widgetsettings.css %}
   <input type="hidden" name="css" value="{{ sitelocation.site.widgetsettings.css.url }}">
@@ -169,7 +169,7 @@ $(document).ready(function () {
               <label for="count">Title</label>
             </td>
             <td>
-              <input name="title" value="{{ sitelocation.site.widgetsettings.title }}" />
+              <input name="title" value="{{ sitelocation.site.widgetsettings.get_title_or_reasonable_default }}" />
             </td>
           </tr>
           {% endif %}

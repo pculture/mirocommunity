@@ -1,5 +1,5 @@
 Changed metadata:
-{% for item in changed_fields.items %}
-{% if item.0 == 'thumbnail_url' %}Thumbnail URL: {{ item.1 }}{% else %}{% if item.0 == 'thumbnail_changed' %}Thumbnail has been modified: {{ original.thumbnail_url }}{% else %}{{ item.0|title }}: {% if item.0 == 'tags' %}{% for tag in item.1 %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}{{ item.1 }}{% endif %}{% endif %}{% endif %}{% endfor %}
+
+{% for item in changed_fields.items %}{% if item.0 in 'thumbnail_url thumbnail_changed tags '%}{% if item.0 == 'thumbnail_url' %}{% include "localtv/admin/video_updated_thumbnail.txt" %}{% endif %}{% if item.0 == 'thumbnail_changed' %}Thumbnail has been modified: {{ original.thumbnail_url }}{% endif %}{% if item.0 == 'tags' %}{% include "localtv/admin/video_updated_tags.txt" %}{% endif %}{% else %}{% include "localtv/admin/video_updated_generic.txt" %}{% endif %}{% endfor %}
 
 You can see this video at: http://{{ video.site.domain }}{{ video.get_absolute_url }}

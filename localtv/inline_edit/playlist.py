@@ -34,5 +34,5 @@ def info(request, playlist):
     else:
         Response = HttpResponseForbidden
 
-    widget = editable_widget(playlist, 'info', form=edit_form)
+    widget = editable_widget(request, playlist, 'info', form=edit_form)
     return Response(widget, content_type='text/html')

@@ -53,7 +53,7 @@ class Migration:
         
         # Changing field 'OpenIdUser.user'
         # (to signature: django.db.models.fields.related.OneToOneField(to=orm['auth.User'], unique=True))
-        db.alter_column('localtv_openiduser', 'user_id', orm['localtv.openiduser:user'])
+        db.alter_column('localtv_openiduser', 'user_id', orm['localtv.openiduser:user'], ignore_constraints=True)
         
     
     
@@ -92,7 +92,7 @@ class Migration:
         
         # Changing field 'OpenIdUser.user'
         # (to signature: django.db.models.fields.related.OneToOneField(to=orm['auth.User'], unique=True, null=True))
-        db.alter_column('localtv_openiduser', 'user_id', orm['localtv.openiduser:user'])
+        db.alter_column('localtv_openiduser', 'user_id', orm['localtv.openiduser:user'], ignore_constraints=True)
         
     
     

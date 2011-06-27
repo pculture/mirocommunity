@@ -26,7 +26,7 @@ class Migration:
         
         # Changing field 'Video.description'
         # (to signature: django.db.models.fields.TextField(blank=True))
-        db.alter_column('localtv_video', 'description', orm['localtv.video:description'])
+        db.alter_column('localtv_video', 'description', orm['localtv.video:description'], ignore_constraints=True)
         
         # Deleting unique_together for [name, site] on feed.
         db.delete_unique('localtv_feed', ['name', 'site_id'])
@@ -37,7 +37,7 @@ class Migration:
         
         # Changing field 'Video.description'
         # (to signature: django.db.models.fields.TextField())
-        db.alter_column('localtv_video', 'description', orm['localtv.video:description'])
+        db.alter_column('localtv_video', 'description', orm['localtv.video:description'], ignore_constraints=True)
         
         # Creating unique_together for [name, site] on feed.
         db.create_unique('localtv_feed', ['name', 'site_id'])

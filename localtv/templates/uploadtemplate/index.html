@@ -39,7 +39,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
   <div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
-    <form method="post" action="" enctype="multipart/form-data">uploadtemplate
+    <form method="post" action="" enctype="multipart/form-data">{% csrf_token %}
       <h2>Upload a Custom Theme</h2>
       <p>Download/modify any existing theme and upload it as a ZIP file.</p>
       <div class="upload_form">{{ form.as_p }}</div>
@@ -70,7 +70,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
       <h3>{{ theme.name }}</h3>
       <div class="description">{{ theme.description }}</div>
+      {% if theme.may_set_as_default %}
       <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
+      {% endif %}
       <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
       <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
     </li>

@@ -22,12 +22,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}bulkedit{% endblock body_class %}
 
 
-{% load i18n pagetabs %}
+{% load i18n pagetabs generate_modified_query_string %}
 
 {% block title %}{{ block.super }} - {% block subtitle %}{% trans "Admin - Bulk Edit" %}{% endblock %}{% endblock %}
 {% block head %}{{ block.super }}
-  <script type="text/javascript" src="/js/admin/inline_edit.js"></script>
-  <script type="text/javascript" src="/js/admin/bulk_edit.js"></script>
+  <script type="text/javascript" src="/js/admin/inline_edit.js?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="/js/admin/bulk_edit.js?version={{ mc_version }}"></script>
 {% endblock %}
 {% block content %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
@@ -219,7 +219,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
                   <li class="users_edit scrollable right">
                     <label class="padding">Users</label>
                     {{ form.authors.errors }}
+		    <a class="replace_with_href" href='?{% generate_modified_query_string "just_the_author_field" form.prefix %}&video_id={{ form.instance.id }}'>Click to edit the users associated with this video</a>
+		    {% comment %}
                     {{ form.authors }}
+		    {% endcomment %}
                   </li>
                 </ul>
                 {% endblock %}

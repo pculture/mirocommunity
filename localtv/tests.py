@@ -21,6 +21,8 @@ import shutil
 import tempfile
 from urllib import quote_plus, urlencode
 
+import mock
+
 import feedparser
 import vidscraper
 
@@ -41,8 +43,10 @@ from django.test.client import Client
 
 from haystack.query import SearchQuerySet
 
+import localtv.templatetags.filters
 from localtv import models
 from localtv import util
+from localtv import tiers
 
 from notification import models as notification
 from tagging.models import Tag
@@ -66,12 +70,18 @@ class BaseTestCase(TestCase):
         settings.SITE_ID = 1
         models.SiteLocation.objects.clear_cache()
         self.site_location = models.SiteLocation.objects.get_current()
+        self.tier_info = models.TierInfo.objects.get_current()
+
+        # By default, tests run on an 'max' account.
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.tmpdir
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
+        mail.outbox = [] # reset any email at the start of the suite
 
     def tearDown(self):
         TestCase.tearDown(self)
@@ -136,7 +146,7 @@ class BaseTestCase(TestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s?next=%s' %
-                          (self.site_location.site.domain,
+                          ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
 
@@ -178,6 +188,20 @@ class FeedModelTestCase(BaseTestCase):
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+
+    @mock.patch('localtv.tiers.Tier.can_add_more_videos', lambda *args: False)
+    def test_auto_approve_True_when_user_past_video_limit(self):
+        """
+        If Feed.auto_approve is True, but the site is past the video limit,
+        the imported videos should be marked as unapproved.
+        """
+        feed = models.Feed.objects.get(pk=1)
+        feed.auto_approve = True
+        feed.feed_url = self._data_file('feed.rss')
+        feed.update_items()
+        self.assertEquals(models.Video.objects.count(), 5)
+        self.assertEquals(models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
         """
@@ -725,7 +749,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
         response = c.get(reverse('localtv_view_video',
@@ -733,7 +757,7 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 301)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 video.get_absolute_url()))
 
     def test_view_video_category(self):
@@ -769,9 +793,9 @@ class ViewTestCase(BaseTestCase):
 
         c = Client()
         response = c.get(video.get_absolute_url(),
-                         HTTP_HOST=self.site_location.site.domain,
+                         HTTP_HOST='testserver',
                          HTTP_REFERER='http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver',
                 reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
@@ -1563,6 +1587,53 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
                           lambda: v.original)
 
 # -----------------------------------------------------------------------------
+# Site tier tests
+# -----------------------------------------------------------------------------
+class SiteTierTests(BaseTestCase):
+    def test_basic_account(self):
+        # Create a SiteLocation whose site_tier is set to 'basic'
+        self.site_location.tier_name = 'basic'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(0, tier.dollar_cost())
+        self.assertEqual(500, tier.videos_limit())
+        self.assertEqual(1, tier.admins_limit())
+        self.assertFalse(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_plus_account(self):
+        # Create a SiteLocation whose site_tier is set to 'plus'
+        self.site_location.tier_name = 'plus'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(15, tier.dollar_cost())
+        self.assertEqual(1000, tier.videos_limit())
+        self.assertEqual(5, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_premium_account(self):
+        # Create a SiteLocation whose site_tier is set to 'premium'
+        self.site_location.tier_name = 'premium'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(35, tier.dollar_cost())
+        self.assertEqual(5000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertFalse(tier.permit_custom_template())
+
+    def test_max_account(self):
+        self.site_location.tier_name = 'max'
+        self.site_location.save()
+        tier = self.site_location.get_tier()
+        self.assertEqual(75, tier.dollar_cost())
+        self.assertEqual(25000, tier.videos_limit())
+        self.assertEqual(None, tier.admins_limit())
+        self.assertTrue(tier.permit_custom_css())
+        self.assertTrue(tier.permit_custom_template())
+
+# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 
@@ -2003,3 +2074,50 @@ today</a>.</p></div>""",
                               }
         changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
         self.assertFalse(changes)
+
+class TestWmodeFilter(BaseTestCase):
+    def test_add_transparent_wmode_to_object(self):
+        input = "<object></object>"
+        output = '<object><param name="wmode" value="transparent"></object>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
+
+    def test_add_transparent_wmode_to_two_objects(self):
+        input = "<object></object>"
+        output = '<object><param name="wmode" value="transparent"></object>'
+        self.assertEqual(output + output,
+                         localtv.templatetags.filters.wmode_transparent(input + input))
+
+    def test_add_transparent_wmode_to_embed(self):
+        input = '<embed type="application/x-shockwave-flash"></embed>'
+        output = '<embed type="application/x-shockwave-flash" wmode="transparent"></embed>'
+        self.assertEqual(output,
+                         localtv.templatetags.filters.wmode_transparent(input))
+                
+class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
+    def test_unit(self):
+        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+        tier_info = models.TierInfo.objects.get_current()
+        tier_info.user_has_successfully_performed_a_paypal_transaction = True
+        tier_info.save()
+        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=True))
+
+class TierMethodsTests(BaseTestCase):
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
+    def test_can_add_more_videos(self):
+        # This is true because enforcement is off.
+        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
+    def test_can_add_more_videos_returns_false(self):
+        # This is False because the number of videos remaining is zero.
+        self.assertFalse(localtv.tiers.Tier.get().can_add_more_videos())
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=1))
+    def test_can_add_video_lets_you_add_final_video(self):
+        # This is False because the number of videos remaining is zero.
+        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())

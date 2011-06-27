@@ -1,4 +1,21 @@
- # encoding: utf-8
+# encoding: utf-8
+
+# This file is part of Miro Community.
+# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
@@ -9,13 +26,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Changing field 'Video.flash_enclosure_url'
-        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
         # Changing field 'Video.website_url'
-        db.alter_column('localtv_video', 'website_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'website_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
         # Changing field 'Video.file_url'
-        db.alter_column('localtv_video', 'file_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'file_url', self.gf('localtv.models.BitLyWrappingURLField')(max_length=200), ignore_constraints=True)
 
 
     def backwards(self, orm):

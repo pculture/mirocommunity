@@ -17,6 +17,8 @@
 
 import datetime
 import re
+import lxml.html
+
 from BeautifulSoup import BeautifulSoup, Comment, Tag
 from django.template import Library
 from django.utils.html import urlize
@@ -98,21 +100,28 @@ def sanitize(value, extra_filters=None):
 
     return mark_safe(soup.renderContents().decode('utf8'))
 
-
 def wmode_transparent(value):
-    soup = BeautifulSoup(value)
-    param_tag = Tag(soup, 'param', [
-            ('name', 'wmode'),
-            ('value', 'transparent')])
+    doc = lxml.html.fragment_fromstring('<div>' + value + '</div>')
+    # Find any object tag
+    tags = doc.cssselect('object')
+    for object_tag in tags:
+        WMODE_TRANSPARENT_PARAM = lxml.html.fragment_fromstring("""<param name="wmode" value="transparent"></param>""")
+        object_tag.insert(0, WMODE_TRANSPARENT_PARAM)
 
-    for html_object in soup.findAll('object'):
-        html_object.insert(0, param_tag)
+    # Find any relevant flash embed
+    embeds = doc.cssselect('embed')
+    for embed in embeds:
+        if embed.get('type') == 'application/x-shockwave-flash':
+            embed.set('wmode', 'transparent')
 
-    for flash_embed in soup.findAll('embed',
-                                type="application/x-shockwave-flash"):
-        flash_embed['wmode'] = 'transparent'
-
-    return mark_safe(soup.prettify())
+    wrapped_in_a_div = lxml.html.tostring(doc)
+    if (wrapped_in_a_div.startswith('<div>') and 
+        wrapped_in_a_div.endswith('</div>')):
+        start = len('<div>')
+        end = - len('</div>')
+        return mark_safe(wrapped_in_a_div[start:end])
+    # else, uh, return the wrapped thing.
+    return mark_safe(wrapped_in_a_div)
 
 register.filter(simpletimesince)
 register.filter(sanitize)

@@ -19,10 +19,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% block title %}Importing videos...{% endblock %}
 {% block error %}
-  <meta http-equiv='refresh' content='20; {{ request.path }}?task_id={{ task_id }}'>
+  <meta http-equiv='refresh' content='5; {{ request.path }}?task_id={{ task_id }}'>
 {% endblock %}
 {% block bottom %}
-<p style="font-size: 18px;">{% if feed.video_set.count %}Imported {{ feed.video_set.count }} videos{% else %}Importing videos{% endif %} from
+<p style="font-size: 18px;">{% if fully_thumbnailed_count %}Imported {{ fully_thumbnailed_count }} videos{% else %}Importing videos{% endif %} from
 <br/> <br/><strong style="font-size: 24px;">{{ feed.feed_url }}</strong>
 <br/><br/>This page will reload periodically with updates on the import status.
 </p>

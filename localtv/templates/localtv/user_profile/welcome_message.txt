@@ -1,0 +1,13 @@
+Hello {{ user.username }},
+
+Thank you for signing up for {{ site.name }}! You can read more about {{ site.name }}
+at http://{{site.domain}}/about/.
+
+You can:
+
+* Start watching videos at http://{{site.domain}}{% url localtv_list_new %}
+* Add videos at http://{{ site.domain}}{% url localtv_submit_video %}
+* Or fill out your profile at http://{{site.domain}}{% url localtv_user_profile%}.
+
+Forgot your password? You can reset it at 
+http://{{site.domain}}{% url django.contrib.auth.views.password_reset %}.

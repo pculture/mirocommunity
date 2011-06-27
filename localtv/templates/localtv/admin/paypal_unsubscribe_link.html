@@ -1,0 +1,7 @@
+{% if paypal_sandbox %}
+<a class="approve_button" target="_blank" href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_subscr-find&alias={{ paypal_email }}">
+{% else %}
+<a class="approve_button" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_subscr-find&alias={{ paypal_email }}">
+{% endif %}
+<span>Yes, do it</span>
+</a>

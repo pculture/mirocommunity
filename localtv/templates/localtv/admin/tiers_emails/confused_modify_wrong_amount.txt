@@ -1,0 +1,25 @@
+Hi, support team. I'm kind of worried.
+
+A Miro Community site just submitted a payment modification that
+changes the payment amount to something we would never ask for.
+
+What can this mean? It either indicates a but in Miro Community,
+or a user that is monkeying with payment amounts.
+
+Anyway, you should take a look at the site and the PayPal
+payment profiles.
+
+The site's domain:
+    {{ site_domain }}
+
+You're using this email address with PayPal:
+    {{ paypal_email_address }}
+
+The recurring payment profile ID:
+    {{ profile_on_file }}
+
+Because I wasn't sure what to do, I ignored the change.
+
+Sincerely,
+
+A confused robot.

@@ -23,6 +23,9 @@ import urllib
 import urllib2
 import urlparse
 import mimetypes
+import base64
+import os
+import types
 try:
     from PIL import Image
 except ImportError:
@@ -56,17 +59,24 @@ import tagging
 
 from localtv.templatetags.filters import sanitize
 from localtv import util
+import localtv.tiers
+
+def delete_if_exists(path):
+    if default_storage.exists(path):
+        default_storage.delete(path)
 
 # the difference between unapproved and rejected is that unapproved simply
 # hasn't been looked at by an administrator yet.
 VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
 VIDEO_STATUS_ACTIVE = FEED_STATUS_ACTIVE = 1
 VIDEO_STATUS_REJECTED = FEED_STATUS_REJECTED = 2
+VIDEO_STATUS_PENDING_THUMBNAIL = FEED_STATUS_PENDING_THUMBNAIL = 3
 
 VIDEO_STATUSES = FEED_STATUSES = (
     (VIDEO_STATUS_UNAPPROVED, 'Unapproved'),
     (VIDEO_STATUS_ACTIVE, 'Active'),
-    (VIDEO_STATUS_REJECTED, 'Rejected'))
+    (VIDEO_STATUS_REJECTED, 'Rejected'),
+    (VIDEO_STATUS_PENDING_THUMBNAIL, 'Waiting on thumbnail'))
 
 SITE_STATUS_DISABLED = 0
 SITE_STATUS_ACTIVE = 1
@@ -100,7 +110,7 @@ class CannotOpenImageUrl(Error): pass
 
 class BitLyWrappingURLField(models.URLField):
     def get_db_prep_value(self, value):
-        if not settings.BITLY_LOGIN:
+        if not getattr(settings, 'BITLY_LOGIN'):
             return value
         if len(value) <= self.max_length: # short enough to save
             return value
@@ -135,7 +145,7 @@ class Thumbnailable(models.Model):
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        default_storage.delete(
+        delete_if_exists(
             self.get_original_thumb_storage_path())
 
         self.thumbnail_extension = pil_image.format.lower()
@@ -157,74 +167,19 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb=None):
+    def resize_thumbnail(self, thumb, resized_images=None):
         """
         Creates resized versions of the video's thumbnail image
         """
         if not thumb:
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
-        for size in self.THUMB_SIZES:
-            if len(size) == 2:
-                (width, height), force_height = size, FORCE_HEIGHT_CROP
-            else:
-                width, height, force_height = size
-            resized_image = thumb.copy()
-            if resized_image.size != (width, height):
-                width_scale = float(resized_image.size[0]) / width
-                if force_height:
-                    height_scale = float(resized_image.size[1]) / height
-                    if force_height == FORCE_HEIGHT_CROP:
-                        # make the resized_image have one side the same as the
-                        # thumbnail, and the other bigger so we can crop it
-                        if width_scale < height_scale:
-                            new_height = int(resized_image.size[1] /
-                                             width_scale)
-                            new_width = width
-                        else:
-                            new_width = int(resized_image.size[0] /
-                                            height_scale)
-                            new_height = height
-                    else: # FORCE_HEIGHT_PADDING
-                        if width_scale < height_scale:
-                            new_width = int(resized_image.size[0] /
-                                            height_scale)
-                            new_height = height
-                        else:
-                            new_height = int(resized_image.size[1] /
-                                             width_scale)
-                            new_width = width
-                    resized_image = resized_image.resize(
-                        (new_width, new_height),
-                        Image.ANTIALIAS)
-                    if resized_image.size != (width, height):
-                        x = y = 0
-                        if force_height == FORCE_HEIGHT_CROP:
-                            if resized_image.size[1] > height:
-                                y = int((height - resized_image.size[1]) / 2)
-                            else:
-                                x = int((width - resized_image.size[0]) / 2)
-                        else: # FORCE_HEIGHT_PADDING:
-                            if resized_image.size[1] == height:
-                                x = int((width - resized_image.size[0]) / 2)
-                            else:
-                                y = int((height - resized_image.size[1]) / 2)
-                        new_image = Image.new('RGBA',
-                                              (width, height), (0, 0, 0, 0))
-                        new_image.paste(resized_image, (x, y))
-                        resized_image = new_image
-                elif width_scale > 1:
-                    # resize the width, keep the height aspect ratio the same
-                    new_height = int(resized_image.size[1] / width_scale)
-                    resized_image = resized_image.resize((width, new_height),
-                                                         Image.ANTIALIAS)
-            sio_img = StringIO.StringIO()
-            resized_image.save(sio_img, 'png')
-            sio_img.seek(0)
-            cf_image = ContentFile(sio_img.read())
-
+        if resized_images is None:
+            resized_images = localtv.util.resize_image_returning_list_of_content_files(
+                thumb, self.THUMB_SIZES)
+        for ( (width, height), cf_image) in resized_images:
             # write file, deleting old thumb if it exists
-            default_storage.delete(
+            delete_if_exists(
                 self.get_resized_thumb_storage_path(width, height))
             default_storage.save(
                 self.get_resized_thumb_storage_path(width, height),
@@ -250,9 +205,9 @@ class Thumbnailable(models.Model):
 
     def delete_thumbnails(self):
         self.has_thumbnail = False
-        default_storage.delete(self.get_original_thumb_storage_path())
+        delete_if_exists(self.get_original_thumb_storage_path())
         for size in self.THUMB_SIZES:
-            default_storage.delete(
+            delete_if_exists(
                 self.get_resized_thumb_storage_path(*size[:2]))
         self.thumbnail_extension = ''
         self.save()
@@ -293,6 +248,54 @@ class SiteLocationManager(models.Manager):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
 
+class TierInfoManager(models.Manager):
+    def get_current(self):
+        current_site_location = SiteLocation.objects.get_current()
+        tier_info, _ = TierInfo.objects.get_or_create(
+            sitelocation = current_site_location)
+        return tier_info
+
+class TierInfo(models.Model):
+    payment_due_date = models.DateTimeField(null=True, blank=True)
+    free_trial_available = models.BooleanField(default=True)
+    free_trial_started_on = models.DateTimeField(null=True, blank=True)
+    in_free_trial = models.BooleanField(default=False)
+    payment_secret = models.CharField(max_length=255, default='',blank=True) # This is part of payment URLs.
+    current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
+    video_allotment_warning_sent = models.BooleanField(default=False)
+    free_trial_warning_sent = models.BooleanField(default=False)
+    already_sent_welcome_email = models.BooleanField(default=False)
+    inactive_site_warning_sent = models.BooleanField(default=False)
+    user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
+    already_sent_tiers_compliance_email = models.BooleanField(default=False)
+    fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
+    should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
+    sitelocation = models.OneToOneField('SiteLocation')
+    objects = TierInfoManager()
+
+    def get_payment_secret(self):
+        '''The secret had better be non-empty. So we make it non-empty right here.'''
+        if self.payment_secret:
+            return self.payment_secret
+        # Guess we had better fill it.
+        self.payment_secret = base64.b64encode(os.urandom(16))
+        self.save()
+        return self.payment_secret
+
+    def site_is_subsidized(self):
+        return (self.current_paypal_profile_id == 'subsidized')
+
+    def set_to_subsidized(self):
+        assert not self.current_paypal_profile_id
+        self.current_paypal_profile_id = 'subsidized'
+
+    def time_until_free_trial_expires(self):
+        if not self.in_free_trial:
+            return None
+        if not self.payment_due_date:
+            return None
+
+        return (self.datetime.datetime.utcnow() - self.payment_due_date)
 
 class SiteLocation(Thumbnailable):
     """
@@ -321,6 +324,7 @@ class SiteLocation(Thumbnailable):
        actually can though)
      - submission_requires_login: whether or not users need to log in to submit
        videos.
+     - tier_name: A short string representing the class of site. This relates to paid extras.
     """
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
@@ -338,6 +342,8 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
+    hide_get_started = models.BooleanField(default=False)
 
     # ordering options
     use_original_date = models.BooleanField(
@@ -367,6 +373,37 @@ class SiteLocation(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
+    def add_queued_mail(self, data):
+        if not hasattr(self, '_queued_mail'):
+            self._queued_mail = []
+        self._queued_mail.append(data)
+
+    def get_queued_mail_destructively(self):
+        ret = getattr(self, '_queued_mail', [])
+        self._queued_mail = []
+        return ret
+
+    @staticmethod
+    def enforce_tiers(override_setting=None):
+        '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
+        then this function returns False. Otherwise, it returns True.'''
+        if override_setting is None:
+            disabled = getattr(settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
+        else:
+            disabled = override_setting
+
+        if disabled:
+            # Well, hmm. If the site admin participated in a PayPal transaction, then we
+            # actually will enforce the tiers.
+            #
+            # Go figure.
+            tierdata = TierInfo.objects.get_current()
+            if tierdata.user_has_successfully_performed_a_paypal_transaction:
+                return True # enforce it.
+
+        # Generally, we just negate the "disabled" boolean.
+        return not disabled
+
     def user_is_admin(self, user):
         """
         Return True if the given User is an admin for this SiteLocation.
@@ -383,6 +420,30 @@ class SiteLocation(Thumbnailable):
         SITE_LOCATION_CACHE[self.site_id] = self
         return models.Model.save(self, *args, **kwargs)
 
+    def get_tier(self):
+        return localtv.tiers.Tier(self.tier_name)
+
+    def get_fully_confirmed_tier(self):
+        # If we are in a transitional state, then we would have stored
+        # the last fully confirmed tier name in an unusual column.
+        tierdata = TierInfo.objects.get_current()
+        if tierdata.fully_confirmed_tier_name:
+            return localtv.tiers.Tier(tierdata.fully_confirmed_tier_name)
+        return None
+
+    def get_css_for_display_if_permitted(self):
+        '''This function checks the site tier, and if permitted, returns the
+        custom CSS the admin has set.
+
+        If that is not permitted, it returns the empty unicode string.'''
+        if (not self.enforce_tiers() or
+            self.get_tier().permit_custom_css()):
+            # Sweet.
+            return self.css
+        else:
+            # Silenced.
+            return u''
+
 
 class WidgetSettings(Thumbnailable):
     """
@@ -391,7 +452,7 @@ class WidgetSettings(Thumbnailable):
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
-    title_editable = models.BooleanField(default=False)
+    title_editable = models.BooleanField(default=True)
 
     icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
     icon_editable = models.BooleanField(default=False)
@@ -413,6 +474,45 @@ class WidgetSettings(Thumbnailable):
         (140, 110, False),
         (222, 169, False),
         ]
+
+    def get_title_or_reasonable_default(self):
+        # Is the title worth using? If so, use that.
+        use_title = True
+        if self.title.endswith('example.com'):
+            use_title = False
+        if not self.title:
+            use_title = False
+
+        # Okay, so either we return the title, or a sensible default
+        if use_title:
+            return self.title
+        return self.generate_reasonable_default_title()
+
+    def generate_reasonable_default_title(self):
+        prefix = 'Watch Videos on %s'
+
+        # Now, work on calculating what goes at the end.
+        site = Site.objects.get_current()
+
+        # The default suffix is a self-link. If the site name and
+        # site domain are plausible, do that.
+        if ((site.name and site.name.lower() != 'example.com') and
+            (site.domain and site.domain.lower() != 'example.com')):
+            suffix = '<a href="http://%s/">%s</a>' % (
+                site.domain, site.name)
+
+        # First, we try the site name, if that's a nice string.
+        elif site.name and site.name.lower() != 'example.com':
+            suffix = site.name
+
+        # Else, we try the site domain, if that's not example.com
+        elif site.domain.lower() != 'example.com':
+            suffix = site.domain
+
+        else:
+            suffix = 'our video site'
+
+        return prefix % suffix
 
 class Source(Thumbnailable):
     """
@@ -467,6 +567,7 @@ class Feed(Source):
     status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         unique_together = (
@@ -493,7 +594,7 @@ class Feed(Source):
             pass
 
     def _update_items_generator(self, verbose=False, parsed_feed=None,
-                                clear_rejected=False):
+                                clear_rejected=False, actually_save_thumbnails=True):
         """
         Fetch and import new videos from this field.  After each imported
         video, we yield a dictionary:
@@ -502,180 +603,192 @@ class Feed(Source):
          'video': the Video object we just imported
         }
         """
-        if self.auto_approve:
-            initial_video_status = VIDEO_STATUS_ACTIVE
-        else:
-            initial_video_status = VIDEO_STATUS_UNAPPROVED
-
         if parsed_feed is None:
             parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
-            skip = False
-            guid = entry.get('guid', '')
-            if guid and Video.objects.filter(
-                feed=self, guid=guid).count():
-                skip = 'duplicate guid'
-            link = entry.get('link', '')
-            for possible_link in entry.links:
-                if possible_link.get('rel') == 'via':
-                    # original URL
-                    link = possible_link['href']
-                    break
-            if link:
-                if clear_rejected:
-                    for video in Video.objects.filter(
-                        status=VIDEO_STATUS_REJECTED,
-                        website_url=link):
-                        video.delete()
-                if Video.objects.filter(
-                    website_url=link).count():
-                    skip = 'duplicate link'
+            yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
 
-            video_data = {
-                'name': unescape(entry['title']),
-                'guid': guid,
-                'site': self.site,
-                'description': '',
-                'file_url': '',
-                'file_url_length': None,
-                'file_url_mimetype': '',
-                'embed_code': '',
-                'flash_enclosure_url': '',
-                'when_submitted': datetime.datetime.now(),
-                'when_approved': (
-                    self.auto_approve and datetime.datetime.now() or None),
-                'status': initial_video_status,
-                'when_published': None,
-                'feed': self,
-                'website_url': link}
+        self._mark_bulk_import_as_done(parsed_feed)
 
-            tags = []
-            authors = self.auto_authors.all()
+    def default_video_status(self):
+        # Check that if we want to add an active
+        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
+            initial_video_status = VIDEO_STATUS_ACTIVE
+        else:
+            initial_video_status = VIDEO_STATUS_UNAPPROVED
+        return initial_video_status
 
-            if 'updated_parsed' in entry:
-                video_data['when_published'] = datetime.datetime(
-                    *entry.updated_parsed[:6])
+    def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
+                                           actually_save_thumbnails=True):
+        initial_video_status = self.default_video_status()
 
-            thumbnail_url = util.get_thumbnail_url(entry) or ''
-            if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
-                thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                 thumbnail_url)
-            video_data['thumbnail_url'] = thumbnail_url
+        skip = False
+        guid = entry.get('guid', '')
+        if guid and Video.objects.filter(
+            feed=self, guid=guid).count():
+            skip = 'duplicate guid'
+        link = entry.get('link', '')
+        for possible_link in entry.links:
+            if possible_link.get('rel') == 'via':
+                # original URL
+                link = possible_link['href']
+                break
+        if link:
+            if clear_rejected:
+                for video in Video.objects.filter(
+                    status=VIDEO_STATUS_REJECTED,
+                    website_url=link):
+                    video.delete()
+            if Video.objects.filter(
+                website_url=link).count():
+                skip = 'duplicate link'
 
-            video_enclosure = util.get_first_video_enclosure(entry)
-            if video_enclosure:
-                file_url = video_enclosure.get('url')
-                if file_url:
-                    file_url = unescape(file_url)
-                    if not urlparse.urlparse(file_url)[0]:
-                        file_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                    file_url)
-                    video_data['file_url'] = file_url
+        video_data = {
+            'name': unescape(entry['title']),
+            'guid': guid,
+            'site': self.site,
+            'description': '',
+            'file_url': '',
+            'file_url_length': None,
+            'file_url_mimetype': '',
+            'embed_code': '',
+            'flash_enclosure_url': '',
+            'when_submitted': datetime.datetime.now(),
+            'when_approved': (
+                self.auto_approve and datetime.datetime.now() or None),
+            'status': initial_video_status,
+            'when_published': None,
+            'feed': self,
+            'website_url': link}
 
-                    try:
-                        file_url_length = int(
-                            video_enclosure.get('filesize') or
-                            video_enclosure.get('length'))
-                    except (ValueError, TypeError):
-                        file_url_length = None
-                    video_data['file_url_length'] = file_url_length
+        tags = []
+        authors = self.auto_authors.all()
 
-                    video_data['file_url_mimetype'] = video_enclosure.get(
-                        'type')
+        if entry.get('updated_parsed', None):
+            video_data['when_published'] = datetime.datetime(
+                *entry.updated_parsed[:6])
 
-            if link and not skip:
+        thumbnail_url = util.get_thumbnail_url(entry) or ''
+        if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
+            thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
+                                             thumbnail_url)
+        video_data['thumbnail_url'] = thumbnail_url
+
+        video_enclosure = util.get_first_video_enclosure(entry)
+        if video_enclosure:
+            file_url = video_enclosure.get('url')
+            if file_url:
+                file_url = unescape(file_url)
+                if not urlparse.urlparse(file_url)[0]:
+                    file_url = urlparse.urljoin(parsed_feed.feed.link,
+                                                file_url)
+                video_data['file_url'] = file_url
+
                 try:
-                    scraped_data = vidscraper.auto_scrape(
-                        link,
-                        fields=['file_url', 'embed', 'flash_enclosure_url',
-                                'publish_date', 'thumbnail_url', 'link',
-                                'file_url_is_flaky', 'user', 'user_url',
-                                'tags', 'description'])
-                    if not video_data['file_url']:
-                        if not scraped_data.get('file_url_is_flaky'):
-                            video_data['file_url'] = scraped_data.get(
-                                'file_url') or ''
-                    video_data['embed_code'] = scraped_data.get('embed')
-                    video_data['flash_enclosure_url'] = scraped_data.get(
-                        'flash_enclosure_url', '')
-                    video_data['when_published'] = scraped_data.get(
-                        'publish_date')
-                    video_data['description'] = scraped_data.get(
-                        'description', '')
-                    if scraped_data['thumbnail_url']:
-                        video_data['thumbnail_url'] = scraped_data.get(
-                            'thumbnail_url')
+                    file_url_length = int(
+                        video_enclosure.get('filesize') or
+                        video_enclosure.get('length'))
+                except (ValueError, TypeError):
+                    file_url_length = None
+                video_data['file_url_length'] = file_url_length
 
-                    if scraped_data.get('link'):
-                        if (Video.objects.filter(
-                                website_url=scraped_data['link']).count()):
-                            skip = 'duplicate link (vidscraper)'
-                        else:
-                            video_data['website_url'] = scraped_data['link']
+                video_data['file_url_mimetype'] = video_enclosure.get(
+                    'type')
 
-                    tags = scraped_data.get('tags', [])
+        if link and not skip:
+            try:
+                scraped_data = vidscraper.auto_scrape(
+                    link,
+                    fields=['file_url', 'embed', 'flash_enclosure_url',
+                            'publish_date', 'thumbnail_url', 'link',
+                            'file_url_is_flaky', 'user', 'user_url',
+                            'tags', 'description'])
+                if not video_data['file_url']:
+                    if not scraped_data.get('file_url_is_flaky'):
+                        video_data['file_url'] = scraped_data.get(
+                            'file_url') or ''
+                video_data['embed_code'] = scraped_data.get('embed')
+                video_data['flash_enclosure_url'] = scraped_data.get(
+                    'flash_enclosure_url', '')
+                video_data['when_published'] = scraped_data.get(
+                    'publish_date')
+                video_data['description'] = scraped_data.get(
+                    'description', '')
+                if scraped_data['thumbnail_url']:
+                    video_data['thumbnail_url'] = scraped_data.get(
+                        'thumbnail_url')
 
-                    if not authors.count() and scraped_data.get('user'):
-                        author, created = User.objects.get_or_create(
-                            username=scraped_data.get('user'),
-                            defaults={'first_name': scraped_data.get('user')})
-                        if created:
-                            author.set_unusable_password()
-                            author.save()
-                            util.get_profile_model().objects.create(
-                                user=author,
-                                website=scraped_data.get('user_url'))
-                        authors = [author]
+                if scraped_data.get('link'):
+                    if (Video.objects.filter(
+                            website_url=scraped_data['link']).count()):
+                        skip = 'duplicate link (vidscraper)'
+                    else:
+                        video_data['website_url'] = scraped_data['link']
 
-                except vidscraper.errors.Error, e:
-                    if verbose:
-                        print "Vidscraper error: %s" % e
+                tags = scraped_data.get('tags', [])
 
-            if not skip:
-                if not (video_data['file_url'] or video_data['embed_code']):
-                    skip = 'invalid'
+                if not authors.count() and scraped_data.get('user'):
+                    author, created = User.objects.get_or_create(
+                        username=scraped_data.get('user'),
+                        defaults={'first_name': scraped_data.get('user')})
+                    if created:
+                        author.set_unusable_password()
+                        author.save()
+                        util.get_profile_model().objects.create(
+                            user=author,
+                            website=scraped_data.get('user_url'))
+                    authors = [author]
 
-            if skip:
+            except vidscraper.errors.Error, e:
                 if verbose:
-                    print "Skipping %s: %s" % (entry['title'], skip)
-                yield {'index': index,
-                       'total': len(parsed_feed.entries),
-                       'video': None,
-                       'skip': skip}
-                continue
+                    print "Vidscraper error: %s" % e
 
-            if not video_data['description']:
-                description = entry.get('summary', '')
-                for content in entry.get('content', []):
-                    type = content.get('type', '')
-                    if 'html' in type:
-                        description = content.value
-                        break
-                video_data['description'] = description
+        if not skip:
+            if not (video_data['file_url'] or video_data['embed_code']):
+                skip = 'invalid'
 
-            if video_data['description']:
-                soup = BeautifulSoup(video_data['description'])
-                for tag in soup.findAll(
-                    'div', {'class': "miro-community-description"}):
-                    video_data['description'] = tag.renderContents()
-                    break
-                video_data['description'] = sanitize(video_data['description'],
-                                                     extra_filters=['img'])
-
-            if entry.get('media_player'):
-                player = entry['media_player']
-                if isinstance(player, basestring):
-                    video_data['embed_code'] = unescape(player)
-                elif player.get('content'):
-                    video_data['embed_code'] = unescape(player['content'])
-                elif 'url' in player and not video_data['embed_code']:
-                    video_data['embed_code'] = '<embed src="%(url)s">' % player
-
-            video = Video.objects.create(**video_data)
+        if skip:
             if verbose:
-                    print 'Made video %i: %s' % (video.pk, video.name)
+                print "Skipping %s: %s" % (entry['title'], skip)
+            return {'index': index,
+                   'total': len(parsed_feed.entries),
+                   'video': None,
+                   'skip': skip}
 
+
+        if not video_data['description']:
+            description = entry.get('summary', '')
+            for content in entry.get('content', []):
+                content_type = content.get('type', '')
+                if 'html' in content_type:
+                    description = content.value
+                    break
+            video_data['description'] = description
+
+        if video_data['description']:
+            soup = BeautifulSoup(video_data['description'])
+            for tag in soup.findAll(
+                'div', {'class': "miro-community-description"}):
+                video_data['description'] = tag.renderContents()
+                break
+            video_data['description'] = sanitize(video_data['description'],
+                                                 extra_filters=['img'])
+
+        if entry.get('media_player'):
+            player = entry['media_player']
+            if isinstance(player, basestring):
+                video_data['embed_code'] = unescape(player)
+            elif player.get('content'):
+                video_data['embed_code'] = unescape(player['content'])
+            elif 'url' in player and not video_data['embed_code']:
+                video_data['embed_code'] = '<embed src="%(url)s">' % player
+
+        video = Video.objects.create(**video_data)
+        if verbose:
+                print 'Made video %i: %s' % (video.pk, video.name)
+
+        if actually_save_thumbnails:
             try:
                 video.save_thumbnail()
             except CannotOpenImageUrl:
@@ -683,38 +796,78 @@ class Feed(Source):
                     print "Can't get the thumbnail for %s at %s" % (
                         video.id, video.thumbnail_url)
 
-            if entry.get('tags') or tags:
-                if not tags:
+        if entry.get('tags') or tags:
+            if not tags:
+                # Sometimes, entry.tags is just a lousy old
+                # string. In that case, do our best to undo the
+                # delimiting. For now, all I have seen is
+                # space-separated values, so that's what I'm going
+                # to go with.
+                if type(entry.tags) in types.StringTypes:
+                    tags = set(tag.strip() for tag in entry.tags.split())
+
+                else:
+                    # Usually, entry.tags is a list of dicts. If so, flatten them out into
                     tags = set(
                         tag['term'] for tag in entry['tags']
                         if tag.get('term'))
-                if tags:
-                    video.tags = util.get_or_create_tags(tags)
 
-            video.categories = self.auto_categories.all()
-            video.authors = authors
-            video.save()
+            if tags:
+                video.tags = util.get_or_create_tags(tags)
 
-            yield {'index': index,
-                   'total': len(parsed_feed.entries),
-                   'video': video}
+        video.categories = self.auto_categories.all()
+        video.authors = authors
+        video.save()
 
+        return {'index': index,
+               'total': len(parsed_feed.entries),
+               'video': video}
+            
+    def _mark_bulk_import_as_done(self, parsed_feed):
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
         self.save()
 
     def source_type(self):
-        video_service = self.video_service()
-        if video_service is None:
-            return u'Feed'
-        else:
-            return u'User: %s' % video_service
+        return self.calculated_source_type
+
+    def _calculate_source_type(self):
+        return _feed__calculate_source_type(self)
 
     def video_service(self):
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, self.feed_url, re.I):
-                return service
+        return feed__video_service(self)
 
+def feed__video_service(feed):
+    # This implements the video_service method. It's outside the Feed class
+    # so we can use it safely from South.
+    for service, regexp in VIDEO_SERVICE_REGEXES:
+        if re.search(regexp, feed.feed_url, re.I):
+            return service
+
+def _feed__calculate_source_type(feed):
+    # This implements the _calculate_source_type method. It's outside the Feed
+    # class so we can use it safely from South.
+    video_service = feed__video_service(feed)
+    if video_service is None:
+        return u'Feed'
+    else:
+        return u'User: %s' % video_service
+
+def pre_save_set_calculated_source_type(instance, **kwargs):
+    # Always save the calculated_source_type
+    instance.calculated_source_type = _feed__calculate_source_type(instance)
+    # Plus, if the name changed, we have to recalculate all the Videos that depend on us.
+    try:
+        v = Feed.objects.get(id=instance.id)
+    except Feed.DoesNotExist:
+        return instance
+    if v.name != instance.name:
+        # recalculate all the sad little videos' calculated_source_type
+        for vid in instance.video_set.all():
+            vid.save()
+    return instance
+models.signals.pre_save.connect(pre_save_set_calculated_source_type,
+                                sender=Feed)
 
 class Category(models.Model):
     """
@@ -850,7 +1003,7 @@ class SavedSearch(Source):
             [result for result in raw_results if result is not None],
             self.site)
 
-        if self.auto_approve:
+        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
             initial_status = VIDEO_STATUS_ACTIVE
         else:
             initial_status = VIDEO_STATUS_UNAPPROVED
@@ -924,7 +1077,7 @@ class OriginalVideo(VideoBase):
                 scraped_data = vidscraper.auto_scrape(video.website_url,
                                                       fields=['title', 'description',
                                                               'tags', 'thumbnail_url'])
-            except vidscraper.errors.VideoDeleted, e:
+            except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
 
         # Now that we have the "scraped_data", analyze it: does it look like
@@ -953,7 +1106,7 @@ class OriginalVideo(VideoBase):
                     # message
                     continue
                 new = util.unicode_set(scraped_data['tags'])
-                if settings.FORCE_LOWERCASE_TAGS:
+                if getattr(settings, 'FORCE_LOWERCASE_TAGS'):
                     new = util.unicode_set(name.lower() for name in new)
                 old = util.unicode_set(self.tags)
                 if new != old:
@@ -967,6 +1120,24 @@ class OriginalVideo(VideoBase):
 
         return changed_fields
 
+    def originals_for_changed_fields(self, changed_fields):
+        '''The OriginalVideo emails need to say not just the new data, but also
+        provide the value that was in the OriginalVideo object just before the
+        email is sent.
+
+        This function takes a changed_fields dictionary, and uses its keys to
+        figure out what relevant snapshotted information would help the user
+        contextualize the changed_fields data.'''
+        old_fields = {}
+
+        if 'deleted' in changed_fields:
+            return old_fields
+
+        for key in changed_fields:
+            old_fields[key] = getattr(self, key)
+
+        return old_fields
+
     def _remote_thumbnail_appears_changed(self):
         '''This private method checks if the remote thumbnail has been updated.
 
@@ -974,7 +1145,7 @@ class OriginalVideo(VideoBase):
         when the remote video service did not give us a new thumbnail URL.
 
         It returns a boolean. True, if and only if the remote video has:
-        
+
         * a Last-Modified header indicating it has been modified, and
         * HTTP response body that hashes to a different SHA1 than the
           one we stored.
@@ -1029,6 +1200,7 @@ class OriginalVideo(VideoBase):
             # out.
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETED
         else:
+            # send the message next time
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETE_PENDING
         self.save()
 
@@ -1046,6 +1218,8 @@ class OriginalVideo(VideoBase):
             # Yes? Uh oh.
             self.send_deleted_notification()
             return # Stop processing here.
+
+        original_values = self.originals_for_changed_fields(changed_fields)
 
         changed_model = False
         for field in changed_fields.copy():
@@ -1077,14 +1251,22 @@ class OriginalVideo(VideoBase):
         if not changed_fields: # modified them all
             return
 
-        self.send_updated_notification(changed_fields)
+        self.send_updated_notification(changed_fields, original_values)
 
-    def send_updated_notification(self, changed_fields):
+    def send_updated_notification(self, changed_fields, originals_for_changed_fields):
         from localtv.util import send_notice, get_or_create_tags
+
+        # Create a custom hodge-podge of changed fields and the original values
+        hodge_podge = {}
+        for key in changed_fields:
+            hodge_podge[key] = (
+                changed_fields[key],
+                originals_for_changed_fields.get(key, None))
+
         t = loader.get_template('localtv/admin/video_updated.txt')
         c = Context({'video': self.video,
                      'original': self,
-                     'changed_fields': changed_fields})
+                     'changed_fields': hodge_podge})
         subject = '[%s] Video Updated: "%s"' % (
             self.video.site.name, self.video.name)
         message = t.render(c)
@@ -1169,7 +1351,6 @@ localtv_watch.timestamp > %s"""},
                                  dict((key, kwargs[key]) for key in keys)
                                  )
 
-
 class Video(Thumbnailable, VideoBase):
     """
     Fields:
@@ -1246,7 +1427,7 @@ class Video(Thumbnailable, VideoBase):
     contact = models.CharField(max_length=250, blank=True,
                                default='')
     notes = models.TextField(blank=True)
-
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
 
@@ -1312,23 +1493,6 @@ class Video(Thumbnailable, VideoBase):
         else:
             self.save_thumbnail_from_file(content_thumb)
 
-    def source_type(self):
-        if self.search:
-            return u'Search: %s' % self.search
-        elif self.feed:
-            if self.feed.video_service():
-                return u'User: %s: %s' % (
-                    self.feed.video_service(),
-                    self.feed)
-            else:
-                return 'Feed: %s' % self.feed
-        elif self.video_service_user:
-            return u'User: %s: %s' % (
-                self.video_service(),
-                self.video_service_user)
-        else:
-            return ''
-
     def submitter(self):
         """
         Return the user that submitted this video.  If necessary, use the
@@ -1354,6 +1518,12 @@ class Video(Thumbnailable, VideoBase):
             return self.when_published
         return self.when_approved or self.when_submitted
 
+    def source_type(self):
+        return video__source_type(self)
+
+    def video_service(self):
+        return video__video_service(self)
+
     def when_prefix(self):
         """
         When videos are bulk imported (from a feed or a search), we list the
@@ -1366,15 +1536,43 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
-    def video_service(self):
-        if not self.website_url:
-            return
+def video__source_type(self):
+    '''This is not a method of the Video so that we can can call it from South.'''
+    try:
+        if self.search:
+            return u'Search: %s' % self.search
+        elif self.feed:
+            if feed__video_service(self.feed):
+                return u'User: %s: %s' % (
+                    feed__video_service(self.feed),
+                    self.feed.name)
+            else:
+                return 'Feed: %s' % self.feed.name
+        elif self.video_service_user:
+            return u'User: %s: %s' % (
+                video__video_service(self),
+                self.video_service_user)
+        else:
+            return ''
+    except Feed.DoesNotExist:
+        return ''
 
-        url = self.website_url
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, url, re.I):
-                return service
+def pre_save_video_set_calculated_source_type(instance, **kwargs):
+    # Always recalculate the source_type field.
+    instance.calculated_source_type = video__source_type(instance)
+    return instance
+models.signals.pre_save.connect(pre_save_video_set_calculated_source_type,
+                                sender=Video)
 
+def video__video_service(self):
+    '''This is not a method of Video so we can call it from a South migration.'''
+    if not self.website_url:
+        return
+
+    url = self.website_url
+    for service, regexp in VIDEO_SERVICE_REGEXES:
+        if re.search(regexp, url, re.I):
+            return service
 
 class VideoAdmin(admin.ModelAdmin):
     list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
@@ -1564,6 +1762,15 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
+
+### register pre-save handler for Tiers and payment due dates
+models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
+                                sender=SiteLocation)
+models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
+                                sender=SiteLocation)
+models.signals.post_save.connect(localtv.tiers.post_save_send_queued_mail,
+                                 sender=SiteLocation)
+
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:
         return # don't care about saving
