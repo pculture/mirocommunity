@@ -43,6 +43,8 @@ import uploadtemplate
 import vidscraper
 from notification import models as notification
 
+import localtv.management.commands.check_frequently_for_invalid_tiers_state
+
 Profile = util.get_profile_model()
 
 class AdministrationBaseTestCase(BaseTestCase):
@@ -3969,7 +3971,7 @@ class NightlyTiersEmails(BaseTestCase):
         self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
         self.admin.save()
         self.assertFalse(self.site_location.inactive_site_warning_sent)
-        
+
         # Make sure it sends an email...
         self.tiers_cmd.handle()
         self.assertEquals(len(mail.outbox), 1)
@@ -4008,14 +4010,151 @@ class NightlyTiersEmails(BaseTestCase):
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 0)
 
+    @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=-1)))
+    def test_free_trial_negative(self):
+        self.assertRaises(ValueError, self.tiers_cmd.handle, ())
+        self.assertEqual(len(mail.outbox), 0)
+        mail.outbox = []
+
 class SendWelcomeEmailTest(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
 
     def test(self):
         from localtv.management.commands import send_welcome_email
         cmd = send_welcome_email.Command()
         cmd.handle()
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_do_not_send_twice(self):
+        self.test()
+        mail.outbox = []
+        from localtv.management.commands import send_welcome_email
+        cmd = send_welcome_email.Command()
+        cmd.handle()
+        self.assertEqual(len(mail.outbox), 0) # zero this time.
+
+class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
+    target_tier_name = 'basic'
+
+    @mock.patch('localtv.management.commands.send_welcome_email.Command.actually_send')
+    def test_delayed_welcome_email_with_flag_with_successful_upgrade(self, mock_send):
+        # When we create a site in a paid tier, we set the
+        # should_send_welcome_email_on_paypal_event flag to True.
+        #
+        # This signifies that we are waiting for the user to go to
+        # PayPal before we send the welcome email. So there are two
+        # cases:
+        #
+        # This test method tests the case where the user successfully gets
+        # through the process and calls the _paypal_return admin view.
+        #
+        # (Note that, in theory, the user could rig things carefully so
+        # that _paypal_return() gets called, since we don't validate the
+        # IPN stuff through _paypal_return(). But the IPN/subscription
+        # validation stuff is handled in a separate part of code.)
+
+        # We mock out send_welcome_email's .handle() so that we know if it
+        # gets called.
+
+        # No call yet.
+        self.assertFalse(mock_send.called)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).already_sent_welcome_email)
+
+        # Pre-requisite:
+        ti = models.TierInfo.objects.get_current()
+        ti.should_send_welcome_email_on_paypal_event = True
+        ti.save()
+
+        # No call yet.
+        self.assertFalse(mock_send.called)
+        self.assertTrue(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+
+        # Whatever changes the user makes to the SiteLocation should not
+        # cause sending, so long as they don't adjust the tier_name.
+        site_location = models.SiteLocation.objects.get_current()
+        site_location.tagline = 'my site rules'
+        site_location.save()
+        # No call yet. Tier Info still retains the flag.
+        self.assertFalse(mock_send.called)
+        self.assertTrue(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('basic', site_location.tier_name)
+
+        # Now, call _paypal_return() as if the user got there from PayPal.
+        localtv.admin.tiers._paypal_return('plus')
+
+        # Make sure the email got sent
+        self.assertTrue(mock_send.called)
+        # Make sure the tier_name is plus, really, and that the flag is
+        # now set to False.
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('plus', site_location.tier_name)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+
+    @mock.patch('localtv.management.commands.send_welcome_email.Command.actually_send')
+    def test_delayed_welcome_email_with_flag_with_unsuccessful_upgrade(self,
+                                                                       mock_send):
+        # Okay, so let's say that you thought you were going to sign
+        # up for a 'plus' account.
+        #
+        # But then you go to PayPal and realize you forgot your password.
+        # "Whatever," you figure, and you log in and use the new MC site.
+        #
+        # What should happen is:
+        # - Your site got created as 'basic' at the start.
+        # - We don't send you the welcome email because we hoped you would
+        #   finish the sign-up process in a non-basic tier.
+        # - Then the twice-an-hour cron job runs.
+        # - First, it runs when the time delta is less than 30 minutes, in which
+        #   case we're still hoping that you will finish up with PayPal.
+        # - Then it runs again, and it's more than 30 minutes. So we send you
+        #   a welcome email for the tier you are in (basic), and we remove the
+        #   flag that says we are expecting you to finish the PayPal process.
+
+        # Setup
+        # Pre-requisite:
+        NOW = datetime.datetime.utcnow()
+        PLUS_THIRTY_MIN = NOW + datetime.timedelta(minutes=30)
+        ti = models.TierInfo.objects.get_current()
+        ti.should_send_welcome_email_on_paypal_event = True
+        ti.waiting_on_payment_until = PLUS_THIRTY_MIN
+        ti.save()
+
+        self.assertFalse(mock_send.called)
+        self.assertEqual(models.SiteLocation.objects.get_current().tier_name,
+                         'basic')
+
+        # Whatever changes the user makes to the SiteLocation should not
+        # cause sending, so long as they don't adjust the tier_name.
+        site_location = models.SiteLocation.objects.get_current()
+        site_location.tagline = 'my site rules'
+        site_location.save()
+        # No call yet. Tier Info still retains the flag.
+        self.assertFalse(mock_send.called)
+        self.assertTrue(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+        site_location = models.SiteLocation.objects.get_current()
+        self.assertEqual('basic', site_location.tier_name)
+
+        PLUS_TEN_MIN = NOW + datetime.timedelta(minutes=10)
+        PLUS_FORTY_MIN = NOW + datetime.timedelta(minutes=40)
+
+        cmd = localtv.management.commands.check_frequently_for_invalid_tiers_state.Command()
+        cmd.stop_waiting_if_we_have_to(PLUS_TEN_MIN)
+
+        # Should be no change + no email
+        self.assertFalse(mock_send.called)
+
+        # re-call even later
+        cmd.stop_waiting_if_we_have_to(PLUS_FORTY_MIN)
+        self.assertTrue(mock_send.called)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).should_send_welcome_email_on_paypal_event)
+        self.assertFalse(models.TierInfo.objects.get_current(
+                ).waiting_on_payment_until)
 
 class TestDisableEnforcement(BaseTestCase):
 
@@ -4066,6 +4205,12 @@ class TestTiersComplianceEmail(BaseTestCase):
 class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
     fixtures = BaseTestCase.fixtures
 
+    def setUp(self):
+        super(DowngradingCanNotifySupportAboutCustomDomain, self).setUp()
+        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
+        settings.LOCALTV_USE_ZENDESK = True
+
+    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
     def test(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
@@ -4091,6 +4236,10 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
         import localtv.zendesk
         self.assertEqual(1, len(localtv.zendesk.outbox))
 
+    def tearDown(self):
+        super(DowngradingCanNotifySupportAboutCustomDomain, self).tearDown()
+        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+
 class IpnIntegration(BaseTestCase):
     def setUp(self):
         # Call superclass setUp()
@@ -4111,6 +4260,13 @@ class IpnIntegration(BaseTestCase):
 
         self.c = Client()
         self.c.login(username='superuser', password='superuser')
+
+        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
+        settings.LOCALTV_USE_ZENDESK = True
+
+    def tearDown(self):
+        super(IpnIntegration, self).tearDown()
+        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
 
     def upgrade_and_submit_ipn(self):
         self.assertTrue(models.TierInfo.objects.get_current().free_trial_available)
@@ -4317,7 +4473,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
-        expected = {'recurring': 35, 'daily_amount': 18, 'num_days': 28}
+        expected = {'recurring': 35, 'cost_for_prorated_period': 18, 'days_covered_by_prorating': 28}
         self.assertEqual(data, expected)
 
     def test_end_of_month(self):
@@ -4325,7 +4481,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
-        expected = {'recurring': 35, 'daily_amount': 0, 'num_days': 0}
+        expected = {'recurring': 35, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
         self.assertEqual(data, expected)
 
 class TestUpgradePage(BaseTestCase):
@@ -4340,10 +4496,14 @@ class TestUpgradePage(BaseTestCase):
         localtv.zendesk.outbox = []
         c.handle_noargs()
 
+        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
+        settings.LOCALTV_USE_ZENDESK = True
+
     def tearDown(self):
         # Note: none of these tests should cause email to be sent.
         self.assertEqual([],
                          [str(k.body) for k in mail.outbox])
+        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
 
     ## assertion helpers
     def _assert_upgrade_extra_payments_always_false(self, response):
@@ -4585,10 +4745,10 @@ class TestUpgradePage(BaseTestCase):
         extras = response.context['upgrade_extra_payments']
         premium = extras['premium']
         # The adjusted due date is, like, about 1 day different.
-        self.assertTrue(abs((Fakedatetime.utcnow() - (sl.tierinfo.payment_due_date - datetime.timedelta(premium['num_days']))).days) <= 1)
+        self.assertTrue(abs((Fakedatetime.utcnow() - (sl.tierinfo.payment_due_date - datetime.timedelta(premium['days_covered_by_prorating']))).days) <= 1)
         # The one-time money bump is more than 2/3 of the difference.
         entire_difference = (localtv.tiers.Tier('premium').dollar_cost() - localtv.tiers.Tier('plus').dollar_cost())
-        self.assertTrue(premium['daily_amount'] >= (0.667 * entire_difference))
+        self.assertTrue(premium['cost_for_prorated_period'] >= (0.667 * entire_difference))
         self._assert_modify_always_false(response) # no modify possible from 'plus'
 
         # Let's try paying.
@@ -4597,9 +4757,9 @@ class TestUpgradePage(BaseTestCase):
         with mock.patch('datetime.datetime', Fakedatetime):
             self._run_method_from_ipn_integration_test_case(
                 'upgrade_including_prorated_duration_and_amount', 
-                '%d.00' % premium['daily_amount'],
+                '%d.00' % premium['cost_for_prorated_period'],
                 '35.00',
-                '%d D' % premium['num_days'])
+                '%d D' % premium['days_covered_by_prorating'])
             sl = models.SiteLocation.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
             # Also, no emails.

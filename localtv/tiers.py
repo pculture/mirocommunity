@@ -83,6 +83,10 @@ def should_send_five_day_free_trial_warning():
         return False
     if tier_info.free_trial_warning_sent:
         return False
+
+    if time_remaining < datetime.timedelta():
+        raise ValueError, "Well, that sucks, the trial is negative."
+
     if time_remaining <= datetime.timedelta(days=5):
         return True
     return False
@@ -113,7 +117,7 @@ def user_warnings_for_downgrade(new_tier_name):
 
     # If the old tier permitted advertising, and the new one does not,
     # then let the user know about that change.
-    if (current_tier.permits_advertising() and 
+    if (current_tier.permits_advertising() and
         not future_tier.permits_advertising()):
         warnings.add('advertising')
 
@@ -156,7 +160,6 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     if count <= 0:
         return
 
-    disabled_this_many = 0
     disable_these_videos = current_videos_that_count_toward_limit().order_by('pk')[:count]
     disable_these_pks = list(disable_these_videos.values_list('id', flat=True))
 
@@ -166,7 +169,6 @@ def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     return disable_these_videos.count()
 
 def switch_to_a_bundled_theme_if_necessary(future_tier_obj, actually_do_it=False):
-    import localtv.models
     if uploadtemplate.models.Theme.objects.filter(default=True):
         current_theme = uploadtemplate.models.Theme.objects.get_default()
         if not current_theme.bundled:
@@ -200,7 +202,7 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     # grab hold of the current SiteLocation
     try:
         sitelocation = localtv.models.SiteLocation.objects.get_current()
-    except localtv.models.SiteLocation.DoesNotExist, e:
+    except localtv.models.SiteLocation.DoesNotExist:
         return # well okay, there is no current SiteLocation.
 
     # We have this many right now
@@ -219,7 +221,7 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
         for demotee in demotees:
             sitelocation.admins.remove(demotee)
     return demotee_usernames
-    
+
 
 def number_of_admins_including_superuser():
     import localtv.models
@@ -423,17 +425,22 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
     # 2. The site has been around a while, and we send an email because it
     # is an upgrade.
 
-    # Case 1 (this field is set by the site creation scripts)
-    if tier_info.should_send_welcome_email_on_paypal_event:
-        instance.add_queued_mail(
-            ('send_welcome_email_hack', {}))
-        # If we are sending the welcome email now, then we quit here.
-        tier_info.should_send_welcome_email_on_paypal_event = False
-        tier_info.save()
-        return
+    # Either way, we only trigger any email sending if the tier cost is
+    # changing.
 
-    # Case 2: Normal operation
     if new_tier_obj.dollar_cost() > current_tier_obj.dollar_cost():
+        # Case 1 (this field is set by the site creation scripts)
+        if tier_info.should_send_welcome_email_on_paypal_event:
+            # Reset the flag...
+            tier_info.should_send_welcome_email_on_paypal_event = False
+            tier_info.save()
+            # ...enqueue the mail
+            instance.add_queued_mail(
+                ('send_welcome_email_hack', {}))
+            # ...and stop processing at this point
+            return
+
+        # Case 2: Normal operation
         # Plan to send an email about the transition
         # but leave it queued up in the instance. We will send it post-save.
         # This eliminates a large source of possible latency.
@@ -456,7 +463,10 @@ def post_save_send_queued_mail(sender, instance, **kwargs):
         else:
             send_tiers_related_email(*args, **kwargs)
 
-def pre_save_adjust_resource_usage(instance, signal, **kwargs):
+def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
+    if raw: # if we are loading data from a fixture, skip these checks
+        return
+
     import localtv.models
     # Check if there is an existing SiteLocation. If not, we should bail
     # out now.
@@ -485,9 +495,19 @@ def pre_save_adjust_resource_usage(instance, signal, **kwargs):
             sitelocation=instance,
             override_to=['mirocommunity@pculture.org'],
             just_rendered_body=True)
-        import localtv.zendesk
-        localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
-                                      message)
+
+        # If the site is configured to, we can send notifications of
+        # tiers-related changes to ZenDesk, the customer support ticketing
+        # system used by PCF.
+        #
+        # A non-PCF deployment of localtv would not want to set the
+        # LOCALTV_USE_ZENDESK setting.
+        use_zendesk = getattr(settings, 'LOCALTV_USE_ZENDESK', False)
+        if use_zendesk:
+            import localtv.zendesk
+            localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
+                                          message,
+                                          use_configured_assignee=False)
 
     # Push the published videos into something within the limit
     hide_videos_above_limit(new_tier_obj, actually_do_it=True)
@@ -603,17 +623,4 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
 
     message_html = html_t.render(c)
     msg.attach_alternative(message_html, "text/html")
-    # FIXME: Attach attachments.
     msg.send(fail_silently=False)
-
-def get_monthly_amount_of_paypal_subscription(subscription_id):
-    import localtv.models
-    # FIXME: Get this covered with a test.
-    ti = localtv.models.TierInfo.objects.get_current()
-    signups = paypal.standard.ipn.models.PayPalIPN.objects.filter(
-        subscr_id=ti.current_paypal_profile_id, flag=False, txn_type='subscr_signup')
-    if signups:
-        signup = signups.order_by('-pk')[0]
-        amount = float(signup.amount3)
-        return amount
-    raise ValueError, "Um, there is no current profile ID."

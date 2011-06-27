@@ -26,11 +26,12 @@ import mimetypes
 import base64
 import os
 import types
+import logging
+
 try:
     from PIL import Image
 except ImportError:
     import Image
-import StringIO
 import time
 from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
@@ -50,6 +51,7 @@ import django.dispatch
 from django.core.validators import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
+import django.utils.html
 
 import bitly
 import feedparser
@@ -251,8 +253,10 @@ class SiteLocationManager(models.Manager):
 class TierInfoManager(models.Manager):
     def get_current(self):
         current_site_location = SiteLocation.objects.get_current()
-        tier_info, _ = TierInfo.objects.get_or_create(
+        tier_info, created = TierInfo.objects.get_or_create(
             sitelocation = current_site_location)
+        if created:
+            logging.info("Created TierInfo.")
         return tier_info
 
 class TierInfo(models.Model):
@@ -270,6 +274,7 @@ class TierInfo(models.Model):
     already_sent_tiers_compliance_email = models.BooleanField(default=False)
     fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
     should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
+    waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
     sitelocation = models.OneToOneField('SiteLocation')
     objects = TierInfoManager()
 
@@ -289,13 +294,26 @@ class TierInfo(models.Model):
         assert not self.current_paypal_profile_id
         self.current_paypal_profile_id = 'subsidized'
 
-    def time_until_free_trial_expires(self):
+    def time_until_free_trial_expires(self, now = None):
         if not self.in_free_trial:
             return None
         if not self.payment_due_date:
             return None
 
-        return (self.datetime.datetime.utcnow() - self.payment_due_date)
+        if now is None:
+            now = datetime.datetime.utcnow()
+        return (self.payment_due_date - now)
+
+    def use_zendesk(self):
+        '''If the site is configured to, we can send notifications of
+        tiers-related changes to ZenDesk, the customer support ticketing
+        system used by PCF.
+
+        A non-PCF deployment of localtv would not want to set the
+        LOCALTV_USE_ZENDESK setting. Then this method will return False,
+        and the parts of the tiers system that check it will avoid
+        making calls out to ZenDesk.'''
+        return getattr(settings, 'LOCALTV_USE_ZENDESK', False)
 
 class SiteLocation(Thumbnailable):
     """
@@ -337,7 +355,7 @@ class SiteLocation(Thumbnailable):
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
-    tagline = models.CharField(max_length=250, blank=True)
+    tagline = models.CharField(max_length=4096, blank=True)
     css = models.TextField(blank=True)
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
@@ -485,7 +503,7 @@ class WidgetSettings(Thumbnailable):
 
         # Okay, so either we return the title, or a sensible default
         if use_title:
-            return self.title
+            return django.utils.html.escape(self.title)
         return self.generate_reasonable_default_title()
 
     def generate_reasonable_default_title(self):
@@ -499,7 +517,7 @@ class WidgetSettings(Thumbnailable):
         if ((site.name and site.name.lower() != 'example.com') and
             (site.domain and site.domain.lower() != 'example.com')):
             suffix = '<a href="http://%s/">%s</a>' % (
-                site.domain, site.name)
+                site.domain, django.utils.html.escape(site.name))
 
         # First, we try the site name, if that's a nice string.
         elif site.name and site.name.lower() != 'example.com':
@@ -822,7 +840,7 @@ class Feed(Source):
         return {'index': index,
                'total': len(parsed_feed.entries),
                'video': video}
-            
+
     def _mark_bulk_import_as_done(self, parsed_feed):
         self.etag = parsed_feed.get('etag') or ''
         self.last_updated = datetime.datetime.now()
@@ -1239,6 +1257,10 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, value)
                 setattr(self.video, field, value)
                 changed_model = True
+
+        if self.remote_video_was_deleted:
+            self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
+            changed_model = True
 
         if self.remote_video_was_deleted:
             self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE

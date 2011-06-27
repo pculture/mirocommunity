@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters %}
+{% load i18n filters comments pagetabs %}
 {% block body_class %}comments{% endblock %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
@@ -38,53 +38,88 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 {% if empty %}
 <p id="nocomments">{% trans "No comments to moderate" %}.</p>
+    {% if request.GET.undo %}
+    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
+      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
+      <input type="submit" value="Undo">
+    </form>
+    {% endif %}
+
 {% else %}
 <div id="content-main">
  
  <h2>Comments</h2>
  
   <div class="module" id="labels">
-    <table cellspacing="0" class="rounded">
-      <thead>
-        <tr>
-          <th><span>{% trans "Name" %}</span></th>
-          <th><span>{% trans "Comment" %}</span></th>
-          <th><span>{% trans "Email" %}</span></th>
-          <th><span>{% trans "URL" %}</span></th>
-          <th><span>{% trans "Authenticated?" %}</span></th>
-          <th><span>{% trans "IP Address" %}</span></th>
-          <th class="sorted desc"><span>{% trans "Date posted" %}</span></th>
-        </tr>
-    </thead>
-    <tbody>
-      {% for comment in comments %}
-        <tr class="{% cycle 'row1' 'row2' %}">
-          <td>
-            {{ comment.name }}
-            <div class="actions">
-              <form action="{% url comments-approve comment.pk %}" method="post">{% csrf_token %}
-                <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
-                <input class="approve submit" type="submit" name="submit" value="{% trans "Approve" %}" />
-              </form>
-              <form action="{% url comments-delete comment.pk %}" method="post">{% csrf_token %}
-                <input type="hidden" name="next" value="{% url comments-moderation-queue %}" />
-                <input class="remove submit" type="submit" name="submit" value="{% trans "Remove" %}" />
-              </form>
-            </div>
-          </td>
-          <td>{{ comment.comment|sanitize }}</td>
-          <td>{{ comment.email }}</td>
-          <td>{{ comment.url }}</td>
-          <td>
+    {% if page_obj %}
+    <div class="pag">
+      {% pagetabs page_obj %}
+    </div>
+    {% endif %}
+    {% if request.GET.undo %}
+    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
+      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
+      <input type="submit" value="Undo">
+    </form>
+    {% endif %}
+    <form method="POST" action="">{% csrf_token %}
+      <div class="bulkedit_controls">
+        <select id="bulk_action_selector" class="behave" name="bulk_action">
+          <option value="">Bulk Actions</option>
+          <option value="approve">Approve</option>
+          <option value="remove">Remove</option>
+        </select>
+        <button type="submit" class="med_button"><span>Apply</span></button>
+      </div>
+      <table cellspacing="0" class="rounded">
+        <thead>
+          <tr>
+            <th><input id="id_select_all" type="checkbox"></th>
+            <th><span>{% trans "Name" %}</span></th>
+            <th><span>{% trans "Comment" %}</span></th>
+            <th><span>{% trans "Email" %}</span></th>
+            <th><span>{% trans "URL" %}</span></th>
+            <th><span>{% trans "Authenticated?" %}</span></th>
+            <th><span>{% trans "IP Address" %}</span></th>
+            <th class="sorted desc"><span>{% trans "Date posted" %}</span></th>
+            <th><span>{% trans "Video" %}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ formset.management_form }}
+          {{ formset.non_form_errors }}
+          {% for form in formset.forms %}
+          <tr class="{% cycle 'row1' 'row2' %}">
+            <td>{{ form.id }}{{ form.BULK }}{{ form.non_field_errors }}</td>
+            {% with form.instance as comment %}
+            <td>
+              {{ comment.name }}
+              <div class="actions">
+                <input class="approve submit" type="submit" name="{{ form.prefix }}-APPROVE" value="{% trans "Approve" %}" />
+                <input class="remove submit" type="submit" name="{{ form.prefix }}-REMOVE" value="{% trans "Remove" %}" />
+              </div>
+            </td>
+            <td>{{ comment.comment|sanitize }}</td>
+            <td>{{ comment.email }}</td>
+            <td>{{ comment.url }}</td>
+            <td>
               {% if comment.user %}{% trans "yes" %}{% else %}{% trans "no" %}{% endif %}
-          </td>
-          <td>{{ comment.ip_address }}</td>
-          <td>{{ comment.submit_date|date:"F j, P" }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-    </table>
+            </td>
+            <td>{{ comment.ip_address }}</td>
+            <td>{{ comment.submit_date|date:"F j, P" }}</td>
+            <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td>
+            {% endwith %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
   </div>
 </div>
 {% endif %}
+<script type="text/javascript">
+  $("#id_select_all").click(function() {
+  $("input[type=checkbox]").attr('checked', this.checked);
+  });
+</script>
 {% endblock %}

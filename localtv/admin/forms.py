@@ -43,6 +43,7 @@ from localtv import util
 import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
+import vidscraper.sites.blip
 
 Profile = util.get_profile_model()
 
@@ -381,21 +382,42 @@ class BulkEditVideoForm(EditVideoForm):
     _categories_queryset = None
     _authors_queryset = None
 
-    def __init__(self, *args, **kwargs):
+    def fill_cache(self, cache_for_form_optimization):
+        if cache_for_form_optimization is None:
+            cache_for_form_optimization = {}
+
+        # Great. Fill the cache.
+        if 'categories_qs' not in cache:
+            cache_for_form_optimization['categories_qs'] = util.MockQueryset(
+                models.Category.objects.filter(site=Site.objects.get_current()))
+        if 'authors_qs' not in cache_for_form_optimization:
+            cache_for_form_optimization['authors_qs'] = util.MockQueryset(
+                User.objects.order_by('username'))
+
+        return cache_for_form_optimization
+
+    def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
+        # The cache_for_form_optimization is an object that is
+        # optionally created by the request that calls
+        # BulkEditForm. One difficulty with BulkEditForms is that the
+        # forms generate similar data over and over again; we can
+        # avoid some database hits by running some queries just once
+        # (at BulkEditForm instantiation time), rather than once per
+        # sub-form.
+        #
+        # However, it is unsafe to cache data in the BulkEditForm
+        # class because that persists for as long as the Python
+        # process does (meaning that subsequent requests will use the
+        # same cache).
         EditVideoForm.__init__(self, *args, **kwargs)
-        site = Site.objects.get_current()
 
         # cache the querysets so that we don't hit the DB for each form
-        if self.__class__._categories_queryset is None:
-            self.__class__._categories_queryset = util.MockQueryset(
-                models.Category.objects.filter(site=site))
-        if self.__class__._authors_queryset is None:
-            self.__class__._authors_queryset = util.MockQueryset(
-                User.objects.order_by('username'))
-        self.fields['categories'].queryset = \
-            self.__class__._categories_queryset
-        self.fields['authors'].queryset = \
-            self.__class__._authors_queryset
+        cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
+
+        self.fields['categories'].queryset = cache_for_form_optimization[
+            'categories_qs']
+        self.fields['authors'].queryset = cache_for_form_optimization[
+            'authors_qs']
 
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
@@ -425,7 +447,7 @@ class EditSettingsForm(forms.ModelForm):
     """
     title = forms.CharField(label="Site Title", max_length=50)
     tagline = forms.CharField(label="Site Tagline", required=False,
-                              max_length=250,
+                              max_length=4096,
                               help_text="Your title and tagline "
                               "define your site, both for humans and search "
                               "engines. Consider including key words so that "
@@ -790,7 +812,6 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-
 class AddFeedForm(forms.Form):
     SERVICE_PROFILES = (
         (re.compile(
@@ -800,7 +821,7 @@ class AddFeedForm(forms.Form):
         (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
                     r'(?P<name>\w+)'),
          'youtube'),
-        (re.compile(r'^(http://)?(www\.)?(?P<name>\w+)\.blip\.tv'), 'blip'),
+        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
         (re.compile(
                 r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
          'vimeo'),
@@ -812,7 +833,7 @@ class AddFeedForm(forms.Form):
     SERVICE_FEEDS = {
         'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
                     'uploads?alt=rss&v=2&orderby=published'),
-        'blip': 'http://%s.blip.tv/rss',
+        'blip': vidscraper.sites.blip._blip_feedify,
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
         'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
         }
@@ -828,10 +849,14 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         value = self.cleaned_data['feed_url']
         for regexp, service in self.SERVICE_PROFILES:
-            match = regexp.match(value)
+            match = regexp.search(value)
             if match:
-                username = match.group('name')
-                value = self.SERVICE_FEEDS[service] % username
+                service_feed_generator = self.SERVICE_FEEDS[service]
+                if callable(service_feed_generator):
+                    value = service_feed_generator(value)
+                else:
+                    username = match.group('name')
+                    value = service_feed_generator % username
                 break
 
         site = Site.objects.get_current()

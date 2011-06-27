@@ -31,8 +31,8 @@ value="http://{{ sitelocation.site.domain }}{% url localtv_admin_ipn_endpoint pa
   <input type="hidden" name="t1" value="D">
   {% else %}
   {% if specific_payment_override %}
-  <input type="hidden" name="a1" value="{{ specific_payment_override.daily_amount }}">
-  <input type="hidden" name="p1" value="{{ specific_payment_override.num_days }}">
+  <input type="hidden" name="a1" value="{{ specific_payment_override.cost_for_prorated_period }}">
+  <input type="hidden" name="p1" value="{{ specific_payment_override.days_covered_by_prorating }}">
   <input type="hidden" name="t1" value="D">
   {% endif %}
   <input type="hidden" name="return" value="http://{{ sitelocation.site.domain }}{% url localtv_admin_paypal_return payment_secret target_tier_name %}">

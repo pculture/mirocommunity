@@ -38,6 +38,8 @@ urlpatterns += patterns(
     (r'^comments/post/$', 'post_comment', {}, 'comments-post-comment'),
     (r'^comments/moderation-queue$', 'moderation_queue', {},
      'comments-moderation-queue'),
+    (r'^comments/moderation-queue/undo$', 'undo', {},
+     'comments-moderation-undo'),
     (r'^comments/', include('django.contrib.comments.urls')))
 
 urlpatterns += patterns(

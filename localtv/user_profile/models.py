@@ -93,10 +93,7 @@ def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=
 
     # If this is the only user, then skip the email sending.
     if User.objects.all().count() <= 1:
-        # The user had better be a superuser...
-        if not instance.is_superuser:
-            logging.error("Uh, yikes, the first user you created wasn't a superuser. Bizarre.")
-        # Either way, we stop right here, and refuse to send email.
+        # We stop right here, and refuse to send email.
         return
 
     # Note: We're extra careful here: if the user does not have a login-able password,

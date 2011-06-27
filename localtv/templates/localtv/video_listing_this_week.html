@@ -1,3 +1,4 @@
+{% extends "localtv/video_listing.html" %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -17,4 +18,13 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{{ obj.name|safe }}
+
+{% load i18n %}
+
+{% block page_title %}Videos published this week{% endblock %}
+
+{% block rss_url %}{% url localtv_feeds_new %}{% endblock %}
+
+{% block title %}{{ block.super }} - {% trans "Videos published this week" %}{% endblock %}
+
+{% block body_id %}video_listing_new{% endblock body_id %}

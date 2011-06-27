@@ -15,20 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import datetime
-import urllib
 
-from django.contrib.auth.models import User
-from django.core.paginator import Paginator, InvalidPage
-import django.core.mail
-from django.db.models import Q
-from django.db import transaction
-from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.template.loader import render_to_string
+from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -261,8 +253,8 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
         days_difference = 0
     if days_difference == 0:
         return {'recurring': target_tier_obj.dollar_cost(),
-                'daily_amount': 0,
-                'num_days': 0}
+                'cost_for_prorated_period': 0,
+                'days_covered_by_prorating': 0}
 
     # Okay, so we have some days.
     # If it were the full price...
@@ -271,14 +263,13 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
     # ...how much is that, anyway? Well, it's days_difference / days_in_the_pay_period
     # ...since our pay period is 30 days, that's easy.
     return {'recurring': target_tier_obj.dollar_cost(),
-            'daily_amount': int(price_difference * (days_difference / 30.0)),
-            'num_days': days_difference}
+            'cost_for_prorated_period': int(price_difference * (days_difference / 30.0)),
+            'days_covered_by_prorating': days_difference}
 
 def _start_free_trial_unconfirmed(target_tier_name):
     '''We call this function from within the unconfirmed PayPal return
     handler, if you are just now starting a free trial.'''
     import localtv.models
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
     ti = localtv.models.TierInfo.objects.get_current()
 
     # If you already are in a free trial, just do a redirect back to the upgrade page.
@@ -391,9 +382,10 @@ def handle_recurring_profile_start(sender, **kwargs):
                                          'old_profile': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'new_profile': ipn_obj.subscr_id})
-        import localtv.zendesk
-        localtv.zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
-                                      message_body)
+        if tier_info.use_zendesk():
+            import localtv.zendesk
+            localtv.zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
+                                          message_body, use_configured_assignee=True)
 
     expected_due_date = None
     # Okay. Now it's save to overwrite the subscription ID that is the current one.
@@ -421,11 +413,12 @@ def handle_recurring_profile_start(sender, **kwargs):
         if not tier_info.in_free_trial:
             # sanity-check that there is no period1 or period2 value
             paypal_event_contains_free_trial = ipn_obj.period1 or ipn_obj.period2
-            if paypal_event_contains_free_trial:
+            if paypal_event_contains_free_trial and tier_info.use_zendesk():
                 import localtv.zendesk
                 localtv.zendesk.create_ticket(
                     "Eek, the user tried to create a free trial incorrectly",
-                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site")
+                    "Check on the state of the " + localtv.models.SiteLocation.objects.get_current().site.domain + " site",
+                    use_configured_assignee=False)
                 return
 
     tier_info.current_paypal_profile_id = ipn_obj.subscr_id
@@ -439,7 +432,6 @@ def handle_recurring_profile_start(sender, **kwargs):
     # If we get the IPN, and we have not yet adjusted the tier name
     # to be at that level, now is a *good* time to do so.
     amount = float(ipn_obj.amount3)
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
     if current_tier_obj.dollar_cost() == amount:
         pass
     else:
@@ -482,7 +474,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
     import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
-    if tier_info.current_paypal_profile_id != sender.subscr_id:
+    if (tier_info.current_paypal_profile_id != sender.subscr_id) and (tier_info.use_zendesk()):
         # then we had better notify staff indicating that the old one
         # should be cancelled.
         import localtv.zendesk
@@ -492,7 +484,8 @@ def handle_recurring_profile_modify(sender, **kwargs):
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
         localtv.zendesk.create_ticket("Eek, you should check on this MC site",
-                                      message_body)
+                                      message_body,
+                                      use_configured_assignee=False)
         return
 
     # Okay, well at this point, we need to adjust the site tier to match.
@@ -507,14 +500,16 @@ def handle_recurring_profile_modify(sender, **kwargs):
         except ValueError:
             # then we had better notify staff indicating that the
             # amount is bizarre.
-            import localtv.zendesk
-            message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
-                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
-                                         'profile_on_file': tier_info.current_paypal_profile_id,
-                                         'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
-                                         'surprising_profile': ipn_obj.subscr_id})
-            localtv.zendesk.create_ticket("Eek, you should check on this MC site",
-                                          message_body)
+            if tier_info.use_zendesk():
+                import localtv.zendesk
+                message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
+                                                {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                                 'profile_on_file': tier_info.current_paypal_profile_id,
+                                                 'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
+                                                 'surprising_profile': ipn_obj.subscr_id})
+                localtv.zendesk.create_ticket("Eek, you should check on this MC site",
+                                              message_body,
+                                              use_configured_assignee=False)
             return
         _actually_switch_tier(target_tier_name)
 

@@ -24,6 +24,7 @@ urlpatterns = patterns(
     (r'^(json/)?popular/$', 'popular', {}, 'localtv_feeds_popular'),
     (r'^(json/)?category/([\w-]+)$', 'category', {}, 'localtv_feeds_category'),
     (r'^(json/)?author/(\d+)$', 'author', {}, 'localtv_feeds_author'),
+    (r'^(json/)?videos-imported-from/(\d+)$', 'feed', {}, 'localtv_feeds_feed'),
     (r'^(json/)?tag/(.+)$', 'tag', {}, 'localtv_feeds_tag'),
     (r'^(json/)?search/(.+)$', 'search', {}, 'localtv_feeds_search'),
     (r'^(json/)?playlist/(\d+)$', 'playlist', {}, 'localtv_feeds_playlist'),

@@ -59,10 +59,13 @@ def feed_view(klass):
         mime_type_and_output = cache.cache.get(cache_key)
         if mime_type_and_output is None:
             try:
-                feed = klass(None, request, json=json).get_feed(*args)
+                instance = klass(None, request, json=json)
+                feed = instance.get_feed(*args)
             except FeedDoesNotExist:
                 raise Http404
             else:
+                if hasattr(instance, 'opensearch_data'):
+                    feed.opensearch_data = instance.opensearch_data
                 mime_type = feed.mime_type
                 output = feed.writeString('utf-8')
                 cache.cache.set(cache_key, (mime_type, output))
@@ -84,11 +87,25 @@ def feed_view(klass):
         return response
     return wrapper
 
+
 class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
+
+    def add_root_elements(self, handler):
+        # First. let the superclass add its own essential root elements.
+        super(ThumbnailFeedGenerator, self).add_root_elements(handler)
+
+        # Second, add the necessary information for this feed to be identified
+        # as an OpenSearch feed.
+        if hasattr(self, 'opensearch_data'):
+            for key in self.opensearch_data:
+                name = 'opensearch:' + key
+                value = unicode(self.opensearch_data[key])
+                handler.addQuickElement(name, value)
 
     def root_attributes(self):
         attrs = feedgenerator.Atom1Feed.root_attributes(self)
         attrs['xmlns:media'] = 'http://search.yahoo.com/mrss/'
+        attrs['xmlns:opensearch'] = 'http://a9.com/-/spec/opensearch/1.1/'
         return attrs
 
     def add_item_elements(self, handler, item):
@@ -168,6 +185,65 @@ class BaseVideosFeed(Feed):
                 self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
         self.sitelocation = models.SiteLocation.objects.get_current()
+        self.opensearch_data = {}
+
+    def slice_items(self, items, default_items_per_page=None):
+        '''slice_items() is a method that can be used to filter a list
+        (or queryset) of objects and return just the ones that the
+        user requested.
+
+        We respect the three indexing-related OpenSearch query string parameters:
+        * count
+        * startIndex
+        * startPage
+
+        More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
+
+        As for searchTerms, well, maybe one day we'll respect that, too.'''
+        if default_items_per_page is None:
+            default_items_per_page = LOCALTV_FEED_LENGTH
+
+        count = self._get_int_from_querystring(
+            parameter_name='count',
+            default=default_items_per_page,
+            insist_non_negative=True)
+
+        # The spec says to use startIndex, but vidscraper seems to send out
+        # start-index. I don't really know what's up with that.
+        startIndex = self._get_int_from_querystring('startIndex', default=None)
+        if startIndex is None:
+            startIndex = self._get_int_from_querystring('start-index')
+        # The spec allows negative values, but that seems useless to me,
+        # so we will insist on non-negative values.
+
+        # We only check for startPage if there is no startIndex. This mailing
+        # list discussion indicates that startPage and startIndex conflict:
+        # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
+
+        if not startIndex:
+            startPage = self._get_int_from_querystring('startPage')
+            startIndex = startPage * count
+
+        end = startIndex + count
+
+        self.opensearch_data = {'startindex': startIndex,
+                                'itemsperpage': count,
+                                'totalresults': len(items)}
+
+        return items[startIndex:end]
+
+    def _get_int_from_querystring(self, parameter_name, default=0,
+                                  insist_non_negative=True):
+        try:
+            value = int(self.request.GET.get(parameter_name, None))
+        except (ValueError, TypeError):
+            value = default
+
+        if insist_non_negative:
+            if value < 0:
+                value = default
+
+        return value
 
     def item_pubdate(self, video):
         if video.status != models.VIDEO_STATUS_ACTIVE:
@@ -243,7 +319,6 @@ class BaseVideosFeed(Feed):
         else:
             return ""
 
-
 class NewVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_new')
@@ -256,7 +331,7 @@ class NewVideosFeed(BaseVideosFeed):
         videos = models.Video.objects.new(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
@@ -274,8 +349,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
             status=models.VIDEO_STATUS_ACTIVE)
         videos = videos.order_by(
             '-last_featured', '-when_approved','-when_submitted')
-        return videos[:LOCALTV_FEED_LENGTH]
-
+        return self.slice_items(videos)
 
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
@@ -285,7 +359,7 @@ class PopularVideosFeed(BaseVideosFeed):
         videos = models.Video.objects.popular_since(
             datetime.timedelta(days=7), self.sitelocation,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self):
         return "%s: %s" % (
@@ -301,7 +375,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return category.get_absolute_url()
 
     def items(self, category):
-        return category.approved_set.all()[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(category.approved_set.all())
 
     def title(self, category):
         return "%s: %s" % (
@@ -319,12 +393,42 @@ class AuthorVideosFeed(BaseVideosFeed):
             Q(authors=author) | Q(user=author),
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE).distinct()
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, author):
+        name_or_username = author.get_full_name()
+        if not name_or_username.strip():
+            name_or_username = author.username
+
         return "%s: %s" % (
             self.sitelocation.site.name,
-            _('Author: %s') % author.get_full_name())
+            _('Author: %s') % name_or_username)
+
+class FeedVideosFeed(BaseVideosFeed):
+    # This class can be a bit confusing:
+    #
+    # It is the Miro Community feed that represents all
+    # the videos that we have imported from a remote video source.
+    #
+    # To avoid end-users getting confused, the URL does not say "feed"
+    # twice, but talks about video sources.
+    def get_object(self, bits):
+        return models.Feed.objects.get(pk=bits[0])
+
+    def link(self, feed):
+        return reverse('localtv_list_feed', args=[feed.pk])
+
+    def items(self, feed):
+        videos = models.Video.objects.filter(
+            feed=feed,
+            site=self.sitelocation.site,
+            status=models.VIDEO_STATUS_ACTIVE).distinct()
+        return self.slice_items(videos)
+
+    def title(self, feed):
+        return "%s: Videos imported from %s" % (
+            self.sitelocation.site.name,
+            feed.name or '')
 
 class TagVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
@@ -337,7 +441,7 @@ class TagVideosFeed(BaseVideosFeed):
         videos = models.Video.tagged.with_all(tag).filter(
             site=self.sitelocation.site,
             status=models.VIDEO_STATUS_ACTIVE)
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, tag):
         return "%s: %s" % (
@@ -363,8 +467,8 @@ class SearchVideosFeed(BaseVideosFeed):
                 site=self.sitelocation.site,
                 status=models.VIDEO_STATUS_ACTIVE,
                 pk__in=[result.pk for result in results if result])
-            return videos[:LOCALTV_FEED_LENGTH]
-        return [result.object for result in results[:LOCALTV_FEED_LENGTH]
+            return self.slice_items(videos)
+        return [result.object for result in self.slice_items(results)
                 if result.object]
 
     def title(self, search):
@@ -382,7 +486,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
         videos = playlist.video_set.all()
         if self.request.GET.get('sort', None) != 'order':
             videos = videos.order_by('-playlistitem___order')
-        return videos[:LOCALTV_FEED_LENGTH]
+        return self.slice_items(videos)
 
     def title(self, playlist):
         return "%s: %s" % (
@@ -396,3 +500,4 @@ author = feed_view(AuthorVideosFeed)
 tag = feed_view(TagVideosFeed)
 search = feed_view(SearchVideosFeed)
 playlist = feed_view(PlaylistVideosFeed)
+feed = feed_view(FeedVideosFeed)

@@ -23,6 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block name %}{% trans "Admin - Search Video Sites" %}{% endblock %}
 {% block body_class %}searches{% endblock body_class %}
+{% block page_title %}Searched Video Sites for "{% if query_string %}{{ query_string }}{% endif %}"{% endblock %}
 {% block admin_actions %}
 {% if is_saved_search %}
     <span href="#" class="floatright"><span>This search is saved</span></span>
@@ -32,11 +33,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <span>Save as a Source</span></a>
   {% endif %}
   {% endif %}
-
-
-
-<h2 class="marginbottom">Searched Video Sites for "{% if query_string %}{{ query_string }}{% endif %}"</h2>
-
   
   <div id="saved_searches" class="search_sites rounded">
   <form method="GET" action="{% url localtv_admin_search %}">

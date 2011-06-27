@@ -62,7 +62,7 @@ def add_feed(request):
     feed_url = add_form.cleaned_data['feed_url']
     parsed_feed = add_form.cleaned_data['parsed_feed']
 
-    title = parsed_feed.feed.title or feed_url
+    title = getattr(parsed_feed.feed, 'title', '') or feed_url
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
         if match:
