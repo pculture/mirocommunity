@@ -484,6 +484,17 @@ class SiteLocation(Thumbnailable):
         /admin/approve_reject/.'''
         return getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 
+    def should_show_account_level(self):
+        '''On /admin/upgrade/, most sites will see an info page that
+        shows how to change their account level (AKA site tier).
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL variable to False.
+
+        This simply removes the link from the sidebar; if you visit the
+        /admin/upgrade/ page, it renders as usual.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
