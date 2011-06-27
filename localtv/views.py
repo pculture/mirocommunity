@@ -33,7 +33,7 @@ from localtv.playlists.models import (Playlist, PlaylistItem,
 
 def index(request):
     featured_videos = models.Video.objects.filter(
-        site=request.sitelocation.site_id,
+        site=request.sitelocation().site_id,
         status=models.VIDEO_STATUS_ACTIVE,
         last_featured__isnull=False)
     featured_videos = featured_videos.order_by(
@@ -41,16 +41,16 @@ def index(request):
         '-when_submitted')
 
     popular_videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation=request.sitelocation,
+        datetime.timedelta(days=7), sitelocation=request.sitelocation(),
         status=models.VIDEO_STATUS_ACTIVE)
 
     new_videos = models.Video.objects.new(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         status=models.VIDEO_STATUS_ACTIVE) \
         .exclude(feed__avoid_frontpage=True)
 
     recent_comments = comments.get_model().objects.filter(
-        site=request.sitelocation.site,
+        site=request.sitelocation().site,
         content_type__app_label='localtv',
         content_type__model='video',
         object_pk__in=models.Video.objects.filter(
@@ -76,10 +76,10 @@ def about(request):
 @vary_on_headers('User-Agent', 'Referer')
 def view_video(request, video_id, slug=None):
     video = get_object_or_404(models.Video, pk=video_id,
-                              site=request.sitelocation.site)
+                              site=request.sitelocation().site)
 
     if video.status != models.VIDEO_STATUS_ACTIVE and \
-            not request.user_is_admin:
+            not request.user_is_admin():
         raise Http404
 
     if slug is not None and request.path != video.get_absolute_url():
@@ -88,7 +88,7 @@ def view_video(request, video_id, slug=None):
     context = {'current_video': video,
                # set edit_video_form to True if the user is an admin for
                # backwards-compatibility
-               'edit_video_form': request.user_is_admin}
+               'edit_video_form': request.user_is_admin()}
 
     if video.categories.count():
         category_obj = None
@@ -109,7 +109,7 @@ def view_video(request, video_id, slug=None):
                         try:
                             category_obj = models.Category.objects.get(
                                 slug=args[0],
-                                site=request.sitelocation.site)
+                                site=request.sitelocation().site)
                         except models.Category.DoesNotExist:
                             pass
                         else:
@@ -123,25 +123,25 @@ def view_video(request, video_id, slug=None):
         context['category'] = category_obj
         context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
-            sitelocation=request.sitelocation,
+            sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE,
             categories__pk=category_obj.pk)
     else:
         context['popular_videos'] = models.Video.objects.popular_since(
             datetime.timedelta(days=7),
-            sitelocation=request.sitelocation,
+            sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
-    if request.sitelocation.playlists_enabled:
+    if request.sitelocation().playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
-            if request.user_is_admin or \
-                    request.sitelocation.playlists_enabled == 1:
+            if request.user_is_admin() or \
+                    request.sitelocation().playlists_enabled == 1:
                 # user can add videos to playlists
                 context['playlists'] = Playlist.objects.filter(
                     user=request.user)
 
-        if request.user_is_admin:
+        if request.user_is_admin():
             # show all playlists
             context['playlistitem_set'] = video.playlistitem_set.all()
         elif request.user.is_authenticated():
@@ -161,7 +161,7 @@ def view_video(request, video_id, slug=None):
                 pass
             else:
                 if playlist.status == PLAYLIST_STATUS_PUBLIC or \
-                        request.user_is_admin or \
+                        request.user_is_admin() or \
                         request.user.is_authenticated() and \
                         playlist.user_id == request.user.pk:
                     try:
@@ -180,7 +180,7 @@ def view_video(request, video_id, slug=None):
 def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
     return views.share_email(request, content_type_pk, object_id,
-                             {'site': request.sitelocation.site,
-                              'sitelocation': request.sitelocation},
+                             {'site': request.sitelocation().site,
+                              'sitelocation': request.sitelocation()},
                              form_class = forms.ShareMultipleEmailForm
                              )

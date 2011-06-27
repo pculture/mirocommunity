@@ -28,11 +28,11 @@ import localtv.models
 @require_site_admin
 @csrf_protect
 def edit_settings(request):
-    form = forms.EditSettingsForm(instance=request.sitelocation)
+    form = forms.EditSettingsForm(instance=request.sitelocation())
 
     if request.method == 'POST':
         form = forms.EditSettingsForm(request.POST, request.FILES,
-                                      instance=request.sitelocation)
+                                      instance=request.sitelocation())
         if form.is_valid():
             sitelocation = form.save()
             if request.POST.get('delete_background'):
@@ -50,7 +50,7 @@ def edit_settings(request):
 @csrf_protect
 def widget_settings(request):
     form = forms.WidgetSettingsForm(
-        instance=request.sitelocation.site.widgetsettings,
+        instance=request.sitelocation().site.widgetsettings,
         initial={'title': 
                  localtv.models.WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
@@ -58,7 +58,7 @@ def widget_settings(request):
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=request.sitelocation.site.widgetsettings)
+            instance=request.sitelocation().site.widgetsettings)
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):

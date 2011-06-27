@@ -28,7 +28,7 @@ from localtv.admin import forms
 @require_site_admin
 @csrf_protect
 def categories(request):
-    categories = MockQueryset(Category.in_order(request.sitelocation.site))
+    categories = MockQueryset(Category.in_order(request.sitelocation().site))
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
@@ -39,7 +39,7 @@ def categories(request):
     add_category_form = forms.CategoryForm()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
-            category = Category(site=request.sitelocation.site)
+            category = Category(site=request.sitelocation().site)
             add_category_form = forms.CategoryForm(request.POST,
                                                    request.FILES,
                                                    instance=category)

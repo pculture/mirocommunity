@@ -30,14 +30,14 @@ def editors_comment(request, id):
     obj = get_object_or_404(
         Video,
         id=id,
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
 
     edit_form = forms.VideoEditorsComment(request.POST, instance=obj)
 
     if edit_form.is_valid():
         comment = edit_form.save(commit=False)
         if comment:
-            comment.site = request.sitelocation.site
+            comment.site = request.sitelocation().site
             comment.user = request.user
             comment.save()
             edit_form.save_m2m()

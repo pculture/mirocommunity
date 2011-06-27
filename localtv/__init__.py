@@ -47,21 +47,33 @@ class SiteLocationMiddleware(object):
     uses it.
     """
     def process_request(self, request):
-        # Either the app is set up properly, in which case we can just get
-        # the current SiteLocation:
-        try:
-            request.sitelocation = models.SiteLocation.objects.get_current()
-            request.tier_info = models.TierInfo.objects.get_current()
-            request.user_is_admin = request.sitelocation.user_is_admin(
-                request.user)
-        except models.SiteLocation.DoesNotExist:
-            # Or, for some reason, the SiteLocation does not yet exist. That
-            # is okay; we can create it.
-            models.SiteLocation.objects.create(site=Site.objects.get_current())
-            return self.process_request(request)
+        # These attributes on the request are helpers for view functions
+        # that want easy access to some data.
+        #
+        # They are functions rather than actual results so that, in case we
+        # cache an entire page, we can avoid ever executing the database
+        # query.
+        #
+        # Performance-wise, that does mean that when a view uses this data,
+        # it has to go through one or more function calls.
+
+        # First, create a user_is_admin function that can easily determine
+        # if the logged-in user is an admin.
+        def user_is_admin(request=request):
+            if getattr(request, '_user_is_admin_cache', None):
+                return request._user_is_admin_cache
+            request._user_is_admin_cache = request.sitelocation().user_is_admin(request.user)
+            return request._user_is_admin_cache
+
+        # Then tack that helper on, along with a SiteLocation getter.
+        request.user_is_admin = user_is_admin
+        request.sitelocation = models.SiteLocation.objects.get_current
+
+        # We fall off the end, implicitly returning None, so Django
+        # continues processing the request.
 
 def context_processor(request):
-    sitelocation = request.sitelocation
+    sitelocation = request.sitelocation()
 
     display_submit_button = sitelocation.display_submit_button
     if display_submit_button:
@@ -82,7 +94,7 @@ def context_processor(request):
         'mc_version': '1.2',
         'sitelocation': sitelocation,
         'request': request,
-        'user_is_admin': request.user_is_admin,
+        'user_is_admin': request.user_is_admin(),
         'categories':  models.Category.objects.filter(site=sitelocation.site,
                                                       parent=None),
         'cache_invalidator': cache_invalidator,

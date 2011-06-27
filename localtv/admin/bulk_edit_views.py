@@ -58,7 +58,7 @@ def bulk_edit(request):
 
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
-        site=request.sitelocation.site)
+        site=request.sitelocation().site)
     videos = videos.select_related('feed', 'search', 'site')
 
     if 'filter' in request.GET:
@@ -68,7 +68,7 @@ def bulk_edit(request):
         elif filter_type == 'rejected':
             videos = models.Video.objects.filter(
                 status=models.VIDEO_STATUS_REJECTED,
-                site=request.sitelocation.site)
+                site=request.sitelocation().site)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
@@ -137,7 +137,7 @@ def bulk_edit(request):
                                      queryset=page.object_list)
         if formset.is_valid():
             tier_prevented_some_action = False
-            tier = request.sitelocation.get_tier()
+            tier = request.sitelocation().get_tier()
             videos_approved_so_far = 0
 
             for form in list(formset.deleted_forms):
@@ -162,7 +162,7 @@ def bulk_edit(request):
                                 form.instance.status = \
                                     models.VIDEO_STATUS_REJECTED
                             elif value == 'approve':
-                                if (request.sitelocation.enforce_tiers() and
+                                if (request.sitelocation().enforce_tiers() and
                                     tier.remaining_videos() <= videos_approved_so_far):
                                     tier_prevented_some_action = True
                                 else:
@@ -174,7 +174,7 @@ def bulk_edit(request):
                                     models.VIDEO_STATUS_UNAPPROVED
                             elif value == 'feature':
                                 if form.instance.status != models.VIDEO_STATUS_ACTIVE:
-                                    if (request.sitelocation.enforce_tiers() and
+                                    if (request.sitelocation().enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
@@ -224,6 +224,6 @@ def bulk_edit(request):
                                'search_string': search_string,
                                'page': page,
                                'categories': models.Category.objects.filter(
-                site=request.sitelocation.site),
+                site=request.sitelocation().site),
                                'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

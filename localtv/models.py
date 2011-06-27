@@ -226,9 +226,18 @@ class SiteLocationManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
         try:
+            # Dig it out of the cache.
             current_site_location = SITE_LOCATION_CACHE[sid]
         except KeyError:
-            current_site_location = self.select_related().get(site__pk=sid)
+            # Not in the cache? Time to put it in the cache.
+            try:
+                # If it is in the DB, get it.
+                current_site_location = self.select_related().get(site__pk=sid)
+            except SiteLocation.DoesNotExist:
+                # Otherwise, create it.
+                current_site_location = models.SiteLocation.objects.create(
+                    site=Site.objects.get_current())
+
             SITE_LOCATION_CACHE[sid] = current_site_location
         return current_site_location
 
