@@ -38,10 +38,6 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
-try:
-    import voting
-except ImportError:
-    voting = None
 
 from localtv import models
 from localtv import util
@@ -592,7 +588,7 @@ class WidgetSettingsForm(forms.ModelForm):
         return ws
 
 class CategoryForm(forms.ModelForm):
-    if voting:
+    if settings.VOTING_ENABLED:
         contest_mode = forms.BooleanField(label='Turn on Contest',
                                           required=False)
     class Meta:

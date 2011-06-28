@@ -27,11 +27,6 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
-try:
-    import voting.views
-except ImportError:
-    voting = None
-
 from localtv import models
 from localtv.listing import views as listing_views
 
@@ -139,7 +134,8 @@ def view_video(request, video_id, slug=None):
             sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
-    if voting:
+    if settings.VOTING_ENABLED:
+        import voting
         user_can_vote = True
         if request.user.is_authenticated():
             MAX_VOTES_PER_CATEGORY = getattr(settings,
@@ -209,8 +205,9 @@ def share_email(request, content_type_pk, object_id):
                              )
 
 def video_vote(request, object_id, direction, **kwargs):
-    if not voting:
+    if not settings.VOTING_ENABLED:
         raise Http404
+    import voting.views
     if request.user.is_authenticated() and direction != 'clear':
         video = get_object_or_404(models.Video, pk=object_id)
         MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
