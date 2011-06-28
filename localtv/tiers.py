@@ -624,3 +624,14 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
     message_html = html_t.render(c)
     msg.attach_alternative(message_html, "text/html")
     msg.send(fail_silently=False)
+
+def get_paypal_email_address():
+    '''If the site is configured to use PayPal, then we return
+    the setting from the config:
+
+    PAYPAL_RECEIVER_EMAIL
+
+    Otherwise, we return a string that indicates that PayPal is
+    not properly configured.'''
+    DEFAULT = 'payal-misconfigured@example.com'
+    return getattr(settings, 'PAYPAL_RECEIVER_EMAIL', DEFAULT)

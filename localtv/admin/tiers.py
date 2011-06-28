@@ -66,8 +66,8 @@ def downgrade_confirm(request):
         data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
         data['can_modify'] = _generate_can_modify()[target_tier_name]
         data['paypal_url'] = get_paypal_form_submission_url()
-        data['paypal_email'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
-        data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
+        data['paypal_email'] = localtv.tiers.get_paypal_email_address()
+        data['paypal_email_acct'] = localtv.tiers.get_paypal_email_address()
         data['target_tier_obj'] = target_tier_obj
         data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
         data['customtheme_nag'] = ('customtheme' in would_lose)
@@ -129,7 +129,7 @@ def upgrade(request):
     data['payment_secret'] = request.sitelocation().tierinfo.get_payment_secret()
     data['offer_free_trial'] = request.sitelocation().tierinfo.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
-    data['paypal_email_acct'] = getattr(settings, 'PAYPAL_RECEIVER_EMAIL', '')
+    data['paypal_email_acct'] = localtv.tiers.get_paypal_email_address()
     data['tier_to_price'] = localtv.tiers.Tier.NAME_TO_COST()
     if not data['skip_paypal']:
         data['paypal_url'] = get_paypal_form_submission_url()
@@ -378,7 +378,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         # then we had better notify staff that the old one should be
         # cancelled.
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
-                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                        {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
                                          'old_profile': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'new_profile': ipn_obj.subscr_id})
@@ -479,7 +479,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
         # should be cancelled.
         import localtv.zendesk
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
-                                        {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                        {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
                                          'profile_on_file': tier_info.current_paypal_profile_id,
                                          'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
@@ -503,7 +503,7 @@ def handle_recurring_profile_modify(sender, **kwargs):
             if tier_info.use_zendesk():
                 import localtv.zendesk
                 message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
-                                                {'paypal_email_address': settings.PAYPAL_RECEIVER_EMAIL,
+                                                {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
                                                  'profile_on_file': tier_info.current_paypal_profile_id,
                                                  'site_domain': localtv.models.SiteLocation.objects.get_current().site.domain,
                                                  'surprising_profile': ipn_obj.subscr_id})
