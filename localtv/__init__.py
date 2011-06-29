@@ -106,11 +106,3 @@ def context_processor(request):
         'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
         'VIDEO_STATUS_REJECTED': models.VIDEO_STATUS_REJECTED}
-
-try:
-    import voting
-except ImportError:
-    settings.VOTING_ENABLED = False
-else:
-    del voting
-    settings.VOTING_ENABLED = ('voting' in settings.INSTALLED_APPS)

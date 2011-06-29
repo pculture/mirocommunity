@@ -39,6 +39,7 @@ from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
 
+import localtv.settings
 from localtv import models
 from localtv import util
 import localtv.tiers
@@ -588,7 +589,7 @@ class WidgetSettingsForm(forms.ModelForm):
         return ws
 
 class CategoryForm(forms.ModelForm):
-    if settings.VOTING_ENABLED:
+    if localtv.settings.voting_enabled():
         contest_mode = forms.BooleanField(label='Turn on Contest',
                                           required=False)
     class Meta:

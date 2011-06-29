@@ -27,6 +27,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
+import localtv.settings
 from localtv import models
 from localtv.listing import views as listing_views
 
@@ -134,7 +135,7 @@ def view_video(request, video_id, slug=None):
             sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
-    if settings.VOTING_ENABLED:
+    if localtv.settings.voting_enabled():
         import voting
         user_can_vote = True
         if request.user.is_authenticated():
@@ -205,7 +206,7 @@ def share_email(request, content_type_pk, object_id):
                              )
 
 def video_vote(request, object_id, direction, **kwargs):
-    if not settings.VOTING_ENABLED:
+    if not localtv.settings.voting_enabled():
         raise Http404
     import voting.views
     if request.user.is_authenticated() and direction != 'clear':

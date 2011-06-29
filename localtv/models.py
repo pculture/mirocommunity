@@ -944,10 +944,11 @@ class Category(models.Model):
         verbose_name='Category Parent',
         help_text=("Categories, unlike tags, can have a "
                    "hierarchy."))
-    if settings.VOTING_ENABLED:
-        contest_mode = models.DateTimeField('Turn on Contest',
-                                            null=True,
-                                            default=None)
+
+    # only relevant is voting is enabled for the site
+    contest_mode = models.DateTimeField('Turn on Contest',
+                                        null=True,
+                                        default=None)
 
     class Meta:
         ordering = ['name']
@@ -1571,9 +1572,10 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
-    if settings.VOTING_ENABLED:
-        def voting_enabled(self):
-            return self.categories.filter(contest_mode__isnull=False).exists()
+    def voting_enabled(self):
+        if not localtv.settings.voting_enabled():
+            return False
+        return self.categories.filter(contest_mode__isnull=False).exists()
 
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''
