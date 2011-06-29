@@ -43,6 +43,7 @@ from django.test.client import Client
 
 from haystack.query import SearchQuerySet
 
+import localtv.settings
 import localtv.templatetags.filters
 from localtv import models
 from localtv import util
@@ -2214,3 +2215,158 @@ class FeedViewTestCase(BaseTestCase):
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']
         self.assertEqual(1, len(items_from_second_GET))
+
+if localtv.settings.voting_enabled():
+    import voting
+
+    class VotingTestCase(BaseTestCase):
+
+        fixtures = BaseTestCase.fixtures + ['videos', 'categories']
+
+        def setUp(self):
+            BaseTestCase.setUp(self)
+            self.video = models.Video.objects.get(pk=20)
+            self.category = models.Category.objects.get(slug='miro')
+            self.category.contest_mode = datetime.datetime.now()
+            self.category.save()
+            self.video.categories.add(self.category)
+
+        def test_voting_view_add(self):
+            """
+            A POST request to the localtv_video_vote should add a vote for that
+            video ID.
+            """
+            c = Client()
+            c.login(username='user', password='password')
+            response = c.post(reverse('localtv_video_vote',
+                                      args=(self.video.pk,
+                                            'up')))
+            self.assertStatusCodeEquals(response, 302)
+            self.assertEqual(response['Location'],
+                             'http://testserver%s' % (
+                    self.video.get_absolute_url()))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                1)
+            vote = voting.models.Vote.objects.get()
+            self.assertEqual(vote.object, self.video)
+            self.assertEqual(vote.user.username, 'user')
+            self.assertEqual(vote.vote, 1)
+
+        def test_voting_view_add_twice(self):
+            """
+            Adding a vote multiple times doesn't create multiple votes.
+            """
+            c = Client()
+            c.login(username='user', password='password')
+            c.post(reverse('localtv_video_vote',
+                                      args=(self.video.pk,
+                                            'up')))
+            c.post(reverse('localtv_video_vote',
+                                      args=(self.video.pk,
+                                            'up')))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                1)
+
+        def test_voting_view_clear(self):
+            """
+            Clearing a vote removes it from the database.
+            """
+            c = Client()
+            c.login(username='user', password='password')
+            c.post(reverse('localtv_video_vote',
+                                      args=(self.video.pk,
+                                            'up')))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                1)
+            c.post(reverse('localtv_video_vote',
+                           args=(self.video.pk,
+                                 'clear')))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                0)
+
+        def test_voting_view_too_many_votes(self):
+            """
+            You should only be able to vote for 3 videos in a category.
+            """
+            videos = []
+            for v in models.Video.objects.all()[:4]:
+                v.categories.add(self.category)
+                videos.append(v)
+
+            c = Client()
+            c.login(username='user', password='password')
+
+            for video in videos:
+                c.post(reverse('localtv_video_vote',
+                               args=(video.pk,
+                                     'up')))
+
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                3)
+
+            self.assertEqual(
+                set(
+                    voting.models.Vote.objects.values_list(
+                        'object_id', flat=True)),
+                set([v.pk for v in videos[:3]]))
+
+        def test_voting_view_clear_with_too_many(self):
+            """
+            Even if the user has voted the maximum number of times, a clear
+            should still succeed.
+            """
+            videos = []
+            for v in models.Video.objects.all()[:3]:
+                v.categories.add(self.category)
+                videos.append(v)
+
+            c = Client()
+            c.login(username='user', password='password')
+
+            for video in videos:
+                c.post(reverse('localtv_video_vote',
+                               args=(video.pk,
+                                     'up')))
+
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                3)
+
+            c.post(reverse('localtv_video_vote',
+                           args=(video.pk,
+                                 'clear')))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                2)
+
+        def test_voting_view_requires_authentication(self):
+            """
+            The user must be logged in in order to vote.
+            """
+            self.assertRequiresAuthentication(reverse('localtv_video_vote',
+                                                      args=(self.video.pk,
+                                                            'up')))
+
+        def test_voting_view_voting_disabled(self):
+            """
+            If voting is not enabled for a category on the video, voting should
+            have no effect.
+            """
+            self.video.categories.clear()
+            c = Client()
+            c.login(username='user', password='password')
+            response = c.post(reverse('localtv_video_vote',
+                                      args=(self.video.pk,
+                                            'up')))
+            self.assertStatusCodeEquals(response, 302)
+            self.assertEqual(response['Location'],
+                             'http://testserver%s' % (
+                    self.video.get_absolute_url()))
+            self.assertEqual(
+                voting.models.Vote.objects.count(),
+                0)
