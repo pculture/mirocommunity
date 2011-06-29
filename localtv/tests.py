@@ -2221,7 +2221,7 @@ if localtv.settings.voting_enabled():
 
     class VotingTestCase(BaseTestCase):
 
-        fixtures = BaseTestCase.fixtures + ['videos', 'categories']
+        fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
         def setUp(self):
             BaseTestCase.setUp(self)
@@ -2370,3 +2370,40 @@ if localtv.settings.voting_enabled():
             self.assertEqual(
                 voting.models.Vote.objects.count(),
                 0)
+
+        def test_video_model_voting_enabled(self):
+            """
+            Video.voting_enabled() should be True if it has a voting-enabled
+            category, else False.
+            """
+            self.assertTrue(self.video.voting_enabled())
+            self.assertFalse(models.Video.objects.get(pk=1).voting_enabled())
+
+        def test_video_view_user_can_vote_True(self):
+            """
+            The view_video view should have a 'user_can_vote' variable which is
+            True if the user has not used all their votes.
+            """
+            c = Client()
+            c.login(username='user', password='password')
+
+            response = c.get(self.video.get_absolute_url())
+            self.assertTrue(response.context['user_can_vote'])
+
+        def test_video_view_user_can_vote_False(self):
+            """
+            If the user has used all of their votes, 'user_can_vote' should be
+            False.
+            """
+            c = Client()
+            c.login(username='user', password='password')
+
+            for video in models.Video.objects.all()[:3]:
+                video.categories.add(self.category)
+                c.post(reverse('localtv_video_vote',
+                               args=(video.pk,
+                                     'up')))
+
+            response = c.get(self.video.get_absolute_url())
+            self.assertFalse(response.context['user_can_vote'])
+            
