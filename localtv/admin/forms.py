@@ -754,21 +754,46 @@ class AuthorForm(user_profile_forms.ProfileForm):
             self.fields['role'].help_text = message
 
     def clean_role(self):
-        if not localtv.models.SiteLocation.objects.get_current().enforce_tiers():
-            return self.cleaned_data['role']
+        if localtv.models.SiteLocation.objects.get_current().enforce_tiers():
+            future_role = self.cleaned_data['role']
 
-        # If the user tried to create an admin, but the tier does not
-        # permit creating another admin, raise an error.
-        permitted_admins = localtv.tiers.Tier.get().admins_limit()
-        if self.cleaned_data['role'] == 'admin' and permitted_admins is not None:
-            num_admins = localtv.tiers.number_of_admins_including_superuser()
-
-            if (permitted_admins is not None) and num_admins >= permitted_admins:
+            looks_good = self._validate_role_with_tiers_enforcement(
+                future_role)
+            if not looks_good:
+                permitted_admins = localtv.tiers.Tier.get().admins_limit()
                 raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
                     permitted_admins,
                     django.template.defaultfilters.pluralize(permitted_admins)))
-        # Otherwise, things seem good!
-        return self.cleaned_data['role']
+
+            return self.cleaned_data['role']
+
+    def _validate_role_with_tiers_enforcement(self, future_role):
+        # If the user tried to create an admin, but the tier does not
+        # permit creating another admin, raise an error.
+        permitted_admins = localtv.tiers.Tier.get().admins_limit()
+
+        # Some tiers permit an unbounded number of admins. Then, anything goes.
+        if permitted_admins is None:
+            return True
+
+        # All non-admin values are permitted
+        if future_role !='admin':
+            return True
+
+        if self.instance and self.sitelocation.user_is_admin(
+            self.instance):
+            return True # all role values permitted if you're already an admin
+
+        # Okay, so now we know we are trying to make someone an admin in a
+        # tier where admins are limited.
+        #
+        # The question becomes: is there room for one more?
+        num_admins = localtv.tiers.number_of_admins_including_superuser()
+        if (num_admins + 1) <= permitted_admins:
+            return True
+
+        # Otherwise, gotta say no.
+        return False
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
