@@ -150,6 +150,12 @@ def view_video(request, video_id, slug=None):
             if votes >= max_votes:
                 user_can_vote = False
         context['user_can_vote'] = user_can_vote
+        if user_can_vote:
+            if 'category' in context and context['category'].contest_mode:
+                context['contest_category'] = context['category']
+            else:
+                context['contest_category'] = video.categories.filter(
+                    contest_mode__isnull=False)[0]
             
 
     if request.sitelocation().playlists_enabled:
