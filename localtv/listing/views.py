@@ -18,6 +18,7 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -26,6 +27,7 @@ from django.conf import settings
 
 from tagging.models import Tag
 
+import localtv.settings
 from localtv import models
 from localtv.search.forms import VideoSearchForm
 
@@ -215,12 +217,26 @@ def category(request, slug=None, count=None, sort=None):
     else:
         category = get_object_or_404(models.Category, slug=slug,
                                      site=request.sitelocation().site)
+        user_can_vote = False
+        if localtv.settings.voting_enabled():
+            import voting
+            MAX_VOTES_PER_CATEGORY = getattr(settings,
+                                             'MAX_VOTES_PER_CATEGORY',
+                                             3)
+            votes = voting.models.Vote.objects.filter(
+                content_type=ContentType.objects.get_for_model(models.Video),
+                object_id__in=category.approved_set.values_list('id',
+                                                                flat=True),
+                user=request.user).count()
+            if votes < MAX_VOTES_PER_CATEGORY:
+                user_can_vote = True
         return object_list(
             request=request, queryset=category.approved_set.all(),
             paginate_by=count,
             template_name='localtv/category.html',
             allow_empty=True, template_object_name='video',
-            extra_context={'category': category})
+            extra_context={'category': category,
+                           'user_can_vote': user_can_vote})
 
 @get_args
 def author(request, id=None, count=None, sort=True):
