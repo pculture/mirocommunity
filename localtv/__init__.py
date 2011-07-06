@@ -17,7 +17,7 @@
 
 import urlparse
 
-from django.conf import settings
+from django.conf import settings as django_settings
 from django.contrib.sites.models import Site
 
 from localtv import models
@@ -101,7 +101,7 @@ def context_processor(request):
 
         'display_submit_button': display_submit_button,
 
-        'settings': settings,
+        'settings': django_settings,
 
         'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
