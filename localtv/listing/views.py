@@ -218,7 +218,8 @@ def category(request, slug=None, count=None, sort=None):
         category = get_object_or_404(models.Category, slug=slug,
                                      site=request.sitelocation().site)
         user_can_vote = False
-        if localtv.settings.voting_enabled():
+        if (localtv.settings.voting_enabled() and
+            request.user.is_authenticated()):
             import voting
             MAX_VOTES_PER_CATEGORY = getattr(settings,
                                              'MAX_VOTES_PER_CATEGORY',
