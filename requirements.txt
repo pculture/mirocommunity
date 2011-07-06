@@ -13,7 +13,7 @@ South>=0.7
 flup>=1.0.2
 python-openid==2.2.4
 http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
-simplejson==1.9.2
+simplejson>=1.9.2
 wsgiref==0.1.2
 django-tagging==0.3
 -e svn+http://recaptcha.googlecode.com/svn/trunk/recaptcha-plugins/python@124#egg=recaptcha_client-dev_r124
