@@ -660,7 +660,9 @@ class Feed(Source):
         }
         """
         if parsed_feed is None:
-            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+            data = util.http_get(self.feed_url)
+            # FIXME: I know we are abusing etag here.
+            parsed_feed = feedparser.parse(data, etag=self.etag)
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
             yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
