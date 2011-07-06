@@ -22,6 +22,7 @@ import urllib
 import types
 import os
 import os.path
+import logging
 
 import Image
 try:
@@ -443,6 +444,7 @@ def http_get(url, _httplib2=None, return_blank_on_failure=True):
     except AttributeError: # this is the exception httplib2 gives
                            # on socket timeout
         if return_blank_on_failure:
+            logging.warn("This URL timed out: " + repr(url))
             return ''
         else:
             raise
