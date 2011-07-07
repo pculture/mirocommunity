@@ -70,5 +70,5 @@ else:
          'video_vote', dict(
                 template_object_name='video',
                 template_name='localtv/video_vote_confirm.html',
-                allow_xmlhttprequest=True),
+                allow_xmlhttprequest=False),
          'localtv_video_vote'))
