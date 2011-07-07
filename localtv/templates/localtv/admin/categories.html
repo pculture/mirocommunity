@@ -116,6 +116,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if field.name = 'contest_mode' and form.instance.contest_mode %}
     Contest started at {{ form.instance.contest_mode }}
     {% endif %}
+    {% if form.instance.has_votes %}
+    <a href="{% url localtv_admin_category_votes form.instance.slug %}">View Votes</a>
+    {% endif %}
   </li>
   {% endifnotequal %}
   {% endfor %}
