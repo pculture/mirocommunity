@@ -38,3 +38,4 @@ ipython
 MySQL-Python
 johnny-cache
 xapian-haystack
+-e git+http://git.pculture.org/localtv-mainsite#egg=localtv-mainsite
