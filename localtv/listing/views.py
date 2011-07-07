@@ -218,19 +218,21 @@ def category(request, slug=None, count=None, sort=None):
         category = get_object_or_404(models.Category, slug=slug,
                                      site=request.sitelocation().site)
         user_can_vote = False
-        if (localtv.settings.voting_enabled() and
-            request.user.is_authenticated()):
-            import voting
-            MAX_VOTES_PER_CATEGORY = getattr(settings,
-                                             'MAX_VOTES_PER_CATEGORY',
-                                             3)
-            votes = voting.models.Vote.objects.filter(
-                content_type=ContentType.objects.get_for_model(models.Video),
-                object_id__in=category.approved_set.values_list('id',
-                                                                flat=True),
-                user=request.user).count()
-            if votes < MAX_VOTES_PER_CATEGORY:
-                user_can_vote = True
+        if localtv.settings.voting_enabled() and category.contest_mode:
+            user_can_vote = True
+            if request.user.is_authenticated():
+                import voting
+                MAX_VOTES_PER_CATEGORY = getattr(settings,
+                                                 'MAX_VOTES_PER_CATEGORY',
+                                                 3)
+                votes = voting.models.Vote.objects.filter(
+                    content_type=ContentType.objects.get_for_model(
+                        models.Video),
+                    object_id__in=category.approved_set.values_list('id',
+                                                                    flat=True),
+                    user=request.user).count()
+                if votes >= MAX_VOTES_PER_CATEGORY:
+                    user_can_vote = False
         return object_list(
             request=request, queryset=category.approved_set.all(),
             paginate_by=count,
