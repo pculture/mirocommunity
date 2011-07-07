@@ -22,13 +22,16 @@
 {% block body_class %}category_admin{% endblock body_class %}
 {% block content %}
 {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-<div id="category_votes">
-  <h1>Votes for videos in {{ category }}</h1>
-  <table>
-    <tr>
-      <td>Video</td>
-      <td>Votes</td>
-    </tr>
+<h2>Votes for videos in {{ category }}</h2>
+<div id="labels">
+  <form>{# the CSS expects a form #}
+  <table class="rounded">
+    <thead>
+      <tr>
+        <th>Video</th>
+        <th>Votes</th>
+      </tr>
+    </thead>
     {% for entry in sorted_scores %}
     <tr>
       {% with entry.0 as video %}{% with entry.1 as score %}
@@ -38,6 +41,7 @@
     </tr>
     {% endfor %}
   </table>
+  </form>
 </div>
 
 {% endblock %}
