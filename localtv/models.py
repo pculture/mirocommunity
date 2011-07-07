@@ -114,6 +114,11 @@ class BitLyWrappingURLField(models.URLField):
     def get_db_prep_value(self, value):
         if not getattr(settings, 'BITLY_LOGIN'):
             return value
+
+        # Workaround for some cases
+        if value is None:
+            value = ''
+
         if len(value) <= self.max_length: # short enough to save
             return value
         api = bitly.Api(login=settings.BITLY_LOGIN,
