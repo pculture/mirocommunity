@@ -40,5 +40,6 @@ MySQL-Python
 johnny-cache
 xapian-haystack
 -e git+http://git.pculture.org/localtv-mainsite#egg=localtv-mainsite
+-e hg+https://bitbucket.org/paulswartz/django-storages#egg=django-storages
 django-voting
 
