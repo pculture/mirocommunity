@@ -17,14 +17,17 @@
 
 import datetime
 from django.contrib import comments
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve, Resolver404
+from django.conf import settings
 from django.db.models import Q
-from django.http import Http404, HttpResponsePermanentRedirect, HttpResponse
+from django.http import (Http404, HttpResponsePermanentRedirect,
+                         HttpResponseRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
-
+import localtv.settings
 from localtv import models
 from localtv.listing import views as listing_views
 
@@ -132,6 +135,29 @@ def view_video(request, video_id, slug=None):
             sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
+    if localtv.settings.voting_enabled():
+        import voting
+        user_can_vote = True
+        if request.user.is_authenticated():
+            MAX_VOTES_PER_CATEGORY = getattr(settings,
+                                             'MAX_VOTES_PER_CATEGORY',
+                                             3)
+            max_votes = video.categories.filter(
+                contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
+            votes = voting.models.Vote.objects.filter(
+                content_type=ContentType.objects.get_for_model(models.Video),
+                user=request.user).count()
+            if votes >= max_votes:
+                user_can_vote = False
+        context['user_can_vote'] = user_can_vote
+        if user_can_vote:
+            if 'category' in context and context['category'].contest_mode:
+                context['contest_category'] = context['category']
+            else:
+                context['contest_category'] = video.categories.filter(
+                    contest_mode__isnull=False)[0]
+            
+
     if request.sitelocation().playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
@@ -184,3 +210,23 @@ def share_email(request, content_type_pk, object_id):
                               'sitelocation': request.sitelocation()},
                              form_class = forms.ShareMultipleEmailForm
                              )
+
+def video_vote(request, object_id, direction, **kwargs):
+    if not localtv.settings.voting_enabled():
+        raise Http404
+    import voting.views
+    if request.user.is_authenticated() and direction != 'clear':
+        video = get_object_or_404(models.Video, pk=object_id)
+        MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
+                                         3)
+        max_votes = video.categories.filter(
+            contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
+        votes = voting.models.Vote.objects.filter(
+            content_type=ContentType.objects.get_for_model(models.Video),
+            user=request.user).count()
+        if votes >= max_votes:
+            return HttpResponseRedirect(video.get_absolute_url())
+    return voting.views.vote_on_object(request, models.Video,
+                                       direction=direction,
+                                       object_id=object_id,
+                                       **kwargs)

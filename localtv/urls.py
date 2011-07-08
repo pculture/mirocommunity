@@ -58,3 +58,17 @@ urlpatterns += patterns(
     (r'^share/', include('email_share.urls')),
     (r'^widgets/', include('localtv.widgets.urls')),
     (r'^playlists/', include('localtv.playlists.urls')))
+
+try:
+    import voting
+except ImportError:
+    pass # ignore voting
+else:
+    urlpatterns += patterns(
+        'localtv.views',
+        (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
+         'video_vote', dict(
+                template_object_name='video',
+                template_name='localtv/video_vote_confirm.html',
+                allow_xmlhttprequest=False),
+         'localtv_video_vote'))

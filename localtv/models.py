@@ -42,6 +42,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.contrib.contenttypes.models import ContentType
 from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -973,6 +974,11 @@ class Category(models.Model):
         help_text=("Categories, unlike tags, can have a "
                    "hierarchy."))
 
+    # only relevant is voting is enabled for the site
+    contest_mode = models.DateTimeField('Turn on Contest',
+                                        null=True,
+                                        default=None)
+
     class Meta:
         ordering = ['name']
         unique_together = (
@@ -1022,6 +1028,18 @@ class Category(models.Model):
     def unique_error_message(self, model_class, unique_check):
         return 'Category with this %s already exists.' % (
             unique_check[0],)
+
+    def has_votes(self):
+        """
+        Returns True if this category has videos with votes.
+        """
+        if not localtv.settings.voting_enabled():
+            return False
+        import voting
+        return voting.models.Vote.objects.filter(
+            content_type=ContentType.objects.get_for_model(Video),
+            object_id__in=self.approved_set.values_list('id',
+                                                        flat=True)).exists()
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
@@ -1594,6 +1612,11 @@ class Video(Thumbnailable, VideoBase):
             return 'published'
         else:
             return 'posted'
+
+    def voting_enabled(self):
+        if not localtv.settings.voting_enabled():
+            return False
+        return self.categories.filter(contest_mode__isnull=False).exists()
 
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''

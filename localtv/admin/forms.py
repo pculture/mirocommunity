@@ -18,6 +18,7 @@
 import re
 import os.path
 import feedparser
+import datetime
 
 import django.template.defaultfilters
 from django import forms
@@ -38,6 +39,7 @@ from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
 
+import localtv.settings
 from localtv import models
 from localtv import util
 import localtv.tiers
@@ -587,6 +589,9 @@ class WidgetSettingsForm(forms.ModelForm):
         return ws
 
 class CategoryForm(forms.ModelForm):
+    if localtv.settings.voting_enabled():
+        contest_mode = forms.BooleanField(label='Turn on Contest',
+                                          required=False)
     class Meta:
         model = models.Category
         exclude = ['site']
@@ -597,6 +602,13 @@ class CategoryForm(forms.ModelForm):
         self.site = Site.objects.get_current()
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=self.site)
+
+    def clean_contest_mode(self):
+        val = self.cleaned_data.get('contest_mode')
+        if val:
+            return datetime.datetime.now()
+        else:
+            return None
 
     def _post_clean(self):
         forms.ModelForm._post_clean(self)
