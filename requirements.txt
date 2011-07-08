@@ -29,7 +29,6 @@ oauth2==1.2.0
 oauth
 -e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
-django-storages
 django-notification
 -e git+git://git.pculture.org/localtv@master#egg=miro-community
 whoosh
