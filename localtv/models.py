@@ -241,7 +241,7 @@ class SiteLocationManager(models.Manager):
                 current_site_location = self.select_related().get(site__pk=sid)
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
-                current_site_location = models.SiteLocation.objects.create(
+                current_site_location = localtv.models.SiteLocation.objects.create(
                     site=Site.objects.get_current())
 
             SITE_LOCATION_CACHE[sid] = current_site_location
