@@ -9,7 +9,7 @@ PIL>=1.1.6
 lxml==2.2.7
 python-memcached==1.45
 South>=0.7
--e svn+http://feedparser.googlecode.com/svn/trunk/#egg=feedparser
+feedparser>=5.0.1
 flup>=1.0.2
 python-openid==2.2.4
 http://pypi.pinaxproject.com/python-yadis-1.1.0.tar.gz
