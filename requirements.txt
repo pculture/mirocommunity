@@ -18,7 +18,7 @@ wsgiref==0.1.2
 django-tagging==0.3
 -e svn+http://recaptcha.googlecode.com/svn/trunk/recaptcha-plugins/python@124#egg=recaptcha_client-dev_r124
 -e svn+http://recaptcha-django.googlecode.com/svn/trunk@6#egg=recaptcha_django-0.1-py2.6-dev_r6
-django-haystack==1.0.1-final
+django-haystack>=1.1
 # whoosh or another Haystack backend
 celery==1.0.0
 -e git+http://git.participatoryculture.org/python-bitly@8cd21ba16601f587c607738e80b18a3e1a378c65#egg=python_bitly-trunk-py2.6-dev
