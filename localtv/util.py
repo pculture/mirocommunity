@@ -22,6 +22,7 @@ import urllib
 import types
 import os
 import os.path
+import logging
 
 import Image
 try:
@@ -425,9 +426,31 @@ else:
             return name
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
+DEFAULT_HTTPLIB_TIMEOUT=20
 # We save data inside the httplib cache, but in a hidden directory
 OUR_CACHE_DIR = os.path.join(DEFAULT_HTTPLIB_CACHE_PATH,
                              '.cache_downloaded_file')
+
+def http_get(url, _httplib2=None, return_blank_on_failure=True):
+    if _httplib2:
+        httplib2 = _httplib2
+    else:
+        import httplib2
+
+    h = httplib2.Http(cache=DEFAULT_HTTPLIB_CACHE_PATH,
+                      timeout=DEFAULT_HTTPLIB_TIMEOUT)
+    try:
+        response, body = h.request(url)
+    except AttributeError: # this is the exception httplib2 gives
+                           # on socket timeout
+        if return_blank_on_failure:
+            logging.warn("This URL timed out: " + repr(url))
+            return ''
+        else:
+            raise
+
+    return body
+
 def cache_downloaded_file(url, http_getter):
     if not os.path.exists(DEFAULT_HTTPLIB_CACHE_PATH):
         os.mkdir(DEFAULT_HTTPLIB_CACHE_PATH, 0700)

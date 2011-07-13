@@ -59,7 +59,6 @@ def bulk_edit(request):
     videos = models.Video.objects.filter(
         status=models.VIDEO_STATUS_ACTIVE,
         site=request.sitelocation().site)
-    videos = videos.select_related('feed', 'search', 'site')
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
@@ -73,6 +72,12 @@ def bulk_edit(request):
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
+        elif filter_type == 'unapproved':
+            videos = models.Video.objects.filter(
+                status=models.VIDEO_STATUS_UNAPPROVED,
+                site=request.sitelocation().site)
+
+    videos = videos.select_related('feed', 'search', 'site')
 
     category = request.GET.get('category', '')
     try:

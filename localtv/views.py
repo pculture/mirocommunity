@@ -135,7 +135,7 @@ def view_video(request, video_id, slug=None):
             sitelocation=request.sitelocation(),
             status=models.VIDEO_STATUS_ACTIVE)
 
-    if localtv.settings.voting_enabled():
+    if video.voting_enabled():
         import voting
         user_can_vote = True
         if request.user.is_authenticated():

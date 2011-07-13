@@ -53,6 +53,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <option {% if not request.GET.filter %}selected="selected"{% endif %} value="">Current Videos</option>
       <option {% ifequal request.GET.filter "featured" %}selected="selected"{% endifequal %} value="featured">Featured Videos</option>
       <option {% ifequal request.GET.filter "rejected" %}selected="selected"{% endifequal %} value="rejected">Rejected Videos</option>
+      <option {% ifequal request.GET.filter "unapproved" %}selected="selected"{% endifequal %} value="unapproved">Unapproved Videos</option>      
       <option {% ifequal request.GET.filter "no-attribution" %}selected="selected"{% endifequal %} value="no-attribution">Videos without Attribution</option>
       <option {% ifequal request.GET.filter "no-category" %}selected="selected"{% endifequal %} value="no-category">Videos without Category</option>
     </select>

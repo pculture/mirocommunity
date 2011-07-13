@@ -74,7 +74,7 @@ function run_and_disappear(eventdata) {
 
 function load_video(eventdata) {
     var viddiv = $(this);
-    var video_url = $(this).find('.click_to_display').attr('href');
+    var video_url = $(this).find('.video_preview').text();
     var admin_rightpane = $('#admin_rightpane');
     jQuery.ajax({
             url: video_url,

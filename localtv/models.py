@@ -57,6 +57,7 @@ import django.utils.html
 import bitly
 import feedparser
 import vidscraper
+import vidscraper.bulk_import.util
 from notification import models as notification
 import tagging
 
@@ -115,6 +116,11 @@ class BitLyWrappingURLField(models.URLField):
     def get_db_prep_value(self, value):
         if not getattr(settings, 'BITLY_LOGIN'):
             return value
+
+        # Workaround for some cases
+        if value is None:
+            value = ''
+
         if len(value) <= self.max_length: # short enough to save
             return value
         api = bitly.Api(login=settings.BITLY_LOGIN,
@@ -236,7 +242,7 @@ class SiteLocationManager(models.Manager):
                 current_site_location = self.select_related().get(site__pk=sid)
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
-                current_site_location = models.SiteLocation.objects.create(
+                current_site_location = localtv.models.SiteLocation.objects.create(
                     site=Site.objects.get_current())
 
             SITE_LOCATION_CACHE[sid] = current_site_location
@@ -472,6 +478,29 @@ class SiteLocation(Thumbnailable):
             # Silenced.
             return u''
 
+    def should_show_dashboard(self):
+        '''On /admin/, most sites will see a dashboard that gives them
+        information at a glance about the site, including its tier status.
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
+
+        In that case (in the default theme) the left-hand navigation
+        will omit the link to the Dashboard, and also the dashboard itself
+        will be an empty page with a META REFRESH that points to
+        /admin/approve_reject/.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
+
+    def should_show_account_level(self):
+        '''On /admin/upgrade/, most sites will see an info page that
+        shows how to change their account level (AKA site tier).
+
+        Some sites want to disable that, which they can do by setting the
+        LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL variable to False.
+
+        This simply removes the link from the sidebar; if you visit the
+        /admin/upgrade/ page, it renders as usual.'''
+        return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
 
 class WidgetSettings(Thumbnailable):
     """
@@ -621,6 +650,23 @@ class Feed(Source):
                                               clear_rejected):
             pass
 
+    def _get_feed_urls(self):
+        '''You might think that self.feed_url is the feed we will fetch
+        during self.update_items(). That would be true, but...
+
+        YouTube provides two different URLs for video feed. They are supposed
+        to be equivalent, but sometimes videos show up in one but do not show
+        up in the other. So when doing update_items() on a YouTube feed, we
+        ask the backend to crawl both feed URLs.
+
+        It's pretty terrible, but that's life.'''
+        # Here is the YouTube-specific hack...
+        if (self.feed_url.startswith('http://gdata.youtube.com/') and
+            'v=2' in self.feed_url and
+            'orderby=published' in self.feed_url):
+            return [self.feed_url, self.feed_url.replace('orderby=published', '')]
+        return [self.feed_url]
+
     def _update_items_generator(self, verbose=False, parsed_feed=None,
                                 clear_rejected=False, actually_save_thumbnails=True):
         """
@@ -632,7 +678,12 @@ class Feed(Source):
         }
         """
         if parsed_feed is None:
-            parsed_feed = feedparser.parse(self.feed_url, etag=self.etag)
+            for feed_url in self._get_feed_urls():
+                individual_parsed_feeds = []
+                data = util.http_get(self.feed_url)
+                individual_parsed_feeds.append(feedparser.parse(data))
+            parsed_feed = vidscraper.bulk_import.util.join_feeds(
+                individual_parsed_feeds)
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
             yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
