@@ -678,7 +678,7 @@ class Feed(Source):
         }
         """
         if parsed_feed is None:
-            for feed_url in self._get_feed_urls:
+            for feed_url in self._get_feed_urls():
                 individual_parsed_feeds = []
                 data = util.http_get(self.feed_url)
                 individual_parsed_feeds.append(feedparser.parse(data))
