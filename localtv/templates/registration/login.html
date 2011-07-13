@@ -90,7 +90,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     <div id="login_tab_twitter" class="inactive">
       <div class="left">
-        <a href="{% url socialauth_twitter_login %}"><img src="{% get_static_url "/images/twitter_login.gif" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+        <a href="{% url socialauth_twitter_login %}?next={{ next }}"><img src="{% get_static_url "/images/twitter_login.gif" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
       </div>
       <div class="clear"></div>
     </div>
