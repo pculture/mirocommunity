@@ -57,6 +57,7 @@ import django.utils.html
 import bitly
 import feedparser
 import vidscraper
+import vidscraper.bulk_import.util
 from notification import models as notification
 import tagging
 
@@ -649,6 +650,23 @@ class Feed(Source):
                                               clear_rejected):
             pass
 
+    def _get_feed_urls(self):
+        '''You might think that self.feed_url is the feed we will fetch
+        during self.update_items(). That would be true, but...
+
+        YouTube provides two different URLs for video feed. They are supposed
+        to be equivalent, but sometimes videos show up in one but do not show
+        up in the other. So when doing update_items() on a YouTube feed, we
+        ask the backend to crawl both feed URLs.
+
+        It's pretty terrible, but that's life.'''
+        # Here is the YouTube-specific hack...
+        if (self.feed_url.startswith('http://gdata.youtube.com/') and
+            'v=2' in self.feed_url and
+            'orderby=published' in self.feed_url):
+            return [self.feed_url, self.feed_url.replace('orderby=published', '')]
+        return [self.feed_url]
+
     def _update_items_generator(self, verbose=False, parsed_feed=None,
                                 clear_rejected=False, actually_save_thumbnails=True):
         """
@@ -660,9 +678,12 @@ class Feed(Source):
         }
         """
         if parsed_feed is None:
-            data = util.http_get(self.feed_url)
-            # FIXME: I know we are abusing etag here.
-            parsed_feed = feedparser.parse(data, etag=self.etag)
+            for feed_url in self._get_feed_urls:
+                individual_parsed_feeds = []
+                data = util.http_get(self.feed_url)
+                individual_parsed_feeds.append(feedparser.parse(data))
+            parsed_feed = vidscraper.bulk_import.util.join_feeds(
+                individual_parsed_feeds)
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
             yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
