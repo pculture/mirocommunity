@@ -74,7 +74,7 @@ class Command(BaseCommand):
         # This permits us to download it only once, passing a parsed_feed through
         # to the vidscraper functions.
         h = httplib2.Http(DEFAULT_HTTPLIB_CACHE_PATH)
-        content = localtv.util.http_get(_httplib2=httplib2)
+        content = localtv.util.http_get(feed.feed_url, _httplib2=httplib2)
 
         parsed_feed = feedparser.parse(content)
 
