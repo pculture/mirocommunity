@@ -594,7 +594,10 @@ class CategoryForm(forms.ModelForm):
                                           required=False)
     class Meta:
         model = models.Category
-        exclude = ['site']
+        if localtv.settings.voting_enabled():
+            exclude = ['site']
+        else:
+            exclude = ['site', 'contest_mode']
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
