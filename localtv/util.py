@@ -539,3 +539,8 @@ def resize_image_returning_list_of_content_files(original_image,
              ContentFile(sio_img.read())))
     return ret
 
+def touch(filename):
+    '''This is like /usr/bin/touch.'''
+    file_obj = open(filename, 'w')
+    file_obj.write('')
+    file_obj.close()

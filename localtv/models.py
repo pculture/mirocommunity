@@ -1914,3 +1914,39 @@ if ENABLE_ORIGINAL_VIDEO:
                                      sender=Video)
     models.signals.post_save.connect(save_original_tags,
                                      sender=tagging.models.TaggedItem)
+
+### The "stamp" set of features is a performance optimization for large
+### deployments of Miro Community.
+###
+### The VIDEO_PUBLISHED_STAMP updates the mtime of a file whenever a Video instance
+### is created or modified. If the stamp file is really old, then you can
+### safely skip running management commands like update_index.
+
+ENABLE_CHANGE_STAMPS = getattr(
+    settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
+
+def video_published_stamp_signal_listener(sender=None, instance=None, created=False, **kwargs):
+    '''The purpose of the change stamp is to create a file on-disk that
+    indicates when a new instance of the Video model has been published
+    or modified.
+
+    We actually simply update the stamp on every change or deletion to
+    Video instances. This is slightly too aggressive: If a Video comes in
+    from a feed and is not published, we will update the stamp needlessly.
+
+    That is okay with me for now.
+    '''
+    update_stamp(name='video-published-stamp')
+
+def update_stamp(name):
+    path = os.path.join(settings.MEDIA_ROOT, '.' + name)
+    try:
+        util.touch(path)
+    except Exception, e:
+        logging.error(e)
+
+if ENABLE_CHANGE_STAMPS:
+    models.signals.post_save.connect(video_published_stamp_signal_listener,
+                                     sender=Video)
+    models.signals.post_delete.connect(video_published_stamp_signal_listener,
+                                       sender=Video)
