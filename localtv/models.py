@@ -1937,9 +1937,13 @@ def video_published_stamp_signal_listener(sender=None, instance=None, created=Fa
     That is okay with me for now.
     '''
     if do_query:
-        v = Video.objects.filter(status=VIDEO_STATUS_ACTIVE
-                                 ).order_by('-when_published')[0]
-        override_date = v.when_published
+        videos = Video.objects.filter(status=VIDEO_STATUS_ACTIVE
+                                 ).order_by('-when_published')
+        if videos:
+            v = videos[0]
+            override_date = v.when_published
+        else:
+            override_date = datetime.datetime(1970, 1, 1, 0, 0, 0)
     else:
         override_date = None
     update_stamp(name='video-published-stamp', override_date=override_date)
