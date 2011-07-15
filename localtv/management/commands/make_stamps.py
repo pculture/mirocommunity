@@ -25,6 +25,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         '''This management command calls all the known stamp signal listeners.
 
-        This stores a stamp on-disk with the current date.'''
-        localtv.models.video_published_stamp_signal_listener()
-        localtv.models.user_modified_stamp_signal_listener()
+        This stores a stamp on-disk with the value it should have.'''
+        localtv.models.video_published_stamp_signal_listener(do_query=True)
+        localtv.models.user_modified_stamp_signal_listener(do_query=True)

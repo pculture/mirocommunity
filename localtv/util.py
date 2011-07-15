@@ -539,8 +539,11 @@ def resize_image_returning_list_of_content_files(original_image,
              ContentFile(sio_img.read())))
     return ret
 
-def touch(filename):
+def touch(filename, override_date=None):
     '''This is like /usr/bin/touch.'''
     file_obj = open(filename, 'w')
     file_obj.write('')
     file_obj.close()
+    if override_date:
+        as_int = int(override_date.strftime("+%s"))
+        os.utime(filename, (as_int, as_int))
