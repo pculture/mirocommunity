@@ -1962,7 +1962,9 @@ def user_modified_stamp_signal_listener(sender=None, instance=None, created=Fals
         users = SiteLocation.objects.get_current().admins.order_by('-last_login')
         if users:
             u = users[0]
-        override_date = u.last_login
+            override_date = u.last_login
+        else:
+            override_date = datetime.datetime(1970, 1, 1, 0, 0, 0)
     else:
         override_date = None
     update_stamp(name='user-modified-stamp', override_date=override_date)
