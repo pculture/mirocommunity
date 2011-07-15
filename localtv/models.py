@@ -1938,6 +1938,18 @@ def video_published_stamp_signal_listener(sender=None, instance=None, created=Fa
     '''
     update_stamp(name='video-published-stamp')
 
+def user_modified_stamp_signal_listener(sender=None, instance=None, created=False, **kwargs):
+    '''The purpose of this stamp is to listen to the User model, and whenever
+    a User changes (perhaps due to a change in the last_login value), we create
+    a file on-disk to say so.
+
+    Note taht this is a little too aggressive: Any change to a User will cause this stamp
+    to get updated, not just last_login-related changes.
+
+    That is okay with me for now.
+    '''
+    update_stamp(name='user-modified-stamp')
+
 def update_stamp(name):
     path = os.path.join(settings.MEDIA_ROOT, '.' + name)
     try:
@@ -1950,3 +1962,7 @@ if ENABLE_CHANGE_STAMPS:
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,
                                        sender=Video)
+    models.signals.post_save.connect(user_modified_stamp_signal_listener,
+                                     sender=User)
+    models.signals.post_delete.connect(user_modified_stamp_signal_listener,
+                                       sender=User)

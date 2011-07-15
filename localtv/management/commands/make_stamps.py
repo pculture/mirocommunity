@@ -27,3 +27,4 @@ class Command(BaseCommand):
 
         This stores a stamp on-disk with the current date.'''
         localtv.models.video_published_stamp_signal_listener()
+        localtv.models.user_modified_stamp_signal_listener()
