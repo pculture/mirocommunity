@@ -183,7 +183,7 @@ def view_video(request, video_id, slug=None):
         if 'playlist' in request.GET:
             try:
                 playlist = Playlist.objects.get(pk=request.GET['playlist'])
-            except Playlist.DoesNotExist:
+            except (Playlist.DoesNotExist, ValueError):
                 pass
             else:
                 if playlist.status == PLAYLIST_STATUS_PUBLIC or \
