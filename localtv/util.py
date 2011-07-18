@@ -415,6 +415,8 @@ except (AttributeError, ImportError):
     pass
 else:
     class SimplerS3Storage(backends.s3.S3Storage):
+        EVEN = set(['0', '2', '4', '6', '8', 'a', 'c', 'e'])
+        ODD  = set(['1', '3', '5', '7', '8', 'b', 'd', 'f'])
         '''This is just like the normal S3Storage backend, only
         we override the get_available_name method so that we permit
         ourselves to overwrite files. By default, the core of Django's
@@ -424,6 +426,58 @@ else:
             """ Overwrite existing file with the same name. """
             name = self._clean_name(name)
             return name
+
+        def url(self, *args, **kwargs):
+            '''This is just like the S3Storage url() function, with
+            one big caveat: It swaps out the default Amazon domain name
+            with a nearly-randomly chosen selection of alternate domain names.
+
+            This is to let browsers download with greater parallelism.
+
+            This is kind of like making up a CallingFormat.RoundRobin class,
+            but more of a hack. Read this URL for more about CallingFormat:
+            https://bitbucket.org/david/django-storages/src/629607f8767f/storages/backends/s3.py'''
+            url = super(SimplerS3Storage, self).url(*args, **kwargs)
+            if getattr(settings, 'LOCALTV_S3_ROUND_ROBIN', False):
+                return self._maybe_mangle_s3_url(url)
+
+        def _maybe_mangle_s3_url(self, url):
+            '''Input: A URL on Amazon S3.
+
+            Output: One of 2 equivalent URLs to the same file. This function will
+            always return the same output for a given input.'''
+            hasher = hashlib.md5()
+            parsed = list(urlparse.urlparse(url))
+            path = parsed[1]
+            hasher.update(path)
+            digested = hasher.hexdigested()
+            if digested[-1] in self.EVEN:
+                return url
+            else:
+                return self._mangle_s3_url(parsed)
+
+
+        def _mangle_s3_url(self, parsed_url):
+            '''This converts the calling format between subdomain to bucket-name.'''
+            netloc = parsed_url[1]
+            path   = parsed_url[2]
+            bucket = settings.AWS_STORAGE_BUCKET_NAME
+            S3_DOMAIN = 's3.amazonaws.com'
+            if netloc == (bucket + '.' + S3_DOMAIN):
+                netloc = S3_DOMAIN
+                path = bucket + '/' + path
+            elif (path.startswith(bucket + '/') and netloc == S3_DOMAIN):
+                netloc = bucket + '.' + S3_DOMAIN
+                path = path.replace(bucket + '/', '', 1)
+            else:
+                logging.warning("Got a weird URL in S3 mangling: " + parsed_url)
+                return url
+
+            # Slide these values back into (a copy of) parsed_url
+            new_parsed_url = parsed_url[:]
+            new_parsed_url[1] = netloc
+            new_parsed_url[2] = path
+            return urlparse.urlunparse(new_parsed_url)
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 DEFAULT_HTTPLIB_TIMEOUT=20
