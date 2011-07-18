@@ -36,6 +36,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endautoescape %}
   </div>
   <p>
-    <a href="#">{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago</a>
+    <a href="{{ video.get_absolute_url }}">{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago</a>
   </p>
 </div>
