@@ -17,6 +17,7 @@
 import os
 import simplejson
 import multiprocessing
+import logging
 
 import feedparser
 
@@ -35,7 +36,6 @@ DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 
 def function_for_fork_worker(data_tuple):
     video_id, future_status = data_tuple
-    import logging
     import localtv.management.commands.update_one_thumbnail
     cmd = localtv.management.commands.update_one_thumbnail.Command()
     try:
@@ -96,6 +96,24 @@ class Command(BaseCommand):
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
         # This asynchronous bulk_import is a parallelism monster.
 
+        # Also, for some reason, this monster causes MySQL to frequently just
+        # disconnect us with an error like:
+        # OperationalError: (2013, 'Lost connection to MySQL server during query')
+        # so we set this flag called keep_going to True, and repeat the body of this code
+        # for up to 8 tries, if that's how long it takes.
+        MAX_TRIES_FOR_BULK_IMPORT = 8
+        num_tries_so_far = 0
+        while num_tries_so_far < MAX_TRIES_FOR_BULK_IMPORT:
+            try:
+                result = self._bulk_import_asynchronously_for_real(original_parsed_feed, h, feed_urls, feed)
+                return result
+            except Exception, e:
+                logging.warn("oh, sad, the bulk import fell over. Maybe it will work on a retry.")
+                logging.exception(e)
+                num_tries_so_far += 1
+
+    @transaction.commit_manually
+    def _bulk_import_asynchronously_for_real(self, original_parsed_feed, h, feed_urls, feed):
         # We do as much network I/O as we can using eventlet,
         # rather than threads or subprocesses.
         httplib2 = eventlet.import_patched('httplib2')
