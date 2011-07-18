@@ -38,6 +38,7 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
+from tagging.utils import edit_string_for_tags
 
 import localtv.settings
 from localtv import models
@@ -413,6 +414,11 @@ class BulkEditVideoForm(EditVideoForm):
         # same cache).
         EditVideoForm.__init__(self, *args, **kwargs)
 
+        # We have to initialize tags manually because the model form
+        # (django.forms.models.model_to_dict) only collects fields and
+        # relations, and not descriptors like Video.tags
+        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+
         # cache the querysets so that we don't hit the DB for each form
         cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
 
@@ -437,6 +443,12 @@ class BulkEditVideoForm(EditVideoForm):
 
     def _restore_authors(self):
         self.cleaned_data['authors'] = [unicode(x.id) for x in self.instance.authors.all()]
+
+    def save(self, *args, **kwargs):
+        # We need to update the Video.tags descriptor manually because
+        # Django's model forms does not (django.forms.models.construct_instance)
+        self.instance.tags = self.cleaned_data['tags']
+        return super(BulkEditVideoForm, self).save(*args, **kwargs)
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,

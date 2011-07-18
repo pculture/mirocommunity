@@ -32,6 +32,8 @@ from django.test.client import Client
 from django.utils.encoding import force_unicode
 from django.conf import settings
 
+from tagging.utils import edit_string_for_tags
+
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
@@ -2363,6 +2365,11 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         * categories: a QuerySet for the categories of the site
         * users: a Queryset for the users on the site
         """
+        # Add tags to a video
+        video = self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[0];
+        video.tags = 'SomeSpecificTagString AnotherSpecificTagString'
+        video.save()
+        
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
@@ -2377,13 +2384,17 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
              response.context[0]['formset'].initial_forms],
             list(
                 self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
+        self.assertEquals(
+            [form.initial['tags'] for form in
+             response.context[0]['formset'].initial_forms],
+            list (edit_string_for_tags(video.tags) for video in
+                  self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEquals(list(response.context[0]['categories']),
                           list(models.Category.objects.filter(
                 site=self.site_location.site)))
         self.assertEquals(list(response.context[0]['users']),
                           list(User.objects.order_by('username')))
-
 
     def test_GET_sorting(self):
         """
@@ -2582,8 +2593,10 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_data.update({
                 'form-0-name': 'new name!',
                 'form-0-file_url': 'http://pculture.org/',
+                'form-0-tags': 'tag1 tag2',
                 'form-1-description': 'localtv',
-                'form-1-embed_code': 'new embed code'
+                'form-1-embed_code': 'new embed code',
+                'form-1-tags': 'tag3 tag4',
                 })
 
         POST_response = c.post(self.url, POST_data,
@@ -2600,6 +2613,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(video1.name, POST_data['form-0-name'])
         self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
         self.assertEquals(video1.embed_code, POST_data['form-0-embed_code'])
+        self.assertEquals(set(video1.tags.values_list('name', flat=True)),
+                          set(['tag1', 'tag2']))
 
         video2 = models.Video.objects.get(
             pk=POST_data['form-1-id'])
@@ -2607,6 +2622,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
                           POST_data['form-1-description'])
         self.assertEquals(video2.embed_code,
                           POST_data['form-1-embed_code'])
+        self.assertEquals(set(video2.tags.values_list('name', flat=True)),
+                          set(['tag3', 'tag4']))
 
     def test_POST_change_just_one_video(self):
         """

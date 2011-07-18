@@ -190,7 +190,7 @@ def bulk_edit(request):
                             elif value == 'unfeature':
                                 form.instance.last_featured = None
                         elif key == 'tags':
-                            form.instance.tags = value
+                            form.cleaned_data[key] = value
                         elif key == 'categories':
                             # categories append, not replace
                             form.cleaned_data[key] = (
