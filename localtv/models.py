@@ -808,9 +808,15 @@ class Feed(Source):
                 tags = scraped_data.get('tags', [])
 
                 if not authors.count() and scraped_data.get('user'):
+                    name = scraped_data.get('user')
+                    if ' ' in name:
+                        first, last = name.split(' ', 1)
+                    else:
+                        first, last = name, ''
                     author, created = User.objects.get_or_create(
-                        username=scraped_data.get('user'),
-                        defaults={'first_name': scraped_data.get('user')})
+                        username=name[:30],
+                        defaults={'first_name': first[:30],
+                                  'last_name': last[:30]})
                     if created:
                         author.set_unusable_password()
                         author.save()
