@@ -23,6 +23,7 @@ import types
 import os
 import os.path
 import logging
+import urlparse
 
 import Image
 try:
