@@ -503,7 +503,7 @@ def http_get(url, _httplib2=None, return_blank_on_failure=True):
             return ''
         else:
             raise
-    except httplib2.BadStatusLine, e:
+    except httplib2.httplib.BadStatusLine, e:
         if not e.args[0] and return_blank_on_failure:
             logging.warn("This URL timed out: %r", url)
             return ''
