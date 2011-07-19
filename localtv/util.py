@@ -450,7 +450,7 @@ else:
             parsed = list(urlparse.urlparse(url))
             path = parsed[1]
             hasher.update(path)
-            digested = hasher.hexdigested()
+            digested = hasher.hexdigest()
             if digested[-1] in self.EVEN:
                 return url
             else:
@@ -466,12 +466,11 @@ else:
             if netloc == (bucket + '.' + S3_DOMAIN):
                 netloc = S3_DOMAIN
                 path = bucket + '/' + path
-            elif (path.startswith(bucket + '/') and netloc == S3_DOMAIN):
+            elif (path.startswith('/' + bucket + '/') and netloc == S3_DOMAIN):
                 netloc = bucket + '.' + S3_DOMAIN
                 path = path.replace(bucket + '/', '', 1)
             else:
                 logging.warning("Got a weird URL in S3 mangling: " + parsed_url)
-                return url
 
             # Slide these values back into (a copy of) parsed_url
             new_parsed_url = parsed_url[:]
