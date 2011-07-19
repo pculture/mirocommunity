@@ -101,7 +101,7 @@ def sanitize(value, extra_filters=None):
     return mark_safe(soup.renderContents().decode('utf8'))
 
 def wmode_transparent(value):
-    doc = lxml.html.fragment_fromstring('<div>' + value + '</div>')
+    doc = lxml.html.fromstring('<div>' + value + '</div>')
     # Find any object tag
     tags = doc.cssselect('object')
     for object_tag in tags:
