@@ -307,7 +307,11 @@ class TierInfo(models.Model):
         return (self.current_paypal_profile_id == 'subsidized')
 
     def set_to_subsidized(self):
-        assert not self.current_paypal_profile_id
+        if self.current_paypal_profile_id:
+            raise AssertionError, (
+                "Bailing out: " +
+                "the site already has a payment profile configured: %s" %
+                                   self.current_paypal_profile_id)
         self.current_paypal_profile_id = 'subsidized'
 
     def time_until_free_trial_expires(self, now = None):
