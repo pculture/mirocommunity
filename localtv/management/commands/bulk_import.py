@@ -24,6 +24,8 @@ import feedparser
 import eventlet
 import eventlet.pools
 
+import httplib
+
 from django.db import transaction
 from django.core.management.base import BaseCommand, CommandError
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
@@ -127,7 +129,13 @@ class Command(BaseCommand):
             with httppool.item() as http:
                 if self.verbose:
                     print 'getting', url
-                resp, content = http.request(url, 'GET')
+                try:
+                    resp, content = http.request(url, 'GET')
+                except httplib.BadStatusLine, e:
+                    if not e.args[0]: # timeout
+                        resp, content = e, ''
+                    else:
+                        raise
                 return (resp, content)
 
         def cache_thumbnail_url(url):
