@@ -1935,7 +1935,7 @@ if ENABLE_ORIGINAL_VIDEO:
 ENABLE_CHANGE_STAMPS = getattr(
     settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
 
-def video_published_stamp_signal_listener(sender=None, instance=None, created=False, do_query=False, **kwargs):
+def video_published_stamp_signal_listener(sender=None, instance=None, created=False, override_date=None, **kwargs):
     '''The purpose of the change stamp is to create a file on-disk that
     indicates when a new instance of the Video model has been published
     or modified.
@@ -1946,19 +1946,9 @@ def video_published_stamp_signal_listener(sender=None, instance=None, created=Fa
 
     That is okay with me for now.
     '''
-    if do_query:
-        videos = Video.objects.filter(status=VIDEO_STATUS_ACTIVE
-                                 ).order_by('-when_published')
-        if videos:
-            v = videos[0]
-            override_date = v.when_published
-        else:
-            override_date = datetime.datetime(1970, 1, 1, 0, 0, 0)
-    else:
-        override_date = None
     update_stamp(name='video-published-stamp', override_date=override_date)
 
-def user_modified_stamp_signal_listener(sender=None, instance=None, created=False, do_query=False, **kwargs):
+def user_modified_stamp_signal_listener(sender=None, instance=None, created=False, override_date=None, **kwargs):
     '''The purpose of this stamp is to listen to the User model, and whenever
     a User changes (perhaps due to a change in the last_login value), we create
     a file on-disk to say so.
@@ -1968,15 +1958,6 @@ def user_modified_stamp_signal_listener(sender=None, instance=None, created=Fals
 
     That is okay with me for now.
     '''
-    if do_query:
-        users = SiteLocation.objects.get_current().admins.order_by('-last_login')
-        if users:
-            u = users[0]
-            override_date = u.last_login
-        else:
-            override_date = datetime.datetime(1970, 1, 1, 0, 0, 0)
-    else:
-        override_date = None
     update_stamp(name='user-modified-stamp', override_date=override_date)
 
 def update_stamp(name, override_date=None):
