@@ -439,7 +439,8 @@ else:
             https://bitbucket.org/david/django-storages/src/629607f8767f/storages/backends/s3.py'''
             url = super(SimplerS3Storage, self).url(*args, **kwargs)
             if getattr(settings, 'LOCALTV_S3_ROUND_ROBIN', False):
-                return self._maybe_mangle_s3_url(url)
+                url = self._maybe_mangle_s3_url(url)
+            return url
 
         def _maybe_mangle_s3_url(self, url):
             '''Input: A URL on Amazon S3.
