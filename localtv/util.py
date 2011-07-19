@@ -601,10 +601,35 @@ def resize_image_returning_list_of_content_files(original_image,
     return ret
 
 def touch(filename, override_date=None):
-    '''This is like /usr/bin/touch.'''
+    '''This is like /usr/bin/touch
+
+    It has a special override_date parameter which is used
+    as the time to store in the file. If the file is already
+    newer than the given time, then we simply do nothing.'''
+    actually_touch_it = True
+
+    if override_date:
+        as_int = int(override_date.strftime("%s"))
+        actually_touch_it = True
+        try:
+            current_mtime = os.stat(filename).st_mtime
+        except OSError, e:
+            if e.errno == 2:
+                pass # this is expected sometimes
+            else:
+                logging.error(e)
+        else:
+            # If the file is already newer, do not touch
+            if current_mtime > as_int:
+                actually_touch_it = False
+
+    if not actually_touch_it:
+        return
+
+    # Okay, so we definitely want to touch the file.
     file_obj = open(filename, 'w')
     file_obj.write('')
     file_obj.close()
+
     if override_date:
-        as_int = int(override_date.strftime("+%s"))
         os.utime(filename, (as_int, as_int))
