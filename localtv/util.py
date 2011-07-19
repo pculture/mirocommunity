@@ -450,7 +450,7 @@ else:
             always return the same output for a given input.'''
             hasher = hashlib.md5()
             parsed = list(urlparse.urlparse(url))
-            path = parsed[1]
+            path = parsed[2]
             hasher.update(path)
             digested = hasher.hexdigest()
             if digested[-1] in self.EVEN:
@@ -467,10 +467,10 @@ else:
             S3_DOMAIN = 's3.amazonaws.com'
             if netloc == (bucket + '.' + S3_DOMAIN):
                 netloc = S3_DOMAIN
-                path = bucket + '/' + path
+                path = '/' + bucket + path
             elif (path.startswith('/' + bucket + '/') and netloc == S3_DOMAIN):
                 netloc = bucket + '.' + S3_DOMAIN
-                path = path.replace(bucket + '/', '', 1)
+                path = path.replace('/' + bucket, '', 1)
             else:
                 logging.warning("Got a weird URL in S3 mangling: " + parsed_url)
 
