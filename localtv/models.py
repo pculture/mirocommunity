@@ -1996,7 +1996,13 @@ def create_or_delete_video_needs_published_date_stamp():
 def update_stamp(name, override_date=None, delete_stamp=False):
     path = os.path.join(settings.MEDIA_ROOT, '.' + name)
     if delete_stamp:
-        os.unlink(path)
+        try:
+            os.unlink(path)
+        except OSError, e:
+            if e.errno == 2: # does not exist
+                pass
+            else:
+                raise
         return
 
     try:
