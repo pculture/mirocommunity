@@ -1601,7 +1601,10 @@ class Video(Thumbnailable, VideoBase):
             self.has_thumbnail = False
             self.save()
         else:
-            self.save_thumbnail_from_file(content_thumb)
+            try:
+                self.save_thumbnail_from_file(content_thumb)
+            except Exception:
+                logging.exception("Error while getting " + repr(self.thumbnail_url))
 
     def submitter(self):
         """
