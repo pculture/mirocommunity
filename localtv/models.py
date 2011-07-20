@@ -1960,6 +1960,18 @@ def site_has_at_least_one_feed_stamp_signal_listener(sender=None, instance=None,
     '''
     update_stamp(name='site-has-at-least-one-feed-stamp', override_date=override_date)
 
+def site_has_at_least_one_saved_search_stamp_signal_listener(sender=None, instance=None, created=False, override_date=None, **kwargs):
+    '''The purpose of this stamp is to signify to management scripts that this
+    site has at least one Feed.
+
+    Therefore, it listens to all .save()s on the Feed model and makes sure
+    that the site-has-at-least-one-feed-stamp file exists.
+
+    The site-has-at-least-one-feed-stamp stamp is unique in that its modification time
+    is not very important.
+    '''
+    update_stamp(name='site-has-at-least-saved-search-stamp', override_date=override_date)
+
 def user_modified_stamp_signal_listener(sender=None, instance=None, created=False, override_date=None, **kwargs):
     '''The purpose of this stamp is to listen to the User model, and whenever
     a User changes (perhaps due to a change in the last_login value), we create
@@ -1990,3 +2002,5 @@ if ENABLE_CHANGE_STAMPS:
                                        sender=User)
     models.signals.post_save.connect(site_has_at_least_one_feed_stamp_signal_listener,
                                      sender=Feed)
+    models.signals.post_save.connect(site_has_at_least_one_saved_search_stamp_signal_listener,
+                                     sender=SavedSearch)
