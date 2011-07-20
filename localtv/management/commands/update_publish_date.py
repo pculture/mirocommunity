@@ -38,3 +38,7 @@ class Command(NoArgsCommand):
                 if d:
                     v.when_published = d['publish_date']
                     v.save()
+
+        # Finally, at the end, if stamps are enabled, update them.
+        if models.ENABLE_CHANGE_STAMPS:
+            models.create_or_delete_video_needs_published_date_stamp()
