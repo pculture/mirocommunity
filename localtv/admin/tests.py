@@ -4454,6 +4454,24 @@ class IpnIntegration(BaseTestCase):
         tier_info = models.TierInfo.objects.get_current()
         self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
 
+    @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
+    def test_payment_success(self):
+        self.upgrade_and_submit_ipn()
+        tier_info = models.TierInfo.objects.get_current()
+        self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
+
+        # Send ourselves a payment IPN.
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': u'15.00', u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        url = reverse('localtv_admin_ipn_endpoint',
+                      kwargs={'payment_secret': self.tier_info.get_payment_secret()})
+
+        Client().post(url,
+                      ipn_data)
+        tier_info_new = models.TierInfo.objects.get_current()
+        self.assertEqual(tier_info_new.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
+        # make sure that they've pushed the due date into the future
+        self.assertTrue(tier_info_new.payment_due_date > tier_info.payment_due_date)
+
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='FAILURE'))
     def test_failure(self):
         tier_info = models.TierInfo.objects.get_current()

@@ -25,6 +25,7 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+from paypal.standard.ipn.models import PayPalIPN
 import paypal.standard.ipn.views
 
 from localtv.decorators import require_site_admin
@@ -358,7 +359,7 @@ def _generate_can_modify():
 
     return can_modify_mapping
 
-from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot, subscription_modify
+from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot, subscription_modify, payment_was_successful
 def handle_recurring_profile_start(sender, **kwargs):
     ipn_obj = sender
 
@@ -514,3 +515,38 @@ def handle_recurring_profile_modify(sender, **kwargs):
         _actually_switch_tier(target_tier_name)
 
 subscription_modify.connect(handle_recurring_profile_modify)
+
+def handle_successful_payment(sender, **kwargs):
+    ipn_obj = sender
+
+    # If the thing is invalid, do not process any further.
+    if ipn_obj.flag:
+        return
+
+    test_ipn = getattr(settings, 'PAYPAL_TEST', False)
+
+    if ipn_obj.test_ipn != test_ipn:
+        # per Asheesh, make sure that the test_ipn setting matches the PAYPAL_TEST setting
+        return
+
+    import localtv.models
+    tier_info = localtv.models.TierInfo.objects.get_current()
+    current_tier_obj = localtv.models.SiteLocation.objects.get_current().get_tier()
+
+    if float(ipn_obj.payment_gross) != current_tier_obj.dollar_cost():
+        raise ValueError("User paid %f instead of %f" % (ipn_obj.payment_gross,
+                                                         current_tier_obj.dollar_cost()))
+    
+    subscription_start = PayPalIPN.objects.filter(
+        subscr_id=ipn_obj.subscr_id,
+        flag=False,
+        test_ipn=test_ipn).exclude(period1="").order_by('-id')[0]
+    num, format = subscription_start.period1.split(' ', 1)
+    num = int(num)
+    if format.upper() != 'D':
+        raise ValueError('invalid repeat period: %r' % subscription_start.period1)
+
+    tier_info.payment_due_date += datetime.timedelta(days=num)
+    tier_info.save()
+
+payment_was_successful.connect(handle_successful_payment)
