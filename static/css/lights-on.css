@@ -3611,6 +3611,12 @@ h2.page_title .private, h2.page_title .private a{
     font-size: 0.9em;
 }
 
+div.playlist_description {
+    padding-top: 10px;
+    clear: left;
+    margin-bottom: -50px;
+}
+
 #main .description ul {
     display: block;
     margin-bottom: 18px;

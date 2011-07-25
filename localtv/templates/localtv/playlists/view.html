@@ -19,3 +19,7 @@
 
 {% block page_title %}Playlist: {{ playlist.name }}{% if playlist.status != 2 %} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}{% endblock %}
 {% block rss_url %}{% url localtv_feeds_playlist playlist.pk %}{% endblock %}
+{% block pagination %}
+{% if playlist.description %}<div class="playlist_description">{{ playlist.description }}</div>{% endif %}
+{{ block.super }}
+{% endblock %}
