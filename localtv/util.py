@@ -199,7 +199,7 @@ def normalize_newlines(s):
     return s
 
 def send_notice(notice_label, subject, message, fail_silently=True,
-                sitelocation=None):
+                sitelocation=None, content_subtype=None):
     notice_type = notification.NoticeType.objects.get(label=notice_label)
     recipient_list = notification.NoticeSetting.objects.filter(
         notice_type=notice_type,
@@ -207,8 +207,11 @@ def send_notice(notice_label, subject, message, fail_silently=True,
         send=True).exclude(user__email='').filter(
         Q(user__in=sitelocation.admins.all()) |
         Q(user__is_superuser=True)).values_list('user__email', flat=True)
-    EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
-                 bcc=recipient_list).send(fail_silently=fail_silently)
+    message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
+                           bcc=recipient_list)
+    if content_subtype:
+        message.content_subtype = content_subtype
+    message.send(fail_silently=fail_silently)
 
 class SortHeaders:
     def __init__(self, request, headers, default_order=None):

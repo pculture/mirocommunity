@@ -18,7 +18,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
@@ -74,3 +74,30 @@ def widget_settings(request):
         'localtv/admin/widget_settings.html',
         {'form': form},
         context_instance=RequestContext(request))
+
+@require_site_admin
+@csrf_protect
+def newsletter_settings(request):
+    newsletter = localtv.models.NewsletterSettings.objects.get_current()
+    if not newsletter.sitelocation.get_tier().permit_newsletter():
+        raise Http404
+
+    form = forms.NewsletterSettingsForm(instance=newsletter)
+
+    if request.method == 'POST':
+        form = forms.NewsletterSettingsForm(request.POST, instance=newsletter)
+        if form.is_valid():
+            newsletter = form.save()
+            if request.POST.get('send_email'):
+                newsletter.send()
+            elif request.POST.get('preview'):
+                return HttpResponseRedirect(
+                    reverse('localtv_newsletter'))
+            return HttpResponseRedirect(
+                reverse('localtv_admin_newsletter_settings'))
+
+    return render_to_response(
+        'localtv/admin/newsletter_settings.html',
+        {'form': form},
+        context_instance=RequestContext(request))
+

@@ -52,6 +52,7 @@ import django.dispatch
 from django.core.validators import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
+from django.template.loader import render_to_string
 import django.utils.html
 
 import bitly
@@ -88,6 +89,19 @@ SITE_STATUS_ACTIVE = 1
 SITE_STATUSES = (
     (SITE_STATUS_DISABLED, 'Disabled'),
     (SITE_STATUS_ACTIVE, 'Active'))
+
+(NEWSLETTER_STATUS_DISABLED,
+ NEWSLETTER_STATUS_FEATURED,
+ NEWSLETTER_STATUS_POPULAR,
+ NEWSLETTER_STATUS_CUSTOM,
+ NEWSLETTER_STATUS_LATEST) = range(5)
+
+NEWSLETTER_STATUSES = (
+    (NEWSLETTER_STATUS_DISABLED, 'Disabled'),
+    (NEWSLETTER_STATUS_FEATURED, "5 most recently featured"),
+    (NEWSLETTER_STATUS_POPULAR, "5 most popular"),
+    (NEWSLETTER_STATUS_LATEST, "5 latest videos"),
+    (NEWSLETTER_STATUS_CUSTOM, 'Custom selection'))
 
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (534, 430), # behind a video
@@ -266,14 +280,14 @@ class SiteLocationManager(models.Manager):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
 
-class TierInfoManager(models.Manager):
+class SingletonManager(models.Manager):
     def get_current(self):
         current_site_location = SiteLocation.objects.get_current()
-        tier_info, created = TierInfo.objects.get_or_create(
+        singleton, created = self.model.objects.get_or_create(
             sitelocation = current_site_location)
         if created:
-            logging.info("Created TierInfo.")
-        return tier_info
+            logging.info("Created %s." % self.model.__class__.__name__)
+        return singleton
 
 class TierInfo(models.Model):
     payment_due_date = models.DateTimeField(null=True, blank=True)
@@ -292,7 +306,7 @@ class TierInfo(models.Model):
     should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
     waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
     sitelocation = models.OneToOneField('SiteLocation')
-    objects = TierInfoManager()
+    objects = SingletonManager()
 
     def get_payment_secret(self):
         '''The secret had better be non-empty. So we make it non-empty right here.'''
@@ -506,6 +520,106 @@ class SiteLocation(Thumbnailable):
         /admin/upgrade/ page, it renders as usual.'''
         return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
 
+class NewsletterSettings(models.Model):
+    
+    sitelocation = models.OneToOneField(SiteLocation)
+    status = models.IntegerField(
+        choices=NEWSLETTER_STATUSES, default=NEWSLETTER_STATUS_DISABLED,
+        help_text='What videos should get sent out in the newsletter?')
+
+    # for custom newsletter
+    video1 = models.ForeignKey('Video', related_name='newsletter1', null=True,
+                               help_text='A URL of a video on your site.')
+    video2 = models.ForeignKey('Video', related_name='newsletter2', null=True,
+                               help_text='A URL of a video on your site.')
+    video3 = models.ForeignKey('Video', related_name='newsletter3', null=True,
+                               help_text='A URL of a video on your site.')
+    video4 = models.ForeignKey('Video', related_name='newsletter4', null=True,
+                               help_text='A URL of a video on your site.')
+    video5 = models.ForeignKey('Video', related_name='newsletter5', null=True,
+                               help_text='A URL of a video on your site.')
+    
+    intro = models.CharField(max_length=200, blank=True,
+                             help_text=('Include a short introduction to your '
+                                        'newsletter. If you will be sending '
+                                        'the newsletter automatically, make '
+                                        'sure to update this or write '
+                                        'something that will be evergreen! '
+                                        '(limit 200 characters)'))
+    show_icon = models.BooleanField(default=True,
+                                    help_text=('Do you want to include your '
+                                               'site logo in the newsletter '
+                                               'header?'))
+
+    twitter_url = models.URLField(verify_exists=False, blank=True,
+                                  help_text='e.g. https://twitter.com/#!/mirocommunity')
+    facebook_url = models.URLField(verify_exists=False, blank=True,
+                                   help_text='e.g. http://www.facebook.com/universalsubtitles')
+
+    repeat = models.IntegerField(default=0) # hours between sending
+    last_sent = models.DateTimeField(null=True)
+
+    objects = SingletonManager()
+
+    def videos(self):
+        if self.status == NEWSLETTER_STATUS_DISABLED:
+            raise ValueError('no videos for disabled newsletter')
+        elif self.status == NEWSLETTER_STATUS_FEATURED:
+            videos = Video.objects.filter(
+                site=self.sitelocation.site,
+                status=VIDEO_STATUS_ACTIVE,
+                last_featured__isnull=False).order_by('-last_featured')
+        elif self.status == NEWSLETTER_STATUS_POPULAR:
+            # popular over the last week
+            videos = Video.objects.popular_since(
+                datetime.timedelta(days=7),
+                sitelocation=self.sitelocation,
+                status=VIDEO_STATUS_ACTIVE)
+        elif self.status == NEWSLETTER_STATUS_LATEST:
+            videos = Video.objects.new(site=self.sitelocation.site,
+                                       status=VIDEO_STATUS_ACTIVE)
+        elif self.status == NEWSLETTER_STATUS_CUSTOM:
+            videos = [video for video in (
+                    self.video1,
+                    self.video2,
+                    self.video3,
+                    self.video4,
+                    self.video5) if video]
+        return videos[:5]
+
+    def next_send_time(self):
+        if not self.repeat:
+            return None
+        if not self.last_sent:
+            dt = datetime.datetime.now()
+        else:
+            dt = self.last_sent
+        return dt + datetime.timedelta(hours=self.repeat)
+
+    def send(self):
+        from localtv.admin.user_views import _filter_just_humans
+        body = self.as_html()
+        subject = '[%s] Newsletter for %s' % (self.sitelocation.site.name,
+                                              datetime.datetime.now().strftime('%m/%d/%y'))
+        notice_type = notification.NoticeType.objects.get(label='newsletter')
+        for u in User.objects.exclude(email=None).exclude(email='').filter(
+            _filter_just_humans()):
+            if notification.get_notification_setting(u, notice_type, "1"):
+                message = EmailMessage(subject, body,
+                                       settings.DEFAULT_FROM_EMAIL,
+                                       [u.email])
+                message.content_subtype = 'html'
+                message.send(fail_silently=True)
+
+    def as_html(self, extra_context=None):
+        context = {'newsletter': self,
+                   'sitelocation': self.sitelocation,
+                   'site': self.sitelocation.site}
+        if extra_context:
+            context.update(extra_context)
+        return render_to_string('localtv/admin/newsletter.html',
+                                context)
+        
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -1867,6 +1981,11 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
     notification.create_notice_type('video_approved',
                                     'Your video was approved',
                                     'An admin approved your video',
+                                    default=2,
+                                    verbosity=verbosity)
+    notification.create_notice_type('newsletter',
+                                    'Newsletter',
+                                    'Receive an occasional newsletter',
                                     default=2,
                                     verbosity=verbosity)
     notification.create_notice_type('admin_new_comment',

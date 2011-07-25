@@ -22,7 +22,7 @@ from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
 from django.db.models import Q
 from django.http import (Http404, HttpResponsePermanentRedirect,
-                         HttpResponseRedirect)
+                         HttpResponseRedirect, HttpResponse)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
@@ -230,3 +230,14 @@ def video_vote(request, object_id, direction, **kwargs):
                                        direction=direction,
                                        object_id=object_id,
                                        **kwargs)
+
+def newsletter(request):
+    newsletter = models.NewsletterSettings.objects.get_current()
+    if not newsletter.status:
+        raise Http404
+    elif not newsletter.sitelocation.get_tier().permit_newsletter():
+        raise Http404
+
+    return HttpResponse(newsletter.as_html(
+            {'preview': True}), content_type='text/html')
+

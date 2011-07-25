@@ -23,7 +23,8 @@ urlpatterns = patterns(
     (r'^about/$', 'about', {}, 'localtv_about'),
     (r'^share/(\d+)/(\d+)', 'share_email', {}, 'email-share'),
     (r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
-     {}, 'localtv_view_video'))
+     {}, 'localtv_view_video'),
+    (r'^newsletter/$', 'newsletter', {}, 'localtv_newsletter'))
 
 urlpatterns += patterns(
     'localtv.listing.views',
