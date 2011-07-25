@@ -1462,6 +1462,38 @@ class CommentModerationTestCase(BaseTestCase):
         self.assertEquals(mail.outbox[0].recipients(),
                           [admin.email])
 
+    def test_comments_email_previous_commenter(self):
+        """
+        If previous comment submitters have the 'comment_post_comment'
+        notification enabled, they should get an e-mail when a new comment
+        appears on a video they've commented on.
+        """
+        user = User.objects.get(username='user')
+
+        self.video.user = None
+        self.video.save()
+
+        self.site_location.screen_all_comments = False
+        self.site_location.save()
+
+        c = Client()
+        c.login(username='user', password='password')
+        self.assertStatusCodeEquals(c.post(self.url, self.POST_data), 302)
+
+        self.assertEquals(len(mail.outbox), 0)
+
+        mail.outbox = []
+
+        c = Client()
+        c.login(username='admin', password='admin')
+        self.POST_data['comment'] = 'another comment'
+        self.assertStatusCodeEquals(c.post(self.url, self.POST_data), 302)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEquals(mail.outbox[0].recipients(),
+                          [user.email])
+
+
 # -----------------------------------------------------------------------------
 # Video model tests
 # -----------------------------------------------------------------------------

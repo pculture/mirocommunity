@@ -1760,11 +1760,12 @@ class VideoModerator(CommentModerator):
         send_notice('admin_new_comment', subject, message,
                     sitelocation=sitelocation)
 
+        admin_new_comment = notification.NoticeType.objects.get(
+            label="admin_new_comment")
+
         if video.user and video.user.email:
             video_comment = notification.NoticeType.objects.get(
                 label="video_comment")
-            admin_new_comment = notification.NoticeType.objects.get(
-                label="admin_new_comment")
             if notification.should_send(video.user, video_comment, "1") and \
                not notification.should_send(video.user,
                                             admin_new_comment, "1"):
@@ -1774,6 +1775,30 @@ class VideoModerator(CommentModerator):
                message = t.render(c)
                EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                             [video.user.email]).send(fail_silently=True)
+
+        comment_post_comment = notification.NoticeType.objects.get(
+            label="comment_post_comment")
+        previous_users = set()
+        for previous_comment in comment.__class__.objects.filter(
+            content_type=comment.content_type,
+            object_pk=video.pk,
+            is_public=True,
+            is_removed=False,
+            submit_date__lt=comment.submit_date,
+            user__email__isnull=False).exclude(
+            user__email=''):
+            if (previous_comment.user not in previous_users and
+                notification.should_send(previous_comment.user,
+                                         comment_post_comment, "1") and
+                not notification.should_send(previous_comment.user,
+                                             admin_new_comment, "1")):
+                previous_users.add(previous_comment.user)
+                c = Context({ 'comment': comment,
+                              'content_object': video,
+                              'user_is_admin': False})
+                message = t.render(c)
+                EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
+                             [previous_comment.user.email]).send(fail_silently=True)
 
     def moderate(self, comment, video, request):
         sitelocation = SiteLocation.objects.get(site=video.site)
@@ -1832,6 +1857,11 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
     notification.create_notice_type('video_comment',
                                     'New comment on your video',
                                     'Someone commented on your video',
+                                    default=2,
+                                    verbosity=verbosity)
+    notification.create_notice_type('comment_post_comment',
+                                    'New comment after your comment',
+                                    'Someone commented on a video after you',
                                     default=2,
                                     verbosity=verbosity)
     notification.create_notice_type('video_approved',
