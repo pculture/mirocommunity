@@ -26,9 +26,16 @@ def check_call(args):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
+    stderr = []
+    while process.poll() is None:
+        # #17982: the stderr buffer can fill, so make sure to pull the data
+        # out of the buffer
+        err = process.stderr.read()
+        if err:
+            stderr.append(err)
+
     return_code = process.wait()
     if return_code: # some problem with the code
-        stderr = [process.stderr.read()]
         while stderr[-1] != '':
             stderr.append(process.stderr.read())
 
