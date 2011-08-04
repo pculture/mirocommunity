@@ -91,7 +91,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.comments',
     'django.contrib.flatpages',
-    'south',
+    #'south', # only needed if you're upgrading from an earlier install
     'djpagetabs',
     'djvideo',
     'localtv',
@@ -190,11 +190,12 @@ ACCOUNT_ACTIVATION_DAYS = 7
 FORCE_LOWERCASE_TAGS = True
 
 # celery
-BROKER_HOST = 'localhost'
-BROKER_PORT = 5672
-BROKER_USER = 'celery'
-BROKER_PASSWORD = 'testing'
-BROKER_VHOST = '/'
+CELERY_ALWAYS_EAGER = True # for debugging
+#BROKER_HOST = 'localhost'
+#BROKER_PORT = 5672
+#BROKER_USER = 'celery'
+#BROKER_PASSWORD = 'testing'
+#BROKER_VHOST = '/'
 CELERY_BACKEND = 'cache' # this MUST be set, otherwise the import page won't be
                          # able to figure out if the task has ended
 
