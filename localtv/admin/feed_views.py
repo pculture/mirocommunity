@@ -140,20 +140,21 @@ def add_feed_done(request, feed_id):
     feed = get_object_or_404(models.Feed, pk=feed_id)
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
+        task = celery.result.AsyncResult(task_id)
     else:
         mod = import_module(settings.SETTINGS_MODULE)
         manage_py = os.path.join(
             os.path.dirname(mod.__file__),
             'manage.py')
-        result = tasks.check_call.delay((
+        task = tasks.check_call.delay((
                 getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
                 manage_py,
                 'bulk_import',
                 feed_id))
-        return HttpResponseRedirect('%s?task_id=%s' % (
-                request.path, result.task_id))
+        if not task.ready():
+            return HttpResponseRedirect('%s?task_id=%s' % (
+                    request.path, task.task_id))
 
-    task = celery.result.AsyncResult(task_id)
     if task.ready(): # completed
         context = {'feed': feed,
                    'result': {
