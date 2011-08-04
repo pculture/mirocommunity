@@ -91,7 +91,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.comments',
     'django.contrib.flatpages',
-    #'south', # only needed if you're upgrading from an earlier install
+    'south',
     'djpagetabs',
     'djvideo',
     'localtv',
