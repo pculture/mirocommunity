@@ -891,7 +891,7 @@ class Feed(Source):
                 video_data['file_url_length'] = file_url_length
 
                 video_data['file_url_mimetype'] = video_enclosure.get(
-                    'type')
+                    'type', '')
 
         if link and not skip:
             try:
