@@ -54,7 +54,7 @@ def sanitize(value, extra_filters=None):
         # convert plain-text links into HTML
         return mark_safe(urlize(value,
                                 nofollow=True,
-                                autoescape=True))
+                                autoescape=True).replace('\n', '<br/>'))
 
     js_regex = re.compile(r'[\s]*(&#x.{1,7})?'.join(list('javascript')),
                           re.IGNORECASE)
