@@ -1506,17 +1506,33 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, changed_fields[field])
         self.save()
 
-class VideoManager(models.Manager):
 
-    def new(self, **kwargs):
+class VideoQuerySet(models.query.QuerySet):
+
+    def with_best_date(self, site=None):
         published = 'localtv_video.when_published,'
-        if 'site' in kwargs:
+        if site is not None:
             if not SiteLocation.objects.get(
-                site=kwargs['site']).use_original_date:
+                site=site).use_original_date:
                 published = ''
-        videos = self.extra(select={'best_date': """
+        return self.extra(select={'best_date': """
 COALESCE(%slocaltv_video.when_approved,
 localtv_video.when_submitted)""" % published})
+
+
+class VideoManager(models.Manager):
+
+    def get_query_set(self):
+        """Returns a new QuerySet object.  Subclasses can override this method
+        to easily customize the behavior of the Manager.
+        """
+        return VideoQuerySet(self.model, using=self._db)
+
+    def with_best_date(self, site=None):
+        return self.get_query_set().with_best_date(site)
+
+    def new(self, **kwargs):
+        videos = self.with_best_date(site=kwargs.get('site', None))
         return videos.filter(**kwargs).order_by('-best_date')
 
     def popular_since(self, delta, sitelocation, **kwargs):
