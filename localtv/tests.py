@@ -109,7 +109,7 @@ class BaseTestCase(TestCase):
                 'testdata',
                 filename))
 
-    def assertIsInstance(self, obj, klass):
+    def assertIsInstance(self, obj, klass, msg=None):
         """
         Assert that the given object is an instance of the given class.
 
@@ -117,6 +117,7 @@ class BaseTestCase(TestCase):
         @param klass: the klass the object should be an instance of
         """
         self.assertTrue(isinstance(obj, klass),
+                        msg if msg is not None else
                         "%r is not an instance of %r; %s instead" % (
                 obj, klass, type(obj)))
 
@@ -184,6 +185,13 @@ class FeedModelTestCase(BaseTestCase):
         models.vidscraper = self.vidscraper
         del self.vidscraper
 
+    def _parse_feed(self, filename):
+        """
+        Parses and returns the feed stored as <filename> in our testdata.
+        """
+        data = open(self._data_file(filename)).read()
+        return feedparser.parse(data)
+
     def test_auto_approve_True(self):
         """
         If Feed.auto_approve is True, the imported videos should be marked as
@@ -191,8 +199,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
@@ -205,8 +212,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
@@ -218,8 +224,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = False
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
@@ -240,12 +245,11 @@ class FeedModelTestCase(BaseTestCase):
     def test_entries_inserted_in_reverse_order(self):
         """
         When adding entries from a feed, they should be added to the database
-        in rever order (oldest first)
+        in reversed order (oldest first)
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
-        parsed_feed = feedparser.parse(feed.feed_url)
+        parsed_feed = self._parse_feed('feed.rss')
+        feed.update_items(parsed_feed=parsed_feed)
         parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
         db_guids = models.Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
@@ -257,8 +261,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_duplicate_guid.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_guid.rss'))
         self.assertEquals(models.Video.objects.count(), 1)
         self.assertEquals(models.Video.objects.get().name, 'Old Item')
 
@@ -268,8 +271,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_duplicate_link.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_link.rss'))
         self.assertEquals(models.Video.objects.count(), 1)
         self.assertEquals(models.Video.objects.get().name, 'Old Item')
 
@@ -288,8 +290,7 @@ class FeedModelTestCase(BaseTestCase):
         * tags
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
@@ -321,8 +322,7 @@ class FeedModelTestCase(BaseTestCase):
         A link in the feed to the original source should be optional.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_without_link.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_without_link.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -333,8 +333,7 @@ class FeedModelTestCase(BaseTestCase):
         think is media, should be imported.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_without_mime_type.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_without_mime_type.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -346,8 +345,7 @@ class FeedModelTestCase(BaseTestCase):
         models.vidscraper = self.vidscraper
         feed = models.Feed.objects.get(pk=1)
         feed.auto_authors = []
-        feed.feed_url = self._data_file('vimeo.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('vimeo.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
@@ -399,8 +397,7 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
         feed = models.Feed.objects.get(pk=1)
         user = User.objects.get(pk=1)
         feed.auto_authors = [user]
-        feed.feed_url = self._data_file('youtube.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('youtube.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -414,16 +411,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertEquals(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
         self.assertEquals(video.embed_code,
-                          '<object width="480" height="385">'
-                          '<param name="movie" value="'
-                          'http://www.youtube.com/v/BBwtzeZdoHQ&amp;hl=en&amp;'
-                          'fs=1"><param name="allowFullScreen" value="true">'
-                          '<param name="allowscriptaccess" value="always">'
-                          '<embed src="http://www.youtube.com/v/BBwtzeZdoHQ'
-                          '&amp;hl=en&amp;fs=1" allowscriptaccess="always" '
-                          'height="385" width="480" allowfullscreen="true" '
-                          'type="application/x-shockwave-flash"></embed>'
-                          '</object>')
+                          '<iframe width="480" height="390"'
+                          ' src="http://www.youtube.com/embed/BBwtzeZdoHQ"'
+                          ' frameborder="0" allowfullscreen></iframe>')
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
@@ -447,8 +437,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds should be handled correctly,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'http://www.example.org/entries/1')
@@ -474,8 +463,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         was imported from the original feed.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_from_mc.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_from_mc.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -519,8 +507,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         URL.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_link_via.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_link_via.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
@@ -532,8 +519,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         their content imported,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_media.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_media.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
@@ -548,8 +534,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         embeddable player (with <media:player> should have that code included,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_media_player.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_media_player.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
@@ -561,8 +546,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         don't specify a video another way) should be ignored.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_invalid_media.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_invalid_media.atom'))
         self.assertEquals(feed.video_set.count(), 0)
 
     def test_entries_atom_with_long_item(self):
@@ -571,8 +555,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         so they fit in the database.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_long_item.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
 
     def test_video_service(self):
