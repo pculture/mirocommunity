@@ -815,6 +815,22 @@ class ViewTestCase(BaseTestCase):
                     categories__pk=1,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
+    def assertSearchResults(self, response, expected_sqs,
+                            expected_object_count, expected_page_num):
+        paginator = response.context['paginator']
+        per_page = paginator.per_page
+        page_num = response.context['page_obj'].number
+        videos = list(response.context['video_list'])
+        expected_sqs_results = [r.object for r in expected_sqs if
+                        r.object.status == models.VIDEO_STATUS_ACTIVE and isinstance(r.object, models.Video)]
+        start = (page_num - 1) * per_page
+        end = page_num * per_page
+
+        self.assertEquals(page_num, expected_page_num)
+        self.assertEquals(len(paginator.object_list),
+                          expected_object_count)
+        self.assertEquals(videos, expected_sqs_results[start:end])
+
     def test_video_search(self):
         """
         The video_search view should take a GET['q'] and search through the
@@ -829,11 +845,8 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='blender')[:10]])
+        self.assertSearchResults(response, 
+                    SearchQuerySet().filter(content='blender'), 16, 1)
 
     def test_video_search_phrase(self):
         """
@@ -842,15 +855,13 @@ class ViewTestCase(BaseTestCase):
         self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'q': '"bits of blender"'})
+                         {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='bits ofblender')])
+        self.assertSearchResults(response,
+                        SearchQuerySet().filter(content='making of elephants'),
+                        4, 1)
 
     def test_video_search_no_query(self):
         """
@@ -872,12 +883,12 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'blender',
                           'page': 2})
+        paginator = response.context['paginator']
+        per_page = paginator.per_page
+
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 2)
-        self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='blender')[10:20]])
+        self.assertSearchResults(response,
+                    SearchQuerySet().filter(content='blender'), 16, 2)
 
 
     def test_video_search_includes_tags(self):
@@ -1016,11 +1027,8 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '-blender'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().exclude(content='blender')])
+        self.assertSearchResults(response,
+                    SearchQuerySet().exclude(content='blender'), 7, 1)
 
     def test_video_search_unicode(self):
         """
@@ -1086,15 +1094,16 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_author',
                                  args=[author.pk]))
+        videos = list(response.context['video_list'])
+        expected = list(models.Video.objects.new().filter( Q(user=author) |
+                    Q(authors=author), status=models.VIDEO_STATUS_ACTIVE
+                    ).distinct().order_by('-best_date'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/author.html')
         self.assertEquals(response.context['author'], author)
-        self.assertEquals(len(response.context['video_list']), 2)
-        self.assertEquals(list(response.context['video_list']),
-                          list(models.Video.objects.filter(
-                    Q(user=author) | Q(authors=author),
-                    status=models.VIDEO_STATUS_ACTIVE)))
+        self.assertEquals(len(videos), 2)
+        self.assertEquals(videos, expected)
 
 
 # -----------------------------------------------------------------------------
