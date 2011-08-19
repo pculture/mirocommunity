@@ -1789,17 +1789,15 @@ class OriginalVideoModelTestCase(BaseTestCase):
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
         'name': u'Miro appreciates the support of our sponsors',
-        'description': u"""<div><br><p>Miro is a non-profit project working \
+        'description': u"""<span><br>\n\nMiro is a non-profit project working \
 to build a better media future as television moves online. We provide our \
-software free to our users and other developers, despite the significant \
-cost of developing the software. This work is made possible in part by the \
-support of our sponsors. Please watch this video for a message from our \
-sponsors. </p><p>If you wish to support Miro yourself, please \
-<a href="http://www.getmiro.com/about/donate?ref=blipfeed">donate $10 \
-today</a>.</p></div>""",
+software free to our users and other developers, despite the significant cost \
+of developing the software. This work is made possible in part by the support \
+of our sponsors. Please watch this video for a message from our sponsors. If \
+you wish to support Miro yourself, please donate $10 today.</span>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
-                          'MiroAppreciatesTheSupportOfOurSponsors478.png'),
+            'MiroAppreciatesTheSupportOfOurSponsors478.png'),
         'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
         }
 
@@ -1844,64 +1842,59 @@ today</a>.</p></div>""",
         """
         self.assertEquals(self.original.changed_fields(), {})
 
+    def assertChanges(self, field, value, old_value):
+        """
+        Sets the field on self.original, tests that
+        self.original.changed_fields() contains the correct data, and then
+        resets the field.
+        """
+        setattr(self.original, field, value)
+        self.assertEquals(self.original.changed_fields(), {field: old_value})
+        setattr(self.original, field, old_value)
+
     def test_name_change(self):
         """
         If the name has changed, OriginalVideo.changed_fields() should return
         the new name.
         """
-        self.original.name = 'Different Name'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'name': self.BASE_DATA['name']})
+        self.assertChanges('name', 'Different Name', self.BASE_DATA['name'])
 
     def test_description_change(self):
         """
         If the description has changed, OriginalVideo.changed_fields() should
         return the new description.
         """
-        self.original.description = \
-            'Different Description'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'description': self.BASE_DATA['description']})
+        self.assertChanges('description', 'Different Description',
+                           self.BASE_DATA['description'])
 
     def test_tags_change(self):
         """
         If the tags have changed, OriginalVideo.changed_fields() should return
         the new tags.
         """
-        self.original.tags = ['Different', 'Tags']
-        self.original.save()
-
         tag = 'Default Category'
         if settings.FORCE_LOWERCASE_TAGS:
             tag = tag.lower()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'tags': set((tag,))})
+        self.assertChanges('tags', ['Different', 'Tags'], set((tag,)))
 
     def test_thumbnail_url_change(self):
         """
         If the thumbnail_url has changed, OriginalVideo.changed_fields() should
         return the new thumbnail_url.
         """
-        self.original.thumbnail_url = \
-            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'thumbnail_url': self.BASE_DATA['thumbnail_url']})
+        self.assertChanges('thumbnail_url',
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png',
+            self.BASE_DATA['thumbnail_url'])
 
     def test_thumbnail_updated_change(self):
         """
         If the date on the thumbnail has changed,
         OriginalVideo.changed_fields() should return the new thumbnail date.
         """
+        old_hash = self.original.remote_thumbnail_hash
+        old_updated = self.original.thumbnail_updated
         self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1197'
         self.original.thumbnail_updated = datetime.datetime.min
-        self.original.save()
 
         time_at_start_of_test = datetime.datetime.utcnow()
         changed_fields = self.original.changed_fields()
@@ -1909,14 +1902,17 @@ today</a>.</p></div>""",
         new_thumbnail_timestamp = changed_fields['thumbnail_updated']
         self.assertTrue(new_thumbnail_timestamp >=
                         time_at_start_of_test)
+        self.original.remote_thumbnail_hash = old_hash
+        self.original.thumbnail_updated = old_updated
 
     def test_thumbnail_change_ignored_if_hash_matches(self):
+        old_updated = self.original.thumbnail_updated
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
-        self.original.save()
 
         changed_fields = self.original.changed_fields()
         self.assertFalse('thumbnail_updated' in changed_fields)
+        self.original.thumbnail_updated = old_updated
 
     def test_update_no_updates(self):
         """
@@ -2430,4 +2426,4 @@ if localtv.settings.voting_enabled():
 
             response = c.get(self.video.get_absolute_url())
             self.assertFalse(response.context['user_can_vote'])
-            
+
