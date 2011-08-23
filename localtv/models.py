@@ -798,7 +798,7 @@ class Feed(Source):
         if parsed_feed is None:
             for feed_url in self._get_feed_urls():
                 individual_parsed_feeds = []
-                data = util.http_get(self.feed_url)
+                data = util.http_get(feed_url)
                 individual_parsed_feeds.append(feedparser.parse(data))
             parsed_feed = vidscraper.bulk_import.util.join_feeds(
                 individual_parsed_feeds)
@@ -999,7 +999,7 @@ class Feed(Source):
                     print "Can't get the thumbnail for %s at %s" % (
                         video.id, video.thumbnail_url)
 
-        if entry.get('tags') or tags:
+        if tags or entry.get('tags'):
             if not tags:
                 # Sometimes, entry.tags is just a lousy old
                 # string. In that case, do our best to undo the

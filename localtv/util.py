@@ -159,7 +159,13 @@ def get_or_create_tags(tag_list):
         tag = get_tag(tag_text);
         tag.name = force_unicode(tag.name)
         tag_set.add(tag)
-    return tagging.utils.edit_string_for_tags(list(tag_set))
+    edit_string = tagging.utils.edit_string_for_tags(list(tag_set))
+
+    # HACK to work around a bug in django-tagging.
+    if (len(tag_set) == 1 and edit_string == tag_set.pop().name
+        and " " in edit_string):
+        edit_string = '"%s"' % edit_string
+    return edit_string
 
 def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
     hasher = hash_constructor()
