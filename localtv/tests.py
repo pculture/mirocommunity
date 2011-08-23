@@ -109,7 +109,7 @@ class BaseTestCase(TestCase):
                 'testdata',
                 filename))
 
-    def assertIsInstance(self, obj, klass):
+    def assertIsInstance(self, obj, klass, msg=None):
         """
         Assert that the given object is an instance of the given class.
 
@@ -117,6 +117,7 @@ class BaseTestCase(TestCase):
         @param klass: the klass the object should be an instance of
         """
         self.assertTrue(isinstance(obj, klass),
+                        msg if msg is not None else
                         "%r is not an instance of %r; %s instead" % (
                 obj, klass, type(obj)))
 
@@ -184,6 +185,13 @@ class FeedModelTestCase(BaseTestCase):
         models.vidscraper = self.vidscraper
         del self.vidscraper
 
+    def _parse_feed(self, filename):
+        """
+        Parses and returns the feed stored as <filename> in our testdata.
+        """
+        data = open(self._data_file(filename)).read()
+        return feedparser.parse(data)
+
     def test_auto_approve_True(self):
         """
         If Feed.auto_approve is True, the imported videos should be marked as
@@ -191,8 +199,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_ACTIVE).count(), 5)
@@ -205,8 +212,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
@@ -218,8 +224,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = models.Feed.objects.get(pk=1)
         feed.auto_approve = False
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
                 status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
@@ -240,12 +245,11 @@ class FeedModelTestCase(BaseTestCase):
     def test_entries_inserted_in_reverse_order(self):
         """
         When adding entries from a feed, they should be added to the database
-        in rever order (oldest first)
+        in reversed order (oldest first)
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
-        parsed_feed = feedparser.parse(feed.feed_url)
+        parsed_feed = self._parse_feed('feed.rss')
+        feed.update_items(parsed_feed=parsed_feed)
         parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
         db_guids = models.Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
@@ -257,8 +261,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_duplicate_guid.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_guid.rss'))
         self.assertEquals(models.Video.objects.count(), 1)
         self.assertEquals(models.Video.objects.get().name, 'Old Item')
 
@@ -268,8 +271,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_duplicate_link.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_link.rss'))
         self.assertEquals(models.Video.objects.count(), 1)
         self.assertEquals(models.Video.objects.get().name, 'Old Item')
 
@@ -288,8 +290,7 @@ class FeedModelTestCase(BaseTestCase):
         * tags
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
@@ -321,8 +322,7 @@ class FeedModelTestCase(BaseTestCase):
         A link in the feed to the original source should be optional.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_without_link.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_without_link.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -333,8 +333,7 @@ class FeedModelTestCase(BaseTestCase):
         think is media, should be imported.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_without_mime_type.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_without_mime_type.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -346,8 +345,7 @@ class FeedModelTestCase(BaseTestCase):
         models.vidscraper = self.vidscraper
         feed = models.Feed.objects.get(pk=1)
         feed.auto_authors = []
-        feed.feed_url = self._data_file('vimeo.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('vimeo.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
@@ -399,8 +397,7 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
         feed = models.Feed.objects.get(pk=1)
         user = User.objects.get(pk=1)
         feed.auto_authors = [user]
-        feed.feed_url = self._data_file('youtube.rss')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('youtube.rss'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -414,16 +411,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertEquals(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
         self.assertEquals(video.embed_code,
-                          '<object width="480" height="385">'
-                          '<param name="movie" value="'
-                          'http://www.youtube.com/v/BBwtzeZdoHQ&amp;hl=en&amp;'
-                          'fs=1"><param name="allowFullScreen" value="true">'
-                          '<param name="allowscriptaccess" value="always">'
-                          '<embed src="http://www.youtube.com/v/BBwtzeZdoHQ'
-                          '&amp;hl=en&amp;fs=1" allowscriptaccess="always" '
-                          'height="385" width="480" allowfullscreen="true" '
-                          'type="application/x-shockwave-flash"></embed>'
-                          '</object>')
+                          '<iframe width="480" height="390"'
+                          ' src="http://www.youtube.com/embed/BBwtzeZdoHQ"'
+                          ' frameborder="0" allowfullscreen></iframe>')
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
@@ -447,8 +437,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds should be handled correctly,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'http://www.example.org/entries/1')
@@ -474,8 +463,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         was imported from the original feed.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_from_mc.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_from_mc.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -519,8 +507,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         URL.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_link_via.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_link_via.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
@@ -532,8 +519,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         their content imported,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_media.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_media.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
@@ -548,8 +534,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         embeddable player (with <media:player> should have that code included,
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_media_player.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_media_player.atom'))
         video = models.Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
@@ -561,8 +546,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         don't specify a video another way) should be ignored.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_invalid_media.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_invalid_media.atom'))
         self.assertEquals(feed.video_set.count(), 0)
 
     def test_entries_atom_with_long_item(self):
@@ -571,8 +555,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         so they fit in the database.
         """
         feed = models.Feed.objects.get(pk=1)
-        feed.feed_url = self._data_file('feed_with_long_item.atom')
-        feed.update_items()
+        feed.update_items(parsed_feed=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
 
     def test_video_service(self):
@@ -815,6 +798,22 @@ class ViewTestCase(BaseTestCase):
                     categories__pk=1,
                     status=models.VIDEO_STATUS_ACTIVE)))
 
+    def assertSearchResults(self, response, expected_sqs,
+                            expected_object_count, expected_page_num):
+        paginator = response.context['paginator']
+        per_page = paginator.per_page
+        page_num = response.context['page_obj'].number
+        videos = list(response.context['video_list'])
+        expected_sqs_results = [r.object for r in expected_sqs if
+                        r.object.status == models.VIDEO_STATUS_ACTIVE and isinstance(r.object, models.Video)]
+        start = (page_num - 1) * per_page
+        end = page_num * per_page
+
+        self.assertEquals(page_num, expected_page_num)
+        self.assertEquals(len(paginator.object_list),
+                          expected_object_count)
+        self.assertEquals(videos, expected_sqs_results[start:end])
+
     def test_video_search(self):
         """
         The video_search view should take a GET['q'] and search through the
@@ -829,11 +828,8 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='blender')[:10]])
+        self.assertSearchResults(response, 
+                    SearchQuerySet().filter(content='blender'), 16, 1)
 
     def test_video_search_phrase(self):
         """
@@ -842,15 +838,13 @@ class ViewTestCase(BaseTestCase):
         self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
-                         {'q': '"bits of blender"'})
+                         {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='bits ofblender')])
+        self.assertSearchResults(response,
+                        SearchQuerySet().filter(content='making of elephants'),
+                        4, 1)
 
     def test_video_search_no_query(self):
         """
@@ -872,12 +866,12 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'blender',
                           'page': 2})
+        paginator = response.context['paginator']
+        per_page = paginator.per_page
+
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 2)
-        self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().filter(content='blender')[10:20]])
+        self.assertSearchResults(response,
+                    SearchQuerySet().filter(content='blender'), 16, 2)
 
 
     def test_video_search_includes_tags(self):
@@ -1016,11 +1010,8 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '-blender'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
-                          [result.object for result in
-                           SearchQuerySet().exclude(content='blender')])
+        self.assertSearchResults(response,
+                    SearchQuerySet().exclude(content='blender'), 7, 1)
 
     def test_video_search_unicode(self):
         """
@@ -1086,15 +1077,16 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_author',
                                  args=[author.pk]))
+        videos = list(response.context['video_list'])
+        expected = list(models.Video.objects.new().filter( Q(user=author) |
+                    Q(authors=author), status=models.VIDEO_STATUS_ACTIVE
+                    ).distinct().order_by('-best_date'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/author.html')
         self.assertEquals(response.context['author'], author)
-        self.assertEquals(len(response.context['video_list']), 2)
-        self.assertEquals(list(response.context['video_list']),
-                          list(models.Video.objects.filter(
-                    Q(user=author) | Q(authors=author),
-                    status=models.VIDEO_STATUS_ACTIVE)))
+        self.assertEquals(len(videos), 2)
+        self.assertEquals(videos, expected)
 
 
 # -----------------------------------------------------------------------------
@@ -1797,17 +1789,15 @@ class OriginalVideoModelTestCase(BaseTestCase):
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
         'name': u'Miro appreciates the support of our sponsors',
-        'description': u"""<div><br><p>Miro is a non-profit project working \
+        'description': u"""<span><br>\n\nMiro is a non-profit project working \
 to build a better media future as television moves online. We provide our \
-software free to our users and other developers, despite the significant \
-cost of developing the software. This work is made possible in part by the \
-support of our sponsors. Please watch this video for a message from our \
-sponsors. </p><p>If you wish to support Miro yourself, please \
-<a href="http://www.getmiro.com/about/donate?ref=blipfeed">donate $10 \
-today</a>.</p></div>""",
+software free to our users and other developers, despite the significant cost \
+of developing the software. This work is made possible in part by the support \
+of our sponsors. Please watch this video for a message from our sponsors. If \
+you wish to support Miro yourself, please donate $10 today.</span>""",
         'tags': u'"Default Category"',
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
-                          'MiroAppreciatesTheSupportOfOurSponsors478.png'),
+            'MiroAppreciatesTheSupportOfOurSponsors478.png'),
         'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
         }
 
@@ -1852,64 +1842,59 @@ today</a>.</p></div>""",
         """
         self.assertEquals(self.original.changed_fields(), {})
 
+    def assertChanges(self, field, value, old_value):
+        """
+        Sets the field on self.original, tests that
+        self.original.changed_fields() contains the correct data, and then
+        resets the field.
+        """
+        setattr(self.original, field, value)
+        self.assertEquals(self.original.changed_fields(), {field: old_value})
+        setattr(self.original, field, old_value)
+
     def test_name_change(self):
         """
         If the name has changed, OriginalVideo.changed_fields() should return
         the new name.
         """
-        self.original.name = 'Different Name'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'name': self.BASE_DATA['name']})
+        self.assertChanges('name', 'Different Name', self.BASE_DATA['name'])
 
     def test_description_change(self):
         """
         If the description has changed, OriginalVideo.changed_fields() should
         return the new description.
         """
-        self.original.description = \
-            'Different Description'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'description': self.BASE_DATA['description']})
+        self.assertChanges('description', 'Different Description',
+                           self.BASE_DATA['description'])
 
     def test_tags_change(self):
         """
         If the tags have changed, OriginalVideo.changed_fields() should return
         the new tags.
         """
-        self.original.tags = ['Different', 'Tags']
-        self.original.save()
-
         tag = 'Default Category'
         if settings.FORCE_LOWERCASE_TAGS:
             tag = tag.lower()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'tags': set((tag,))})
+        self.assertChanges('tags', ['Different', 'Tags'], set((tag,)))
 
     def test_thumbnail_url_change(self):
         """
         If the thumbnail_url has changed, OriginalVideo.changed_fields() should
         return the new thumbnail_url.
         """
-        self.original.thumbnail_url = \
-            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
-        self.original.save()
-
-        self.assertEquals(self.original.changed_fields(),
-                          {'thumbnail_url': self.BASE_DATA['thumbnail_url']})
+        self.assertChanges('thumbnail_url',
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png',
+            self.BASE_DATA['thumbnail_url'])
 
     def test_thumbnail_updated_change(self):
         """
         If the date on the thumbnail has changed,
         OriginalVideo.changed_fields() should return the new thumbnail date.
         """
+        old_hash = self.original.remote_thumbnail_hash
+        old_updated = self.original.thumbnail_updated
         self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1197'
         self.original.thumbnail_updated = datetime.datetime.min
-        self.original.save()
 
         time_at_start_of_test = datetime.datetime.utcnow()
         changed_fields = self.original.changed_fields()
@@ -1917,14 +1902,17 @@ today</a>.</p></div>""",
         new_thumbnail_timestamp = changed_fields['thumbnail_updated']
         self.assertTrue(new_thumbnail_timestamp >=
                         time_at_start_of_test)
+        self.original.remote_thumbnail_hash = old_hash
+        self.original.thumbnail_updated = old_updated
 
     def test_thumbnail_change_ignored_if_hash_matches(self):
+        old_updated = self.original.thumbnail_updated
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
-        self.original.save()
 
         changed_fields = self.original.changed_fields()
         self.assertFalse('thumbnail_updated' in changed_fields)
+        self.original.thumbnail_updated = old_updated
 
     def test_update_no_updates(self):
         """
@@ -2438,4 +2426,4 @@ if localtv.settings.voting_enabled():
 
             response = c.get(self.video.get_absolute_url())
             self.assertFalse(response.context['user_can_vote'])
-            
+
