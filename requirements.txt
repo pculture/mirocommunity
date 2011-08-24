@@ -3,7 +3,7 @@
 -e git+http://git.participatoryculture.org/vidscraper@master#egg=vidscraper-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-email-share/@5ba2d02a6c44d3cb16c579911f72cf150bd1df6e#egg=django_email_share-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-uploadtemplate@db144765894f10f0211b4deb16f9f3f948a5e173#egg=django_uploadtemplate-0.0.1-py2.6-dev
-BeautifulSoup
+BeautifulSoup>=3.2,<4
 Django>=1.2.1,<1.3
 PIL>=1.1.6
 lxml>=2.3beta1
