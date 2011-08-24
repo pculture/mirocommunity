@@ -202,7 +202,7 @@ class FeedModelTestCase(BaseTestCase):
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+                status=models.Video.ACTIVE).count(), 5)
 
     @mock.patch('localtv.tiers.Tier.can_add_more_videos', lambda *args: False)
     def test_auto_approve_True_when_user_past_video_limit(self):
@@ -215,7 +215,7 @@ class FeedModelTestCase(BaseTestCase):
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
+                status=models.Video.UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
         """
@@ -227,7 +227,7 @@ class FeedModelTestCase(BaseTestCase):
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
         self.assertEquals(models.Video.objects.count(), 5)
         self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
+                status=models.Video.UNAPPROVED).count(), 5)
 
     def test_uses_given_parsed_feed(self):
         """
@@ -616,16 +616,16 @@ class ViewTestCase(BaseTestCase):
                           'localtv/index.html')
         self.assertEquals(list(response.context['featured_videos']),
                           list(models.Video.objects.filter(
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=models.Video.ACTIVE,
                     last_featured__isnull=False)))
         self.assertEquals(list(response.context['popular_videos']),
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
                     self.site_location,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
         self.assertEquals(list(response.context['new_videos']),
                           list(models.Video.objects.new(
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
         self.assertEquals(list(response.context['comments']), [])
 
     def test_index_feeds_avoid_frontpage(self):
@@ -650,11 +650,11 @@ class ViewTestCase(BaseTestCase):
         Recent comments should only include approved videos.
         """
         unapproved = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+            status=models.Video.UNAPPROVED)[0]
         approved = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE)[0]
+            status=models.Video.ACTIVE)[0]
         rejected = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_REJECTED)[0]
+            status=models.Video.REJECTED)[0]
         for video in unapproved, approved, rejected:
             Comment.objects.create(
                 site=self.site_location.site,
@@ -668,7 +668,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['comments'][0].content_object,
                           approved)
 
-        approved.status = models.VIDEO_STATUS_REJECTED
+        approved.status = models.Video.REJECTED
         approved.save()
 
         c = Client()
@@ -709,7 +709,7 @@ class ViewTestCase(BaseTestCase):
                           list(models.Video.objects.popular_since(
                     datetime.timedelta.max,
                     self.site_location,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
     def test_view_video_admins_see_rejected(self):
         """
@@ -770,7 +770,7 @@ class ViewTestCase(BaseTestCase):
                     datetime.timedelta.max,
                     self.site_location,
                     categories__pk=2,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
     def test_view_video_category_referer(self):
         """
@@ -796,7 +796,7 @@ class ViewTestCase(BaseTestCase):
                     datetime.timedelta.max,
                     self.site_location,
                     categories__pk=1,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
     def assertSearchResults(self, response, expected_sqs,
                             expected_object_count, expected_page_num):
@@ -805,7 +805,7 @@ class ViewTestCase(BaseTestCase):
         page_num = response.context['page_obj'].number
         videos = list(response.context['video_list'])
         expected_sqs_results = [r.object for r in expected_sqs if
-                        r.object.status == models.VIDEO_STATUS_ACTIVE and isinstance(r.object, models.Video)]
+                        r.object.status == models.Video.ACTIVE and isinstance(r.object, models.Video)]
         start = (page_num - 1) * per_page
         end = page_num * per_page
 
@@ -1079,7 +1079,7 @@ class ViewTestCase(BaseTestCase):
                                  args=[author.pk]))
         videos = list(response.context['video_list'])
         expected = list(models.Video.objects.new().filter( Q(user=author) |
-                    Q(authors=author), status=models.VIDEO_STATUS_ACTIVE
+                    Q(authors=author), status=models.Video.ACTIVE
                     ).distinct().order_by('-best_date'))
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
@@ -1124,7 +1124,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(len(response.context['page_obj'].object_list), 15)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Video.objects.new(
-                    status=models.VIDEO_STATUS_ACTIVE)[:15]))
+                    status=models.Video.ACTIVE)[:15]))
 
     def test_popular_videos(self):
         """
@@ -1148,7 +1148,7 @@ class ListingViewTestCase(BaseTestCase):
                     datetime.timedelta.max,
                     self.site_location,
                     watch__timestamp__gte=datetime.datetime.min,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
     def test_featured_videos(self):
         """
@@ -1166,7 +1166,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(models.Video.objects.filter(
                     last_featured__isnull=False,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
     def test_tag_videos(self):
         """
@@ -1207,7 +1207,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(feed.video_set.filter(
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=models.Video.ACTIVE)))
 
 
 # -----------------------------------------------------------------------------
@@ -2211,7 +2211,7 @@ class FeedViewTestCase(BaseTestCase):
 
         for vid in three_vids:
             vid.categories.add(linux_category)
-            vid.status = models.VIDEO_STATUS_ACTIVE
+            vid.status = models.Video.ACTIVE
             vid.save()
 
         # Do a GET for the first 2 in the feed

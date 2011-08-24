@@ -103,6 +103,6 @@ def context_processor(request):
 
         'settings': django_settings,
 
-        'VIDEO_STATUS_UNAPPROVED': models.VIDEO_STATUS_UNAPPROVED,
-        'VIDEO_STATUS_ACTIVE': models.VIDEO_STATUS_ACTIVE,
-        'VIDEO_STATUS_REJECTED': models.VIDEO_STATUS_REJECTED}
+        'VIDEO_STATUS_UNAPPROVED': models.Video.UNAPPROVED,
+        'VIDEO_STATUS_ACTIVE': models.Video.ACTIVE,
+        'VIDEO_STATUS_REJECTED': models.Video.REJECTED}

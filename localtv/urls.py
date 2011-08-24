@@ -29,10 +29,10 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     'localtv.listing.views',
     (r'^search/$', 'video_search', {}, 'localtv_search'),
-    (r'^category/$', 'category', {}, 'localtv_category_index'),
-    (r'^category/([-\w]+)$', 'category', {}, 'localtv_category'),
-    (r'^author/$', 'author', {}, 'localtv_author_index'),
-    (r'^author/(\d+)$', 'author', {}, 'localtv_author'))
+    (r'^category/$', 'category_list', {}, 'localtv_category_index'),
+    (r'^category/([-\w]+)$', 'category_videos', {}, 'localtv_category'),
+    (r'^author/$', 'author_list', {}, 'localtv_author_index'),
+    (r'^author/(\d+)$', 'author_videos', {}, 'localtv_author'))
 
 urlpatterns += patterns(
     'localtv.comments.views',
