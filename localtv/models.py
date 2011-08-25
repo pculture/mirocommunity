@@ -53,7 +53,9 @@ from django.core.validators import ipv4_re
 from django.template import mark_safe, Context, loader
 from django.template.defaultfilters import slugify
 from django.template.loader import render_to_string
+from django.utils.encoding import force_unicode
 import django.utils.html
+from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import feedparser
@@ -70,38 +72,13 @@ def delete_if_exists(path):
     if default_storage.exists(path):
         default_storage.delete(path)
 
-# the difference between unapproved and rejected is that unapproved simply
-# hasn't been looked at by an administrator yet.
-VIDEO_STATUS_UNAPPROVED = FEED_STATUS_UNAPPROVED =0
-VIDEO_STATUS_ACTIVE = FEED_STATUS_ACTIVE = 1
-VIDEO_STATUS_REJECTED = FEED_STATUS_REJECTED = 2
-VIDEO_STATUS_PENDING_THUMBNAIL = FEED_STATUS_PENDING_THUMBNAIL = 3
+EMPTY = object()
 
-VIDEO_STATUSES = FEED_STATUSES = (
-    (VIDEO_STATUS_UNAPPROVED, 'Unapproved'),
-    (VIDEO_STATUS_ACTIVE, 'Active'),
-    (VIDEO_STATUS_REJECTED, 'Rejected'),
-    (VIDEO_STATUS_PENDING_THUMBNAIL, 'Waiting on thumbnail'))
-
-SITE_STATUS_DISABLED = 0
-SITE_STATUS_ACTIVE = 1
-
-SITE_STATUSES = (
-    (SITE_STATUS_DISABLED, 'Disabled'),
-    (SITE_STATUS_ACTIVE, 'Active'))
-
-(NEWSLETTER_STATUS_DISABLED,
- NEWSLETTER_STATUS_FEATURED,
- NEWSLETTER_STATUS_POPULAR,
- NEWSLETTER_STATUS_CUSTOM,
- NEWSLETTER_STATUS_LATEST) = range(5)
-
-NEWSLETTER_STATUSES = (
-    (NEWSLETTER_STATUS_DISABLED, 'Disabled'),
-    (NEWSLETTER_STATUS_FEATURED, "5 most recently featured"),
-    (NEWSLETTER_STATUS_POPULAR, "5 most popular"),
-    (NEWSLETTER_STATUS_LATEST, "5 latest videos"),
-    (NEWSLETTER_STATUS_CUSTOM, 'Custom selection'))
+UNAPPROVED_STATUS_TEXT = _(u'Unapproved')
+ACTIVE_STATUS_TEXT = _(u'Active')
+REJECTED_STATUS_TEXT = _(u'Rejected')
+PENDING_THUMBNAIL_STATUS_TEXT = _(u'Waiting on thumbnail')
+DISABLED_STATUS_TEXT = _(u'Disabled')
 
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (534, 430), # behind a video
@@ -121,6 +98,11 @@ VIDEO_SERVICE_REGEXES = (
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
     ('Vimeo', r'http://(www\.)?vimeo\.com/'),
     ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
+
+
+POPULAR_QUERY_TIMEOUT = getattr(settings, 'LOCALTV_POPULAR_QUERY_TIMEOUT',
+                                120 * 60) # 120 minutes
+
 
 class Error(Exception): pass
 class CannotOpenImageUrl(Error): pass
@@ -144,8 +126,10 @@ class BitLyWrappingURLField(models.URLField):
         except bitly.BitlyError:
             return unicode(value)[:self.max_length]
 
+
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
+
 
 class Thumbnailable(models.Model):
     """
@@ -240,8 +224,8 @@ class Thumbnailable(models.Model):
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
-
 SITE_LOCATION_CACHE = {}
+
 
 class SiteLocationManager(models.Manager):
     def get_current(self):
@@ -280,6 +264,7 @@ class SiteLocationManager(models.Manager):
         global SITE_LOCATION_CACHE
         SITE_LOCATION_CACHE = {}
 
+
 class SingletonManager(models.Manager):
     def get_current(self):
         current_site_location = SiteLocation.objects.get_current()
@@ -288,6 +273,7 @@ class SingletonManager(models.Manager):
         if created:
             logging.info("Created %s." % self.model.__class__.__name__)
         return singleton
+
 
 class TierInfo(models.Model):
     payment_due_date = models.DateTimeField(null=True, blank=True)
@@ -349,6 +335,7 @@ class TierInfo(models.Model):
         making calls out to ZenDesk.'''
         return getattr(settings, 'LOCALTV_USE_ZENDESK', False)
 
+
 class SiteLocation(Thumbnailable):
     """
     An extension to the django.contrib.sites site model, providing
@@ -360,7 +347,7 @@ class SiteLocation(Thumbnailable):
      - background: custom background image for this site (unused?)
      - admins: a collection of Users who have access to administrate this
        sitelocation
-     - status: one of SITE_STATUSES; either disabled or active
+     - status: one of SiteLocation.STATUS_CHOICES
      - sidebar_html: custom html to appear on the right sidebar of many
        user-facing pages.  Can be whatever's most appropriate for the owners of
        said site.
@@ -378,6 +365,14 @@ class SiteLocation(Thumbnailable):
        videos.
      - tier_name: A short string representing the class of site. This relates to paid extras.
     """
+    DISABLED = 0
+    ACTIVE = 1
+
+    STATUS_CHOICES = (
+        (DISABLED, DISABLED_STATUS_TEXT),
+        (ACTIVE, ACTIVE_STATUS_TEXT),
+    )
+
     site = models.ForeignKey(Site, unique=True)
     logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
     background = models.ImageField(upload_to='localtv/site_backgrounds',
@@ -385,7 +380,7 @@ class SiteLocation(Thumbnailable):
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
     status = models.IntegerField(
-        choices=SITE_STATUSES, default=SITE_STATUS_ACTIVE)
+        choices=STATUS_CHOICES, default=ACTIVE)
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
@@ -520,11 +515,24 @@ class SiteLocation(Thumbnailable):
         /admin/upgrade/ page, it renders as usual.'''
         return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
 
+
 class NewsletterSettings(models.Model):
+    DISABLED = 0
+    FEATURED = 1
+    POPULAR = 2
+    CUSTOM = 3
+    LATEST = 4
     
+    STATUS_CHOICES = (
+        (DISABLED, DISABLED_STATUS_TEXT),
+        (FEATURED, _("5 most recently featured")),
+        (POPULAR, _("5 most popular")),
+        (LATEST, _("5 latest videos")),
+        (CUSTOM, _("Custom selection")),
+    )
     sitelocation = models.OneToOneField(SiteLocation)
     status = models.IntegerField(
-        choices=NEWSLETTER_STATUSES, default=NEWSLETTER_STATUS_DISABLED,
+        choices=STATUS_CHOICES, default=DISABLED,
         help_text='What videos should get sent out in the newsletter?')
 
     # for custom newsletter
@@ -562,23 +570,16 @@ class NewsletterSettings(models.Model):
     objects = SingletonManager()
 
     def videos(self):
-        if self.status == NEWSLETTER_STATUS_DISABLED:
+        if self.status == NewsletterSettings.DISABLED:
             raise ValueError('no videos for disabled newsletter')
-        elif self.status == NEWSLETTER_STATUS_FEATURED:
-            videos = Video.objects.filter(
-                site=self.sitelocation.site,
-                status=VIDEO_STATUS_ACTIVE,
-                last_featured__isnull=False).order_by('-last_featured')
-        elif self.status == NEWSLETTER_STATUS_POPULAR:
+        elif self.status == NewsletterSettings.FEATURED:
+            videos = Video.objects.get_featured_videos(self.sitelocation)
+        elif self.status == NewsletterSettings.POPULAR:
             # popular over the last week
-            videos = Video.objects.popular_since(
-                datetime.timedelta(days=7),
-                sitelocation=self.sitelocation,
-                status=VIDEO_STATUS_ACTIVE)
-        elif self.status == NEWSLETTER_STATUS_LATEST:
-            videos = Video.objects.new(site=self.sitelocation.site,
-                                       status=VIDEO_STATUS_ACTIVE)
-        elif self.status == NEWSLETTER_STATUS_CUSTOM:
+            videos = Video.objects.get_popular_videos(self.sitelocation)
+        elif self.status == NewsletterSettings.LATEST:
+            videos = Video.objects.get_latest_videos(self.sitelocation)
+        elif self.status == NewsletterSettings.CUSTOM:
             videos = [video for video in (
                     self.video1,
                     self.video2,
@@ -619,7 +620,8 @@ class NewsletterSettings(models.Model):
             context.update(extra_context)
         return render_to_string('localtv/admin/newsletter.html',
                                 context)
-        
+
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -689,6 +691,7 @@ class WidgetSettings(Thumbnailable):
 
         return prefix % suffix
 
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
@@ -707,7 +710,72 @@ class Source(Thumbnailable):
     class Meta:
         abstract = True
 
-class Feed(Source):
+
+class StatusedThumbnailableQuerySet(models.query.QuerySet):
+
+    def unapproved(self):
+        return self.filter(status=StatusedThumbnailable.UNAPPROVED)
+
+    def active(self):
+        return self.filter(status=StatusedThumbnailable.ACTIVE)
+
+    def rejected(self):
+        return self.filter(status=StatusedThumbnailable.REJECTED)
+
+    def pending_thumbnail(self):
+        return self.filter(status=StatusedThumbnailable.PENDING_THUMBNAIL)
+
+
+class StatusedThumbnailableManager(models.Manager):
+
+    def get_query_set(self):
+        return StatusedThumbnailableQuerySet(self.model, using=self._db)
+
+    def unapproved(self):
+        return self.get_query_set().unapproved()
+
+    def active(self):
+        return self.get_query_set().active()
+
+    def rejected(self):
+        return self.get_query_set().rejected()
+
+    def pending_thumbnail(self):
+        return self.get_query_set().pending_thumbnail()
+
+
+class StatusedThumbnailable(models.Model):
+    """
+    Abstract class to provide the ``status`` field for Feeds and Videos.
+    """
+    #: An admin has not looked at this feed yet.
+    UNAPPROVED = 0
+    ACTIVE = 1
+    #: This feed was rejected by an admin.
+    REJECTED = 2
+    PENDING_THUMBNAIL = 3
+
+    STATUS_CHOICES = (
+        (UNAPPROVED, UNAPPROVED_STATUS_TEXT),
+        (ACTIVE, ACTIVE_STATUS_TEXT),
+        (REJECTED, REJECTED_STATUS_TEXT),
+        (PENDING_THUMBNAIL, PENDING_THUMBNAIL_STATUS_TEXT),
+    )
+
+    objects = StatusedThumbnailableManager()
+
+    status = models.IntegerField(
+        choices=STATUS_CHOICES, default=UNAPPROVED)
+
+    def is_active(self):
+        """Shortcut to check the common case of whether a video is active."""
+        return self.status == self.ACTIVE
+
+    class Meta:
+        abstract = True
+
+
+class Feed(Source, StatusedThumbnailable):
     """
     Feed to pull videos in from.
 
@@ -722,7 +790,7 @@ class Feed(Source):
       - description: human readable description of this item
       - last_updated: last time we ran self.update_items()
       - when_submitted: when this feed was first registered on this site
-      - status: one of FEED_STATUSES, either unapproved, active, or rejected
+      - status: one of Feed.STATUS_CHOICES
       - etag: used to see whether or not the feed has changed since our last
         update.
       - auto_approve: whether or not to set all videos in this feed to approved
@@ -739,7 +807,6 @@ class Feed(Source):
     description = models.TextField()
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
-    status = models.IntegerField(choices=FEED_STATUSES)
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
@@ -811,9 +878,9 @@ class Feed(Source):
     def default_video_status(self):
         # Check that if we want to add an active
         if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
-            initial_video_status = VIDEO_STATUS_ACTIVE
+            initial_video_status = Video.ACTIVE
         else:
-            initial_video_status = VIDEO_STATUS_UNAPPROVED
+            initial_video_status = Video.UNAPPROVED
         return initial_video_status
 
     def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
@@ -833,9 +900,7 @@ class Feed(Source):
                 break
         if link:
             if clear_rejected:
-                for video in Video.objects.filter(
-                    status=VIDEO_STATUS_REJECTED,
-                    website_url=link):
+                for video in Video.objects.rejected().filter(website_url=link):
                     video.delete()
             if Video.objects.filter(
                 website_url=link).count():
@@ -1076,7 +1141,7 @@ class Category(models.Model):
     """
     A category for videos to be contained in.
 
-    Categoies and tags aren't too different functionally, but categories are
+    Categories and tags aren't too different functionally, but categories are
     more strict as they can't be defined by visitors.  Categories can also be
     hierarchical.
 
@@ -1167,9 +1232,14 @@ class Category(models.Model):
         return objects
 
     def approved_set(self):
+        """
+        Returns active videos for the category and its subcategories, ordered
+        by decreasing best date.
+        
+        """
         categories = [self] + self.in_order(self.site, self.child_set.all())
-        return Video.objects.new(status=VIDEO_STATUS_ACTIVE,
-                                 categories__in=categories).distinct()
+        return Video.objects.active().filter(
+            categories__in=categories).distinct()
     approved_set = property(approved_set)
 
     def unique_error_message(self, model_class, unique_check):
@@ -1224,9 +1294,9 @@ class SavedSearch(Source):
             self.site)
 
         if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
-            initial_status = VIDEO_STATUS_ACTIVE
+            initial_status = Video.ACTIVE
         else:
-            initial_status = VIDEO_STATUS_UNAPPROVED
+            initial_status = Video.UNAPPROVED
 
         authors = self.auto_authors.all()
 
@@ -1506,76 +1576,128 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, changed_fields[field])
         self.save()
 
-class VideoManager(models.Manager):
 
-    def new(self, **kwargs):
-        published = 'localtv_video.when_published,'
-        if 'site' in kwargs:
-            if not SiteLocation.objects.get(
-                site=kwargs['site']).use_original_date:
-                published = ''
-        videos = self.extra(select={'best_date': """
+class VideoQuerySet(StatusedThumbnailableQuerySet):
+
+    def with_best_date(self, use_original_date=True):
+        if use_original_date:
+            published = 'localtv_video.when_published,'
+        else:
+            published = ''
+        return self.extra(select={'best_date': """
 COALESCE(%slocaltv_video.when_approved,
 localtv_video.when_submitted)""" % published})
-        return videos.filter(**kwargs).order_by('-best_date')
 
-    def popular_since(self, delta, sitelocation, **kwargs):
+    def with_watch_count(self, since=EMPTY):
         """
-        Returns a QuerySet of the most popular videos in the previous C{delta)
-        time.
-
-        @type delta: L{datetime.timedelta)
-        @type sitelocation: L{SiteLocation}
+        Returns a QuerySet of videos annotated with a ``watch_count`` of all
+        watches since ``since`` (a datetime, which defaults to seven days ago).
         """
-        from localtv import util
+        if since is EMPTY:
+            since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        cache_key = 'videomanager.popular_since:%s:%s' % (
-            hash(delta), sitelocation.site.domain)
-        for k in sorted(kwargs.keys()):
-            v = kwargs[k]
-            if '__timestamp__' in k:
-                now = datetime.datetime.now().replace(microsecond=0)
-                v = v.replace(microsecond=0)
-                v = hash(now - v)
-            cache_key += ':%s-%s' % (k, v)
-        ids = cache.cache.get(cache_key)
-        if ids is None:
-            try:
-                earliest_time = datetime.datetime.now() - delta
-            except OverflowError:
-                earliest_time = datetime.datetime(1900, 1, 1)
-
-            if sitelocation is not None:
-                videos = self.filter(site=sitelocation.site)
-            else:
-                videos = self
-            if kwargs:
-                videos = videos.filter(**kwargs)
-            videos = videos.extra(
-                select={'watchcount':
-                            """SELECT COUNT(*) FROM localtv_watch
+        return self.extra(
+            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
 WHERE localtv_video.id = localtv_watch.video_id AND
 localtv_watch.timestamp > %s"""},
-                select_params = (earliest_time,))
-            if 'extra_where' in kwargs:
-                where = kwargs.pop('extra_where')
-                videos = videos.extra(where=where)
-            videos = videos.order_by(
-                    '-watchcount',
-                    '-when_published',
-                    '-when_approved').distinct()
-            ids = [v[0] for v in videos.values_list('id', 'watchcount')]
-            cache.cache.set(cache_key, ids,
-                            timeout=getattr(settings,
-                                            'LOCALTV_POPULAR_QUERY_TIMEOUT',
-                                            120 * 60 # 120 minutes
-                                            ))
-        keys = [key for key in kwargs if '__' not in key]
-        return util.MockQueryset(ids, self.model,
-                                 dict((key, kwargs[key]) for key in keys)
-                                 )
+            select_params = (since,)
+        )
 
-class Video(Thumbnailable, VideoBase):
+
+class VideoManager(StatusedThumbnailableManager):
+
+    def get_query_set(self):
+        return VideoQuerySet(self.model, using=self._db)
+
+    def with_best_date(self, *args, **kwargs):
+        return self.get_query_set().with_best_date(*args, **kwargs)
+
+    def popular_since(self, *args, **kwargs):
+        return self.get_query_set().popular_since(*args, **kwargs)
+
+    def get_sitelocation_videos(self, sitelocation):
+        """
+        Returns a QuerySet of videos which are active and tied to the
+        sitelocation. This QuerySet is cached on the request.
+        
+        """
+        return self.active().filter(site=sitelocation.site)
+
+    def get_featured_videos(self, sitelocation):
+        """
+        Returns a ``QuerySet`` of active videos which are considered "featured"
+        for the sitelocation.
+
+        """
+        return self.get_sitelocation_videos(sitelocation).filter(
+            last_featured__isnull=False
+        ).order_by(
+            '-last_featured',
+            '-when_approved',
+            '-when_published',
+            '-when_submitted'
+        )
+
+    def get_latest_videos(self, sitelocation):
+        """
+        Returns a ``QuerySet`` of active videos for the sitelocation, ordered by
+        decreasing ``best_date``.
+        
+        """
+        return self.get_sitelocation_videos(sitelocation).with_best_date(
+            sitelocation.use_original_date
+        ).order_by('-best_date')
+
+    def get_popular_videos(self, sitelocation):
+        """
+        Returns a ``QuerySet`` of active videos considered "popular" for the
+        current sitelocation.
+
+        """
+        return self.get_latest_videos(sitelocation).with_watch_count().order_by(
+            '-watch_count',
+            '-best_date'
+        )
+
+    def get_category_videos(self, sitelocation, category):
+        """
+        Returns a ``QuerySet`` of active videos considered part of the selected
+        category or its descendants for the sitelocation.
+
+        """
+        # category.approved_set already checks active().
+        return category.approved_set.filter(
+            site=sitelocation.site
+        ).with_best_date(
+            sitelocation.use_original_date
+        ).order_by('-best_date')
+
+    def get_tag_videos(self, sitelocation, tag):
+        """
+        Returns a ``QuerySet`` of active videos with the given tag for the
+        sitelocation.
+
+        """
+        return Video.tagged.with_all(tag).active().filter(
+            site=sitelocation.site
+        ).order_by(
+            '-when_approved',
+            '-when_published',
+            '-when_submitted'
+        )
+
+    def get_author_videos(self, sitelocation, author):
+        """
+        Returns a ``QuerySet`` of active videos published or produced by
+        ``author`` related to the sitelocation.
+
+        """
+        return self.get_latest_videos(sitelocation).filter(
+            models.Q(authors=author) | models.Q(user=author)
+        ).distinct().order_by('-best_date')
+
+
+class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     """
     Fields:
      - name: Name of this video
@@ -1595,7 +1717,7 @@ class Video(Thumbnailable, VideoBase):
      - when_published: When this file was published at its original
        source (if known)
      - last_featured: last time this item was featured.
-     - status: one of localtv.models.VIDEOS_STATUSES
+     - status: one of Video.STATUS_CHOICES
      - feed: which feed this item came from (if any)
      - website_url: The page that this item is associated with.
      - embed_code: code used to embed this item.
@@ -1632,8 +1754,6 @@ class Video(Thumbnailable, VideoBase):
     when_approved = models.DateTimeField(null=True, blank=True)
     when_published = models.DateTimeField(null=True, blank=True)
     last_featured = models.DateTimeField(null=True, blank=True)
-    status = models.IntegerField(
-        choices=VIDEO_STATUSES, default=VIDEO_STATUS_UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = BitLyWrappingURLField(verbose_name='Website URL',
                                         verify_exists=False,
@@ -1952,8 +2072,8 @@ submit_finished = django.dispatch.Signal()
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
-    if sender.status == VIDEO_STATUS_ACTIVE:
-        # don't send the e-mail for new videos
+    if sender.is_active():
+        # don't send the e-mail for videos that are already active
         return
     t = loader.get_template('localtv/submit_video/new_video_email.txt')
     c = Context({'video': sender})

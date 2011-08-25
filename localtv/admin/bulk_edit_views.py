@@ -56,8 +56,7 @@ def bulk_edit(request):
                                   template_data,
                                   context_instance=RequestContext(request))
 
-    videos = models.Video.objects.filter(
-        status=models.VIDEO_STATUS_ACTIVE,
+    videos = models.Video.objects.active().filter(
         site=request.sitelocation().site)
 
     if 'filter' in request.GET:
@@ -65,16 +64,14 @@ def bulk_edit(request):
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = models.Video.objects.filter(
-                status=models.VIDEO_STATUS_REJECTED,
+            videos = models.Video.objects.rejected().filter(
                 site=request.sitelocation().site)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED,
+            videos = models.Video.objects.unapproved().filter(
                 site=request.sitelocation().site)
 
     videos = videos.select_related('feed', 'search', 'site')
@@ -147,7 +144,7 @@ def bulk_edit(request):
 
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
-                form.instance.status = models.VIDEO_STATUS_REJECTED
+                form.instance.status = models.Video.REJECTED
                 form.instance.save()
             bulk_edits = formset.extra_forms[0].cleaned_data
             for key in list(bulk_edits.keys()): # get the list because we'll be
@@ -164,28 +161,25 @@ def bulk_edit(request):
                     for key, value in bulk_edits.items():
                         if key == 'action': # do something to the video
                             if value == 'delete':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_REJECTED
+                                form.instance.status = models.Video.REJECTED
                             elif value == 'approve':
                                 if (request.sitelocation().enforce_tiers() and
                                     tier.remaining_videos() <= videos_approved_so_far):
                                     tier_prevented_some_action = True
                                 else:
-                                    form.instance.status = \
-                                        models.VIDEO_STATUS_ACTIVE
+                                    form.instance.status = models.Video.ACTIVE
                                     videos_approved_so_far += 1
                             elif value == 'unapprove':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_UNAPPROVED
+                                form.instance.status = models.Video.UNAPPROVED
                             elif value == 'feature':
-                                if form.instance.status != models.VIDEO_STATUS_ACTIVE:
+                                if not form.instance.is_active():
                                     if (request.sitelocation().enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
                                         form.instance.status = \
-                                            models.VIDEO_STATUS_ACTIVE
-                                if form.instance.status == models.VIDEO_STATUS_ACTIVE:
+                                        models.Video.ACTIVE
+                                if form.instance.is_active():
                                     form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None

@@ -42,10 +42,12 @@ import tagging
 import vidscraper
 from notification import models as notification
 
+
 VIDEO_EXTENSIONS = [
     '.mov', '.wmv', '.mp4', '.m4v', '.ogg', '.ogv', '.anx',
     '.mpg', '.avi', '.flv', '.mpeg', '.divx', '.xvid', '.rmvb',
     '.mkv', '.m2v', '.ogm']
+
 
 def is_video_filename(filename):
     """
@@ -58,6 +60,7 @@ def is_video_filename(filename):
             return True
     return False
 
+
 def is_video_type(type):
     application_video_mime_types = [
         "application/ogg",
@@ -67,6 +70,7 @@ def is_video_type(type):
     ]
     return (type.startswith('video/') or type.startswith('audio/') or
             type in application_video_mime_types)
+
 
 def get_first_video_enclosure(entry):
     """Find the first video enclosure in a feedparser entry.  Returns the
@@ -84,6 +88,7 @@ def get_first_video_enclosure(entry):
             elif best_enclosure is None:
                 best_enclosure = enclosure
     return best_enclosure
+
 
 def get_thumbnail_url(entry):
     """Get the URL for a thumbnail from a feedparser entry."""
@@ -133,6 +138,7 @@ def get_thumbnail_url(entry):
 
     return None
 
+
 def get_tag(tag_text):
     while True:
         try:
@@ -148,6 +154,7 @@ def get_tag(tag_text):
                         return tag
         except Exception:
             pass # try again to create the tag
+
 
 def get_or_create_tags(tag_list):
     tag_set = set()
@@ -167,6 +174,7 @@ def get_or_create_tags(tag_list):
         edit_string = '"%s"' % edit_string
     return edit_string
 
+
 def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
     hasher = hash_constructor()
     for chunk in iter(lambda: file_obj.read(4096), ''):
@@ -175,11 +183,13 @@ def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):
         file_obj.close()
     return hasher.hexdigest()
 
+
 def unicode_set(iterable):
     output = set()
     for thing in iterable:
         output.add(force_unicode(thing, strings_only=True))
     return output
+
 
 def get_scraped_data(url):
     cache_key = 'vidscraper_data-' + url
@@ -199,10 +209,12 @@ def get_scraped_data(url):
 
     return scraped_data
 
+
 def normalize_newlines(s):
     if type(s) in types.StringTypes:
         s = s.replace('\r\n', '\n')
     return s
+
 
 def send_notice(notice_label, subject, message, fail_silently=True,
                 sitelocation=None, content_subtype=None):
@@ -303,6 +315,7 @@ class SortHeaders:
             self.desc and '-' or '',
             self.ordering)
 
+
 class MockQueryset(object):
     """
     Wrap a list of objects in an object which pretends to be a QuerySet.
@@ -400,6 +413,7 @@ class MockQueryset(object):
             new_filters[k] = v
         return MockQueryset(self.objects, self.model, new_filters)
 
+
 def get_profile_model():
     app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
     Profile = get_model(app_label, model_name)
@@ -411,13 +425,16 @@ def get_profile_model():
 
 SAFE_URL_CHARACTERS = string.ascii_letters + string.punctuation
 
+
 def quote_unicode_url(url):
     return urllib.quote(url, safe=SAFE_URL_CHARACTERS)
+
 
 try:
     import backends
 except ImportError:
     import storages.backends as backends
+
 
 try:
     import backends.s3
@@ -489,11 +506,13 @@ else:
             new_parsed_url[2] = path
             return urlparse.urlunparse(new_parsed_url)
 
+
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
 DEFAULT_HTTPLIB_TIMEOUT=20
 # We save data inside the httplib cache, but in a hidden directory
 OUR_CACHE_DIR = os.path.join(DEFAULT_HTTPLIB_CACHE_PATH,
                              '.cache_downloaded_file')
+
 
 def http_get(url, _httplib2=None, return_blank_on_failure=True):
     if _httplib2:
@@ -521,6 +540,7 @@ def http_get(url, _httplib2=None, return_blank_on_failure=True):
 
     return body
 
+
 def cache_downloaded_file(url, http_getter):
     if not os.path.exists(DEFAULT_HTTPLIB_CACHE_PATH):
         os.mkdir(DEFAULT_HTTPLIB_CACHE_PATH, 0700)
@@ -534,12 +554,14 @@ def cache_downloaded_file(url, http_getter):
     file_obj.write(content)
     file_obj.close()
 
+
 def pull_downloaded_file_from_cache(url):
     file_obj = file(os.path.join(OUR_CACHE_DIR,
                                  hashlib.sha1(url).hexdigest()))
     data = file_obj.read()
     file_obj.close()
     return data
+
 
 def resize_image_returning_list_of_content_files(original_image,
                                                  THUMB_SIZES):
@@ -608,6 +630,7 @@ def resize_image_returning_list_of_content_files(original_image,
             ((width, height),
              ContentFile(sio_img.read())))
     return ret
+
 
 def touch(filename, override_date=None):
     '''This is like /usr/bin/touch

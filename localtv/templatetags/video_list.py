@@ -22,14 +22,18 @@ from django.db.models import Q
 
 from tagging.models import Tag
 
-from localtv import models
+from localtv.models import Video, Category
+from localtv.views import get_request_videos, get_popular_videos, get_featured_videos, get_latest_videos, get_tag_videos, get_author_videos, get_category_videos
+
 
 register = template.Library()
+
 
 class BaseVideoListNode(template.Node):
     """
     Base helper class (abstract) for handling the get_video_list_* template
     tags.  Based heavily on the template tags for django.contrib.comments.
+    
     """
 
     takes_argument = False # if True, takes an argument (tag/category/user
@@ -74,75 +78,79 @@ class BaseVideoListNode(template.Node):
     def get_query_set(self, context):
         raise NotImplementedError
 
+
 class NewVideoListNode(BaseVideoListNode):
     """
     Insert a list of new videos into the context.
+    
     """
     def get_query_set(self, context):
-        return models.Video.objects.new(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE)
+        return get_latest_videos(context['request'])
+
 
 class PopularVideoListNode(BaseVideoListNode):
     """
     Insert a list of popular videos into the context.
+    
     """
     def get_query_set(self, context):
-        return models.Video.objects.popular_since(
-            datetime.timedelta(days=7), sitelocation=context['sitelocation'],
-            status=models.VIDEO_STATUS_ACTIVE)
+        return get_popular_videos(context['request'])
+
 
 class FeaturedVideoListNode(BaseVideoListNode):
     """
     Insert a list of featured videos into the context.
+    
     """
     def get_query_set(self, context):
-        return models.Video.objects.filter(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE,
-            last_featured__isnull=False).order_by('-last_featured',
-                                                  '-when_approved',
-                                                  '-when_published',
-                                                  '-when_submitted')
+        return get_featured_videos(context['request'])
+
 
 class CategoryVideoListNode(BaseVideoListNode):
     """
-    Insert a list of videos for the given category into the context.
+    Insert a list of videos for the given category into the context. Does not
+    include videos that belong to that category's descendants.
+    
     """
     takes_argument = True
 
     def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            category = self.item.resolve(context)
-        else:
+        category = self.item.resolve(context)
+        request = context['request']
+        if isinstance(category, basestring):
             try:
-                category = models.Category.objects.get(
-                    slug=self.item,
-                    site=context['sitelocation'].site)
-            except models.Category.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.objects.new(
-            site=context['sitelocation'].site,
-            categories=category,
-            status=models.VIDEO_STATUS_ACTIVE)
+                category = Category.objects.get(
+                    slug=category,
+                    site=request.sitelocation().site
+                )
+            except Category.DoesNotExist:
+                return Video.objects.none()
+        elif not isinstance(category, Category):
+            return Video.objects.none()
+        return get_latest_videos(request).filter(
+            categories=category
+        ).distinct().order_by('-best_date')
+
 
 class TagVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given tag into the context.
+    
     """
     takes_argument = True
 
     def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            tag = self.item.resove(context)
-        else:
+        request = context['request']
+        tag = self.item.resove(context)
+        if isinstance(tag, basestring):
             try:
-                tag = Tag.objects.get(name=self.item)
+                tag = Tag.objects.get(name=tag)
             except Tag.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.tagged.with_all(tag).filter(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE)
+                return Video.objects.none()
+        elif not isinstance(tag, Tag):
+            return Video.objects.none()
+        return get_tag_videos(request, tag)
+
 
 class UserVideoListNode(BaseVideoListNode):
     """
@@ -151,17 +159,17 @@ class UserVideoListNode(BaseVideoListNode):
     takes_argument = True
 
     def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            author = self.item.resolve(context)
-        else:
+        request = context['request']
+        author = self.item.resolve(context)
+        if isinstance(author, basestring):
             try:
                 author = User.objects.get(username=self.item)
             except User.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.objects.filter(
-            Q(authors=author) | Q(user=author),
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
+                return Video.objects.none()
+        elif not isinstance(author, User):
+            return Video.objects.none()
+        return get_author_videos(request, author)
+
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)
 register.tag('get_video_list_popular', PopularVideoListNode.handle_token)

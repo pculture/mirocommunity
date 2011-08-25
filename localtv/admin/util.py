@@ -67,7 +67,7 @@ class MetasearchVideo(object):
         ## the id this should have once it becomes a model
         self.id = id
 
-    def generate_video_model(self, site, status=models.VIDEO_STATUS_ACTIVE):
+    def generate_video_model(self, site, status=models.Video.ACTIVE):
         scraped_data = get_scraped_data(self.website_url)
         self.name = scraped_data.get('title', self.name)
         self.description = scraped_data.get('description', self.description)

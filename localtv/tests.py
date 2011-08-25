@@ -46,6 +46,7 @@ from haystack.query import SearchQuerySet
 import localtv.settings
 import localtv.templatetags.filters
 from localtv import models
+from localtv.models import Watch, Category, SiteLocation, Video, TierInfo, Feed, OriginalVideo, SavedSearch
 from localtv import util
 import localtv.feeds.views
 from localtv import tiers
@@ -72,9 +73,9 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        models.SiteLocation.objects.clear_cache()
-        self.site_location = models.SiteLocation.objects.get_current()
-        self.tier_info = models.TierInfo.objects.get_current()
+        SiteLocation.objects.clear_cache()
+        self.site_location = SiteLocation.objects.get_current()
+        self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
 
@@ -197,12 +198,12 @@ class FeedModelTestCase(BaseTestCase):
         If Feed.auto_approve is True, the imported videos should be marked as
         active.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
-        self.assertEquals(models.Video.objects.count(), 5)
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_ACTIVE).count(), 5)
+        self.assertEquals(Video.objects.count(), 5)
+        self.assertEquals(Video.objects.filter(
+                status=Video.ACTIVE).count(), 5)
 
     @mock.patch('localtv.tiers.Tier.can_add_more_videos', lambda *args: False)
     def test_auto_approve_True_when_user_past_video_limit(self):
@@ -210,24 +211,24 @@ class FeedModelTestCase(BaseTestCase):
         If Feed.auto_approve is True, but the site is past the video limit,
         the imported videos should be marked as unapproved.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
-        self.assertEquals(models.Video.objects.count(), 5)
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
+        self.assertEquals(Video.objects.count(), 5)
+        self.assertEquals(Video.objects.filter(
+                status=Video.UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
         """
         If Feed.auto_approve is False, the imported videos should be marked as
         unapproved.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.auto_approve = False
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
-        self.assertEquals(models.Video.objects.count(), 5)
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(), 5)
+        self.assertEquals(Video.objects.count(), 5)
+        self.assertEquals(Video.objects.filter(
+                status=Video.UNAPPROVED).count(), 5)
 
     def test_uses_given_parsed_feed(self):
         """
@@ -235,10 +236,10 @@ class FeedModelTestCase(BaseTestCase):
         the method should not download the feed itself.
         """
         parsed_feed = feedparser.parse(self._data_file('feed.rss'))
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=parsed_feed)
         parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
-        db_guids = models.Video.objects.order_by('id').values_list('guid',
+        db_guids = Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
 
@@ -247,11 +248,11 @@ class FeedModelTestCase(BaseTestCase):
         When adding entries from a feed, they should be added to the database
         in reversed order (oldest first)
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         parsed_feed = self._parse_feed('feed.rss')
         feed.update_items(parsed_feed=parsed_feed)
         parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
-        db_guids = models.Video.objects.order_by('id').values_list('guid',
+        db_guids = Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
 
@@ -260,20 +261,20 @@ class FeedModelTestCase(BaseTestCase):
         If the GUID already exists for this item, the newer item should be
         skipped.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_guid.rss'))
-        self.assertEquals(models.Video.objects.count(), 1)
-        self.assertEquals(models.Video.objects.get().name, 'Old Item')
+        self.assertEquals(Video.objects.count(), 1)
+        self.assertEquals(Video.objects.get().name, 'Old Item')
 
     def test_ignore_duplicate_link(self):
         """
         If the link already exists for this item, the newer item should be
         skipped.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_link.rss'))
-        self.assertEquals(models.Video.objects.count(), 1)
-        self.assertEquals(models.Video.objects.get().name, 'Old Item')
+        self.assertEquals(Video.objects.count(), 1)
+        self.assertEquals(Video.objects.get().name, 'Old Item')
 
     def test_entries_include_feed_data(self):
         """
@@ -289,9 +290,9 @@ class FeedModelTestCase(BaseTestCase):
         * thumbnail
         * tags
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
         self.assertEquals(video.name, u'Dave Glassco Supports Miro')
@@ -321,9 +322,9 @@ class FeedModelTestCase(BaseTestCase):
         """
         A link in the feed to the original source should be optional.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_without_link.rss'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
@@ -332,9 +333,9 @@ class FeedModelTestCase(BaseTestCase):
         An enclosure without a MIME type, but with a file URL extension we
         think is media, should be imported.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_without_mime_type.rss'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
@@ -343,10 +344,10 @@ class FeedModelTestCase(BaseTestCase):
         Vimeo RSS feeds should include the correct data.
         """
         models.vidscraper = self.vidscraper
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.auto_authors = []
         feed.update_items(parsed_feed=self._parse_feed('vimeo.rss'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
         self.assertEquals(video.name, u'Tishana - Pro-Choicers on Stupak')
@@ -394,11 +395,11 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
         Youtube RSS feeds should include the correct data.
         """
         models.vidscraper = self.vidscraper
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         user = User.objects.get(pk=1)
         feed.auto_authors = [user]
         feed.update_items(parsed_feed=self._parse_feed('youtube.rss'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
                           u'tag:youtube.com,2008:video:BBwtzeZdoHQ')
@@ -436,9 +437,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         Atom feeds should be handled correctly,
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed.atom'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'http://www.example.org/entries/1')
         self.assertEquals(video.name, u'Atom 1.0')
@@ -462,9 +463,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds generated by Miro Community should be handled as if the item
         was imported from the original feed.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_from_mc.atom'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
                           u'http://www.onnetworks.com/5843 at '
@@ -506,9 +507,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds with <link rel="via"> should use the via URL as the website
         URL.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_link_via.atom'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
                           u'http://www.example.org/entries/1')
@@ -518,9 +519,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds that use Yahoo!'s Media RSS specification should also have
         their content imported,
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_media.atom'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
                           u'http://www.example.org/myvideo.ogg')
@@ -533,9 +534,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds that use Yahoo!'s Media RSS specification to include an
         embeddable player (with <media:player> should have that code included,
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_media_player.atom'))
-        video = models.Video.objects.order_by('id')[0]
+        video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
                           '<embed src="http://www.example.org/?a=b&c=d">')
@@ -545,7 +546,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds that incorrectly use Yahoo!'s Media RSS specification (and
         don't specify a video another way) should be ignored.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_invalid_media.atom'))
         self.assertEquals(feed.video_set.count(), 0)
 
@@ -554,7 +555,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Feeds with long file URLs (>200 characters) should have them shortened
         so they fit in the database.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         feed.update_items(parsed_feed=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
 
@@ -572,7 +573,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
             ('blip.tv', 'http://miropcf.blip.tv/rss'),
             ('Vimeo', 'http://vimeo.com/tag:miro/rss'))
 
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
         for service, url in services:
             feed.feed_url = url
             self.assertEquals(feed.video_service(), service,
@@ -595,7 +596,7 @@ class ViewTestCase(BaseTestCase):
         Rebuilds the search index.
         """
         from haystack import site
-        index = site.get_index(models.Video)
+        index = site.get_index(Video)
         index.reindex()
 
     def test_index(self):
@@ -604,7 +605,7 @@ class ViewTestCase(BaseTestCase):
         should include 10 featured videos, 10 popular videos, 10 new views, and
         the base categories (those without parents).
         """
-        for watched in models.Watch.objects.all():
+        for watched in Watch.objects.all():
             watched.timestamp = datetime.datetime.now() # so that they're
                                                         # recent
             watched.save()
@@ -614,18 +615,13 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/index.html')
+        featured = list(Video.objects.get_featured_videos(self.site_location))
         self.assertEquals(list(response.context['featured_videos']),
-                          list(models.Video.objects.filter(
-                    status=models.VIDEO_STATUS_ACTIVE,
-                    last_featured__isnull=False)))
+                          featured)
         self.assertEquals(list(response.context['popular_videos']),
-                          list(models.Video.objects.popular_since(
-                    datetime.timedelta.max,
-                    self.site_location,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_popular_videos(self.site_location)))
         self.assertEquals(list(response.context['new_videos']),
-                          list(models.Video.objects.new(
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_latest_videos(self.site_location)))
         self.assertEquals(list(response.context['comments']), [])
 
     def test_index_feeds_avoid_frontpage(self):
@@ -637,7 +633,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_index'))
         new_videos_count = len(response.context['new_videos'])
 
-        models.Feed.objects.all().update(avoid_frontpage=True)
+        Feed.objects.all().update(avoid_frontpage=True)
 
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
@@ -649,12 +645,12 @@ class ViewTestCase(BaseTestCase):
         """
         Recent comments should only include approved videos.
         """
-        unapproved = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
-        approved = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE)[0]
-        rejected = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_REJECTED)[0]
+        unapproved = Video.objects.filter(
+            status=Video.UNAPPROVED)[0]
+        approved = Video.objects.filter(
+            status=Video.ACTIVE)[0]
+        rejected = Video.objects.filter(
+            status=Video.REJECTED)[0]
         for video in unapproved, approved, rejected:
             Comment.objects.create(
                 site=self.site_location.site,
@@ -668,7 +664,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.context['comments'][0].content_object,
                           approved)
 
-        approved.status = models.VIDEO_STATUS_REJECTED
+        approved.status = Video.REJECTED
         approved.save()
 
         c = Client()
@@ -692,12 +688,12 @@ class ViewTestCase(BaseTestCase):
         template.  It should include the current video, and a QuerySet of other
         popular videos.
         """
-        for watched in models.Watch.objects.all():
+        for watched in Watch.objects.all():
             watched.timestamp = datetime.datetime.now() # so that they're
                                                         # recent
             watched.save()
 
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
 
         c = Client()
         response = c.get(video.get_absolute_url())
@@ -706,17 +702,15 @@ class ViewTestCase(BaseTestCase):
                           'localtv/view_video.html')
         self.assertEquals(response.context[0]['current_video'], video)
         self.assertEquals(list(response.context[0]['popular_videos']),
-                          list(models.Video.objects.popular_since(
-                    datetime.timedelta.max,
-                    self.site_location,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_popular_videos(
+                    self.site_location)))
 
     def test_view_video_admins_see_rejected(self):
         """
         The view_video view should return a 404 for rejected videos, unless the
         user is an admin.
         """
-        video = models.Video.objects.get(pk=1)
+        video = Video.objects.get(pk=1)
 
         c = Client()
         response = c.get(video.get_absolute_url(), follow=True)
@@ -731,7 +725,7 @@ class ViewTestCase(BaseTestCase):
         The view_video view should redirect the user to the URL with the slug
         if the URL doesn't include it or includes the wrong one.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
 
         c = Client()
         response = c.get(reverse('localtv_view_video',
@@ -757,7 +751,7 @@ class ViewTestCase(BaseTestCase):
         category in the template and those videos should be shown in place of
         the regular popular videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.categories = [2]
         video.save()
 
@@ -766,11 +760,8 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['category'].pk, 2)
         self.assertEquals(list(response.context[0]['popular_videos']),
-                          list(models.Video.objects.popular_since(
-                    datetime.timedelta.max,
-                    self.site_location,
-                    categories__pk=2,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_popular_videos(
+                    self.site_location).filter(categories__pk=2)))
 
     def test_view_video_category_referer(self):
         """
@@ -778,7 +769,7 @@ class ViewTestCase(BaseTestCase):
         included in the template and those videos should be shown in place of
         the regular popular videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.categories = [1, 2]
         video.save()
 
@@ -792,11 +783,8 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.context['category'].pk, 1)
         self.assertEquals(list(response.context[0]['popular_videos']),
-                          list(models.Video.objects.popular_since(
-                    datetime.timedelta.max,
-                    self.site_location,
-                    categories__pk=1,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_popular_videos(
+                    self.site_location).filter(categories__pk=1)))
 
     def assertSearchResults(self, response, expected_sqs,
                             expected_object_count, expected_page_num):
@@ -805,7 +793,7 @@ class ViewTestCase(BaseTestCase):
         page_num = response.context['page_obj'].number
         videos = list(response.context['video_list'])
         expected_sqs_results = [r.object for r in expected_sqs if
-                        r.object.status == models.VIDEO_STATUS_ACTIVE and isinstance(r.object, models.Video)]
+                        r.object.status == Video.ACTIVE and isinstance(r.object, Video)]
         start = (page_num - 1) * per_page
         end = page_num * per_page
 
@@ -878,7 +866,7 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should search the tags for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
 
@@ -907,7 +895,7 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should search the category for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.categories = [1, 2] # Miro, Linux
         video.save()
 
@@ -936,7 +924,7 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should search the user who submitted videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
         video.user.first_name = 'firstname'
         video.user.last_name = 'lastname'
@@ -968,7 +956,7 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should search the video service user for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
 
@@ -987,7 +975,7 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should search the feed name for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         # feed is miropcf
 
         self._rebuild_index()
@@ -1039,14 +1027,14 @@ class ViewTestCase(BaseTestCase):
                           'localtv/categories.html')
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Category.objects.filter(parent=None)))
+                          list(Category.objects.filter(parent=None)))
 
     def test_category(self):
         """
         The category view should render the 'localtv/category.html'
         template, and include the appropriate category.
         """
-        category = models.Category.objects.get(slug='miro')
+        category = Category.objects.get(slug='miro')
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
@@ -1078,9 +1066,12 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_author',
                                  args=[author.pk]))
         videos = list(response.context['video_list'])
-        expected = list(models.Video.objects.new().filter( Q(user=author) |
-                    Q(authors=author), status=models.VIDEO_STATUS_ACTIVE
-                    ).distinct().order_by('-best_date'))
+        sitelocation = SiteLocation.objects.get_current()
+        expected = list(
+            Video.objects.get_latest_videos(sitelocation).filter(
+                Q(user=author) | Q(authors=author)
+            ).distinct().order_by('-best_date')
+        )
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/author.html')
@@ -1109,7 +1100,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(response.template[0].name,
                           'localtv/browse.html')
 
-    def test_new_videos(self):
+    def test_latest_videos(self):
         """
         The new_videos view should render the
         'localtv/video_listing_new.html' template and include the new
@@ -1123,8 +1114,8 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(response.context['pages'], 2)
         self.assertEquals(len(response.context['page_obj'].object_list), 15)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.new(
-                    status=models.VIDEO_STATUS_ACTIVE)[:15]))
+                          list(Video.objects.get_latest_videos(
+                              self.site_location)[:15]))
 
     def test_popular_videos(self):
         """
@@ -1132,7 +1123,7 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
-        for w in models.Watch.objects.all():
+        for w in Watch.objects.all():
             w.timestamp = datetime.datetime.now()
             w.save()
 
@@ -1144,11 +1135,10 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.popular_since(
-                    datetime.timedelta.max,
-                    self.site_location,
-                    watch__timestamp__gte=datetime.datetime.min,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                          list(Video.objects.get_popular_videos(
+                                 self.site_location).filter(
+                                     watch__timestamp__gte=datetime.datetime.min
+                                 ).distinct()))
 
     def test_featured_videos(self):
         """
@@ -1164,9 +1154,9 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(response.context['pages'], 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(models.Video.objects.filter(
+                          list(Video.objects.filter(
                     last_featured__isnull=False,
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=Video.ACTIVE)))
 
     def test_tag_videos(self):
         """
@@ -1174,7 +1164,7 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_tag.html' template and include the
         tagged videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.tags = 'tag1'
         video.save()
 
@@ -1195,7 +1185,7 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_feed.html' template and include the
         videos from the given feed.
         """
-        feed = models.Feed.objects.get(pk=1)
+        feed = Feed.objects.get(pk=1)
 
         c = Client()
         response = c.get(reverse('localtv_list_feed',
@@ -1207,7 +1197,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(feed.video_set.filter(
-                    status=models.VIDEO_STATUS_ACTIVE)))
+                    status=Video.ACTIVE)))
 
 
 # -----------------------------------------------------------------------------
@@ -1220,7 +1210,7 @@ class CommentModerationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
-        self.video = models.Video.objects.get(pk=20)
+        self.video = Video.objects.get(pk=20)
         self.url = get_form_target()
         if 'captcha' in CommentForm.base_fields:
             del CommentForm.base_fields['captcha']
@@ -1402,7 +1392,7 @@ class CommentModerationTestCase(BaseTestCase):
         If the submitter of a video has the 'video_comment' notificiation
         enabled, an e-mail with the comment should be sent to them.
         """
-        video = models.Video.objects.get(pk=43) # has a user
+        video = Video.objects.get(pk=43) # has a user
         form = CommentForm(video,
                            initial={
                 'name': 'postname',
@@ -1502,7 +1492,7 @@ class VideoModelTestCase(BaseTestCase):
         2) when_approved (when it was made visible on the site)
         3) when_submitted (when it was submitted to the site)
         """
-        v = models.Video.objects.get(pk=11)
+        v = Video.objects.get(pk=11)
         self.assertEquals(v.when(), v.when_published)
         v.when_published = None
         self.assertEquals(v.when(), v.when_approved)
@@ -1516,7 +1506,7 @@ class VideoModelTestCase(BaseTestCase):
         """
         self.site_location.use_original_date = False
         self.site_location.save()
-        v = models.Video.objects.get(pk=11)
+        v = Video.objects.get(pk=11)
         self.assertEquals(v.when(), v.when_approved)
 
 
@@ -1525,7 +1515,7 @@ class VideoModelTestCase(BaseTestCase):
         Video.when_prefix() returns 'published' if the date is
         when_published, otherwise it returns 'posted'..
         """
-        v = models.Video.objects.get(pk=11)
+        v = Video.objects.get(pk=11)
         self.assertEquals(v.when_prefix(), 'published')
         v.when_published = None
         self.assertEquals(v.when_prefix(), 'posted')
@@ -1537,46 +1527,51 @@ class VideoModelTestCase(BaseTestCase):
         """
         self.site_location.use_original_date = False
         self.site_location.save()
-        v = models.Video.objects.get(pk=11)
+        v = Video.objects.get(pk=11)
         self.assertEquals(v.when_prefix(), 'posted')
 
-    def test_new(self):
+    def test_latest(self):
         """
-        Video.objects.new() should return a QuerySet ordered by the best
-        available date:
+        Video.objects.get_latest_videos() should return a QuerySet ordered by
+        the best available date:
 
         1) when_published
         2) when_approved
         3) when_submitted
         """
-        self.assertEquals(list(models.Video.objects.new()),
-                          list(models.Video.objects.extra(select={'date': """
+        results = list(
+            Video.objects.get_latest_videos(self.site_location)
+        )
+        expected = list(Video.objects.active().extra(
+            select={'date': """
 COALESCE(localtv_video.when_published,localtv_video.when_approved,
-localtv_video.when_submitted)"""}).order_by('-date')))
+localtv_video.when_submitted)"""}
+        ).filter(site=self.site_location.site).order_by('-date'))
+        self.assertEquals(results, expected)
 
-    def test_new_use_original_date_False(self):
+    def test_latest_use_original_date_False(self):
         """
-        When SiteLocation.use_original_date is False, Video.objects.new()
-        should ignore the when_published date.
+        When SiteLocation.use_original_date is False,
+        Video.objects.get_latest_videos() should ignore the when_published date.
         """
         self.site_location.use_original_date = False
         self.site_location.save()
-        self.assertEquals(list(models.Video.objects.new(
-                    site=self.site_location.site)),
-                          list(models.Video.objects.extra(select={'date': """
+        self.assertEquals(list(Video.objects.get_latest_videos(
+                    self.site_location)),
+                          list(Video.objects.active().extra(select={'date': """
 COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
-                                                          ).order_by('-date')))
+                      ).filter(site=self.site_location.site).order_by('-date')))
 
     def test_thumbnail_deleted(self):
         """
         If a Video has a thumbnail, deleting the Video should remove the
         thumbnail.
         """
-        v = models.Video.objects.get(pk=11)
+        v = Video.objects.get(pk=11)
         v.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
 
         paths = [v.get_original_thumb_storage_path()]
-        for size in models.THUMB_SIZES:
+        for size in Video.THUMB_SIZES:
             paths.append(v.get_resized_thumb_storage_path(*size))
 
         v.delete()
@@ -1589,7 +1584,7 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
         When an Video object is a created, an OriginalVideo object should also
         be created with the data from that video.
         """
-        v = models.Video.objects.create(
+        v = Video.objects.create(
             site=self.site_location.site,
             name='Test Name',
             description='Test Description',
@@ -1610,12 +1605,12 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
         If we don't know have a website URL for the video, don't bother
         creating an OriginalVideo object.
         """
-        v = models.Video.objects.create(
+        v = Video.objects.create(
             site=self.site_location.site,
             name='Test Name',
             description='Test Description',
             )
-        self.assertRaises(models.OriginalVideo.DoesNotExist,
+        self.assertRaises(OriginalVideo.DoesNotExist,
                           lambda: v.original)
 
 # -----------------------------------------------------------------------------
@@ -1682,11 +1677,11 @@ class WatchModelTestCase(BaseTestCase):
         request.META['REMOTE_ADDR'] = '123.123.123.123'
         request.user = User.objects.get(username='user')
 
-        video = models.Video.objects.get(pk=1)
+        video = Video.objects.get(pk=1)
 
-        models.Watch.add(request, video)
+        Watch.add(request, video)
 
-        watch = models.Watch.objects.get()
+        watch = Watch.objects.get()
         self.assertEquals(watch.video, video)
         self.assertTrue(watch.timestamp - datetime.datetime.now() <
                         datetime.timedelta(seconds=1))
@@ -1701,11 +1696,11 @@ class WatchModelTestCase(BaseTestCase):
         request = HttpRequest()
         request.META['REMOTE_ADDR'] = '123.123.123.123'
 
-        video = models.Video.objects.get(pk=1)
+        video = Video.objects.get(pk=1)
 
-        models.Watch.add(request, video)
+        Watch.add(request, video)
 
-        watch = models.Watch.objects.get()
+        watch = Watch.objects.get()
         self.assertEquals(watch.video, video)
         self.assertTrue(watch.timestamp - datetime.datetime.now() <
                         datetime.timedelta(seconds=1))
@@ -1720,11 +1715,11 @@ class WatchModelTestCase(BaseTestCase):
         request = HttpRequest()
         request.META['REMOTE_ADDR'] = 'unknown'
 
-        video = models.Video.objects.get(pk=1)
+        video = Video.objects.get(pk=1)
 
-        models.Watch.add(request, video)
+        Watch.add(request, video)
 
-        w = models.Watch.objects.get()
+        w = Watch.objects.get()
         self.assertEquals(w.video, video)
         self.assertEquals(w.ip_address, '0.0.0.0')
 
@@ -1742,7 +1737,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         SavedSearch.update_items() should create new Video objects linked to
         the search.
         """
-        ss = models.SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=1)
         self.assertEquals(ss.video_set.count(), 0)
         ss.update_items()
         self.assertNotEquals(ss.video_set.count(), 0)
@@ -1752,7 +1747,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         A search that includes the same video should should not add the video a
         second time.
         """
-        ss = models.SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=1)
         ss.update_items()
         count = ss.video_set.count()
         ss.update_items()
@@ -1763,7 +1758,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         If a SavedSearch has authors set, imported videos should be given that
         authorship.
         """
-        ss = models.SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=1)
         ss.auto_authors = [User.objects.get(pk=1)]
         ss.update_items()
         video = ss.video_set.all()[0]
@@ -1775,7 +1770,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         If a SavedSearch has no author, imported videos should have a User
         based on the user on the original video service.
         """
-        ss = models.SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=1)
         ss.save()
         ss.update_items()
         video = ss.video_set.all()[0]
@@ -1804,7 +1799,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
 
     def setUp(self):
         BaseTestCase.setUp(self)
-        self.video = models.Video.objects.create(
+        self.video = Video.objects.create(
             site=self.site_location.site,
             website_url=self.BASE_URL,
             name=self.BASE_DATA['name'],
@@ -1944,7 +1939,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
-        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        original = OriginalVideo.objects.get(pk=self.original.pk)
         self.assertEquals(original.name,
                           self.BASE_DATA['name'])
         self.assertEquals(original.thumbnail_url,
@@ -1975,7 +1970,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
             tag = tag.lower()
 
         self.assertEquals(len(mail.outbox), 0)
-        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        original = OriginalVideo.objects.get(pk=self.original.pk)
         self.assertEquals(original.name,
                           self.BASE_DATA['name'])
         self.assertEquals(original.thumbnail_url,
@@ -2013,7 +2008,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
-        original = models.OriginalVideo.objects.get(pk=self.original.pk)
+        original = OriginalVideo.objects.get(pk=self.original.pk)
         self.assertEquals(original.name,
                           self.BASE_DATA['name'])
         self.assertEquals(original.thumbnail_url,
@@ -2124,11 +2119,11 @@ class TestWmodeFilter(BaseTestCase):
                 
 class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
     def test_unit(self):
-        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
-        tier_info = models.TierInfo.objects.get_current()
+        self.assertFalse(SiteLocation.enforce_tiers(override_setting=True))
+        tier_info = TierInfo.objects.get_current()
         tier_info.user_has_successfully_performed_a_paypal_transaction = True
         tier_info.save()
-        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=True))
+        self.assertTrue(SiteLocation.enforce_tiers(override_setting=True))
 
 class TierMethodsTests(BaseTestCase):
 
@@ -2151,13 +2146,13 @@ class TierMethodsTests(BaseTestCase):
         self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
 
     def test_time_until_free_trial_expires_none_when_not_in_free_trial(self):
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.in_free_trial = False
         ti.save()
         self.assertEqual(None, ti.time_until_free_trial_expires())
 
     def test_time_until_free_trial_expires_none_when_no_payment_due(self):
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.in_free_trial = True
         ti.payment_due_date = None # Note that this is a kind of insane state.
         ti.save()
@@ -2166,7 +2161,7 @@ class TierMethodsTests(BaseTestCase):
     def test_time_until_free_trial_expires(self):
         now = datetime.datetime(2011, 5, 24, 23, 44, 30)
         a_bit_in_the_future = now + datetime.timedelta(hours=5)
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.in_free_trial = True
         ti.payment_due_date = a_bit_in_the_future
         ti.save()
@@ -2206,12 +2201,13 @@ class FeedViewTestCase(BaseTestCase):
 
     def test_feed_views_respect_count_when_set_integration(self):
         # Put 3 videos into the Linux category
-        linux_category = models.Category.objects.get(slug='linux')
-        three_vids = models.Video.objects.new()[:3]
+        linux_category = Category.objects.get(slug='linux')
+        three_vids = Video.objects.get_latest_videos(
+            self.site_location)[:3]
 
         for vid in three_vids:
             vid.categories.add(linux_category)
-            vid.status = models.VIDEO_STATUS_ACTIVE
+            vid.status = Video.ACTIVE
             vid.save()
 
         # Do a GET for the first 2 in the feed
@@ -2237,7 +2233,7 @@ class FeedViewTestCase(BaseTestCase):
         self.assertEqual(1, len(items_from_second_GET))
 
 if localtv.settings.voting_enabled():
-    import voting
+    from voting.models import Vote
 
     class VotingTestCase(BaseTestCase):
 
@@ -2245,8 +2241,8 @@ if localtv.settings.voting_enabled():
 
         def setUp(self):
             BaseTestCase.setUp(self)
-            self.video = models.Video.objects.get(pk=20)
-            self.category = models.Category.objects.get(slug='miro')
+            self.video = Video.objects.get(pk=20)
+            self.category = Category.objects.get(slug='miro')
             self.category.contest_mode = datetime.datetime.now()
             self.category.save()
             self.video.categories.add(self.category)
@@ -2266,9 +2262,9 @@ if localtv.settings.voting_enabled():
                              'http://testserver%s' % (
                     self.video.get_absolute_url()))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 1)
-            vote = voting.models.Vote.objects.get()
+            vote = Vote.objects.get()
             self.assertEqual(vote.object, self.video)
             self.assertEqual(vote.user.username, 'user')
             self.assertEqual(vote.vote, 1)
@@ -2286,7 +2282,7 @@ if localtv.settings.voting_enabled():
                                       args=(self.video.pk,
                                             'up')))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 1)
 
         def test_voting_view_clear(self):
@@ -2299,13 +2295,13 @@ if localtv.settings.voting_enabled():
                                       args=(self.video.pk,
                                             'up')))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 1)
             c.post(reverse('localtv_video_vote',
                            args=(self.video.pk,
                                  'clear')))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 0)
 
         def test_voting_view_too_many_votes(self):
@@ -2313,7 +2309,7 @@ if localtv.settings.voting_enabled():
             You should only be able to vote for 3 videos in a category.
             """
             videos = []
-            for v in models.Video.objects.all()[:4]:
+            for v in Video.objects.all()[:4]:
                 v.categories.add(self.category)
                 videos.append(v)
 
@@ -2326,12 +2322,12 @@ if localtv.settings.voting_enabled():
                                      'up')))
 
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 3)
 
             self.assertEqual(
                 set(
-                    voting.models.Vote.objects.values_list(
+                    Vote.objects.values_list(
                         'object_id', flat=True)),
                 set([v.pk for v in videos[:3]]))
 
@@ -2341,7 +2337,7 @@ if localtv.settings.voting_enabled():
             should still succeed.
             """
             videos = []
-            for v in models.Video.objects.all()[:3]:
+            for v in Video.objects.all()[:3]:
                 v.categories.add(self.category)
                 videos.append(v)
 
@@ -2354,14 +2350,14 @@ if localtv.settings.voting_enabled():
                                      'up')))
 
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 3)
 
             c.post(reverse('localtv_video_vote',
                            args=(video.pk,
                                  'clear')))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 2)
 
         def test_voting_view_requires_authentication(self):
@@ -2388,7 +2384,7 @@ if localtv.settings.voting_enabled():
                              'http://testserver%s' % (
                     self.video.get_absolute_url()))
             self.assertEqual(
-                voting.models.Vote.objects.count(),
+                Vote.objects.count(),
                 0)
 
         def test_video_model_voting_enabled(self):
@@ -2397,7 +2393,7 @@ if localtv.settings.voting_enabled():
             category, else False.
             """
             self.assertTrue(self.video.voting_enabled())
-            self.assertFalse(models.Video.objects.get(pk=1).voting_enabled())
+            self.assertFalse(Video.objects.get(pk=1).voting_enabled())
 
         def test_video_view_user_can_vote_True(self):
             """
@@ -2418,7 +2414,7 @@ if localtv.settings.voting_enabled():
             c = Client()
             c.login(username='user', password='password')
 
-            for video in models.Video.objects.all()[:3]:
+            for video in Video.objects.all()[:3]:
                 video.categories.add(self.category)
                 c.post(reverse('localtv_video_vote',
                                args=(video.pk,

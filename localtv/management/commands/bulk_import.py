@@ -169,14 +169,14 @@ class Command(BaseCommand):
                 # The _handle_one_bulk_import_feed_entry() method gave the
                 # video a status, but we have to take that back for now.
                 #
-                # We set the status to VIDEO_STATUS_PENDING_THUMBNAIL so that
+                # We set the status to Video.PENDING_THUMBNAIL so that
                 # no one can see the video until the thumbnailing process is
                 # complete.
                 #
                 # We pass the thumbnailer the status that the video should get
                 # so that it can set that once it is ready.
                 i['future_status'] = v.status
-                v.status = models.VIDEO_STATUS_PENDING_THUMBNAIL
+                v.status = models.Video.PENDING_THUMBNAIL
                 v.save()
 
             stats['total'] += 1
@@ -244,9 +244,8 @@ class Command(BaseCommand):
 
     def enqueue_forked_tasks_for_thumbnail_fetches(self, feed):
         # Make sure that any videos from the feed with
-        # status=models.VIDEO_STATUS_PENDING_THUMBNAIL have tasks.
-        all_feed_items_pending_thumbnail = feed.video_set.filter(
-            status=models.VIDEO_STATUS_PENDING_THUMBNAIL)
+        # status=models.Video.PENDING_THUMBNAIL have tasks.
+        all_feed_items_pending_thumbnail = feed.video_set.pending_thumbnail()
 
         for video in all_feed_items_pending_thumbnail:
             if video.id in self.forked_tasks:

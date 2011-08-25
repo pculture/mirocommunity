@@ -142,7 +142,7 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.sitelocation:
             self.instance.site = self.sitelocation.site
-        self.instance.status = models.VIDEO_STATUS_UNAPPROVED
+        self.instance.status = models.Video.UNAPPROVED
         kwargs['self'] = self
         get_extended_init_callable_for_class_name('SecondStepSubmitVideoForm')(*args, **kwargs)
 
@@ -155,11 +155,11 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         if self.sitelocation.user_is_admin(self.user):
             if (not self.sitelocation.enforce_tiers() or
                 self.sitelocation.get_tier().remaining_videos() >= 1):
-                video.status = models.VIDEO_STATUS_ACTIVE
+                video.status = models.Video.ACTIVE
         old_m2m = self.save_m2m
         def save_m2m():
             video = self.instance
-            if video.status == models.VIDEO_STATUS_ACTIVE:
+            if video.is_active():
                 # when_submitted isn't set until after the save
                 video.when_approved = video.when_submitted
                 video.save()
@@ -236,7 +236,7 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
 
         self.instance.name=scraped_data.get('title') or ''
         self.instance.site=self.sitelocation.site
-        self.instance.status=models.VIDEO_STATUS_UNAPPROVED
+        self.instance.status=models.Video.UNAPPROVED
         self.instance.description=sanitize(scraped_data.get('description') or \
                                                '',
                                            extra_filters=['img'])

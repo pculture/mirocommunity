@@ -23,7 +23,6 @@ from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
 from django.core import cache
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
 from django.utils.cache import patch_vary_headers
@@ -34,7 +33,7 @@ from django.utils.tzinfo import FixedOffset
 from tagging.models import Tag
 import simplejson
 
-from localtv import models
+from localtv.models import Video, Category, SiteLocation
 from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
 from localtv.templatetags.filters import simpletimesince
@@ -45,7 +44,7 @@ LOCALTV_FEED_LENGTH = 30
 
 def feed_view(klass):
     def wrapper(request, *args):
-        sitelocation = models.SiteLocation.objects.get_current()
+        sitelocation = SiteLocation.objects.get_current()
         if len(args) == 0:
             args = [None]
         if args[0] == 'json/': # JSON feed
@@ -184,7 +183,7 @@ class BaseVideosFeed(Feed):
             if kwargs.pop('json'):
                 self.feed_type = JSONGenerator
         Feed.__init__(self, *args, **kwargs)
-        self.sitelocation = models.SiteLocation.objects.get_current()
+        self.sitelocation = SiteLocation.objects.get_current()
         self.opensearch_data = {}
 
     def slice_items(self, items, default_items_per_page=None):
@@ -246,7 +245,7 @@ class BaseVideosFeed(Feed):
         return value
 
     def item_pubdate(self, video):
-        if video.status != models.VIDEO_STATUS_ACTIVE:
+        if not video.is_active():
             return None
         return video.when().replace(tzinfo=FixedOffset(0))
 
@@ -328,9 +327,7 @@ class NewVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('New Videos'))
 
     def items(self):
-        videos = models.Video.objects.new(
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE)
+        videos = Video.objects.get_latest_videos(self.sitelocation)
         return self.slice_items(videos)
 
 
@@ -343,12 +340,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('Featured Videos'))
 
     def items(self):
-        videos = models.Video.objects.filter(
-            site=self.sitelocation.site,
-            last_featured__isnull=False,
-            status=models.VIDEO_STATUS_ACTIVE)
-        videos = videos.order_by(
-            '-last_featured', '-when_approved','-when_submitted')
+        videos = Video.objects.get_featured_videos(self.sitelocation)
         return self.slice_items(videos)
 
 class PopularVideosFeed(BaseVideosFeed):
@@ -356,9 +348,7 @@ class PopularVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_popular')
 
     def items(self):
-        videos = models.Video.objects.popular_since(
-            datetime.timedelta(days=7), self.sitelocation,
-            status=models.VIDEO_STATUS_ACTIVE)
+        videos = Video.objects.get_popular_videos(self.sitelocation)
         return self.slice_items(videos)
 
     def title(self):
@@ -368,14 +358,15 @@ class PopularVideosFeed(BaseVideosFeed):
 
 class CategoryVideosFeed(BaseVideosFeed):
     def get_object(self, bits):
-        return models.Category.objects.get(site=self.sitelocation.site,
+        return Category.objects.get(site=self.sitelocation.site,
                                            slug=bits[0])
 
     def link(self, category):
         return category.get_absolute_url()
 
     def items(self, category):
-        return self.slice_items(category.approved_set.all())
+        videos = Video.objects.get_category_videos(self.sitelocation, category)
+        return self.slice_items(videos)
 
     def title(self, category):
         return "%s: %s" % (
@@ -389,10 +380,7 @@ class AuthorVideosFeed(BaseVideosFeed):
         return reverse('localtv_author', args=[author.pk])
 
     def items(self, author):
-        videos = models.Video.objects.filter(
-            Q(authors=author) | Q(user=author),
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
+        videos = Video.objects.get_author_videos(self.sitelocation, author)
         return self.slice_items(videos)
 
     def title(self, author):
@@ -413,16 +401,15 @@ class FeedVideosFeed(BaseVideosFeed):
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
     def get_object(self, bits):
-        return models.Feed.objects.get(pk=bits[0])
+        return Feed.objects.get(pk=bits[0])
 
     def link(self, feed):
         return reverse('localtv_list_feed', args=[feed.pk])
 
     def items(self, feed):
-        videos = models.Video.objects.filter(
-            feed=feed,
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
+        videos = Video.objects.get_latest_videos(
+            self.sitelocation
+        ).filter(feed=feed)
         return self.slice_items(videos)
 
     def title(self, feed):
@@ -438,9 +425,7 @@ class TagVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_tag', args=[tag.name])
 
     def items(self, tag):
-        videos = models.Video.tagged.with_all(tag).filter(
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_ACTIVE)
+        videos = Video.objects.get_tag_videos(self.sitelocation, tag)
         return self.slice_items(videos)
 
     def title(self, tag):
@@ -463,9 +448,7 @@ class SearchVideosFeed(BaseVideosFeed):
             raise FeedDoesNotExist(search)
         results = form.search()
         if self.request.GET.get('sort', None) == 'latest':
-            videos = models.Video.objects.new(
-                site=self.sitelocation.site,
-                status=models.VIDEO_STATUS_ACTIVE,
+            videos = Video.objects.get_latest_videos(self.sitelocation).filter(
                 pk__in=[result.pk for result in results if result])
             return self.slice_items(videos)
         return [result.object for result in self.slice_items(results)

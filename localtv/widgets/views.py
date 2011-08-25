@@ -21,6 +21,8 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
 from localtv import models
+from localtv.views import get_featured_videos, get_latest_videos, get_popular_videos
+
 
 def widget(func):
     def wrapper(request, *args, **kwargs):
@@ -29,34 +31,14 @@ def widget(func):
             count = int(request.GET.get('count'))
         except TypeError:
             count = 3
-        else:
-            objects = objects[:count]
+
+        objects = objects[:count]
         return render_to_response('localtv/widgets/widget.html',
                                   {'objects': objects},
                                   context_instance=RequestContext(request))
     return wrapper
 
-@widget
-def featured(request):
-    featured_videos = models.Video.objects.filter(
-        site=request.sitelocation().site,
-        status=models.VIDEO_STATUS_ACTIVE,
-        last_featured__isnull=False)
-    featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_approved', '-when_published',
-        '-when_submitted')
-    return featured_videos
 
-@widget
-def new(request):
-    new_videos = models.Video.objects.new(
-        site=request.sitelocation().site,
-        status=models.VIDEO_STATUS_ACTIVE)
-    return new_videos
-
-@widget
-def popular(request):
-    popular_videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation=request.sitelocation(),
-        status=models.VIDEO_STATUS_ACTIVE)
-    return popular_videos
+featured = widget(get_featured_videos)
+new = widget(get_latest_videos)
+popular = widget(get_popular_videos)
