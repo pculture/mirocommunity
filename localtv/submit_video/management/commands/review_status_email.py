@@ -40,9 +40,9 @@ class Command(NoArgsCommand):
 
         previous = datetime.datetime.now() - delta
 
-        queue_videos = models.Video.objects.filter(
+        queue_videos = models.Video.objects.unapproved().filter(
             site=sitelocation.site,
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        )
         new_videos = queue_videos.filter(when_submitted__gte=previous)
 
         if new_videos.count():

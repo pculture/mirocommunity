@@ -170,7 +170,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         """
         video = models.Video.objects.create(
             site=self.site_location.site,
-            status=models.VIDEO_STATUS_REJECTED,
+            status=models.Video.REJECTED,
             name='test video',
             website_url = self.GET_data['url'])
         c = Client()
@@ -183,7 +183,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
+        self.assertEquals(video.status, models.Video.UNAPPROVED)
         self.assertEquals(video.name, self.video_data['name'])
         self.assertEquals(video.description, self.video_data['description'])
         self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
@@ -210,7 +210,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEquals(video.status, models.VIDEO_STATUS_UNAPPROVED)
+        self.assertEquals(video.status, models.Video.UNAPPROVED)
         self.assertEquals(video.name, self.video_data['name'])
         self.assertEquals(video.description, self.video_data['description'])
         self.assertEquals(video.thumbnail_url, self.video_data['thumbnail'])
@@ -326,7 +326,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        self.assertEquals(video.status, models.Video.ACTIVE)
         self.assertEquals(video.when_approved, video.when_submitted)
         self.assertEquals(video.user, User.objects.get(username='admin'))
 
@@ -379,7 +379,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=models.Video.ACTIVE,
             website_url='http://www.pculture.org/',
             user=user)
 
@@ -416,7 +416,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=models.Video.ACTIVE,
             website_url='http://www.pculture.org/')
 
         c = Client()
@@ -436,7 +436,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         """
         video = models.Video.objects.create(
             site=self.site_location.site,
-            status=models.VIDEO_STATUS_REJECTED,
+            status=models.Video.REJECTED,
             name='test video',
             website_url = 'http://www.pculture.org/')
 
@@ -460,7 +460,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=models.Video.ACTIVE,
             website_url='http://www.pculture.org/')
 
         c = Client()
@@ -484,7 +484,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=models.Video.ACTIVE,
             file_url='http://www.pculture.org/')
 
         c = Client()
@@ -505,7 +505,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_ACTIVE,
+            status=models.Video.ACTIVE,
             file_url='http://www.pculture.org/')
 
         c = Client()
@@ -528,7 +528,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_UNAPPROVED,
+            status=models.Video.UNAPPROVED,
             website_url='http://www.pculture.org/')
 
         c = Client()
@@ -550,7 +550,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         video = models.Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.VIDEO_STATUS_UNAPPROVED,
+            status=models.Video.UNAPPROVED,
             website_url='http://www.pculture.org/')
 
         c = Client()
@@ -565,7 +565,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                         args=[video.pk])))
 
         video = models.Video.objects.get(pk=video.pk)
-        self.assertEquals(video.status,models.VIDEO_STATUS_ACTIVE)
+        self.assertEquals(video.status,models.Video.ACTIVE)
 
     def test_GET_bookmarklet(self):
         """
@@ -939,7 +939,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         sent
         """
         queue_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+            status=models.Video.UNAPPROVED)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now() - \
@@ -973,7 +973,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
             setting.save()
 
         queue_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+            status=models.Video.UNAPPROVED)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now()

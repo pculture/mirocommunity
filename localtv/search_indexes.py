@@ -18,7 +18,7 @@ from django.utils.encoding import force_unicode
 
 from haystack import indexes
 from haystack import site
-from localtv.models import Video, VIDEO_STATUS_ACTIVE
+from localtv.models import Video
 
 
 class VideoIndex(indexes.SearchIndex):
@@ -35,7 +35,7 @@ class VideoIndex(indexes.SearchIndex):
         """
         Custom queryset to only search approved videos.
         """
-        return Video.objects.filter(status=VIDEO_STATUS_ACTIVE)
+        return Video.objects.active()
 
     def get_updated_field(self):
         return 'when_modified'

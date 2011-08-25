@@ -48,9 +48,8 @@ class UnapprovedVideosFeed(views.BaseVideosFeed):
             self.sitelocation.site.name, _('Videos Awaiting Moderation'))
 
     def items(self):
-        videos = models.Video.objects.filter(
-            site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_UNAPPROVED).order_by(
+        videos = models.Video.objects.unapproved().filter(
+            site=self.sitelocation.site).order_by(
             'when_submitted', 'when_published')
         return videos[:views.LOCALTV_FEED_LENGTH]
 
@@ -61,9 +60,8 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
             self.sitelocation.site.name, _('Unapproved User Submissions'))
 
     def items(self):
-        videos = models.Video.objects.filter(
+        videos = models.Video.objects.unapproved().filter(
             site=self.sitelocation.site,
-            status=models.VIDEO_STATUS_UNAPPROVED,
             feed=None, search=None)
         videos = videos.order_by(
             'when_submitted', 'when_published')

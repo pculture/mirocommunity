@@ -53,9 +53,9 @@ class Command(BaseCommand):
         # Set the status.
         # However, if the video wants to become ACTIVE but we may not make it
         # ACTIVE, make it UNAPPROVED instead.
-        if future_status == models.VIDEO_STATUS_ACTIVE:
+        if future_status == models.Video.ACTIVE:
             if not models.SiteLocation.objects.get().get_tier().can_add_more_videos():
-                future_status = models.VIDEO_STATUS_UNAPPROVED
+                future_status = models.Video.UNAPPROVED
 
         video.status = future_status
         video.save()

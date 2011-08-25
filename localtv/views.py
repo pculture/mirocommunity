@@ -30,13 +30,12 @@ from django.views.decorators.vary import vary_on_headers
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings
-from localtv.listing import views as listing_views
 
 from localtv.playlists.models import (Playlist, PlaylistItem,
                                       PLAYLIST_STATUS_PUBLIC)
 
 
-def _request_videos(request, manager, key, *args, **kwargs):
+def _request_videos(manager, key, request, *args, **kwargs):
     _cache_attr = "_localtv_%s_videos" % key
     if not hasattr(request, _cache_attr):
         meth = getattr(manager, "get_%s_videos" % key)
@@ -44,14 +43,14 @@ def _request_videos(request, manager, key, *args, **kwargs):
     return getattr(request, _cache_attr)
 
 
-mgr = Video.objects
-get_request_videos = curry(_request_videos, manager=mgr, key='sitelocation')
-get_featured_videos = curry(_request_videos, manager=mgr, key='featured')
-get_latest_videos = curry(_request_videos, manager=mgr, key='latest')
-get_popular_videos = curry(_request_videos, manager=mgr, key='popular')
-get_category_videos = curry(_request_videos, manager=mgr, key='category')
-get_tag_videos = curry(_request_videos, manager=mgr, key='tag')
-get_author_videos = curry(_request_videos, manager=mgr, key='author')
+manager = Video.objects
+get_request_videos = curry(_request_videos, manager, 'sitelocation')
+get_featured_videos = curry(_request_videos, manager, 'featured')
+get_latest_videos = curry(_request_videos, manager, 'latest')
+get_popular_videos = curry(_request_videos, manager, 'popular')
+get_category_videos = curry(_request_videos, manager, 'category')
+get_tag_videos = curry(_request_videos, manager, 'tag')
+get_author_videos = curry(_request_videos, manager, 'author')
 
 
 def index(request):
@@ -60,7 +59,7 @@ def index(request):
     new_videos = get_latest_videos(request).exclude(feed__avoid_frontpage=True)
 
     recent_comments = comments.get_model().objects.filter(
-        site=sitelocation.site,
+        site=request.sitelocation().site,
         content_type=ContentType.objects.get_for_model(Video),
         object_pk__in=get_request_videos(request).values_list('pk', flat=True),
         is_removed=False,
@@ -115,7 +114,8 @@ def view_video(request, video_id, slug=None):
                 except Resolver404:
                     pass
                 else:
-                    if view == listing_views.category:
+                    from localtv.listing.views import category_videos
+                    if view == category_videos:
                         try:
                             category_obj = Category.objects.get(
                                 slug=args[0],
@@ -131,8 +131,9 @@ def view_video(request, video_id, slug=None):
             category_obj = video.categories.all()[0]
 
         context['category'] = category_obj
-        context['popular_videos'] = popular_videos.filter(
-                                        categories=category_obj)
+        popular_videos = popular_videos.filter(categories=category_obj)
+
+    context['popular_videos'] = popular_videos
 
     if video.voting_enabled():
         import voting

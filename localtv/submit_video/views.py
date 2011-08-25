@@ -97,15 +97,18 @@ def submit_video(request):
                 Q(website_url=submit_form.cleaned_data['url']) |
                 Q(file_url=submit_form.cleaned_data['url']),
                 site=request.sitelocation().site)
-            existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
+            existing.rejected().delete()
             if existing.count():
                 if request.user_is_admin():
                     # even if the video was rejected, an admin submitting it
                     # should make it approved
+                    # FIXME: This initiates a new query against the database -
+                    # so the rejected videos which were deleted will not be
+                    # marked approved.
                     for v in existing.exclude(
-                        status=models.VIDEO_STATUS_ACTIVE):
+                        status=models.Video.ACTIVE):
                         v.user = request.user
-                        v.status = models.VIDEO_STATUS_ACTIVE
+                        v.status = models.Video.ACTIVE
                         v.when_approved = datetime.datetime.now()
                         v.save()
                     return HttpResponseRedirect(
@@ -113,8 +116,7 @@ def submit_video(request):
                                 args=[existing[0].pk]))
                 else:
                     # pick the first approved video to point the user at
-                    videos = existing.filter(
-                        status=models.VIDEO_STATUS_ACTIVE)
+                    videos = existing.active()
                     if videos.count():
                         video = videos[0]
                     else:
@@ -194,7 +196,7 @@ def scraped_submit_video(request):
     url = scraped_data.get('link', request.REQUEST['url'])
     existing =  models.Video.objects.filter(site=request.sitelocation().site,
                                             website_url=url)
-    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
+    existing.rejected().delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
@@ -232,7 +234,7 @@ def embedrequest_submit_video(request):
     url = request.REQUEST['url']
     existing =  models.Video.objects.filter(site=request.sitelocation().site,
                                             website_url=url)
-    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
+    existing.rejected().delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
@@ -273,7 +275,7 @@ def directlink_submit_video(request):
     url = request.REQUEST['url']
     existing =  models.Video.objects.filter(Q(website_url=url)|Q(file_url=url),
                                             site=request.sitelocation().site)
-    existing.filter(status=models.VIDEO_STATUS_REJECTED).delete()
+    existing.rejected().delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))

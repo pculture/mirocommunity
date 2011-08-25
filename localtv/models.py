@@ -1693,7 +1693,7 @@ class VideoManager(StatusedThumbnailableManager):
 
         """
         return self.get_latest_videos(sitelocation).filter(
-            Q(authors=author) | Q(user=author)
+            models.Q(authors=author) | models.Q(user=author)
         ).distinct().order_by('-best_date')
 
 

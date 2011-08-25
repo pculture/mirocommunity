@@ -178,7 +178,7 @@ def approve(request, search_video):
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
     elif request.GET.get('queue'):
-        video.status = models.VIDEO_STATUS_UNAPPROVED
+        video.status = models.Video.UNAPPROVED
 
     user, created = User.objects.get_or_create(
         username=video.video_service_user,

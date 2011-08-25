@@ -19,7 +19,6 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic.list_detail import object_list
@@ -39,7 +38,7 @@ MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
 #TODO: Replace this wrapper with a CBV when we move to Django 1.3
-def video_list(func, object_name='videos'):
+def video_list(func, object_name='video'):
     def wrapper(request, *args, **kwargs):
         count = request.GET.get('count')
         if count:
@@ -64,7 +63,7 @@ def video_list(func, object_name='videos'):
             extra_context=extra_context)
     return wrapper
 
-category_list = curry(video_list, object_name="categories")
+category_list = curry(video_list, object_name="category")
 
 
 
@@ -76,8 +75,7 @@ def index(request):
 
 @video_list
 def new_videos(request, sort=None):
-    return get_latest_videos(request),
-           'localtv/video_listing_new.html', None
+    return get_latest_videos(request), 'localtv/video_listing_new.html', None
 
 
 @video_list
@@ -95,7 +93,7 @@ def popular_videos(request, sort=None):
     # probably either be removed or moved up into get_popular_videos.
     videos = get_popular_videos(request).filter(
         watch__timestamp__gte=datetime.datetime.now() - datetime.timedelta(7)
-    )
+    ).distinct()
     return videos, 'localtv/video_listing_popular.html', None
 
 @video_list
@@ -110,7 +108,7 @@ def featured_videos(request, sort=None):
 @video_list
 def tag_videos(request, tag_name, sort=None):
     tag = get_object_or_404(Tag, name=tag_name)
-    videos = get_tag_videos(tag)
+    videos = get_tag_videos(request, tag)
     return videos, 'localtv/video_listing_tag.html', {'tag': tag}
 
 @video_list
@@ -198,6 +196,6 @@ def author_videos(request, author_id, sort='latest'):
     videos = get_author_videos(request, author)
     if sort == 'latest':
         videos = videos.with_best_date(
-            sitelocation.use_original_date
+            request.sitelocation().use_original_date
         ).order_by('-best_date')
     return videos, 'localtv/author.html', {'author': author}
