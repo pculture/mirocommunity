@@ -27,7 +27,7 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv import models
+from localtv.models import Video, Category, SiteLocation
 from localtv.admin import forms
 from localtv.util import SortHeaders
 
@@ -46,7 +46,7 @@ def bulk_edit(request):
         # generate just the particular form that the user wants
         template_data = {}
         form_prefix = request.GET['just_the_author_field']
-        video = get_object_or_404(models.Video, pk=int(request.GET['video_id']))
+        video = get_object_or_404(Video, pk=int(request.GET['video_id']))
         cache_for_form_optimization = {}
         form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix,
                                        cache_for_form_optimization=cache_for_form_optimization)
@@ -56,23 +56,22 @@ def bulk_edit(request):
                                   template_data,
                                   context_instance=RequestContext(request))
 
-    videos = models.Video.objects.active().filter(
-        site=request.sitelocation().site)
+    sitelocation = SiteLocation.objects.get_current()
+    videos = Video.objects.active().filter(
+        site=sitelocation.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = models.Video.objects.rejected().filter(
-                site=request.sitelocation().site)
+            videos = Video.objects.rejected()
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = models.Video.objects.unapproved().filter(
-                site=request.sitelocation().site)
+            videos = Video.objects.unapproved()
 
     videos = videos.select_related('feed', 'search', 'site')
 
@@ -139,12 +138,12 @@ def bulk_edit(request):
                                      queryset=page.object_list)
         if formset.is_valid():
             tier_prevented_some_action = False
-            tier = request.sitelocation().get_tier()
+            tier = sitelocation.get_tier()
             videos_approved_so_far = 0
 
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
-                form.instance.status = models.Video.REJECTED
+                form.instance.status = Video.REJECTED
                 form.instance.save()
             bulk_edits = formset.extra_forms[0].cleaned_data
             for key in list(bulk_edits.keys()): # get the list because we'll be
@@ -161,24 +160,23 @@ def bulk_edit(request):
                     for key, value in bulk_edits.items():
                         if key == 'action': # do something to the video
                             if value == 'delete':
-                                form.instance.status = models.Video.REJECTED
+                                form.instance.status = Video.REJECTED
                             elif value == 'approve':
-                                if (request.sitelocation().enforce_tiers() and
+                                if (sitelocation.enforce_tiers() and
                                     tier.remaining_videos() <= videos_approved_so_far):
                                     tier_prevented_some_action = True
                                 else:
-                                    form.instance.status = models.Video.ACTIVE
+                                    form.instance.status = Video.ACTIVE
                                     videos_approved_so_far += 1
                             elif value == 'unapprove':
-                                form.instance.status = models.Video.UNAPPROVED
+                                form.instance.status = Video.UNAPPROVED
                             elif value == 'feature':
                                 if not form.instance.is_active():
-                                    if (request.sitelocation().enforce_tiers() and
+                                    if (sitelocation.enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
-                                        form.instance.status = \
-                                        models.Video.ACTIVE
+                                        form.instance.status = Video.ACTIVE
                                 if form.instance.is_active():
                                     form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
@@ -222,7 +220,7 @@ def bulk_edit(request):
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': models.Category.objects.filter(
-                site=request.sitelocation().site),
+                               'categories': Category.objects.filter(
+                site=sitelocation.site),
                                'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

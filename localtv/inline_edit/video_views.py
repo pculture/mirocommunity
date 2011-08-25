@@ -21,23 +21,24 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
 from localtv.inline_edit import forms
-from localtv.models import Video
+from localtv.models import Video, SiteLocation
 from localtv.templatetags.editable_widget import editable_widget
 
 @require_site_admin
 @csrf_protect
 def editors_comment(request, id):
+    sitelocation = SiteLocation.objects.get_current()
     obj = get_object_or_404(
         Video,
         id=id,
-        site=request.sitelocation().site)
+        site=sitelocation.site)
 
     edit_form = forms.VideoEditorsComment(request.POST, instance=obj)
 
     if edit_form.is_valid():
         comment = edit_form.save(commit=False)
         if comment:
-            comment.site = request.sitelocation().site
+            comment.site = sitelocation.site
             comment.user = request.user
             comment.save()
             edit_form.save_m2m()

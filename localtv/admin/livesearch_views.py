@@ -25,9 +25,9 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
-from localtv.decorators import require_site_admin, \
-    referrer_redirect
-from localtv import models, util
+from localtv import util
+from localtv.decorators import require_site_admin, referrer_redirect
+from localtv.models import SiteLocation, Video, SavedSearch
 from localtv.admin.util import MetasearchVideo, metasearch_from_querystring, \
     strip_existing_metasearchvideos
 
@@ -115,6 +115,7 @@ def livesearch(request):
     query_string, order_by, query_subkey = get_query_components(request)
 
     results = []
+    sitelocation = SiteLocation.objects.get_current()
     if query_string:
         results = cache.get(query_subkey)
         if results is None:
@@ -125,12 +126,12 @@ def livesearch(request):
                 MetasearchVideo.create_from_vidscraper_dict(raw_result)
                 for raw_result in sorted_raw_results]
             results = strip_existing_metasearchvideos(
-                results, request.sitelocation().site)
+                results, sitelocation.site)
             cache.add(query_subkey, results)
 
     is_saved_search = bool(
-        models.SavedSearch.objects.filter(
-            site=request.sitelocation().site,
+        SavedSearch.objects.filter(
+            site=sitelocation.site,
             query_string=query_string).count())
 
     video_paginator = Paginator(results, 10)
@@ -154,8 +155,8 @@ def livesearch(request):
          'query_string': query_string,
          'order_by': order_by,
          'is_saved_search': is_saved_search,
-         'saved_searches': models.SavedSearch.objects.filter(
-                site=request.sitelocation().site)},
+         'saved_searches': SavedSearch.objects.filter(
+                site=sitelocation.site)},
         context_instance=RequestContext(request))
 
 
@@ -163,13 +164,14 @@ def livesearch(request):
 @require_site_admin
 @get_search_video
 def approve(request, search_video):
+    sitelocation = SiteLocation.objects.get_current()
     if not request.GET.get('queue'):
-        if not request.sitelocation().get_tier().can_add_more_videos():
+        if not sitelocation.get_tier().can_add_more_videos():
             return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
-    video = search_video.generate_video_model(request.sitelocation().site)
-    existing_saved_search = models.SavedSearch.objects.filter(
-        site=request.sitelocation().site, query_string=request.GET.get('query'))
+    video = search_video.generate_video_model(sitelocation.site)
+    existing_saved_search = SavedSearch.objects.filter(
+        site=sitelocation.site, query_string=request.GET.get('query'))
     if existing_saved_search.count():
         video.search = existing_saved_search[0]
     else:
@@ -178,7 +180,7 @@ def approve(request, search_video):
     if request.GET.get('feature'):
         video.last_featured = datetime.datetime.now()
     elif request.GET.get('queue'):
-        video.status = models.Video.UNAPPROVED
+        video.status = Video.UNAPPROVED
 
     user, created = User.objects.get_or_create(
         username=video.video_service_user,
@@ -214,16 +216,17 @@ def create_saved_search(request):
     if not query_string:
         return HttpResponseBadRequest('must provide a query_string')
 
-    existing_saved_search = models.SavedSearch.objects.filter(
-        site=request.sitelocation().site,
+    sitelocation = SiteLocation.objects.get_current()
+    existing_saved_search = SavedSearch.objects.filter(
+        site=sitelocation.site,
         query_string=query_string)
 
     if existing_saved_search.count():
         return HttpResponseBadRequest(
             'Saved search of that query already exists')
 
-    saved_search = models.SavedSearch(
-        site=request.sitelocation().site,
+    saved_search = SavedSearch(
+        site=sitelocation.site,
         query_string=query_string,
         user=request.user,
         when_created=datetime.datetime.now())
@@ -237,9 +240,9 @@ def create_saved_search(request):
 @require_site_admin
 def search_auto_approve(request, search_id):
     search = get_object_or_404(
-        models.SavedSearch,
+        SavedSearch,
         id=search_id,
-        site=request.sitelocation().site)
+        site=SiteLocation.objects.get_current().site)
 
     search.auto_approve = not request.GET.get('disable')
     search.save()

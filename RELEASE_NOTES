@@ -1,0 +1,16 @@
+1.8
+====
+
+Backwards-incompatible changes
+++++++++++++++++++++++++++++++
+
+* localtv.context_processor is now located at localtv.context_processors.localtv
+  and no longer includes "request" in the context. The request can be included
+  in the context by adding "django.core.context_processors.request" to the
+  TEMPLATE_CONTEXT_PROCESSORS setting.
+* request.sitelocation() has been removed in favor of the more explicit
+  SiteLocation.objects.get_current().
+* localtv.FixAJAXMiddleware was moved to localtv.middleware.FixAJAXMiddleware.
+* localtv.SiteLocationMiddleware was moved to
+  localtv.middleware.UserIsAdminMiddleware and no longer provides a shortcut
+  method for fetching SiteLocations on the request.

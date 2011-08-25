@@ -36,7 +36,8 @@ from importlib import import_module
 import simplejson
 
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv import models, tasks, util
+from localtv import tasks, util
+from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
 
 from vidscraper import bulk_import
@@ -76,7 +77,7 @@ def add_feed(request):
         'description': parsed_feed.feed.get('summary', ''),
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
-        'status': models.FEED_STATUS_UNAPPROVED,
+        'status': Feed.UNAPPROVED,
         'user': request.user,
         'etag': '',
         'auto_approve': bool(request.POST.get('auto_approve', False))}
@@ -87,11 +88,11 @@ def add_feed(request):
         if 'cancel' in request.POST:
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
-        form = forms.SourceForm(request.POST, instance=models.Feed(**defaults))
+        form = forms.SourceForm(request.POST, instance=Feed(**defaults))
         if form.is_valid():
-            feed, created = models.Feed.objects.get_or_create(
+            feed, created = Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=request.sitelocation().site,
+                site=SiteLocation.objects.get_current().site,
                 defaults=defaults)
 
             if not created:
@@ -128,7 +129,7 @@ def add_feed(request):
                                                 args=[feed.pk]))
 
     else:
-        form = forms.SourceForm(instance=models.Feed(**defaults))
+        form = forms.SourceForm(instance=Feed(**defaults))
     return render_to_response('localtv/admin/add_feed.html',
                               {'form': form,
                                'video_count': video_count},
@@ -137,7 +138,7 @@ def add_feed(request):
 
 @require_site_admin
 def add_feed_done(request, feed_id):
-    feed = get_object_or_404(models.Feed, pk=feed_id)
+    feed = get_object_or_404(Feed, pk=feed_id)
     if 'task_id' in request.GET:
         task_id = request.GET['task_id']
         task = celery.result.AsyncResult(task_id)
@@ -164,14 +165,14 @@ def add_feed_done(request, feed_id):
             json = simplejson.loads(task.result)
             context.update(json)
         else:
-            feed.status = models.FEED_STATUS_ACTIVE
+            feed.status = Feed.ACTIVE
             feed.save()
         return render_to_response('localtv/admin/feed_done.html',
                                   context,
                                   context_instance=RequestContext(request))
     else:
         videos_that_are_fully_thumbnailed = feed.video_set.exclude(
-            status=models.FEED_STATUS_PENDING_THUMBNAIL)
+            status=Feed.PENDING_THUMBNAIL)
         fully_thumbnailed_count = videos_that_are_fully_thumbnailed.count()
         return render_to_response('localtv/admin/feed_wait.html',
                                   {'feed': feed,
@@ -184,9 +185,9 @@ def add_feed_done(request, feed_id):
 @require_site_admin
 def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
-        models.Feed,
+        Feed,
         id=feed_id,
-        site=request.sitelocation().site)
+        site=SiteLocation.objects.get_current().site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

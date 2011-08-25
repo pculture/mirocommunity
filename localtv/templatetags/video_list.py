@@ -22,7 +22,7 @@ from django.db.models import Q
 
 from tagging.models import Tag
 
-from localtv.models import Video, Category
+from localtv.models import Video, Category, SiteLocation
 from localtv.views import get_request_videos, get_popular_videos, get_featured_videos, get_latest_videos, get_tag_videos, get_author_videos, get_category_videos
 
 
@@ -121,7 +121,7 @@ class CategoryVideoListNode(BaseVideoListNode):
             try:
                 category = Category.objects.get(
                     slug=category,
-                    site=request.sitelocation().site
+                    site=SiteLocation.objects.get_current().site
                 )
             except Category.DoesNotExist:
                 return Video.objects.none()

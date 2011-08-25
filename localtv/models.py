@@ -1615,15 +1615,17 @@ class VideoManager(StatusedThumbnailableManager):
     def popular_since(self, *args, **kwargs):
         return self.get_query_set().popular_since(*args, **kwargs)
 
-    def get_sitelocation_videos(self, sitelocation):
+    def get_sitelocation_videos(self, sitelocation=None):
         """
         Returns a QuerySet of videos which are active and tied to the
         sitelocation. This QuerySet is cached on the request.
         
         """
+        if sitelocation is None:
+            sitelocation = SiteLocation.objects.get_current()
         return self.active().filter(site=sitelocation.site)
 
-    def get_featured_videos(self, sitelocation):
+    def get_featured_videos(self, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos which are considered "featured"
         for the sitelocation.
@@ -1638,17 +1640,19 @@ class VideoManager(StatusedThumbnailableManager):
             '-when_submitted'
         )
 
-    def get_latest_videos(self, sitelocation):
+    def get_latest_videos(self, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos for the sitelocation, ordered by
         decreasing ``best_date``.
         
         """
+        if sitelocation is None:
+            sitelocation = SiteLocation.objects.get_current()
         return self.get_sitelocation_videos(sitelocation).with_best_date(
             sitelocation.use_original_date
         ).order_by('-best_date')
 
-    def get_popular_videos(self, sitelocation):
+    def get_popular_videos(self, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos considered "popular" for the
         current sitelocation.
@@ -1659,12 +1663,14 @@ class VideoManager(StatusedThumbnailableManager):
             '-best_date'
         )
 
-    def get_category_videos(self, sitelocation, category):
+    def get_category_videos(self, category, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos considered part of the selected
         category or its descendants for the sitelocation.
 
         """
+        if sitelocation is None:
+            sitelocation = SiteLocation.objects.get_current()
         # category.approved_set already checks active().
         return category.approved_set.filter(
             site=sitelocation.site
@@ -1672,12 +1678,14 @@ class VideoManager(StatusedThumbnailableManager):
             sitelocation.use_original_date
         ).order_by('-best_date')
 
-    def get_tag_videos(self, sitelocation, tag):
+    def get_tag_videos(self, tag, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos with the given tag for the
         sitelocation.
 
         """
+        if sitelocation is None:
+            sitelocation = SiteLocation.objects.get_current()
         return Video.tagged.with_all(tag).active().filter(
             site=sitelocation.site
         ).order_by(
@@ -1686,7 +1694,7 @@ class VideoManager(StatusedThumbnailableManager):
             '-when_submitted'
         )
 
-    def get_author_videos(self, sitelocation, author):
+    def get_author_videos(self, author, sitelocation=None):
         """
         Returns a ``QuerySet`` of active videos published or produced by
         ``author`` related to the sitelocation.

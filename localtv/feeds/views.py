@@ -327,7 +327,7 @@ class NewVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('New Videos'))
 
     def items(self):
-        videos = Video.objects.get_latest_videos(self.sitelocation)
+        videos = Video.objects.get_latest_videos()
         return self.slice_items(videos)
 
 
@@ -340,7 +340,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('Featured Videos'))
 
     def items(self):
-        videos = Video.objects.get_featured_videos(self.sitelocation)
+        videos = Video.objects.get_featured_videos()
         return self.slice_items(videos)
 
 class PopularVideosFeed(BaseVideosFeed):
@@ -348,7 +348,7 @@ class PopularVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_popular')
 
     def items(self):
-        videos = Video.objects.get_popular_videos(self.sitelocation)
+        videos = Video.objects.get_popular_videos()
         return self.slice_items(videos)
 
     def title(self):
@@ -365,7 +365,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return category.get_absolute_url()
 
     def items(self, category):
-        videos = Video.objects.get_category_videos(self.sitelocation, category)
+        videos = Video.objects.get_category_videos(category)
         return self.slice_items(videos)
 
     def title(self, category):
@@ -380,7 +380,7 @@ class AuthorVideosFeed(BaseVideosFeed):
         return reverse('localtv_author', args=[author.pk])
 
     def items(self, author):
-        videos = Video.objects.get_author_videos(self.sitelocation, author)
+        videos = Video.objects.get_author_videos(author)
         return self.slice_items(videos)
 
     def title(self, author):
@@ -407,9 +407,7 @@ class FeedVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_feed', args=[feed.pk])
 
     def items(self, feed):
-        videos = Video.objects.get_latest_videos(
-            self.sitelocation
-        ).filter(feed=feed)
+        videos = Video.objects.get_latest_videos().filter(feed=feed)
         return self.slice_items(videos)
 
     def title(self, feed):
@@ -425,7 +423,7 @@ class TagVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_tag', args=[tag.name])
 
     def items(self, tag):
-        videos = Video.objects.get_tag_videos(self.sitelocation, tag)
+        videos = Video.objects.get_tag_videos(tag)
         return self.slice_items(videos)
 
     def title(self, tag):
@@ -448,7 +446,7 @@ class SearchVideosFeed(BaseVideosFeed):
             raise FeedDoesNotExist(search)
         results = form.search()
         if self.request.GET.get('sort', None) == 'latest':
-            videos = Video.objects.get_latest_videos(self.sitelocation).filter(
+            videos = Video.objects.get_latest_videos().filter(
                 pk__in=[result.pk for result in results if result])
             return self.slice_items(videos)
         return [result.object for result in self.slice_items(results)

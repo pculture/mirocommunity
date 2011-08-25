@@ -29,7 +29,7 @@ from django.utils.functional import curry
 from django.views.decorators.vary import vary_on_headers
 
 import localtv.settings
-from localtv.models import Video, Watch, Category, NewsletterSettings
+from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
 
 from localtv.playlists.models import (Playlist, PlaylistItem,
                                       PLAYLIST_STATUS_PUBLIC)
@@ -39,7 +39,7 @@ def _request_videos(manager, key, request, *args, **kwargs):
     _cache_attr = "_localtv_%s_videos" % key
     if not hasattr(request, _cache_attr):
         meth = getattr(manager, "get_%s_videos" % key)
-        setattr(request, _cache_attr, meth(request.sitelocation(), *args, **kwargs))
+        setattr(request, _cache_attr, meth(*args, **kwargs))
     return getattr(request, _cache_attr)
 
 
@@ -59,7 +59,7 @@ def index(request):
     new_videos = get_latest_videos(request).exclude(feed__avoid_frontpage=True)
 
     recent_comments = comments.get_model().objects.filter(
-        site=request.sitelocation().site,
+        site=SiteLocation.objects.get_current().site,
         content_type=ContentType.objects.get_for_model(Video),
         object_pk__in=get_request_videos(request).values_list('pk', flat=True),
         is_removed=False,
@@ -83,7 +83,7 @@ def about(request):
 @vary_on_headers('User-Agent', 'Referer')
 def view_video(request, video_id, slug=None):
     video = get_object_or_404(Video, pk=video_id,
-                              site=request.sitelocation().site)
+                              site=SiteLocation.objects.get_current().site)
 
     if not video.is_active() and not request.user_is_admin():
         raise Http404
@@ -96,7 +96,7 @@ def view_video(request, video_id, slug=None):
                # backwards-compatibility
                'edit_video_form': request.user_is_admin()}
 
-    sitelocation = request.sitelocation()
+    sitelocation = SiteLocation.objects.get_current()
     popular_videos = get_popular_videos(request)
     
     if video.categories.count():
@@ -205,9 +205,10 @@ def view_video(request, video_id, slug=None):
 
 def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
+    sitelocation = SiteLocation.objects.get_current()
     return views.share_email(request, content_type_pk, object_id,
-                             {'site': request.sitelocation().site,
-                              'sitelocation': request.sitelocation()},
+                             {'site': sitelocation.site,
+                              'sitelocation': sitelocation},
                              form_class = forms.ShareMultipleEmailForm
                              )
 

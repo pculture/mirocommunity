@@ -30,7 +30,8 @@ def index(request):
     headers = [
         {'label': 'Page Name'},
         {'label': 'URL'}]
-    flatpages = FlatPage.objects.filter(sites=request.sitelocation().site)
+    sitelocation = SiteLocation.objects.get_current()
+    flatpages = FlatPage.objects.filter(sites=sitelocation.site)
     formset = forms.FlatPageFormSet(queryset=flatpages)
 
     form = forms.FlatPageForm()
@@ -46,7 +47,7 @@ def index(request):
 
             if form.is_valid():
                 flatpage = form.save()
-                flatpage.sites.add(request.sitelocation().site)
+                flatpage.sites.add(sitelocation.site)
                 return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/admin/flatpages.html',

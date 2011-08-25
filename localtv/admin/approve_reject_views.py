@@ -21,16 +21,15 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseBadRequest, \
+    HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import require_site_admin, \
-    referrer_redirect
-from localtv import models
+from localtv.decorators import require_site_admin, referrer_redirect
+from localtv.models import Video, SiteLocation
 from localtv.admin import feeds
-from django.http import HttpResponse, HttpResponseBadRequest, \
-    HttpResponseRedirect
 
 from notification import models as notification
 
@@ -39,7 +38,7 @@ from notification import models as notification
 ## --------------------
 
 def get_video_paginator(sitelocation):
-    videos = models.Video.objects.unapproved().filter(
+    videos = Video.objects.unapproved().filter(
         site=sitelocation.site).order_by(
         'when_submitted', 'when_published')
 
@@ -48,7 +47,7 @@ def get_video_paginator(sitelocation):
 @require_site_admin
 @csrf_protect
 def approve_reject(request):
-    video_paginator = get_video_paginator(request.sitelocation())
+    video_paginator = get_video_paginator(SiteLocation.objects.get_current())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -72,10 +71,10 @@ def approve_reject(request):
 @require_site_admin
 def preview_video(request):
     current_video = get_object_or_404(
-        models.Video,
+        Video,
         id=request.GET['video_id'],
-        status=models.Video.UNAPPROVED,
-        site=request.sitelocation().site)
+        status=Video.UNAPPROVED,
+        site=SiteLocation.objects.get_current().site)
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': current_video},
@@ -85,18 +84,19 @@ def preview_video(request):
 @referrer_redirect
 @require_site_admin
 def approve_video(request):
+    sitelocation = SiteLocation.objects.get_current()
     current_video = get_object_or_404(
-        models.Video,
+        Video,
         id=request.GET['video_id'],
-        site=request.sitelocation().site)
+        site=sitelocation.site)
 
     # If the site would exceed its video allotment, then fail
     # with a HTTP 403 and a clear message about why.
-    if (models.SiteLocation.enforce_tiers() and
-        request.sitelocation().get_tier().remaining_videos() < 1):
+    if (SiteLocation.enforce_tiers() and
+        sitelocation.get_tier().remaining_videos() < 1):
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
-    current_video.status = models.Video.ACTIVE
+    current_video.status = Video.ACTIVE
     current_video.when_approved = datetime.datetime.now()
 
     if request.GET.get('feature'):
@@ -125,10 +125,10 @@ def approve_video(request):
 @require_site_admin
 def reject_video(request):
     current_video = get_object_or_404(
-        models.Video,
+        Video,
         id=request.GET['video_id'],
-        site=request.sitelocation().site)
-    current_video.status = models.Video.REJECTED
+        site=SiteLocation.objects.get_current().site)
+    current_video.status = Video.REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
 
@@ -137,13 +137,14 @@ def reject_video(request):
 @require_site_admin
 def feature_video(request):
     video_id = request.GET.get('video_id')
+    sitelocation = SiteLocation.objects.get_current()
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation().site)
+        Video, pk=video_id, site=sitelocation.site)
     if not current_video.is_active():
-        if (models.SiteLocation.enforce_tiers() and
-            request.sitelocation().get_tier().remaining_videos() < 1):
+        if (SiteLocation.enforce_tiers() and
+            sitelocation.get_tier().remaining_videos() < 1):
             return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
-        current_video.status = models.Video.ACTIVE
+        current_video.status = Video.ACTIVE
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
     current_video.save()
@@ -156,7 +157,7 @@ def feature_video(request):
 def unfeature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation().site)
+        Video, pk=video_id, site=SiteLocation.objects.get_current().site)
     current_video.last_featured = None
     current_video.save()
 
@@ -167,7 +168,7 @@ def unfeature_video(request):
 @require_site_admin
 @csrf_protect
 def reject_all(request):
-    video_paginator = get_video_paginator(request.sitelocation())
+    video_paginator = get_video_paginator(SiteLocation.objects.get_current())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -177,7 +178,7 @@ def reject_all(request):
             'Page number request exceeded available pages')
 
     for video in page.object_list:
-        video.status = models.Video.REJECTED
+        video.status = Video.REJECTED
         video.save()
 
     return HttpResponse('SUCCESS')
@@ -186,7 +187,8 @@ def reject_all(request):
 @require_site_admin
 @csrf_protect
 def approve_all(request):
-    video_paginator = get_video_paginator(request.sitelocation())
+    sitelocation = SiteLocation.objects.get_current()
+    video_paginator = get_video_paginator(sitelocation)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -195,8 +197,8 @@ def approve_all(request):
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
 
-    if models.SiteLocation.enforce_tiers():
-        tier_remaining_videos = request.sitelocation().get_tier().remaining_videos()
+    if SiteLocation.enforce_tiers():
+        tier_remaining_videos = sitelocation.get_tier().remaining_videos()
         if len(page.object_list) > tier_remaining_videos:
             remaining = str(tier_remaining_videos)
             need = str(len(page.object_list))
@@ -206,7 +208,7 @@ def approve_all(request):
                     ("Please upgrade your account to increase your limit, or unapprove some older videos to make space for newer ones.")), status=402)
 
     for video in page.object_list:
-        video.status = models.Video.ACTIVE
+        video.status = Video.ACTIVE
         video.when_approved = datetime.datetime.now()
         video.save()
 
@@ -215,11 +217,11 @@ def approve_all(request):
 @require_site_admin
 @csrf_protect
 def clear_all(request):
-    videos = models.Video.objects.unapproved().filter(
-        site=request.sitelocation().site)
+    videos = Video.objects.unapproved().filter(
+        site=SiteLocation.objects.get_current().site)
     if request.POST.get('confirm') == 'yes':
         for video in videos:
-            video.status = models.Video.REJECTED
+            video.status = Video.REJECTED
             video.save()
         return HttpResponseRedirect(reverse('localtv_admin_approve_reject'))
     else:

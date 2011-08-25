@@ -28,7 +28,7 @@ from django.utils.functional import curry
 from tagging.models import Tag
 
 import localtv.settings
-from localtv.models import Video, Feed, Category
+from localtv.models import Video, Feed, Category, SiteLocation
 from localtv.search.forms import VideoSearchForm
 from localtv.views import get_request_videos, get_featured_videos, get_latest_videos, get_popular_videos, get_tag_videos, get_category_videos, get_author_videos
 
@@ -101,7 +101,7 @@ def featured_videos(request, sort=None):
     videos = get_featured_videos(request)
     if sort == 'latest':
         videos = videos.with_best_date(
-            request.sitelocation().use_original_date
+            SiteLocation.objects.get_current().use_original_date
         ).order_by = ('-best_date', '-last_featured')
     return videos, 'localtv/video_listing_featured.html', None
 
@@ -114,7 +114,7 @@ def tag_videos(request, tag_name, sort=None):
 @video_list
 def feed_videos(request, feed_id, sort=None):
     feed = get_object_or_404(Feed, pk=feed_id,
-                             site=request.sitelocation().site)
+                             site=SiteLocation.objects.get_current().site)
     videos = get_latest_videos(request).filter(feed=feed)
     return videos, 'localtv/video_listing_feed.html', {'feed': feed}
 
@@ -153,7 +153,7 @@ def video_search(request, sort=None):
 @category_list
 def category_list(request, sort=None):
     categories = Category.objects.filter(
-        site=request.sitelocation().site,
+        site=SiteLocation.objects.get_current().site,
         parent=None)
 
     return categories, 'localtv/categories.html', None
@@ -162,7 +162,7 @@ def category_list(request, sort=None):
 @video_list
 def category_videos(request, slug, sort=None):
     category = get_object_or_404(Category, slug=slug,
-                                 site=request.sitelocation().site)
+                                 site=SiteLocation.objects.get_current().site)
 
     user_can_vote = False
     
@@ -196,6 +196,6 @@ def author_videos(request, author_id, sort='latest'):
     videos = get_author_videos(request, author)
     if sort == 'latest':
         videos = videos.with_best_date(
-            request.sitelocation().use_original_date
+            SiteLocation.objects.get_current().use_original_date
         ).order_by('-best_date')
     return videos, 'localtv/author.html', {'author': author}

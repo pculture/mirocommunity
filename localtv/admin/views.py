@@ -23,7 +23,7 @@ from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseBadRequest
 
 from localtv.decorators import require_site_admin
-from localtv import models
+from localtv.models import Video, SiteLocation
 import localtv.tiers
 
 @require_site_admin
@@ -31,18 +31,19 @@ def index(request):
     """
     Simple index page for the admin site.
     """
+    sitelocation = SiteLocation.objects.get_current()
     total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
     percent_videos_used = math.floor(
-        (100.0 * total_count) / request.sitelocation().get_tier().videos_limit())
-    videos_this_week_count = models.Video.objects.active().filter(
+        (100.0 * total_count) / sitelocation.get_tier().videos_limit())
+    videos_this_week_count = Video.objects.active().filter(
         when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
         ).count()
     return render_to_response(
         'localtv/admin/index.html',
         {'total_count': total_count,
          'percent_videos_used': percent_videos_used,
-         'unreviewed_count': models.Video.objects.unapproved().filter(
-                site=request.sitelocation().site).count(),
+         'unreviewed_count': Video.objects.unapproved().filter(
+                site=sitelocation.site).count(),
          'videos_this_week_count': videos_this_week_count,
          'comment_count': comments.get_model().objects.filter(
                 is_public=False, is_removed=False).count()},
@@ -52,7 +53,7 @@ def index(request):
 def hide_get_started(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('You have to POST to this URL.')
-    site_location = models.SiteLocation.objects.get_current()
+    site_location = SiteLocation.objects.get_current()
     site_location.hide_get_started = True
     site_location.save()
     return HttpResponse("OK")
