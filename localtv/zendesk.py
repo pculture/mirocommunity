@@ -64,9 +64,10 @@ def create_ticket(subject, body, use_configured_assignee,
     global outbox
 
     h= httplib2.Http("/tmp/.cache")
-    if getattr(settings, "ZENDESK_USERNAME"):
-        h.add_credentials(getattr(settings, 'ZENDESK_USERNAME'),
-                          getattr(settings, 'ZENDESK_PASSWORD'))
+    username = getattr(settings, "ZENDESK_USERNAME", None)
+    password = getattr(settings, "ZENDESK_PASSWORD", None)
+    if username and password:
+        h.add_credentials(username, password)
     else:
         raise ValueError, "Cannot create ticket because Zendesk not configured. Bailing out now."
 

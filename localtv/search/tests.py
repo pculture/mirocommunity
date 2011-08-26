@@ -18,9 +18,9 @@ from django.contrib.auth.models import User
 
 from localtv.tests import BaseTestCase
 
-from localtv import models
-from localtv.playlists.models import Playlist
 from localtv import search
+from localtv.models import Video, SavedSearch, Feed
+from localtv.playlists.models import Playlist
 
 class SearchTokenizeTestCase(BaseTestCase):
     """
@@ -103,7 +103,7 @@ class AutoQueryTestCase(BaseTestCase):
         Rebuilds the search index.
         """
         from haystack import site
-        index = site.get_index(models.Video)
+        index = site.get_index(Video)
         index.reindex()
 
     def search(self, query):
@@ -133,7 +133,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the tags for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
 
@@ -151,7 +151,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the category for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.categories = [1, 2] # Miro, Linux
         video.save()
 
@@ -169,7 +169,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the user who submitted videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
         video.user.username = 'SuperUser'
         video.user.first_name = 'firstname'
@@ -177,7 +177,7 @@ class AutoQueryTestCase(BaseTestCase):
         video.user.save()
         video.save()
 
-        video2 = models.Video.objects.get(pk=47)
+        video2 = Video.objects.get(pk=47)
         video2.authors = [video.user]
         video2.save()
 
@@ -198,7 +198,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         -user:name should exclude that user's videos from the search results.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
         video.user.username = 'SuperUser'
         video.user.first_name = 'firstname'
@@ -206,7 +206,7 @@ class AutoQueryTestCase(BaseTestCase):
         video.user.save()
         video.save()
 
-        video2 = models.Video.objects.get(pk=47)
+        video2 = Video.objects.get(pk=47)
         video2.user = video.user
         video2.authors = [video.user]
         video2.save()
@@ -223,7 +223,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the video service user for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
 
@@ -234,15 +234,21 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the feed name for videos.
         """
-        video = models.Video.objects.get(pk=20)
-        # feed is miropcf
+        feed = Feed.objects.get(name='miropcf')
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('miropcf'), [video])
+        videos = self.search('miropcf')
+        for video in videos:
+            self.assertEquals(video.feed_id, feed.pk)
 
-        self.assertEquals(self.search('feed:miropcf'), [video]) # name
-        self.assertEquals(self.search('feed:%i' % video.feed.pk), [video]) # pk
+        videos = self.search('feed:miropcf')
+        for video in videos:
+            self.assertEquals(video.feed_id, feed.pk)
+
+        videos = self.search('feed:%i' % feed.pk)
+        for video in videos:
+            self.assertEquals(video.feed_id, feed.pk)
 
     def test_search_exclude_terms(self):
         """
@@ -271,7 +277,7 @@ class AutoQueryTestCase(BaseTestCase):
             name='Test List',
             slug='test-list',
             description="This is a list for testing")
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         playlist.add_video(video)
 
         self._rebuild_index()
@@ -283,8 +289,8 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should include the saved search a video came from.
         """
-        video = models.Video.objects.get(pk=20)
-        search = models.SavedSearch.objects.get(pk=6) # Participatory Culture
+        video = Video.objects.get(pk=20)
+        search = SavedSearch.objects.get(pk=6) # Participatory Culture
         video.search = search
         video.save()
 

@@ -26,16 +26,18 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from paypal.standard.ipn.models import PayPalIPN
+from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot, subscription_modify, payment_was_successful
 import paypal.standard.ipn.views
 
 from localtv.decorators import require_site_admin
-
 import localtv.tiers
 from localtv.models import SiteLocation, TierInfo
+
 
 ### Below this line
 ### ----------------------------------------------------------------------
 ### These are admin views that the user will see at /admin/*
+
 
 @require_site_admin
 @csrf_protect
@@ -54,6 +56,7 @@ def confirmed_change_tier(request):
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
     return _actually_switch_tier(target_tier_name)
+
 
 @require_site_admin
 def downgrade_confirm(request):
@@ -85,6 +88,7 @@ def downgrade_confirm(request):
 
     # In some weird error case, redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
 
 @require_site_admin
 @csrf_protect
@@ -140,9 +144,11 @@ def upgrade(request):
     return render_to_response('localtv/admin/upgrade.html', data,
                               context_instance=RequestContext(request))
 
+
 ### Below this line:
 ### -------------------------------------------------------------------------
 ### These functions are resquest handlers that actually switch tier.
+
 
 @csrf_exempt
 def paypal_return(request, payment_secret, target_tier_name):
@@ -165,6 +171,7 @@ def paypal_return(request, payment_secret, target_tier_name):
         return _paypal_return(target_tier_name)
     return HttpResponseForbidden("You submitted something invalid to this paypal return URL. If you are surprised to see this message, contact support@mirocommunity.org.")
 
+
 def _paypal_return(target_tier_name):
     # This view always changes the tier_name stored in the SiteLocation.
     # This is to that changes appear to happen immediately.
@@ -185,6 +192,7 @@ def _paypal_return(target_tier_name):
         sitelocation.tier_name = target_tier_name
         sitelocation.save()
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
 
 @csrf_exempt
 @require_site_admin
@@ -215,9 +223,11 @@ def begin_free_trial(request, payment_secret):
     # Switch the tier!
     return _start_free_trial_unconfirmed(target_tier_name)
 
+
 ### Below this line
 ### --------------------------------------------------------------------------------------------
 ### This function is something PayPal POSTs updates to.
+
 
 @csrf_exempt
 def ipn_endpoint(request, payment_secret):
@@ -232,9 +242,11 @@ def ipn_endpoint(request, payment_secret):
         return response
     return HttpResponseForbidden("You submitted something invalid to this IPN handler.")
 
+
 ### Below this line
 ### ----------------------------------------------------------------------
 ### These are helper functions.
+
 
 def get_paypal_form_submission_url():
     use_sandbox = getattr(settings, 'PAYPAL_TEST', False)
@@ -242,6 +254,7 @@ def get_paypal_form_submission_url():
         return 'https://www.sandbox.paypal.com/cgi-bin/webscr'
     else: # Live API!
         return 'https://www.paypal.com/cgi-bin/webscr'
+
 
 def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, current_payment_due_date, todays_date=None):
     target_tier_obj = localtv.tiers.Tier(target_tier_name)
@@ -270,6 +283,7 @@ def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, curre
             'cost_for_prorated_period': int(price_difference * (days_difference / 30.0)),
             'days_covered_by_prorating': days_difference}
 
+
 def _start_free_trial_unconfirmed(target_tier_name):
     '''We call this function from within the unconfirmed PayPal return
     handler, if you are just now starting a free trial.'''
@@ -280,6 +294,7 @@ def _start_free_trial_unconfirmed(target_tier_name):
     if ti.in_free_trial:
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
     return _start_free_trial_for_real(target_tier_name)
+
 
 def _start_free_trial_for_real(target_tier_name):
     sitelocation = SiteLocation.objects.get_current()
@@ -298,6 +313,7 @@ def _start_free_trial_for_real(target_tier_name):
     sitelocation.tier_name = target_tier_name
     sitelocation.save()
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
+
 
 def _actually_switch_tier(target_tier_name):
     # Proceed with the internal tier switch.
@@ -337,6 +353,7 @@ def _actually_switch_tier(target_tier_name):
     # Always redirect back to tiers page
     return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
+
 def _generate_can_modify():
     # This dictionary maps from the target_tier_name to the value of can_modify
     # In the PayPal API, you cannot modify your subscription in the following circumstances:
@@ -358,7 +375,7 @@ def _generate_can_modify():
 
     return can_modify_mapping
 
-from paypal.standard.ipn.signals import subscription_signup, subscription_cancel, subscription_eot, subscription_modify, payment_was_successful
+
 def handle_recurring_profile_start(sender, **kwargs):
     ipn_obj = sender
 
@@ -439,8 +456,8 @@ def handle_recurring_profile_start(sender, **kwargs):
         # Find the right tier to move to
         target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
         _actually_switch_tier(target_tier_name)
-
 subscription_signup.connect(handle_recurring_profile_start)
+
 
 def on_subscription_cancel_switch_to_basic(sender, **kwargs):
     ipn_obj = sender
@@ -460,9 +477,9 @@ def on_subscription_cancel_switch_to_basic(sender, **kwargs):
         return
 
     _actually_switch_tier('basic')
-
 subscription_cancel.connect(on_subscription_cancel_switch_to_basic)
 subscription_eot.connect(on_subscription_cancel_switch_to_basic)
+
 
 def handle_recurring_profile_modify(sender, **kwargs):
     ipn_obj = sender
@@ -511,8 +528,8 @@ def handle_recurring_profile_modify(sender, **kwargs):
                                               use_configured_assignee=False)
             return
         _actually_switch_tier(target_tier_name)
-
 subscription_modify.connect(handle_recurring_profile_modify)
+
 
 def handle_successful_payment(sender, **kwargs):
     ipn_obj = sender
@@ -545,5 +562,4 @@ def handle_successful_payment(sender, **kwargs):
 
     tier_info.payment_due_date += datetime.timedelta(days=num)
     tier_info.save()
-
 payment_was_successful.connect(handle_successful_payment)

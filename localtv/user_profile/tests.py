@@ -206,16 +206,21 @@ class NotificationsFormTestCase(TestCase):
 
     def test_user_settings(self):
         """
-        A regular user should only see the 'video_approved' and 'video_comment'
-        notifications.  The initial data for the form should have those
-        settings enabled, since they're on by default.
+        A regular user should only see the 'video_approved', 'video_comment',
+        and 'newsletter' notifications.  The initial data for the form should
+        have those settings enabled, since they're on by default.
         """
         user = User.objects.get(username='user')
         form = forms.NotificationsForm(instance=user)
-        self.assertEquals(len(form.fields['notifications'].choices), 2)
+        self.assertEquals(len(form.fields['notifications'].choices),
+                          len(form.CHOICES))
         self.assertEquals(form.initial, {
-                'notifications': ['video_approved', 'video_comment']
-                })
+                'notifications': [
+                    'video_approved',
+                    'video_comment',
+                    'newsletter'
+                ]
+            })
 
     def test_save_user_settings(self):
         """
@@ -243,18 +248,19 @@ class NotificationsFormTestCase(TestCase):
         """
         admin = User.objects.get(username='admin')
         form = forms.NotificationsForm(instance=admin)
-        self.assertEquals(len(form.fields['notifications'].choices), 7)
+        choice_len = len(form.CHOICES + form.ADMIN_CHOICES)
+        self.assertEquals(len(form.fields['notifications'].choices), choice_len)
         self.assertEquals(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
-                                  'admin_new_playlist']
+                                  'newsletter', 'admin_new_playlist']
                 })
 
         superuser = User.objects.get(username='superuser')
         form = forms.NotificationsForm(instance=superuser)
-        self.assertEquals(len(form.fields['notifications'].choices), 7)
+        self.assertEquals(len(form.fields['notifications'].choices), choice_len)
         self.assertEquals(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
-                                  'admin_new_playlist']
+                                  'newsletter', 'admin_new_playlist']
                 })
 
     def test_save_admin_settings(self):
@@ -266,16 +272,18 @@ class NotificationsFormTestCase(TestCase):
             form = forms.NotificationsForm({'notifications': [
                         'admin_new_comment',
                         'admin_new_submission',
+                        'admin_new_playlist',
                         'admin_queue_daily',
                         'admin_queue_weekly']}, instance=admin)
             self.assertTrue(form.is_valid(), form.errors)
             form.save()
-            for label in 'video_comment', 'video_approved':
+            for label in 'video_comment', 'video_approved', 'newsletter':
                 notice_type = notification.NoticeType.objects.get(label=label)
                 self.assertFalse(notification.should_send(admin, notice_type,
                                                           "1"))
             for label in ('admin_new_comment', 'admin_new_submission',
-                          'admin_queue_daily', 'admin_queue_weekly'):
+                          'admin_new_playlist', 'admin_queue_daily',
+                          'admin_queue_weekly'):
                 notice_type = notification.NoticeType.objects.get(label=label)
                 self.assertTrue(notification.should_send(admin, notice_type,
                                                          "1"))

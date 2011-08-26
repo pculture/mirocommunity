@@ -23,7 +23,8 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-import localtv.models
+from localtv.models import SiteLocation, WidgetSettings, NewsletterSettings
+
 
 @require_site_admin
 @csrf_protect
@@ -47,6 +48,7 @@ def edit_settings(request):
         {'form': form},
         context_instance=RequestContext(request))
 
+
 @require_site_admin
 @csrf_protect
 def widget_settings(request):
@@ -54,7 +56,7 @@ def widget_settings(request):
     form = forms.WidgetSettingsForm(
         instance=sitelocation.site.widgetsettings,
         initial={'title': 
-                 localtv.models.WidgetSettings.objects.get().get_title_or_reasonable_default()})
+                 WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
     if request.method == 'POST':
         form = forms.WidgetSettingsForm(
@@ -77,10 +79,11 @@ def widget_settings(request):
         {'form': form},
         context_instance=RequestContext(request))
 
+
 @require_site_admin
 @csrf_protect
 def newsletter_settings(request):
-    newsletter = localtv.models.NewsletterSettings.objects.get_current()
+    newsletter = NewsletterSettings.objects.get_current()
     if not newsletter.sitelocation.get_tier().permit_newsletter():
         raise Http404
 

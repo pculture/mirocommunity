@@ -21,8 +21,10 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv.decorators import require_site_admin
 from localtv.admin import forms
+from localtv.decorators import require_site_admin
+from localtv.models import SiteLocation
+
 
 @require_site_admin
 @csrf_protect
