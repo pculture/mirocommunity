@@ -23,7 +23,6 @@ from django.db.models import Q
 from tagging.models import Tag
 
 from localtv.models import Video, Category, SiteLocation
-from localtv.views import get_request_videos, get_popular_videos, get_featured_videos, get_latest_videos, get_tag_videos, get_author_videos, get_category_videos
 
 
 register = template.Library()
@@ -85,7 +84,7 @@ class NewVideoListNode(BaseVideoListNode):
     
     """
     def get_query_set(self, context):
-        return get_latest_videos(context['request'])
+        return Video.objects.get_latest_videos()
 
 
 class PopularVideoListNode(BaseVideoListNode):
@@ -94,7 +93,7 @@ class PopularVideoListNode(BaseVideoListNode):
     
     """
     def get_query_set(self, context):
-        return get_popular_videos(context['request'])
+        return Video.objects.get_popular_videos()
 
 
 class FeaturedVideoListNode(BaseVideoListNode):
@@ -103,7 +102,7 @@ class FeaturedVideoListNode(BaseVideoListNode):
     
     """
     def get_query_set(self, context):
-        return get_featured_videos(context['request'])
+        return Video.objects.get_featured_videos()
 
 
 class CategoryVideoListNode(BaseVideoListNode):
@@ -127,7 +126,7 @@ class CategoryVideoListNode(BaseVideoListNode):
                 return Video.objects.none()
         elif not isinstance(category, Category):
             return Video.objects.none()
-        return get_latest_videos(request).filter(
+        return Video.objects.get_latest_videos().filter(
             categories=category
         ).distinct().order_by('-best_date')
 
@@ -149,7 +148,7 @@ class TagVideoListNode(BaseVideoListNode):
                 return Video.objects.none()
         elif not isinstance(tag, Tag):
             return Video.objects.none()
-        return get_tag_videos(request, tag)
+        return Video.objects.get_tag_videos(tag)
 
 
 class UserVideoListNode(BaseVideoListNode):
@@ -168,7 +167,7 @@ class UserVideoListNode(BaseVideoListNode):
                 return Video.objects.none()
         elif not isinstance(author, User):
             return Video.objects.none()
-        return get_author_videos(request, author)
+        return Video.objects.get_author_videos(author)
 
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)

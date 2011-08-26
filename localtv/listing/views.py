@@ -30,7 +30,6 @@ from tagging.models import Tag
 import localtv.settings
 from localtv.models import Video, Feed, Category, SiteLocation
 from localtv.search.forms import VideoSearchForm
-from localtv.views import get_request_videos, get_featured_videos, get_latest_videos, get_popular_videos, get_tag_videos, get_category_videos, get_author_videos
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
@@ -75,12 +74,16 @@ def index(request):
 
 @video_list
 def new_videos(request, sort=None):
-    return get_latest_videos(request), 'localtv/video_listing_new.html', None
+    return (
+        Video.objects.get_latest_videos(),
+        'localtv/video_listing_new.html',
+        None
+    )
 
 
 @video_list
 def this_week_videos(request, sort=None):
-    videos = request_videos(request).filter(
+    videos = Video.objects.get_sitelocation_videos().filter(
         when_approved__gt=(datetime.datetime.now() - datetime.timedelta(days=7))
     ).order_by('-when_approved')
 
@@ -91,14 +94,14 @@ def this_week_videos(request, sort=None):
 def popular_videos(request, sort=None):
     # XXX: should the watch__timestamp__gte filter really be here? It should
     # probably either be removed or moved up into get_popular_videos.
-    videos = get_popular_videos(request).filter(
+    videos = Video.objects.get_popular_videos().filter(
         watch__timestamp__gte=datetime.datetime.now() - datetime.timedelta(7)
     ).distinct()
     return videos, 'localtv/video_listing_popular.html', None
 
 @video_list
 def featured_videos(request, sort=None):
-    videos = get_featured_videos(request)
+    videos = Video.objects.get_featured_videos()
     if sort == 'latest':
         videos = videos.with_best_date(
             SiteLocation.objects.get_current().use_original_date
@@ -108,14 +111,14 @@ def featured_videos(request, sort=None):
 @video_list
 def tag_videos(request, tag_name, sort=None):
     tag = get_object_or_404(Tag, name=tag_name)
-    videos = get_tag_videos(request, tag)
+    videos = Video.objects.get_tag_videos(tag)
     return videos, 'localtv/video_listing_tag.html', {'tag': tag}
 
 @video_list
 def feed_videos(request, feed_id, sort=None):
     feed = get_object_or_404(Feed, pk=feed_id,
                              site=SiteLocation.objects.get_current().site)
-    videos = get_latest_videos(request).filter(feed=feed)
+    videos = Video.objects.get_latest_videos().filter(feed=feed)
     return videos, 'localtv/video_listing_feed.html', {'feed': feed}
 
 
@@ -143,9 +146,9 @@ def video_search(request, sort=None):
         videos = Video.objects.none()
     else:
         if sort == 'latest':
-            videos = get_latest_videos(request).filter(pk__in=pks)
+            videos = Video.objects.get_latest_videos().filter(pk__in=pks)
         else:
-            videos = get_request_videos(request).filter(pk__in=pks)
+            videos = Video.objects.get_sitelocation_videos().filter(pk__in=pks)
             order = ['-localtv_video.id = %i' % int(pk) for pk in pks]
             videos = videos.extra(order_by=order)
     return videos, 'localtv/video_listing_search.html', {'query': query}
@@ -165,8 +168,8 @@ def category_videos(request, slug, sort=None):
                                  site=SiteLocation.objects.get_current().site)
 
     user_can_vote = False
-    
-    videos = get_category_videos(request, category)
+
+    videos = Video.objects.get_category_videos(category)
 
     if localtv.settings.voting_enabled() and category.contest_mode:
         user_can_vote = True
@@ -193,7 +196,7 @@ def author_list(request):
 @video_list
 def author_videos(request, author_id, sort='latest'):
     author = get_object_or_404(User, pk=author_id)
-    videos = get_author_videos(request, author)
+    videos = Video.objects.get_author_videos(author)
     if sort == 'latest':
         videos = videos.with_best_date(
             SiteLocation.objects.get_current().use_original_date

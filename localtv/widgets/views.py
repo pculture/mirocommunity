@@ -20,13 +20,12 @@ import datetime
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
-from localtv import models
-from localtv.views import get_featured_videos, get_latest_videos, get_popular_videos
+from localtv.models import Video
 
 
 def widget(func):
     def wrapper(request, *args, **kwargs):
-        objects = func(request, *args, **kwargs)
+        objects = func(*args, **kwargs)
         try:
             count = int(request.GET.get('count'))
         except TypeError:
@@ -39,6 +38,6 @@ def widget(func):
     return wrapper
 
 
-featured = widget(get_featured_videos)
-new = widget(get_latest_videos)
-popular = widget(get_popular_videos)
+featured = widget(Video.objects.get_featured_videos)
+new = widget(Video.objects.get_latest_videos)
+popular = widget(Video.objects.get_popular_videos)

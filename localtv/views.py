@@ -25,7 +25,6 @@ from django.http import (Http404, HttpResponsePermanentRedirect,
                          HttpResponseRedirect, HttpResponse)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.utils.functional import curry
 from django.views.decorators.vary import vary_on_headers
 
 import localtv.settings
@@ -35,33 +34,17 @@ from localtv.playlists.models import (Playlist, PlaylistItem,
                                       PLAYLIST_STATUS_PUBLIC)
 
 
-def _request_videos(manager, key, request, *args, **kwargs):
-    _cache_attr = "_localtv_%s_videos" % key
-    if not hasattr(request, _cache_attr):
-        meth = getattr(manager, "get_%s_videos" % key)
-        setattr(request, _cache_attr, meth(*args, **kwargs))
-    return getattr(request, _cache_attr)
-
-
-manager = Video.objects
-get_request_videos = curry(_request_videos, manager, 'sitelocation')
-get_featured_videos = curry(_request_videos, manager, 'featured')
-get_latest_videos = curry(_request_videos, manager, 'latest')
-get_popular_videos = curry(_request_videos, manager, 'popular')
-get_category_videos = curry(_request_videos, manager, 'category')
-get_tag_videos = curry(_request_videos, manager, 'tag')
-get_author_videos = curry(_request_videos, manager, 'author')
-
-
 def index(request):
-    featured_videos = get_featured_videos(request)
-    popular_videos = get_popular_videos(request)
-    new_videos = get_latest_videos(request).exclude(feed__avoid_frontpage=True)
+    featured_videos = Video.objects.get_featured_videos()
+    popular_videos = Video.objects.get_popular_videos()
+    new_videos = Video.objects.get_latest_videos().exclude(
+                                            feed__avoid_frontpage=True)
 
+    sitelocation_videos = Video.objects.get_sitelocation_videos()
     recent_comments = comments.get_model().objects.filter(
         site=SiteLocation.objects.get_current().site,
         content_type=ContentType.objects.get_for_model(Video),
-        object_pk__in=get_request_videos(request).values_list('pk', flat=True),
+        object_pk__in=sitelocation_videos.values_list('pk', flat=True),
         is_removed=False,
         is_public=True).order_by('-submit_date')
 
@@ -97,7 +80,7 @@ def view_video(request, video_id, slug=None):
                'edit_video_form': request.user_is_admin()}
 
     sitelocation = SiteLocation.objects.get_current()
-    popular_videos = get_popular_videos(request)
+    popular_videos = Video.objects.get_popular_videos()
     
     if video.categories.count():
         category_obj = None
