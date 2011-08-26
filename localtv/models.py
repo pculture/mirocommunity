@@ -38,7 +38,6 @@ from BeautifulSoup import BeautifulSoup
 
 from django.db import models
 from django.conf import settings
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
@@ -1259,9 +1258,6 @@ class Category(models.Model):
             object_id__in=self.approved_set.values_list('id',
                                                         flat=True)).exists()
 
-class CategoryAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
-
 
 class SavedSearch(Source):
     """
@@ -1935,11 +1931,6 @@ def video__video_service(self):
         if re.search(regexp, url, re.I):
             return service
 
-class VideoAdmin(admin.ModelAdmin):
-    list_display = ('name', 'site', 'when_submitted', 'status', 'feed')
-    list_filter = ['status', 'when_submitted']
-    search_fields = ['name', 'description']
-
 
 class Watch(models.Model):
     """
@@ -2054,13 +2045,6 @@ class VideoModerator(CommentModerator):
             return False
 
 moderator.register(Video, VideoModerator)
-
-admin.site.register(SiteLocation)
-admin.site.register(Feed)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Video, VideoAdmin)
-admin.site.register(SavedSearch)
-admin.site.register(Watch)
 
 tagging.register(Video)
 tagging.register(OriginalVideo)

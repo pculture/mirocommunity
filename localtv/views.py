@@ -81,7 +81,7 @@ def view_video(request, video_id, slug=None):
 
     sitelocation = SiteLocation.objects.get_current()
     popular_videos = Video.objects.get_popular_videos()
-    
+
     if video.categories.count():
         category_obj = None
         referrer = request.META.get('HTTP_REFERER')
@@ -139,7 +139,6 @@ def view_video(request, video_id, slug=None):
             else:
                 context['contest_category'] = video.categories.filter(
                     contest_mode__isnull=False)[0]
-            
 
     if sitelocation.playlists_enabled:
         # showing playlists
@@ -186,6 +185,7 @@ def view_video(request, video_id, slug=None):
         context,
         context_instance=RequestContext(request))
 
+
 def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
     sitelocation = SiteLocation.objects.get_current()
@@ -194,6 +194,7 @@ def share_email(request, content_type_pk, object_id):
                               'sitelocation': sitelocation},
                              form_class = forms.ShareMultipleEmailForm
                              )
+
 
 def video_vote(request, object_id, direction, **kwargs):
     if not localtv.settings.voting_enabled():
@@ -215,9 +216,10 @@ def video_vote(request, object_id, direction, **kwargs):
                                        object_id=object_id,
                                        **kwargs)
 
+
 def newsletter(request):
     newsletter = NewsletterSettings.objects.get_current()
-    if not newsletter.status:
+    if newsletter.status == NewsletterSettings.DISABLED:
         raise Http404
     elif not newsletter.sitelocation.get_tier().permit_newsletter():
         raise Http404
