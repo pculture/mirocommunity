@@ -30,8 +30,10 @@ from django.views.decorators.vary import vary_on_headers
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
 
-from localtv.playlists.models import (Playlist, PlaylistItem,
-                                      PLAYLIST_STATUS_PUBLIC)
+from localtv.playlists.models import Playlist, PlaylistItem
+
+
+MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
 def index(request):
@@ -122,9 +124,6 @@ def view_video(request, video_id, slug=None):
         import voting
         user_can_vote = True
         if request.user.is_authenticated():
-            MAX_VOTES_PER_CATEGORY = getattr(settings,
-                                             'MAX_VOTES_PER_CATEGORY',
-                                             3)
             max_votes = video.categories.filter(
                 contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
             votes = voting.models.Vote.objects.filter(
@@ -155,12 +154,12 @@ def view_video(request, video_id, slug=None):
         elif request.user.is_authenticated():
             # public playlists or my playlists
             context['playlistitem_set'] = video.playlistitem_set.filter(
-                Q(playlist__status=PLAYLIST_STATUS_PUBLIC) |
+                Q(playlist__status=Playlist.PUBLIC) |
                 Q(playlist__user=request.user))
         else:
             # just public playlists
             context['playlistitem_set'] = video.playlistitem_set.filter(
-                playlist__status=PLAYLIST_STATUS_PUBLIC)
+                playlist__status=Playlist.PUBLIC)
 
         if 'playlist' in request.GET:
             try:
@@ -168,10 +167,10 @@ def view_video(request, video_id, slug=None):
             except (Playlist.DoesNotExist, ValueError):
                 pass
             else:
-                if playlist.status == PLAYLIST_STATUS_PUBLIC or \
-                        request.user_is_admin() or \
-                        request.user.is_authenticated() and \
-                        playlist.user_id == request.user.pk:
+                if (playlist.is_public() or
+                        request.user_is_admin() or
+                        (request.user.is_authenticated() and
+                        playlist.user_id == request.user.pk)):
                     try:
                         context['playlistitem'] = video.playlistitem_set.get(
                             playlist=playlist)
@@ -202,8 +201,6 @@ def video_vote(request, object_id, direction, **kwargs):
     import voting.views
     if request.user.is_authenticated() and direction != 'clear':
         video = get_object_or_404(Video, pk=object_id)
-        MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
-                                         3)
         max_votes = video.categories.filter(
             contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
         votes = voting.models.Vote.objects.filter(

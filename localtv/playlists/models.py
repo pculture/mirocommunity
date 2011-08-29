@@ -20,12 +20,12 @@ from django.template import Context, loader
 
 from localtv.models import Video
 
-PLAYLIST_STATUS_PRIVATE = 0
-PLAYLIST_STATUS_WAITING_FOR_MODERATION = 1
-PLAYLIST_STATUS_PUBLIC = 2
 
 class Playlist(models.Model):
-    status = models.IntegerField(default=PLAYLIST_STATUS_PRIVATE)
+    PRIVATE = 0
+    WAITING_FOR_MODERATION = 1
+    PUBLIC = 2
+    status = models.IntegerField(default=PRIVATE)
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
@@ -88,6 +88,12 @@ class Playlist(models.Model):
         except PlaylistItem.DoesNotExist:
             return None
 
+    def is_public(self):
+        return self.status == Playlist.PUBLIC
+
+    def is_private(self):
+        return self.status == Playlist.PRIVATE
+
 
 class PlaylistItem(models.Model):
     playlist = models.ForeignKey(Playlist)
@@ -128,7 +134,7 @@ class PlaylistItem(models.Model):
         return (previous, self)
 
 def send_notification(sender, instance, raw, created, **kwargs):
-    if instance.status == PLAYLIST_STATUS_WAITING_FOR_MODERATION:
+    if instance.status == Playlist.WAITING_FOR_MODERATION:
         from localtv.models import SiteLocation
         from localtv.util import send_notice
 
