@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.db.models import Count
 from django.utils.encoding import force_unicode
 
 from haystack import indexes
@@ -23,19 +24,33 @@ from localtv.models import Video
 
 class VideoIndex(indexes.SearchIndex):
     text = indexes.CharField(document=True, use_template=True)
-    feed = indexes.IntegerField(model_attr='feed__pk', null=True)
-    search = indexes.IntegerField(model_attr='search__pk', null=True)
-    user = indexes.IntegerField(model_attr='user__pk', null=True)
+
+    # ForeignKey relationships
+    feed = indexes.IntegerField(model_attr='feed_id', null=True)
+    search = indexes.IntegerField(model_attr='search_id', null=True)
+    user = indexes.IntegerField(model_attr='user_id', null=True)
+    site = indexes.IntegerField(model_attr='site_id')
+
+    # M2M relationships
     tags = indexes.MultiValueField()
     categories = indexes.MultiValueField()
     authors = indexes.MultiValueField()
     playlists = indexes.MultiValueField()
 
-    def get_queryset(self):
+    # Aggregated/collated data.
+    best_date = indexes.DateTimeField(model_attr='when')
+    #: watch_count is set during :meth:`~VideoIndex.index_queryset`.
+    watch_count = indexes.IntegerField(model_attr='watch_count')
+    last_featured = indexes.DateTimeField(model_attr='last_featured', null=True)
+    when_approved = indexes.DateTimeField(model_attr='when_approved', null=True)
+
+    def index_queryset(self):
         """
-        Custom queryset to only search approved videos.
+        Custom queryset to only search active videos and to annotate them
+        with the watch_count.
+
         """
-        return Video.objects.active()
+        return Video.objects.active().annotate(watch_count=Count('watch'))
 
     def get_updated_field(self):
         return 'when_modified'
