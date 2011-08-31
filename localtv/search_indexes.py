@@ -55,12 +55,11 @@ class VideoIndex(indexes.SearchIndex):
     def get_updated_field(self):
         return 'when_modified'
 
-    def _prepare_field(self, video, field, attr='pk', normalize=int):
-        return [normalize(getattr(rel, attr))
-                for rel in getattr(video, field).all()]
+    def _prepare_field(self, video, field):
+        return [int(rel.pk) for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        return self._prepare_field(video, 'tags', 'name', force_unicode)
+        return self._prepare_field(video, 'tags')
 
     def prepare_categories(self, video):
         return self._prepare_field(video, 'categories')

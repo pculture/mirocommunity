@@ -19,18 +19,15 @@ import datetime
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.db.models.fields import FieldDoesNotExist
-from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from django.views.generic import ListView
 from django.conf import settings
-from haystack.backends import SQ
 from voting.models import Vote
 
 import localtv.settings
 from localtv.models import Video, Category
-from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
-from localtv.search.query import SmartSearchQuerySet
 from localtv.search.util import SortFilterMixin
 
 
@@ -79,7 +76,7 @@ class VideoSearchView(ListView, SortFilterMixin):
 
     def _get_filter(self):
         """Fetches the filter for the current request."""
-        self.request.GET.get('filter', self.default_filter)
+        return self.request.GET.get('filter', self.default_filter)
 
     def get_queryset(self):
         """
@@ -88,7 +85,11 @@ class VideoSearchView(ListView, SortFilterMixin):
         """
         sqs = self._query(self._get_query())
         sqs = self._sort(sqs, self._get_sort())
-        sqs, self._filter_obj = self._filter(sqs, self._get_filter())
+        try:
+            sqs, self._filter_obj = self._filter(sqs, self._get_filter(),
+                                **self.kwargs)
+        except ObjectDoesNotExist:
+            raise Http404
         if self.approved_since is not None:
             sqs = sqs.filter(when_approved__gt=(
                         datetime.datetime.now() - self.approved_since))

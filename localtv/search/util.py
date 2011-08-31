@@ -17,6 +17,8 @@
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.db.models.fields import FieldDoesNotExist
+from haystack.backends import SQ
 from tagging.models import Tag
 
 from localtv.models import Video, Feed, Category
@@ -61,7 +63,7 @@ class SortFilterMixin(object):
 
         """
         descending = False
-        if sort[0] == '-':
+        if sort is not None and sort[0] == '-':
             descending = True
             sort = sort[1:]
         return (sort, descending)
@@ -90,28 +92,36 @@ class SortFilterMixin(object):
                             ''.join(('-' if desc else '', order_by)))
         return searchqueryset
 
-    def _filter(self, searchqueryset, search_filter, **kwargs):
+    def _get_filter_obj(self, model_class, **kwargs):
+        try:
+            model_class._meta.get_field_by_name('site')
+        except FieldDoesNotExist:
+            pass
+        else:
+            kwargs['site'] = Site.objects.get_current()
+        return model_class._default_manager.get(**kwargs)
+
+    def _filter(self, searchqueryset, search_filter, filter_obj=None, **kwargs):
         """
         Sets up the searchqueryset to use the specified filter and returns a
         (``searchqueryset``, ``filter_obj``) tuple, where ``filter_obj`` is the
         instance which is being filtered for. If a valid ``search_filter`` is
         provided, but no ``filter_obj`` is found, an Http404 will be raised.
 
+        If no valid ``search_filter`` is provided, the ``filter_obj`` returned
+        will always be None.
+
         """
-        filter_obj = None
+        new_filter_obj = None
         search_filter = self.filters.get(search_filter, None)
         if search_filter is not None:
-            try:
-                search_filter['model']._meta.get_field_by_name('site')
-            except FieldDoesNotExist:
-                pass
-            else:
-                kwargs['site'] = Site.objects.get_current()
-
-            filter_obj = get_object_or_404(search_filter['model'], **kwargs)
+            new_filter_obj = (
+                filter_obj or
+                self._get_filter_obj(search_filter['model'], **kwargs)
+            )
             sq = SQ()
             for field in search_filter['fields']:
-                sq |= SQ(**{field: filter_obj.pk})
+                sq |= SQ(**{field: new_filter_obj.pk})
             searchqueryset = searchqueryset.filter(sq)
 
-        return searchqueryset, filter_obj
+        return searchqueryset, new_filter_obj
