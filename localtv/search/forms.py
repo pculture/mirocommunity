@@ -20,13 +20,19 @@ from haystack import forms
 from localtv.models import Video
 from localtv.search.query import SmartSearchQuerySet
 
-class VideoSearchForm(forms.SearchForm):
+
+class SmartSearchForm(forms.SearchForm):
     def __init__(self, *args, **kwargs):
         sqs = kwargs.get('searchqueryset', None)
         if sqs is None:
             kwargs['searchqueryset'] = SmartSearchQuerySet()
-        super(VideoSearchForm, self).__init__(*args, **kwargs)
+        super(SmartSearchForm, self).__init__(*args, **kwargs)
 
+    def no_query_found(self):
+        return self.searchqueryset.all()
+
+
+class VideoSearchForm(SmartSearchForm):
     def search(self):
         """
         Adjusts the searchqueryset to return only videos associated with the
@@ -37,6 +43,3 @@ class VideoSearchForm(forms.SearchForm):
         self.searchqueryset = self.searchqueryset.models(
                         Video).filter(site=site.pk)
         return super(VideoSearchForm, self).search()
-
-    def no_query_found(self):
-        return self.searchqueryset.all()

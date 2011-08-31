@@ -17,30 +17,28 @@
 
 import datetime
 
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from django.views.generic.edit import FormMixin
 from django.conf import settings
 from haystack.backends import SQ
-from tagging.models import Tag
 from voting.models import Vote
 
 import localtv.settings
-from localtv.models import Video, Feed, Category
+from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
 from localtv.search.query import SmartSearchQuerySet
+from localtv.search.util import SortFilterMixin
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class VideoSearchView(ListView, FormMixin):
+class VideoSearchView(ListView, SortFilterMixin):
     """
     Generic view for videos; implements pagination, filtering and searching.
 
@@ -48,29 +46,10 @@ class VideoSearchView(ListView, FormMixin):
     paginate_by = VIDEOS_PER_PAGE
     form_class = VideoSearchForm
     context_object_name = 'video_list'
-    #: Defines the available sort options and the indexes that they correspond
-    #: to on the :class:`localtv.search_indexes.VideoIndex`.
-    sorts = {
-        'date': 'best_date',
-        'featured': 'last_featured',
-        'popular': 'watch_count',
-        'approved': 'when_approved',
 
-        # deprecated
-        'latest': 'best_date'
-    }
     #: Default sort method to use. Should be one of the keys from ``sorts``.
     default_sort = None
 
-    #: Defines the available filtering options and the indexes that they
-    #: correspond to on the :class:`localtv.search_indexes.VideoIndex`.
-    filters = {
-        'tag': {'model': Tag, 'fields': ['tags']},
-        'category': {'model': Category, 'fields': ['categories']},
-        'author': {'model': User, 'fields': ['authors', 'user']},
-        'playlist': {'model': Playlist, 'fields': ['playlists']},
-        'feed': {'model': Feed, 'fields': ['feed']},
-    }
     #: Default filter to use. Should be one of the keys from ``filters``.
     default_filter = None
 
@@ -88,83 +67,31 @@ class VideoSearchView(ListView, FormMixin):
             paginate_by = self.paginate_by
         return paginate_by
 
-    def get_form_kwargs(self):
-        kwargs = super(VideoSearchView, self).get_form_kwargs()
-        data = self.request.GET.copy()
-
-        # HACK to support old custom templates
-        # XXX: How old? Perhaps remove in 2.0.
-        if 'q' not in data and 'query' in data:
-            data['q'] = data['query']
-
-        kwargs['data'] = data
-        return kwargs
-
-    def get(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        self._search_form = self.get_form(form_class)
-        self._searchqueryset = self._search_form.search()
-        return super(VideoSearchView, self).get(request, *args, **kwargs)
+    def _get_query(self):
+        """Fetches the query for the current request."""
+        # Support old-style templates that used "query". Remove in 2.0.
+        key = 'q' if 'q' in self.request.GET else 'query'
+        return self.request.GET.get(key, "")
 
     def _get_sort(self):
-        if not hasattr(self, '_sort'):
-            self._sort = self.request.GET.get('sort', self.default_sort)
-            if self._sort:
-                self._sort_desc = False
-                if self._sort[0] == '-':
-                    self._sort_desc = True
-                    self._sort = self._sort[1:]
-        return self._sort
+        """Fetches the sort for the current request."""
+        return self.request.GET.get('sort', self.default_sort)
 
-    def get_searchqueryset(self):
-        """
-        Performs a haystack search and sort using
-        :class:`~localtv.search.forms.VideoSearchForm`. Three sort options are
-        currently supported: ``date``, ``featured``, and ``popular``.
-
-        """
-        current_site = Site.objects.get_current()
-        # self._searchqueryset is set during form validation handling.
-        sqs = self._searchqueryset
-
-        sort = self._get_sort()
-        order_by = self.sorts.get(sort, None)
-
-        if order_by is not None:
-            sqs = sqs.order_by(
-                ''.join(('-' if self._sort_desc else '', order_by))
-            )
-
-        if self.approved_since is not None:
-            sqs = sqs.filter(when_approved__gt=(
-                        datetime.datetime.now() - self.approved_since))
-
-        if self.default_filter in self.filters:
-            search_filter = self.filters[self.default_filter]
-            filter_obj_kwargs = self.kwargs.copy()
-
-            try:
-                search_filter['model']._meta.get_field_by_name('site')
-            except FieldDoesNotExist:
-                pass
-            else:
-                filter_obj_kwargs['site'] = Site.objects.get_current()
-
-            self._filter_obj = get_object_or_404(
-                        search_filter['model'], **filter_obj_kwargs)
-            sq = SQ()
-            for field in search_filter['fields']:
-                sq |= SQ(**{field: self._filter_obj})
-            sqs = sqs.filter(sq)
-
-        return sqs
+    def _get_filter(self):
+        """Fetches the filter for the current request."""
+        self.request.GET.get('filter', self.default_filter)
 
     def get_queryset(self):
         """
-        Returns a MockQuerySet based on the results of a haystack search.
+        Returns a list based on the results of a haystack search.
 
         """
-        sqs = self.get_searchqueryset()
+        sqs = self._query(self._get_query())
+        sqs = self._sort(sqs, self._get_sort())
+        sqs, self._filter_obj = self._filter(sqs, self._get_filter())
+        if self.approved_since is not None:
+            sqs = sqs.filter(when_approved__gt=(
+                        datetime.datetime.now() - self.approved_since))
         sqs.load_all()
         
         # For now, make it a simple list. Might need to support some
@@ -183,12 +110,12 @@ class VideoSearchView(ListView, FormMixin):
 
         """
         context = ListView.get_context_data(self, **kwargs)
-        context['form'] = self._search_form
+        form = self._make_search_form(self._get_query())
+        context['form'] = form
+        form.is_valid()
+        context['query'] = form.cleaned_data['q']
 
-        cleaned_data = getattr(context['form'], 'cleaned_data', {})
-        context['query'] = cleaned_data.get('q', '')
-
-        sort = self._get_sort()
+        sort, desc = self._process_sort(self._get_sort())
         sort_links = {}
 
         for s in self.sorts:
@@ -197,17 +124,15 @@ class VideoSearchView(ListView, FormMixin):
             querydict.pop('page', None)
             if s == sort:
                 # Reverse the current ordering if the sort is active.
-                querydict['sort'] = ''.join(('' if self._sort_desc else '-', s))
+                querydict['sort'] = ''.join(('' if desc else '-', s))
             else:
                 # Default to descending.
                 querydict['sort'] = ''.join(('-', s))
             sort_links[s] = ''.join(('?', querydict.urlencode()))
         context['sort_links'] = sort_links
 
-        if self.default_filter in self.filters:
-            # Then by now, self._filter_obj is either populated or a 404
-            # has been raised.
-            context[self.default_filter] = self._filter_obj
+        if self._filter_obj is not None:
+            context[self._get_filter()] = self._filter_obj
 
         return context
 
