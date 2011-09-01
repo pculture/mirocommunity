@@ -15,7 +15,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import simplejson
 import multiprocessing
 import logging
 
@@ -28,6 +27,7 @@ import httplib
 
 from django.db import transaction
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import simplejson
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
 from localtv import models

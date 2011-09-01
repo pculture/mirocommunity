@@ -18,11 +18,12 @@
 import hashlib
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from localtv.feeds import views
+from localtv.feeds.views import BaseVideosFeed, LOCALTV_FEED_LENGTH
 from localtv import models
 
 def generate_secret():
@@ -39,7 +40,7 @@ def verify_secret(func):
         return func(request)
     return wrapper
 
-class UnapprovedVideosFeed(views.BaseVideosFeed):
+class UnapprovedVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_admin_approve_reject')
 
@@ -47,26 +48,28 @@ class UnapprovedVideosFeed(views.BaseVideosFeed):
         return "%s: %s" % (
             self.sitelocation.site.name, _('Videos Awaiting Moderation'))
 
-    def items(self):
-        videos = models.Video.objects.unapproved().filter(
-            site=self.sitelocation.site).order_by(
-            'when_submitted', 'when_published')
-        return videos[:views.LOCALTV_FEED_LENGTH]
+    def _actual_items(self):
+        return models.Video.objects.unapproved().filter(
+            site=Site.objects.get_current()
+        ).order_by(
+            'when_submitted', 'when_published'
+        )
 
 
 class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Unapproved User Submissions'))
+            Site.objects.get_current().name, _('Unapproved User Submissions'))
 
     def items(self):
-        videos = models.Video.objects.unapproved().filter(
-            site=self.sitelocation.site,
-            feed=None, search=None)
-        videos = videos.order_by(
-            'when_submitted', 'when_published')
-        return videos[:views.LOCALTV_FEED_LENGTH]
+        return models.Video.objects.unapproved().filter(
+            site=Site.objects.get_current(),
+            feed=None,
+            search=None
+        ).order_by(
+            'when_submitted', 'when_published'
+        )
 
 
-unapproved = verify_secret(views.feed_view(UnapprovedVideosFeed))
-unapproved_user = verify_secret(views.feed_view(UnapprovedUserVideosFeed))
+unapproved = verify_secret(UnapprovedVideosFeed())
+unapproved_user = verify_secret(UnapprovedUserVideosFeed())
