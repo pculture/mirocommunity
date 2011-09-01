@@ -19,158 +19,31 @@ import datetime
 import urllib
 
 from django.contrib.auth.models import User
-from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
-from django.core import cache
+from django.contrib.sites.models import Site
+from django.contrib.syndication.views import Feed, add_domain
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.utils import feedgenerator
 from django.utils.cache import patch_vary_headers
-from django.utils.encoding import iri_to_uri
+from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
-
+from haystack.query import SearchQuerySet
 from tagging.models import Tag
-import simplejson
 
-from localtv.models import Video, Category, SiteLocation
+from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
+from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
 from localtv.templatetags.filters import simpletimesince
 
+
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
-
-def feed_view(klass):
-    def wrapper(request, *args):
-        sitelocation = SiteLocation.objects.get_current()
-        if len(args) == 0:
-            args = [None]
-        if args[0] == 'json/': # JSON feed
-            json = True
-        else:
-            json = False
-        args = args[1:]
-        cache_key = ('feed_cache:%s:%s:%i:%s:%s' % (
-            sitelocation.site.domain, klass.__name__, json, args,
-            repr(request.GET.items()))).replace(' ', '')
-        mime_type_and_output = cache.cache.get(cache_key)
-        if mime_type_and_output is None:
-            try:
-                instance = klass(None, request, json=json)
-                feed = instance.get_feed(*args)
-            except FeedDoesNotExist:
-                raise Http404
-            else:
-                if hasattr(instance, 'opensearch_data'):
-                    feed.opensearch_data = instance.opensearch_data
-                mime_type = feed.mime_type
-                output = feed.writeString('utf-8')
-                cache.cache.set(cache_key, (mime_type, output))
-        else:
-            mime_type, output = mime_type_and_output
-
-        if json and request.GET.get('jsoncallback'):
-            output = '%s(%s);' % (
-                request.GET['jsoncallback'],
-                output)
-            mime_type = 'text/javascript'
-        if mime_type.startswith('application/') and \
-                'MSIE' in request.META.get('HTTP_USER_AGENT', ''):
-            # MSIE doesn't support application/atom+xml, so we fake it
-            mime_type = 'text/html'
-        response = HttpResponse(output,
-                            mimetype=mime_type)
-        patch_vary_headers(response, ['User-Agent'])
-        return response
-    return wrapper
-
-
-class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
-
-    def add_root_elements(self, handler):
-        # First. let the superclass add its own essential root elements.
-        super(ThumbnailFeedGenerator, self).add_root_elements(handler)
-
-        # Second, add the necessary information for this feed to be identified
-        # as an OpenSearch feed.
-        if hasattr(self, 'opensearch_data'):
-            for key in self.opensearch_data:
-                name = 'opensearch:' + key
-                value = unicode(self.opensearch_data[key])
-                handler.addQuickElement(name, value)
-
-    def root_attributes(self):
-        attrs = feedgenerator.Atom1Feed.root_attributes(self)
-        attrs['xmlns:media'] = 'http://search.yahoo.com/mrss/'
-        attrs['xmlns:opensearch'] = 'http://a9.com/-/spec/opensearch/1.1/'
-        return attrs
-
-    def add_item_elements(self, handler, item):
-        feedgenerator.Atom1Feed.add_item_elements(self, handler, item)
-        if 'thumbnail' in item:
-            handler.addQuickElement('media:thumbnail',
-                                    attrs={'url': item['thumbnail']})
-        if 'website_url' in item:
-            handler.addQuickElement('link', attrs={
-                    'rel': 'via',
-                    'href': item['website_url']})
-        if 'embed_code' in item:
-            handler.startElement('media:player',
-                                 {'url': item.get('website_url', '')})
-            handler.characters(item['embed_code'])
-            handler.endElement('media:player')
-
-class JSONGenerator(feedgenerator.SyndicationFeed):
-    mime_type = 'application/json'
-    def write(self, outfile, encoding):
-        json = {}
-        self.add_root_elements(json)
-        self.write_items(json)
-        simplejson.dump(json, outfile, encoding=encoding)
-
-    def add_root_elements(self, json):
-        json['title'] = self.feed['title']
-        json['link'] = self.feed['link']
-        json['id'] = self.feed['id']
-        json['updated'] = unicode(self.latest_post_date())
-
-    def write_items(self, json):
-        json['items'] = []
-        for item in self.items:
-            self.add_item_elements(json['items'], item)
-
-    def add_item_elements(self, json_items, item):
-        json_item = {}
-        json_item['title'] = item['title']
-        json_item['link'] = item['link']
-        json_item['when'] = item['when']
-        if item.get('pubdate'):
-            json_item['pubdate'] = unicode(item['pubdate'])
-        if item.get('description'):
-            json_item['description'] = item['description']
-        if item.get('enclosure'):
-            enclosure = item['enclosure']
-            json_item['enclosure'] = {
-                'link': enclosure.url,
-                'length': enclosure.length,
-                'type': enclosure.mime_type}
-        if item['categories']:
-            json_item['categories'] = item['categories']
-        if 'thumbnail' in item:
-            json_item['thumbnail'] = item['thumbnail']
-            json_item['thumbnails_resized'] = resized = []
-            for size, url in item['thumbnails_resized'].items():
-                resized.append({'width': size[0],
-                                'height': size[1],
-                                'url': url})
-        if 'website_url' in item:
-            json_item['website_url'] = item['website_url']
-        if 'embed_code' in item:
-            json_item['embed_code'] = item['embed_code']
-
-        json_items.append(json_item)
 
 
 class BaseVideosFeed(Feed):
@@ -178,67 +51,126 @@ class BaseVideosFeed(Feed):
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
 
-    def __init__(self, *args, **kwargs):
-        if 'json' in kwargs:
-            if kwargs.pop('json'):
-                self.feed_type = JSONGenerator
-        Feed.__init__(self, *args, **kwargs)
-        self.sitelocation = SiteLocation.objects.get_current()
-        self.opensearch_data = {}
+    def __init__(self, json=False):
+        if json:
+            self.feed_type = JSONGenerator
 
-    def slice_items(self, items, default_items_per_page=None):
-        '''slice_items() is a method that can be used to filter a list
-        (or queryset) of objects and return just the ones that the
-        user requested.
+    def _get_cache_key(self, vary):
+        return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
+            'domain': Site.objects.get_current().domain,
+            'class': self.__class__.__name__,
+            'vary': force_unicode(vary)
+        }
 
-        We respect the three indexing-related OpenSearch query string parameters:
+    def __call__(self, request, *args, **kwargs):
+        is_json = self.feed_type is JSONGenerator
+        jsoncallback = request.GET.get('jsoncallback')
+        is_jsonp = is_json and bool(jsoncallback)
+        vary = (
+            is_json,
+            is_jsonp,
+            request.GET.get('count'),
+            request.GET.get('startIndex'),
+            request.GET.get('startPage')
+        )
+        cache_key = self._get_cache_key(vary)
+
+        response = cache.get(cache_key)
+        if response is None:
+            response = super(BaseVideosFeed, self).__call__(request,
+                                                            *args, **kwargs)
+            if is_jsonp:
+                response = HttpResponse(u"%s(%s);" % (jsoncallback,
+                            response.content), mimetype='text/javascript')
+            cache.set(cache_key, response, 15*60)
+        return response
+
+    def get_object(self, request, *args, **kwargs):
+        """
+        Returns a dictionary containing all information that must be propagated
+        to child methods, since feed instances are reused for multiple requests,
+        and are thus unsuitable for storage.
+
+        """
+        return {'request': request}
+
+    def _actual_items(self, obj):
+        raise NotImplementedError
+
+    def get_feed(self, obj, request):
+        """
+        Returns a feed generator that has opensearch information stored as
+        :attr:`feed.opensearch_data`.
+
+        """
+        feed = super(BaseVideosFeed, self).get_feed(obj, request)
+        feed.opensearch_data = self._get_opensearch_data(obj)
+        return feed
+
+    def items(self, obj):
+        """
+        Handles a list or queryset of items fetched with :meth:`_actual_items`
+        according to the following `OpenSearch` query string parameters:
+
         * count
         * startIndex
         * startPage
 
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
-        As for searchTerms, well, maybe one day we'll respect that, too.'''
-        if default_items_per_page is None:
-            default_items_per_page = LOCALTV_FEED_LENGTH
+        """
+        items = self._actual_items(obj)
 
-        count = self._get_int_from_querystring(
-            parameter_name='count',
-            default=default_items_per_page,
-            insist_non_negative=True)
+        opensearch = self._get_opensearch_data(obj)
+        start = opensearch['startindex']
+        end = start + opensearch['itemsperpage']
+        opensearch['totalresults'] = len(items)
+        items = items[start:end]
+        if isinstance(items, SearchQuerySet):
+            return [result.object for result in items]
+        return items
 
-        # The spec says to use startIndex, but vidscraper seems to send out
-        # start-index. I don't really know what's up with that.
-        startIndex = self._get_int_from_querystring('startIndex', default=None)
-        if startIndex is None:
-            startIndex = self._get_int_from_querystring('start-index')
-        # The spec allows negative values, but that seems useless to me,
-        # so we will insist on non-negative values.
+    def _get_opensearch_data(self, obj):
+        """
+        Stores and returns opensearch information for the object.
 
-        # We only check for startPage if there is no startIndex. This mailing
-        # list discussion indicates that startPage and startIndex conflict:
-        # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
+        """
+        if 'opensearch_data' not in obj:
+            request = obj['request']
 
-        if not startIndex:
-            startPage = self._get_int_from_querystring('startPage')
-            startIndex = startPage * count
+            count = self._normalize_param(request, 'count',
+                                default=LOCALTV_FEED_LENGTH)
 
-        end = startIndex + count
+            # The spec says to use startIndex, but vidscraper seems to send out
+            # start-index. I don't really know what's up with that.
+            startIndex = self._normalize_param(request, 'startIndex',
+                                    default=None)
+            if startIndex is None:
+                startIndex = self._normalize_param(request, 'start-index')
+            # The spec allows negative values, but that seems useless to me,
+            # so we will insist on non-negative values.
 
-        self.opensearch_data = {'startindex': startIndex,
-                                'itemsperpage': count,
-                                'totalresults': len(items)}
+            # We only check for startPage if there is no startIndex. This
+            # mailing list discussion indicates that startPage and startIndex
+            # conflict:
+            # http://lists.opensearch.org/pipermail/opensearch-discuss/2006-December/000026.html
 
-        return items[startIndex:end]
+            if not startIndex:
+                startPage = self._normalize_param(request, 'startPage')
+                startIndex = startPage * count
 
-    def _get_int_from_querystring(self, parameter_name, default=0,
-                                  insist_non_negative=True):
+            obj['opensearch_data'] = {'startindex': startIndex,
+                                    'itemsperpage': count}
+        return obj['opensearch_data']
+
+    def _normalize_param(self, request, param, default=0,
+                                allow_negative=False):
         try:
-            value = int(self.request.GET.get(parameter_name, None))
+            value = int(request.GET.get(param, None))
         except (ValueError, TypeError):
             value = default
 
-        if insist_non_negative:
+        if not allow_negative:
             if value < 0:
                 value = default
 
@@ -266,6 +198,7 @@ class BaseVideosFeed(Feed):
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
         if item.has_thumbnail:
+            site = Site.objects.get_current()
             if item.thumbnail_url:
                 kwargs['thumbnail'] = iri_to_uri(item.thumbnail_url)
             else:
@@ -273,17 +206,15 @@ class BaseVideosFeed(Feed):
                     item.get_resized_thumb_storage_path(375, 295))
                 if not (default_url.startswith('http://') or
                         default_url.startswith('https://')):
-                    default_url = 'http://%s%s' % (
-                    self.sitelocation.site.domain, default_url)
+                    default_url = 'http://%s%s' % (site.domain, default_url)
                 kwargs['thumbnail'] = default_url
             kwargs['thumbnails_resized'] = resized = {}
-            for size in models.THUMB_SIZES:
+            for size in Video.THUMB_SIZES:
                 url = default_storage.url(
                     item.get_resized_thumb_storage_path(*size))
                 if not (url.startswith('http://') or
                         url.startswith('http://')):
-                    url = 'http://%s%s' % (
-                        self.sitelocation.site.domain, url)
+                    url = 'http://%s%s' % (site.domain, url)
                 resized[size] = url
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
@@ -324,11 +255,10 @@ class NewVideosFeed(BaseVideosFeed):
 
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('New Videos'))
+            Site.objects.get_current().name, _('New Videos'))
 
-    def items(self):
-        videos = Video.objects.get_latest_videos()
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_latest_videos()
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
@@ -337,59 +267,59 @@ class FeaturedVideosFeed(BaseVideosFeed):
 
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Featured Videos'))
+            Site.objects.get_current().name, _('Featured Videos'))
 
-    def items(self):
-        videos = Video.objects.get_featured_videos()
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_featured_videos()
 
 class PopularVideosFeed(BaseVideosFeed):
     def link(self):
         return reverse('localtv_list_popular')
 
-    def items(self):
-        videos = Video.objects.get_popular_videos()
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_popular_videos()
 
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Popular Videos'))
+            Site.objects.get_current().name, _('Popular Videos'))
 
 
 class CategoryVideosFeed(BaseVideosFeed):
-    def get_object(self, bits):
-        return Category.objects.get(site=self.sitelocation.site,
-                                           slug=bits[0])
+    def get_object(self, request, slug):
+        obj = BaseVideosFeed.get_object(self, request, slug)
+        obj['obj'] = Category.objects.get(
+                        site=Site.objects.get_current(), slug=slug)
+        return obj
 
-    def link(self, category):
-        return category.get_absolute_url()
+    def link(self, obj):
+        return obj['obj'].get_absolute_url()
 
-    def items(self, category):
-        videos = Video.objects.get_category_videos(category)
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_category_videos(obj['obj'])
 
-    def title(self, category):
+    def title(self, obj):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Category: %s') % category.name)
+            obj['site'].name, _('Category: %s') % obj['obj'].name)
 
 class AuthorVideosFeed(BaseVideosFeed):
-    def get_object(self, bits):
-        return User.objects.get(pk=bits[0])
+    def get_object(self, request, pk):
+        obj = BaseVideosFeed.get_object(self, request, pk)
+        obj['obj'] = User.objects.get(pk=pk)
+        return obj
 
-    def link(self, author):
-        return reverse('localtv_author', args=[author.pk])
+    def link(self, obj):
+        return reverse('localtv_author', args=[obj['obj'].pk])
 
-    def items(self, author):
-        videos = Video.objects.get_author_videos(author)
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_author_videos(obj['obj'])
 
-    def title(self, author):
-        name_or_username = author.get_full_name()
+    def title(self, obj):
+        name_or_username = obj['obj'].get_full_name()
         if not name_or_username.strip():
-            name_or_username = author.username
+            name_or_username = obj['obj'].username
 
         return "%s: %s" % (
-            self.sitelocation.site.name,
+            Site.objects.get_current().name,
             _('Author: %s') % name_or_username)
 
 class FeedVideosFeed(BaseVideosFeed):
@@ -400,85 +330,95 @@ class FeedVideosFeed(BaseVideosFeed):
     #
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
-    def get_object(self, bits):
-        return Feed.objects.get(pk=bits[0])
+    def get_object(self, request, pk):
+        obj = BaseVideosFeed.get_object(self, request, pk)
+        obj['obj'] = Feed.objects.get(pk=pk)
+        return obj
 
-    def link(self, feed):
-        return reverse('localtv_list_feed', args=[feed.pk])
+    def link(self, obj):
+        return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
-    def items(self, feed):
-        videos = Video.objects.get_latest_videos().filter(feed=feed)
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_latest_videos().filter(feed=obj['obj'])
 
-    def title(self, feed):
+    def title(self, obj):
         return "%s: Videos imported from %s" % (
-            self.sitelocation.site.name,
-            feed.name or '')
+            Site.objects.get_current().name,
+            obj['obj'].name or '')
 
 class TagVideosFeed(BaseVideosFeed):
-    def get_object(self, bits):
-        return Tag.objects.get(name=bits[0])
+    def get_object(self, request, name):
+        obj = BaseVideosFeed.get_object(self, request, name)
+        obj['obj'] = Tag.objects.get(name=name)
+        return obj
 
-    def link(self, tag):
-        return reverse('localtv_list_tag', args=[tag.name])
+    def link(self, obj):
+        return reverse('localtv_list_tag', args=[obj['obj'].name])
 
-    def items(self, tag):
-        videos = Video.objects.get_tag_videos(tag)
-        return self.slice_items(videos)
+    def _actual_items(self, obj):
+        return Video.objects.get_tag_videos(obj['obj'])
 
-    def title(self, tag):
+    def title(self, obj):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Tag: %s') % tag.name)
+            Site.objects.get_current().name, _('Tag: %s') % obj['obj'].name)
 
 class SearchVideosFeed(BaseVideosFeed):
-    def get_object(self, bits):
-        return bits[0]
+    def get_object(self, request, query):
+        obj = BaseVideosFeed.get_object(self, request, query)
+        obj['obj'] = query
+        return obj
 
-    def link(self, search):
-        args = {'q': search.encode('utf-8')}
-        if self.request.GET.get('sort', None) == 'latest':
-            args['sort'] = 'latest'
-        return reverse('localtv_search') + '?' + urllib.urlencode(args)
+    def link(self, obj):
+        kwargs = {'q': obj['obj'].encode('utf-8')}
+        sort = obj['request'].GET.get('sort', None)
+        if sort == 'latest':
+            kwargs['sort'] = 'latest'
+        return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
-    def items(self, search):
-        form = VideoSearchForm({'q': search})
+    def _actual_items(self, obj):
+        form = VideoSearchForm({'q': obj['obj']})
         if not form.is_valid():
-            raise FeedDoesNotExist(search)
+            raise Http404
         results = form.search()
-        if self.request.GET.get('sort', None) == 'latest':
+        sort = obj['request'].GET.get('sort', None)
+        if sort == 'latest':
             videos = Video.objects.get_latest_videos().filter(
                 pk__in=[result.pk for result in results if result])
-            return self.slice_items(videos)
-        return [result.object for result in self.slice_items(results)
-                if result.object]
+            return videos
 
-    def title(self, search):
+        return results
+
+    def title(self, obj):
         return u"%s: %s" % (
-            self.sitelocation.site.name, _(u'Search: %s') % search)
+            Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
 
 class PlaylistVideosFeed(BaseVideosFeed):
-    def get_object(self, bits):
-        return Playlist.objects.get(pk=bits[0])
+    def get_object(self, request, pk):
+        obj = BaseVideosFeed.get_object(self, request, pk)
+        obj['obj'] = Playlist.objects.get(pk=pk)
+        return obj
 
-    def link(self, playlist):
-        return playlist.get_absolute_url()
+    def link(self, obj):
+        return obj['obj'].get_absolute_url()
 
-    def items(self, playlist):
-        videos = playlist.video_set.all()
-        if self.request.GET.get('sort', None) != 'order':
+    def _actual_items(self, obj):
+        videos = obj['obj'].video_set.all()
+        sort = obj['request'].GET.get('sort', None)
+        if sort != 'order':
             videos = videos.order_by('-playlistitem___order')
-        return self.slice_items(videos)
+        return videos
 
-    def title(self, playlist):
+    def title(self, obj):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Playlist: %s') % playlist.name)
+            Site.objects.get_current().name,
+            _('Playlist: %s') % obj['obj'].name)
 
-new = feed_view(NewVideosFeed)
-featured = feed_view(FeaturedVideosFeed)
-popular = feed_view(PopularVideosFeed)
-category = feed_view(CategoryVideosFeed)
-author = feed_view(AuthorVideosFeed)
-tag = feed_view(TagVideosFeed)
-search = feed_view(SearchVideosFeed)
-playlist = feed_view(PlaylistVideosFeed)
-feed = feed_view(FeedVideosFeed)
+new = NewVideosFeed()
+featured = FeaturedVideosFeed()
+popular = PopularVideosFeed()
+category = CategoryVideosFeed()
+author = AuthorVideosFeed()
+tag = TagVideosFeed()
+search = SearchVideosFeed()
+playlist = PlaylistVideosFeed()
+feed = FeedVideosFeed()

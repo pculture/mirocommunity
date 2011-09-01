@@ -29,11 +29,11 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.utils import simplejson
 from django.views.decorators.csrf import csrf_protect
 
 import celery
 from importlib import import_module
-import simplejson
 
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv import tasks, util
