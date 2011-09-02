@@ -59,7 +59,7 @@ class BaseVideosFeed(Feed):
         return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
             'domain': Site.objects.get_current().domain,
             'class': self.__class__.__name__,
-            'vary': force_unicode(vary)
+            'vary': force_unicode(vary).replace(' ', '')
         }
 
     def __call__(self, request, *args, **kwargs):
@@ -71,6 +71,10 @@ class BaseVideosFeed(Feed):
             is_jsonp,
             request.GET.get('count'),
             request.GET.get('startIndex'),
+            # We need to vary on start-index as well since
+            # :meth:`_get_opensearch_data` uses it as an alternate source for
+            # startIndex.
+            request.GET.get('start-index'),
             request.GET.get('startPage')
         )
         cache_key = self._get_cache_key(vary)
@@ -299,7 +303,8 @@ class CategoryVideosFeed(BaseVideosFeed):
 
     def title(self, obj):
         return "%s: %s" % (
-            obj['site'].name, _('Category: %s') % obj['obj'].name)
+            Site.objects.get_current().name,
+            _('Category: %s') % obj['obj'].name)
 
 class AuthorVideosFeed(BaseVideosFeed):
     def get_object(self, request, pk):
