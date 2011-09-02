@@ -389,6 +389,7 @@ class SearchVideosFeed(BaseVideosFeed):
         return u"%s: %s" % (
             Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
 
+
 class PlaylistVideosFeed(BaseVideosFeed):
     def get_object(self, request, pk):
         obj = BaseVideosFeed.get_object(self, request, pk)
@@ -421,14 +422,3 @@ class PlaylistVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name,
             _('Playlist: %s') % obj['obj'].name)
-
-
-new = NewVideosFeed()
-featured = FeaturedVideosFeed()
-popular = PopularVideosFeed()
-category = CategoryVideosFeed()
-author = AuthorVideosFeed()
-tag = TagVideosFeed()
-search = SearchVideosFeed()
-playlist = PlaylistVideosFeed()
-feed = FeedVideosFeed()
