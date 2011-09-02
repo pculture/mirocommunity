@@ -38,6 +38,7 @@ from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
+from localtv.search.util import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
 
 
@@ -46,10 +47,12 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 LOCALTV_FEED_LENGTH = 30
 
 
-class BaseVideosFeed(Feed):
+class BaseVideosFeed(Feed, SortFilterViewMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
+    default_sort = None
+    default_filter = None
 
     def __init__(self, json=False):
         if json:
@@ -119,16 +122,18 @@ class BaseVideosFeed(Feed):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        items = self._actual_items(obj)
+        sqs = self._query(self._get_query(obj['request']))
+        sqs = self._sort(sqs, self._get_sort(obj['request']))
+        search_filter = self._get_filter(obj['request'])
+        if search_filter and 'obj' in obj:
+            sqs, xxx = self._filter(sqs, search_filter, filter_obj=obj['obj'])
 
         opensearch = self._get_opensearch_data(obj)
         start = opensearch['startindex']
         end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(items)
-        items = items[start:end]
-        if isinstance(items, SearchQuerySet):
-            return [result.object for result in items]
-        return items
+        opensearch['totalresults'] = len(sqs)
+        sqs.load_all()[start:end]
+        return [result.object for result in sqs]
 
     def _get_opensearch_data(self, obj):
         """
@@ -249,7 +254,10 @@ class BaseVideosFeed(Feed):
         else:
             return ""
 
+
 class NewVideosFeed(BaseVideosFeed):
+    default_sort = '-date'
+
     def link(self):
         return reverse('localtv_list_new')
 
@@ -257,11 +265,10 @@ class NewVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name, _('New Videos'))
 
-    def _actual_items(self, obj):
-        return Video.objects.get_latest_videos()
-
 
 class FeaturedVideosFeed(BaseVideosFeed):
+    default_sort = '-featured'
+
     def link(self):
         return reverse('localtv_list_featured')
 
@@ -269,15 +276,12 @@ class FeaturedVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name, _('Featured Videos'))
 
-    def _actual_items(self, obj):
-        return Video.objects.get_featured_videos()
 
 class PopularVideosFeed(BaseVideosFeed):
+    default_sort = '-popular'
+
     def link(self):
         return reverse('localtv_list_popular')
-
-    def _actual_items(self, obj):
-        return Video.objects.get_popular_videos()
 
     def title(self):
         return "%s: %s" % (
@@ -285,6 +289,9 @@ class PopularVideosFeed(BaseVideosFeed):
 
 
 class CategoryVideosFeed(BaseVideosFeed):
+    default_filter = 'category'
+    default_sort = '-date'
+
     def get_object(self, request, slug):
         obj = BaseVideosFeed.get_object(self, request, slug)
         obj['obj'] = Category.objects.get(
@@ -294,14 +301,17 @@ class CategoryVideosFeed(BaseVideosFeed):
     def link(self, obj):
         return obj['obj'].get_absolute_url()
 
-    def _actual_items(self, obj):
-        return Video.objects.get_category_videos(obj['obj'])
-
     def title(self, obj):
         return "%s: %s" % (
-            obj['site'].name, _('Category: %s') % obj['obj'].name)
+            Site.objects.get_current().name,
+            _('Category: %s') % obj['obj'].name
+        )
+
 
 class AuthorVideosFeed(BaseVideosFeed):
+    default_filter = 'author'
+    default_sort = '-date'
+
     def get_object(self, request, pk):
         obj = BaseVideosFeed.get_object(self, request, pk)
         obj['obj'] = User.objects.get(pk=pk)
@@ -309,9 +319,6 @@ class AuthorVideosFeed(BaseVideosFeed):
 
     def link(self, obj):
         return reverse('localtv_author', args=[obj['obj'].pk])
-
-    def _actual_items(self, obj):
-        return Video.objects.get_author_videos(obj['obj'])
 
     def title(self, obj):
         name_or_username = obj['obj'].get_full_name()
@@ -322,6 +329,7 @@ class AuthorVideosFeed(BaseVideosFeed):
             Site.objects.get_current().name,
             _('Author: %s') % name_or_username)
 
+
 class FeedVideosFeed(BaseVideosFeed):
     # This class can be a bit confusing:
     #
@@ -330,6 +338,9 @@ class FeedVideosFeed(BaseVideosFeed):
     #
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
+    default_filter = 'feed'
+    default_sort = '-date'
+
     def get_object(self, request, pk):
         obj = BaseVideosFeed.get_object(self, request, pk)
         obj['obj'] = Feed.objects.get(pk=pk)
@@ -338,15 +349,16 @@ class FeedVideosFeed(BaseVideosFeed):
     def link(self, obj):
         return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
-    def _actual_items(self, obj):
-        return Video.objects.get_latest_videos().filter(feed=obj['obj'])
-
     def title(self, obj):
         return "%s: Videos imported from %s" % (
             Site.objects.get_current().name,
             obj['obj'].name or '')
 
+
 class TagVideosFeed(BaseVideosFeed):
+    default_filter = 'tag'
+    default_sort = '-date'
+
     def get_object(self, request, name):
         obj = BaseVideosFeed.get_object(self, request, name)
         obj['obj'] = Tag.objects.get(name=name)
@@ -355,12 +367,10 @@ class TagVideosFeed(BaseVideosFeed):
     def link(self, obj):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
 
-    def _actual_items(self, obj):
-        return Video.objects.get_tag_videos(obj['obj'])
-
     def title(self, obj):
         return "%s: %s" % (
             Site.objects.get_current().name, _('Tag: %s') % obj['obj'].name)
+
 
 class SearchVideosFeed(BaseVideosFeed):
     def get_object(self, request, query):
@@ -375,19 +385,6 @@ class SearchVideosFeed(BaseVideosFeed):
             kwargs['sort'] = 'latest'
         return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
-    def _actual_items(self, obj):
-        form = VideoSearchForm({'q': obj['obj']})
-        if not form.is_valid():
-            raise Http404
-        results = form.search()
-        sort = obj['request'].GET.get('sort', None)
-        if sort == 'latest':
-            videos = Video.objects.get_latest_videos().filter(
-                pk__in=[result.pk for result in results if result])
-            return videos
-
-        return results
-
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
@@ -401,17 +398,30 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def link(self, obj):
         return obj['obj'].get_absolute_url()
 
-    def _actual_items(self, obj):
-        videos = obj['obj'].video_set.all()
-        sort = obj['request'].GET.get('sort', None)
-        if sort != 'order':
-            videos = videos.order_by('-playlistitem___order')
-        return videos
+    def items(self, obj):
+        """
+        This feed is unusual enough that we actually need to override
+        :meth:`items`.
+
+        """
+        sort = self._get_sort(obj['request'])
+        if sort == 'order':
+            # TODO: This probably breaks if a video is in multiple playlists.
+            # Check.
+            videos = obj['obj'].video_set.order_by('-playlistitem___order')
+            opensearch = self._get_opensearch_data(obj)
+            start= opensearch['startindex']
+            end = start + opensearch['itemsperpage']
+            opensearch['totalresults'] = len(videos)
+            videos = videos[start:end]
+            return videos
+        return BaseVideosFeed.items(self, obj)
 
     def title(self, obj):
         return "%s: %s" % (
             Site.objects.get_current().name,
             _('Playlist: %s') % obj['obj'].name)
+
 
 new = NewVideosFeed()
 featured = FeaturedVideosFeed()

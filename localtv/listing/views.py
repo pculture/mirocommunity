@@ -20,6 +20,7 @@ import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, Page
 from django.http import Http404
 from django.views.generic import ListView
 from django.conf import settings
@@ -28,19 +29,44 @@ from voting.models import Vote
 import localtv.settings
 from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
-from localtv.search.util import SortFilterMixin
+from localtv.search.util import SortFilterViewMixin
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class VideoSearchView(ListView, SortFilterMixin):
+class VideoSearchPaginator(Paginator):
+    """
+    Custom paginator class allows us to only load the model data for the
+    instances which will actually be on the page, rather than for the entire
+    :class:`SearchQuerySet`.
+
+    """
+    def page(self, number):
+        """
+        Correctly slices a searchqueryset to load and return a list of model
+        instances rather than results. :meth:`SearchQuerySet.load_all` should be
+        called on the searchqueryset before pagination to minimize the number
+        of database queries.
+
+        """
+        number = self.validate_number(number)
+        start = (number - 1) * self.per_page
+        end = start + self.per_page
+        if end + self.orphans >= self.count:
+            top = self.count
+        object_list = [result.object for result in self.object_list[start:end]]
+        return Page(object_list, number, self)
+
+
+class VideoSearchView(ListView, SortFilterViewMixin):
     """
     Generic view for videos; implements pagination, filtering and searching.
 
     """
     paginate_by = VIDEOS_PER_PAGE
+    paginator_class = VideoSearchPaginator
     form_class = VideoSearchForm
     context_object_name = 'video_list'
 
@@ -64,40 +90,32 @@ class VideoSearchView(ListView, SortFilterMixin):
             paginate_by = self.paginate_by
         return paginate_by
 
-    def _get_query(self):
+    def _get_query(self, request):
         """Fetches the query for the current request."""
         # Support old-style templates that used "query". Remove in 2.0.
-        key = 'q' if 'q' in self.request.GET else 'query'
-        return self.request.GET.get(key, "")
-
-    def _get_sort(self):
-        """Fetches the sort for the current request."""
-        return self.request.GET.get('sort', self.default_sort)
-
-    def _get_filter(self):
-        """Fetches the filter for the current request."""
-        return self.request.GET.get('filter', self.default_filter)
+        key = 'q' if 'q' in request.GET else 'query'
+        return request.GET.get(key, "")
 
     def get_queryset(self):
         """
         Returns a list based on the results of a haystack search.
 
         """
-        sqs = self._query(self._get_query())
-        sqs = self._sort(sqs, self._get_sort())
+        sqs = self._query(self._get_query(self.request))
+        sqs = self._sort(sqs, self._get_sort(self.request))
         try:
-            sqs, self._filter_obj = self._filter(sqs, self._get_filter(),
-                                **self.kwargs)
+            sqs, self._filter_obj = self._filter(sqs,
+                        self._get_filter(self.request), **self.kwargs)
         except ObjectDoesNotExist:
             raise Http404
         if self.approved_since is not None:
             sqs = sqs.filter(when_approved__gt=(
                         datetime.datetime.now() - self.approved_since))
-        sqs.load_all()
-        
-        # For now, make it a simple list. Might need to support some
-        # queryset methods later.
-        return [result.object for result in sqs]
+
+        # :meth:`SearchQuerySet.load_all` sets the queryset up to load all, but
+        # doesn't actually perform any loading; this will only happen when the
+        # cache is filled.
+        return sqs.load_all()
 
     def get_context_data(self, **kwargs):
         """
@@ -111,12 +129,12 @@ class VideoSearchView(ListView, SortFilterMixin):
 
         """
         context = ListView.get_context_data(self, **kwargs)
-        form = self._make_search_form(self._get_query())
+        form = self._make_search_form(self._get_query(self.request))
         context['form'] = form
         form.is_valid()
         context['query'] = form.cleaned_data['q']
 
-        sort, desc = self._process_sort(self._get_sort())
+        sort, desc = self._process_sort(self._get_sort(self.request))
         sort_links = {}
 
         for s in self.sorts:
@@ -133,7 +151,7 @@ class VideoSearchView(ListView, SortFilterMixin):
         context['sort_links'] = sort_links
 
         if self._filter_obj is not None:
-            context[self._get_filter()] = self._filter_obj
+            context[self._get_filter(self.request)] = self._filter_obj
 
         return context
 

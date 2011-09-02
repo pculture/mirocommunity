@@ -54,8 +54,6 @@ class SortFilterMixin(object):
         'playlist': {'model': Playlist, 'fields': ['playlists']},
         'feed': {'model': Feed, 'fields': ['feed']},
     }
-    #: Default filter to use. Should be one of the keys from ``filters``.
-    search_filter = None
 
     def _process_sort(self, sort):
         """
@@ -125,3 +123,25 @@ class SortFilterMixin(object):
             searchqueryset = searchqueryset.filter(sq)
 
         return searchqueryset, new_filter_obj
+
+
+class SortFilterViewMixin(SortFilterMixin):
+    """
+    Views can define default sorts and filters which can be overridden by GET
+    parameters.
+
+    """
+    default_sort = None
+    default_filter = None
+
+    def _get_query(self, request):
+        """Fetches the query for the current request."""
+        return request.GET.get('q', "")
+
+    def _get_sort(self, request):
+        """Fetches the sort for the current request."""
+        return request.GET.get('sort', self.default_sort)
+
+    def _get_filter(self, request):
+        """Fetches the filter for the current request."""
+        return request.GET.get('filter', self.default_filter)
