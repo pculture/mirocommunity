@@ -412,13 +412,3 @@ class PlaylistVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name,
             _('Playlist: %s') % obj['obj'].name)
-
-new = NewVideosFeed()
-featured = FeaturedVideosFeed()
-popular = PopularVideosFeed()
-category = CategoryVideosFeed()
-author = AuthorVideosFeed()
-tag = TagVideosFeed()
-search = SearchVideosFeed()
-playlist = PlaylistVideosFeed()
-feed = FeedVideosFeed()
