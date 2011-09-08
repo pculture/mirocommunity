@@ -1,5 +1,5 @@
 {{ object.name }}
-{{ object.description }}
+{{ object.description|striptags }}
 {% for tag in object.tags %}{{ tag }}
 {% endfor %}
 {% for cat in object.categories.all %}{{ cat.name }}
