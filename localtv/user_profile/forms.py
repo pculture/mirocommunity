@@ -105,6 +105,8 @@ class NotificationsForm(forms.Form):
     CHOICES = (
         ('video_approved', 'A video you submitted was approved'),
         ('video_comment', 'Someone left a comment on your video'),
+        ('comment_post_comment',
+         'Someone left a comment on a video you commented on'),
         ('newsletter', 'Receive an occasional newsletter'),
         )
     ADMIN_CHOICES = (
