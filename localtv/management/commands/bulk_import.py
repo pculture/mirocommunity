@@ -25,7 +25,7 @@ import eventlet.pools
 
 import httplib
 
-from django.db import transaction
+from django.db import transaction, close_connection
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import simplejson
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
@@ -35,6 +35,18 @@ import localtv.util
 import localtv.tasks
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
+
+MAX_TRIES_FOR_BULK_IMPORT = 8
+
+def try_a_few_times(func, count=MAX_TRIES_FOR_BULK_IMPORT):
+    def wrapper(*args, **kwargs):
+        for i in range(count):
+            try:
+                return func(*args, **kwargs)
+            except Exception, e:
+                logging.exception('%s(%s, %s) fell down', func, args, kwargs)
+        raise e
+    return wrapper
 
 def function_for_fork_worker(data_tuple):
     video_id, future_status = data_tuple
@@ -46,9 +58,8 @@ def function_for_fork_worker(data_tuple):
         logging.warn("For some reason, we failed to find the model with ID %d" % (
                 video_id, ))
         return False # Aww, shucks. Maybe after a retry this will work.
-    except Exception, e:
-        logging.warn("uh, bizarre -- the task fell over. Maybe it will work on a retry.")
-        logging.exception(e)
+    except Exception:
+        logging.exception("uh, bizarre -- the task fell over. Maybe it will work on a retry.")
         return False
     return True
 
@@ -89,33 +100,19 @@ class Command(BaseCommand):
         # Okay, good, we either got the feed_url list, or we passed the work
         # off the old-style function. Proceed.
         self.forked_tasks = {}
-        self.forked_task_worker_pool =  multiprocessing.Pool(processes=8)
+        # close the database connection when we start a new process; otherwise,
+        # MySQL falls over because we corrupt the connection
+        self.forked_task_worker_pool =  multiprocessing.Pool(processes=8,
+                                                             initializer=close_connection)
         # start 8 worker processes. That should be fine, right?
         self.bulk_import_asynchronously(parsed_feed, h, feed_urls, feed)
         self.enqueue_forked_tasks_for_thumbnail_fetches(feed)
 
     @transaction.commit_manually
+    @try_a_few_times
     def bulk_import_asynchronously(self, original_parsed_feed, h, feed_urls, feed):
         # This asynchronous bulk_import is a parallelism monster.
 
-        # Also, for some reason, this monster causes MySQL to frequently just
-        # disconnect us with an error like:
-        # OperationalError: (2013, 'Lost connection to MySQL server during query')
-        # so we set this flag called keep_going to True, and repeat the body of this code
-        # for up to 8 tries, if that's how long it takes.
-        MAX_TRIES_FOR_BULK_IMPORT = 8
-        num_tries_so_far = 0
-        while num_tries_so_far < MAX_TRIES_FOR_BULK_IMPORT:
-            try:
-                result = self._bulk_import_asynchronously_for_real(original_parsed_feed, h, feed_urls, feed)
-                return result
-            except Exception, e:
-                logging.warn("oh, sad, the bulk import fell over. Maybe it will work on a retry.")
-                logging.exception(e)
-                num_tries_so_far += 1
-
-    @transaction.commit_manually
-    def _bulk_import_asynchronously_for_real(self, original_parsed_feed, h, feed_urls, feed):
         # We do as much network I/O as we can using eventlet,
         # rather than threads or subprocesses.
         httplib2 = eventlet.import_patched('httplib2')
@@ -154,7 +151,12 @@ class Command(BaseCommand):
             parsed_feed = feedparser.parse(feed_contents)
             # For each feed entry in this small sub-feed, handle the item.
             for index, entry in enumerate(parsed_feed['entries'][::-1]):
-                yield handle_one_item(index, parsed_feed, entry)
+                try:
+                    yield handle_one_item(index, parsed_feed, entry)
+                except Exception:
+                    logging.warn('error handling %s', entry.get('link',
+                                                                '[NO URL]'))
+                    raise
 
         def handle_one_item(index, parsed_feed, entry):
             i = feed._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=self.verbose, clear_rejected=False,

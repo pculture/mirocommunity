@@ -119,6 +119,15 @@ class AutoQueryTestCase(BaseTestCase):
         for result in results:
             self.assertTrue('blender' in result.text.lower(), result.text)
 
+    def test_search_description_with_html(self):
+        """
+        If the description contains HTML, searching should still find words
+        next to HTML tags.
+        """
+        self._rebuild_index()
+        results = search.auto_query('blahblah')
+        self.assertTrue(results)
+
     def test_search_phrase(self):
         """
         Phrases in quotes should be searched for as a phrase.
