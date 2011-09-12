@@ -122,12 +122,10 @@ class FilteredVideoListNode(BaseVideoListNode):
     field_name = None
 
     def _filter(self, searchqueryset, search_filter, context):
-        search_filter = self.filters.get(search_filter, None)
-        if search_filter is not None:
-            context = kwargs.pop('context', {})
+        filter_dict = self.filters.get(search_filter, None)
+        if filter_dict is not None:
             item = self.item.resolve(context)
-
-            model_class = search_filter['model']
+            model_class = filter_dict['model']
             super_filter = curry(super(FilteredVideoListNode, self)._filter,
                                     searchqueryset, search_filter)
             if isinstance(item, model_class):

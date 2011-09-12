@@ -20,6 +20,7 @@ from django.utils.encoding import force_unicode
 from haystack import indexes
 from haystack import site
 from localtv.models import Video
+from localtv.search.util import SortFilterMixin
 
 
 class VideoIndex(indexes.SearchIndex):
@@ -41,8 +42,10 @@ class VideoIndex(indexes.SearchIndex):
     best_date = indexes.DateTimeField(model_attr='when')
     #: watch_count is set during :meth:`~VideoIndex.index_queryset`.
     watch_count = indexes.IntegerField(model_attr='watch_count')
-    last_featured = indexes.DateTimeField(model_attr='last_featured', null=True)
-    when_approved = indexes.DateTimeField(model_attr='when_approved', null=True)
+    last_featured = indexes.DateTimeField(model_attr='last_featured',
+                            default=SortFilterMixin._empty_value['featured'])
+    when_approved = indexes.DateTimeField(model_attr='when_approved',
+                            default=SortFilterMixin._empty_value['approved'])
 
     def index_queryset(self):
         """

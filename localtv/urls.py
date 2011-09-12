@@ -34,6 +34,10 @@ urlpatterns = patterns(
     url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'))
 
 # Listing patterns
+category_videos = CategoryVideoSearchView.as_view(
+    template_name='localtv/category.html',
+    default_filter='category'
+)
 urlpatterns += patterns(
     'localtv.listing.views',
     url(r'^search/$', VideoSearchView.as_view(
@@ -41,13 +45,11 @@ urlpatterns += patterns(
                     ), name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
                         template_name='localtv/categories.html',
-                        model=Category,
+                        queryset=Category.objects.filter(parent=None),
                         paginate_by=15
                     ), name='localtv_category_index'),
-    url(r'^category/(?P<slug>[-\w]+)$', CategoryVideoSearchView.as_view(
-                        template_name='localtv/category.html',
-                        default_filter='category'
-                    ), name='localtv_category'),
+    url(r'^category/(?P<slug>[-\w]+)$', category_videos,
+                    name='localtv_category'),
     url(r'^author/$', ListView.as_view(
                         template_name='localtv/author_list.html',
                         model=User,
@@ -55,7 +57,8 @@ urlpatterns += patterns(
                     ), name='localtv_author_index'),
     url(r'^author/(?P<pk>\d+)$', VideoSearchView.as_view(
                         template_name='localtv/author.html',
-                        default_filter='author'
+                        default_filter='author',
+                        default_sort='-date'
                     ), name='localtv_author'))
 
 # Comments patterns

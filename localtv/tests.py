@@ -27,11 +27,12 @@ import feedparser
 import vidscraper
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.comments import get_model, get_form, get_form_target
 Comment = get_model()
 CommentForm = get_form()
 
+from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
@@ -39,12 +40,13 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpRequest
 from django.test import TestCase
-from django.test.client import Client
+from django.test.client import Client, RequestFactory
 
 from haystack.query import SearchQuerySet
 
 import localtv.settings
 import localtv.templatetags.filters
+from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
 from localtv.models import Watch, Category, SiteLocation, Video, TierInfo, Feed, OriginalVideo, SavedSearch
 from localtv import util
@@ -55,7 +57,18 @@ import localtv.feeds.views
 from notification import models as notification
 from tagging.models import Tag
 
+
 Profile = util.get_profile_model()
+
+
+class FakeRequestFactory(RequestFactory):
+    """Constructs requests with any necessary attributes set."""
+    def request(self, **request):
+        request = super(FakeRequestFactory, self).request(**request)
+        request.user = AnonymousUser()
+        UserIsAdminMiddleware().process_request(request)
+        return request
+
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
@@ -78,6 +91,7 @@ class BaseTestCase(TestCase):
         self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
+        self._rebuild_index()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -85,6 +99,7 @@ class BaseTestCase(TestCase):
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
         mail.outbox = [] # reset any email at the start of the suite
+        self.factory = FakeRequestFactory()
 
     def _switch_into_tier(self):
         # By default, tests run on an 'max' account.
@@ -109,18 +124,6 @@ class BaseTestCase(TestCase):
                 os.path.dirname(__file__),
                 'testdata',
                 filename))
-
-    def assertIsInstance(self, obj, klass, msg=None):
-        """
-        Assert that the given object is an instance of the given class.
-
-        @param obj: the object we are testing
-        @param klass: the klass the object should be an instance of
-        """
-        self.assertTrue(isinstance(obj, klass),
-                        msg if msg is not None else
-                        "%r is not an instance of %r; %s instead" % (
-                obj, klass, type(obj)))
 
     def assertStatusCodeEquals(self, response, status_code):
         """
@@ -159,6 +162,14 @@ class BaseTestCase(TestCase):
                           ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
+
+    def _rebuild_index(self):
+        """
+        Rebuilds the search index.
+        """
+        from haystack import site
+        index = site.get_index(Video)
+        index.reindex()
 
 
 # -----------------------------------------------------------------------------
@@ -591,14 +602,6 @@ class ViewTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'videos',
                                         'watched']
 
-    def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import site
-        index = site.get_index(Video)
-        index.reindex()
-
     def test_index(self):
         """
         The index view should render the 'localtv/index.html'.  The context
@@ -754,6 +757,7 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [2]
         video.save()
+        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url())
@@ -772,6 +776,7 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [1, 2]
         video.save()
+        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url(),
@@ -808,7 +813,6 @@ class ViewTestCase(BaseTestCase):
         videos.  It should render the
         'localtv/video_listing_search.html' template.
         """
-        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
                          {'q': 'blender'}) # lots of Blender videos in the test
@@ -823,7 +827,6 @@ class ViewTestCase(BaseTestCase):
         """
         Phrases in quotes should be searched for as a phrase.
         """
-        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
                          {'q': '"making of elephants"'})
@@ -869,7 +872,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
-
         self._rebuild_index()
 
         c = Client()
@@ -898,7 +900,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [1, 2] # Miro, Linux
         video.save()
-
         self._rebuild_index()
 
         c = Client()
@@ -930,7 +931,6 @@ class ViewTestCase(BaseTestCase):
         video.user.last_name = 'lastname'
         video.user.save()
         video.save()
-
         self._rebuild_index()
 
         c = Client()
@@ -959,7 +959,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
-
         self._rebuild_index()
 
         c = Client()
@@ -978,8 +977,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         # feed is miropcf
 
-        self._rebuild_index()
-
         c = Client()
         response = c.get(reverse('localtv_search'),
                          {'q': 'miropcf'})
@@ -993,7 +990,6 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should exclude terms that start with - (hyphen).
         """
-        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
                          {'q': '-blender'})
@@ -1005,7 +1001,6 @@ class ViewTestCase(BaseTestCase):
         """
         The video_search view should handle Unicode strings.
         """
-        self._rebuild_index()
         c = Client()
         response = c.get(reverse('localtv_search'),
                          {'q': u'espa\xf1a'})
@@ -1025,9 +1020,10 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/categories.html')
-        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(Category.objects.filter(parent=None)))
+                          list(Category.objects.filter(parent=None,
+                               site=Site.objects.get_current())))
 
     def test_category(self):
         """
@@ -1111,7 +1107,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_new.html')
-        self.assertEquals(response.context['pages'], 2)
+        self.assertEquals(response.context['paginator'].num_pages, 2)
         self.assertEquals(len(response.context['page_obj'].object_list), 15)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_latest_videos(
@@ -1132,7 +1128,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_popular.html')
-        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_popular_videos(
@@ -1151,12 +1147,11 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_featured.html')
-        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 2)
         self.assertEquals(list(response.context['page_obj'].object_list),
-                          list(Video.objects.filter(
-                    last_featured__isnull=False,
-                    status=Video.ACTIVE)))
+                          list(Video.objects.active().filter(
+                               last_featured__isnull=False)))
 
     def test_tag_videos(self):
         """
@@ -1167,6 +1162,7 @@ class ListingViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1'
         video.save()
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_list_tag',
@@ -1174,7 +1170,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_tag.html')
-        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           [video])
@@ -1193,7 +1189,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_feed.html')
-        self.assertEquals(response.context['pages'], 1)
+        self.assertEquals(response.context['paginator'].num_pages, 1)
         self.assertEquals(len(response.context['page_obj'].object_list), 1)
         self.assertEquals(list(response.context['page_obj'].object_list),
                           list(feed.video_set.filter(
@@ -2173,31 +2169,27 @@ class FeedViewTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
     def test_feed_views_respect_count_when_set(self):
-        fake_request = mock.Mock()
-        fake_request.GET = {'count': '10'}
+        fake_request = self.factory.get('?count=10')
         feed = localtv.feeds.views.NewVideosFeed(json=False)
         obj = feed.get_object(fake_request)
         self.assertEqual(10, len(feed.items(obj)))
 
     def test_feed_views_ignore_count_when_nonsense(self):
-        fake_request = mock.Mock()
-        fake_request.GET = {'count': 'nonsense'}
+        fake_request = self.factory.get('?count=nonsense')
         feed = localtv.feeds.views.NewVideosFeed(json=False)
         obj = feed.get_object(fake_request)
         # 23, because that's the number of videos in the fixture
         self.assertEqual(23, len(feed.items(obj)))
 
     def test_feed_views_ignore_count_when_empty(self):
-        fake_request = mock.Mock()
+        fake_request = self.factory.get('')
         feed = localtv.feeds.views.NewVideosFeed(json=False)
         obj = feed.get_object(fake_request)
         # 23, because that's the number of videos in the fixture
         self.assertEqual(23, len(feed.items(obj)))
 
     def test_category_feed_renders_at_all(self):
-        fake_request = mock.Mock()
-        fake_request.GET = {'count': '10'}
-        fake_request.META = {}
+        fake_request = self.factory.get('?count=10')
         view = localtv.feeds.views.CategoryVideosFeed()
         response = view(fake_request, 'linux')
         self.assertEqual(200, response.status_code)
@@ -2212,11 +2204,10 @@ class FeedViewTestCase(BaseTestCase):
             vid.categories.add(linux_category)
             vid.status = Video.ACTIVE
             vid.save()
+        self._rebuild_index()
 
         # Do a GET for the first 2 in the feed
-        fake_request = mock.Mock()
-        fake_request.GET = {'count': '2'}
-        fake_request.META = {}
+        fake_request = self.factory.get('?count=2')
         view = localtv.feeds.views.CategoryVideosFeed()
         response = view(fake_request, 'linux')
         self.assertEqual(200, response.status_code)
@@ -2225,9 +2216,7 @@ class FeedViewTestCase(BaseTestCase):
         self.assertEqual(2, len(items_from_first_GET))
 
         # Do a GET for the next "2" (just 1 left)
-        fake_request = mock.Mock()
-        fake_request.GET = {'count': '2', 'start-index': '2'}
-        fake_request.META = {}
+        fake_request = self.factory.get('?count=2&start-index=2')
         view = localtv.feeds.views.CategoryVideosFeed()
         response = view(fake_request, 'linux')
         self.assertEqual(200, response.status_code)

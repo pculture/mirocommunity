@@ -136,7 +136,7 @@ class BaseVideosFeed(Feed, SortFilterViewMixin):
         start = opensearch['startindex']
         end = start + opensearch['itemsperpage']
         opensearch['totalresults'] = len(sqs)
-        sqs.load_all()[start:end]
+        sqs = sqs.load_all()[start:end]
         return [result.object for result in sqs]
 
     def _get_opensearch_data(self, obj):

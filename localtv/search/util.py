@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
@@ -43,6 +45,14 @@ class SortFilterMixin(object):
 
         # deprecated
         'latest': 'best_date'
+    }
+
+    #: Defines which items should be excluded when using a given sort. This is a
+    #: hack necessitated by lack of __isnull searching in haystack.
+    _empty_value = {
+        'featured': datetime.min,
+        'approved': datetime.min,
+        'popular': 0
     }
 
     #: Defines the available filtering options and the indexes that they
@@ -86,6 +96,9 @@ class SortFilterMixin(object):
         sort, desc = self._process_sort(sort)
         order_by = self.sorts.get(sort, None)
         if order_by is not None:
+            if sort in self._empty_value:
+                searchqueryset = searchqueryset.exclude(
+                                    **{order_by: self._empty_value[sort]})
             searchqueryset = searchqueryset.order_by(
                             ''.join(('-' if desc else '', order_by)))
         return searchqueryset
@@ -111,14 +124,14 @@ class SortFilterMixin(object):
 
         """
         new_filter_obj = None
-        search_filter = self.filters.get(search_filter, None)
-        if search_filter is not None:
+        filter_dict = self.filters.get(search_filter, None)
+        if filter_dict is not None:
             new_filter_obj = (
                 filter_obj or
-                self._get_filter_obj(search_filter['model'], **kwargs)
+                self._get_filter_obj(filter_dict['model'], **kwargs)
             )
             sq = SQ()
-            for field in search_filter['fields']:
+            for field in filter_dict['fields']:
                 sq |= SQ(**{field: new_filter_obj.pk})
             searchqueryset = searchqueryset.filter(sq)
 
