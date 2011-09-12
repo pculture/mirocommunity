@@ -89,6 +89,11 @@ margin: 0 auto;
       {% endwith %}
     {% endif %}
     </div>
+    {% if current_video.watch_count %}
+        <div class="views">
+            {{ current_video.watch_count }}
+        </div>
+    {% endif %}
     <div class="video_wrapper">
         {% if current_video.embed_code %}
         {{ current_video.embed_code|wmode_transparent }}
