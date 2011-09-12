@@ -14,15 +14,32 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.contrib.sites.models import Site
+
 from haystack import forms
-from localtv import models
-from localtv import search
+from localtv.models import Video
+from localtv.search.query import SmartSearchQuerySet
 
-class VideoSearchForm(forms.SearchForm):
 
+class SmartSearchForm(forms.SearchForm):
+    def __init__(self, *args, **kwargs):
+        sqs = kwargs.get('searchqueryset', None)
+        if sqs is None:
+            kwargs['searchqueryset'] = SmartSearchQuerySet()
+        super(SmartSearchForm, self).__init__(*args, **kwargs)
+
+    def no_query_found(self):
+        return self.searchqueryset.all()
+
+
+class VideoSearchForm(SmartSearchForm):
     def search(self):
-        self.clean()
-        sqs = self.searchqueryset.models(models.Video)
-        sqs = search.auto_query(self.cleaned_data['q'], sqs)
+        """
+        Adjusts the searchqueryset to return only videos associated with the
+        current site before performing the search.
 
-        return sqs
+        """
+        site = Site.objects.get_current()
+        self.searchqueryset = self.searchqueryset.models(
+                        Video).filter(site=site.pk)
+        return super(VideoSearchForm, self).search()

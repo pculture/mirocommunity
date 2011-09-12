@@ -99,11 +99,11 @@ def view_video(request, video_id, slug=None):
                 except Resolver404:
                     pass
                 else:
-                    from localtv.listing.views import category_videos
+                    from localtv.urls import category_videos
                     if view == category_videos:
                         try:
                             category_obj = Category.objects.get(
-                                slug=args[0],
+                                slug=kwargs['slug'],
                                 site=sitelocation.site)
                         except Category.DoesNotExist:
                             pass

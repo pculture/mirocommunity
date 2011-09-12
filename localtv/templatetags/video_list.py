@@ -14,29 +14,33 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django import template
-from django.contrib.auth.models import User
-from django.db.models import Q
+from django.utils.functional import curry
 
-from tagging.models import Tag
-
-from localtv.models import Video, Category, SiteLocation
+from localtv.search.forms import VideoSearchForm
+from localtv.search.util import SortFilterMixin
 
 
 register = template.Library()
 
 
-class BaseVideoListNode(template.Node):
+class BaseVideoListNode(template.Node, SortFilterMixin):
     """
     Base helper class (abstract) for handling the get_video_list_* template
     tags.  Based heavily on the template tags for django.contrib.comments.
-    
-    """
 
+    Syntax::
+
+        {% get_video_list_FOO as <varname> %}
+        {% get_video_list_for_FOO <foo_instance> as <varname> %}
+
+    """
+    form_class = VideoSearchForm
     takes_argument = False # if True, takes an argument (tag/category/user
                            # lists)
+
+    sort = None
+    search_filter = None
 
     @classmethod
     def handle_token(cls, parser, token):
@@ -71,103 +75,99 @@ class BaseVideoListNode(template.Node):
         self.as_varname = as_varname
 
     def render(self, context):
-        context[self.as_varname] = self.get_query_set(context)
+        context[self.as_varname] = self.get_video_list(context)
         return ''
 
-    def get_query_set(self, context):
-        raise NotImplementedError
+    def get_video_list(self, context):
+        sqs = self._query("")
+        sqs = self._sort(sqs, self.sort)
+        if self.search_filter is not None:
+            sqs, filter_obj = self._filter(sqs, self.search_filter, context)
+        sqs.load_all()
+        return [result.object for result in sqs]
 
 
 class NewVideoListNode(BaseVideoListNode):
     """
     Insert a list of new videos into the context.
-    
+
     """
-    def get_query_set(self, context):
-        return Video.objects.get_latest_videos()
+    sort = '-date'
 
 
 class PopularVideoListNode(BaseVideoListNode):
     """
     Insert a list of popular videos into the context.
-    
+
     """
-    def get_query_set(self, context):
-        return Video.objects.get_popular_videos()
+    sort = '-popular'
 
 
 class FeaturedVideoListNode(BaseVideoListNode):
     """
     Insert a list of featured videos into the context.
-    
+
     """
-    def get_query_set(self, context):
-        return Video.objects.get_featured_videos()
+    sort = '-featured'
 
 
-class CategoryVideoListNode(BaseVideoListNode):
+class FilteredVideoListNode(BaseVideoListNode):
     """
-    Insert a list of videos for the given category into the context. Does not
-    include videos that belong to that category's descendants.
-    
+    Base class for filtered video lists.
+
     """
     takes_argument = True
+    #: The name of the field which should be queried to fetch the instance
+    #: to use in filtering if the passed-in value is a string.
+    field_name = None
 
-    def get_query_set(self, context):
-        category = self.item.resolve(context)
-        request = context['request']
-        if isinstance(category, basestring):
-            try:
-                category = Category.objects.get(
-                    slug=category,
-                    site=SiteLocation.objects.get_current().site
-                )
-            except Category.DoesNotExist:
-                return Video.objects.none()
-        elif not isinstance(category, Category):
-            return Video.objects.none()
-        return Video.objects.get_latest_videos().filter(
-            categories=category
-        ).distinct().order_by('-best_date')
+    def _filter(self, searchqueryset, search_filter, context):
+        filter_dict = self.filters.get(search_filter, None)
+        if filter_dict is not None:
+            item = self.item.resolve(context)
+            model_class = filter_dict['model']
+            super_filter = curry(super(FilteredVideoListNode, self)._filter,
+                                    searchqueryset, search_filter)
+            if isinstance(item, model_class):
+                return super_filter(filter_obj=item)
+            elif isinstance(item, basestring):
+                try:
+                    return super_filter(**{self.field_name: item})
+                except model_class.DoesNotExist:
+                    pass
+            searchqueryset = searchqueryset.none()
+        return searchqueryset, None
+
+
+class CategoryVideoListNode(FilteredVideoListNode):
+    """
+    Insert a list of videos for the given category into the context.
+
+    """
+    takes_argument = True
+    search_filter = 'category'
+    field_name = 'slug'
+    sort = '-date'
 
 
 class TagVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given tag into the context.
-    
+
     """
     takes_argument = True
-
-    def get_query_set(self, context):
-        request = context['request']
-        tag = self.item.resove(context)
-        if isinstance(tag, basestring):
-            try:
-                tag = Tag.objects.get(name=tag)
-            except Tag.DoesNotExist:
-                return Video.objects.none()
-        elif not isinstance(tag, Tag):
-            return Video.objects.none()
-        return Video.objects.get_tag_videos(tag)
+    search_filter = 'tag'
+    field_name = 'name'
 
 
 class UserVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given user into the context.
+
     """
     takes_argument = True
-
-    def get_query_set(self, context):
-        request = context['request']
-        author = self.item.resolve(context)
-        if isinstance(author, basestring):
-            try:
-                author = User.objects.get(username=self.item)
-            except User.DoesNotExist:
-                return Video.objects.none()
-        elif not isinstance(author, User):
-            return Video.objects.none()
-        return Video.objects.get_author_videos(author)
+    search_filter = 'author'
+    field_name = 'username'
 
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)
