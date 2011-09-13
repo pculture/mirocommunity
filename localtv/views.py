@@ -18,9 +18,10 @@
 import datetime
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import (Http404, HttpResponsePermanentRedirect,
                          HttpResponseRedirect, HttpResponse)
 from django.shortcuts import render_to_response, get_object_or_404
@@ -44,7 +45,7 @@ def index(request):
 
     sitelocation_videos = Video.objects.get_sitelocation_videos()
     recent_comments = comments.get_model().objects.filter(
-        site=SiteLocation.objects.get_current().site,
+        site=Site.objects.get_current(),
         content_type=ContentType.objects.get_for_model(Video),
         object_pk__in=sitelocation_videos.values_list('pk', flat=True),
         is_removed=False,
@@ -67,8 +68,9 @@ def about(request):
 
 @vary_on_headers('User-Agent', 'Referer')
 def view_video(request, video_id, slug=None):
-    video = get_object_or_404(Video, pk=video_id,
-                              site=SiteLocation.objects.get_current().site)
+    video_qs = Video.objects.annotate(watch_count=Count('watch'))
+    video = get_object_or_404(video_qs, pk=video_id,
+                              site=Site.objects.get_current())
 
     if not video.is_active() and not request.user_is_admin():
         raise Http404
