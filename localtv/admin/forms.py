@@ -514,7 +514,7 @@ class EditSettingsForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if (not localtv.models.SiteLocation.objects.get_current().enforce_tiers()
+        if (not models.SiteLocation.enforce_tiers()
             or localtv.tiers.Tier.get().permit_custom_css()):
             pass # Sweet, CSS is permitted.
         else:
@@ -538,7 +538,7 @@ class EditSettingsForm(forms.ModelForm):
         css = self.cleaned_data.get('css')
         # Does thes SiteLocation permit CSS modifications? If so,
         # return the data the user inputted.
-        if (not localtv.models.SiteLocation.objects.get_current().enforce_tiers() or
+        if (not models.SiteLocation.enforce_tiers() or
             localtv.tiers.Tier.get().permit_custom_css()):
             return css # no questions asked
 
@@ -940,7 +940,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
             self.fields['role'].help_text = message
 
     def clean_role(self):
-        if localtv.models.SiteLocation.objects.get_current().enforce_tiers():
+        if models.SiteLocation.enforce_tiers():
             future_role = self.cleaned_data['role']
 
             looks_good = self._validate_role_with_tiers_enforcement(
@@ -951,7 +951,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
                     permitted_admins,
                     django.template.defaultfilters.pluralize(permitted_admins)))
 
-            return self.cleaned_data['role']
+        return self.cleaned_data['role']
 
     def _validate_role_with_tiers_enforcement(self, future_role):
         # If the user tried to create an admin, but the tier does not
