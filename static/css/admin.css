@@ -386,13 +386,12 @@ background: url(../images/admin_sprites.png) left -374px no-repeat;
 	margin-left: 10px;
 	margin-bottom: 25px;
 	padding-right: 18px;
-	background: url(../images/admin_sprites.png) right -185px no-repeat;	
+	background: url(../images/admin_sprites.png) right -185px no-repeat;
 }
 
 
 
 button.approve_button{
-background: url(../images/admin_sprites.png) right -183px no-repeat;
 padding-right: 14px;
 border: 0;
 cursor: pointer;
