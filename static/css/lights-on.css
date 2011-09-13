@@ -343,19 +343,6 @@ color: #666;
 padding-top: 5px;
 }
 
-.views {
-    float:right;
-    clear:right;
-    color:#666;
-    margin-bottom:15px;
-}
-
-.views span{
-    color:#444;
-    font-size:1.5em;
-    line-height:.66em;
-}
-
 .byline {
     clear: left;
     float: left;
