@@ -18,10 +18,10 @@ from django import forms
 from django.contrib.auth.models import User
 from django.utils.encoding import force_unicode
 
-from localtv import models, util
+from localtv import models, utils
 from notification import models as notification
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class ProfileForm(forms.ModelForm):
     name = forms.CharField(max_length=61, required=False)

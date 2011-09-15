@@ -30,7 +30,7 @@ from django.conf import settings
 from tagging.forms import TagField
 
 from localtv import models
-from localtv.util import (quote_unicode_url, get_profile_model,
+from localtv.utils import (quote_unicode_url, get_profile_model,
                           get_or_create_tags)
 from localtv.templatetags.filters import sanitize
 

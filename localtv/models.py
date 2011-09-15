@@ -67,7 +67,7 @@ from notification import models as notification
 import tagging
 
 from localtv.templatetags.filters import sanitize
-from localtv import util
+from localtv import utils
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -184,7 +184,7 @@ class Thumbnailable(models.Model):
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
         if resized_images is None:
-            resized_images = localtv.util.resize_image_returning_list_of_content_files(
+            resized_images = localtv.utils.resize_image_returning_list_of_content_files(
                 thumb, self.THUMB_SIZES)
         for ( (width, height), cf_image) in resized_images:
             # write file, deleting old thumb if it exists
@@ -867,9 +867,9 @@ class Feed(Source, StatusedThumbnailable):
         if parsed_feed is None:
             for feed_url in self._get_feed_urls():
                 individual_parsed_feeds = []
-                data = util.http_get(feed_url)
+                data = utils.http_get(feed_url)
                 individual_parsed_feeds.append(feedparser.parse(data))
-            parsed_feed = vidscraper.bulk_import.util.join_feeds(
+            parsed_feed = vidscraper.bulk_import.utils.join_feeds(
                 individual_parsed_feeds)
 
         for index, entry in enumerate(parsed_feed['entries'][::-1]):
@@ -1005,7 +1005,7 @@ class Feed(Source, StatusedThumbnailable):
                     if created:
                         author.set_unusable_password()
                         author.save()
-                        util.get_profile_model().objects.create(
+                        utils.get_profile_model().objects.create(
                             user=author,
                             website=scraped_data.get('user_url'))
                     authors = [author]
@@ -1083,7 +1083,7 @@ class Feed(Source, StatusedThumbnailable):
                         if tag.get('term'))
 
             if tags:
-                video.tags = util.get_or_create_tags(tags)
+                video.tags = utils.get_or_create_tags(tags)
 
         video.categories = self.auto_categories.all()
         video.authors = authors
@@ -1280,15 +1280,15 @@ class SavedSearch(Source):
         return self.query_string
 
     def update_items(self, verbose=False):
-        from localtv.admin import util as admin_util
+        from localtv.admin import utils as admin_utils
         raw_results = vidscraper.metasearch.intersperse_results(
-            admin_util.metasearch_from_querystring(
+            admin_utils.metasearch_from_querystring(
                 self.query_string))
 
-        raw_results = [admin_util.MetasearchVideo.create_from_vidscraper_dict(
+        raw_results = [admin_utils.MetasearchVideo.create_from_vidscraper_dict(
                 result) for result in raw_results]
 
-        raw_results = admin_util.strip_existing_metasearchvideos(
+        raw_results = admin_utils.strip_existing_metasearchvideos(
             [result for result in raw_results if result is not None],
             self.site)
 
@@ -1313,7 +1313,7 @@ class SavedSearch(Source):
                 if created:
                     author.set_unusable_password()
                     author.save()
-                    util.get_profile_model().objects.create(
+                    utils.get_profile_model().objects.create(
                         user=author,
                         website=video.video_service_url)
                 video.authors = [author]
@@ -1394,13 +1394,13 @@ class OriginalVideo(VideoBase):
                     # failed to get tags, so don't send a spurious change
                     # message
                     continue
-                new = util.unicode_set(scraped_data['tags'])
+                new = utils.unicode_set(scraped_data['tags'])
                 if getattr(settings, 'FORCE_LOWERCASE_TAGS'):
-                    new = util.unicode_set(name.lower() for name in new)
-                old = util.unicode_set(self.tags)
+                    new = utils.unicode_set(name.lower() for name in new)
+                old = utils.unicode_set(self.tags)
                 if new != old:
                     changed_fields[field] = new
-            elif util.normalize_newlines(scraped_data[field]) != util.normalize_newlines(getattr(self, field)):
+            elif utils.normalize_newlines(scraped_data[field]) != utils.normalize_newlines(getattr(self, field)):
                 changed_fields[field] = scraped_data[field]
             elif field == 'thumbnail_url':
                 right_now = datetime.datetime.utcnow()
@@ -1463,7 +1463,7 @@ class OriginalVideo(VideoBase):
 
         # If we get here, then the remote server thinks that the file is fresh.
         # We should check its SHA1 hash against the one we have stored.
-        new_sha1 = util.hash_file_obj(response)
+        new_sha1 = utils.hash_file_obj(response)
 
         if new_sha1 == self.remote_thumbnail_hash:
             # FIXME: Somehow alert downstream layers that it is safe to update
@@ -1476,7 +1476,7 @@ class OriginalVideo(VideoBase):
 
     def send_deleted_notification(self):
         if self.remote_video_was_deleted == OriginalVideo.VIDEO_DELETE_PENDING:
-            from localtv.util import send_notice
+            from localtv.utils import send_notice
             t = loader.get_template('localtv/admin/video_deleted.txt')
             c = Context({'video': self.video})
             subject = '[%s] Video Deleted: "%s"' % (
@@ -1494,7 +1494,7 @@ class OriginalVideo(VideoBase):
         self.save()
 
     def update(self, override_vidscraper_result = None):
-        from localtv.util import get_or_create_tags
+        from localtv.utils import get_or_create_tags
 
         changed_fields = self.changed_fields(override_vidscraper_result)
         if not changed_fields:
@@ -1547,7 +1547,7 @@ class OriginalVideo(VideoBase):
         self.send_updated_notification(changed_fields, original_values)
 
     def send_updated_notification(self, changed_fields, originals_for_changed_fields):
-        from localtv.util import send_notice, get_or_create_tags
+        from localtv.utils import send_notice, get_or_create_tags
 
         # Create a custom hodge-podge of changed fields and the original values
         hodge_podge = {}
@@ -1808,7 +1808,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         if not self.file_url:
             return
 
-        request = urllib2.Request(util.quote_unicode_url(self.file_url))
+        request = urllib2.Request(utils.quote_unicode_url(self.file_url))
         request.get_method = lambda: 'HEAD'
         try:
             http_file = urllib2.urlopen(request)
@@ -1833,7 +1833,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
         try:
             content_thumb = ContentFile(urllib.urlopen(
-                    util.quote_unicode_url(self.thumbnail_url)).read())
+                    utils.quote_unicode_url(self.thumbnail_url)).read())
         except IOError:
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         except httplib.InvalidURL:
@@ -1983,7 +1983,7 @@ class VideoModerator(CommentModerator):
     def email(self, comment, video, request):
         # we do the import in the function because otherwise there's a circular
         # dependency
-        from localtv.util import send_notice
+        from localtv.utils import send_notice
 
         sitelocation = SiteLocation.objects.get(site=video.site)
         t = loader.get_template('comments/comment_notification_email.txt')
@@ -2075,7 +2075,7 @@ def send_new_video_email(sender, **kwargs):
     message = t.render(c)
     subject = '[%s] New Video in Review Queue: %s' % (sender.site.name,
                                                           sender)
-    util.send_notice('admin_new_submission',
+    utils.send_notice('admin_new_submission',
                      subject, message,
                      sitelocation=sitelocation)
 
@@ -2273,7 +2273,7 @@ def update_stamp(name, override_date=None, delete_stamp=False):
         return
 
     try:
-        util.touch(path, override_date=override_date)
+        utils.touch(path, override_date=override_date)
     except Exception, e:
         logging.error(e)
 

@@ -136,7 +136,7 @@ class PlaylistItem(models.Model):
 def send_notification(sender, instance, raw, created, **kwargs):
     if instance.status == Playlist.WAITING_FOR_MODERATION:
         from localtv.models import SiteLocation
-        from localtv.util import send_notice
+        from localtv.utils import send_notice
 
         sitelocation = SiteLocation.objects.get_current()
         t = loader.get_template('localtv/playlists/notification_email.txt')

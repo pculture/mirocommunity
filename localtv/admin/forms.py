@@ -44,13 +44,13 @@ from tagging.utils import edit_string_for_tags
 
 import localtv.settings
 from localtv import models
-from localtv import util
+from localtv import utils
 import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
 import vidscraper.sites.blip
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class BulkFormSetMixin(object):
     """
@@ -393,10 +393,10 @@ class BulkEditVideoForm(EditVideoForm):
 
         # Great. Fill the cache.
         if 'categories_qs' not in cache:
-            cache_for_form_optimization['categories_qs'] = util.MockQueryset(
+            cache_for_form_optimization['categories_qs'] = utils.MockQueryset(
                 models.Category.objects.filter(site=Site.objects.get_current()))
         if 'authors_qs' not in cache_for_form_optimization:
-            cache_for_form_optimization['authors_qs'] = util.MockQueryset(
+            cache_for_form_optimization['authors_qs'] = utils.MockQueryset(
                 User.objects.order_by('username'))
 
         return cache_for_form_optimization

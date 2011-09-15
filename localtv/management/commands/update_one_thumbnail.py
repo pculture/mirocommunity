@@ -18,7 +18,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 
 from localtv import models
-import localtv.util
+import localtv.utils
 
 class Command(BaseCommand):
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         thumbnail_data = None
         if video.thumbnail_url:
             try:
-                thumbnail_data = localtv.util.pull_downloaded_file_from_cache(video.thumbnail_url)
+                thumbnail_data = localtv.utils.pull_downloaded_file_from_cache(video.thumbnail_url)
             except IOError:
                 pass # Aw well, we can't have nice things.
 

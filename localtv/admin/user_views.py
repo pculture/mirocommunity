@@ -26,7 +26,7 @@ from django.core.paginator import Paginator, EmptyPage
 
 from localtv.decorators import require_site_admin
 from localtv.admin import forms
-from localtv.util import SortHeaders
+from localtv.utils import SortHeaders
 
 def _filter_just_humans():
     filters = ~(Q(password=UNUSABLE_PASSWORD) | Q(password=''))

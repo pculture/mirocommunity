@@ -38,7 +38,7 @@ from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
 from localtv.search.forms import VideoSearchForm
-from localtv.search.util import SortFilterViewMixin
+from localtv.search.utils import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
 
 

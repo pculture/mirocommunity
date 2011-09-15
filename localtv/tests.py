@@ -49,7 +49,7 @@ import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
 from localtv.models import Watch, Category, SiteLocation, Video, TierInfo, Feed, OriginalVideo, SavedSearch
-from localtv import util
+from localtv import utils
 import localtv.feeds.views
 from localtv import tiers
 import localtv.feeds.views
@@ -58,7 +58,7 @@ from notification import models as notification
 from tagging.models import Tag
 
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 
 class FakeRequestFactory(RequestFactory):
@@ -1818,13 +1818,13 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         dos_style = 'hello\r\nthere'
         unix_style = 'hello\nthere'
         self.assertEqual(
-            util.normalize_newlines(dos_style),
-            util.normalize_newlines(unix_style))
+            utils.normalize_newlines(dos_style),
+            utils.normalize_newlines(unix_style))
 
     def test_normalize_newlines_weird_input(self):
-        self.assert_(util.normalize_newlines(None)
+        self.assert_(utils.normalize_newlines(None)
                      is None)
-        self.assert_(util.normalize_newlines(True) is True)
+        self.assert_(utils.normalize_newlines(True) is True)
 
     def test_no_changes(self):
         """

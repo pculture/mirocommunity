@@ -30,11 +30,11 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv import util
+from localtv import utils
 from localtv.decorators import request_passes_test
 from localtv.models import SiteLocation, Video, submit_finished
 from localtv.submit_video import forms
-from localtv.submit_video.util import is_video_url
+from localtv.submit_video.utils import is_video_url
 
 url_re = URLValidator.regex
 
@@ -130,7 +130,7 @@ def submit_video(request):
                          'video': video},
                         context_instance=RequestContext(request))
 
-            scraped_data = util.get_scraped_data(
+            scraped_data = utils.get_scraped_data(
                 submit_form.cleaned_data['url'])
 
             get_dict = {'url': submit_form.cleaned_data['url']}
@@ -192,7 +192,7 @@ def scraped_submit_video(request):
                 url_re.match(request.REQUEST['url'])):
         return HttpResponseRedirect(reverse('localtv_submit_video'))
 
-    scraped_data = util.get_scraped_data(request.REQUEST['url'])
+    scraped_data = utils.get_scraped_data(request.REQUEST['url'])
 
     url = scraped_data.get('link', request.REQUEST['url'])
     sitelocation = SiteLocation.objects.get_current()
@@ -242,7 +242,7 @@ def embedrequest_submit_video(request):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
-    scraped_data = util.get_scraped_data(request.REQUEST['url']) or {}
+    scraped_data = utils.get_scraped_data(request.REQUEST['url']) or {}
     initial = {
         'url': url,
         'name': scraped_data.get('title', ''),

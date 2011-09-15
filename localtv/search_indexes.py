@@ -20,7 +20,7 @@ from django.utils.encoding import force_unicode
 from haystack import indexes
 from haystack import site
 from localtv.models import Video
-from localtv.search.util import SortFilterMixin
+from localtv.search.utils import SortFilterMixin
 
 
 class VideoIndex(indexes.SearchIndex):

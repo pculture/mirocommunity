@@ -29,7 +29,7 @@ from django.views.decorators.csrf import csrf_protect
 from localtv.decorators import require_site_admin
 from localtv.models import Video, Category, SiteLocation
 from localtv.admin import forms
-from localtv.util import SortHeaders
+from localtv.utils import SortHeaders
 
 try:
     from operator import methodcaller

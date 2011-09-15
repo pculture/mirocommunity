@@ -21,7 +21,7 @@ from django.core.management.base import NoArgsCommand
 from django.template import Context, loader
 
 from localtv import models
-from localtv import util
+from localtv import utils
 
 class Command(NoArgsCommand):
 
@@ -54,6 +54,6 @@ class Command(NoArgsCommand):
                          'time_period': time_period,
                          'site': sitelocation.site})
             message = t.render(c)
-            util.send_notice(notice_type,
+            utils.send_notice(notice_type,
                              subject, message,
                              sitelocation=sitelocation)

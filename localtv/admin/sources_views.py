@@ -28,7 +28,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
 from localtv.models import SiteLocation, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
-from localtv.util import SortHeaders, MockQueryset
+from localtv.utils import SortHeaders, MockQueryset
 from localtv.admin import forms
 
 VIDEO_SERVICE_TITLES = (

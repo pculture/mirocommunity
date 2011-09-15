@@ -29,7 +29,7 @@ from voting.models import Vote
 import localtv.settings
 from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
-from localtv.search.util import SortFilterViewMixin
+from localtv.search.utils import SortFilterViewMixin
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)

@@ -22,7 +22,7 @@ import vidscraper
 from localtv import models
 from localtv.templatetags.filters import sanitize
 
-from localtv.util import get_scraped_data, get_or_create_tags
+from localtv.utils import get_scraped_data, get_or_create_tags
 
 ## ----------------
 ## Metasearch utils

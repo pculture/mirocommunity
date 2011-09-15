@@ -37,14 +37,14 @@ from tagging.utils import edit_string_for_tags
 from uploadtemplate.models import Theme
 import vidscraper
 
-from localtv import util
-from localtv.admin.util import MetasearchVideo
+from localtv import utils
+from localtv.admin.utils import MetasearchVideo
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
 from localtv.models import Feed, Video, SavedSearch, Category, SiteLocation, TierInfo
 from localtv.tests import BaseTestCase
 import localtv.tiers
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class AdministrationBaseTestCase(BaseTestCase):
 

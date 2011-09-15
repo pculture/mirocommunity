@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_protect
 import localtv.settings
 from localtv.decorators import require_site_admin
 from localtv.models import Category, Video, SiteLocation
-from localtv.util import MockQueryset
+from localtv.utils import MockQueryset
 from localtv.admin import forms
 
 @require_site_admin

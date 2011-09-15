@@ -18,7 +18,7 @@ from django import template
 from django.utils.functional import curry
 
 from localtv.search.forms import VideoSearchForm
-from localtv.search.util import SortFilterMixin
+from localtv.search.utils import SortFilterMixin
 
 
 register = template.Library()

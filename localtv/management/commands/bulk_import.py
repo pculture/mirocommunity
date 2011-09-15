@@ -31,7 +31,7 @@ from django.utils import simplejson
 from vidscraper.bulk_import import bulk_import_url_list, bulk_import
 
 from localtv import models
-import localtv.util
+import localtv.utils
 import localtv.tasks
 
 DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
@@ -87,7 +87,7 @@ class Command(BaseCommand):
         # This permits us to download it only once, passing a parsed_feed through
         # to the vidscraper functions.
         h = httplib2.Http(DEFAULT_HTTPLIB_CACHE_PATH)
-        content = localtv.util.http_get(feed.feed_url, _httplib2=httplib2)
+        content = localtv.utils.http_get(feed.feed_url, _httplib2=httplib2)
 
         parsed_feed = feedparser.parse(content)
 
@@ -139,7 +139,7 @@ class Command(BaseCommand):
             with httppool.item() as http:
                 if self.verbose:
                     print 'getting thumb', url
-                localtv.util.cache_downloaded_file(url, http)
+                localtv.utils.cache_downloaded_file(url, http)
 
         stats = {
             'total': 0,

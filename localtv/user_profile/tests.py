@@ -30,9 +30,9 @@ from notification import models as notification
 
 from localtv.tests import BaseTestCase
 from localtv.user_profile import forms
-from localtv import util
+from localtv import utils
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class ProfileFormTestCase(TestCase):
 

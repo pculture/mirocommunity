@@ -36,14 +36,14 @@ import celery
 from importlib import import_module
 
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv import tasks, util
+from localtv import tasks, utils
 from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
 
 from vidscraper import bulk_import
 from vidscraper.utils.feedparser import get_item_thumbnail_url
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
@@ -108,7 +108,7 @@ def add_feed(request):
                 try:
                     thumbnail_file = ContentFile(
                         urllib2.urlopen(
-                            util.quote_unicode_url(thumbnail_url)).read())
+                            utils.quote_unicode_url(thumbnail_url)).read())
                 except IOError: # couldn't get the thumbnail
                     pass
                 else:

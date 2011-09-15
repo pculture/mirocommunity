@@ -25,13 +25,13 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from vidscraper import metasearch
 
-from localtv import util
+from localtv import utils
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv.models import SiteLocation, Video, SavedSearch
-from localtv.admin.util import MetasearchVideo, metasearch_from_querystring, \
+from localtv.admin.utils import MetasearchVideo, metasearch_from_querystring, \
     strip_existing_metasearchvideos
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 ## ----------
 ## Utils
