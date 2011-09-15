@@ -60,7 +60,9 @@ from django.utils.translation import ugettext_lazy as _
 import bitly
 import feedparser
 import vidscraper
-import vidscraper.bulk_import.util
+import vidscraper.bulk_import.utils
+from vidscraper.utils.feedparser import get_entry_thumbnail_url, \
+                                        get_first_accepted_enclosure
 from notification import models as notification
 import tagging
 
@@ -931,13 +933,13 @@ class Feed(Source, StatusedThumbnailable):
             video_data['when_published'] = datetime.datetime(
                 *entry.updated_parsed[:6])
 
-        thumbnail_url = util.get_thumbnail_url(entry) or ''
+        thumbnail_url = get_entry_thumbnail_url(entry) or ''
         if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
             thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
                                              thumbnail_url)
         video_data['thumbnail_url'] = thumbnail_url
 
-        video_enclosure = util.get_first_video_enclosure(entry)
+        video_enclosure = get_first_accepted_enclosure(entry)
         if video_enclosure:
             file_url = video_enclosure.get('url')
             if file_url:

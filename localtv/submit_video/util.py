@@ -18,7 +18,7 @@
 import httplib
 import urlparse
 
-from localtv.util import is_video_type, is_video_filename
+from vidscraper.utils.mimetypes import is_accepted_type, is_accepted_filename
 
 def is_video_url(url):
     """
@@ -26,9 +26,9 @@ def is_video_url(url):
 
     1) It checks the extension to see if it's in VIDEO_EXTENSIONS
     2) It performs an HTTP HEAD request and checks the MIME type with
-       is_video_type()
+       is_accepted_type()
     """
-    if is_video_filename(url):
+    if is_accepted_filename(url):
         return True
 
     parsed = urlparse.urlparse(url)
@@ -42,4 +42,4 @@ def is_video_url(url):
     response = conn.getresponse()
 
     mimetype = response.getheader('Content-Type', '')
-    return is_video_type(mimetype)
+    return is_accepted_type(mimetype)
