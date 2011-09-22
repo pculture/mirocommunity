@@ -1,8 +1,8 @@
 -e git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/djvideo@master#egg=djvideo-0.0.1-py2.6-dev
 -e git+git://github.com/pculture/vidscraper.git@master#egg=vidscraper-0.0.1-py2.6-dev
--e git+http://git.participatoryculture.org/django-email-share/@5ba2d02a6c44d3cb16c579911f72cf150bd1df6e#egg=django_email_share-0.0.1-py2.6-dev
--e git+http://git.participatoryculture.org/django-uploadtemplate@db144765894f10f0211b4deb16f9f3f948a5e173#egg=django_uploadtemplate-0.0.1-py2.6-dev
+-e git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share-0.0.1-py2.6-dev
+-e git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_uploadtemplate-0.0.1-py2.6-dev
 BeautifulSoup==3.2.0
 Django>=1.2.1,<1.3
 PIL>=1.1.6
@@ -21,7 +21,7 @@ django-tagging==0.3
 django-haystack>=1.1
 # whoosh or another Haystack backend
 celery==1.0.0
--e git+http://git.participatoryculture.org/python-bitly@8cd21ba16601f587c607738e80b18a3e1a378c65#egg=python_bitly-trunk-py2.6-dev
+-e git+http://git.participatoryculture.org/python-bitly@master#egg=python_bitly-trunk-py2.6-dev
 oauth2==1.2.0
 -e hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration
 -e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
@@ -38,6 +38,6 @@ ipython
 MySQL-Python
 johnny-cache
 xapian-haystack
--e git+http://git.pculture.org/localtv-mainsite#egg=localtv-mainsite
+-e git+http://git.pculture.org/localtv-mainsite@master#egg=localtv-mainsite
 -e hg+https://bitbucket.org/paulswartz/django-storages#egg=django-storages
 django-voting
