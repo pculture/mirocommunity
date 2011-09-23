@@ -29,7 +29,7 @@ class Command(NoArgsCommand):
         if site_too_old():
             return
         for original in models.OriginalVideo.objects.exclude(
-            video__status=models.FEED_STATUS_REJECTED):
+            video__status=models.Feed.REJECTED):
             try:
                 original.update()
             except vidscraper.errors.CantIdentifyUrl, e:

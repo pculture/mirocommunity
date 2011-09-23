@@ -224,7 +224,7 @@ class Command(BaseCommand):
             # Finish marking the Feed as imported.
             feed._mark_bulk_import_as_done(original_parsed_feed)
 
-            feed.status = models.FEED_STATUS_ACTIVE
+            feed.status = models.Feed.ACTIVE
             feed.save()
             return_me = [i['video'].id for i in results if i['video']]
         except:
@@ -300,6 +300,6 @@ class Command(BaseCommand):
                 else:
                     stats['skipped'] += 1
         finally:
-            feed.status = models.FEED_STATUS_ACTIVE
+            feed.status = models.Feed.ACTIVE
             feed.save()
         print simplejson.dumps(stats),

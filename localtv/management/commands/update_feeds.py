@@ -33,11 +33,11 @@ class Command(NoArgsCommand):
         hour = datetime.timedelta(hours=1)
         models.Feed.objects.filter(
             when_submitted__lte=datetime.datetime.now()-hour,
-            status=models.FEED_STATUS_UNAPPROVED).update(
-            status=models.FEED_STATUS_ACTIVE)
+            status=models.Feed.UNAPPROVED).update(
+            status=models.Feed.ACTIVE)
 
         for feed in models.Feed.objects.filter(
-            status=models.FEED_STATUS_ACTIVE):
+            status=models.Feed.ACTIVE):
             try:
                 feed.update_items()
             except:

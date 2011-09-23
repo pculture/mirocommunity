@@ -103,7 +103,10 @@ def add_feed(request):
             for key, value in form.cleaned_data.items():
                 setattr(feed, key, value)
 
-            thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
+            try:
+                thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
+            except KeyError:
+                thumbnail_url = None
             if thumbnail_url:
                 try:
                     thumbnail_file = ContentFile(
