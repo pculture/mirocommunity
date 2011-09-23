@@ -45,33 +45,25 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
     @classmethod
     def handle_token(cls, parser, token):
         """Class method to parse get_video_list_* and return a Node."""
-        tokens = token.split_contents()
-        argument_count = int(cls.takes_argument) + 3
-        if len(tokens) != argument_count:
+        bits = token.split_contents()
+        tag_name = bits[0]
+        bits = bits[1:]
+        argument_count = int(cls.takes_argument) + 2
+        if len(bits) != argument_count:
             raise template.TemplateSyntaxError(
-                "%r tag requires %i arguments" % (tokens[0], argument_count))
-        if not cls.takes_argument:
-            # {% get_whatever as varname %}
-            if tokens[1] != 'as':
-                raise template.TemplateSyntaxError(
-                    "Second argument in %r tag must be 'as'" % tokens[0])
-            return cls(as_varname=tokens[2])
-        else:
-            if tokens[2] != 'as':
-                raise template.TemplateSyntaxError(
-                    "Third argument in %r tag must be 'as'" % tokens[0])
-            return cls(item=tokens[1], as_varname=tokens[3])
+                "%r tag requires %i arguments" % (tag_name, argument_count))
+        item = None
+        if cls.takes_argument:
+            item = parser.compile_filter(bits[1])
+            bits = bits[1:]
+        if bits[0] != 'as':
+            raise template.TemplateSyntaxError(
+                    "%s argument in %r tag must be 'as'" % (
+                        "Third" if cls.takes_argument else "Second", tag_name))
+        return cls(item=item, as_varname=bits[1])
 
     def __init__(self, item=None, as_varname=None):
-        if item is not None:
-            if item.startswith('"') and item.endswith('"'):
-                self.item = item[1:-1]
-            elif item.startswith("'") and item.endswith("'"):
-                self.item = item[1:-1]
-            else:
-                self.item = template.Variable(item)
-        else:
-            self.item = item
+        self.item = item
         self.as_varname = as_varname
 
     def render(self, context):
