@@ -28,8 +28,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
 {% if sitelocation.site.widgetsettings.css and not sitelocation.site.widgetsettings.css_editable %}
-<link rel="stylesheet" href="{{ sitelocation.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="/css/widget.css">{% endif %}
-<script src="/js/widget.js"></script>
+<link rel="stylesheet" href="{{ sitelocation.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{{ STATIC_URL }}localtv/css/widget.css">{% endif %}
+<script src="{{ STATIC_URL }}localtv/js/widget.js"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
 function full_url(path) {

@@ -27,8 +27,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% include "localtv/admin/dirty_form.html" %}
 {% endblock %}
 {% block extrahead %}
-<link rel="stylesheet" type="text/css" href="/css/admin/signup.css" />
-<link rel="stylesheet" type="text/css" href="/css/admin/upgrade.css" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/signup.css" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/upgrade.css" />
 {% endblock extrahead %}
 
 {% block body_id %}tier{% endblock %}

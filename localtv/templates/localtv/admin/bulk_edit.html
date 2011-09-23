@@ -26,8 +26,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% block subtitle %}{% trans "Admin - Bulk Edit" %}{% endblock %}{% endblock %}
 {% block head %}{{ block.super }}
-  <script type="text/javascript" src="/js/admin/inline_edit.js?version={{ mc_version }}"></script>
-  <script type="text/javascript" src="/js/admin/bulk_edit.js?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/inline_edit.js?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/bulk_edit.js?version={{ mc_version }}"></script>
 {% endblock %}
 {% block content %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
