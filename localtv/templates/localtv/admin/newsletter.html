@@ -16,7 +16,7 @@
   <body style="margin: 0; padding: 0;" bgcolor="#e7e7e7">
     <div style="width: 730px; margin: 25px auto;">
       {% if not preview %}<p style="text-align: center; margin: 0 0 10px 0; font-size: 12px; color: #777;">Having trouble viewing this email? <a href="http://{{ site.domain }}{% url localtv_newsletter %}">View it online</a></p>{% endif %}
-      <div id="header" style="width: 729px; height: 108px; margin: 0 0 0 2px; border: 1px #bebebe solid; background-color: #FFF;">
+      <div id="header" style="width: 729px; height: 138px; margin: 0 0 0 2px; border: 1px #bebebe solid; background-color: #FFF;">
         <table style="padding: 12px 0 0 20px;">
           <tr>
             {% if newsletter.show_icon and sitelocation.logo %}
@@ -24,7 +24,7 @@
               <img src="{% if sitelocation.logo %}{% get_thumbnail_url absolute sitelocation 130 110 %}{% else %}{% get_static_url "/images/logo.gif" %}{% endif %}" alt="Logo for {{ site.name }}" />
             </td>
             {% endif %}
-            <td style="width: 475px; padding: 0 0 0 15px;">
+            <td style="width: 450px; padding: 0 0 0 15px;">
               <h1 style="color: #444; font-size: 24px; margin: 0; padding: 0;"><a href="http://{{ site.domain }}/">{{ site.name }}</a></h1>
               <h2 style="color: #555; font-size: 14px; margin: 0; padding: 0;">{{ sitelocation.tagline|truncatewords_html:"10" }}</h2>
             </td>
