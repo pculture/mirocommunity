@@ -377,8 +377,8 @@ class Tier(object):
         return self.permit_custom_template()
 
     def permit_newsletter(self):
-        special_cases = {'basic': False}
-        default = True
+        special_cases = {}
+        default = False
         return special_cases.get(self.tier_name, default)
 
     def dollar_cost(self):
