@@ -146,11 +146,12 @@ def add_feed_done(request, feed_id):
         manage_py = os.path.join(
             os.path.dirname(mod.__file__),
             'manage.py')
-        task = tasks.check_call.delay((
-                getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
-                manage_py,
-                'bulk_import',
-                feed_id))
+        task = tasks.check_call.delay(
+            (getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
+             manage_py,
+             'bulk_import',
+             feed_id),
+            env={'DJANGO_SETTINGS_MODULE': settings.SETTINGS_MODULE})
         if not task.ready():
             return HttpResponseRedirect('%s?task_id=%s' % (
                     request.path, task.task_id))
