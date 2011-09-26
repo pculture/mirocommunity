@@ -14,17 +14,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import subprocess
 from celery.decorators import task
 
 @task()
-def check_call(args):
+def check_call(args, env={}):
     args = [str(arg) for arg in args]
+    environ = os.environ.copy()
+    environ.update(env)
     process = subprocess.Popen(
         args,
         executable=args[0],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+        env=environ)
 
     stderr = []
     while process.poll() is None:
