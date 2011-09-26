@@ -48,10 +48,11 @@ class SortFilterMixin(object):
     }
 
     #: Defines which items should be excluded when using a given sort. This is a
-    #: hack necessitated by lack of __isnull searching in haystack.
+    #: hack necessitated by lack of __isnull searching in haystack. Max is used
+    #: because whoosh can't handle datetime values before 1900. Ick ick ick.
     _empty_value = {
-        'featured': datetime.min,
-        'approved': datetime.min,
+        'featured': datetime.max,
+        'approved': datetime.max,
         'popular': 0
     }
 
