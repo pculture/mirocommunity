@@ -40,3 +40,4 @@ xapian-haystack
 -e git+http://git.pculture.org/localtv-mainsite@master#egg=localtv-mainsite
 -e hg+https://bitbucket.org/paulswartz/django-storages#egg=django-storages
 django-voting
+eventlets
