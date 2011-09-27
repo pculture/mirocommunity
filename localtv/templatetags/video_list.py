@@ -55,7 +55,7 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
                 "%r tag requires %i arguments" % (tag_name, argument_count))
         item = None
         if cls.takes_argument:
-            item = parser.compile_filter(bits[1])
+            item = parser.compile_filter(bits[0])
             bits = bits[1:]
         if bits[0] != 'as':
             raise template.TemplateSyntaxError(
