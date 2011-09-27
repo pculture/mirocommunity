@@ -41,6 +41,7 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
 
     sort = None
     search_filter = None
+    field_name = None
 
     @classmethod
     def handle_token(cls, parser, token):
@@ -74,7 +75,16 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         sqs = self._query("")
         sqs = self._sort(sqs, self.sort)
         if self.search_filter is not None:
-            sqs, filter_obj = self._filter(sqs, self.search_filter, context)
+            filter_dict = self.filters.get(self.search_filter, None)
+            kwargs = {}
+            if filter_dict is not None:
+                item = self.item.resolve(context)
+                if isinstance(item, filter_dict['model']):
+                    kwargs['filter_objects'] = [item]
+                elif isinstance(item, basestring):
+                    kwargs[self.field_name] = item
+                sqs, filter_obj = self._filter(sqs, self.search_filter,
+                                   **kwargs)
         sqs.load_all()
         return [result.object for result in sqs]
 
@@ -103,35 +113,7 @@ class FeaturedVideoListNode(BaseVideoListNode):
     sort = '-featured'
 
 
-class FilteredVideoListNode(BaseVideoListNode):
-    """
-    Base class for filtered video lists.
-
-    """
-    takes_argument = True
-    #: The name of the field which should be queried to fetch the instance
-    #: to use in filtering if the passed-in value is a string.
-    field_name = None
-
-    def _filter(self, searchqueryset, search_filter, context):
-        filter_dict = self.filters.get(search_filter, None)
-        if filter_dict is not None:
-            item = self.item.resolve(context)
-            model_class = filter_dict['model']
-            super_filter = curry(super(FilteredVideoListNode, self)._filter,
-                                    searchqueryset, search_filter)
-            if isinstance(item, model_class):
-                return super_filter(filter_obj=item)
-            elif isinstance(item, basestring):
-                try:
-                    return super_filter(**{self.field_name: item})
-                except model_class.DoesNotExist:
-                    pass
-            searchqueryset = searchqueryset.none()
-        return searchqueryset, None
-
-
-class CategoryVideoListNode(FilteredVideoListNode):
+class CategoryVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given category into the context.
 
