@@ -48,14 +48,14 @@ urlpatterns += patterns(
                         queryset=Category.objects.filter(parent=None),
                         paginate_by=15
                     ), name='localtv_category_index'),
-    url(r'^category/(?P<slug>[-\w]+)$', category_videos,
+    url(r'^category/(?P<slug>[-\w]+)/$', category_videos,
                     name='localtv_category'),
     url(r'^author/$', ListView.as_view(
                         template_name='localtv/author_list.html',
                         model=User,
                         context_object_name='authors'
                     ), name='localtv_author_index'),
-    url(r'^author/(?P<pk>\d+)$', VideoSearchView.as_view(
+    url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
                         template_name='localtv/author.html',
                         default_filter='author',
                         default_sort='-date'
