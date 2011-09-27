@@ -48,10 +48,11 @@ class SortFilterMixin(object):
     }
 
     #: Defines which items should be excluded when using a given sort. This is a
-    #: hack necessitated by lack of __isnull searching in haystack.
+    #: hack necessitated by lack of __isnull searching in haystack. Max is used
+    #: because whoosh can't handle datetime values before 1900. Ick ick ick.
     _empty_value = {
-        'featured': datetime.min,
-        'approved': datetime.min,
+        'featured': datetime.max,
+        'approved': datetime.max,
         'popular': 0
     }
 
@@ -103,39 +104,46 @@ class SortFilterMixin(object):
                             ''.join(('-' if desc else '', order_by)))
         return searchqueryset
 
-    def _get_filter_obj(self, model_class, **kwargs):
+    def _get_filter_objects(self, model_class, **kwargs):
         try:
             model_class._meta.get_field_by_name('site')
         except FieldDoesNotExist:
             pass
         else:
             kwargs['site'] = Site.objects.get_current()
-        return model_class._default_manager.get(**kwargs)
+        return model_class._default_manager.filter(**kwargs)
 
-    def _filter(self, searchqueryset, search_filter, filter_obj=None, **kwargs):
+    def _filter(self, searchqueryset, search_filter, filter_objects=None, **kwargs):
         """
         Sets up the searchqueryset to use the specified filter and returns a
-        (``searchqueryset``, ``filter_obj``) tuple, where ``filter_obj`` is the
-        instance which is being filtered for. If a valid ``search_filter`` is
-        provided, but no ``filter_obj`` is found, an Http404 will be raised.
+        (``searchqueryset``, ``filter_objects``) tuple, where ``filter_objects``
+        is an iterable of model instances which are being filtered for. If a
+        valid ``search_filter`` is provided, but no ``filter_objects`` are
+        found, an Http404 will be raised.
 
-        If no valid ``search_filter`` is provided, the ``filter_obj`` returned
-        will always be None.
+        If no valid ``search_filter`` is provided, the ``filter_objects``
+        returned will always be an empty list.
 
         """
         new_filter_obj = None
         filter_dict = self.filters.get(search_filter, None)
         if filter_dict is not None:
-            new_filter_obj = (
-                filter_obj or
-                self._get_filter_obj(filter_dict['model'], **kwargs)
+            new_filter_objects = (
+                filter_objects or
+                self._get_filter_objects(filter_dict['model'], **kwargs)
             )
-            sq = SQ()
+            pks = [obj.pk for obj in new_filter_objects]
+            sq = None
+
             for field in filter_dict['fields']:
-                sq |= SQ(**{field: new_filter_obj.pk})
+                new_sq = SQ(**{"%s__in" % field: pks})
+                if sq is None:
+                    sq = new_sq
+                else:
+                    sq |= new_sq
             searchqueryset = searchqueryset.filter(sq)
 
-        return searchqueryset, new_filter_obj
+        return searchqueryset, new_filter_objects
 
 
 class SortFilterViewMixin(SortFilterMixin):
