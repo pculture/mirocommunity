@@ -125,7 +125,7 @@ class SortFilterMixin(object):
         returned will always be an empty list.
 
         """
-        new_filter_obj = None
+        new_filter_objects = None
         filter_dict = self.filters.get(search_filter, None)
         if filter_dict is not None:
             new_filter_objects = (
