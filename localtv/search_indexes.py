@@ -31,7 +31,7 @@ class VideoIndex(indexes.SearchIndex):
     authors = indexes.MultiValueField()
     playlists = indexes.MultiValueField()
 
-    def get_queryset(self):
+    def index_queryset(self):
         """
         Custom queryset to only search approved videos.
         """
