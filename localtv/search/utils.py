@@ -25,7 +25,7 @@ from tagging.models import Tag
 
 from localtv.models import Video, Feed, Category
 from localtv.playlists.models import Playlist
-from localtv.search.forms import SmartSearchForm
+from localtv.search.forms import SmartSearchForm, FilterForm
 
 
 class SortFilterMixin(object):
@@ -113,37 +113,45 @@ class SortFilterMixin(object):
             kwargs['site'] = Site.objects.get_current()
         return model_class._default_manager.filter(**kwargs)
 
-    def _filter(self, searchqueryset, search_filter, filter_objects=None, **kwargs):
+    def _filter(self, searchqueryset, **kwargs):
         """
-        Sets up the searchqueryset to use the specified filter and returns a
-        (``searchqueryset``, ``filter_objects``) tuple, where ``filter_objects``
-        is an iterable of model instances which are being filtered for. If a
-        valid ``search_filter`` is provided, but no ``filter_objects`` are
-        found, an Http404 will be raised.
+        Sets up the searchqueryset to use the specified filter(s) and returns a
+        (``searchqueryset``, ``clean_filter_dict``) tuple, where
+        ``clean_filter_dict`` is a dictionary mapping valid filter names to
+        iterables of model instances which are being filtered for.
 
-        If no valid ``search_filter`` is provided, the ``filter_objects``
-        returned will always be an empty list.
+        Any ``kwargs`` which are valid filter names are expected to be either an
+        iterable of filter objects or dictionaries to be passed as ``kwargs``
+        to :meth:`_get_filter_objects`.
 
         """
-        new_filter_objects = None
-        filter_dict = self.filters.get(search_filter, None)
-        if filter_dict is not None:
-            new_filter_objects = (
-                filter_objects or
-                self._get_filter_objects(filter_dict['model'], **kwargs)
-            )
-            pks = [obj.pk for obj in new_filter_objects]
-            sq = None
-
-            for field in filter_dict['fields']:
-                new_sq = SQ(**{"%s__in" % field: pks})
-                if sq is None:
-                    sq = new_sq
+        clean_filter_dict = {}
+        for filter_name, filter_objects in kwargs.iteritems():
+            filter_def = self.filters.get(filter_name, None)
+            if filter_def is not None:
+                if isinstance(filter_objects, dict):
+                    new_filter_objects = self._get_filter_objects(
+                            filter_def['model'], **filter_objects)
                 else:
-                    sq |= new_sq
-            searchqueryset = searchqueryset.filter(sq)
+                    try:
+                        new_filter_objects = list(filter_objects)
+                    except TypeError:
+                        new_filter_objects = []
 
-        return searchqueryset, new_filter_objects
+                clean_filter_dict[filter_name] = new_filter_objects
+                if new_filter_objects:
+                    pks = [obj.pk for obj in new_filter_objects]
+                    sq = None
+
+                    for field in filter_def['fields']:
+                        new_sq = SQ(**{"%s__in" % field: pks})
+                        if sq is None:
+                            sq = new_sq
+                        else:
+                            sq |= new_sq
+                    searchqueryset = searchqueryset.filter(sq)
+
+        return searchqueryset, clean_filter_dict
 
 
 class SortFilterViewMixin(SortFilterMixin):
@@ -154,6 +162,7 @@ class SortFilterViewMixin(SortFilterMixin):
     """
     default_sort = None
     default_filter = None
+    filter_form_class = FilterForm
 
     def _get_query(self, request):
         """Fetches the query for the current request."""
@@ -163,6 +172,21 @@ class SortFilterViewMixin(SortFilterMixin):
         """Fetches the sort for the current request."""
         return request.GET.get('sort', self.default_sort)
 
-    def _get_filter(self, request):
-        """Fetches the filter for the current request."""
-        return request.GET.get('filter', self.default_filter)
+    def _get_filter_info(self, request, default=None):
+        """
+        Returns a ``(filter_dict, filter_form)`` tuple. ``filter_form`` is used
+        to clean the raw request data. ``filter_dict`` is a dictionary suitable
+        for passing to :meth:`._filter`. It is equivalent to
+        ``filter_form.cleaned_data``, except that if a ``default`` is provided
+        and :attr:`.default_filter` is not ``None``, that value will override
+        any values that may have been passed with the request for that filter.
+
+        """
+        filter_form = self.filter_form_class(request.GET)
+        filter_form.is_valid()
+        filter_dict = getattr(filter_form, 'cleaned_data', {}).copy()
+
+        if default is not None and self.default_filter is not None:
+            filter_dict[self.default_filter] = default
+
+        return filter_dict, filter_form
