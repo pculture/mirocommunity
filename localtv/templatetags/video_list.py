@@ -76,15 +76,16 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         sqs = self._sort(sqs, self.sort)
         if self.search_filter is not None:
             filter_dict = self.filters.get(self.search_filter, None)
-            kwargs = {}
             if filter_dict is not None:
                 item = self.item.resolve(context)
+                val = None
                 if isinstance(item, filter_dict['model']):
-                    kwargs['filter_objects'] = [item]
+                    val = [item]
                 elif isinstance(item, basestring):
-                    kwargs[self.field_name] = item
-                sqs, filter_obj = self._filter(sqs, self.search_filter,
-                                   **kwargs)
+                    val = {self.field_name: item}
+                if val is not None:
+                    sqs, xxx = self._filter(sqs, **{self.search_filter:
+                                                           val})
         sqs.load_all()
         return [result.object for result in sqs]
 
