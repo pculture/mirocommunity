@@ -58,16 +58,16 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import bitly
-import feedparser
 import vidscraper
-import vidscraper.bulk_import.utils
 from vidscraper.utils.feedparser import get_entry_thumbnail_url, \
                                         get_first_accepted_enclosure
 from notification import models as notification
 import tagging
 
+from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
+from localtv.signals import post_video_from_scraped
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -104,10 +104,6 @@ VIDEO_SERVICE_REGEXES = (
 
 POPULAR_QUERY_TIMEOUT = getattr(settings, 'LOCALTV_POPULAR_QUERY_TIMEOUT',
                                 120 * 60) # 120 minutes
-
-
-class Error(Exception): pass
-class CannotOpenImageUrl(Error): pass
 
 
 class BitLyWrappingURLField(models.URLField):
@@ -1796,6 +1792,49 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         return ('localtv_view_video', (),
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
+
+    @classmethod
+    def from_scraped_video(cls, video, feed=None, status=None):
+        """
+        Builds a :class:`Video` instance from a :class:`vidscraper.ScrapedVideo`
+        instance. This instance will not be saved.
+
+        """
+        if not video.embed_code and not video.file_url:
+            raise InvalidVideo
+
+        if status is None:
+            status = cls.ACTIVE
+
+        site = Site.objects.get_current()
+        now = datetime.datetime.now()
+        instance = cls(
+            site=site,
+            feed=feed,
+            name=video.title or '',
+            description=video.description or '',
+            website_url=video.link or '',
+            when_published=video.publish_datetime,
+            file_url=video.file_url or '',
+            when_submitted=now,
+            when_approved=now if status == cls.ACTIVE else None,
+            status=status,
+            thumbnail_url=video.thumbnail_url or '',
+            embed_code=video.embed_code or '',
+            flash_enclosure_url=video.flash_enclosure_url or '',
+            video_service_user=video.user or '',
+            video_service_url=video.user_url or '',
+        )
+        instance.try_to_get_file_url_data()
+        instance._scraped_tags = video.tags or []
+        post_video_from_scraped.send_robust(instance=instance,
+                                            scraped_video=video)
+        return instance
+
+    def get_tags(self):
+        if self.pk is None:
+            return getattr(self, '_scraped_tags', [])
+        return self.tags
 
     def try_to_get_file_url_data(self):
         """
