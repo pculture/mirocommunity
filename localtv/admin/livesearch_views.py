@@ -110,55 +110,6 @@ def get_search_video(view_func):
 ## Views
 ## ----------
 
-@require_site_admin
-def livesearch(request):
-    query_string, order_by, query_subkey = get_query_components(request)
-
-    results = []
-    sitelocation = SiteLocation.objects.get_current()
-    if query_string:
-        results = cache.get(query_subkey)
-        if results is None:
-            raw_results = metasearch_from_querystring(
-                query_string, order_by)
-            sorted_raw_results = metasearch.intersperse_results(raw_results)
-            results = [
-                MetasearchVideo.create_from_vidscraper_dict(raw_result)
-                for raw_result in sorted_raw_results]
-            results = strip_existing_metasearchvideos(
-                results, sitelocation.site)
-            cache.add(query_subkey, results)
-
-    is_saved_search = bool(
-        SavedSearch.objects.filter(
-            site=sitelocation.site,
-            query_string=query_string).count())
-
-    video_paginator = Paginator(results, 10)
-
-    try:
-        page = video_paginator.page(int(request.GET.get('page', 1)))
-    except ValueError:
-        return HttpResponseBadRequest('Not a page number')
-    except EmptyPage:
-        page = video_paginator.page(video_paginator.num_pages)
-
-    current_video = None
-    if page.object_list:
-        current_video = page.object_list[0]
-
-    return render_to_response(
-        'localtv/admin/livesearch_table.html',
-        {'current_video': current_video,
-         'page_obj': page,
-         'video_list': page.object_list,
-         'query_string': query_string,
-         'order_by': order_by,
-         'is_saved_search': is_saved_search,
-         'saved_searches': SavedSearch.objects.filter(
-                site=sitelocation.site)},
-        context_instance=RequestContext(request))
-
 
 @referrer_redirect
 @require_site_admin
