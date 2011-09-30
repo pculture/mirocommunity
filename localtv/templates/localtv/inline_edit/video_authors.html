@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% if instance.authors.count %}
+{% if instance.authors %}
     By {% for user in instance.authors.all %}<a href="{% url localtv_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
 {% else %}
   {% if instance.feed %}
@@ -29,5 +29,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% endif %}
 {% endif %}
   {% if rendered_within_get_display_content %}
-  <a href="#" class="edit_link">Edit {% if not instance.authors.count and not instance.feed and not instance.video_service_user %}Attribution{% endif %}</a>
+  <a href="#" class="edit_link">Edit {% if not instance.authors and not instance.feed and not instance.video_service_user %}Attribution{% endif %}</a>
   {% endif %}
