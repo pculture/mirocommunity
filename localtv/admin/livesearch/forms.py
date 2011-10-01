@@ -21,11 +21,8 @@ from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
 from vidscraper.utils.search import intersperse_results
 
-from localtv.admin.livesearch.utils import parse_querystring
+from localtv.admin.livesearch.utils import parse_querystring, terms_for_cache
 from localtv.models import Video
-
-
-WHITESPACE_RE = re.compile('\s+')
 
 
 class LiveSearchForm(forms.Form):
@@ -39,9 +36,8 @@ class LiveSearchForm(forms.Form):
     order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, default=LATEST)
 
     def _get_cache_key(self, include_terms, exclude_terms):
-        query_as_str = u''.join(include_terms) + u''.join(exclude_terms)
-        query_as_str = WHITESPACE_RE.sub('', query_as_str)
-        return 'localtv-livesearch-%s' % query_as_str
+        return 'localtv-livesearch-%s' % terms_for_cache(include_terms,
+                                                         exclude_terms)
 
     def get_search_kwargs(self):
         return {
