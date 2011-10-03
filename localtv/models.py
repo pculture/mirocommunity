@@ -1826,7 +1826,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             video_service_user=video.user or '',
             video_service_url=video.user_url or '',
         )
-        instance._scraped_tags = video.tags or []
+        instance._scraped_video = video
         post_video_from_scraped.send_robust(instance=instance,
                                             scraped_video=video)
         return instance
@@ -1852,9 +1852,9 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             if video_instance.file_url:
                 file_urls.append(video_instance.file_url)
             if video_instance.guid:
-                guids.append(video_instance.guids)
+                guids.append(video_instance.guid)
             if video_instance.website_url:
-                website_urls.append(video_instance.website_urls)
+                website_urls.append(video_instance.website_url)
 
         old_video_filter = (
             models.Q(file_url__in=file_urls) |
@@ -1884,7 +1884,8 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
     def get_tags(self):
         if self.pk is None:
-            return getattr(self, '_scraped_tags', [])
+            scraped = getattr(self, '_scraped_video', None)
+            return getattr(scraped, 'tags', [])
         return self.tags
 
     def try_to_get_file_url_data(self):
@@ -2022,6 +2023,12 @@ def video__video_service(self):
     for service, regexp in VIDEO_SERVICE_REGEXES:
         if re.search(regexp, url, re.I):
             return service
+
+
+def save_scraped_tags(sender, instance, created, **kwargs):
+    if created and hasattr(instance, '_scraped_video'):
+        instance.tags = utils.get_or_create_tags(instance._scraped_video.tags)
+models.signals.post_save.connect(save_scraped_tags, sender=Video)
 
 
 class Watch(models.Model):
