@@ -18,6 +18,7 @@
 import datetime
 import email.utils
 import httplib
+import itertools
 import re
 import urllib
 import urllib2
@@ -1825,11 +1826,61 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             video_service_user=video.user or '',
             video_service_url=video.user_url or '',
         )
-        instance.try_to_get_file_url_data()
         instance._scraped_tags = video.tags or []
         post_video_from_scraped.send_robust(instance=instance,
                                             scraped_video=video)
         return instance
+
+    @classmethod
+    def bulk_import(cls, videos, feed=None, status=None, clear_rejected=False):
+        """
+        Creates and saves :class:`.Video` instances corresponding to the scraped
+        videos contained in the ``videos`` iterable, and attached to the
+        ``feed`` and with the given initial ``status``. Returns a list of
+        instances which were created.
+
+        """
+        file_urls = []
+        guids = []
+        website_urls = []
+        new_videos = []
+        for video in videos:
+            video.load()
+            video_instance = cls.from_scraped_video(video, feed=instance,
+                                     status=instance.default_video_status())
+            new_videos.append(video_instance)
+            if video_instance.file_url:
+                file_urls.append(video_instance.file_url)
+            if video_instance.guid:
+                guids.append(video_instance.guids)
+            if video_instance.website_url:
+                website_urls.append(video_instance.website_urls)
+
+        old_video_filter = (
+            models.Q(file_url__in=file_urls) |
+            models.Q(guid__in=guids) |
+            models.Q(website_url__in=website_urls)
+        )
+        if clear_rejected:
+            cls._default_manager.filter(old_video_filter).rejected().delete()
+        old_videos = cls._default_manager.filter(old_video_filter)
+        old_videos = old_videos.values_list('file_url', 'guid', 'website_url',)
+
+        old_file_urls, old_guids, old_website_urls = zip(old_videos)
+        old_file_urls = set(itertools.ifilter(None, old_file_urls))
+        old_guids = set(itertools.ifilter(None, old_guids))
+        old_website_urls = set(itertools.ifilter(None, old_website_urls))
+
+        new_new_videos = []
+        for video in itertools.ifilter(lambda v: (
+                    v.file_url not in old_file_urls and
+                    v.guid not in old_guids and
+                    v.website_url not in old_website_urls
+                ), new_videos):
+            video.try_to_get_file_url_data()
+            video.save()
+            new_new_videos.append(video)
+        return new_new_videos
 
     def get_tags(self):
         if self.pk is None:
