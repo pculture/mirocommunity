@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 from django.conf import settings
 
-from localtv.models import SiteLocation, Video, Category
+from localtv.models import SiteLocation, Video, Category, ENABLE_CHANGE_STAMPS
 
 
 def localtv(request):
@@ -32,11 +34,20 @@ def localtv(request):
         if request.user_is_admin():
             display_submit_button = True
 
-    try:
-        cache_invalidator = str(Video.objects.order_by(
-                '-when_modified').values_list('when_modified', flat=True)[0])
-    except IndexError:
-        cache_invalidator = None
+    if ENABLE_CHANGE_STAMPS:
+        try:
+            cache_invalidator = os.stat(
+                os.path.join(settings.MEDIA_ROOT,
+                             '.video-published-stamp')).st_mtime
+        except OSError:
+            cache_invalidator = None
+    else:
+        try:
+            cache_invalidator = str(Video.objects.order_by(
+                    '-when_modified').values_list(
+                    'when_modified', flat=True)[0])
+        except IndexError:
+            cache_invalidator = None
 
     return  {
         'mc_version': '1.2',

@@ -47,10 +47,10 @@ class ThumbnailFeedGenerator(feedgenerator.Atom1Feed):
             handler.addQuickElement('link', attrs={
                     'rel': 'via',
                     'href': item['website_url']})
-        if 'embed_code' in item:
+        if 'embed_code' in item or 'website_url' in item:
             handler.startElement('media:player',
                                  {'url': item.get('website_url', '')})
-            handler.characters(item['embed_code'])
+            handler.characters(item.get('embed_code', ''))
             handler.endElement('media:player')
 
 class JSONGenerator(feedgenerator.SyndicationFeed):

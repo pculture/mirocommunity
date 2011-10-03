@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endif %}
 <div class="floatleft">
   <h4>Category{% if rendered_within_get_display_content %}<a href="#" id="add_cat" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
-  {% if instance.categories.count %}
+  {% if instance.categories %}
   <ul>
     {% for category in instance.categories.all %}
     <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
