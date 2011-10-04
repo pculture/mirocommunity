@@ -33,7 +33,7 @@ class LiveSearchForm(forms.Form):
         (RELEVANT, _('Relevant')),
     )
     q = forms.CharField()
-    order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, default=LATEST)
+    order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST)
 
     def _get_cache_key(self, include_terms, exclude_terms):
         return 'localtv-livesearch-%s' % terms_for_cache(include_terms,

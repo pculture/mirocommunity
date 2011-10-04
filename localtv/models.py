@@ -1827,7 +1827,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             video_service_url=video.user_url or '',
         )
         instance._scraped_video = video
-        post_video_from_scraped.send_robust(instance=instance,
+        post_video_from_scraped.send_robust(sender=cls, instance=instance,
                                             scraped_video=video)
         return instance
 
@@ -1840,14 +1840,16 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         instances which were created.
 
         """
+        if status is None and feed is not None:
+            status = feed.default_video_status()
         file_urls = []
         guids = []
         website_urls = []
         new_videos = []
         for video in videos:
             video.load()
-            video_instance = cls.from_scraped_video(video, feed=instance,
-                                     status=instance.default_video_status())
+            video_instance = cls.from_scraped_video(video, feed=feed,
+                                                    status=status)
             new_videos.append(video_instance)
             if video_instance.file_url:
                 file_urls.append(video_instance.file_url)
@@ -1866,17 +1868,19 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         old_videos = cls._default_manager.filter(old_video_filter)
         old_videos = old_videos.values_list('file_url', 'guid', 'website_url',)
 
-        old_file_urls, old_guids, old_website_urls = zip(old_videos)
-        old_file_urls = set(itertools.ifilter(None, old_file_urls))
-        old_guids = set(itertools.ifilter(None, old_guids))
-        old_website_urls = set(itertools.ifilter(None, old_website_urls))
+        if old_videos:
+            old_file_urls, old_guids, old_website_urls = zip(*old_videos)
+            old_file_urls = set(itertools.ifilter(None, old_file_urls))
+            old_guids = set(itertools.ifilter(None, old_guids))
+            old_website_urls = set(itertools.ifilter(None, old_website_urls))
+            new_videos = itertools.ifilter(lambda v: (
+                                v.file_url not in old_file_urls and
+                                v.guid not in old_guids and
+                                v.website_url not in old_website_urls
+                            ), new_videos)
 
         new_new_videos = []
-        for video in itertools.ifilter(lambda v: (
-                    v.file_url not in old_file_urls and
-                    v.guid not in old_guids and
-                    v.website_url not in old_website_urls
-                ), new_videos):
+        for video in new_videos:
             video.try_to_get_file_url_data()
             video.save()
             new_new_videos.append(video)
