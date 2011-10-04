@@ -46,7 +46,6 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-
 class BaseVideosFeed(Feed, SortFilterViewMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
@@ -233,16 +232,7 @@ class BaseVideosFeed(Feed, SortFilterViewMixin):
             return video.file_url
         elif video.flash_enclosure_url:
             return video.flash_enclosure_url
-        # FIXME: The below is a gross hack. It is strictly a workaround for Miro pre-4.0,
-        # where if the feed item has no enclosure URL but it has a thumbnail, the feed parser
-        # in Miro 4.0 crashes, and no items at all show up in the feed.
-        elif video.website_url:
-            return video.website_url
-        # In the future, the feed views should have tests (I guess they don't, at *all*, as far as I can tell)
-        # and we should make sure that we cover the case where the feed has no enclosure URL.
-        #
-        # In that case, we should make sure to not generate a thumbnail.
-
+ 
     def item_enclosure_length(self, video):
         if video.file_url_length:
             return video.file_url_length

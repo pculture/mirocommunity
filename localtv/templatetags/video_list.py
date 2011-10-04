@@ -86,7 +86,7 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
                 if val is not None:
                     sqs, xxx = self._filter(sqs, **{self.search_filter:
                                                            val})
-        sqs.load_all()
+        sqs = sqs.load_all()
         return [result.object for result in sqs]
 
 

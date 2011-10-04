@@ -127,7 +127,7 @@ margin: 0 auto;
     {% endif %}
     <div id="tags">
       <ul class="meta_listing">
-        {% if user_is_admin or current_video.categories.count %}<li class="item">
+        {% if user_is_admin or current_video.categories %}<li class="item">
           {% if user_is_admin %}
           {% editable_widget current_video "categories" %}
           {% else %}
@@ -136,7 +136,7 @@ margin: 0 auto;
             {% endwith %}
           {% endif %}
         </li>{% endif %}
-        {% if user_is_admin or current_video.tags.count %}<li class="item">
+        {% if user_is_admin or current_video.tags %}<li class="item">
           {% if user_is_admin %}
           {% editable_widget current_video "tags" %}
           {% else %}
@@ -167,12 +167,10 @@ margin: 0 auto;
     <br class="clear" />
     </div>
 
-    {% get_comment_count for current_video as comment_count %}
 
-
-    {% if comment_count %}<h2 class="comments-title">{{ comment_count }} Comment{{ comment_count|pluralize }}</h2>{% endif %}
     {% get_comment_list for current_video as comments %}
-    {% if comments %}
+
+    {% if comments %}<h2 class="comments-title">{{ comments|length }} Comment{{ comments|length|pluralize }}</h2>
     <ul id="comments">
       {% for comment in comments %}
       <li>
