@@ -28,6 +28,29 @@ from localtv.playlists.models import Playlist
 from localtv.search.forms import SmartSearchForm, FilterForm
 
 
+class SearchQuerysetSliceHack(object):
+    """
+    Wraps a haystack SearchQueryset so that slice operations and __getitem__
+    calls return :class:`localtv.models.Video` instances efficiently instead of
+    returning result objects. This is a hack for backwards compatibility.
+
+    """
+    def __init__(self, searchqueryset):
+        self.searchqueryset = searchqueryset
+
+    def __getitem__(self, k):
+        results = self.searchqueryset[k]
+        if isinstance(results, list):
+            return [result.object for result in results]
+        return result.object
+
+    def __len__(self):
+        return len(self.searchqueryset)
+
+    def __iter__(self):
+        return iter(self.searchqueryset)
+
+
 class SortFilterMixin(object):
     """
     Generic mixin to provide standardized haystack-based filtering and sorting
