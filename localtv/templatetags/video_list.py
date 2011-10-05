@@ -18,7 +18,7 @@ from django import template
 from django.utils.functional import curry
 
 from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterMixin
+from localtv.search.utils import SortFilterMixin, SearchQuerysetSliceHack
 
 
 register = template.Library()
@@ -87,7 +87,7 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
                     sqs, xxx = self._filter(sqs, **{self.search_filter:
                                                            val})
         sqs = sqs.load_all()
-        return [result.object for result in sqs]
+        return SearchQuerysetSliceHack(sqs)
 
 
 class NewVideoListNode(BaseVideoListNode):
