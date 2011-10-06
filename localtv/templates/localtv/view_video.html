@@ -167,10 +167,12 @@ margin: 0 auto;
     <br class="clear" />
     </div>
 
+    {% get_comment_count for current_video as comment_count %}
 
+
+    {% if comment_count %}<h2 class="comments-title">{{ comment_count }} Comment{{ comment_count|pluralize }}</h2>{% endif %}
     {% get_comment_list for current_video as comments %}
-
-    {% if comments %}<h2 class="comments-title">{{ comments|length }} Comment{{ comments|length|pluralize }}</h2>
+    {% if comments %}
     <ul id="comments">
       {% for comment in comments %}
       <li>

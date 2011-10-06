@@ -1,6 +1,6 @@
 -e git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/djvideo@master#egg=djvideo-0.0.1-py2.6-dev
--e git+git://github.com/pculture/vidscraper.git@master#egg=vidscraper-0.0.1-py2.6-dev
+-e git+git://github.com/pculture/vidscraper.git@pre-suite#egg=vidscraper-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share-0.0.1-py2.6-dev
 -e git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_uploadtemplate-0.0.1-py2.6-dev
 BeautifulSoup==3.2.0
@@ -29,7 +29,7 @@ oauth
 -e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
 django-notification
--e git+git://git.pculture.org/localtv@master#egg=miro-community
+-e git+git://github.com/pculture/mirocommunity.git@develop#egg=miro-community
 whoosh
 django-extensions
 httplib2
