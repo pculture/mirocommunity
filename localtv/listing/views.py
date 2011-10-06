@@ -29,35 +29,11 @@ from voting.models import Vote
 import localtv.settings
 from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterViewMixin
+from localtv.search.utils import SortFilterViewMixin, SearchQuerysetSliceHack
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
-
-
-class VideoSearchPaginator(Paginator):
-    """
-    Custom paginator class allows us to only load the model data for the
-    instances which will actually be on the page, rather than for the entire
-    :class:`SearchQuerySet`.
-
-    """
-    def page(self, number):
-        """
-        Correctly slices a searchqueryset to load and return a list of model
-        instances rather than results. :meth:`SearchQuerySet.load_all` should be
-        called on the searchqueryset before pagination to minimize the number
-        of database queries.
-
-        """
-        number = self.validate_number(number)
-        start = (number - 1) * self.per_page
-        end = start + self.per_page
-        if end + self.orphans >= self.count:
-            top = self.count
-        object_list = [result.object for result in self.object_list[start:end]]
-        return Page(object_list, number, self)
 
 
 class VideoSearchView(ListView, SortFilterViewMixin):
@@ -66,7 +42,6 @@ class VideoSearchView(ListView, SortFilterViewMixin):
 
     """
     paginate_by = VIDEOS_PER_PAGE
-    paginator_class = VideoSearchPaginator
     form_class = VideoSearchForm
     context_object_name = 'video_list'
 
@@ -115,7 +90,7 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         # :meth:`SearchQuerySet.load_all` sets the queryset up to load all, but
         # doesn't actually perform any loading; this will only happen when the
         # cache is filled.
-        return sqs.load_all()
+        return SearchQuerysetSliceHack(sqs.load_all())
 
     def get_context_data(self, **kwargs):
         """

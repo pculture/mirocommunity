@@ -17,13 +17,12 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% if rendered_within_get_display_content %}
-{% endif %}
+{% with tags=instance.tags.all %}
 <div class="floatleft">
   <h4>Tags{% if rendered_within_get_display_content %}<a href="#" id="add_tag" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
-  {% if instance.tags %}
+  {% if tags %}
   <ul>
-    {% for tag in instance.tags.all %}
+    {% for tag in tags %}
     {% if tag.name %}
     {% url localtv_list_tag tag.name as tag_url %}
     <li>{% if tag_url %}<a href="{% url localtv_list_tag tag.name %}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %}</li>
@@ -32,3 +31,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
   {% endif %}
 </div>
+{% endwith %}

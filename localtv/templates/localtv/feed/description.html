@@ -29,10 +29,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <div class="miro-community-description">{{ obj.description|sanitize }}</div>
     </td>
     <td width="250" valign="top">
-      <div>{% if obj.authors %}<b>By:</b> {% for author in obj.authors.all %}<a href="{% url localtv_author author.pk %}">{% if author.firstname %}{{ author.get_full_name }}{% else %}{{ author.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
-      <div>{% if obj.categories %}<b>Categories:</b> {% for cat in obj.categories.all %}<a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
-      <div>{% if obj.tags %}<b>Tags:</b> {% for tag in obj.tags.all %}{% url localtv_list_tag tag.name as tag_url %}{% if tag_url %}<a href="{{ tag_url }}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      {% with authors=obj.authors.all categories=obj.categories.all tags=obj.tags.all %}
+      <div>{% if authors %}<b>By:</b> {% for author in authors %}<a href="{% url localtv_author author.pk %}">{% if author.firstname %}{{ author.get_full_name }}{% else %}{{ author.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      <div>{% if categories %}<b>Categories:</b> {% for cat in categories %}<a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
+      <div>{% if tags %}<b>Tags:</b> {% for tag in tags %}{% url localtv_list_tag tag.name as tag_url %}{% if tag_url %}<a href="{{ tag_url }}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
       {% if obj.website_url %}<div><b>{% trans "Original link" %}:</b><a href="{{ obj.website_url }}">{{ obj.website_url }}</a></div>{% endif %}
+      {% endwith %}
     </td>
   </tr>
 </table>

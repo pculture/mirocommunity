@@ -63,6 +63,15 @@ def create_ticket(subject, body, use_configured_assignee,
                   requester_email='paulproteus+robot@pculture.org'):
     global outbox
 
+    # Prepare kwargs for HTTP request
+    ticket_body_kwargs = {'subject': subject, 'body': body, 'requester_email': requester_email}
+    
+    # If we are inside the test suite, just create an "outbox" and push things onto it
+    # Detect the test suite by looking at the email backend
+    if settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend':
+        outbox.append(ticket_body_kwargs)
+        return True
+    
     h= httplib2.Http("/tmp/.cache")
     username = getattr(settings, "ZENDESK_USERNAME", None)
     password = getattr(settings, "ZENDESK_PASSWORD", None)
@@ -71,8 +80,6 @@ def create_ticket(subject, body, use_configured_assignee,
     else:
         raise ValueError, "Cannot create ticket because Zendesk not configured. Bailing out now."
 
-    # Prepare kwargs for HTTP request
-    ticket_body_kwargs = {'subject': subject, 'body': body, 'requester_email': requester_email}
     http_data = dict(headers={'Content-Type': 'application/xml'},
                      body=(
             generate_ticket_body(
@@ -80,11 +87,6 @@ def create_ticket(subject, body, use_configured_assignee,
                 requester_email_text=requester_email,
                 use_configured_assignee=use_configured_assignee)))
 
-    # If we are inside the test suite, just create an "outbox" and push things onto it
-    # Detect the test suite by looking at the email backend
-    if settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend':
-        outbox.append(ticket_body_kwargs)
-        return True
 
     # Oh, so we're in real mode? Okay, then let's actually do the HTTP game.
     response = h.request("http://mirocommunity.zendesk.com/tickets.xml", "POST", **http_data)

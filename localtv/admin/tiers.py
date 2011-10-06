@@ -30,7 +30,7 @@ from paypal.standard.ipn.signals import subscription_signup, subscription_cancel
 import paypal.standard.ipn.views
 
 from localtv.decorators import require_site_admin
-import localtv.tiers
+from localtv import tiers, zendesk
 from localtv.models import SiteLocation, TierInfo
 
 
@@ -51,7 +51,7 @@ def confirmed_change_tier(request):
     target_tier_name = request.POST.get('target_tier_name', '')
 
     # validate
-    if target_tier_name not in dict(localtv.tiers.CHOICES):
+    if target_tier_name not in dict(tiers.CHOICES):
         # Always redirect back to tiers page
         return HttpResponseRedirect(reverse('localtv_admin_tier'))
 
@@ -62,26 +62,26 @@ def confirmed_change_tier(request):
 def downgrade_confirm(request):
     target_tier_name = request.POST.get('target_tier_name', None)
     # validate
-    if target_tier_name in dict(localtv.tiers.CHOICES):
-        target_tier_obj = localtv.tiers.Tier(target_tier_name)
+    if target_tier_name in dict(tiers.CHOICES):
+        target_tier_obj = tiers.Tier(target_tier_name)
 
-        would_lose = localtv.tiers.user_warnings_for_downgrade(target_tier_name)
+        would_lose = tiers.user_warnings_for_downgrade(target_tier_name)
         data = {}
         data['tier_name'] = target_tier_name
         data['paypal_sandbox'] = getattr(settings, 'PAYPAL_TEST', False)
         data['can_modify'] = _generate_can_modify()[target_tier_name]
         data['paypal_url'] = get_paypal_form_submission_url()
-        data['paypal_email'] = localtv.tiers.get_paypal_email_address()
-        data['paypal_email_acct'] = localtv.tiers.get_paypal_email_address()
+        data['paypal_email'] = tiers.get_paypal_email_address()
+        data['paypal_email_acct'] = tiers.get_paypal_email_address()
         data['target_tier_obj'] = target_tier_obj
-        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
+        data['would_lose_admin_usernames'] = tiers.push_number_of_admins_down(target_tier_obj.admins_limit())
         data['customtheme_nag'] = ('customtheme' in would_lose)
         data['advertising_nag'] = ('advertising' in would_lose)
         data['customdomain_nag'] = ('customdomain' in would_lose)
         data['css_nag'] = ('css' in would_lose)
         data['videos_nag'] = ('videos' in would_lose)
-        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(target_tier_obj)
-        data['new_theme_name'] = localtv.tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
+        data['videos_over_limit'] = tiers.hide_videos_above_limit(target_tier_obj)
+        data['new_theme_name'] = tiers.switch_to_a_bundled_theme_if_necessary(target_tier_obj)
         data['payment_secret'] = SiteLocation.objects.get_current().tierinfo.get_payment_secret()
         return render_to_response('localtv/admin/downgrade_confirm.html', data,
                                   context_instance=RequestContext(request))
@@ -114,12 +114,12 @@ def upgrade(request):
         if tier_name == sitelocation.tier_name:
             would_lose[tier_name] = False
         else:
-            would_lose[tier_name] = localtv.tiers.user_warnings_for_downgrade(tier_name)
+            would_lose[tier_name] = tiers.user_warnings_for_downgrade(tier_name)
 
     upgrade_extra_payments = {}
     for target_tier_name in ['basic', 'plus', 'premium', 'max']:
         if (sitelocation.tierinfo.in_free_trial or
-            (localtv.tiers.Tier(target_tier_name).dollar_cost() <= sitelocation.get_tier().dollar_cost()) or
+            (tiers.Tier(target_tier_name).dollar_cost() <= sitelocation.get_tier().dollar_cost()) or
             not sitelocation.tierinfo.payment_due_date):
             upgrade_extra_payments[target_tier_name] = None
             continue
@@ -136,8 +136,8 @@ def upgrade(request):
     data['payment_secret'] = sitelocation.tierinfo.get_payment_secret()
     data['offer_free_trial'] = sitelocation.tierinfo.free_trial_available
     data['skip_paypal'] = getattr(settings, 'LOCALTV_SKIP_PAYPAL', False)
-    data['paypal_email_acct'] = localtv.tiers.get_paypal_email_address()
-    data['tier_to_price'] = localtv.tiers.Tier.NAME_TO_COST()
+    data['paypal_email_acct'] = tiers.get_paypal_email_address()
+    data['tier_to_price'] = tiers.Tier.NAME_TO_COST()
     if not data['skip_paypal']:
         data['paypal_url'] = get_paypal_form_submission_url()
 
@@ -217,7 +217,7 @@ def begin_free_trial(request, payment_secret):
     #if payment_secret != sitelocation.tierinfo.payment_secret:
     #    return HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
     target_tier_name = request.GET.get('target_tier_name', '')
-    if target_tier_name not in dict(localtv.tiers.CHOICES):
+    if target_tier_name not in dict(tiers.CHOICES):
         return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
 
     # Switch the tier!
@@ -257,8 +257,8 @@ def get_paypal_form_submission_url():
 
 
 def generate_payment_amount_for_upgrade(start_tier_name, target_tier_name, current_payment_due_date, todays_date=None):
-    target_tier_obj = localtv.tiers.Tier(target_tier_name)
-    start_tier_obj = localtv.tiers.Tier(start_tier_name)
+    target_tier_obj = tiers.Tier(target_tier_name)
+    start_tier_obj = tiers.Tier(start_tier_name)
 
     if todays_date is None:
         todays_date = datetime.datetime.utcnow()
@@ -367,7 +367,7 @@ def _generate_can_modify():
         if (tier_info.free_trial_available or tier_info.in_free_trial):
             can_modify_mapping[target_tier_name] = False
             continue
-        target_tier_obj = localtv.tiers.Tier(target_tier_name) 
+        target_tier_obj = tiers.Tier(target_tier_name) 
         if target_tier_obj.dollar_cost() >= current_tier_price:
             can_modify_mapping[target_tier_name] = False
             continue
@@ -395,13 +395,12 @@ def handle_recurring_profile_start(sender, **kwargs):
         # then we had better notify staff that the old one should be
         # cancelled.
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
-                                        {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
+                                        {'paypal_email_address': tiers.get_paypal_email_address(),
                                          'old_profile': tier_info.current_paypal_profile_id,
                                          'site_domain': sitelocation.site.domain,
                                          'new_profile': ipn_obj.subscr_id})
         if tier_info.use_zendesk():
-            import localtv.zendesk
-            localtv.zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
+            zendesk.create_ticket("Eek, you should cancel a recurring payment profile",
                                           message_body, use_configured_assignee=True)
 
     expected_due_date = None
@@ -431,8 +430,7 @@ def handle_recurring_profile_start(sender, **kwargs):
             # sanity-check that there is no period1 or period2 value
             paypal_event_contains_free_trial = ipn_obj.period1 or ipn_obj.period2
             if paypal_event_contains_free_trial and tier_info.use_zendesk():
-                import localtv.zendesk
-                localtv.zendesk.create_ticket(
+                zendesk.create_ticket(
                     "Eek, the user tried to create a free trial incorrectly",
                     "Check on the state of the " + sitelocation.site.domain + ""
                     " site",
@@ -454,7 +452,7 @@ def handle_recurring_profile_start(sender, **kwargs):
         pass
     else:
         # Find the right tier to move to
-        target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+        target_tier_name = tiers.Tier.get_by_cost(amount)
         _actually_switch_tier(target_tier_name)
 subscription_signup.connect(handle_recurring_profile_start)
 
@@ -494,13 +492,12 @@ def handle_recurring_profile_modify(sender, **kwargs):
     if (tier_info.current_paypal_profile_id != sender.subscr_id) and (tier_info.use_zendesk()):
         # then we had better notify staff indicating that the old one
         # should be cancelled.
-        import localtv.zendesk
         message_body = render_to_string('localtv/admin/tiers_emails/disable_old_recurring_payment.txt',
-                                        {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
+                                        {'paypal_email_address': tiers.get_paypal_email_address(),
                                          'profile_on_file': tier_info.current_paypal_profile_id,
                                          'site_domain': sitelocation.site.domain,
                                          'surprising_profile': ipn_obj.subscr_id})
-        localtv.zendesk.create_ticket("Eek, you should check on this MC site",
+        zendesk.create_ticket("Eek, you should check on this MC site",
                                       message_body,
                                       use_configured_assignee=False)
         return
@@ -512,18 +509,17 @@ def handle_recurring_profile_modify(sender, **kwargs):
     else:
         # Find the right tier to move to
         try:
-            target_tier_name = localtv.tiers.Tier.get_by_cost(amount)
+            target_tier_name = tiers.Tier.get_by_cost(amount)
         except ValueError:
             # then we had better notify staff indicating that the
             # amount is bizarre.
             if tier_info.use_zendesk():
-                import localtv.zendesk
                 message_body = render_to_string('localtv/admin/tiers_emails/confused_modify_wrong_amount.txt',
-                                                {'paypal_email_address': localtv.tiers.get_paypal_email_address(),
+                                                {'paypal_email_address': tiers.get_paypal_email_address(),
                                                  'profile_on_file': tier_info.current_paypal_profile_id,
                                                  'site_domain': sitelocation.site.domain,
                                                  'surprising_profile': ipn_obj.subscr_id})
-                localtv.zendesk.create_ticket("Eek, you should check on this MC site",
+                zendesk.create_ticket("Eek, you should check on this MC site",
                                               message_body,
                                               use_configured_assignee=False)
             return

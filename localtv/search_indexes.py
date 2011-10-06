@@ -53,7 +53,17 @@ class VideoIndex(indexes.SearchIndex):
         with the watch_count.
 
         """
-        return Video.objects.active().annotate(watch_count=Count('watch'))
+        return self.model._default_manager.active().annotate(
+                                                    watch_count=Count('watch'))
+
+    def read_queryset(self):
+        """
+        Adds a select_related call to the normal :meth:`.index_queryset`; the
+        related items only need to be in the index by id, but on read we will
+        probably need more.
+
+        """
+        return self.index_queryset().select_related('feed', 'user', 'search')
 
     def get_updated_field(self):
         return 'when_modified'

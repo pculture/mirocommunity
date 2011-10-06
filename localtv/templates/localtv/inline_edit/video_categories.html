@@ -17,15 +17,15 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% if rendered_within_get_display_content %}
-{% endif %}
+{% with categories=instance.categories.all %}
 <div class="floatleft">
   <h4>Category{% if rendered_within_get_display_content %}<a href="#" id="add_cat" class="edit_link"><span>Edit</span></a>{% endif %}</h4>
-  {% if instance.categories %}
+  {% if categories %}
   <ul>
-    {% for category in instance.categories.all %}
+    {% for category in categories %}
     <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
     {% endfor %}
   </ul>
   {% endif %}
 </div>
+{% endwith %}
