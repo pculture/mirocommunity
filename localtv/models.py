@@ -250,7 +250,7 @@ class SiteLocationManager(models.Manager):
 
     def get(self, **kwargs):
         if 'site' in kwargs:
-            site= kwargs.pop('site')
+            site = kwargs['site']
             if not isinstance(site, (int, long, basestring)):
                 site = site.id
             site = int(site)
