@@ -16,11 +16,34 @@
 
 import traceback
 import datetime
+import eventlet
+from eventlet.green import urllib2
+import feedparser
 
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
 from localtv import models
 
+def feed_update_items(feed, etag, data):
+    try:
+        feed.update_items(parsed_feed=feedparser.parse(data))
+    except:
+        traceback.print_exc()
+    else:
+        if etag:
+            feed.etag = etag
+            feed.save()
+
+def fetch_feed(feed):
+    req = urllib2.Request(feed.feed_url)
+    if feed.etag:
+        req.add_header('If-None-Match', feed.etag)
+    try:
+	handle = urllib2.urlopen(req)
+    except urllib2.HTTPError:
+        return (None, None, None)
+    return feed, handle.info().getheader('ETag'), handle.read()
+    
 class Command(NoArgsCommand):
 
     args = ''
@@ -36,9 +59,14 @@ class Command(NoArgsCommand):
             status=models.FEED_STATUS_UNAPPROVED).update(
             status=models.FEED_STATUS_ACTIVE)
 
+        green_pile = eventlet.GreenPile()
         for feed in models.Feed.objects.filter(
             status=models.FEED_STATUS_ACTIVE):
-            try:
-                feed.update_items()
-            except:
-                traceback.print_exc()
+            for url in feed._get_feed_urls():
+                green_pile.spawn(fetch_feed, feed)
+        for feed, etag, data in green_pile:
+            if feed:
+                feed_update_items(feed, etag, data)
+
+
+
