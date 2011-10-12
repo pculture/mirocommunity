@@ -818,19 +818,29 @@ class Feed(Source):
 
     def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
                                            actually_save_thumbnails=True):
+        def skip(reason):
+            if verbose:
+                print "Skipping %s: %s" % (entry['title'], reason)
+            return {'index': index,
+                   'total': len(parsed_feed.entries),
+                   'video': None,
+                   'skip': reason}
+
         initial_video_status = self.default_video_status()
 
-        skip = False
         guid = entry.get('guid', '')
-        if guid and Video.objects.filter(
-            feed=self, guid=guid).count():
-            skip = 'duplicate guid'
         link = entry.get('link', '')
-        for possible_link in entry.links:
-            if possible_link.get('rel') == 'via':
-                # original URL
-                link = possible_link['href']
-                break
+        if guid and Video.objects.filter(
+            feed=self, guid=guid).exists():
+            return skip('duplicate guid')
+
+        if 'links' in entry:
+            for possible_link in entry.links:
+                if possible_link.get('rel') == 'via':
+                    # original URL
+                    link = possible_link['href']
+                    break
+
         if link:
             if clear_rejected:
                 for video in Video.objects.filter(
@@ -838,8 +848,8 @@ class Feed(Source):
                     website_url=link):
                     video.delete()
             if Video.objects.filter(
-                website_url=link).count():
-                skip = 'duplicate link'
+                website_url=link).exists():
+                return skip('duplicate link')
 
         video_data = {
             'name': unescape(entry['title']),
@@ -893,72 +903,62 @@ class Feed(Source):
                 video_data['file_url_mimetype'] = video_enclosure.get(
                     'type', '')
 
-        if link and not skip:
-            try:
-                scraped_data = vidscraper.auto_scrape(
-                    link,
-                    fields=['file_url', 'embed', 'flash_enclosure_url',
-                            'publish_date', 'thumbnail_url', 'link',
-                            'file_url_is_flaky', 'user', 'user_url',
-                            'tags', 'description'])
-                if not video_data['file_url']:
-                    if not scraped_data.get('file_url_is_flaky'):
-                        video_data['file_url'] = scraped_data.get(
-                            'file_url') or ''
-                video_data['embed_code'] = scraped_data.get('embed')
-                video_data['flash_enclosure_url'] = scraped_data.get(
-                    'flash_enclosure_url', '')
-                video_data['when_published'] = scraped_data.get(
-                    'publish_date')
-                video_data['description'] = scraped_data.get(
-                    'description', '')
-                if scraped_data['thumbnail_url']:
-                    video_data['thumbnail_url'] = scraped_data.get(
-                        'thumbnail_url')
+        try:
+            scraped_data = vidscraper.auto_scrape(
+                link,
+                fields=['file_url', 'embed', 'flash_enclosure_url',
+                        'publish_date', 'thumbnail_url', 'link',
+                        'file_url_is_flaky', 'user', 'user_url',
+                        'tags', 'description'])
+            if scraped_data.get('link'):
+                if (Video.objects.filter(
+                        website_url=scraped_data['link']).count()):
+                    return skip('duplicate link (vidscraper)')
+                else:
+                    video_data['website_url'] = scraped_data['link']
 
-                if scraped_data.get('link'):
-                    if (Video.objects.filter(
-                            website_url=scraped_data['link']).count()):
-                        skip = 'duplicate link (vidscraper)'
-                    else:
-                        video_data['website_url'] = scraped_data['link']
 
-                tags = scraped_data.get('tags', [])
+            if not video_data['file_url']:
+                if not scraped_data.get('file_url_is_flaky'):
+                    video_data['file_url'] = scraped_data.get(
+                        'file_url') or ''
+            video_data['embed_code'] = scraped_data.get('embed')
+            video_data['flash_enclosure_url'] = scraped_data.get(
+                'flash_enclosure_url', '')
+            video_data['when_published'] = scraped_data.get(
+                'publish_date')
+            video_data['description'] = scraped_data.get(
+                'description', '')
+            if scraped_data['thumbnail_url']:
+                video_data['thumbnail_url'] = scraped_data.get(
+                    'thumbnail_url')
 
-                if not authors.count() and scraped_data.get('user'):
-                    name = scraped_data.get('user')
-                    if ' ' in name:
-                        first, last = name.split(' ', 1)
-                    else:
-                        first, last = name, ''
-                    author, created = User.objects.get_or_create(
-                        username=name[:30],
-                        defaults={'first_name': first[:30],
-                                  'last_name': last[:30]})
-                    if created:
-                        author.set_unusable_password()
-                        author.save()
-                        util.get_profile_model().objects.create(
-                            user=author,
-                            website=scraped_data.get('user_url'))
-                    authors = [author]
+            tags = scraped_data.get('tags', [])
 
-            except vidscraper.errors.Error, e:
-                if verbose:
-                    print "Vidscraper error: %s" % e
+            if not authors.count() and scraped_data.get('user'):
+                name = scraped_data.get('user')
+                if ' ' in name:
+                    first, last = name.split(' ', 1)
+                else:
+                    first, last = name, ''
+                author, created = User.objects.get_or_create(
+                    username=name[:30],
+                    defaults={'first_name': first[:30],
+                              'last_name': last[:30]})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    util.get_profile_model().objects.create(
+                        user=author,
+                        website=scraped_data.get('user_url'))
+                authors = [author]
 
-        if not skip:
-            if not (video_data['file_url'] or video_data['embed_code']):
-                skip = 'invalid'
-
-        if skip:
+        except vidscraper.errors.Error, e:
             if verbose:
-                print "Skipping %s: %s" % (entry['title'], skip)
-            return {'index': index,
-                   'total': len(parsed_feed.entries),
-                   'video': None,
-                   'skip': skip}
+                print "Vidscraper error: %s" % e
 
+        if not (video_data['file_url'] or video_data['embed_code']):
+            return skip('invalid')
 
         if not video_data['description']:
             description = entry.get('summary', '')
