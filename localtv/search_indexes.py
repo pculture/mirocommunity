@@ -40,8 +40,7 @@ class VideoIndex(indexes.SearchIndex):
 
     # Aggregated/collated data.
     best_date = indexes.DateTimeField(model_attr='when')
-    #: watch_count is set during :meth:`~VideoIndex.index_queryset`.
-    watch_count = indexes.IntegerField(model_attr='watch_count')
+    watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
                             default=SortFilterMixin._empty_value['featured'])
     when_approved = indexes.DateTimeField(model_attr='when_approved',
@@ -82,5 +81,13 @@ class VideoIndex(indexes.SearchIndex):
 
     def prepare_playlists(self, video):
         return self._prepare_field(video, 'playlists')
+
+    def prepare_watch_count(self, video):
+        # video.watch_count is set during :meth:`~VideoIndex.index_queryset`.
+        # If for some reason that isn't available, do a manual count.
+        try:
+            return video.watch_count
+        except AttributeError:
+            return video.watch_set.count()
 
 site.register(Video, VideoIndex)
