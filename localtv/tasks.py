@@ -58,8 +58,11 @@ def check_call(args, env={}):
 def haystack_update_index(app_label, model_name, pk, is_removal):
     """
     Updates a haystack index for the given model (specified by ``app_label`` and
-    ``model_name``). An instance is built from the passed-in ``model_dict``, and
-    either updated or deleted depending on whether ``is_removal`` is ``True``.
+    ``model_name``). If ``is_removal`` is ``True``, a fake instance is
+    constructed with the given ``pk`` and passed to the index's
+    :meth:`remove_object` method. Otherwise, the latest version of the instance
+    is fetched from the database and passed to the index's :meth:`update_object`
+    method.
 
     """
     model_class = get_model(app_label, model_name)

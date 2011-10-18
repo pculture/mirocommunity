@@ -32,6 +32,12 @@ class QueuedSearchIndex(indexes.SearchIndex):
     def _setup_delete(self, model):
         signals.post_delete.connect(self._enqueue_removal, sender=model)
 
+    def _teardown_save(self, model):
+        signals.post_save.disconnect(self._enqueue_update, sender=model)
+
+    def _teardown_delete(self, model):
+        signals.post_delete.connect(self._enqueue_removal, sender=model)
+
     def _enqueue_update(self, instance, **kwargs):
         self._enqueue_instance(instance, False)
 
