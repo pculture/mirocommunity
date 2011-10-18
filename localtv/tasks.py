@@ -17,6 +17,8 @@
 import os
 import subprocess
 from celery.decorators import task
+from django.db.models.loading import get_model
+from haystack import site
 
 @task()
 def check_call(args, env={}):
@@ -51,3 +53,27 @@ def check_call(args, env={}):
             stdout.append(process.stdout.read())
         return ''.join(stdout)
 
+
+@task(ignore_result=True)
+def haystack_update_index(app_label, model_name, pk, is_removal):
+    """
+    Updates a haystack index for the given model (specified by ``app_label`` and
+    ``model_name``). If ``is_removal`` is ``True``, a fake instance is
+    constructed with the given ``pk`` and passed to the index's
+    :meth:`remove_object` method. Otherwise, the latest version of the instance
+    is fetched from the database and passed to the index's :meth:`update_object`
+    method.
+
+    """
+    model_class = get_model(app_label, model_name)
+    search_index = site.get_index(model_class)
+    if is_removal:
+        instance = model_class(pk=pk)
+        search_index.remove_object(instance)
+    else:
+        try:
+            instance = search_index.read_queryset().get(pk=pk)
+        except model_class.DoesNotExist:
+            pass
+        else:
+            search_index.update_object(instance)
