@@ -40,7 +40,6 @@ from localtv import tasks, utils
 from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
 
-from vidscraper import bulk_import
 from vidscraper.utils.feedparser import get_item_thumbnail_url
 
 Profile = utils.get_profile_model()
@@ -62,28 +61,45 @@ def add_feed(request):
             add_form['feed_url'].errors.as_text())
 
     feed_url = add_form.cleaned_data['feed_url']
+    scraped_feed = add_form.cleaned_data['scraped_feed']
     parsed_feed = add_form.cleaned_data['parsed_feed']
 
-    title = getattr(parsed_feed.feed, 'title', '') or feed_url
+    if scraped_feed:
+        scraped_feed.load()
+        title = scraped_feed.title or ''
+    else:
+        title = getattr(parsed_feed.feed, 'title', '') or feed_url
+
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
         if match:
             title = match.group(1)
             break
-
+        
     defaults = {
         'name': title,
         'feed_url': feed_url,
-        'webpage': parsed_feed.feed.get('link', ''),
-        'description': parsed_feed.feed.get('summary', ''),
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
         'status': Feed.UNAPPROVED,
         'user': request.user,
-        'etag': '',
+
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
-    video_count = bulk_import.video_count(feed_url, parsed_feed)
+    if scraped_feed:
+        defaults.update({
+                'webpage': scraped_feed.webpage or '',
+                'description': scraped_feed.description or '',
+                'etag': scraped_feed.etag or ''
+                })
+        video_count = scraped_feed.entry_count
+    else:
+        defaults.update({
+                'webpage': parsed_feed.feed.get('link', ''),
+                'description': parsed_feed.feed.get('summary', ''),
+                'etag': parsed_feed.get('etag', ''),
+                })
+        video_count = len(parsed_feed.entries)
 
     if request.method == 'POST':
         if 'cancel' in request.POST:
@@ -104,7 +120,10 @@ def add_feed(request):
                 setattr(feed, key, value)
 
             try:
-                thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
+                if scraped_feed:
+                    thumbnail_url = get_item_thumbnail_url(scraped_feed.parsed_feed)
+                else:
+                    thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
             except KeyError:
                 thumbnail_url = None
             if thumbnail_url:
@@ -172,6 +191,10 @@ def add_feed_done(request, feed_id):
         else:
             feed.status = Feed.ACTIVE
             feed.save()
+            if settings.DEBUG:
+                raise RuntimeError(
+                    'Exception during Celery task:\n%s' % task.result)
+
         return render_to_response('localtv/admin/feed_done.html',
                                   context,
                                   context_instance=RequestContext(request))

@@ -835,7 +835,9 @@ class Feed(Source, StatusedThumbnailable):
             pass
 
     def _update_items_generator(self, verbose=False, scraped_feed=None,
-                                clear_rejected=False, actually_save_thumbnails=True):
+                                clear_rejected=False,
+                                actually_save_thumbnails=True,
+                                **kwargs):
         """
         Fetch and import new videos from this field.  After each imported
         video, we yield a dictionary:
@@ -850,7 +852,8 @@ class Feed(Source, StatusedThumbnailable):
                 fields=['title', 'file_url', 'embed_code', 'flash_enclosure_url',
                         'publish_datetime', 'thumbnail_url', 'link',
                         'file_url_is_flaky', 'user', 'user_url',
-                        'tags', 'description', 'file_url', 'guid'])
+                        'tags', 'description', 'file_url', 'guid'],
+                **kwargs)
 
         for index, video in enumerate(list(scraped_feed)[::-1]):
             yield self._handle_one_scraped_video(
@@ -906,7 +909,11 @@ class Feed(Source, StatusedThumbnailable):
         else:
             return skip('no link')
 
-        scraped_video.load()
+        try:
+            scraped_video.load()
+        except Exception:
+            logging.exception('while importing %s' % link)
+
         if scraped_video.file_url is None and scraped_video.embed_code is None:
             return skip('no file URL or embed code')
 
