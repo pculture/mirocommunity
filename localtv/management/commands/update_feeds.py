@@ -35,10 +35,10 @@ class Command(NoArgsCommand):
             when_submitted__lte=datetime.datetime.now()-hour,
             status=models.Feed.UNAPPROVED).update(
             status=models.Feed.ACTIVE)
-
+        verbose = (int(options.get('verbosity', 1)) > 1)
         for feed in models.Feed.objects.filter(
             status=models.Feed.ACTIVE):
             try:
-                feed.update_items()
+                feed.update_items(verbose=verbose)
             except:
                 traceback.print_exc()
