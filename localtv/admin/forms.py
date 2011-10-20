@@ -1067,10 +1067,10 @@ class AddFeedForm(forms.Form):
         url = self.cleaned_data['feed_url']
         try:
             scraped_feed = auto_feed(url)
-            parsed_feed = None
             url = scraped_feed.url
         except CantIdentifyUrl:
-            scraped_feed = None
+            raise forms.ValidationError('It does not appear that %s is an '
+                                        'RSS/Atom feed URL.' % url)
 
         site = Site.objects.get_current()
         if models.Feed.objects.filter(feed_url=url,
@@ -1078,23 +1078,6 @@ class AddFeedForm(forms.Form):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
 
-        if not scraped_feed:
-            key = self._feed_url_key(url)
-            parsed_feed = cache.get(key)
-            if parsed_feed is None:
-                parsed_feed = feedparser.parse(url)
-                if 'bozo_exception' in parsed_feed:
-                    # can't cache exceptions
-                    del parsed_feed['bozo_exception']
-                cache.set(key, parsed_feed)
-            if not parsed_feed.feed or not (parsed_feed.entries or
-                                            parsed_feed.feed.get('title')):
-                raise forms.ValidationError('It does not appear that %s is an '
-                                            'RSS/Atom feed URL.' % url)
-
-        # drop the parsed data into cleaned_data so that other code can re-use
-        # the data
         self.cleaned_data['scraped_feed'] = scraped_feed
-        self.cleaned_data['parsed_feed'] = parsed_feed
 
         return url
