@@ -769,15 +769,9 @@ class NewsletterSettingsForm(forms.ModelForm):
         return instance
 
 class CategoryForm(forms.ModelForm):
-    if localtv.settings.voting_enabled():
-        contest_mode = forms.BooleanField(label='Turn on Contest',
-                                          required=False)
     class Meta:
         model = models.Category
-        if localtv.settings.voting_enabled():
-            exclude = ['site']
-        else:
-            exclude = ['site', 'contest_mode']
+        exclude = ['site']
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -785,13 +779,6 @@ class CategoryForm(forms.ModelForm):
         self.site = Site.objects.get_current()
         self.fields['parent'].queryset = models.Category.objects.filter(
             site=self.site)
-
-    def clean_contest_mode(self):
-        val = self.cleaned_data.get('contest_mode')
-        if val:
-            return datetime.datetime.now()
-        else:
-            return None
 
     def _post_clean(self):
         forms.ModelForm._post_clean(self)

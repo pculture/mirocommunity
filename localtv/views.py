@@ -126,25 +126,6 @@ def view_video(request, video_id, slug=None):
 
     context['popular_videos'] = popular_videos
 
-    if video.voting_enabled():
-        import voting
-        user_can_vote = True
-        if request.user.is_authenticated():
-            max_votes = video.categories.filter(
-                contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
-            votes = voting.models.Vote.objects.filter(
-                content_type=ContentType.objects.get_for_model(Video),
-                user=request.user).count()
-            if votes >= max_votes:
-                user_can_vote = False
-        context['user_can_vote'] = user_can_vote
-        if user_can_vote:
-            if 'category' in context and context['category'].contest_mode:
-                context['contest_category'] = context['category']
-            else:
-                context['contest_category'] = video.categories.filter(
-                    contest_mode__isnull=False)[0]
-
     if site_settings.playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
@@ -201,25 +182,6 @@ def share_email(request, content_type_pk, object_id):
                              )
 
 
-def video_vote(request, object_id, direction, **kwargs):
-    if not localtv.settings.voting_enabled():
-        raise Http404
-    import voting.views
-    if request.user.is_authenticated() and direction != 'clear':
-        video = get_object_or_404(Video, pk=object_id)
-        max_votes = video.categories.filter(
-            contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
-        votes = voting.models.Vote.objects.filter(
-            content_type=ContentType.objects.get_for_model(Video),
-            user=request.user).count()
-        if votes >= max_votes:
-            return HttpResponseRedirect(video.get_absolute_url())
-    return voting.views.vote_on_object(request, Video,
-                                       direction=direction,
-                                       object_id=object_id,
-                                       **kwargs)
-
-
 def newsletter(request):
     newsletter = NewsletterSettings.objects.get_current()
     if newsletter.status == NewsletterSettings.DISABLED:
@@ -229,4 +191,3 @@ def newsletter(request):
 
     return HttpResponse(newsletter.as_html(
             {'preview': True}), content_type='text/html')
-

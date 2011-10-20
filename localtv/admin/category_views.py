@@ -71,31 +71,4 @@ def categories(request):
                                'headers': headers,
                                'add_category_form': add_category_form},
                               context_instance=RequestContext(request))
-
-
-@require_site_admin
-def votes(request, slug):
-    if not localtv.settings.voting_enabled():
-        raise Http404
-    
-    category = get_object_or_404(Category, slug=slug)
-
-    def score_key((k, v)):
-        return v['score']
-
-    def sorted_scores():
-        videos = category.approved_set.only('id')
-        import voting
-        scores = voting.models.Vote.objects.get_scores_in_bulk(videos)
-
-        for video_pk, score_dict in sorted(scores.items(),
-                                           key=score_key,
-                                           reverse=True):
-            yield Video.objects.get(pk=video_pk), score_dict
-
-    return render_to_response('localtv/admin/category_votes.html',
-                              {'category': category,
-                               'sorted_scores': sorted_scores()
-                               },
-                              context_instance=RequestContext(request))
     
