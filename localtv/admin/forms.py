@@ -64,7 +64,7 @@ class BulkFormSetMixin(object):
     @property
     def bulk_forms(self):
         for form in self.initial_forms:
-            if form.cleaned_data['BULK'] and \
+            if form.cleaned_data and form.cleaned_data['BULK'] and \
                     not self._should_delete_form(form):
                 yield form
 
