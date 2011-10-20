@@ -121,7 +121,8 @@ def add_feed(request):
 
             try:
                 if scraped_feed:
-                    thumbnail_url = get_item_thumbnail_url(scraped_feed.parsed_feed)
+                    thumbnail_url = get_item_thumbnail_url(
+                        scraped_feed.parsed_feed)
                 else:
                     thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
             except KeyError:
@@ -202,11 +203,12 @@ def add_feed_done(request, feed_id):
         videos_that_are_fully_thumbnailed = feed.video_set.exclude(
             status=Feed.PENDING_THUMBNAIL)
         fully_thumbnailed_count = videos_that_are_fully_thumbnailed.count()
-        return render_to_response('localtv/admin/feed_wait.html',
-                                  {'feed': feed,
-                                   'fully_thumbnailed_count': fully_thumbnailed_count,
-                                   'task_id': task_id},
-                                  context_instance=RequestContext(request))
+        return render_to_response(
+            'localtv/admin/feed_wait.html',
+            {'feed': feed,
+             'fully_thumbnailed_count': fully_thumbnailed_count,
+             'task_id': task_id},
+            context_instance=RequestContext(request))
 
 
 @referrer_redirect
