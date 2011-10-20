@@ -34,7 +34,6 @@ try:
 except ImportError:
     import Image
 import time
-from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
 
 from django.db import models
@@ -878,7 +877,7 @@ class Feed(Source, StatusedThumbnailable):
 
         def skip(reason):
             if verbose:
-                print "Skipping %s: %s" % (scraped_video.title, reason)
+                print "Skipping %r: %s" % (scraped_video.title, reason)
             return {'index': index,
                    'total': scraped_feed.entry_count,
                    'video': None,
@@ -893,11 +892,6 @@ class Feed(Source, StatusedThumbnailable):
             feed=self, guid=guid).count():
             return skip('duplicate guid')
 
-        # for possible_link in entry.links:
-        #     if possible_link.get('rel') == 'via':
-        #         # original URL
-        #         link = possible_link['href']
-        #         break
         link = scraped_video.link
         if link:
             if clear_rejected:
@@ -916,38 +910,6 @@ class Feed(Source, StatusedThumbnailable):
 
         if scraped_video.file_url is None and scraped_video.embed_code is None:
             return skip('no file URL or embed code')
-
-        video_data = {
-            'name': scraped_video.title,
-            'guid': guid or '',
-            'site': self.site,
-            'description': scraped_video.description or '',
-            'file_url': scraped_video.file_url or '',
-            'file_url_length': None,
-            'file_url_mimetype': '',
-            'thumbnail_url': scraped_video.thumbnail_url or '',
-            'embed_code': scraped_video.embed_code or '',
-            'flash_enclosure_url': scraped_video.flash_enclosure_url or '',
-            'when_submitted': datetime.datetime.now(),
-            'when_approved': (
-                self.auto_approve and datetime.datetime.now() or None),
-            'status': initial_video_status,
-            'when_published': scraped_video.publish_datetime,
-            'feed': self,
-            'website_url': link,
-            }
-
-        # XXX not supported in vidscraper yet
-        # try:
-        #     file_url_length = int(
-        #         video_enclosure.get('filesize') or
-        #         video_enclosure.get('length'))
-        # except (ValueError, TypeError):
-        #     file_url_length = None
-        # video_data['file_url_length'] = file_url_length
-        
-        # video_data['file_url_mimetype'] = video_enclosure.get(
-        #     'type', '')
 
         authors = self.auto_authors.all()
         if not authors and scraped_video.user:
@@ -968,28 +930,23 @@ class Feed(Source, StatusedThumbnailable):
                         website=scraped_video.user_url or '')
                     authors = [author]
 
-        if video_data['description']:
-            soup = BeautifulSoup(video_data['description'])
+        video = Video.from_scraped_video(scraped_video,
+                                         feed=self,
+                                         status=initial_video_status)
+
+        if video.description:
+            soup = BeautifulSoup(video.description)
             for tag in soup.findAll(
                 'div', {'class': "miro-community-description"}):
-                video_data['description'] = tag.renderContents()
+                video.description = tag.renderContents()
                 break
-            video_data['description'] = sanitize(video_data['description'],
-                                                 extra_filters=['img'])
+            video.description = sanitize(video.description,
+                                     extra_filters=['img'])
 
-        # XXX not supported in vidscraper yet
-        # if entry.get('media_player'):
-        #     player = entry['media_player']
-        #     if isinstance(player, basestring):
-        #         video_data['embed_code'] = unescape(player)
-        #     elif player.get('content'):
-        #         video_data['embed_code'] = unescape(player['content'])
-        #     elif 'url' in player and not video_data['embed_code']:
-        #         video_data['embed_code'] = '<embed src="%(url)s">' % player
+        video.save()
 
-        video = Video.objects.create(**video_data)
         if verbose:
-                print 'Made video %i: %s' % (video.pk, video.name)
+                print 'Made video %i: %r' % (video.pk, video.name)
 
         if actually_save_thumbnails:
             try:
@@ -1728,16 +1685,18 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         if status is None:
             status = cls.ACTIVE
 
-        site = Site.objects.get_current()
         now = datetime.datetime.now()
         instance = cls(
-            site=site,
+            site=feed.site if feed else Site.objects.get_current(),
             feed=feed,
+            guid=video.guid or '',
             name=video.title or '',
             description=video.description or '',
             website_url=video.link or '',
             when_published=video.publish_datetime,
             file_url=video.file_url or '',
+            file_url_mimetype=video.file_url_mimetype or '',
+            file_url_length=video.file_url_length,
             when_submitted=now,
             when_approved=now if status == cls.ACTIVE else None,
             status=status,
@@ -1948,13 +1907,6 @@ def video__video_service(self):
     for service, regexp in VIDEO_SERVICE_REGEXES:
         if re.search(regexp, url, re.I):
             return service
-
-
-def save_scraped_tags(sender, instance, created, **kwargs):
-    if created and hasattr(instance, '_scraped_video'):
-        instance.tags = utils.get_or_create_tags(instance._scraped_video.tags)
-models.signals.post_save.connect(save_scraped_tags, sender=Video)
-
 
 class Watch(models.Model):
     """
