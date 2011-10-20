@@ -26,7 +26,6 @@ from django.views.generic import ListView
 from django.conf import settings
 from haystack.query import SearchQuerySet
 
-import localtv.settings
 from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
 from localtv.search.utils import (SortFilterViewMixin, NormalizedVideoList,

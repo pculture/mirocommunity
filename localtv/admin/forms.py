@@ -40,7 +40,6 @@ from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
 
-import localtv.settings
 from localtv import models
 from localtv import utils
 import localtv.tiers

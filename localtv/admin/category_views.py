@@ -20,7 +20,6 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-import localtv.settings
 from localtv.decorators import require_site_admin
 from localtv.models import Category, Video, SiteSettings
 from localtv.utils import MockQueryset

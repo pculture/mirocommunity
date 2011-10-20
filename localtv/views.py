@@ -29,7 +29,6 @@ from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 from django.views.generic import TemplateView
 
-import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
 from localtv.search.utils import SortFilterMixin, NormalizedVideoList
 
