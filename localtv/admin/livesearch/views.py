@@ -41,9 +41,9 @@ class LiveSearchSessionMixin(object):
 
     def _get_cache_key(self):
         include_terms, exclude_terms = parse_querystring(
-                                                self.form.cleaned_data['q'])
+            self.form.cleaned_data['q'])
         return "localtv-livesearch-%s_exclusions" % terms_for_cache(
-                                                   include_terms, exclude_terms)
+            include_terms, exclude_terms)
 
     def get_results(self):
         self.form = self.get_form()
@@ -58,15 +58,15 @@ class LiveSearchSessionMixin(object):
                 video.id = i
             exclusions = self.get_exclusions()
             results = filter(lambda v: (
-                                 v.file_url not in exclusions['file_urls'] and
-                                 v.website_url not in exclusions['website_urls']
-                            ), results)
+                    v.file_url not in exclusions['file_urls'] and
+                    v.website_url not in exclusions['website_urls']
+                    ), results)
         return results
 
     def get_exclusions(self):
         """
-        Returns a dictionary containing ``website_urls`` and ``file_urls`` which
-        should be excluded. Will raise an :exc:`AttributeError` if called
+        Returns a dictionary containing ``website_urls`` and ``file_urls``
+        which should be excluded. Will raise an :exc:`AttributeError` if called
         without ``self.form`` being valid and bound.
 
         """
@@ -189,9 +189,10 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
         if not request.GET.get('queue'):
             sitelocation = SiteLocation.objects.get_current()
             if not sitelocation.get_tier().can_add_more_videos():
-                return HttpResponse(content="You are over the video limit. You "
-                                            "will need to upgrade to approve "
-                                            "that video.", status=402)
+                return HttpResponse(
+                    content="You are over the video limit. You "
+                    "will need to upgrade to approve "
+                    "that video.", status=402)
 
         current_site = Site.objects.get_current()
         try:
