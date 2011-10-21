@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <span href="#" class="floatright"><span>This search is saved</span></span>
   {% else %}
   {% if query_string %}
-    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="add">
+    <a href="{% url localtv_admin_search_add %}?q={{ query_string|urlencode }}" class="add">
       <span>Save as a Source</span></a>
   {% endif %}
   {% endif %}

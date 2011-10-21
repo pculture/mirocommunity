@@ -1133,45 +1133,22 @@ class SavedSearch(Source):
     def __unicode__(self):
         return self.query_string
 
-    def update_items(self, verbose=False):
-        from localtv.admin import utils as admin_utils
-        raw_results = vidscraper.metasearch.intersperse_results(
-            admin_utils.metasearch_from_querystring(
-                self.query_string))
+    def update_items(self, verbose=False, video_iter=None):
+        if video_iter is None:
+            searches = vidscraper.auto_search(
+                self.query_string,
+                fields=['title', 'file_url', 'embed_code',
+                        'flash_enclosure_url', 'publish_datetime',
+                        'thumbnail_url', 'link', 'file_url_is_flaky', 'user',
+                        'user_url', 'tags', 'description', 'file_url', 'guid'])
+            def video_gen():
+                for suite in searches.values():
+                    for video in iter(suite):
+                        yield video
+            video_iter = video_gen()
 
-        raw_results = [admin_utils.MetasearchVideo.create_from_vidscraper_dict(
-                result) for result in raw_results]
-
-        raw_results = admin_utils.strip_existing_metasearchvideos(
-            [result for result in raw_results if result is not None],
-            self.site)
-
-        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
-            initial_status = Video.ACTIVE
-        else:
-            initial_status = Video.UNAPPROVED
-
-        authors = self.auto_authors.all()
-
-        for result in raw_results:
-            video = result.generate_video_model(self.site,
-                                                initial_status)
-            video.search = self
-            video.categories = self.auto_categories.all()
-            if authors.count():
-                video.authors = self.auto_authors.all()
-            else:
-                author, created = User.objects.get_or_create(
-                    username=video.video_service_user,
-                    defaults={'first_name': video.video_service_user})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    utils.get_profile_model().objects.create(
-                        user=author,
-                        website=video.video_service_url)
-                video.authors = [author]
-            video.save()
+        return sum(1 for video in self.bulk_import(video_iter, search=self,
+                                                   verbose=verbose))
 
     def source_type(self):
         return u'Search'

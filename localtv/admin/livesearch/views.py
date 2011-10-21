@@ -23,7 +23,6 @@ from django.http import HttpResponseBadRequest, HttpResponse, Http404
 from django.views.generic import ListView, DetailView, View
 
 from localtv.admin.livesearch.forms import LiveSearchForm
-from localtv.admin.livesearch.utils import parse_querystring, terms_for_cache
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv.models import SavedSearch, SiteLocation, Video
 
@@ -40,30 +39,28 @@ class LiveSearchSessionMixin(object):
         return self.form_class(self.request.GET)
 
     def _get_cache_key(self):
-        include_terms, exclude_terms = parse_querystring(
-            self.form.cleaned_data['q'])
-        return "localtv-livesearch-%s_exclusions" % terms_for_cache(
-            include_terms, exclude_terms)
+        return '%s_exclusions' % self.form._get_cache_key()
 
     def get_results(self):
         self.form = self.get_form()
         if self.form.is_valid():
-            results = self.form.get_results()
+            results = list(self.form.get_results())
         else:
             results = []
 
         if results:
+            print results
             # For now, we need to fake an id on each video.
             for i, video in enumerate(results, start=1):
                 video.id = i
-            exclusions = self.get_exclusions()
+            exclusions = self.get_exclusions(results)
             results = filter(lambda v: (
                     v.file_url not in exclusions['file_urls'] and
                     v.website_url not in exclusions['website_urls']
                     ), results)
         return results
 
-    def get_exclusions(self):
+    def get_exclusions(self, results):
         """
         Returns a dictionary containing ``website_urls`` and ``file_urls``
         which should be excluded. Will raise an :exc:`AttributeError` if called
@@ -82,7 +79,10 @@ class LiveSearchSessionMixin(object):
                                               file_url__in=file_urls
                                              ).values_list('website_url',
                                                            'file_url')
-            website_urls, file_urls = zip(*list(exclusions))
+            if exclusions:
+                website_urls, file_urls = zip(*list(exclusions))
+            else:
+                website_urls = file_urls = set()
             exclusions = {
                 'timestamp': datetime.now(),
                 'website_urls': set(website_urls),
@@ -116,20 +116,19 @@ class LiveSearchView(LiveSearchSessionMixin, ListView):
                               ).exists()
 
         context.update({
-            'current_video': current_video,
-            'form': self.form,
-            # TODO: What are these used for? Can they be eliminated?
-            'is_saved_search': None,
-            'saved_searches': SavedSearch.objects.filter(
-                                        site=Site.objects.get_current())
-        })
+                'current_video': current_video,
+                'form': self.form,
+                'is_saved_search': is_saved_search,
+                })
         
         # Provided for backwards-compatibility reasons only.
-        cleaned_data = getattr(form, 'cleaned_data', form.initial)
+        cleaned_data = getattr(self.form, 'cleaned_data', self.form.initial)
         context.update({
             'order_by': cleaned_data.get('order_by', 'latest'),
             'query_string': cleaned_data.get('q', '')
         })
+        return context
+
 livesearch = require_site_admin(LiveSearchView.as_view())
 
 

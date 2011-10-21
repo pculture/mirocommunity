@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
 from vidscraper.utils.search import intersperse_results
 
-from localtv.admin.livesearch.utils import parse_querystring, terms_for_cache
+from localtv.exceptions import InvalidVideo
 from localtv.models import Video
 
 
@@ -35,27 +35,28 @@ class LiveSearchForm(forms.Form):
     q = forms.CharField()
     order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST)
 
-    def _get_cache_key(self, include_terms, exclude_terms):
-        return 'localtv-livesearch-%s' % terms_for_cache(include_terms,
-                                                         exclude_terms)
+    def _get_cache_key(self):
+        return 'localtv-livesearch-%(q)s-%(order_by)s' % self.cleaned_data
 
-    def get_search_kwargs(self):
+    def get_search_api_keys(self):
         return {
             'vimeo_api_key': getattr(settings, 'VIMEO_API_KEY', None),
             'vimeo_api_secret': getattr(settings, 'VIMEO_API_SECRET', None),
         }
 
     def get_results(self):
-        include_terms, exclude_terms = parse_querystring(self.cleaned_data['q'])
-        cache_key = self._get_cache_key(include_terms, exclude_terms)
+        cache_key = self._get_cache_key()
         results = cache.get(cache_key)
         if results is None:
-            results = auto_search(include_terms, exclude_terms,
-                                  self.cleaned_data['order_by'],
-                                  **self.get_search_kwargs())
-
-            results = [Video.from_scraped_video(scraped) for scraped in
-                       intersperse_results(results, 40)]
+            results = auto_search(self.cleaned_data['q'],
+                                  order_by=self.cleaned_data['order_by'],
+                                  api_keys=self.get_search_api_keys())
+            results = list(intersperse_results(results, 40))
             cache.set(cache_key, results)
+        for scraped_video in results:
+            try:
+                yield Video.from_scraped_video(scraped_video,
+                                               commit=False)
+            except InvalidVideo:
+                pass
 
-        return results

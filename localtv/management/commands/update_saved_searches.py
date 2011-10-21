@@ -28,8 +28,9 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if site_too_old():
             return
+        verbose = (int(options.get('verbosity', 1)) > 1)
         for saved_search in models.SavedSearch.objects.all():
             try:
-                saved_search.update_items()
+                saved_search.update_items(verbose=verbose)
             except:
                 traceback.print_exc()
