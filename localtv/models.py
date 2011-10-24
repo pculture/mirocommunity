@@ -1645,10 +1645,8 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         if 'site' not in kwargs:
             kwargs['site'] = Site.objects.get_current()
 
-        m2m_data = {}
-        for key in ('authors', 'categories'):
-            if key in kwargs:
-                m2m_data[key] = kwargs.pop(key)
+        authors = kwargs.pop('authors', None)
+        categories = kwargs.pop('categories', None)
 
         now = datetime.datetime.now()
         instance = cls(
@@ -1670,7 +1668,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             video_service_url=video.user_url or '',
             **kwargs
         )
-                
+
         if instance.description:
             soup = BeautifulSoup(video.description)
             for tag in soup.findAll(
@@ -1680,18 +1678,29 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])
 
+        if authors is not None:
+            instance._scraped_authors = authors
+        if categories is not None:
+            instance._scraped_categories = categories
+
+        instance._scraped_video = video
+        post_video_from_scraped.send(sender=cls, instance=instance,
+                                            scraped_video=video)
+
         def save_m2m():
-            for key, value in m2m_data.items():
-                setattr(instance, key, value)
-            if video.tags:
-                instance.tags = utils.get_or_create_tags(video.tags)
-        
+            if hasattr(instance, '_scraped_authors'):
+                instance.authors = instance._scraped_authors
+            if hasattr(instance, '_scraped_categories'):
+                instance.categories = instance._scraped_categories
+            if hasattr(instance, '_scraped_video'):
+                instance.tags = utils.get_or_create_tags(
+                                          instance._scraped_video.tags or [])
+
         if commit:
             instance.save()
             save_m2m()
         else:
             instance.save_m2m = save_m2m
-            instance._scraped_video = video
         return instance
 
     def get_tags(self):
