@@ -19,6 +19,7 @@ from django.utils import simplejson
 
 from localtv import models
 
+import vidscraper
 
 class Command(BaseCommand):
 
@@ -38,27 +39,27 @@ class Command(BaseCommand):
         except (KeyError, ValueError):
             self.verbose = False
 
+        video_iter = vidscraper.auto_feed(
+            feed.feed_url,
+            crawl=True,
+            fields=['title', 'file_url', 'embed_code', 'flash_enclosure_url',
+                    'publish_datetime', 'thumbnail_url', 'link',
+                    'file_url_is_flaky', 'user', 'user_url',
+                    'tags', 'description', 'file_url', 'guid'])
+        video_iter.load()
+
         stats = {
-            'total': 0,
-            'imported': 0,
-            'skipped': 0
+            'total': video_iter.entry_count,
             }
+        imported = 0
         try:
-            for i in feed._update_items_generator(
+            imported = feed.update_items(
                 verbose=self.verbose,
                 clear_rejected=True,
-                actually_save_thumbnails=True,
-                max_results=100,
-                crawl=True):
-                if not models.Feed.objects.filter(pk=feed.pk).exists():
-                    # someone deleted the feed, quit
-                    break
-                stats['total'] += 1
-                if i['video'] is not None:
-                    stats['imported'] += 1
-                else:
-                    stats['skipped'] += 1
+                video_iter=video_iter)
         finally:
             feed.status = models.Feed.ACTIVE
             feed.save()
+        stats['imported'] = imported
+        stats['skipped'] = video_iter.entry_count - imported
         print simplejson.dumps(stats),

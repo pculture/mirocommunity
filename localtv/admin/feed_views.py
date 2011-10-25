@@ -40,8 +40,6 @@ from localtv import tasks, utils
 from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
 
-from vidscraper.utils.feedparser import get_item_thumbnail_url
-
 Profile = utils.get_profile_model()
 
 VIDEO_SERVICE_TITLES = (
@@ -62,13 +60,9 @@ def add_feed(request):
 
     feed_url = add_form.cleaned_data['feed_url']
     scraped_feed = add_form.cleaned_data['scraped_feed']
-    parsed_feed = add_form.cleaned_data['parsed_feed']
 
-    if scraped_feed:
-        scraped_feed.load()
-        title = scraped_feed.title or ''
-    else:
-        title = getattr(parsed_feed.feed, 'title', '') or feed_url
+    scraped_feed.load()
+    title = scraped_feed.title or ''
 
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
@@ -79,6 +73,9 @@ def add_feed(request):
     defaults = {
         'name': title,
         'feed_url': feed_url,
+        'webpage': scraped_feed.webpage or '',
+        'description': scraped_feed.description or '',
+        'etag': scraped_feed.etag or '',
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
         'status': Feed.UNAPPROVED,
@@ -86,20 +83,7 @@ def add_feed(request):
 
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
-    if scraped_feed:
-        defaults.update({
-                'webpage': scraped_feed.webpage or '',
-                'description': scraped_feed.description or '',
-                'etag': scraped_feed.etag or ''
-                })
-        video_count = scraped_feed.entry_count
-    else:
-        defaults.update({
-                'webpage': parsed_feed.feed.get('link', ''),
-                'description': parsed_feed.feed.get('summary', ''),
-                'etag': parsed_feed.get('etag', ''),
-                })
-        video_count = len(parsed_feed.entries)
+    video_count = scraped_feed.entry_count
 
     if request.method == 'POST':
         if 'cancel' in request.POST:
@@ -119,14 +103,8 @@ def add_feed(request):
             for key, value in form.cleaned_data.items():
                 setattr(feed, key, value)
 
-            try:
-                if scraped_feed:
-                    thumbnail_url = get_item_thumbnail_url(
-                        scraped_feed.parsed_feed)
-                else:
-                    thumbnail_url = get_item_thumbnail_url(parsed_feed.feed)
-            except KeyError:
-                thumbnail_url = None
+            thumbnail_url = scraped_feed.thumbnail_url
+
             if thumbnail_url:
                 try:
                     thumbnail_file = ContentFile(
