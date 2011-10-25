@@ -53,10 +53,10 @@ class LiveSearchForm(forms.Form):
                                   api_keys=self.get_search_api_keys())
             results = list(intersperse_results(results, 40))
             cache.set(cache_key, results)
-        for scraped_video in results:
+        for vidscraper_video in results:
             try:
-                yield Video.from_scraped_video(scraped_video,
-                                               commit=False)
+                yield Video.from_vidscraper_video(vidscraper_video,
+                                                  commit=False)
             except InvalidVideo:
                 pass
 

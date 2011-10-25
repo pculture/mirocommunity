@@ -67,7 +67,7 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.signals import post_video_from_scraped
+from localtv.signals import post_video_from_vidscraper
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -720,13 +720,13 @@ class Source(Thumbnailable):
                     actually_save_thumbnails=True, **kwargs):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
-        returns :class:`vidscraper.suites.base.ScrapedVideo` objects.  We use
-        :method:`.Video.from_scraped_video to map the Vidscraper fields to
+        returns :class:`vidscraper.suites.base.Video` objects.  We use
+        :method:`.Video.from_vidscraper_video to map the Vidscraper fields to
         Video attributes.
         """
         def skip(video, reason, *args):
             if verbose:
-                print "Skipping %r: %s" % (scraped_video.title, reason % args)
+                print "Skipping %r: %s" % (video.title, reason % args)
 
         if 'status' not in kwargs:
             kwargs['status'] = self._default_video_status()
@@ -745,37 +745,37 @@ class Source(Thumbnailable):
 
         guids = set(Video.objects.filter(**feed_filters).values_list('guid', flat=True))
 
-        for scraped_video in iter(videos):
-            if not scraped_video.title:
-                skip(scraped_video, 'failed to scrape basic data')
+        for vidscraper_video in iter(videos):
+            if not vidscraper_video.title:
+                skip(vidscraper_video, 'failed to scrape basic data')
                 continue
-            elif scraped_video.guid and scraped_video.guid in guids:
-                skip(scraped_video, 'duplicate guid')
+            elif vidscraper_video.guid and vidscraper_video.guid in guids:
+                skip(vidscraper_video, 'duplicate guid')
                 continue
-            elif not scraped_video.link:
-                skip(scraped_video, 'no link')
+            elif not vidscraper_video.link:
+                skip(vidscraper_video, 'no link')
                 continue
             else:
                 videos_with_link = Video.objects.filter(
-                    website_url=scraped_video.link)
+                    website_url=vidscraper_video.link)
                 if clear_rejected:
                     videos_with_link.rejected().delete()
                 if videos_with_link.exists():
-                    skip(scraped_video, 'duplicate link')
+                    skip(vidscraper_video, 'duplicate link')
                     continue
             try:
-                scraped_video.load()
+                vidscraper_video.load()
             except Exception:
-                logging.exception('while importing %r' % scraped_video.link)
+                logging.exception('while importing %r' % vidscraper_video.link)
 
-            if not scraped_video.file_url and not scraped_video.embed_code:
-                skip(scraped_video, 'no file URL or embed code')
+            if not vidscraper_video.file_url and not vidscraper_video.embed_code:
+                skip(vidscraper_video, 'no file URL or embed code')
                 continue
 
             if not kwargs.get('authors'):
                 kwargs['authors'] = []
-                if scraped_video.user:
-                    name = scraped_video.user
+                if vidscraper_video.user:
+                    name = vidscraper_video.user
                     if ' ' in name:
                         first, last = name.split(' ', 1)
                     else:
@@ -789,7 +789,7 @@ class Source(Thumbnailable):
                         author.save()
                         utils.get_profile_model().objects.create(
                             user=author,
-                            website=scraped_video.user_url or '')
+                            website=vidscraper_video.user_url or '')
                         kwargs['authors'] = [author]
                 if not kwargs['authors']:
                     kwargs['authors'] = auto_authors
@@ -797,10 +797,10 @@ class Source(Thumbnailable):
             if not kwargs.get('categories'):
                 kwargs['categories'] = auto_categories
 
-            video = Video.from_scraped_video(scraped_video,
-                                             **kwargs)
-            if scraped_video.guid:
-                guids.add(scraped_video.guid)
+            video = Video.from_vidscraper_video(vidscraper_video,
+                                                **kwargs)
+            if vidscraper_video.guid:
+                guids.add(vidscraper_video.guid)
 
             if verbose:
                 print 'Made video %i: %r' % (video.pk, video.name)
@@ -1629,12 +1629,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                  'slug': slugify(self.name)[:30]})
 
     @classmethod
-    def from_scraped_video(cls, video, status=None, commit=True, **kwargs):
+    def from_vidscraper_video(cls, video, status=None, commit=True, **kwargs):
         """
         Builds a :class:`Video` instance from a
-        :class:`vidscraper.ScrapedVideo` instance. If `commit` is False, the
-        :class:`Video` will not be saved.  There will be a `save_m2m()` method
-        that must be called after you call `save()`.
+        :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
+        the :class:`Video` will not be saved.  There will be a `save_m2m()`
+        method that must be called after you call `save()`.
 
         """
         if not video.embed_code and not video.file_url:
@@ -1683,18 +1683,18 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         if categories is not None:
             instance._scraped_categories = categories
 
-        instance._scraped_video = video
+        instance._vidscraper_video = video
         post_video_from_scraped.send(sender=cls, instance=instance,
-                                            scraped_video=video)
+                                            vidscraper_video=video)
 
         def save_m2m():
             if hasattr(instance, '_scraped_authors'):
                 instance.authors = instance._scraped_authors
             if hasattr(instance, '_scraped_categories'):
                 instance.categories = instance._scraped_categories
-            if hasattr(instance, '_scraped_video'):
+            if hasattr(instance, '_vidscraper_video'):
                 instance.tags = utils.get_or_create_tags(
-                                          instance._scraped_video.tags or [])
+                                          instance._vidscraper_video.tags or [])
 
         if commit:
             instance.save()
@@ -1705,7 +1705,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
     def get_tags(self):
         if self.pk is None:
-            scraped = getattr(self, '_scraped_video', None)
+            scraped = getattr(self, '_vidscraper_video', None)
             return getattr(scraped, 'tags', [])
         return self.tags
 
