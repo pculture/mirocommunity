@@ -1684,7 +1684,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             instance._scraped_categories = categories
 
         instance._vidscraper_video = video
-        post_video_from_scraped.send(sender=cls, instance=instance,
+        post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video)
 
         def save_m2m():
