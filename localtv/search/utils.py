@@ -160,20 +160,21 @@ class SortFilterMixin(object):
                         new_filter_objects = list(filter_objects)
                     except TypeError:
                         new_filter_objects = []
-
                 clean_filter_dict[filter_name] = new_filter_objects
                 if new_filter_objects:
                     pks = [obj.pk for obj in new_filter_objects]
                     sq = None
 
                     for field in filter_def['fields']:
-                        new_sq = SQ(**{"%s__in" % field: pks})
+                        if field.endswith('s'): # plural fields us __in
+                            new_sq = SQ(**{"%s__in" % field: pks})
+                        else: # regular fields use ==
+                            new_sq = SQ(**{field: pks})
                         if sq is None:
                             sq = new_sq
                         else:
                             sq |= new_sq
                     searchqueryset = searchqueryset.filter(sq)
-
         return searchqueryset, clean_filter_dict
 
 

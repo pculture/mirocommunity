@@ -107,7 +107,7 @@ POPULAR_QUERY_TIMEOUT = getattr(settings, 'LOCALTV_POPULAR_QUERY_TIMEOUT',
 
 
 class BitLyWrappingURLField(models.URLField):
-    def get_db_prep_value(self, value):
+    def get_db_prep_value(self, value, *args, **kwargs):
         if not getattr(settings, 'BITLY_LOGIN'):
             return value
 
@@ -752,10 +752,7 @@ class Source(Thumbnailable):
             elif vidscraper_video.guid and vidscraper_video.guid in guids:
                 skip(vidscraper_video, 'duplicate guid')
                 continue
-            elif not vidscraper_video.link:
-                skip(vidscraper_video, 'no link')
-                continue
-            else:
+            elif vidscraper_video.link:
                 videos_with_link = Video.objects.filter(
                     website_url=vidscraper_video.link)
                 if clear_rejected:
@@ -774,7 +771,9 @@ class Source(Thumbnailable):
 
             if not kwargs.get('authors'):
                 kwargs['authors'] = []
-                if vidscraper_video.user:
+                if auto_authors:
+                    kwargs['authors'] = auto_authors
+                elif vidscraper_video.user:
                     name = vidscraper_video.user
                     if ' ' in name:
                         first, last = name.split(' ', 1)
@@ -791,8 +790,6 @@ class Source(Thumbnailable):
                             user=author,
                             website=vidscraper_video.user_url or '')
                         kwargs['authors'] = [author]
-                if not kwargs['authors']:
-                    kwargs['authors'] = auto_authors
 
             if not kwargs.get('categories'):
                 kwargs['categories'] = auto_categories
@@ -942,7 +939,7 @@ class Feed(Source, StatusedThumbnailable):
                         'file_url_is_flaky', 'user', 'user_url',
                         'tags', 'description', 'file_url', 'guid'])
         video_iter.load()
-        imported = sum(1 for video in self.bulk_import(video_iter,
+        imported = sum(1 for video in self.bulk_import(reversed(video_iter),
                                                        feed=self,
                                                        verbose=verbose))
         
@@ -1189,22 +1186,21 @@ class OriginalVideo(VideoBase):
             return {}
 
         remote_video_was_deleted = False
-
+        fields = ['title', 'description', 'tags', 'thumbnail_url']
         if override_vidscraper_result is not None:
-            scraped_data = override_vidscraper_result
+            vidscraper_video = override_vidscraper_result
         else:
             try:
-                scraped_data = vidscraper.auto_scrape(video.website_url,
-                                                      fields=['title', 'description',
-                                                              'tags', 'thumbnail_url'])
+                vidscraper_video = vidscraper.auto_scrape(
+                    video.website_url, fields=fields)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
-        if remote_video_was_deleted or all([x is None for x in scraped_data.values()]):
+        if remote_video_was_deleted or all(not getattr(vidscraper_video, field)
+                                           for field in fields):
             remote_video_was_deleted = True
-
         # If the scraped_data has all None values, then infer that the remote video was
         # deleted.
 
@@ -1213,30 +1209,40 @@ class OriginalVideo(VideoBase):
                 return {} # We already notified the admins of the deletion.
             else:
                 return {'deleted': True}
+        elif self.remote_video_was_deleted:
+            return {'deleted': False}
 
         changed_fields = {}
-        if 'title' in scraped_data:
-            scraped_data['name'] = scraped_data['title']
-            del scraped_data['title']
 
-        for field in scraped_data:
+        for field in fields:
             if field == 'tags': # special case tag checking
-                if scraped_data['tags'] is None:
+                if vidscraper_video.tags is None:
                     # failed to get tags, so don't send a spurious change
                     # message
                     continue
-                new = utils.unicode_set(scraped_data['tags'])
+                new = utils.unicode_set(vidscraper_video.tags)
                 if getattr(settings, 'FORCE_LOWERCASE_TAGS'):
                     new = utils.unicode_set(name.lower() for name in new)
                 old = utils.unicode_set(self.tags)
                 if new != old:
                     changed_fields[field] = new
-            elif utils.normalize_newlines(scraped_data[field]) != utils.normalize_newlines(getattr(self, field)):
-                changed_fields[field] = scraped_data[field]
             elif field == 'thumbnail_url':
-                right_now = datetime.datetime.utcnow()
-                if self._remote_thumbnail_appears_changed():
-                    changed_fields['thumbnail_updated'] = right_now
+                if vidscraper_video.thumbnail_url != self.thumbnail_url:
+                    changed_fields[field] = vidscraper_video.thumbnail_url
+                else:
+                    right_now = datetime.datetime.utcnow()
+                    if self._remote_thumbnail_appears_changed():
+                        changed_fields['thumbnail_updated'] = right_now
+            else:
+                if field == 'title':
+                    model_field = 'name'
+                else:
+                    model_field = field
+                if (utils.normalize_newlines(
+                        getattr(vidscraper_video, field)) !=
+                    utils.normalize_newlines(
+                        getattr(self, model_field))):
+                    changed_fields[model_field] = getattr(vidscraper_video, field)
 
         return changed_fields
 
@@ -1332,7 +1338,7 @@ class OriginalVideo(VideoBase):
             return # don't need to do anything
 
         # Was the remote video deleted?
-        if changed_fields.get('deleted', None):
+        if changed_fields.pop('deleted', None):
             # Have we already sent the notification
             # Mark inside the OriginalVideo that the video has been deleted.
             # Yes? Uh oh.
@@ -1359,10 +1365,6 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, value)
                 setattr(self.video, field, value)
                 changed_model = True
-
-        if self.remote_video_was_deleted:
-            self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
-            changed_model = True
 
         if self.remote_video_was_deleted:
             self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
@@ -1673,28 +1675,22 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             soup = BeautifulSoup(video.description)
             for tag in soup.findAll(
                 'div', {'class': "miro-community-description"}):
-                video.description = tag.renderContents()
+                instance.description = tag.renderContents()
                 break
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])
 
-        if authors is not None:
-            instance._scraped_authors = authors
-        if categories is not None:
-            instance._scraped_categories = categories
-
         instance._vidscraper_video = video
-        post_video_from_vidscraper.send(sender=cls, instance=instance,
-                                            vidscraper_video=video)
 
         def save_m2m():
-            if hasattr(instance, '_scraped_authors'):
-                instance.authors = instance._scraped_authors
-            if hasattr(instance, '_scraped_categories'):
-                instance.categories = instance._scraped_categories
-            if hasattr(instance, '_vidscraper_video'):
-                instance.tags = utils.get_or_create_tags(
-                                          instance._vidscraper_video.tags or [])
+            if authors:
+                instance.authors = authors
+            if categories:
+                instance.categories = categories
+            if video.tags:
+                instance.tags = utils.get_or_create_tags(video.tags) 
+            post_video_from_vidscraper.send(sender=cls, instance=instance,
+                                            vidscraper_video=video)
 
         if commit:
             instance.save()
@@ -1705,8 +1701,8 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
     def get_tags(self):
         if self.pk is None:
-            scraped = getattr(self, '_vidscraper_video', None)
-            return getattr(scraped, 'tags', [])
+            vidscraper_video = getattr(self, '_vidscraper_video', None)
+            return getattr(vidscraper_video, 'tags', None) or []
         return self.tags
 
     def try_to_get_file_url_data(self):
@@ -1931,9 +1927,9 @@ class VideoModerator(CommentModerator):
             object_pk=video.pk,
             is_public=True,
             is_removed=False,
-            submit_date__lt=comment.submit_date,
+            submit_date__lte=comment.submit_date,
             user__email__isnull=False).exclude(
-            user__email=''):
+            user__email='').exclude(pk=comment.pk):
             if (previous_comment.user not in previous_users and
                 notification.should_send(previous_comment.user,
                                          comment_post_comment, "1") and
