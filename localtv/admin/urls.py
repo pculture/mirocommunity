@@ -15,12 +15,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import url, patterns
 
-urlpatterns = patterns(
-    'localtv.admin.views',
-    (r'^$', 'index', {}, 'localtv_admin_index'),
-    (r'^hide_get_started$', 'hide_get_started', {}, 'localtv_admin_hide_get_started'))
+from localtv.admin.dashboard.views import DashboardView
+
+urlpatterns = patterns('',
+    url(r'^$', DashboardView.as_view(), name='localtv_admin_dashboard'),
+)
+
+urlpatterns += patterns(
+    'localtv.admin.api.views',
+    url(r'^hide_get_started$', 'hide_get_started', name='localtv_admin_hide_get_started')
+)
 
 urlpatterns += patterns(
     'localtv.admin.approve_reject_views',

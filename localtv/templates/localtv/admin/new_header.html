@@ -23,7 +23,7 @@ not an admin. If you are an admin, we show some special links:
 {% endcomment %}
     {% if user_is_admin %}
         {% if sitelocation.should_show_dashboard %}
-        <li id="admin_dash"><a href="{% url localtv_admin_index %}"><span>Dashboard</span></a></li>
+        <li id="admin_dash"><a href="{% url localtv_admin_dashboard %}"><span>Dashboard</span></a></li>
         {% endif %}
 
     <li id="admin_videos"><a href="{% url localtv_admin_approve_reject %}">Videos</a></li>
