@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import datetime
 import os.path
 import shutil
@@ -98,6 +99,11 @@ class BaseTestCase(TestCase):
         settings.MEDIA_ROOT = self.tmpdir
         Profile.__dict__['logo'].field.storage = \
             storage.FileSystemStorage(self.tmpdir)
+        self.old_CACHES = settings.CACHES
+        settings.CACHES = {
+            'default':
+                {'BACKEND':
+                     'django.core.cache.backends.dummy.DummyCache'}}
         mail.outbox = [] # reset any email at the start of the suite
         self.factory = FakeRequestFactory()
 
@@ -111,6 +117,7 @@ class BaseTestCase(TestCase):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
+        settings.CACHES = self.old_CACHES
         Profile.__dict__['logo'].field.storage = \
             storage.default_storage
         shutil.rmtree(self.tmpdir)
@@ -176,33 +183,24 @@ class BaseTestCase(TestCase):
 # Feed tests
 # -----------------------------------------------------------------------------
 
-class MockVidScraper(object):
-
-    errors = vidscraper.errors
-
-    def auto_scrape(self, link, fields=None):
-        raise vidscraper.errors.Error('could not scrape %s' % link)
-
 class FeedModelTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds']
 
-    def setUp(self):
-        BaseTestCase.setUp(self)
-        self.vidscraper = models.vidscraper
-        models.vidscraper = MockVidScraper()
-
-    def tearDown(self):
-        BaseTestCase.tearDown(self)
-        models.vidscraper = self.vidscraper
-        del self.vidscraper
-
-    def _parse_feed(self, filename):
+    def _parse_feed(self, filename, force_url=False):
         """
-        Parses and returns the feed stored as <filename> in our testdata.
+        Returns a :class:`vidscraper.suites.base.Feed` for the feed stored as
+        <filename> in our testdata.  If `force_url` is True, we'll load the URL
+        from the feed and use that to get a suite.
         """
-        data = open(self._data_file(filename)).read()
-        return feedparser.parse(data)
+        path = self._data_file(filename)
+        if force_url:
+            fp = feedparser.parse(path)
+            vidscraper_feed = vidscraper.auto_feed(fp.feed.link)
+            vidscraper_feed.get_first_url = lambda: path
+        else:
+            vidscraper_feed = vidscraper.auto_feed(path)
+        return vidscraper_feed
 
     def test_auto_approve_True(self):
         """
@@ -211,7 +209,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed.rss'))
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.ACTIVE).count(), 5)
@@ -224,7 +222,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed.rss'))
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
@@ -236,20 +234,20 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = False
-        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed.rss'))
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
 
-    def test_uses_given_parsed_feed(self):
+    def test_uses_given_video_iter(self):
         """
         When adding entries in update_items with a given FeedParser instance,
         the method should not download the feed itself.
         """
-        parsed_feed = feedparser.parse(self._data_file('feed.rss'))
+        video_iter = self._parse_feed('feed.rss')
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=parsed_feed)
-        parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
+        feed.update_items(video_iter=video_iter)
+        parsed_guids = reversed([entry.guid for entry in video_iter])
         db_guids = Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
@@ -260,9 +258,9 @@ class FeedModelTestCase(BaseTestCase):
         in reversed order (oldest first)
         """
         feed = Feed.objects.get(pk=1)
-        parsed_feed = self._parse_feed('feed.rss')
-        feed.update_items(parsed_feed=parsed_feed)
-        parsed_guids = reversed([entry.guid for entry in parsed_feed.entries])
+        video_iter = self._parse_feed('feed.rss')
+        feed.update_items(video_iter=video_iter)
+        parsed_guids = reversed([entry.guid for entry in video_iter])
         db_guids = Video.objects.order_by('id').values_list('guid',
                                                                    flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
@@ -273,7 +271,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_guid.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_duplicate_guid.rss'))
         self.assertEquals(Video.objects.count(), 1)
         self.assertEquals(Video.objects.get().name, 'Old Item')
 
@@ -283,7 +281,7 @@ class FeedModelTestCase(BaseTestCase):
         skipped.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_duplicate_link.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_duplicate_link.rss'))
         self.assertEquals(Video.objects.count(), 1)
         self.assertEquals(Video.objects.get().name, 'Old Item')
 
@@ -302,7 +300,7 @@ class FeedModelTestCase(BaseTestCase):
         * tags
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed.rss'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
@@ -334,7 +332,7 @@ class FeedModelTestCase(BaseTestCase):
         A link in the feed to the original source should be optional.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_without_link.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed_without_link.rss'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -345,7 +343,7 @@ class FeedModelTestCase(BaseTestCase):
         think is media, should be imported.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_without_mime_type.rss'))
+        feed.update_items(video_iter=self._parse_feed('feed_without_mime_type.rss'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -354,34 +352,25 @@ class FeedModelTestCase(BaseTestCase):
         """
         Vimeo RSS feeds should include the correct data.
         """
-        models.vidscraper = self.vidscraper
         feed = Feed.objects.get(pk=1)
         feed.auto_authors = []
-        feed.update_items(parsed_feed=self._parse_feed('vimeo.rss'))
+        video_iter = vidscraper.auto_feed('http://vimeo.com/user1751935/videos/')
+        video_iter.get_url_response = lambda u: json.load(file(
+                self._data_file('vimeo.json')))
+        feed.update_items(video_iter=video_iter)
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
         self.assertEquals(video.name, u'Tishana - Pro-Choicers on Stupak')
         self.assertEquals(video.description, '\
-<p>Tishana from SPARK Reproductive Justice talking about the right to choose \
-after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
+Tishana from SPARK Reproductive Justice talking about the right to choose \
+after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         self.assertEquals(video.website_url, 'http://vimeo.com/7981161')
-        self.assertEquals(video.embed_code,
-                          '<object width="425" height="344">'
-                          '<param name="allowfullscreen" value="true">'
-                          '<param name="allowscriptaccess" value="always">'
-                          '<param name="movie" value="http://vimeo.com/'
-                          'moogaloop.swf?show_byline=1&amp;fullscreen=1&amp;'
-                          'clip_id=7981161&amp;color=&amp;'
-                          'server=vimeo.com&amp;show_title=1&amp;'
-                          'show_portrait=0"><embed src="http://vimeo.com/'
-                          'moogaloop.swf?show_byline=1&amp;fullscreen=1&amp;'
-                          'clip_id=7981161&amp;color=&amp;'
-                          'server=vimeo.com&amp;show_title=1&amp;'
-                          'show_portrait=0" allowscriptaccess="always" '
-                          'height="344" width="425" allowfullscreen="true" '
-                          'type="application/x-shockwave-flash"></embed>'
-                          '</object>')
+        self.assertEquals(
+            video.embed_code,
+            '<iframe src="http://player.vimeo.com/video/7981161" width="320" '
+            'height="240" frameborder="0" webkitAllowFullScreen '
+            'allowFullScreen></iframe>')
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertTrue(video.thumbnail_url.endswith('.jpg'),
@@ -405,15 +394,15 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009</p>')
         """
         Youtube RSS feeds should include the correct data.
         """
-        models.vidscraper = self.vidscraper
         feed = Feed.objects.get(pk=1)
         user = User.objects.get(pk=1)
         feed.auto_authors = [user]
-        feed.update_items(parsed_feed=self._parse_feed('youtube.rss'))
+        feed.save()
+        feed.update_items(video_iter=self._parse_feed('youtube.rss', force_url=True))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
-                          u'tag:youtube.com,2008:video:BBwtzeZdoHQ')
+                          u'http://gdata.youtube.com/feeds/api/videos/BBwtzeZdoHQ')
         self.assertEquals(video.name,
                           'Dr. Janice Key Answers Questions about Preventing '
                           'Teen Pregnancy')
@@ -422,14 +411,20 @@ Dr. Janice Key, Professor of Adolescent Medicine at the Medical \
 University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertEquals(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
-        self.assertEquals(video.embed_code,
-                          '<iframe width="480" height="390"'
-                          ' src="http://www.youtube.com/embed/BBwtzeZdoHQ"'
-                          ' frameborder="0" allowfullscreen></iframe>')
+        self.assertEquals(
+            video.embed_code,
+            '<object width="480" height="270"><param name="movie" value="'
+            'http://www.youtube.com/v/BBwtzeZdoHQ?version=3&feature=oembed">'
+            '</param><param name="allowFullScreen" value="true"></param>'
+            '<param name="allowscriptaccess" value="always"></param><embed '
+            'src="http://www.youtube.com/v/BBwtzeZdoHQ?version=3&feature='
+            'oembed" type="application/x-shockwave-flash" width="480" '
+            'height="270" allowscriptaccess="always" allowfullscreen="true">'
+            '</embed></object>')
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
-                          'http://img.youtube.com/vi/BBwtzeZdoHQ/hqdefault.jpg'
+                          'http://i.ytimg.com/vi/BBwtzeZdoHQ/0.jpg'
                           )
         self.assertEquals(video.when_published,
                           datetime.datetime(2010, 1, 18, 19, 41, 21))
@@ -449,7 +444,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds should be handled correctly,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed.atom'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'http://www.example.org/entries/1')
@@ -474,8 +469,9 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds generated by Miro Community should be handled as if the item
         was imported from the original feed.
         """
+        self.maxDiff = None
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_from_mc.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_from_mc.atom'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -519,7 +515,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         URL.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_link_via.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_link_via.atom'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
@@ -531,7 +527,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         their content imported,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_media.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_media.atom'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
@@ -546,7 +542,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         embeddable player (with <media:player> should have that code included,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_media_player.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_media_player.atom'))
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
@@ -558,7 +554,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         don't specify a video another way) should be ignored.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_invalid_media.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_invalid_media.atom'))
         self.assertEquals(feed.video_set.count(), 0)
 
     def test_entries_atom_with_long_item(self):
@@ -567,7 +563,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         so they fit in the database.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(parsed_feed=self._parse_feed('feed_with_long_item.atom'))
+        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
 
     def test_video_service(self):
@@ -798,10 +794,10 @@ class ViewTestCase(BaseTestCase):
         page_num = response.context['page_obj'].number
         videos = list(response.context['video_list'])
         expected_sqs_results = [r.object for r in expected_sqs if
-                        r.object.status == Video.ACTIVE and isinstance(r.object, Video)]
+                                r.object.status == Video.ACTIVE]
         start = (page_num - 1) * per_page
         end = page_num * per_page
-
+        
         self.assertEquals(page_num, expected_page_num)
         self.assertEquals(len(paginator.object_list),
                           expected_object_count)
@@ -821,7 +817,9 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response, 
-                    SearchQuerySet().filter(content='blender'), 16, 1)
+                                 SearchQuerySet().models(models.Video).filter(
+                site=1, content='blender'),
+                                 16, 1)
 
     def test_video_search_phrase(self):
         """
@@ -834,8 +832,9 @@ class ViewTestCase(BaseTestCase):
         self.assertEquals(response.template[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response,
-                        SearchQuerySet().filter(content='making of elephants'),
-                        4, 1)
+                                 SearchQuerySet().models(models.Video).filter(
+                site=1, content='making of elephants'),
+                                 4, 1)
 
     def test_video_search_no_query(self):
         """
@@ -857,12 +856,12 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'blender',
                           'page': 2})
-        paginator = response.context['paginator']
-        per_page = paginator.per_page
 
         self.assertStatusCodeEquals(response, 200)
         self.assertSearchResults(response,
-                    SearchQuerySet().filter(content='blender'), 16, 2)
+                                 SearchQuerySet().models(models.Video).filter(
+                site=1, content='blender'),
+                                 16, 2)
 
 
     def test_video_search_includes_tags(self):
@@ -995,7 +994,9 @@ class ViewTestCase(BaseTestCase):
                          {'q': '-blender'})
         self.assertStatusCodeEquals(response, 200)
         self.assertSearchResults(response,
-                    SearchQuerySet().exclude(content='blender'), 7, 1)
+                                 SearchQuerySet().models(models.Video).filter(
+                site=1).exclude(content='blender'),
+                                 7, 1)
 
     def test_video_search_unicode(self):
         """
@@ -1780,20 +1781,20 @@ class OriginalVideoModelTestCase(BaseTestCase):
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
         'name': u'Miro appreciates the support of our sponsors',
-        'description': u"""<span><br>\n\nMiro is a non-profit project working \
+        'description': u"""<p>Miro is a non-profit project working \
 to build a better media future as television moves online. We provide our \
 software free to our users and other developers, despite the significant cost \
 of developing the software. This work is made possible in part by the support \
 of our sponsors. Please watch this video for a message from our sponsors. If \
-you wish to support Miro yourself, please donate $10 today.</span>""",
-        'tags': u'"Default Category"',
+you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2010, 12, 22, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2011, 10, 28, 6, 56, 41),
         }
 
 
     def setUp(self):
+        self.maxDiff = None
         BaseTestCase.setUp(self)
         self.video = Video.objects.create(
             site=self.site_location.site,
@@ -1801,7 +1802,6 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
             name=self.BASE_DATA['name'],
             description=self.BASE_DATA['description'],
             thumbnail_url=self.BASE_DATA['thumbnail_url'])
-        self.video.tags = self.BASE_DATA['tags']
         self.original = self.video.original
         self.original.thumbnail_updated = self.BASE_DATA['thumbnail_updated']
         self.original.save()
@@ -1863,10 +1863,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         If the tags have changed, OriginalVideo.changed_fields() should return
         the new tags.
         """
-        tag = 'Default Category'
-        if settings.FORCE_LOWERCASE_TAGS:
-            tag = tag.lower()
-        self.assertChanges('tags', ['Different', 'Tags'], set((tag,)))
+        self.assertChanges('tags', ['Different', 'Tags'], set())
 
     def test_thumbnail_url_change(self):
         """
@@ -1927,10 +1924,6 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
 
         self.original.update()
 
-        tag = 'Default Category'
-        if settings.FORCE_LOWERCASE_TAGS:
-            tag = tag.lower()
-
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
@@ -1941,7 +1934,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         self.assertEquals(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
         self.assertEquals(set(tag.name for tag in original.tags),
-                          set((tag,)))
+                          set())
         self.assertEquals(original.video.thumbnail_url,
                           self.video.thumbnail_url) # didn't change
         self.assertEquals(set(original.video.tags),
@@ -1961,9 +1954,6 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
 
         self.original.update()
 
-        tag = 'Default Category'
-        if settings.FORCE_LOWERCASE_TAGS:
-            tag = tag.lower()
 
         self.assertEquals(len(mail.outbox), 0)
         original = OriginalVideo.objects.get(pk=self.original.pk)
@@ -1972,7 +1962,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         self.assertEquals(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
         self.assertEquals(set(tag.name for tag in original.tags),
-                          set((tag,)))
+                          set())
         self.assertEquals(original.video.name,
                           original.name)
         self.assertEquals(original.video.thumbnail_url,
@@ -1996,10 +1986,6 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
 
         self.original.update()
 
-        tag = 'Default Category'
-        if settings.FORCE_LOWERCASE_TAGS:
-            tag = tag.lower()
-
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
@@ -2009,8 +1995,8 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
                           self.BASE_DATA['name'])
         self.assertEquals(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
-        self.assertEquals(set(tag.name for tag in original.tags),
-                          set((tag,)))
+        self.assertEquals(set(original.tags),
+                          set())
         self.assertEquals(original.video.name,
                           original.name)
         self.assertEquals(original.video.thumbnail_url,
@@ -2024,7 +2010,7 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
+        vidscraper_result = vidscraper.Video(self.BASE_URL) # all fields None
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
@@ -2052,19 +2038,21 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         and reset the remote_video_was_deleted flag.
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result =  {'description': None, 'thumbnail_url': None, 'title': None}
+        vidscraper_result = vidscraper.Video(self.BASE_URL)
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertTrue(self.original.remote_video_was_deleted)
         self.assertEquals(len(mail.outbox), 0) # not e-mailed yet
 
-        # second try sends the e-mail
-        self.original.update(override_vidscraper_result={
-                'name': self.video.name,
+        # second try doesn't sends the e-mail
+        vidscraper_result.__dict__.update({
+                'title': self.video.name,
                 'description': self.video.description,
                 'tags': list(self.video.tags),
                 'thumbnail_url': self.video.thumbnail_url})
+
+        self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertFalse(self.original.remote_video_was_deleted)
         self.assertEquals(len(mail.outbox), 0)
@@ -2086,11 +2074,12 @@ you wish to support Miro yourself, please donate $10 today.</span>""",
         self.original.video.save()
 
         # Now, do a refresh, simulating the remote response having \r\n line endings
-        vidscraper_result =  {'description': self.original.description.replace('\n', '\r\n'),
-                              'thumbnail_url': self.BASE_DATA['thumbnail_url'],
-                              'title': self.BASE_DATA['name'],
-                              'tags': None, # skip tag check
-                              }
+        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_result.__dict__.update(
+            {'description': self.original.description.replace('\n', '\r\n'),
+             'thumbnail_url': self.BASE_DATA['thumbnail_url'],
+             'title': self.BASE_DATA['name'],
+             })
         changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
         self.assertFalse(changes)
 
@@ -2199,13 +2188,13 @@ class FeedViewTestCase(BaseTestCase):
         linux_category = Category.objects.get(slug='linux')
         three_vids = Video.objects.get_latest_videos(
             self.site_location)[:3]
-
+        self.assertEqual(len(three_vids), 3)
         for vid in three_vids:
             vid.categories.add(linux_category)
             vid.status = Video.ACTIVE
             vid.save()
         self._rebuild_index()
-
+        self.assertEqual(linux_category.approved_set.count(), 3)
         # Do a GET for the first 2 in the feed
         fake_request = self.factory.get('?count=2')
         view = localtv.feeds.views.CategoryVideosFeed()

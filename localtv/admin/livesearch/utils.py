@@ -14,23 +14,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import traceback
 
-from django.core.management.base import NoArgsCommand
+import re
 
-from localtv.management import site_too_old
-from localtv import models
 
-class Command(NoArgsCommand):
+WHITESPACE_RE = re.compile('\s+')
 
-    args = ''
 
-    def handle_noargs(self, **options):
-        if site_too_old():
-            return
-        verbose = (int(options.get('verbosity', 1)) > 1)
-        for saved_search in models.SavedSearch.objects.all():
-            try:
-                saved_search.update_items(verbose=verbose)
-            except:
-                traceback.print_exc()
+def parse_querystring(querystring):
+    """
+    Returns a ``(include_terms, exclude_terms)`` tuple. Currently extremely
+    naive.
+
+    """
+    terms = set(querystring.split())
+    exclude_terms = set((term for term in terms if term.startswith('-')))
+    include_terms = terms - exclude_terms
+    stripped_exclude_terms = [term.lstrip('-') for term in exclude_terms]
+    return include_terms, stripped_exclude_terms
+
+
+def terms_for_cache(include_terms, exclude_terms):
+        terms_as_str = u''.join(include_terms) + u''.join(exclude_terms)
+        return WHITESPACE_RE.sub('', terms_as_str)

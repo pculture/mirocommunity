@@ -19,8 +19,6 @@ from django import template
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
-from localtv.admin.utils import MetasearchVideo
-
 register = template.Library()
 
 class ThumbnailNode(template.Node):
@@ -40,7 +38,7 @@ class ThumbnailNode(template.Node):
             return thumbnail_url
 
     def get_thumbnail_url(self, video, context):
-        if isinstance(video, MetasearchVideo):
+        if video.pk is None:
             return video.thumbnail_url
 
         thumbnail = None
