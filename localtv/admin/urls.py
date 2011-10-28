@@ -60,7 +60,7 @@ urlpatterns += patterns(
      {}, 'localtv_admin_feed_auto_approve'))
 
 urlpatterns += patterns(
-    'localtv.admin.livesearch_views',
+    'localtv.admin.livesearch.views',
     (r'^manage/search/$', 'livesearch',
      {}, 'localtv_admin_search'),
     (r'^manage/search/add$', 'create_saved_search',

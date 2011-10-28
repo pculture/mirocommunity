@@ -18,6 +18,7 @@
 import datetime
 import email.utils
 import httplib
+import itertools
 import re
 import urllib
 import urllib2
@@ -33,7 +34,6 @@ try:
 except ImportError:
     import Image
 import time
-from xml.sax.saxutils import unescape
 from BeautifulSoup import BeautifulSoup
 
 from django.db import models
@@ -58,16 +58,16 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import bitly
-import feedparser
 import vidscraper
-import vidscraper.bulk_import.utils
 from vidscraper.utils.feedparser import get_entry_thumbnail_url, \
                                         get_first_accepted_enclosure
 from notification import models as notification
 import tagging
 
+from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
+from localtv.signals import post_video_from_vidscraper
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -106,12 +106,8 @@ POPULAR_QUERY_TIMEOUT = getattr(settings, 'LOCALTV_POPULAR_QUERY_TIMEOUT',
                                 120 * 60) # 120 minutes
 
 
-class Error(Exception): pass
-class CannotOpenImageUrl(Error): pass
-
-
 class BitLyWrappingURLField(models.URLField):
-    def get_db_prep_value(self, value):
+    def get_db_prep_value(self, value, *args, **kwargs):
         if not getattr(settings, 'BITLY_LOGIN'):
             return value
 
@@ -712,6 +708,109 @@ class Source(Thumbnailable):
     class Meta:
         abstract = True
 
+    def _default_video_status(self):
+        # Check that if we want to add an active
+        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
+            initial_video_status = Video.ACTIVE
+        else:
+            initial_video_status = Video.UNAPPROVED
+        return initial_video_status
+
+    def bulk_import(self, videos, verbose=False, clear_rejected=True,
+                    actually_save_thumbnails=True, **kwargs):
+        """
+        Imports videos from a feed/search.  `videos` is an iterable which
+        returns :class:`vidscraper.suites.base.Video` objects.  We use
+        :method:`.Video.from_vidscraper_video to map the Vidscraper fields to
+        Video attributes.
+        """
+        def skip(video, reason, *args):
+            if verbose:
+                print "Skipping %r: %s" % (video.title, reason % args)
+
+        if 'status' not in kwargs:
+            kwargs['status'] = self._default_video_status()
+
+        if 'site' not in kwargs:
+            kwargs['site'] = self.site
+
+        feed_filters = {}
+        if 'feed' in kwargs:
+            feed_filters['feed'] = kwargs['feed']
+        if 'search' in kwargs:
+            feed_filters['search'] = kwargs['search']
+
+        auto_authors = self.auto_authors.all()
+        auto_categories = self.auto_categories.all()
+
+        guids = set(Video.objects.filter(**feed_filters).values_list('guid', flat=True))
+
+        for vidscraper_video in iter(videos):
+            if not vidscraper_video.title:
+                skip(vidscraper_video, 'failed to scrape basic data')
+                continue
+            elif vidscraper_video.guid and vidscraper_video.guid in guids:
+                skip(vidscraper_video, 'duplicate guid')
+                continue
+            elif vidscraper_video.link:
+                videos_with_link = Video.objects.filter(
+                    website_url=vidscraper_video.link)
+                if clear_rejected:
+                    videos_with_link.rejected().delete()
+                if videos_with_link.exists():
+                    skip(vidscraper_video, 'duplicate link')
+                    continue
+            try:
+                vidscraper_video.load()
+            except Exception:
+                logging.exception('while importing %r' % vidscraper_video.link)
+
+            if not vidscraper_video.file_url and not vidscraper_video.embed_code:
+                skip(vidscraper_video, 'no file URL or embed code')
+                continue
+
+            if not kwargs.get('authors'):
+                kwargs['authors'] = []
+                if auto_authors:
+                    kwargs['authors'] = auto_authors
+                elif vidscraper_video.user:
+                    name = vidscraper_video.user
+                    if ' ' in name:
+                        first, last = name.split(' ', 1)
+                    else:
+                        first, last = name, ''
+                    author, created = User.objects.get_or_create(
+                        username=name[:30],
+                        defaults={'first_name': first[:30],
+                                  'last_name': last[:30]})
+                    if created:
+                        author.set_unusable_password()
+                        author.save()
+                        utils.get_profile_model().objects.create(
+                            user=author,
+                            website=vidscraper_video.user_url or '')
+                        kwargs['authors'] = [author]
+
+            if not kwargs.get('categories'):
+                kwargs['categories'] = auto_categories
+
+            video = Video.from_vidscraper_video(vidscraper_video,
+                                                **kwargs)
+            if vidscraper_video.guid:
+                guids.add(vidscraper_video.guid)
+
+            if verbose:
+                print 'Made video %i: %r' % (video.pk, video.name)
+
+            if actually_save_thumbnails:
+                try:
+                    video.save_thumbnail()
+                except CannotOpenImageUrl:
+                    if verbose:
+                        print "Can't get the thumbnail for %s at %s" % (
+                            video.id, video.thumbnail_url)
+            yield video
+
 
 class StatusedThumbnailableQuerySet(models.query.QuerySet):
 
@@ -825,278 +924,30 @@ class Feed(Source, StatusedThumbnailable):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, parsed_feed=None,
-                     clear_rejected=False):
+    def update_items(self, verbose=False, clear_rejected=False, video_iter=None):
         """
         Fetch and import new videos from this feed.
 
         If clear_rejected is True, rejected videos that are part of this
         feed will be deleted and re-imported.
         """
-        for i in self._update_items_generator(verbose, parsed_feed,
-                                              clear_rejected):
-            pass
-
-    def _get_feed_urls(self):
-        '''You might think that self.feed_url is the feed we will fetch
-        during self.update_items(). That would be true, but...
-
-        YouTube provides two different URLs for video feed. They are supposed
-        to be equivalent, but sometimes videos show up in one but do not show
-        up in the other. So when doing update_items() on a YouTube feed, we
-        ask the backend to crawl both feed URLs.
-
-        It's pretty terrible, but that's life.'''
-        # Here is the YouTube-specific hack...
-        if (self.feed_url.startswith('http://gdata.youtube.com/') and
-            'v=2' in self.feed_url and
-            'orderby=published' in self.feed_url):
-            return [self.feed_url, self.feed_url.replace('orderby=published', '')]
-        return [self.feed_url]
-
-    def _update_items_generator(self, verbose=False, parsed_feed=None,
-                                clear_rejected=False, actually_save_thumbnails=True):
-        """
-        Fetch and import new videos from this field.  After each imported
-        video, we yield a dictionary:
-        {'index': the index of the video we've just imported,
-         'total': the total number of videos in the feed,
-         'video': the Video object we just imported
-        }
-        """
-        if parsed_feed is None:
-            for feed_url in self._get_feed_urls():
-                individual_parsed_feeds = []
-                data = utils.http_get(feed_url)
-                individual_parsed_feeds.append(feedparser.parse(data))
-            parsed_feed = vidscraper.bulk_import.utils.join_feeds(
-                individual_parsed_feeds)
-
-        for index, entry in enumerate(parsed_feed['entries'][::-1]):
-            yield self._handle_one_bulk_import_feed_entry(index, parsed_feed, entry, verbose=verbose, clear_rejected=clear_rejected, actually_save_thumbnails=actually_save_thumbnails)
-
-        self._mark_bulk_import_as_done(parsed_feed)
-
-    def default_video_status(self):
-        # Check that if we want to add an active
-        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
-            initial_video_status = Video.ACTIVE
-        else:
-            initial_video_status = Video.UNAPPROVED
-        return initial_video_status
-
-    def _handle_one_bulk_import_feed_entry(self, index, parsed_feed, entry, verbose, clear_rejected,
-                                           actually_save_thumbnails=True):
-        initial_video_status = self.default_video_status()
-
-        skip = False
-        guid = entry.get('guid', '')
-        if guid and Video.objects.filter(
-            feed=self, guid=guid).count():
-            skip = 'duplicate guid'
-        link = entry.get('link', '')
-        for possible_link in entry.links:
-            if possible_link.get('rel') == 'via':
-                # original URL
-                link = possible_link['href']
-                break
-        if link:
-            if clear_rejected:
-                for video in Video.objects.rejected().filter(website_url=link):
-                    video.delete()
-            if Video.objects.filter(
-                website_url=link).count():
-                skip = 'duplicate link'
-
-        video_data = {
-            'name': unescape(entry['title']),
-            'guid': guid,
-            'site': self.site,
-            'description': '',
-            'file_url': '',
-            'file_url_length': None,
-            'file_url_mimetype': '',
-            'embed_code': '',
-            'flash_enclosure_url': '',
-            'when_submitted': datetime.datetime.now(),
-            'when_approved': (
-                self.auto_approve and datetime.datetime.now() or None),
-            'status': initial_video_status,
-            'when_published': None,
-            'feed': self,
-            'website_url': link}
-
-        tags = []
-        authors = self.auto_authors.all()
-
-        if entry.get('updated_parsed', None):
-            video_data['when_published'] = datetime.datetime(
-                *entry.updated_parsed[:6])
-
-        thumbnail_url = get_entry_thumbnail_url(entry) or ''
-        if thumbnail_url and not urlparse.urlparse(thumbnail_url)[0]:
-            thumbnail_url = urlparse.urljoin(parsed_feed.feed.link,
-                                             thumbnail_url)
-        video_data['thumbnail_url'] = thumbnail_url
-
-        video_enclosure = get_first_accepted_enclosure(entry)
-        if video_enclosure:
-            file_url = video_enclosure.get('url')
-            if file_url:
-                file_url = unescape(file_url)
-                if not urlparse.urlparse(file_url)[0]:
-                    file_url = urlparse.urljoin(parsed_feed.feed.link,
-                                                file_url)
-                video_data['file_url'] = file_url
-
-                try:
-                    file_url_length = int(
-                        video_enclosure.get('filesize') or
-                        video_enclosure.get('length'))
-                except (ValueError, TypeError):
-                    file_url_length = None
-                video_data['file_url_length'] = file_url_length
-
-                video_data['file_url_mimetype'] = video_enclosure.get(
-                    'type', '')
-
-        if link and not skip:
-            try:
-                scraped_data = vidscraper.auto_scrape(
-                    link,
-                    fields=['file_url', 'embed', 'flash_enclosure_url',
-                            'publish_date', 'thumbnail_url', 'link',
-                            'file_url_is_flaky', 'user', 'user_url',
-                            'tags', 'description'])
-                if not video_data['file_url']:
-                    if not scraped_data.get('file_url_is_flaky'):
-                        video_data['file_url'] = scraped_data.get(
-                            'file_url') or ''
-                video_data['embed_code'] = scraped_data.get('embed')
-                video_data['flash_enclosure_url'] = scraped_data.get(
-                    'flash_enclosure_url', '')
-                video_data['when_published'] = scraped_data.get(
-                    'publish_date')
-                video_data['description'] = scraped_data.get(
-                    'description', '')
-                if scraped_data['thumbnail_url']:
-                    video_data['thumbnail_url'] = scraped_data.get(
-                        'thumbnail_url')
-
-                if scraped_data.get('link'):
-                    if (Video.objects.filter(
-                            website_url=scraped_data['link']).count()):
-                        skip = 'duplicate link (vidscraper)'
-                    else:
-                        video_data['website_url'] = scraped_data['link']
-
-                tags = scraped_data.get('tags', [])
-
-                if not authors.count() and scraped_data.get('user'):
-                    name = scraped_data.get('user')
-                    if ' ' in name:
-                        first, last = name.split(' ', 1)
-                    else:
-                        first, last = name, ''
-                    author, created = User.objects.get_or_create(
-                        username=name[:30],
-                        defaults={'first_name': first[:30],
-                                  'last_name': last[:30]})
-                    if created:
-                        author.set_unusable_password()
-                        author.save()
-                        utils.get_profile_model().objects.create(
-                            user=author,
-                            website=scraped_data.get('user_url'))
-                    authors = [author]
-
-            except vidscraper.errors.Error, e:
-                if verbose:
-                    print "Vidscraper error: %s" % e
-
-        if not skip:
-            if not (video_data['file_url'] or video_data['embed_code']):
-                skip = 'invalid'
-
-        if skip:
-            if verbose:
-                print "Skipping %s: %s" % (entry['title'], skip)
-            return {'index': index,
-                   'total': len(parsed_feed.entries),
-                   'video': None,
-                   'skip': skip}
-
-
-        if not video_data['description']:
-            description = entry.get('summary', '')
-            for content in entry.get('content', []):
-                content_type = content.get('type', '')
-                if 'html' in content_type:
-                    description = content.value
-                    break
-            video_data['description'] = description
-
-        if video_data['description']:
-            soup = BeautifulSoup(video_data['description'])
-            for tag in soup.findAll(
-                'div', {'class': "miro-community-description"}):
-                video_data['description'] = tag.renderContents()
-                break
-            video_data['description'] = sanitize(video_data['description'],
-                                                 extra_filters=['img'])
-
-        if entry.get('media_player'):
-            player = entry['media_player']
-            if isinstance(player, basestring):
-                video_data['embed_code'] = unescape(player)
-            elif player.get('content'):
-                video_data['embed_code'] = unescape(player['content'])
-            elif 'url' in player and not video_data['embed_code']:
-                video_data['embed_code'] = '<embed src="%(url)s">' % player
-
-        video = Video.objects.create(**video_data)
-        if verbose:
-                print 'Made video %i: %s' % (video.pk, video.name)
-
-        if actually_save_thumbnails:
-            try:
-                video.save_thumbnail()
-            except CannotOpenImageUrl:
-                if verbose:
-                    print "Can't get the thumbnail for %s at %s" % (
-                        video.id, video.thumbnail_url)
-
-        if tags or entry.get('tags'):
-            if not tags:
-                # Sometimes, entry.tags is just a lousy old
-                # string. In that case, do our best to undo the
-                # delimiting. For now, all I have seen is
-                # space-separated values, so that's what I'm going
-                # to go with.
-                if type(entry.tags) in types.StringTypes:
-                    tags = set(tag.strip() for tag in entry.tags.split())
-
-                else:
-                    # Usually, entry.tags is a list of dicts. If so, flatten them out into
-                    tags = set(
-                        tag['term'] for tag in entry['tags']
-                        if tag.get('term'))
-
-            if tags:
-                video.tags = utils.get_or_create_tags(tags)
-
-        video.categories = self.auto_categories.all()
-        video.authors = authors
-        video.save()
-
-        return {'index': index,
-               'total': len(parsed_feed.entries),
-               'video': video}
-
-    def _mark_bulk_import_as_done(self, parsed_feed):
-        self.etag = parsed_feed.get('etag') or ''
-        self.last_updated = datetime.datetime.now()
+        if video_iter is None:
+            video_iter = vidscraper.auto_feed(
+                self.feed_url,
+                fields=['title', 'file_url', 'embed_code', 'flash_enclosure_url',
+                        'publish_datetime', 'thumbnail_url', 'link',
+                        'file_url_is_flaky', 'user', 'user_url',
+                        'tags', 'description', 'file_url', 'guid'])
+        video_iter.load()
+        imported = sum(1 for video in self.bulk_import(reversed(video_iter),
+                                                       feed=self,
+                                                       verbose=verbose))
+        
+        self.etag = getattr(video_iter, 'etag', None) or ''
+        self.last_updated = (getattr(video_iter, 'last_modified', None) or
+                             datetime.datetime.now())
         self.save()
+        return imported
 
     def source_type(self):
         return self.calculated_source_type
@@ -1279,45 +1130,22 @@ class SavedSearch(Source):
     def __unicode__(self):
         return self.query_string
 
-    def update_items(self, verbose=False):
-        from localtv.admin import utils as admin_utils
-        raw_results = vidscraper.metasearch.intersperse_results(
-            admin_utils.metasearch_from_querystring(
-                self.query_string))
+    def update_items(self, verbose=False, video_iter=None):
+        if video_iter is None:
+            searches = vidscraper.auto_search(
+                self.query_string,
+                fields=['title', 'file_url', 'embed_code',
+                        'flash_enclosure_url', 'publish_datetime',
+                        'thumbnail_url', 'link', 'file_url_is_flaky', 'user',
+                        'user_url', 'tags', 'description', 'file_url', 'guid'])
+            def video_gen():
+                for suite in searches.values():
+                    for video in iter(suite):
+                        yield video
+            video_iter = video_gen()
 
-        raw_results = [admin_utils.MetasearchVideo.create_from_vidscraper_dict(
-                result) for result in raw_results]
-
-        raw_results = admin_utils.strip_existing_metasearchvideos(
-            [result for result in raw_results if result is not None],
-            self.site)
-
-        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
-            initial_status = Video.ACTIVE
-        else:
-            initial_status = Video.UNAPPROVED
-
-        authors = self.auto_authors.all()
-
-        for result in raw_results:
-            video = result.generate_video_model(self.site,
-                                                initial_status)
-            video.search = self
-            video.categories = self.auto_categories.all()
-            if authors.count():
-                video.authors = self.auto_authors.all()
-            else:
-                author, created = User.objects.get_or_create(
-                    username=video.video_service_user,
-                    defaults={'first_name': video.video_service_user})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    utils.get_profile_model().objects.create(
-                        user=author,
-                        website=video.video_service_url)
-                video.authors = [author]
-            video.save()
+        return sum(1 for video in self.bulk_import(video_iter, search=self,
+                                                   verbose=verbose))
 
     def source_type(self):
         return u'Search'
@@ -1358,22 +1186,21 @@ class OriginalVideo(VideoBase):
             return {}
 
         remote_video_was_deleted = False
-
+        fields = ['title', 'description', 'tags', 'thumbnail_url']
         if override_vidscraper_result is not None:
-            scraped_data = override_vidscraper_result
+            vidscraper_video = override_vidscraper_result
         else:
             try:
-                scraped_data = vidscraper.auto_scrape(video.website_url,
-                                                      fields=['title', 'description',
-                                                              'tags', 'thumbnail_url'])
+                vidscraper_video = vidscraper.auto_scrape(
+                    video.website_url, fields=fields)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
-        if remote_video_was_deleted or all([x is None for x in scraped_data.values()]):
+        if remote_video_was_deleted or all(not getattr(vidscraper_video, field)
+                                           for field in fields):
             remote_video_was_deleted = True
-
         # If the scraped_data has all None values, then infer that the remote video was
         # deleted.
 
@@ -1382,30 +1209,40 @@ class OriginalVideo(VideoBase):
                 return {} # We already notified the admins of the deletion.
             else:
                 return {'deleted': True}
+        elif self.remote_video_was_deleted:
+            return {'deleted': False}
 
         changed_fields = {}
-        if 'title' in scraped_data:
-            scraped_data['name'] = scraped_data['title']
-            del scraped_data['title']
 
-        for field in scraped_data:
+        for field in fields:
             if field == 'tags': # special case tag checking
-                if scraped_data['tags'] is None:
+                if vidscraper_video.tags is None:
                     # failed to get tags, so don't send a spurious change
                     # message
                     continue
-                new = utils.unicode_set(scraped_data['tags'])
+                new = utils.unicode_set(vidscraper_video.tags)
                 if getattr(settings, 'FORCE_LOWERCASE_TAGS'):
                     new = utils.unicode_set(name.lower() for name in new)
                 old = utils.unicode_set(self.tags)
                 if new != old:
                     changed_fields[field] = new
-            elif utils.normalize_newlines(scraped_data[field]) != utils.normalize_newlines(getattr(self, field)):
-                changed_fields[field] = scraped_data[field]
             elif field == 'thumbnail_url':
-                right_now = datetime.datetime.utcnow()
-                if self._remote_thumbnail_appears_changed():
-                    changed_fields['thumbnail_updated'] = right_now
+                if vidscraper_video.thumbnail_url != self.thumbnail_url:
+                    changed_fields[field] = vidscraper_video.thumbnail_url
+                else:
+                    right_now = datetime.datetime.utcnow()
+                    if self._remote_thumbnail_appears_changed():
+                        changed_fields['thumbnail_updated'] = right_now
+            else:
+                if field == 'title':
+                    model_field = 'name'
+                else:
+                    model_field = field
+                if (utils.normalize_newlines(
+                        getattr(vidscraper_video, field)) !=
+                    utils.normalize_newlines(
+                        getattr(self, model_field))):
+                    changed_fields[model_field] = getattr(vidscraper_video, field)
 
         return changed_fields
 
@@ -1501,7 +1338,7 @@ class OriginalVideo(VideoBase):
             return # don't need to do anything
 
         # Was the remote video deleted?
-        if changed_fields.get('deleted', None):
+        if changed_fields.pop('deleted', None):
             # Have we already sent the notification
             # Mark inside the OriginalVideo that the video has been deleted.
             # Yes? Uh oh.
@@ -1528,10 +1365,6 @@ class OriginalVideo(VideoBase):
                 setattr(self, field, value)
                 setattr(self.video, field, value)
                 changed_model = True
-
-        if self.remote_video_was_deleted:
-            self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
-            changed_model = True
 
         if self.remote_video_was_deleted:
             self.remote_video_was_deleted = OriginalVideo.VIDEO_ACTIVE
@@ -1797,6 +1630,81 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
 
+    @classmethod
+    def from_vidscraper_video(cls, video, status=None, commit=True, **kwargs):
+        """
+        Builds a :class:`Video` instance from a
+        :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
+        the :class:`Video` will not be saved.  There will be a `save_m2m()`
+        method that must be called after you call `save()`.
+
+        """
+        if not video.embed_code and not video.file_url:
+            raise InvalidVideo
+
+        if status is None:
+            status = cls.UNAPPROVED
+        if 'site' not in kwargs:
+            kwargs['site'] = Site.objects.get_current()
+
+        authors = kwargs.pop('authors', None)
+        categories = kwargs.pop('categories', None)
+
+        now = datetime.datetime.now()
+        instance = cls(
+            guid=video.guid or '',
+            name=video.title or '',
+            description=video.description or '',
+            website_url=video.link or '',
+            when_published=video.publish_datetime,
+            file_url=video.file_url or '',
+            file_url_mimetype=video.file_url_mimetype or '',
+            file_url_length=video.file_url_length,
+            when_submitted=now,
+            when_approved=now if status == cls.ACTIVE else None,
+            status=status,
+            thumbnail_url=video.thumbnail_url or '',
+            embed_code=video.embed_code or '',
+            flash_enclosure_url=video.flash_enclosure_url or '',
+            video_service_user=video.user or '',
+            video_service_url=video.user_url or '',
+            **kwargs
+        )
+
+        if instance.description:
+            soup = BeautifulSoup(video.description)
+            for tag in soup.findAll(
+                'div', {'class': "miro-community-description"}):
+                instance.description = tag.renderContents()
+                break
+            instance.description = sanitize(instance.description,
+                                            extra_filters=['img'])
+
+        instance._vidscraper_video = video
+
+        def save_m2m():
+            if authors:
+                instance.authors = authors
+            if categories:
+                instance.categories = categories
+            if video.tags:
+                instance.tags = utils.get_or_create_tags(video.tags) 
+            post_video_from_vidscraper.send(sender=cls, instance=instance,
+                                            vidscraper_video=video)
+
+        if commit:
+            instance.save()
+            save_m2m()
+        else:
+            instance.save_m2m = save_m2m
+        return instance
+
+    def get_tags(self):
+        if self.pk is None:
+            vidscraper_video = getattr(self, '_vidscraper_video', None)
+            return getattr(vidscraper_video, 'tags', None) or []
+        return self.tags
+
     def try_to_get_file_url_data(self):
         """
         Do a HEAD request on self.file_url to find information about
@@ -1933,7 +1841,6 @@ def video__video_service(self):
         if re.search(regexp, url, re.I):
             return service
 
-
 class Watch(models.Model):
     """
     Record of a video being watched.
@@ -2020,9 +1927,9 @@ class VideoModerator(CommentModerator):
             object_pk=video.pk,
             is_public=True,
             is_removed=False,
-            submit_date__lt=comment.submit_date,
+            submit_date__lte=comment.submit_date,
             user__email__isnull=False).exclude(
-            user__email=''):
+            user__email='').exclude(pk=comment.pk):
             if (previous_comment.user not in previous_users and
                 notification.should_send(previous_comment.user,
                                          comment_post_comment, "1") and

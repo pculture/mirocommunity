@@ -127,7 +127,7 @@ class BaseVideosFeed(Feed, SortFilterViewMixin):
         """
         sqs = self._query(self._get_query(obj['request']))
         sqs = self._sort(sqs, self._get_sort(obj['request']))
-        filter_dict, xxx = self._get_filter_info(obj['request'], obj.get('obj'))
+        filter_dict, xxx = self._get_filter_info(obj['request'], [obj.get('obj')])
         sqs, xxx = self._filter(sqs, **filter_dict)
 
         opensearch = self._get_opensearch_data(obj)
