@@ -22,9 +22,24 @@ from django.db import models
 from localtv.models import Category
 
 
+class ContestSettingsManager(models.Manager):
+    # This is a template for future settings managers.
+    def get_current(self, **kwargs):
+        current_site = Site.objects.get_current()
+        try:
+            current_site.contestsettings
+        except ContestSettings.DoesNotExist:
+            current_site.contestsettings = self.get_or_create(
+                                                site=current_site)[0]
+        return current_site.contestsettings
+
+
+
 class ContestSettings(models.Model):
+    objects = ContestSettingsManager()
+
     #: The site these settings are for.
-    site = models.ForeignKey(Site)
+    site = models.OneToOneField(Site)
 
     #: Categories for which voting is enabled.
     categories = models.ManyToManyField(Category, blank=True, null=True)
