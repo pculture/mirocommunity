@@ -1,5 +1,4 @@
 {% extends "localtv/admin/base.html" %}
-{% load voting_tags %}
 {% comment %}
 # Miro Community - Easiest way to make a video website
 #
@@ -19,30 +18,31 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block title %}{{ block.super }} - Admin - Votes for videos in {{ category }}{% endblock %}
-{% block body_class %}category_admin{% endblock body_class %}
-{% block content %}
-{% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-<h2>Votes for videos in {{ category }}</h2>
-<div id="labels">
-  <form>{# the CSS expects a form #}
-  <table class="rounded">
-    <thead>
-      <tr>
-        <th>Video</th>
-        <th>Votes</th>
-      </tr>
-    </thead>
-    {% for entry in sorted_scores %}
-    <tr>
-      {% with entry.0 as video %}{% with entry.1 as score %}
-      <td><a href="{{ video.get_absolute_url }}">{{ video }}</a></td>
-      <td>{{ score.score }}</td>
-      {% endwith %}{% endwith %}
-    </tr>
-    {% endfor %}
-  </table>
-  </form>
-</div>
+{% block title %}{{ block.super }} - Contest{% endblock %}
 
+{% block content %}
+<h2>Video contest</h2>
+
+{% if form.fields.categories.queryset %}
+	<form action='{{ request.path }}' method='post'>
+		<table>
+			{{ form }}
+		</table>
+	</form>
+
+	{% for category, videos in categories.iteritems %}
+		<div class='category'>
+			<h3>Top videos for {{ category.name }}</h3>
+			<ol>
+				{% for video, score in videos.iteritems %}
+					<li>{{ video.name }} &#8212; {{ video.score }}</li>
+				{% endfor %}
+			</ol>
+		</div>
+	{% endfor %}
+{% else %}
+  <div class="helpful rounded">
+    This site doesn't have any categories. <a href="{% url localtv_admin_categories %}">Add some categories</a> to start setting up your contest!
+  </div>
+{% endif %}
 {% endblock %}

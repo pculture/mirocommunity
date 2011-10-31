@@ -17,6 +17,7 @@
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from voting.models import Vote
@@ -41,8 +42,11 @@ class VotingForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super(VotingForm, self).__init__(*args, **kwargs)
+        current_site = Site.objects.get_current()
         category_qs = Category.objects.filter(
-                        contestsettings_set__site=Site.objects.get_current())
+                          site=current_site,
+                          contestsettings__site=current_site,
+                      )
         # force qs evaluation.
         len(category_qs)
 
@@ -83,3 +87,15 @@ class VotingForm(forms.Form):
     def save(self):
         vote = self.cleaned_data['vote']
         Vote.objects.record_vote(self.category_video, self.user, vote)
+
+
+class AdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AdminForm, self).__init__(*args, **kwargs)
+        self.fields['categories'].queryset = Category.objects.filter(
+                                           site=Site.objects.get_current(),
+                                       )
+
+    class Meta:
+        model = ContestSettings
+        exclude = ('site',)

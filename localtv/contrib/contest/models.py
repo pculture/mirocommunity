@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -45,4 +46,8 @@ class ContestSettings(models.Model):
     categories = models.ManyToManyField(Category, blank=True, null=True)
 
     #: Max number of votes per category
-    max_votes = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    max_votes = models.PositiveIntegerField(validators=[MinValueValidator(1)],
+                                            blank=True, null=True)
+
+    def get_absolute_url(self):
+        return reverse('localtv_contest_admin')
