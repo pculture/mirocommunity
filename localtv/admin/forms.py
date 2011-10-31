@@ -458,7 +458,23 @@ class BulkEditVideoForm(EditVideoForm):
         # We need to update the Video.tags descriptor manually because
         # Django's model forms does not (django.forms.models.construct_instance)
         self.instance.tags = self.cleaned_data['tags']
-        return super(BulkEditVideoForm, self).save(*args, **kwargs)
+        new_categories = dict((
+            (category._get_pk_val(), category)
+            for category in self.cleaned_data.pop('categories')
+        ))
+        instance = super(BulkEditVideoForm, self).save(*args, **kwargs)
+        category_videos = instance.categoryvideo_set.all()
+        for category_video in category_videos:
+            pk = category_video.category_id
+            if pk in new_categories:
+                del new_categories[pk]
+            else:
+                category_video.delete()
+        
+        for category in new_categories.itervalues():
+            instance.categoryvideo_set.get_or_create(category=category)
+        return instance
+
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
