@@ -20,9 +20,6 @@
 {% block extrahead %}
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/dashboard.css" />
 <script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
-{% if not sitelocation.should_show_dashboard %}
-<meta http-equiv="refresh" content="0; url={% url localtv_admin_approve_reject %}">
-{% endif %}
 {% endblock extrahead %}
 {% block body_class %}admin_dash {% if sitelocation.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
 {% block content %}
@@ -33,7 +30,7 @@
   <h2>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</h2>
   <div id="limit_bar">
   <div id="limit_progress" style="width: {{ percent_videos_used }}%;">
-    <a href="{% url localtv_admin_tier %}"><em class="icon"></em>Upgrade</a>
+    <a href="{# {% url localtv_admin_tier %} #}"><em class="icon"></em>Upgrade</a>
   </div><!-- // limit_progress -->
   </div><!-- // limit_bar -->
 </div><!-- // video_limit -->
@@ -46,7 +43,7 @@
     <h2>Videos</h2>
     <h3>pending moderation</h3>
     <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url localtv_admin_approve_reject %}">Moderate</a>
+    <a id="btn_comment_moderate" href="{# {% url localtv_admin_approve_reject %} #}">Moderate</a>
   </div><!-- // videos_pending -->
   
   <div id="comments_pending">
@@ -54,7 +51,7 @@
     <h2>Comments</h2>
     <h3>pending moderation</h3>
     <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url comments-moderation-queue %}">Moderate</a>
+    <a id="btn_comment_moderate" href="{# {% url comments-moderation-queue %} #}">Moderate</a>
   </div><!-- // comments_pending -->
   
   <div id="videos_week">
@@ -76,10 +73,10 @@
     </div><!-- // clear -->
   </div><!-- // hd -->
   <ul>
-    <li id="step1"><strong><a href="{% url localtv_admin_manage_page %}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
-    <li id="step2"><strong><a href="{% url uploadtemplate-index %}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
-    <li id="step3"><strong><a href="{% url localtv_admin_settings %}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
-    <li id="step4"><strong><a href="{% url localtv_user_notifications %}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
+    <li id="step1"><strong><a href="{# {% url localtv_admin_manage_page %} #}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
+    <li id="step2"><strong><a href="{# {% url uploadtemplate-index %} #}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
+    <li id="step3"><strong><a href="{# {% url localtv_admin_settings %} #}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
+    <li id="step4"><strong><a href="{# {% url localtv_user_notifications %} #}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
   </ul>
 </div><!-- // get_started -->
 

@@ -14,3 +14,24 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
+from django.conf.urls.defaults import url, patterns
+from django.utils.translation import ugettext_lazy as _
+
+from localtv.admin.base import MiroCommunityAdminSection, registry
+from localtv.admin.dashboard.views import DashboardView
+
+
+class DashboardSection(MiroCommunityAdminSection):
+	url_prefix = ''
+	navigation_text = _('Dashboard')
+	urlpatterns = patterns('',
+		url(r'^$', DashboardView.as_view(), name='localtv_admin_dashboard'),
+	)
+	site_admin_required = True
+	pages = (
+		(_('Dashboard'), 'localtv_admin_dashboard'),
+	)
+
+
+registry.register(DashboardSection)

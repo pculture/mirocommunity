@@ -15,3 +15,5 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from localtv.admin.base import registry, MiroCommunityAdminSection
+from localtv.admin import dashboard

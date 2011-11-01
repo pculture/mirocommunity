@@ -16,6 +16,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
+{% load url from future %}
+{% load localtv_admin %}
 <!DOCTYPE html>
 <html>
   {% if not request.is_ajax %}
@@ -66,7 +68,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </div><!-- // clear -->
       </div><!-- // header -->
       <div id="wrapper">
-      {% block nav %}{% include "localtv/admin/new_header.html" %}{% endblock %}
+      {% block nav %}
+        {% get_admin_sections as sections %}
+        <ul id="new_admin_nav">
+          {% for section in sections %}
+            <li{% if section|is_active_section:request %} class="active"{% endif %}><a href="{% url section.pages.0.1 %}">{{ section.navigation_text }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endblock %}
       <div id="content">
       {% endif %}
         {% block content %}

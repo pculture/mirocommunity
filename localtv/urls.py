@@ -19,6 +19,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
+from localtv import admin
 from localtv.listing.views import VideoSearchView, SiteListView, \
                         CategoryVideoSearchView
 from localtv.models import Category
@@ -80,7 +81,7 @@ urlpatterns += patterns(
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
-    url(r'^admin/', include('localtv.admin.urls')),
+    url(r'^admin/', include(admin.registry.get_urlpatterns())),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
     url(r'^listing/', include('localtv.listing.urls')),
     url(r'^feeds/', include('localtv.feeds.urls')),
