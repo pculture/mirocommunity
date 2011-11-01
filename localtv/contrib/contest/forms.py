@@ -68,20 +68,25 @@ class VotingForm(forms.Form):
                 video = cleaned_data['video']
             )
         except CategoryVideo.DoesNotExist:
-            raise ValidationError("The selected video is not in the selected category.")
+            raise ValidationError("The selected video is not in the selected "
+                                  "category.")
         
-        if cleaned_data['vote'] != 'clear':
-            categoryvideo_pks = CategoryVideo.objects.filter(
-                category=cleaned_data['category'],
-            ).values_list('pk', flat=True)
-            user_votes_for_category = Vote.objects.filter(
-                content_type=ContentType.objects.get_for_model(CategoryVideo),
-                object_id__in=categoryvideo_pks,
-                user=self.user
-            ).count()
-            contest_settings = ContestSettings.objects.get_current()
-            if user_votes_for_category >= contest_settings.max_votes:
-                raise ValidationError(_(u"Only %d votes can be made per category"
+        contest_settings = ContestSettings.objects.get_current()
+        if contest_settings.max_votes is not None:
+            if cleaned_data['vote'] != 'clear':
+                # Check whether this user has already submitted the maximum
+                # number of votes for this category.
+                categoryvideo_pks = CategoryVideo.objects.filter(
+                    category=cleaned_data['category'],
+                ).values_list('pk', flat=True)
+                user_votes_for_category = Vote.objects.filter(
+                    content_type=ContentType.objects.get_for_model(CategoryVideo),
+                    object_id__in=categoryvideo_pks,
+                    user=self.user
+                ).count()
+                if user_votes_for_category >= contest_settings.max_votes:
+                    raise ValidationError(
+                                    _(u"Only %d votes can be made per category"
                                         % contest_settings.max_votes))
 
     def save(self):
