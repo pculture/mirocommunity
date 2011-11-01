@@ -46,7 +46,8 @@ body#admin.settings ul#new_admin_nav li#admin_settings a,
 body#admin.user_admin ul#new_admin_nav li#admin_users a,
 body#admin.comments ul#new_admin_nav li#admin_comments a,
 body#user_profile ul#new_admin_nav li#admin_profile a,
-body#goodies ul#new_admin_nav li#admin_goodies a {
+body#goodies ul#new_admin_nav li#admin_goodies a,
+ul#new_admin_nav li.active a {
   background: #0077bb;
   background: #e3e3e3;
   background: -webkit-gradient(linear, left top, left bottom, from(#E3E3E3), to(#cecece));
