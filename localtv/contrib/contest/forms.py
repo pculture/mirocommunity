@@ -90,6 +90,11 @@ class VotingForm(forms.Form):
 
 
 class AdminForm(forms.ModelForm):
+    categories = forms.ModelMultipleChoiceField(
+                     queryset=Category.objects.all(),
+                     widget=forms.CheckboxSelectMultiple
+                 )
+
     def __init__(self, *args, **kwargs):
         super(AdminForm, self).__init__(*args, **kwargs)
         self.fields['categories'].queryset = Category.objects.filter(
