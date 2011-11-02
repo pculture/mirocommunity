@@ -39,8 +39,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 
-{% include "localtv/admin/video_header.html" %}
-
 <h2 class="page_title">{% block page_title %}Videos | Videos for Review{% endblock %}</h2>
 
 
@@ -51,16 +49,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% block helpful %}<div class="helpful rounded">
         Videos here require moderator approval before appearing on the site.
         <div>
-          <a class="rss" href="{% url localtv_admin_feed_unapproved feed_secret %}">Unapproved RSS</a>
-          <a class="rss" href="{% url localtv_admin_feed_unapproved_user feed_secret %}">Unapproved User RSS</a>
+          <a class="rss" href="{# {% url localtv_admin_feed_unapproved feed_secret %} #}">Unapproved RSS</a>
+          <a class="rss" href="{# {% url localtv_admin_feed_unapproved_user feed_secret %} #}">Unapproved User RSS</a>
           </div>
         </div>
         {% endblock %}
 
         {% block admin_actions %}
-        <a class="approve_button" href="{% url localtv_admin_approve_all %}?page={{ page_obj.number }}"><span>Approve All Videos on This Page</span></a>
-        <a class="reject_button" href="{% url localtv_admin_reject_all %}?page={{ page_obj.number }}"><span>Reject All Videos on This Page</span></a>
-        <a class="plain_button" href="{% url localtv_admin_clear_all %}"><span>Clear Entire Queue</span></a>
+        <a class="approve_button" href="{# {% url localtv_admin_approve_all %}?page={{ page_obj.number }} #}"><span>Approve All Videos on This Page</span></a>
+        <a class="reject_button" href="{# {% url localtv_admin_reject_all %}?page={{ page_obj.number }} #}"><span>Reject All Videos on This Page</span></a>
+        <a class="plain_button" href="{# {% url localtv_admin_clear_all %} #}"><span>Clear Entire Queue</span></a>
        {% endblock %}
 
 
@@ -95,7 +93,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </div>
     </div>
 {% else %}
-  <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{% url localtv_admin_manage_page %}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
+  <div class="helpful clear rounded">You have no videos that need reviewing.  <a href="{# {% url localtv_admin_manage_page %} #}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</div>
 {% endif %}
 </div>
 {% endblock content %}

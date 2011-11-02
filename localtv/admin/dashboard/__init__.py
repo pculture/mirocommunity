@@ -17,6 +17,7 @@
 
 from django.conf.urls.defaults import url, patterns
 from django.utils.translation import ugettext_lazy as _
+from django.views.generic import RedirectView
 
 from localtv.admin.base import MiroCommunityAdminSection, registry
 from localtv.admin.dashboard.views import DashboardView
@@ -26,7 +27,8 @@ class DashboardSection(MiroCommunityAdminSection):
 	url_prefix = ''
 	navigation_text = _('Dashboard')
 	urlpatterns = patterns('',
-		url(r'^$', DashboardView.as_view(), name='localtv_admin_dashboard'),
+		url(r'^$', RedirectView.as_view(permanent=False, url="dashboard/")),
+		url(r'^dashboard/$', DashboardView.as_view(), name='localtv_admin_dashboard'),
 	)
 	site_admin_required = True
 	pages = (

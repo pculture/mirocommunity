@@ -65,7 +65,8 @@ class MiroCommunitySectionRegistry(object):
 
         for url_prefix, section in self._registry.iteritems():
             urlpatterns += patterns('',
-                url(r'^%s' % url_prefix, include(section.urlpatterns))
+                url(r'^%s%s' % (url_prefix, '/' if url_prefix else ''),
+                    include(section.urlpatterns))
             )
         return urlpatterns
 

@@ -26,16 +26,18 @@ from localtv.models import Video
 
 class VideoReviewView(ListView):
     paginate_by = 10
-    queryset = Video.objects.filter(
-        status=Video.UNAPPROVED,
-        site=Site.objects.get_current()
-    ).order_by('when_submitted', 'when_published')
-    context_object_name = "video_list"
-    template_name = 'localtv/admin/videos/review.html'
+    context_object_name = 'video_list'
+    template_name = 'localtv/admin/moderation/videos/review.html'
 
     @method_decorator(require_site_admin)
     def dispatch(self, *args, **kwargs):
-        super(VideoReviewView, self).dispatch(*args, **kwargs)
+        return super(VideoReviewView, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        return Video.objects.filter(
+            status=Video.UNAPPROVED,
+            site=Site.objects.get_current()
+        ).order_by('when_submitted', 'when_published')
 
     def get_context_data(self, **kwargs):
         context = super(VideoReviewView, self).get_context_data(**kwargs)
@@ -52,7 +54,11 @@ class VideoReviewView(ListView):
 
 
 class VideoPreviewView(DetailView):
-    queryset = Video.objects.filter(
-        status=Video.UNAPPROVED,
-        site=Site.objects.get_current()
-    )
+    template_name = 'localtv/admin/moderation/videos/preview.html'
+    context_object_name = 'video'
+
+    def get_queryset(self):
+        return Video.objects.filter(
+            status=Video.UNAPPROVED,
+            site=Site.objects.get_current()
+        )
