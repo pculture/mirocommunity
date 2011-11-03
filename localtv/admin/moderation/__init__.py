@@ -19,28 +19,35 @@ from django.conf.urls.defaults import url, patterns
 from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import MiroCommunityAdminSection, registry
-from localtv.admin.moderation.views import VideoReviewView, VideoPreviewView
+from localtv.admin.moderation.views import (VideoModerationQueueView,
+                                            VideoPreviewView,
+                                            CommentModerationQueueView)
 
 
 class ModerationSection(MiroCommunityAdminSection):
-	url_prefix = 'moderation'
-	navigation_text = _('Moderation')
-	urlpatterns = patterns('',
-		url(
-			r'^videos/$',
-			VideoReviewView.as_view(),
-			name='localtv_admin_video_review'
-		),
-		url(
-			r'^videos/preview/(?P<pk>[\d+])/$',
-			VideoPreviewView.as_view(),
-			name='localtv_admin_video_preview'
-		)
-	)
-	site_admin_required = True
-	pages = (
-		(_('Video Review Queue'), 'localtv_admin_video_review'),
-	)
+    url_prefix = 'moderation'
+    navigation_text = _('Moderation')
+    urlpatterns = patterns('',
+        url(
+            r'^videos/$',
+            VideoModerationQueueView.as_view(),
+            name='localtv_admin_video_queue'
+        ),
+        url(
+            r'^videos/preview/(?P<pk>[\d+])/$',
+            VideoPreviewView.as_view(),
+            name='localtv_admin_video_preview'
+        ),
+        url(
+            r'^comments/$',
+            CommentModerationQueueView.as_view(),
+            name='localtv_admin_comment_queue'
+        )
+    )
+    site_admin_required = True
+    pages = (
+        (_('Video Review Queue'), 'localtv_admin_video_queue'),
+    )
 
 
 registry.register(ModerationSection)

@@ -36,14 +36,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block content %}
-{% if empty %}
+{% if not formset.forms %}
 <p id="nocomments">{% trans "No comments to moderate" %}.</p>
-    {% if request.GET.undo %}
-    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
-      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
-      <input type="submit" value="Undo">
-    </form>
-    {% endif %}
 
 {% else %}
 <div id="content-main">
@@ -55,12 +49,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div class="pag">
       {% pagetabs page_obj %}
     </div>
-    {% endif %}
-    {% if request.GET.undo %}
-    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
-      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
-      <input type="submit" value="Undo">
-    </form>
     {% endif %}
     <form method="POST" action="">{% csrf_token %}
       <div class="bulkedit_controls">
@@ -107,7 +95,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             </td>
             <td>{{ comment.ip_address }}</td>
             <td>{{ comment.submit_date|date:"F j, P" }}</td>
+            {% comment %}
+            This bit requires a comment-url-redirect view, which is not
+            currently implemented.
             <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td>
+            {% endcomment %}
             {% endwith %}
           </tr>
           {% endfor %}
