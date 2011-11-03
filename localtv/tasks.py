@@ -14,13 +14,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+#import eventlet
+#eventlet.monkey_patch()
+from eventlet.green import urllib2
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+import logging
 import os
 import subprocess
-from celery.decorators import task
+
+try:
+    from PIL import Image
+except:
+    import Image
+
+from celery.task import task
+from celery.task.sets import subtask
 from django.db.models.loading import get_model
 from haystack import site
 
-@task()
+@task
 def check_call(args, env={}):
     args = [str(arg) for arg in args]
     environ = os.environ.copy()
@@ -53,16 +69,45 @@ def check_call(args, env={}):
             stdout.append(process.stdout.read())
         return ''.join(stdout)
 
+@task
+def vidscraper_load(obj):
+    try:
+        obj.load()
+    except Exception:
+        logging.exception('while importing %r' % obj)
+    return obj
+
+@task
+def http_read(url, timeout=10):
+    return urllib2.urlopen(url, timeout=timeout).read()
+
+@task(max_retries=None)
+def thumbnails_from_url(url, thumb_sizes, result=None, retry=1.0,
+                        max_retries=None):
+    if not result:
+        result = http_read.delay(url)
+
+    if not result.ready():
+        thumbnails_from_url.retry(
+            (url, thumb_sizes, result, retry, max_retries),
+            countdown=retry, max_retries=max_retries)
+
+    data = result.get()
+    from localtv.utils import resize_image_returning_list_of_strings
+    image_file = Image.open(StringIO(data))
+    thumbnails = [('original', data)]
+    return thumbnails + resize_image_returning_list_of_strings(
+        image_file, thumb_sizes)
 
 @task(ignore_result=True)
 def haystack_update_index(app_label, model_name, pk, is_removal):
     """
-    Updates a haystack index for the given model (specified by ``app_label`` and
-    ``model_name``). If ``is_removal`` is ``True``, a fake instance is
+    Updates a haystack index for the given model (specified by ``app_label``
+    and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
     constructed with the given ``pk`` and passed to the index's
     :meth:`remove_object` method. Otherwise, the latest version of the instance
-    is fetched from the database and passed to the index's :meth:`update_object`
-    method.
+    is fetched from the database and passed to the index's
+    :meth:`update_object` method.
 
     """
     model_class = get_model(app_label, model_name)
@@ -77,3 +122,4 @@ def haystack_update_index(app_label, model_name, pk, is_removal):
             pass
         else:
             search_index.update_object(instance)
+

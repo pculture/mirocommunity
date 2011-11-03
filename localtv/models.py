@@ -18,15 +18,12 @@
 import datetime
 import email.utils
 import httplib
-import itertools
 import re
 import urllib
 import urllib2
-import urlparse
 import mimetypes
 import base64
 import os
-import types
 import logging
 
 try:
@@ -42,7 +39,6 @@ from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
-from django.core import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
@@ -52,15 +48,13 @@ from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
 from django.template.loader import render_to_string
-from django.utils.encoding import force_unicode
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import vidscraper
-from vidscraper.utils.feedparser import get_entry_thumbnail_url, \
-                                        get_first_accepted_enclosure
+
 from notification import models as notification
 import tagging
 
@@ -139,7 +133,7 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb):
+    def save_thumbnail_from_file(self, content_thumb, resize=True):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
@@ -167,8 +161,9 @@ class Thumbnailable(models.Model):
                 self.get_original_thumb_storage_path())
             pil_image = Image.open(content_thumb)
 
-        # save any resized versions
-        self.resize_thumbnail(pil_image)
+        if resize:
+            # save any resized versions
+            self.resize_thumbnail(pil_image)
         self.has_thumbnail = True
         self.save()
 
@@ -180,10 +175,11 @@ class Thumbnailable(models.Model):
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
         if resized_images is None:
-            resized_images = localtv.utils.resize_image_returning_list_of_content_files(
+            resized_images = localtv.utils.resize_image_returning_list_of_strings(
                 thumb, self.THUMB_SIZES)
-        for ( (width, height), cf_image) in resized_images:
+        for ( (width, height), data) in resized_images:
             # write file, deleting old thumb if it exists
+            cf_image = ContentFile(data)
             delete_if_exists(
                 self.get_resized_thumb_storage_path(width, height))
             default_storage.save(
@@ -745,6 +741,98 @@ class Source(Thumbnailable):
 
         guids = set(Video.objects.filter(**feed_filters).values_list('guid', flat=True))
 
+        load_tasks = set()
+        thumbnail_tasks = set()
+        from localtv.tasks import vidscraper_load, thumbnails_from_url
+
+        def yield_imported_videos():
+            ready_tasks = [task for task in load_tasks if task.ready()]
+            for task in ready_tasks:
+                load_tasks.remove(task)
+                vidscraper_video = task.get()
+                if not vidscraper_video.file_url and not vidscraper_video.embed_code:
+                    skip(vidscraper_video, 'no file URL or embed code')
+                    continue
+
+                # recheck guid and link, since we may have gotten more data
+                if vidscraper_video.guid and vidscraper_video.guid in guids:
+                    skip(vidscraper_video, 'duplicate guid')
+                    continue
+                elif vidscraper_video.link:
+                    videos_with_link = Video.objects.filter(
+                        website_url=vidscraper_video.link)
+                    if videos_with_link.exists():
+                        skip(vidscraper_video, 'duplicate link')
+                        continue
+
+                if not kwargs.get('authors'):
+                    kwargs['authors'] = []
+                    if auto_authors:
+                        kwargs['authors'] = auto_authors
+                    elif vidscraper_video.user:
+                        name = vidscraper_video.user
+                        if ' ' in name:
+                            first, last = name.split(' ', 1)
+                        else:
+                            first, last = name, ''
+                        author, created = User.objects.get_or_create(
+                            username=name[:30],
+                            defaults={'first_name': first[:30],
+                                      'last_name': last[:30]})
+                        if created:
+                            author.set_unusable_password()
+                            author.save()
+                            utils.get_profile_model().objects.create(
+                                user=author,
+                                website=vidscraper_video.user_url or '')
+                            kwargs['authors'] = [author]
+
+                if not kwargs.get('categories'):
+                    kwargs['categories'] = auto_categories
+
+                video = Video.from_vidscraper_video(vidscraper_video,
+                                                    **kwargs)
+                if verbose:
+                    print 'Made video %i: %r' % (video.pk, video.name)
+
+                if video.thumbnail_url:
+                    result = thumbnails_from_url.delay(video.thumbnail_url,
+                                                       Video.THUMB_SIZES)
+                    thumbnail_tasks.add((result, video))
+
+                yield video
+
+        def save_thumbnails():
+            ready_tasks = [(task, video) for (task, video) in thumbnail_tasks
+                           if task.ready()]
+
+            for task, video in ready_tasks:
+                thumbnail_tasks.remove((task, video))
+                if not task.successful():
+                    video.thumbnail_url = ''
+                    video.has_thumbnail = False
+                    video.save()
+                    continue
+                thumbnails = task.get()
+                original, rest = thumbnails[0], thumbnails[1:]
+                try:
+                    video.save_thumbnail_from_file(
+                        ContentFile(original[1]), resize=False)
+                    video.resize_thumbnail(True, rest)
+                except httplib.InvalidURL:
+                    video.thumbnail_url = ''
+                    video.has_thumbnail = False
+                    video.save()
+                except Exception:
+                    if verbose:
+                        print "Can't get the thumbnail for %s at %s" % (
+                            video.id, video.thumbnail_url)
+                else:
+                    if verbose:
+                        print "Saved thumbnail for %s" % video.id
+
+        if verbose:
+            print 'Starting video iterator'
         for vidscraper_video in iter(videos):
             if not vidscraper_video.title:
                 skip(vidscraper_video, 'failed to scrape basic data')
@@ -760,57 +848,30 @@ class Source(Thumbnailable):
                 if videos_with_link.exists():
                     skip(vidscraper_video, 'duplicate link')
                     continue
-            try:
-                vidscraper_video.load()
-            except Exception:
-                logging.exception('while importing %r' % vidscraper_video.link)
 
-            if not vidscraper_video.file_url and not vidscraper_video.embed_code:
-                skip(vidscraper_video, 'no file URL or embed code')
-                continue
+            load_tasks.add(
+                vidscraper_load.delay(vidscraper_video))
 
-            if not kwargs.get('authors'):
-                kwargs['authors'] = []
-                if auto_authors:
-                    kwargs['authors'] = auto_authors
-                elif vidscraper_video.user:
-                    name = vidscraper_video.user
-                    if ' ' in name:
-                        first, last = name.split(' ', 1)
-                    else:
-                        first, last = name, ''
-                    author, created = User.objects.get_or_create(
-                        username=name[:30],
-                        defaults={'first_name': first[:30],
-                                  'last_name': last[:30]})
-                    if created:
-                        author.set_unusable_password()
-                        author.save()
-                        utils.get_profile_model().objects.create(
-                            user=author,
-                            website=vidscraper_video.user_url or '')
-                        kwargs['authors'] = [author]
+            for video in yield_imported_videos():
+                yield video
 
-            if not kwargs.get('categories'):
-                kwargs['categories'] = auto_categories
+            save_thumbnails()
 
-            video = Video.from_vidscraper_video(vidscraper_video,
-                                                **kwargs)
-            if vidscraper_video.guid:
-                guids.add(vidscraper_video.guid)
+        if verbose:
+            print 'Waiting for data from', len(load_tasks), 'videos'
 
-            if verbose:
-                print 'Made video %i: %r' % (video.pk, video.name)
+        while load_tasks:
+            for video in yield_imported_videos():
+                yield video
+            save_thumbnails()
+            print 'waiting on', len(load_tasks), 'videos'
+            print len(thumbnail_tasks), 'thumbnails remaining'
+            time.sleep(1.0) # don't busy wait
 
-            if actually_save_thumbnails:
-                try:
-                    video.save_thumbnail()
-                except CannotOpenImageUrl:
-                    if verbose:
-                        print "Can't get the thumbnail for %s at %s" % (
-                            video.id, video.thumbnail_url)
-            yield video
-
+        while thumbnail_tasks:
+            save_thumbnails()
+            print 'waiting on', len(thumbnail_tasks), 'thumbnails'
+            time.sleep(1.0) # don't busy wait
 
 class StatusedThumbnailableQuerySet(models.query.QuerySet):
 
@@ -939,7 +1000,7 @@ class Feed(Source, StatusedThumbnailable):
                         'file_url_is_flaky', 'user', 'user_url',
                         'tags', 'description', 'file_url', 'guid'])
         video_iter.load()
-        imported = sum(1 for video in self.bulk_import(reversed(video_iter),
+        imported = sum(1 for video in self.bulk_import(video_iter,
                                                        feed=self,
                                                        verbose=verbose))
         

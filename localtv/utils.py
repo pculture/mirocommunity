@@ -467,8 +467,8 @@ def pull_downloaded_file_from_cache(url):
     return data
 
 
-def resize_image_returning_list_of_content_files(original_image,
-                                                 THUMB_SIZES):
+def resize_image_returning_list_of_strings(original_image,
+                                           THUMB_SIZES):
     ret = []
     # Hackishly copying this constant in for now.
     FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
@@ -532,7 +532,7 @@ def resize_image_returning_list_of_content_files(original_image,
         sio_img.seek(0)
         ret.append(
             ((width, height),
-             ContentFile(sio_img.read())))
+             sio_img.read()))
     return ret
 
 

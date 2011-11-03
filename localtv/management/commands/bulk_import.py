@@ -14,21 +14,42 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+#import eventlet
+#eventlet.monkey_patch()
+
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import simplejson
 
+from optparse import make_option
+
 from localtv import models
+from localtv import tiers
 
 import vidscraper
 
 class Command(BaseCommand):
 
+    option_list = BaseCommand.option_list + (
+        make_option('--crawl',
+                    action='store_true',
+                    dest='crawl',
+                    default=False,
+                    help=('Crawl the entire feed (if possible), rather than '
+                          'just the first page')),
+        )
     args = '[feed primary key]'
 
     def handle(self, *args, **options):
         if len(args) != 1:
             raise CommandError('bulk_import takes one argument: '
                                '%i argument(s) given' % len(args))
+
+        if models.SiteLocation.enforce_tiers():
+            max_results = 1000
+        else:
+            tier = tiers.Tier.get()
+            max_results = tier.remaining_videos()
+
         try:
             feed = models.Feed.objects.get(pk=args[0])
         except models.Feed.DoesNotExist:
@@ -40,26 +61,27 @@ class Command(BaseCommand):
             self.verbose = False
 
         video_iter = vidscraper.auto_feed(
-            feed.feed_url,
-            crawl=True,
-            fields=['title', 'file_url', 'embed_code', 'flash_enclosure_url',
-                    'publish_datetime', 'thumbnail_url', 'link',
-                    'file_url_is_flaky', 'user', 'user_url',
-                    'tags', 'description', 'file_url', 'guid'])
-        video_iter.load()
-
+            feed.feed_url, crawl=options['crawl'],
+            max_results=max_results)
+        from localtv import tasks
+        video_iter = tasks.vidscraper_load.delay(video_iter).get()
+        if self.verbose:
+            print 'Loaded object:', repr(video_iter)
+            print 'Loaded feed:', video_iter.title
         stats = {
             'total': video_iter.entry_count,
             }
-        imported = 0
+        if self.verbose:
+            print 'Entry count:', video_iter.entry_count
         try:
             imported = feed.update_items(
                 verbose=self.verbose,
                 clear_rejected=True,
                 video_iter=video_iter)
+            print 'Imported videos:', imported
         finally:
             feed.status = models.Feed.ACTIVE
             feed.save()
         stats['imported'] = imported
-        stats['skipped'] = video_iter.entry_count - imported
+        stats['skipped'] = max_results - imported
         print simplejson.dumps(stats),
