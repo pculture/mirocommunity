@@ -15,8 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.conf.urls.defaults import url, patterns, include
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.utils.datastructures import SortedDict
+
+
+ADMIN_ROOT_VIEW = getattr(settings, 'LOCALTV_ADMIN_ROOT_VIEW', None)
 
 
 class RegistrationError(Exception):
@@ -61,14 +67,21 @@ class MiroCommunitySectionRegistry(object):
             del self._registry[url_prefix]
 
     def get_urlpatterns(self):
-        urlpatterns = patterns('')
+        urlpatterns = patterns('',
+            url(r'^$', self.root_view, name='localtv_admin_root')
+        )
 
         for url_prefix, section in self._registry.iteritems():
             urlpatterns += patterns('',
-                url(r'^%s%s' % (url_prefix, '/' if url_prefix else ''),
-                    include(section.urlpatterns))
+                url(r'^%s/' % url_prefix, include(section.urlpatterns))
             )
         return urlpatterns
+
+    def root_view(self, request):
+        view = (ADMIN_ROOT_VIEW if ADMIN_ROOT_VIEW is not None
+                else 'localtv_admin_dashboard')
+        return HttpResponseRedirect(reverse(view))
+
 
 
 registry = MiroCommunitySectionRegistry()

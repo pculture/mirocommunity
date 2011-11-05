@@ -70,4 +70,7 @@ def is_active_page(page, request):
 
 @register.filter
 def is_active_section(section, request):
-    return any((is_active_page(page, request) for page in section.pages))
+    if not hasattr(request, '_localtv_admin_root_url'):
+        request._localtv_admin_root_url = reverse('localtv_admin_root')
+    prefix = "%s%s/" % (request._localtv_admin_root_url, section.url_prefix)
+    return request.path.startswith(prefix)

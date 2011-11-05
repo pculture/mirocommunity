@@ -24,11 +24,10 @@ from localtv.admin.dashboard.views import DashboardView
 
 
 class DashboardSection(MiroCommunityAdminSection):
-    url_prefix = ''
+    url_prefix = 'dashboard'
     navigation_text = _('Dashboard')
     urlpatterns = patterns('',
-        url(r'^$', RedirectView.as_view(permanent=False, url="dashboard/")),
-        url(r'^dashboard/$', DashboardView.as_view(), name='localtv_admin_dashboard'),
+        url(r'^$', DashboardView.as_view(), name='localtv_admin_dashboard'),
     )
     site_admin_required = True
     pages = (
