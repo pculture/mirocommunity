@@ -1,0 +1,157 @@
+{% spaceless %}{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% comment %}
+This template is heavily based on the work of the HTML5 Boilerplate developers. Many thanks!
+{% endcomment %}
+
+{% load url from future %}
+{% load localtv_admin %}
+
+{% endspaceless %}<!DOCTYPE html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/b/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>{% block title %}{% endblock %}</title>
+  {% comment %}
+  <meta name="description" content="">
+  <meta name="author" content="">
+  {% endcomment %}
+
+  <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  {% block styles %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}localtv/admin/css/styles.css">
+  {% endblock %}
+
+  <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
+
+  {% block js_head %}
+  <!-- All JavaScript at the bottom, except for Modernizr / Respond.
+       Modernizr enables HTML5 elements & feature detects; Respond is a polyfill for min/max-width CSS3 Media Queries
+       For optimal performance, use a custom Modernizr build: www.modernizr.com/download/ -->
+  <script src="{{ STATIC_URL }}localtv/admin/js/modernizr-2.0.6.min.js"></script>
+  {% endblock %}
+
+</head>
+
+<body class="{% block body_classes %}admin{% endblock %}">
+
+  <div id="container">
+    <header>
+      <a href="{% url 'localtv_admin_root' %}">
+        <img src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" />
+        <h1>{{ sitelocation.site.name }}</h1>
+      </a>
+      <ul>
+        <li>Logged in as <em>{{ request.user.username }}</em></li>
+        <li><a href="{{ settings.LOGOUT_URL }}">Sign out</a></li>
+      </ul>
+    </header>
+    <div id="main" role="main">
+      {% get_admin_sections as admin_sections %}
+      {% if admin_sections %}
+        {% block navigation_left %}
+        <nav class='leftnav'>
+          <ul>
+            {% for section in admin_sections %}
+              <li{% if section|is_active_section:request %} class="leftnav-selected"{% endif %}><a href="{% url section.pages.0.1 %}">{{ section.navigation_text }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+        {% endblock %}
+        {% block navigation_top %}
+          {% for section in admin_sections %}
+            {% if section|is_active_section:request %}
+              <nav class='topnav'>
+                <ul>
+                  {% for page in section.pages %}
+                    <li{% if page|is_active_page:request %} class="topnav-selected"{% endif %}><a href="{% url page.1 %}">{{ page.0 }}</a></li>
+                  {% endfor %}
+                </ul>
+              </nav>
+            {% endif %}
+          {% endfor %}
+        {% endblock %}
+      {% endif %}
+
+      <div id="content">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </div>
+    <footer>
+      <ul>
+        <li><a href="http://pculture.org/pcf/websites-privacy/">Privacy Policy</a></li>
+        <li><a href="http://mirocommunity.org/terms">Terms of Service</a></li>
+        <li><a href="http://mirocommunity.org/faq/">FAQ</a></li>
+        <li><a href="https://develop.participatoryculture.org/index.php/MiroCommunityManual">Miro Community Manual</a></li>
+      </ul>
+      {% if user_is_admin %}
+        <p id="footer_help">Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email the support team: <a href="mailto:questions@mirocommunity.org">questions@mirocommunity.org</a></p>
+      {% endif %}
+    </footer>
+  </div> <!--! end of #container -->
+
+  {% block js_foot %}
+  <!-- JavaScript at the bottom for fast page loading -->
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="{{ STATIC_URL }}localtv/admin/js/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <script src="{{ STATIC_URL }}localtv/admin/js/admin_plugins.js"></script>
+  <script src="{{ STATIC_URL }}localtv/admin/js/admin.js"></script>
+
+  {% if settings.GOOGLE_ANALYTICS_UA %}
+  <script>
+    window._gaq = [
+      ['_setAccount','{{ settings.GOOGLE_ANALYTICS_UA }}'],
+      {% if settings.GOOGLE_ANALYTICS_DOMAIN %}
+        ['_setDomainName','.{{ settings.GOOGLE_ANALYTICS_DOMAIN }}']
+      {% endif %}
+      ['_trackPageview'],
+      ['_trackPageLoadTime']
+    ];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+  {% endif %}
+
+  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
+  {% endblock %}
+  
+</body>
+</html>
