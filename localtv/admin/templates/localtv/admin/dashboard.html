@@ -20,61 +20,36 @@
 {% block body_classes %}{{ block.super }} dashboard{% if sitelocation.hide_get_started %} hide_get_started{% endif %}{% endblock %}
 
 {% block content %}
-<div id="dashboard">
-<h1 id="hdr_activity">Activity</h1>
-<div id="video_limit">
-  <h2>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</h2>
-  <div id="limit_bar">
-  <div id="limit_progress" style="width: {{ percent_videos_used }}%;">
-    <a href="{# {% url localtv_admin_tier %} #}"><em class="icon"></em>Upgrade</a>
-  </div><!-- // limit_progress -->
-  </div><!-- // limit_bar -->
-</div><!-- // video_limit -->
+<section>
+  <header>
+    <h1>Activity</h1>
+  </header>
 
-<div class="clear"></div>
-<div id="account_stats">
-  <div class="clear">
-  <div id="videos_pending">
-    <h1>{{ unreviewed_count }}</h1>
-    <h2>Videos</h2>
-    <h3>pending moderation</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{# {% url localtv_admin_approve_reject %} #}">Moderate</a>
-  </div><!-- // videos_pending -->
+  <figure>
+    <figcaption>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</figcaption>
+    <div class="progress_bar">
+      <div class="progress_bar-progress">
+        <a href="{# {% url localtv_admin_tier %} #}">Upgrade</a>
+      </div>
+    </div>
+  </figure>
   
-  <div id="comments_pending">
-    <h1>{{ comment_count }}</h1>
-    <h2>Comments</h2>
-    <h3>pending moderation</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{# {% url comments-moderation-queue %} #}">Moderate</a>
-  </div><!-- // comments_pending -->
-  
-  <div id="videos_week">
-    <h1>{{ videos_this_week_count }}</h1>
-    <h2>Videos</h2>
-    <h3>added this week</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url localtv_list_this_week %}">Moderate</a>
-  </div><!-- // videos_week -->
-
-  </div><!-- // clear -->
-</div><!-- // accounts_stats -->
-
-<div id="get_started">
-  <div id="hd">
-    <div class="clear">
-      <h1 id="hdr_getstarted">Get Started</h1>
-      <a id="started_hide" href="">Hide This</a>
-    </div><!-- // clear -->
-  </div><!-- // hd -->
-  <ul>
-    <li id="step1"><strong><a href="{# {% url localtv_admin_manage_page %} #}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
-    <li id="step2"><strong><a href="{# {% url uploadtemplate-index %} #}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
-    <li id="step3"><strong><a href="{# {% url localtv_admin_settings %} #}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
-    <li id="step4"><strong><a href="{# {% url localtv_user_notifications %} #}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
+  <ul class="overview">
+    <li class="overview-item overview-moderate"><a class="overview-action" href="{# {% url localtv_admin_approve_reject %} #}">Moderate</a> <span class="overview-count">{{ unreviewed_count }}</span> <span class="overview-type">videos</span> <span class="overview-status">pending moderation</span></li>
+    <li class="overview-item overview-moderate"><a class="overview-action" href="{# {% url comments-moderation-queue %} #}">Moderate</a> <span class="overview-count">{{ comment_count }}</span> <span class="overview-type">comments</span> <span class="overview-status">pending moderation</span></li>
+    <li class="overview-item overview-view"><a class="overview-action" href="{% url localtv_list_this_week %}">View</a> <span class="overview-count">{{ unreviewed_count }}</span> <span class="overview-type">videos</span> <span class="overview-status">added this week</span></li>
   </ul>
-</div><!-- // get_started -->
+</section>
 
-</div><!-- // dashboard -->
+<section>
+  <header>
+    <h1>Get Started</h1>
+  </header>
+  <ol>
+    <li><a href="{# {% url localtv_admin_manage_page %} #}">Add Video Feeds</a> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
+    <li><a href="{# {% url uploadtemplate-index %} #}">Change Your Theme</a> — <span>Choose from four default theme choices.</span></li>
+    <li><a href="{# {% url localtv_admin_settings %} #}">Edit Your Site Info &amp; Design</a> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
+    <li><a href="{# {% url localtv_user_notifications %} #}">Set Your Notification Preferences</a> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
+  </ol>
+</section>
 {% endblock %}

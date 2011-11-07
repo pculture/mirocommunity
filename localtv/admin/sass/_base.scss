@@ -1,0 +1,26 @@
+@import "compass";
+
+$em: 15px;
+
+a, a:visited{
+	text-decoration:none;
+	color:#333;
+	font-weight:bold;
+
+	&:hover{
+		color:#06e;
+	}
+}
+
+#container {
+	@include background-image(linear-gradient(#e3e3e3, #cecece 5 * $em - 1px, #e1e1e1 5 * $em - 1px, #e1e1e1 5 * $em, #b8b8b8 5 * $em, #b8b8b8 5 * $em + 1px, #eee 5 * $em + 1px));
+
+	& > header, & > footer{
+		@include single-text-shadow(#fff, 0, 1px, 0);
+	}
+}
+
+#content{
+	background-color:#fff;
+	border:1px solid #aaa;
+}

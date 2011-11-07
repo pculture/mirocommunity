@@ -1,0 +1,64 @@
+@import "compass/css3/text-shadow";
+
+$left-sidebar-width: 225px;
+$content-width: 825px;
+$main-width: $left-sidebar-width + $content-width;
+
+html, body, #container{min-height:100%;width:100%;}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl{margin-top:0;}
+
+#container > header{
+	width: $main-width - 2 * $em;
+	height: 5 * $em;
+	padding:0 $em;
+	& > a{
+		display:block;
+		float:left;
+
+		& > h1{
+			font-size: 1.25 * $em;
+			display: inline-block;
+			margin: 0;
+			line-height: 5 * $em;
+		}
+		& > img{
+			max-width:46px;
+			max-height:46px;
+			border:1px solid #bbb;
+			margin-right:10px;
+		}
+	}
+	& > ul{
+		float:right;
+		margin:2 * $em 0;
+		height:1 * $em;
+	}
+}
+
+#main{
+	width: $main-width;
+	clear: both;
+	margin:4 * $em 0 2 * $em;
+}
+
+	.sidenav{
+		float: left;
+		width: $left-sidebar-width;
+	}
+	.tabbednav{
+		width: $content-width;
+		margin-left: $left-sidebar-width;
+	}
+
+	#content{
+		padding: $em;
+		width: $content-width - 2 * $em;
+		margin-left: $left-sidebar-width;
+	}
+
+#container > footer{
+	width: $content-width;
+	margin-left: $left-sidebar-width;
+	padding-bottom: $em;
+}

@@ -69,8 +69,8 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
         <img src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" />
         <h1>{{ sitelocation.site.name }}</h1>
       </a>
-      <ul>
-        <li>Logged in as <em>{{ request.user.username }}</em></li>
+      <ul class="standalone-links">
+        <li>Logged in as <strong>{{ request.user.username }}</strong></li>
         <li><a href="{{ settings.LOGOUT_URL }}">Sign out</a></li>
       </ul>
     </header>
@@ -78,21 +78,21 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
       {% get_admin_sections as admin_sections %}
       {% if admin_sections %}
         {% block navigation_left %}
-        <nav class='leftnav'>
+        <nav class='sidenav'>
           <ul>
             {% for section in admin_sections %}
-              <li{% if section|is_active_section:request %} class="leftnav-selected"{% endif %}><a href="{% url section.pages.0.1 %}">{{ section.navigation_text }}</a></li>
+              <li class="sidenav-item{% if section|is_active_section:request %} sidenav-selected{% endif %}"><a href="{% url section.pages.0.1 %}">{{ section.navigation_text }}</a></li>
             {% endfor %}
           </ul>
         </nav>
         {% endblock %}
         {% block navigation_top %}
           {% for section in admin_sections %}
-            {% if section|is_active_section:request %}
-              <nav class='topnav'>
+            {% if section|is_active_section:request and section.pages|length > 1 %}
+              <nav class='tabbednav'>
                 <ul>
                   {% for page in section.pages %}
-                    <li{% if page|is_active_page:request %} class="topnav-selected"{% endif %}><a href="{% url page.1 %}">{{ page.0 }}</a></li>
+                    <li class="tabbednav-item{% if page|is_active_page:request %} nav-selected{% endif %}"><a href="{% url page.1 %}">{{ page.0 }}</a></li>
                   {% endfor %}
                 </ul>
               </nav>
@@ -107,7 +107,7 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
       </div>
     </div>
     <footer>
-      <ul>
+      <ul class='standalone-links'>
         <li><a href="http://pculture.org/pcf/websites-privacy/">Privacy Policy</a></li>
         <li><a href="http://mirocommunity.org/terms">Terms of Service</a></li>
         <li><a href="http://mirocommunity.org/faq/">FAQ</a></li>
