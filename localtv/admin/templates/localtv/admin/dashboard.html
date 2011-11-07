@@ -17,6 +17,10 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %} — {{ block.super }}{% endblock %}
+
 {% block body_classes %}{{ block.super }} dashboard{% if sitelocation.hide_get_started %} hide_get_started{% endif %}{% endblock %}
 
 {% block content %}
