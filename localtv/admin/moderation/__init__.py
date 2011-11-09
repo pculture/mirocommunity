@@ -20,7 +20,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import MiroCommunityAdminSection, registry
 from localtv.admin.moderation.views import (VideoModerationQueueView,
-                                            VideoPreviewView,
                                             CommentModerationQueueView)
 
 
@@ -34,11 +33,6 @@ class ModerationSection(MiroCommunityAdminSection):
             name='localtv_admin_video_queue'
         ),
         url(
-            r'^videos/preview/(?P<pk>[\d+])/$',
-            VideoPreviewView.as_view(),
-            name='localtv_admin_video_preview'
-        ),
-        url(
             r'^comments/$',
             CommentModerationQueueView.as_view(),
             name='localtv_admin_comment_queue'
@@ -46,7 +40,8 @@ class ModerationSection(MiroCommunityAdminSection):
     )
     site_admin_required = True
     pages = (
-        (_('Video Review Queue'), 'localtv_admin_video_queue'),
+        (_('Videos'), 'localtv_admin_video_queue'),
+        (_('Comments'), 'localtv_admin_comment_queue')
     )
 
 

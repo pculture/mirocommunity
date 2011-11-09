@@ -1,4 +1,5 @@
-{% extends "localtv/admin/base.html" %}
+{% extends "localtv/admin/__base.html" %}
+
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -18,100 +19,42 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters comments pagetabs %}
-{% block body_class %}comments{% endblock %}
+{% load i18n filters comments %}
 
-{% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
+{% block body_classes %}{{ block.super }} comments{% endblock %}
 
-{% block head %}
-  {{ block.super }}
-  <style type="text/css" media="screen">
-    p#nocomments { font-size: 200%; text-align: center; border: 1px #ccc dashed; padding: 4em; }
-    td.actions { width: 11em; }
-    td.actions form { display: inline; }
-    td.actions form input.submit { width: 5em; padding: 2px 4px; margin-right: 4px;}
-    td.actions form input.approve { background: green; color: white; }
-    td.actions form input.remove { background: red; color: white; }
-  </style>
-{% endblock %}
+
+{% block title %}{% trans "Review Queue" %} — {% trans "Videos" %} — {{ block.super }}{% endblock %}
+
 
 {% block content %}
-{% if not formset.forms %}
-<p id="nocomments">{% trans "No comments to moderate" %}.</p>
+<section>
+  <header>
+    <h1>Comment Review Queue</h1>
+  </header>
 
-{% else %}
-<div id="content-main">
- 
- <h2>Comments</h2>
- 
-  <div class="module" id="labels">
-    {% if page_obj %}
-    <div class="pag">
-      {% pagetabs page_obj %}
-    </div>
+  <ul class="messages">
+    {% if not paginator.count %}
+      <li class="messages-info">{% trans "No comments to moderate" %}</li>
     {% endif %}
-    <form method="POST" action="">{% csrf_token %}
-      <div class="bulkedit_controls">
-        <select id="bulk_action_selector" class="behave" name="bulk_action">
-          <option value="">Bulk Actions</option>
-          <option value="approve">Approve</option>
-          <option value="remove">Remove</option>
-        </select>
-        <button type="submit" class="med_button"><span>Apply</span></button>
-      </div>
-      <table cellspacing="0" class="rounded">
-        <thead>
-          <tr>
-            <th><input id="id_select_all" type="checkbox"></th>
-            <th><span>{% trans "Name" %}</span></th>
-            <th><span>{% trans "Comment" %}</span></th>
-            <th><span>{% trans "Email" %}</span></th>
-            <th><span>{% trans "URL" %}</span></th>
-            <th><span>{% trans "Authenticated?" %}</span></th>
-            <th><span>{% trans "IP Address" %}</span></th>
-            <th class="sorted desc"><span>{% trans "Date posted" %}</span></th>
-            <th><span>{% trans "Video" %}</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{ formset.management_form }}
-          {{ formset.non_form_errors }}
-          {% for form in formset.forms %}
-          <tr class="{% cycle 'row1' 'row2' %}">
-            <td>{{ form.id }}{{ form.BULK }}{{ form.non_field_errors }}</td>
-            {% with form.instance as comment %}
-            <td>
-              {{ comment.name }}
-              <div class="actions">
-                <input class="approve submit" type="submit" name="{{ form.prefix }}-APPROVE" value="{% trans "Approve" %}" />
-                <input class="remove submit" type="submit" name="{{ form.prefix }}-REMOVE" value="{% trans "Remove" %}" />
-              </div>
-            </td>
-            <td>{{ comment.comment|sanitize }}</td>
-            <td>{{ comment.email }}</td>
-            <td>{{ comment.url }}</td>
-            <td>
-              {% if comment.user %}{% trans "yes" %}{% else %}{% trans "no" %}{% endif %}
-            </td>
-            <td>{{ comment.ip_address }}</td>
-            <td>{{ comment.submit_date|date:"F j, P" }}</td>
-            {% comment %}
-            This bit requires a comment-url-redirect view, which is not
-            currently implemented.
-            <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td>
-            {% endcomment %}
-            {% endwith %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  </ul>
+
+  {% if paginator.count %}
+    {% if page.has_other_pages %}
+      {% include "localtv/admin/_pagination.html" %}
+    {% endif %}
+    <form class="bulk-edit" method="post" action="">
+      {{ formset.management_form }}
+      {{ formset.non_form_errors }}
+      {% for form in formset.forms %}
+        <article>
+          <table>
+            {{ form }}
+          </table>
+        </article>
+      {% endfor %}
+      <button type="submit">Save all changes</button>
     </form>
-  </div>
-</div>
-{% endif %}
-<script type="text/javascript">
-  $("#id_select_all").click(function() {
-  $("input[type=checkbox]").attr('checked', this.checked);
-  });
-</script>
+  {% endif %}
+</section>
 {% endblock %}

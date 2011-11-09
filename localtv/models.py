@@ -918,7 +918,7 @@ class Feed(Source, StatusedThumbnailable):
         get_latest_by = 'last_updated'
 
     def __unicode__(self):
-        return self.name
+        return self.name or self.feed_url
 
     @models.permalink
     def get_absolute_url(self):
@@ -1126,6 +1126,9 @@ class SavedSearch(Source):
     """
     query_string = models.TextField()
     when_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "saved searches"
 
     def __unicode__(self):
         return self.query_string

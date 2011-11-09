@@ -92,7 +92,7 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
               <nav class='tabbednav'>
                 <ul>
                   {% for page in section.pages %}
-                    <li class="tabbednav-item{% if page|is_active_page:request %} nav-selected{% endif %}"><a href="{% url page.1 %}">{{ page.0 }}</a></li>
+                    <li class="tabbednav-item{% if page|is_active_page:request %} tabbednav-selected{% endif %}"><a href="{% url page.1 %}">{{ page.0 }}</a></li>
                   {% endfor %}
                 </ul>
               </nav>

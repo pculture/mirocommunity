@@ -4,7 +4,7 @@ $left-sidebar-width: 225px;
 $content-width: 825px;
 $main-width: $left-sidebar-width + $content-width;
 
-html, body, #container{min-height:100%;width:100%;}
+html, body{min-height:100%;}
 
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl{margin-top:0;}
 
@@ -40,6 +40,7 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, dl{margin-top:0;}
 	width: $main-width;
 	clear: both;
 	margin:4 * $em 0 2 * $em;
+	position: relative;
 }
 
 	.sidenav{
@@ -49,12 +50,19 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, dl{margin-top:0;}
 	.tabbednav{
 		width: $content-width;
 		margin-left: $left-sidebar-width;
+		position: absolute;
+		top: -2 * $em;
 	}
 
 	#content{
 		padding: $em;
 		width: $content-width - 2 * $em;
 		margin-left: $left-sidebar-width;
+		&:after{
+			clear:both;
+			content:"";
+			display:table;
+		}
 	}
 
 #container > footer{

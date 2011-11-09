@@ -47,10 +47,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if page.has_other_pages %}
       {% include "localtv/admin/_pagination.html" %}
     {% endif %}
-    <form class="bulk-edit" method="post" action="">
+    <form class="bulk-edit-form" method="post" action="">
+      {{ formset.management_form }}
+      {{ formset.non_form_errors }}
       {% for form in formset.forms %}
         <article>
-          {{ form.as_p }}
+          <table>
+            {{ form }}
+          </table>
         </article>
       {% endfor %}
       <button type="submit">Save all changes</button>

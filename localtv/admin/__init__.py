@@ -16,4 +16,4 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from localtv.admin.base import registry, MiroCommunityAdminSection
-from localtv.admin import dashboard, moderation
+from localtv.admin import dashboard, moderation, sources

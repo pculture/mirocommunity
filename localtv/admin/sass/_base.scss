@@ -12,9 +12,13 @@ a, a:visited{
 	}
 }
 
-#container {
-	@include background-image(linear-gradient(#e3e3e3, #cecece 5 * $em - 1px, #e1e1e1 5 * $em - 1px, #e1e1e1 5 * $em, #b8b8b8 5 * $em, #b8b8b8 5 * $em + 1px, #eee 5 * $em + 1px));
+th{vertical-align:top;}
 
+body{
+	@include background-image(linear-gradient(#e3e3e3, #cecece 5 * $em - 1px, #e1e1e1 5 * $em - 1px, #e1e1e1 5 * $em, #b8b8b8 5 * $em, #b8b8b8 5 * $em + 1px, #eee 5 * $em + 1px));
+}
+
+#container {
 	& > header, & > footer{
 		@include single-text-shadow(#fff, 0, 1px, 0);
 	}
@@ -22,5 +26,5 @@ a, a:visited{
 
 #content{
 	background-color:#fff;
-	border:1px solid #aaa;
+	border:1px solid #ddd;
 }

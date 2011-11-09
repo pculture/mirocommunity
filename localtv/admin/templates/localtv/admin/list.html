@@ -1,0 +1,47 @@
+{% extends "localtv/admin/__base.html" %}
+
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+
+{% load i18n %}
+{% load url from future %}
+
+{% block title %}{{ verbose_name_plural|title }} — {{ block.super }}{% endblock %}
+
+{% block body_classes %}{{ block.super }} list {{ verbose_name_plural }}{% endblock %}
+
+{% block content %}
+<section>
+	<header>
+		<h1>{{ verbose_name_plural|title }}</h1>
+    {% if create_view_name %}
+      <a href="{% url create_view_name %}">{% block create_link_text %}Add a {{ verbose_name }}{% endblock %}</a>
+    {% endif %}
+  </header>
+
+  {% if object_list %}
+  <ul class='object_list'>
+    {% for object in object_list %}
+      <li class='object_list-item'>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endblock %}

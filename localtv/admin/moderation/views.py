@@ -57,17 +57,6 @@ class VideoModerationQueueView(ListView):
         return context
 
 
-class VideoPreviewView(DetailView):
-    template_name = 'localtv/admin/moderation/videos/preview.html'
-    context_object_name = 'video'
-
-    def get_queryset(self):
-        return Video.objects.filter(
-            status=Video.UNAPPROVED,
-            site=Site.objects.get_current()
-        )
-
-
 class CommentModerationQueueView(BulkEditView):
     formset_class = CommentModerationFormSet
     paginate_by = 10

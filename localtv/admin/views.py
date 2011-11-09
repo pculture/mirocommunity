@@ -18,8 +18,73 @@
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect, Http404
+from django.utils.decorators import method_decorator
 from django.views.generic.base import View, TemplateResponseMixin
-from django.views.generic.list import MultipleObjectMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.list import MultipleObjectMixin, ListView
+
+from localtv.decorators import require_site_admin
+
+
+class MiroCommunityAdminMixin(object):
+    list_view_name = None
+    create_view_name = None
+    update_view_name = None
+    delete_view_name = None
+
+    @method_decorator(require_site_admin)
+    def dispatch(self, request, *args, **kwargs):
+        return View.dispatch(self, request, *args, **kwargs)
+
+    def get_template_names(self):
+        if isinstance(self.template_name, basestring):
+            return [self.template_name]
+        else:
+            return list(self.template_name)
+
+    def get_context_data(self, **kwargs):
+        if hasattr(self, 'model') and self.model is not None:
+            model = self.model
+        elif hasattr(self, 'object') and self.object is not None:
+            model = self.object.__class__
+        else:
+            model = self.get_queryset().model
+        return {
+            'verbose_name': model._meta.verbose_name,
+            'verbose_name_plural': model._meta.verbose_name_plural,
+            'list_view_name': self.list_view_name,
+            'create_view_name': self.create_view_name,
+            'update_view_name': self.update_view_name,
+            'delete_view_name': self.delete_view_name,
+        }
+
+
+class MiroCommunityAdminListView(MiroCommunityAdminMixin, ListView):
+    def get_context_data(self, **kwargs):
+        context = ListView.get_context_data(self, **kwargs)
+        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        return context
+
+
+class MiroCommunityAdminCreateView(MiroCommunityAdminMixin, CreateView):
+    def get_context_data(self, **kwargs):
+        context = CreateView.get_context_data(self, **kwargs)
+        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        return context
+
+
+class MiroCommunityAdminUpdateView(MiroCommunityAdminMixin, UpdateView):
+    def get_context_data(self, **kwargs):
+        context = UpdateView.get_context_data(self, **kwargs)
+        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        return context
+
+
+class MiroCommunityAdminDeleteView(MiroCommunityAdminMixin, DeleteView):
+    def get_context_data(self, **kwargs):
+        context = DeleteView.get_context_data(self, **kwargs)
+        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        return context
 
 
 class FormSetMixin(object):

@@ -26,6 +26,35 @@
 	}
 
 
+.tabbednav{
+	height: 2 * $em;
+}
+
+	.tabbednav-item{
+		height: 2 * $em;
+		line-height: 2 * $em;
+		float: left;
+		margin-right:$em;
+
+		& > a{
+			height: 2 * $em - 1px;
+			display: block;
+			padding:0 $em;
+			background-color:#ddd;
+			border:1px solid #ddd;
+			@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%));
+
+			&:hover{
+				background-color:#f4f4f4;
+			}
+		}
+	}
+	.tabbednav-selected > a{
+		background-color:#fff;
+		border-bottom-color:#fff;
+	}
+
+
 .standalone-links{
 	padding: 0;
 
