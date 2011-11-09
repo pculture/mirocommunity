@@ -17,6 +17,7 @@
 
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
@@ -43,6 +44,9 @@ class MiroCommunityAdminMixin(object):
             return [self.template_name]
         else:
             return list(self.template_name)
+
+    def get_success_url(self):
+        return reverse(self.list_view_name)
 
     def get_context_data(self, **kwargs):
         if hasattr(self, 'model') and self.model is not None:
