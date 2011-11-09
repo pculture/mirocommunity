@@ -70,11 +70,10 @@ class SourceSection(MiroCommunityAdminSection):
 
     @property
     def pages(self):
-        return [
-            (section.navigation_text,
-             section.get_view_names()['list_view_name'])
-            for section in self.subsections
-        ]
+        pages = ()
+        for section in self.subsections:
+            pages += section.pages
+        return pages
 
 
 registry.register(SourceSection)

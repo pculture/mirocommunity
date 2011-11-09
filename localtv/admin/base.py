@@ -187,6 +187,13 @@ class CRUDSection(MiroCommunityAdminSection):
         )
         return urlpatterns
 
+    @property
+    def pages(self):
+        view_names = self.get_view_names()
+        return (
+            (self.navigation_text, view_names['list_view_name']),
+        )
+
 
 
 class MiroCommunitySectionRegistry(object):
@@ -194,13 +201,16 @@ class MiroCommunitySectionRegistry(object):
         self._registry = SortedDict()
 
     def register(self, section_class):
-        if section_class.url_prefix in self._registry:
+        section = section_class()
+        url_prefix = section.url_prefix
+        if url_prefix in self._registry:
             raise RegistrationError("Another section is already registered for "
-                            "the url prefix '%s'" % section_class.url_prefix)
-        self._registry[section_class.url_prefix] = section_class()
+                            "the url prefix '%s'" % url_prefix)
+        self._registry[url_prefix] = section
 
     def unregister(self, section_class):
-        url_prefix = section_class.url_prefix
+        section = section_class()
+        url_prefix = section.url_prefix
         if (url_prefix in self._registry and
             isinstance(self._registry[url_prefix], section_class)):
             del self._registry[url_prefix]
