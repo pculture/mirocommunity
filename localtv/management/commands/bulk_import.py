@@ -18,14 +18,10 @@
 #eventlet.monkey_patch()
 
 from django.core.management.base import BaseCommand, CommandError
-from django.utils import simplejson
 
 from optparse import make_option
 
-from localtv import models
-from localtv import tiers
-
-import vidscraper
+from django.conf import settings
 
 class Command(BaseCommand):
 
@@ -40,48 +36,16 @@ class Command(BaseCommand):
     args = '[feed primary key]'
 
     def handle(self, *args, **options):
+        from localtv import models, tasks
+
         if len(args) != 1:
             raise CommandError('bulk_import takes one argument: '
                                '%i argument(s) given' % len(args))
-
-        if models.SiteLocation.enforce_tiers():
-            max_results = 1000
-        else:
-            tier = tiers.Tier.get()
-            max_results = tier.remaining_videos()
 
         try:
             feed = models.Feed.objects.get(pk=args[0])
         except models.Feed.DoesNotExist:
             raise CommandError('Feed with pk %s does not exist' % args[0])
 
-        try:
-            self.verbose = (int(options['verbosity']) > 1)
-        except (KeyError, ValueError):
-            self.verbose = False
-
-        video_iter = vidscraper.auto_feed(
-            feed.feed_url, crawl=options['crawl'],
-            max_results=max_results)
-        from localtv import tasks
-        video_iter = tasks.vidscraper_load.delay(video_iter).get()
-        if self.verbose:
-            print 'Loaded object:', repr(video_iter)
-            print 'Loaded feed:', video_iter.title
-        stats = {
-            'total': video_iter.entry_count,
-            }
-        if self.verbose:
-            print 'Entry count:', video_iter.entry_count
-        try:
-            imported = feed.update_items(
-                verbose=self.verbose,
-                clear_rejected=True,
-                video_iter=video_iter)
-            print 'Imported videos:', imported
-        finally:
-            feed.status = models.Feed.ACTIVE
-            feed.save()
-        stats['imported'] = imported
-        stats['skipped'] = max_results - imported
-        print simplejson.dumps(stats),
+        tasks.bulk_import.delay(feed.pk, crawl=options.get('crawl', False),
+                                using=settings.SETTINGS_MODULE.split('.')[0])

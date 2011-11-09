@@ -43,12 +43,14 @@ import vidscraper
 from notification import models as notification
 
 
-def get_tag(tag_text):
+def get_tag(tag_text, using='default'):
     while True:
         try:
-            tags = tagging.models.Tag.objects.filter(name=tag_text)
+            tags = tagging.models.Tag.objects.using(using).filter(
+                name=tag_text)
             if not tags.count():
-                return tagging.models.Tag.objects.create(name=tag_text)
+                return tagging.models.Tag.objects.using(using).create(
+                    name=tag_text)
             elif tags.count() == 1:
                 return tags[0]
             else:
@@ -60,14 +62,14 @@ def get_tag(tag_text):
             pass # try again to create the tag
 
 
-def get_or_create_tags(tag_list):
+def get_or_create_tags(tag_list, using='default'):
     tag_set = set()
     for tag_text in tag_list:
         if isinstance(tag_text, basestring):
             tag_text = tag_text[:50] # tags can only by 50 chars
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
-        tag = get_tag(tag_text);
+        tag = get_tag(tag_text, using);
         tag.name = force_unicode(tag.name)
         tag_set.add(tag)
     edit_string = tagging.utils.edit_string_for_tags(list(tag_set))
