@@ -19,6 +19,7 @@ from django import forms
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect, Http404
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from django.views.generic.base import View, TemplateResponseMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import MultipleObjectMixin, ListView
@@ -33,6 +34,7 @@ class MiroCommunityAdminMixin(object):
     delete_view_name = None
 
     @method_decorator(require_site_admin)
+    @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         return View.dispatch(self, request, *args, **kwargs)
 

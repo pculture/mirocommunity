@@ -33,6 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </header>
 
   <form class="delete-form" action="{{ request.path }}" method="post">
+    {% csrf_token %}
     {% block confirmation_message %}
     <p>Are you sure you want to delete {{ object }} and all related objects?</p>
     {% endblock %}

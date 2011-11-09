@@ -33,6 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </header>
 
   <form class="edit-form" action="{{ request.path }}" method="post">
+    {% csrf_token %}
     <table>
       <tfoot>
         <tr><td colspan=2>
