@@ -1,4 +1,5 @@
 {% extends "localtv/admin/bulk_edit.html" %}
+{% load filters %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -147,6 +148,12 @@ $(document).ready(function() {
   </span>
 </td>
 <td>{{ form.instance.source_type }}</td>
+<td>
+{% with form.instance.feedimport_set.latest as latest_import %}
+  {% if latest_import %}
+  {% if latest_import.end %}Last import ended {{ latest_import.end|simpletimesince }} ago<br/>Imported {{ latest_import.video_set.count }} videos.
+  {% else %}Last import started {{ latest_import.start|simpletimesince }} ago{% endif %}{% endif %}
+{% endwith %}</td>
 {% if form.instance.query_string %}
 {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}
 {% else %}

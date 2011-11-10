@@ -66,40 +66,6 @@ if hasattr(settings.DATABASES, 'module'):
 else:
     def patch_settings(func):
         return func # noop
-            
-
-@task
-def check_call(args, env={}):
-    args = [str(arg) for arg in args]
-    environ = os.environ.copy()
-    environ.update(env)
-    process = subprocess.Popen(
-        args,
-        executable=args[0],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=environ)
-
-    stderr = []
-    while process.poll() is None:
-        # #17982: the stderr buffer can fill, so make sure to pull the data
-        # out of the buffer
-        err = process.stderr.read()
-        if err:
-            stderr.append(err)
-
-    return_code = process.wait()
-    if return_code: # some problem with the code
-        while stderr[-1] != '':
-            stderr.append(process.stderr.read())
-
-        raise RuntimeError('Error during: %s\n\nTraceback:\n%s' % (
-                ' '.join(args), ''.join(stderr)))
-    else: # imported the feed correctly
-        stdout = [process.stdout.read()]
-        while stdout[-1] != '':
-            stdout.append(process.stdout.read())
-        return ''.join(stdout)
 
 @task(ignore_result=True)
 @patch_settings

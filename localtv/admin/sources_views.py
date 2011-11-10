@@ -49,6 +49,7 @@ def manage_sources(request):
             ('Categories', None),
             ('User Attribution', None),
             ('Type', 'type'),
+            ('Import', None),
             ('Auto Approve', 'auto_approve')))
 
     sort = headers.order_by()

@@ -127,8 +127,11 @@ def add_feed(request):
                 feed.auto_authors.add(user)
             feed.save()
 
-            return HttpResponseRedirect(reverse('localtv_admin_feed_add_done',
-                                                args=[feed.pk]))
+            tasks.bulk_import.delay(feed.pk,
+                                    crawl=True,
+                                    using=settings.SETTINGS_MODULE.split('.')[0])
+            
+            return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
     else:
         form = forms.SourceForm(instance=Feed(**defaults))
@@ -136,58 +139,6 @@ def add_feed(request):
                               {'form': form,
                                'video_count': video_count},
                               context_instance=RequestContext(request))
-
-
-@require_site_admin
-def add_feed_done(request, feed_id):
-    feed = get_object_or_404(Feed, pk=feed_id)
-    if 'task_id' in request.GET:
-        task_id = request.GET['task_id']
-        task = celery.result.AsyncResult(task_id)
-    else:
-        mod = import_module(settings.SETTINGS_MODULE)
-        manage_py = os.path.join(
-            os.path.dirname(mod.__file__),
-            'manage.py')
-        task = tasks.check_call.delay(
-            (getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
-             manage_py,
-             'bulk_import',
-             feed_id),
-            env={'DJANGO_SETTINGS_MODULE': settings.SETTINGS_MODULE})
-        if not task.ready():
-            return HttpResponseRedirect('%s?task_id=%s' % (
-                    request.path, task.task_id))
-
-    if task.ready(): # completed
-        context = {'feed': feed,
-                   'result': {
-                'status': task.status,
-                'result': task.result}}
-        if task.successful():
-            json = simplejson.loads(task.result)
-            context.update(json)
-        else:
-            feed.status = Feed.ACTIVE
-            feed.save()
-            if settings.DEBUG:
-                raise RuntimeError(
-                    'Exception during Celery task:\n%s' % task.result)
-
-        return render_to_response('localtv/admin/feed_done.html',
-                                  context,
-                                  context_instance=RequestContext(request))
-    else:
-        videos_that_are_fully_thumbnailed = feed.video_set.exclude(
-            status=Feed.PENDING_THUMBNAIL)
-        fully_thumbnailed_count = videos_that_are_fully_thumbnailed.count()
-        return render_to_response(
-            'localtv/admin/feed_wait.html',
-            {'feed': feed,
-             'fully_thumbnailed_count': fully_thumbnailed_count,
-             'task_id': task_id},
-            context_instance=RequestContext(request))
-
 
 @referrer_redirect
 @require_site_admin
