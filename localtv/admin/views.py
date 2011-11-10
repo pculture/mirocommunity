@@ -28,7 +28,7 @@ from django.views.generic.list import MultipleObjectMixin, ListView
 from localtv.decorators import require_site_admin
 
 
-class MiroCommunityAdminMixin(object):
+class MiroCommunityAdminCRUDMixin(object):
     list_view_name = None
     create_view_name = None
     update_view_name = None
@@ -65,31 +65,39 @@ class MiroCommunityAdminMixin(object):
         }
 
 
-class MiroCommunityAdminListView(MiroCommunityAdminMixin, ListView):
+class MiroCommunityAdminListView(MiroCommunityAdminCRUDMixin, ListView):
     def get_context_data(self, **kwargs):
         context = ListView.get_context_data(self, **kwargs)
-        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        context.update(
+            MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
+        )
         return context
 
 
-class MiroCommunityAdminCreateView(MiroCommunityAdminMixin, CreateView):
+class MiroCommunityAdminCreateView(MiroCommunityAdminCRUDMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = CreateView.get_context_data(self, **kwargs)
-        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        context.update(
+            MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
+        )
         return context
 
 
-class MiroCommunityAdminUpdateView(MiroCommunityAdminMixin, UpdateView):
+class MiroCommunityAdminUpdateView(MiroCommunityAdminCRUDMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = UpdateView.get_context_data(self, **kwargs)
-        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        context.update(
+            MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
+        )
         return context
 
 
-class MiroCommunityAdminDeleteView(MiroCommunityAdminMixin, DeleteView):
+class MiroCommunityAdminDeleteView(MiroCommunityAdminCRUDMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = DeleteView.get_context_data(self, **kwargs)
-        context.update(MiroCommunityAdminMixin.get_context_data(self, **kwargs))
+        context.update(
+            MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
+        )
         return context
 
 
