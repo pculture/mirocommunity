@@ -22,17 +22,24 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
-{% block body_classes %}{{ block.super }} update {{ verbose_name_plural }}{% endblock %}
+{% block body_classes %}{{ block.super }} update settings{% endblock %}
 
-{% block title %}{{ object }} — {% blocktrans with verbose_name=verbose_name|capfirst %}Edit {{ verbose_name }}{% endblocktrans %} — {{ block.super }}{% endblock %}
+{% block title %}{% trans "Edit Settings" %} — {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
-	<header>
-		<h1>Edit {{ verbose_name|capfirst }}: {{ object }}</h1>
+  <header>
+    <h1>Edit Settings</h1>
   </header>
 
-  <form class="update-form" action="{{ request.path }}" method="post">
+  <p>Use this page to customize your site and make it unique.</p>
+
+  <p>Remember that your title and tagline, in particular, define your site for
+     both humans and search engines. Consider including key words such as
+     "video" and the name of your community or organization, so that people
+     can easily find your site.</p>
+
+  <form class="update-form" action="{{ request.path }}" enctype="multipart/form-data" method="post">
     {% csrf_token %}
     <table>
       <tfoot>

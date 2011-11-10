@@ -1,4 +1,4 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Copyright 2010 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
 # 
@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from localtv.admin.base import registry, MiroCommunityAdminSection
-from localtv.admin import (dashboard, moderation, sources, videos, users,
-						   settings)
+from django.views.generic import UpdateView
+from localtv.models import SiteLocation
+
+
+class SettingsUpdateView(UpdateView):
+	template_name = 'localtv/admin/settings/update.html'
+
+	def get_object(self):
+		return SiteLocation.objects.get_current()
