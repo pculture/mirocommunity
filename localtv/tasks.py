@@ -1,4 +1,4 @@
-g# This file is part of Miro Community.
+# This file is part of Miro Community.
 # Copyright (C) 2010 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
@@ -103,6 +103,13 @@ def check_call(args, env={}):
 
 @task(ignore_result=True)
 @patch_settings
+def update_feeds(using='default'):
+    feeds = Feed.objects.using(using).filter(status=Feed.active)
+    for feed in feeds:
+        bulk_import.delay(feed.pk, using=using)
+
+@task(ignore_result=True)
+@patch_settings
 def bulk_import(feed_id, crawl=False, using='default'):
     try:
         feed = Feed.objects.using(using).get(pk=feed_id)
@@ -129,6 +136,14 @@ def bulk_import(feed_id, crawl=False, using='default'):
         feed.status = Feed.ACTIVE
         feed.save()
 
+def _oldest_video(qs):
+    """
+    Returns the oldest video from a ``QuerySet``.
+    """
+    return qs.order_by('when_published',
+                       'feedimportindex__feedimport__start',
+                       'feedimportindex__index')[0]
+        
 @task(ignore_result=True)
 @patch_settings
 def video_from_vidscraper_video(vidscraper_video, source,
@@ -144,21 +159,34 @@ def video_from_vidscraper_video(vidscraper_video, source,
         logging.debug('skipping %r: no file_url or embed code',
                       vidscraper_video.url)
         return
+    to_remove = set()
     if vidscraper_video.guid:
         guids = source.video_set.filter(guid=vidscraper_video.guid)
         if guids.exists():
-            logging.debug('skipping %r: duplicate guid',
-                          vidscraper_video.url)
-            return
-    elif vidscraper_video.link:
+            oldest = _oldest_video(guids)
+            if oldest.when_published < vidscraper_video.publish_datetime:
+                logging.debug('skipping %r: duplicate guid',
+                              vidscraper_video.url)
+                return
+            else:
+                logging.debug('removing %s which should have been skipped',
+                              oldest)
+                to_remove.update(set(guids))
+    if vidscraper_video.link:
         videos_with_link = Video.objects.filter(
             website_url=vidscraper_video.link)
         if clear_rejected:
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
-            logging.debug('skipping %r: duplicate link',
-                          vidscraper_video.url)
-    if 'authors' not in kwargs and vidscraper_video.user:
+            oldest = _oldest_video(videos_with_link)
+            if oldest.when_published < vidscraper_video.publish_datetime:
+                logging.debug('skipping %r: duplicate link',
+                              vidscraper_video.url)
+            else:
+                logging.debug('removing %s which should have been skipped',
+                              oldest)
+                to_remove.update(set(videos_with_link))
+    if not kwargs.get('authors') and vidscraper_video.user:
         name = vidscraper_video.user
         if ' ' in name:
             first, last = name.split(' ', 1)
@@ -171,9 +199,9 @@ def video_from_vidscraper_video(vidscraper_video, source,
         if created:
             author.set_unusable_password()
             author.save()
-        utils.get_profile_model().objects.create(
-            user=author,
-            website=vidscraper_video.user_url or '')
+            utils.get_profile_model().objects.create(
+                user=author,
+                website=vidscraper_video.user_url or '')
         kwargs['authors'] = [author]
         
     video = Video.from_vidscraper_video(vidscraper_video,
@@ -183,6 +211,8 @@ def video_from_vidscraper_video(vidscraper_video, source,
     if video.thumbnail_url:
         video_save_thumbnail.delay(video.pk, using=using)
 
+    for video in to_remove:
+        video.delete()
 
 @task(ignore_result=True)
 @patch_settings
@@ -228,6 +258,5 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
 @task
 @patch_settings
 def video_count(using='default'):
-    print 'VIDEO COUNT USING', using
     model_class = get_model('localtv', 'Video')
     return settings.ROOT_URLCONF, model_class.objects.db_manager(using).count()

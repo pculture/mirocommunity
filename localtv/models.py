@@ -738,7 +738,7 @@ class Source(Thumbnailable):
         if 'categories' not in kwargs:
             kwargs['categories'] = list(self.auto_categories.all())
 
-        guids = set(self.video_set.values_list('guid', flat=True))
+        #guids = set(self.video_set.values_list('guid', 'when_published'))
         if verbose:
             print 'Starting video iterator'
 
@@ -748,18 +748,21 @@ class Source(Thumbnailable):
             if not vidscraper_video.title:
                 skip(vidscraper_video, 'failed to scrape basic data')
                 continue
-            elif vidscraper_video.guid and vidscraper_video.guid in guids:
-                skip(vidscraper_video, 'duplicate guid')
-                continue
-            elif vidscraper_video.link:
-                videos_with_link = Video.objects.using(self._state.db).filter(
+            # elif (vidscraper_video.guid and
+            #       (vidscraper_video.guid,
+            #        vidscraper_video.publish_datetime) in guids):
+            #     skip(vidscraper_video, 'duplicate guid')
+            #     continue
+            # elif vidscraper_video.link:
+            #     videos_with_link = Video.objects.using(self._state.db).filter(
                     
-                    website_url=vidscraper_video.link)
-                if clear_rejected:
-                    videos_with_link.rejected().delete()
-                if videos_with_link.exists():
-                    skip(vidscraper_video, 'duplicate link')
-                    continue
+            #         website_url=vidscraper_video.link)
+            #     if clear_rejected:
+            #         videos_with_link.rejected().delete()
+            #     if videos_with_link.filter(
+            #         when_published=vidscraper_video.publish_datetime).exists():
+            #         skip(vidscraper_video, 'duplicate link')
+            #         continue
             
             video_from_vidscraper_video.delay(
                 vidscraper_video,
@@ -888,6 +891,12 @@ class Feed(Source, StatusedThumbnailable):
         If clear_rejected is True, rejected videos that are part of this
         feed will be deleted and re-imported.
         """
+        feedimport, created = FeedImport.objects.db_manager(
+            self._state.db).get_or_create(feed=self, end=None)
+        if not created:
+            if verbose:
+                print 'Skipping import of %s: already in progress' % self
+            return
         if video_iter is None:
             video_iter = vidscraper.auto_feed(
                 self.feed_url,
@@ -895,15 +904,20 @@ class Feed(Source, StatusedThumbnailable):
                         'publish_datetime', 'thumbnail_url', 'link',
                         'file_url_is_flaky', 'user', 'user_url',
                         'tags', 'description', 'file_url', 'guid'])
-        video_iter.load()
-        self.bulk_import(video_iter,
-                         feed=self,
-                         verbose=verbose)
-        
-        self.etag = getattr(video_iter, 'etag', None) or ''
-        self.last_updated = (getattr(video_iter, 'last_modified', None) or
-                             datetime.datetime.now())
-        self.save()
+        try:
+            video_iter.load()
+            self.bulk_import(video_iter,
+                             feed=self,
+                             feedimport=feedimport,
+                             verbose=verbose)
+
+            self.etag = getattr(video_iter, 'etag', None) or ''
+            self.last_updated = (getattr(video_iter, 'last_modified', None) or
+                                 datetime.datetime.now())
+            self.save()
+        finally:
+            feedimport.end = datetime.datetime.now()
+            feedimport.save()
 
     def source_type(self):
         return self.calculated_source_type
@@ -945,6 +959,16 @@ def pre_save_set_calculated_source_type(instance, **kwargs):
     return instance
 models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
+
+class FeedImportIndex(models.Model):
+    feedimport = models.ForeignKey('FeedImport')
+    video = models.OneToOneField('Video')
+    index = models.IntegerField()
+
+class FeedImport(models.Model):
+    feed = models.ForeignKey(Feed)
+    start = models.DateTimeField(auto_now_add=True)
+    end = models.DateTimeField(null=True)
 
 class Category(models.Model):
     """
@@ -1492,6 +1516,23 @@ class VideoManager(StatusedThumbnailableManager):
             models.Q(authors=author) | models.Q(user=author)
         ).distinct().order_by('-best_date')
 
+    def in_feed_order(self, feed=None, sitelocation=None):
+        """
+        Returns a ``QuerySet`` of active videos ordered by the order they were
+        in when originally imported.
+        """
+        if sitelocation is None and feed:
+            sitelocation = SiteLocation.objects.get(site=feed.site)
+        if sitelocation:
+            qs = self.get_latest_videos(sitelocation)
+        else:
+            qs = self.all()
+        if feed:
+            qs = qs.filter(feed=feed)
+        return qs.order_by('-feedimportindex__feedimport__start',
+                           '-feedimportindex__index',
+                           '-id')
+
 
 class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     """
@@ -1605,6 +1646,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
         authors = kwargs.pop('authors', None)
         categories = kwargs.pop('categories', None)
+        feedimport = kwargs.pop('feedimport', None)
 
         now = datetime.datetime.now()
 
@@ -1644,6 +1686,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                 instance.authors = authors
             if categories:
                 instance.categories = categories
+            if feedimport and video.index is not None:
+                FeedImportIndex._default_manager.db_manager(
+                    using).create(
+                    feedimport=feedimport,
+                    video=instance,
+                    index=video.index)
             if video.tags:
                 tags = set(tag.strip() for tag in video.tags if tag.strip())
                 for tag_name in tags:

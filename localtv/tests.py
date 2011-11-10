@@ -247,22 +247,22 @@ class FeedModelTestCase(BaseTestCase):
         video_iter = self._parse_feed('feed.rss')
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=video_iter)
-        parsed_guids = reversed([entry.guid for entry in video_iter])
-        db_guids = Video.objects.order_by('id').values_list('guid',
-                                                                   flat=True)
+        parsed_guids = [entry.guid for entry in video_iter]
+        db_guids = Video.objects.in_feed_order().values_list('guid',
+                                                             flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
 
-    def test_entries_inserted_in_reverse_order(self):
+    def test_entries_inserted_in_feed_order(self):
         """
-        When adding entries from a feed, they should be added to the database
-        in reversed order (oldest first)
+        When adding entries from a feed, they should be sortable so that the
+        first item in the feed is the first item returned.
         """
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed.rss')
         feed.update_items(video_iter=video_iter)
-        parsed_guids = reversed([entry.guid for entry in video_iter])
-        db_guids = Video.objects.order_by('id').values_list('guid',
-                                                                   flat=True)
+        parsed_guids = [entry.guid for entry in video_iter]
+        db_guids = Video.objects.in_feed_order().values_list('guid',
+                                                             flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
 
     def test_ignore_duplicate_guid(self):
@@ -301,7 +301,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed.rss'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
         self.assertEquals(video.name, u'Dave Glassco Supports Miro')
@@ -333,7 +333,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed_without_link.rss'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
@@ -344,7 +344,7 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed_without_mime_type.rss'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
@@ -358,7 +358,7 @@ class FeedModelTestCase(BaseTestCase):
         video_iter.get_url_response = lambda u: json.load(file(
                 self._data_file('vimeo.json')))
         feed.update_items(video_iter=video_iter)
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
         self.assertEquals(video.name, u'Tishana - Pro-Choicers on Stupak')
@@ -399,7 +399,7 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         feed.auto_authors = [user]
         feed.save()
         feed.update_items(video_iter=self._parse_feed('youtube.rss', force_url=True))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
                           u'http://gdata.youtube.com/feeds/api/videos/BBwtzeZdoHQ')
@@ -516,7 +516,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed_with_link_via.atom'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
                           u'http://www.example.org/entries/1')
@@ -528,7 +528,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed_with_media.atom'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
                           u'http://www.example.org/myvideo.ogg')
@@ -543,7 +543,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         feed = Feed.objects.get(pk=1)
         feed.update_items(video_iter=self._parse_feed('feed_with_media_player.atom'))
-        video = Video.objects.order_by('id')[0]
+        video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
                           '<embed src="http://www.example.org/?a=b&c=d">')
