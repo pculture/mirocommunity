@@ -150,11 +150,12 @@ $(document).ready(function() {
 <td>{{ form.instance.source_type }}</td>
 <td>
 {% with form.instance.feedimport_set.latest as latest_import %}
-  {% if latest_import %}
+{% if latest_import %}
   {% if form.instance.status == 0 %}First{% else %}Latest{% endif %}
   {% if latest_import.end %}import ended {{ latest_import.end|simpletimesince }} ago
-  {% else %}import started {{ latest_import.start|simpletimesince }} ago{% endif %}{% endif %}<br/>
+  {% else %}import started {{ latest_import.start|simpletimesince }} ago{% endif %}<br/>
 Imported {{ latest_import.video_set.count }} videos.
+{% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}
 {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}

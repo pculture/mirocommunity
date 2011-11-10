@@ -707,7 +707,8 @@ class Source(Thumbnailable):
 
     def _default_video_status(self):
         # Check that if we want to add an active
-        if self.auto_approve and localtv.tiers.Tier.get().can_add_more_videos():
+        sl = SiteLocation.objects.using(self._state.db).get(site=self.site)
+        if self.auto_approve and sl.get_tier().can_add_more_videos():
             initial_video_status = Video.ACTIVE
         else:
             initial_video_status = Video.UNAPPROVED
