@@ -566,6 +566,22 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
 
+    def test_entries_multiple_imports(self):
+        """
+        Importing a feed multiple times shouldn't overwrite the existing videos.
+        """
+        feed = Feed.objects.get(pk=1)
+        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
+        self.assertEquals(feed.video_set.count(), 1)
+        self.assertEquals(feed.feedimport_set.latest().video_set.count(), 1)
+        v = feed.video_set.all()[0]
+        # didn't get any updates
+        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
+        self.assertEquals(feed.video_set.count(), 1)
+        self.assertEquals(feed.feedimport_set.latest().video_set.count(), 0)
+        v2 = feed.video_set.all()[0]
+        self.assertEquals(v.pk, v2.pk)
+
     def test_video_service(self):
         """
         Feed.video_service() should return the name of the video service that

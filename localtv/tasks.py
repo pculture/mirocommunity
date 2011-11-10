@@ -104,7 +104,7 @@ def check_call(args, env={}):
 @task(ignore_result=True)
 @patch_settings
 def update_feeds(using='default'):
-    feeds = Feed.objects.using(using).filter(status=Feed.active)
+    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
     for feed in feeds:
         bulk_import.delay(feed.pk, using=using)
 
@@ -161,10 +161,11 @@ def video_from_vidscraper_video(vidscraper_video, source,
         return
     to_remove = set()
     if vidscraper_video.guid:
-        guids = source.video_set.filter(guid=vidscraper_video.guid)
+        guids = source.video_set.using(using).filter(
+            guid=vidscraper_video.guid)
         if guids.exists():
             oldest = _oldest_video(guids)
-            if oldest.when_published < vidscraper_video.publish_datetime:
+            if oldest.when_published <= vidscraper_video.publish_datetime:
                 logging.debug('skipping %r: duplicate guid',
                               vidscraper_video.url)
                 return
@@ -173,13 +174,13 @@ def video_from_vidscraper_video(vidscraper_video, source,
                               oldest)
                 to_remove.update(set(guids))
     if vidscraper_video.link:
-        videos_with_link = Video.objects.filter(
+        videos_with_link = Video.objects.using(using).filter(
             website_url=vidscraper_video.link)
         if clear_rejected:
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
             oldest = _oldest_video(videos_with_link)
-            if oldest.when_published < vidscraper_video.publish_datetime:
+            if oldest.when_published <= vidscraper_video.publish_datetime:
                 logging.debug('skipping %r: duplicate link',
                               vidscraper_video.url)
             else:
@@ -192,7 +193,7 @@ def video_from_vidscraper_video(vidscraper_video, source,
             first, last = name.split(' ', 1)
         else:
             first, last = name, ''
-        author, created = User.objects.get_or_create(
+        author, created = User.objects.db_manager(using).get_or_create(
             username=name[:30],
             defaults={'first_name': first[:30],
                       'last_name': last[:30]})

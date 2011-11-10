@@ -14,12 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import traceback
-import datetime
-
+from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
-from localtv import models
 
 class Command(NoArgsCommand):
 
@@ -29,16 +26,7 @@ class Command(NoArgsCommand):
         if site_too_old():
             return
 
-        # all feeds submitted more than an hour ago should be shown
-        hour = datetime.timedelta(hours=1)
-        models.Feed.objects.filter(
-            when_submitted__lte=datetime.datetime.now()-hour,
-            status=models.Feed.UNAPPROVED).update(
-            status=models.Feed.ACTIVE)
-        verbose = (int(options.get('verbosity', 1)) > 1)
-        for feed in models.Feed.objects.filter(
-            status=models.Feed.ACTIVE):
-            try:
-                feed.update_items(verbose=verbose)
-            except:
-                traceback.print_exc()
+        from localtv import tasks
+        
+        tasks.update_feeds.delay(
+            using=settings.SETTINGS_MODULE.split('.')[0])

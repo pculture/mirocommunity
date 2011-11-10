@@ -970,6 +970,13 @@ class FeedImport(models.Model):
     start = models.DateTimeField(auto_now_add=True)
     end = models.DateTimeField(null=True)
 
+    class Meta:
+        get_latest_by = 'start'
+
+    @property
+    def video_set(self):
+        return Video.objects.filter(feedimportindex__feedimport=self)
+
 class Category(models.Model):
     """
     A category for videos to be contained in.
