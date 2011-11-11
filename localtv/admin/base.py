@@ -78,6 +78,9 @@ class CRUDSection(MiroCommunityAdminSection):
     update_view_name = 'localtv_admin_%(model_name)s_update'
     delete_view_name = 'localtv_admin_%(model_name)s_delete'
 
+    create_form_class = None
+    update_form_class = None
+
     template_prefixes = (
         'localtv/admin/',
     )
@@ -139,7 +142,8 @@ class CRUDSection(MiroCommunityAdminSection):
         kwargs = self.get_view_kwargs()
         kwargs.update({
             'model': self.get_model_class(),
-            'template_name': self.get_template_names('create')
+            'template_name': self.get_template_names('create'),
+            'form_class': self.create_form_class
         })
         return kwargs
 
@@ -147,7 +151,8 @@ class CRUDSection(MiroCommunityAdminSection):
         kwargs = self.get_view_kwargs()
         kwargs.update({
             'queryset': self.get_queryset(),
-            'template_name': self.get_template_names('update')
+            'template_name': self.get_template_names('update'),
+            'form_class': self.update_form_class
         })
         return kwargs
 

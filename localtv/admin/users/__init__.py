@@ -15,14 +15,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import CRUDSection, registry
+from localtv.admin.users.forms import AdminProfileForm
+from localtv.utils import get_profile_model
+
+
+Profile = get_profile_model()
 
 
 class UserSection(CRUDSection):
-    model = User
+    url_prefix = 'users'
+    navigation_text = _("Users")
+
+    model = Profile
+    create_form_class = AdminProfileForm
+    update_form_class = AdminProfileForm
 
 
 registry.register(UserSection)

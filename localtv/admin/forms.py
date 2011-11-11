@@ -45,12 +45,10 @@ import localtv.settings
 from localtv import models
 from localtv import utils
 import localtv.tiers
-from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
 from vidscraper import auto_feed
 
-Profile = utils.get_profile_model()
 
 class BulkFormSetMixin(object):
     """
@@ -762,134 +760,6 @@ FlatPageFormSet = modelformset_factory(FlatPage,
                                        formset=BaseFlatPageFormSet,
                                        can_delete=True,
                                        extra=0)
-
-class AuthorForm(user_profile_forms.ProfileForm):
-    role = forms.ChoiceField(choices=(
-            ('user', 'User'),
-            ('admin', 'Admin')),
-            widget=forms.RadioSelect,
-            required=False)
-    website = forms.CharField(label='Website', required=False)
-    password_f = forms.CharField(
-        widget=forms.PasswordInput,
-        required=False,
-        label='Password',
-        help_text=('If you do not specify a password, the user will not be '
-                   'allowed to log in.'))
-    password_f2 = forms.CharField(
-        required=False,
-        widget=forms.PasswordInput,
-        label='Confirm Password')
-
-    class Meta:
-        model = User
-        fields = ['username', 'name', 'email', 'role', 'location', 'website',
-                  'logo', 'description', 'password_f', 'password_f2']
-
-    def __init__(self, *args, **kwargs):
-        user_profile_forms.ProfileForm.__init__(self, *args, **kwargs)
-        self.sitelocation = models.SiteLocation.objects.get_current()
-        if self.instance.pk:
-            if self.sitelocation.user_is_admin(self.instance):
-                self.fields['role'].initial = 'admin'
-            else:
-                self.fields['role'].initial = 'user'
-        else:
-            for field_name in ['name', 'logo', 'location',
-                               'description', 'website']:
-                del self.fields[field_name]
-        ## Add a note to the 'role' help text indicating how many admins
-        ## are permitted with this kind of account.
-        tier = localtv.tiers.Tier.get()
-        if tier.admins_limit() is not None:
-            message = 'With a %s, you may have %d administrator%s.' % (
-                models.SiteLocation.objects.get_current().get_tier_name_display(),
-                tier.admins_limit(),
-                django.template.defaultfilters.pluralize(tier.admins_limit()))
-            self.fields['role'].help_text = message
-
-    def clean_role(self):
-        if models.SiteLocation.enforce_tiers():
-            future_role = self.cleaned_data['role']
-
-            looks_good = self._validate_role_with_tiers_enforcement(
-                future_role)
-            if not looks_good:
-                permitted_admins = localtv.tiers.Tier.get().admins_limit()
-                raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
-                    permitted_admins,
-                    django.template.defaultfilters.pluralize(permitted_admins)))
-
-        return self.cleaned_data['role']
-
-    def _validate_role_with_tiers_enforcement(self, future_role):
-        # If the user tried to create an admin, but the tier does not
-        # permit creating another admin, raise an error.
-        permitted_admins = localtv.tiers.Tier.get().admins_limit()
-
-        # Some tiers permit an unbounded number of admins. Then, anything goes.
-        if permitted_admins is None:
-            return True
-
-        # All non-admin values are permitted
-        if future_role !='admin':
-            return True
-
-        if self.instance and self.sitelocation.user_is_admin(
-            self.instance):
-            return True # all role values permitted if you're already an admin
-
-        # Okay, so now we know we are trying to make someone an admin in a
-        # tier where admins are limited.
-        #
-        # The question becomes: is there room for one more?
-        num_admins = localtv.tiers.number_of_admins_including_superuser()
-        if (num_admins + 1) <= permitted_admins:
-            return True
-
-        # Otherwise, gotta say no.
-        return False
-
-    def clean(self):
-        if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
-            # can't delete a superuser, so remove that from the cleaned data
-            self.cleaned_data['DELETE'] = False
-            prefix = self.add_prefix('DELETE')
-            self.data[prefix] = '' # have to set our data directly because
-                                   # BaseModelFormSet pulls the value from
-                                   # there
-        if 'password_f' in self.cleaned_data or \
-                'password_f2' in self.cleaned_data:
-            password = self.cleaned_data.get('password_f')
-            password2 = self.cleaned_data.get('password_f2')
-            if password != password2:
-                del self.cleaned_data['password_f']
-                del self.cleaned_data['password_f2']
-                raise forms.ValidationError(
-                    'The passwords do not match.')
-        return self.cleaned_data
-
-    def save(self, **kwargs):
-        is_new = not self.instance.pk
-        author = user_profile_forms.ProfileForm.save(self, **kwargs)
-        if self.cleaned_data.get('password_f'):
-            author.set_password(self.cleaned_data['password_f'])
-        elif is_new:
-            author.set_unusable_password()
-        author.save()
-        if self.cleaned_data.get('role'):
-            if self.cleaned_data['role'] == 'admin':
-                if not author.is_superuser:
-                    self.sitelocation.admins.add(author)
-            else:
-                self.sitelocation.admins.remove(author)
-            self.sitelocation.save()
-        return author
-
-AuthorFormSet = modelformset_factory(User,
-                                     form=AuthorForm,
-                                     can_delete=True,
-                                     extra=0)
 
 
 class AddFeedForm(forms.Form):
