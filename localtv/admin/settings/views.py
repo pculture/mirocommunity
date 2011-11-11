@@ -16,11 +16,14 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.views.generic import UpdateView
+
+from localtv.admin.settings.forms import SettingsForm
 from localtv.models import SiteLocation
 
 
 class SettingsUpdateView(UpdateView):
 	template_name = 'localtv/admin/settings/update.html'
+	form_class = SettingsForm
 
 	def get_object(self):
 		return SiteLocation.objects.get_current()

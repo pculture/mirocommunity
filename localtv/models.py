@@ -133,8 +133,9 @@ class Thumbnailable(models.Model):
     """
     A type of Model that has thumbnails generated for it.
     """
-    has_thumbnail = models.BooleanField(default=False)
-    thumbnail_extension = models.CharField(max_length=8, blank=True)
+    has_thumbnail = models.BooleanField(default=False, editable=False)
+    thumbnail_extension = models.CharField(max_length=8, blank=True,
+                                           editable=False)
 
     class Meta:
         abstract = True
@@ -371,29 +372,57 @@ class SiteLocation(Thumbnailable):
         (ACTIVE, ACTIVE_STATUS_TEXT),
     )
 
+    PLAYLISTS_ENABLED_CHOICES = (
+        (0, 'No'),
+        (1, 'Yes'),
+        (2, 'Admins Only')
+    )
+
     site = models.ForeignKey(Site, unique=True)
-    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
+    tagline = models.CharField(max_length=4096, blank=True, help_text="")
+
+    # Custom HTML snippets
+    about_html = models.TextField(blank=True, verbose_name=_("About Us Page"),
+                                  help_text="Use HTML.")
+    sidebar_html = models.TextField(blank=True, verbose_name=_("Sidebar Blurb"),
+                                    help_text="Use HTML.")
+    footer_html = models.TextField(blank=True, verbose_name=_("Footer Blurb"),
+                                   help_text="Use HTML. In addition to any "
+                                   "footer text you would like to add, we "
+                                   "suggest using this space to paste in a "
+                                   "Google Analytics tracking code, which will "
+                                   "provide excellent statistics on usage of "
+                                   "your site.")
+
+    # Custom CSS snippet
+    css = models.TextField(blank=True, verbose_name=_("Custom CSS"),
+                           help_text="Here you can append your own CSS to "
+                           "customize your site.")
+
+    # Custom images
+    logo = models.ImageField(upload_to='localtv/site_logos', blank=True,
+                             verbose_name='Logo Image')
     background = models.ImageField(upload_to='localtv/site_backgrounds',
-                                   blank=True)
+                                   blank=True,
+                                   verbose_name=_("Background Image"))
+
+    # Site admins
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=ACTIVE)
-    sidebar_html = models.TextField(blank=True)
-    footer_html = models.TextField(blank=True)
-    about_html = models.TextField(blank=True)
-    tagline = models.CharField(max_length=4096, blank=True)
-    css = models.TextField(blank=True)
-    display_submit_button = models.BooleanField(default=True)
-    submission_requires_login = models.BooleanField(default=False)
-    playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
-    hide_get_started = models.BooleanField(default=False)
+
+    # Basic yes/no options.
+    display_submit_button = models.BooleanField(default=True,
+                verbose_name=_("Display the 'submit a video' navigation item?"))
+    submission_requires_login = models.BooleanField(default=False,
+                   verbose_name=_("Require users to log in to submit a video?"))
+    playlists_enabled = models.IntegerField(default=0,
+                                            verbose_name=_("Enable Playlists?"),
+                                            choices=PLAYLISTS_ENABLED_CHOICES)
 
     # ordering options
     use_original_date = models.BooleanField(
-        default=True,
-        help_text="If set, use the original date the video was posted.  "
+        default=True, verbose_name=_("Use Original Date?"),
+        help_text="If set, use the original date the video was posted. "
         "Otherwise, use the date the video was added to this site.")
 
     # comments options
@@ -405,6 +434,13 @@ class SiteLocation(Thumbnailable):
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
+    
+    # These fields track various aspects of the SiteLocation state, and are
+    # generally managed automatically by the app.
+    status = models.IntegerField(
+        choices=STATUS_CHOICES, default=ACTIVE)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
+    hide_get_started = models.BooleanField(default=False)
 
     objects = SiteLocationManager()
 
