@@ -19,6 +19,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import pluralize
 from django.utils.translation import ugettext_lazy as _
+from notification.models import (NoticeType, NoticeSetting, should_send,
+                                 get_notification_setting)
 
 from localtv.models import SiteLocation
 from localtv.tiers import Tier, number_of_admins_including_superuser
@@ -32,10 +34,12 @@ class BaseProfileForm(forms.ModelForm):
     first_name_field = User._meta.get_field('first_name')
     last_name_field = User._meta.get_field('last_name')
     username_field = User._meta.get_field('username')
+    email_field = User._meta.get_field('email')
 
     first_name = first_name_field.formfield(required=False)
     last_name = last_name_field.formfield(required=False)
     username = username_field.formfield()
+    email = email_field.formfield()
 
     password1 = forms.CharField(label=_("Password"), required=False,
                                 widget=forms.PasswordInput)
@@ -53,6 +57,7 @@ class BaseProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = self.user.first_name
             self.fields['last_name'].initial = self.user.last_name
             self.fields['username'].initial = self.user.username
+            self.fields['email'].initial = self.user.email
         else:
             self.user = User()
 
@@ -67,18 +72,19 @@ class BaseProfileForm(forms.ModelForm):
     def clean_username(self):
         username = self.cleaned_data["username"]
         try:
-            User.objects.get(username=username)
+            User.objects.exclude(pk=self.user.pk).get(username=username)
         except User.DoesNotExist:
             return self.username_field.clean(self.cleaned_data['username'],
                                              self.user)
         raise ValidationError(_("A user with that username already exists."))
-        
 
-    def clean(self):
-        cleaned_data = super(BaseProfileForm, self).clean()
-        if cleaned_data['password1'] != cleaned_data['password2']:
+    def clean_email(self):
+        return self.email_field.clean(self.cleaned_data['email'], self.user)
+
+    def clean_password2(self):
+        if self.cleaned_data['password1'] != self.cleaned_data['password2']:
             raise ValidationError(_("The two password fields didn't match."))
-        return cleaned_data
+        return self.cleaned_data['password2']
 
     def save_user(self, commit=True):
         password = self.cleaned_data['password1']
@@ -105,21 +111,67 @@ class BaseProfileForm(forms.ModelForm):
 
 class UserProfileForm(BaseProfileForm):
     """Form for a user to edit their own profile."""
-    old_password = forms.CharField(label=_("Old password"),
+
+    old_password = forms.CharField(required=False, label=_("Old password"),
                                    widget=forms.PasswordInput,
-                                   help_text="Required to change your password "
-                                             "or username.")
+                                   help_text="Required to change your password,"
+                                             " email, or username.")
+
+    notifications = forms.MultipleChoiceField(required=False,
+                                            choices=(),
+                                            widget=forms.CheckboxSelectMultiple)
+
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, **kwargs)
         self.fields['password1'].label = _("New password")
         self.fields['password2'].label = _("New password confirmation")
 
+        sitelocation = SiteLocation.objects.get_current()
+        user_is_admin = sitelocation.user_is_admin(self.user)
+
+        notification_field = self.fields['notifications']
+        notice_types = NoticeType.objects.all()
+
+        notification_choices = [
+            (notice_type.pk, notice_type.description)
+            for notice_type in notice_types
+            if user_is_admin or not notice_type.label.startswith('admin_')
+        ]
+        notification_initial = [
+            notice_type.pk for notice_type in notice_types
+            if (user_is_admin or not notice_type.label.startswith('admin_')) and
+            should_send(self.user, notice_type, "1") 
+        ]
+        notification_field.choices = notification_choices
+        notification_field.initial = notification_initial
+
     def clean_old_password(self):
         old_password = self.cleaned_data["old_password"]
-        if not self.user.check_password(old_password):
-            raise ValidationError(_("Your old password was entered incorrectly."
-                                    " Please enter it again."))
+        if set(self.changed_data) & set(['password1', 'username', 'email']):
+            if old_password == '':
+                raise ValidationError(_("You must enter your old password to "
+                                        "change your password, username, or "
+                                        "email."))
+            elif not self.user.check_password(old_password):
+                raise ValidationError(_("Your old password was entered "
+                                        "incorrectly. Please enter it again."))
         return old_password
+
+    def save_notifications(self):
+        notice_type_pks = [int(pk) for pk in self.cleaned_data['notifications']]
+        notice_settings = NoticeSetting.objects.filter(user=self.user)
+
+        for notice_setting in notice_settings:
+            send = notice_setting.notice_type_id in notice_type_pks
+            if send != notice_setting.send:
+                notice_setting.send = send
+                notice_setting.save()
+
+    def save(self, commit=True):
+        instance = super(UserProfileForm, self).save(commit)
+        if commit:
+            self.save_notifications()
+        return instance
 
 
 class AdminProfileForm(BaseProfileForm):

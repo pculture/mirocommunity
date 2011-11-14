@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.core.urlresolvers import reverse
 from django.views.generic import UpdateView
 
 from localtv.admin.users.forms import UserProfileForm
@@ -30,3 +31,6 @@ class UserProfileUpdateView(UpdateView):
 
 	def get_object(self):
 		return Profile.objects.get_or_create(user=self.request.user)[0]
+
+	def get_success_url(self):
+		return self.success_url or reverse('localtv_admin_profile')

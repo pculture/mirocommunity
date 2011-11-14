@@ -77,7 +77,6 @@ urlpatterns += patterns(
     '',
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {
                     'next_page': '/'}),
-    url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
