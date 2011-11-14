@@ -24,12 +24,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} update {{ verbose_name_plural }}{% endblock %}
 
-{% block title %}{{ object }} — {% blocktrans with verbose_name=verbose_name|capfirst %}Edit {{ verbose_name }}{% endblocktrans %} — {{ block.super }}{% endblock %}
+{% block title %}{% block page_title %}{{ object }} — {% blocktrans with verbose_name=verbose_name|capfirst %}Edit {{ verbose_name }}{% endblocktrans %}{% endblock %} — {{ block.super }}{% endblock %}
 
 {% block content %}
 <section>
 	<header>
-		<h1>Edit {{ verbose_name|capfirst }}: {{ object }}</h1>
+		<h1>{% block content_title %}Edit {{ verbose_name|capfirst }}: {{ object }}{% endblock %}</h1>
   </header>
 
   <form class="update-form" action="{{ request.path }}" method="post">
@@ -41,7 +41,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         </td></tr>
       </tfoot>
       <tbody>
-        {{ form }}
+        {% block form %}
+          {{ form }}
+        {% endblock %}
       </tbody>
     </table>
   </form>

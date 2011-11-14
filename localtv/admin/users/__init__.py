@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf.urls.defaults import patterns, url
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
-from localtv.admin.base import CRUDSection, registry
+from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
 from localtv.admin.users.forms import AdminProfileForm
+from localtv.admin.users.views import UserProfileUpdateView
 from localtv.utils import get_profile_model
 
 
@@ -35,4 +37,23 @@ class UserSection(CRUDSection):
     update_form_class = AdminProfileForm
 
 
+class ProfileSection(MiroCommunityAdminSection):
+    url_prefix = 'profile'
+    navigation_text = _("Profile")
+    update_view_class = UserProfileUpdateView
+
+    pages = (
+        (_("Profile"), 'localtv_admin_profile'),
+    )
+
+    @property
+    def urlpatterns(self):
+        urlpatterns = patterns('',
+            url(r'^$', self.update_view_class.as_view(),
+                name = 'localtv_admin_profile')
+        )
+        return urlpatterns
+
+
 registry.register(UserSection)
+registry.register(ProfileSection)

@@ -1,7 +1,6 @@
-{% extends "localtv/user_profile/edit.html" %}
-{% comment %}
+# Copyright 2010 - Participatory Culture Foundation
+# 
 # This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -15,17 +14,19 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-{% endcomment %}
+
+from django.views.generic import UpdateView
+
+from localtv.admin.users.forms import UserProfileForm
+from localtv.utils import get_profile_model
 
 
-{% block title %}Notifications{% endblock %}
-{% block body_class %}notifications" onbeforeunload="return setting_onunload();{% endblock %}
-{% block profile_button %}{% endblock %}
-{% block page_title %}Profile | Change E-mail Notifications{% endblock %}
-{% block form %}
-  <div class="form_box">
-    <label for="id_notifications">I want to be notified by e-mail when:</label>
-  {{ form.notifications.errors }}
-  {{ form.notifications }}
-  </div>
-{% endblock %}
+Profile = get_profile_model()
+
+
+class UserProfileUpdateView(UpdateView):
+	template_name = 'localtv/admin/users/profile.html'
+	form_class = UserProfileForm
+
+	def get_object(self):
+		return Profile.objects.get_or_create(user=self.request.user)[0]
