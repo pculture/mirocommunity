@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.core.urlresolvers import reverse
 from django.views.generic import UpdateView
 
 from localtv.admin.settings.forms import SettingsForm
@@ -27,3 +28,6 @@ class SettingsUpdateView(UpdateView):
 
 	def get_object(self):
 		return SiteLocation.objects.get_current()
+
+	def get_success_url(self):
+		return self.success_url or reverse('localtv_admin_settings')
