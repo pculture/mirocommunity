@@ -15,15 +15,56 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf.urls.defaults import patterns, url, include
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext_lazy as _
 
-from localtv.admin.base import CRUDSection, registry
-from localtv.models import Video
+from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
+from localtv.models import Video, Category
+from localtv.playlists.models import Playlist
 
 
-class VideoSection(CRUDSection):
+class VideoCRUDSection(CRUDSection):
     def get_queryset(self):
         return Video.objects.filter(site=Site.objects.get_current())
+
+
+class CategoryCRUDSection(CRUDSection):
+    def get_queryset(self):
+        return Category.objects.filter(site=Site.objects.get_current())
+
+
+class PlaylistCRUDSection(CRUDSection):
+    model = Playlist
+
+
+class VideoSection(MiroCommunityAdminSection):
+    url_prefix = 'videos'
+    navigation_text = _('Videos')
+
+    def __init__(self):
+        self.subsections = [
+            VideoCRUDSection(),
+            CategoryCRUDSection(),
+            PlaylistCRUDSection(),
+        ]
+
+    @property
+    def urlpatterns(self):
+        urlpatterns = patterns('')
+
+        for section in self.subsections:
+            urlpatterns += patterns('',
+                url(r'^%s/' % section.url_prefix, include(section.urlpatterns))
+            )
+        return urlpatterns
+
+    @property
+    def pages(self):
+        pages = ()
+        for section in self.subsections:
+            pages += section.pages
+        return pages
 
 
 registry.register(VideoSection)

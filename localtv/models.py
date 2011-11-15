@@ -1081,6 +1081,7 @@ class Category(models.Model):
                                         default=None)
 
     class Meta:
+        verbose_name_plural = "Categories"
         ordering = ['name']
         unique_together = (
             ('slug', 'site'),

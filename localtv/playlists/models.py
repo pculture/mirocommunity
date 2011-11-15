@@ -25,7 +25,13 @@ class Playlist(models.Model):
     PRIVATE = 0
     WAITING_FOR_MODERATION = 1
     PUBLIC = 2
-    status = models.IntegerField(default=PRIVATE)
+
+    STATUS_CHOICES = (
+        (PRIVATE, "Private"),
+        (WAITING_FOR_MODERATION, "Waiting for moderation"),
+        (PUBLIC, "Public")
+    )
+    status = models.IntegerField(choices=STATUS_CHOICES, default=PRIVATE)
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
