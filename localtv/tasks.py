@@ -18,9 +18,8 @@
 #eventlet.monkey_patch()
 
 import os
-
+import itertools
 import logging
-import subprocess
 
 import vidscraper
 
@@ -31,7 +30,8 @@ from django.contrib.auth.models import User
 from haystack import site
 
 from localtv import utils
-from localtv.models import Video, Feed, SiteLocation, CannotOpenImageUrl
+from localtv.models import (Video, Feed, SiteLocation, SavedSearch,
+                            CannotOpenImageUrl)
 
 #import eventlet.debug
 #eventlet.debug.hub_blocking_detection(True)
@@ -69,27 +69,34 @@ else:
 
 @task(ignore_result=True)
 @patch_settings
-def update_feeds(using='default'):
+def update_sources(using='default'):
     feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
     for feed in feeds:
-        bulk_import.delay(feed.pk, using=using)
+        feed_update_items.delay(feed.pk, using=using)
+
+    searches = SavedSearch.objects.using(using).all()
+    for search in searches:
+        search_update_items.delay(search.pk, using=using)
+
+def _max_results(using):
+    sl = SiteLocation.objects.db_manager(using).get_current()
+    if not sl.enforce_tiers(using=using):
+        return None
+    else:
+        return sl.get_tier().remaining_videos()
 
 @task(ignore_result=True)
 @patch_settings
-def bulk_import(feed_id, crawl=False, using='default'):
+def feed_update_items(feed_id, crawl=False, using='default'):
     try:
         feed = Feed.objects.using(using).get(pk=feed_id)
     except Feed.DoesNotExist:
-        logging.warn('bulk_import(%s, using=%r) could not find feed',
+        logging.warn('feed_update_items(%s, using=%r) could not find feed',
                      feed_id, using)
-    sl = SiteLocation.objects.db_manager(using).get_current()
-    if not sl.enforce_tiers(using=using):
-        max_results = 1000 # None
-    else:
-        max_results = sl.get_tier().remaining_videos()
+        return
 
     video_iter = vidscraper.auto_feed(
-        feed.feed_url, crawl=crawl, max_results=max_results)
+        feed.feed_url, crawl=crawl, max_results=_max_results(using))
     video_iter.load()
     logging.debug('loaded object: %r', video_iter)
     logging.debug('loaded feed: %r', video_iter.title)
@@ -101,6 +108,21 @@ def bulk_import(feed_id, crawl=False, using='default'):
     finally:
         feed.status = Feed.ACTIVE
         feed.save()
+
+@task(ignore_result=True)
+@patch_settings
+def search_update_items(search_id, using='default'):
+    try:
+        search = SavedSearch.objects.using(using).get(pk=search_id)
+    except SavedSearch.DoesNotExist:
+        logging.warn('search_update_items(%s, using=%r) could not find search',
+                     search_id, using)
+        return
+    video_dicts = vidscraper.auto_search(search.query_string,
+                                        max_results=_max_results(using))
+    
+    logging.debug('loaded objects: %r', video_dicts)
+    search.update_items(video_iter=itertools.chain(*video_dicts.values()))
 
 def _oldest_video(qs):
     """
@@ -166,7 +188,7 @@ def video_from_vidscraper_video(vidscraper_video, source,
         if created:
             author.set_unusable_password()
             author.save()
-            utils.get_profile_model().objects.create(
+            utils.get_profile_model().objects.db_manager(using).create(
                 user=author,
                 website=vidscraper_video.user_url or '')
         kwargs['authors'] = [author]
@@ -190,6 +212,7 @@ def video_save_thumbnail(video_pk, using='default'):
         logging.warn(
             'video_save_thumbnails(%s, using=%r) could not find video',
             video_pk, using)
+        return
     try:
         v.save_thumbnail()
     except CannotOpenImageUrl:

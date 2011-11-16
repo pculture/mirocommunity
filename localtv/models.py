@@ -463,7 +463,7 @@ class SiteLocation(Thumbnailable):
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):
-        return localtv.tiers.Tier(self.tier_name)
+        return localtv.tiers.Tier(self.tier_name, self)
 
     def get_fully_confirmed_tier(self):
         # If we are in a transitional state, then we would have stored
@@ -1798,8 +1798,9 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteLocation.objects.get(site=self.site_id).use_original_date and \
-                self.when_published:
+        if SiteLocation.objects.using(self._state.db).get(
+            site=self.site_id).use_original_date and \
+            self.when_published:
             return self.when_published
         return self.when_approved or self.when_submitted
 

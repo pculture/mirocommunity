@@ -28,5 +28,5 @@ class Command(NoArgsCommand):
 
         from localtv import tasks
         
-        tasks.update_feeds.delay(
+        tasks.update_sources.delay(
             using=settings.SETTINGS_MODULE.split('.')[0])
