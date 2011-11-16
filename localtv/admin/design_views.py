@@ -28,29 +28,6 @@ from localtv.models import SiteLocation, WidgetSettings, NewsletterSettings
 
 @require_site_admin
 @csrf_protect
-def edit_settings(request):
-    sitelocation = SiteLocation.objects.get_current()
-    form = forms.EditSettingsForm(instance=sitelocation)
-
-    if request.method == 'POST':
-        form = forms.EditSettingsForm(request.POST, request.FILES,
-                                      instance=sitelocation)
-        if form.is_valid():
-            sitelocation = form.save()
-            if request.POST.get('delete_background'):
-                if sitelocation.background:
-                    sitelocation.background.delete()
-            return HttpResponseRedirect(
-                reverse('localtv_admin_settings'))
-
-    return render_to_response(
-        "localtv/admin/edit_settings.html",
-        {'form': form},
-        context_instance=RequestContext(request))
-
-
-@require_site_admin
-@csrf_protect
 def widget_settings(request):
     sitelocation = SiteLocation.objects.get_current()
     form = forms.WidgetSettingsForm(
