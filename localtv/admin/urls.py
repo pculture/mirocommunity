@@ -63,7 +63,7 @@ urlpatterns += patterns(
      {}, 'localtv_admin_search'),
     (r'^manage/search/add$', 'create_saved_search',
      {}, 'localtv_admin_search_add'),
-    (r'^manage/search/auto_approve/(\d+)$', 'search_auto_approve',
+    (r'^manage/search/auto_approve/(?P<pk>\d+)$', 'search_auto_approve',
      {}, 'localtv_admin_search_auto_approve'),
     (r'^add/approve/$', 'approve',
      {}, 'localtv_admin_search_video_approve'),

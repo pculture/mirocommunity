@@ -35,6 +35,8 @@ from django.views.decorators.csrf import csrf_protect
 import celery
 from importlib import import_module
 
+import vidscraper
+
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv import tasks, utils
 from localtv.models import Feed, SiteLocation
@@ -61,7 +63,12 @@ def add_feed(request):
     feed_url = add_form.cleaned_data['feed_url']
     scraped_feed = add_form.cleaned_data['scraped_feed']
 
-    scraped_feed.load()
+    try:
+        scraped_feed.load()
+    except vidscraper.errors.CantIdentifyUrl:
+        return HttpResponseBadRequest(
+            '* It does not appear that %s is an RSS/Atom feed URL.' % (
+                scraped_feed.url,))
     title = scraped_feed.title or ''
 
     for regexp in VIDEO_SERVICE_TITLES:

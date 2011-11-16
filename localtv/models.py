@@ -725,7 +725,7 @@ class Source(Thumbnailable):
         def skip(video, reason, *args):
             m = "Skipping %r: %s" % (video.title, reason % args)
             logging.debug(m)
-            if True: #verbose:
+            if verbose:
                 print m
 
         if 'status' not in kwargs:

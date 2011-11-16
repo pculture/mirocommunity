@@ -25,7 +25,7 @@ from django.views.generic import ListView, DetailView, View
 from localtv.admin.livesearch.forms import LiveSearchForm
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv.models import SavedSearch, SiteLocation, Video
-
+from localtv import utils
 
 class LiveSearchSessionMixin(object):
     """
@@ -47,9 +47,7 @@ class LiveSearchSessionMixin(object):
             results = list(self.form.get_results())
         else:
             results = []
-
         if results:
-            print results
             # For now, we need to fake an id on each video.
             for i, video in enumerate(results, start=1):
                 video.id = i
@@ -80,13 +78,15 @@ class LiveSearchSessionMixin(object):
                                              ).values_list('website_url',
                                                            'file_url')
             if exclusions:
-                website_urls, file_urls = zip(*list(exclusions))
+                website_urls, file_urls = map(set, zip(*list(exclusions)))
+                website_urls.discard('')
+                file_urls.discard('')
             else:
                 website_urls = file_urls = set()
             exclusions = {
                 'timestamp': datetime.now(),
-                'website_urls': set(website_urls),
-                'file_urls': set(file_urls)
+                'website_urls': website_urls,
+                'file_urls': file_urls
             }
             self.request.session[cache_key] = exclusions
         return exclusions
@@ -215,7 +215,7 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
             user = User(username=video.video_service_user)
             user.set_unusable_password()
             user.save()
-            Profile.objects.create(
+            utils.get_profile_model().objects.create(
                 user=user,
                 website=video.video_service_url
             )
@@ -225,8 +225,10 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
         cache_key = self._get_cache_key()
         exclusions = request.session.get(cache_key)
         if exclusions is not None:
-            exclusions['website_urls'].add(video.website_url)
-            exclusions['file_urls'].add(video.file_url)
+            if video.website_url:
+                exclusions['website_urls'].add(video.website_url)
+            if video.file_url:
+                exclusions['file_urls'].add(video.file_url)
             request.session[cache_key] = exclusions
 
         return HttpResponse('SUCCESS')
@@ -236,7 +238,6 @@ approve = referrer_redirect(require_site_admin(
 
 class SetSearchAutoApprove(DetailView):
     model = SavedSearch
-    pk_url_kwarg = 'search_id'
 
     def get(self, request, **kwargs):
         #TODO: This, too, should be a POST
