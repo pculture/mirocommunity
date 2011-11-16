@@ -493,58 +493,6 @@ class NewsletterSettingsForm(forms.ModelForm):
         return instance
 
 
-class FlatPageForm(forms.ModelForm):
-    url = forms.CharField(required=True,
-                          label='URL',
-                          max_length=100,
-                          help_text=("The URL for the page.  It must start "
-                                     "with a '/' character."))
-    content = forms.CharField(required=True,
-                              label='Content',
-                              widget=forms.Textarea,
-                              help_text=("This is everything you want to "
-                                         "appear on the page.  The header and "
-                                         "footer of your site will be "
-                                         "automatically included.  This can "
-                                         "contain HTML."))
-    class Meta:
-        model = FlatPage
-        fields = ['url', 'title', 'content']
-
-    def clean_url(self):
-        value = self.cleaned_data['url']
-        if not value.startswith('/'):
-            raise forms.ValidationError("URL must start with a '/' character")
-        if getattr(settings, 'APPEND_SLASH', False) and \
-                not value.endswith('/'):
-            # append the trailing slash
-            value = value + '/'
-        existing = FlatPage.objects.filter(
-            url = value,
-            sites=Site.objects.get_current())
-        if self.instance:
-            existing = existing.exclude(pk=self.instance.pk)
-        if existing.count():
-            raise forms.ValidationError(
-                'Flatpage with that URL already exists.')
-        try:
-            resolve(value)
-        except Http404:
-            pass # good, the URL didn't resolve
-        else:
-            raise forms.ValidationError(
-                'View with that URL already exists.')
-        return value
-
-class BaseFlatPageFormSet(BulkFormSetMixin, BaseModelFormSet):
-    pass
-
-FlatPageFormSet = modelformset_factory(FlatPage,
-                                       form=FlatPageForm,
-                                       formset=BaseFlatPageFormSet,
-                                       can_delete=True,
-                                       extra=0)
-
 
 class AddFeedForm(forms.Form):
     SERVICE_PROFILES = (

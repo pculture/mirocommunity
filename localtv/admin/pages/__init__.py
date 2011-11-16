@@ -1,4 +1,4 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Copyright 2010 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
 # 
@@ -15,6 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from localtv.admin.base import registry, MiroCommunityAdminSection
-from localtv.admin import (dashboard, moderation, sources, videos, users,
-						   settings, pages)
+from django.contrib.flatpages.models import FlatPage
+from django.contrib.sites.models import Site
+
+from localtv.admin.base import CRUDSection, registry
+from localtv.admin.pages.forms import FlatPageForm
+
+
+class FlatPageSection(CRUDSection):
+	create_form_class = FlatPageForm
+	update_form_class = FlatPageForm
+
+	def get_queryset(self):
+		return FlatPage.objects.filter(sites=Site.objects.get_current())
+
+
+registry.register(FlatPageSection)
