@@ -20,21 +20,30 @@ from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
+from localtv.admin.videos.forms import VideoForm, CategoryForm, PlaylistForm
 from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
 
 
 class VideoCRUDSection(CRUDSection):
+    create_form_class = VideoForm
+    update_form_class = VideoForm
+
     def get_queryset(self):
         return Video.objects.filter(site=Site.objects.get_current())
 
 
 class CategoryCRUDSection(CRUDSection):
+    create_form_class = CategoryForm
+    update_form_class = CategoryForm
+
     def get_queryset(self):
         return Category.objects.filter(site=Site.objects.get_current())
 
 
 class PlaylistCRUDSection(CRUDSection):
+    create_form_class = PlaylistForm
+    update_form_class = PlaylistForm
     model = Playlist
 
 

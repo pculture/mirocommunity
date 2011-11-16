@@ -25,7 +25,7 @@ from tagging.forms import TagField
 from tagging.utils import edit_string_for_tags
 
 from localtv import models
-from localtv.admin.forms import EditVideoForm, BulkChecklistField
+from localtv.admin.forms import BulkChecklistField
 
 Comment = comments.get_model()
 
@@ -146,5 +146,25 @@ class VideoEditorsComment(forms.Form):
             self.save_m2m = save_m2m
         return self.comment
 
-class VideoThumbnailForm(EditVideoForm):
-    pass
+class VideoThumbnailForm(forms.ModelForm):
+    thumbnail = forms.ImageField(required=False)
+
+    class Meta:
+        model = models.Video
+        fields = ('thumbnail_url',)
+
+    def save(self, *args, **kwargs):
+        thumbnail = self.cleaned_data.pop('thumbnail', None)
+        thumbnail_url = self.cleaned_data.pop('thumbnail_url', None)
+
+        if thumbnail:
+            self.instance.thumbnail_url = ''
+            # since we're no longer using
+            # that URL for a thumbnail
+            self.instance.save_thumbnail_from_file(thumbnail)
+        elif thumbnail_url and 'thumbnail_url' in self.changed_data:
+            try:
+                self.instance.save_thumbnail()
+            except models.CannotOpenImageUrl:
+                pass # we'll get it in a later update
+        return forms.ModelForm.save(self, *args, **kwargs)
