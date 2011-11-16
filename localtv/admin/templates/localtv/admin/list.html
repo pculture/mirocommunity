@@ -34,6 +34,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if create_view_name %}
       <a href="{% url create_view_name %}">{% block create_link_text %}Add a {{ verbose_name }}{% endblock %}</a>
     {% endif %}
+    {% if is_paginated %}
+      {% include 'localtv/admin/_pagination.html' %}
+    {% endif %}
   </header>
 
   {% if object_list %}

@@ -64,7 +64,7 @@ class CRUDSection(MiroCommunityAdminSection):
     #: A queryset of objects for this section.
     queryset = None
 
-    paginate_by = None
+    paginate_by = 10
 
     site_admin_required = True
 

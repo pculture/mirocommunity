@@ -27,26 +27,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% include "localtv/admin/_pagination_item.html" %}
       {% endwith %}
 
-      {% if page.number > paginator.num_pages|add:-4 %}
+      {% if page_obj.number > paginator.num_pages|add:-4 %}
         <span class="pagination-hellip">&hellip;</span>
         {% for page_num in paginator.page_range|slice:"-5:-1" %}
           {% include "localtv/admin/_pagination_item.html" %}
         {% endfor %}
       {% else %}
-        {% if page.number < 4 %}
+        {% if page_obj.number < 5 %}
           {% for page_num in paginator.page_range|slice:"1:5" %}
             {% include "localtv/admin/_pagination_item.html" %}
           {% endfor %}
           <span class="pagination-hellip">&hellip;</span>
         {% else %}
           <span class="pagination-hellip">&hellip;</span>
-          {% with page_num=page.previous_page_number %}
+          {% with page_num=page_obj.previous_page_number %}
             {% include "localtv/admin/_pagination_item.html" %}
           {% endwith %}
-          {% with page_num=page.number %}
+          {% with page_num=page_obj.number %}
             {% include "localtv/admin/_pagination_item.html" %}
           {% endwith %}
-          {% with page_num=page.next_page_number %}
+          {% with page_num=page_obj.next_page_number %}
             {% include "localtv/admin/_pagination_item.html" %}
           {% endwith %}
           <span class="pagination-hellip">&hellip;</span>

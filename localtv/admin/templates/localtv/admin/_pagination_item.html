@@ -16,4 +16,4 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-<li class="pagination-item{% if page_num == page.number %} pagination-selected{% endif %}"><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+<li class="pagination-item{% if page_num == page_obj.number %} pagination-selected{% endif %}"><a href="?page={{ page_num }}">{{ page_num }}</a></li>

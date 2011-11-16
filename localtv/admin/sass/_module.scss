@@ -40,8 +40,9 @@
 			height: 2 * $em - 1px;
 			display: block;
 			padding:0 $em;
-			background-color:#ddd;
+			background-color:#ccc;
 			border:1px solid #ddd;
+			@include text-shadow(1px 1px #fff);
 			@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%));
 
 			&:hover{
@@ -135,3 +136,14 @@
 		.overview-item:last-child > .overview-action{
 			border-bottom-right-radius:$em;
 		}
+
+
+.pagination{}
+
+	.pagination-item{
+		display:inline;
+	}
+
+	.pagination-hellip{
+		display:inline;
+	}
