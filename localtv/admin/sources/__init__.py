@@ -21,11 +21,13 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView
 
 from localtv.admin.base import MiroCommunityAdminSection, registry, CRUDSection
+from localtv.admin.sources.forms import SearchUpdateForm, FeedUpdateForm
 from localtv.decorators import require_site_admin
 from localtv.models import Feed, SavedSearch
 
 
 class FeedSection(CRUDSection):
+    update_form_class = FeedUpdateForm
     template_prefixes = (
         'localtv/admin/sources/feeds/',
         'localtv/admin/sources/',
@@ -38,6 +40,7 @@ class FeedSection(CRUDSection):
 
 
 class SearchSection(CRUDSection):
+    update_form_class = SearchUpdateForm
     url_prefix = 'searches'
     template_prefixes = (
         'localtv/admin/sources/searches/',
