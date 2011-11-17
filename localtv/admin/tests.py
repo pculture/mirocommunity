@@ -38,7 +38,6 @@ from uploadtemplate.models import Theme
 import vidscraper
 
 from localtv import utils
-from localtv.admin.utils import MetasearchVideo
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
 from localtv.models import Feed, Video, SavedSearch, Category, SiteLocation, TierInfo
 from localtv.tests import BaseTestCase
@@ -1076,17 +1075,6 @@ class FeedAdministrationTestCase(BaseTestCase):
     url = reverse('localtv_admin_feed_add')
     feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
 
-    def test_authentication_done(self):
-        """
-        The localtv_admin_feed_add_done view should require administration
-        priviledges.
-        """
-        url = reverse('localtv_admin_feed_add_done', args=[1])
-        self.assertRequiresAuthentication(url)
-
-        self.assertRequiresAuthentication(url,
-                                          username='user', password='password')
-
     def test_GET(self):
         """
         A GET request to the add_feed view should render the
@@ -1125,17 +1113,20 @@ class FeedAdministrationTestCase(BaseTestCase):
         We accept a few different kinds of YouTube URLs.  We should make sure
         we only have one feed per base URL.
         """
-        url1 = ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
-                'alt=rss&v=2&orderby=published')
-        url2 = 'http://www.youtube.com/rss/user/CLPPrj/videos.rss'
+        urls = [
+            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
+             'alt=rss&v=2'),
+            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
+             'alt=rss&v=2&orderby=published'),
+            'http://www.youtube.com/rss/user/CLPPrj/videos.rss']
         Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
             status=Feed.UNAPPROVED,
-            feed_url=url1)
+            feed_url=urls[0])
         c = Client()
         c.login(username='admin', password='admin')
-        for url in url1, url2:
+        for url in urls:
             response = c.get(self.url, {'feed_url': url})
             self.assertEquals(response.status_code, 400,
                               '%r not stopped as a duplicate' % url)
@@ -1225,7 +1216,7 @@ class FeedAdministrationTestCase(BaseTestCase):
     def test_POST_succeed(self):
         """
         A POST request to the add_feed view with a valid form should redirect
-        the user to the localtv_admin_add_feed_done view.
+        the user to the localtv_admin_manage_page view.
 
         A Feed object should also be created, but not have any items.
         """
@@ -1239,35 +1230,15 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
                 'testserver',
-                reverse('localtv_admin_feed_add_done', args=[1])))
+                reverse('localtv_admin_manage_page')))
 
         feed = Feed.objects.get()
         self.assertEquals(feed.name, 'Valid Feed with Relative Links')
         self.assertEquals(feed.feed_url, self.feed_url)
-        self.assertEquals(feed.status, Feed.UNAPPROVED)
+        # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
+        self.assertTrue(feed.status in (Feed.UNAPPROVED, Feed.ACTIVE))
         self.assertEquals(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
-
-    def test_GET_done(self):
-        """
-        A GET request to the add_feed_done view should start importing the
-        videos from the feed by starting a Celery task.  It should also render
-        the 'localtv/admin/feed_wait.html' template and have a 'feed' variable
-        in the context pointing to the Feed object and a 'task_id' variable
-        with the Celery task ID..
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % self.feed_url,
-               {'feed_url': self.feed_url,
-                'auto_approve': 'yes'})
-
-        response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
-        self.assertStatusCodeEquals(response, 302)
-        self.assertTrue(response['Location'].startswith(
-                'http://%s%s?task_id=' % (
-                    'testserver',
-                    reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
         """
@@ -1290,8 +1261,8 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertFalse(user.has_usable_password())
         self.assertEquals(user.email, '')
         self.assertEquals(user.get_profile().website,
-                          'http://www.youtube.com/profile_videos?'
-                          'user=mphtower')
+                          'http://www.youtube.com/profile?'
+                          'user=mphtower#p/u')
         self.assertEquals(list(feed.auto_authors.all()),
                           [user])
 
@@ -1407,38 +1378,38 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_query(self):
         """
-        A GET request to the livesearch view and GET['query'] argument should
-        list some videos that match the query.
+        A GET request to the livesearch view and GET['q'] argument should list
+        some videos that match the query.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
                           'localtv/admin/livesearch_table.html')
-        self.assertIsInstance(response.context[2]['current_video'],
-                              MetasearchVideo)
-        self.assertEquals(response.context[2]['page_obj'].number, 1)
-        self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
-        self.assertEquals(response.context[2]['query_string'], 'search string')
-        self.assertEquals(response.context[2]['order_by'], 'latest')
-        self.assertEquals(response.context[2]['is_saved_search'], False)
+        self.assertIsInstance(response.context['current_video'],
+                              Video)
+        self.assertEquals(response.context['page_obj'].number, 1)
+        self.assertEquals(len(response.context['page_obj'].object_list), 10)
+        self.assertEquals(response.context['query_string'], 'search string')
+        self.assertEquals(response.context['order_by'], 'latest')
+        self.assertEquals(response.context['is_saved_search'], False)
 
     def test_GET_query_pagination(self):
         """
-        A GET request to the livesearch view with GET['query'] and GET['page']
+        A GET request to the livesearch view with GET['q'] and GET['page']
         arguments should return another page of results.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertEquals(response.context[2]['page_obj'].number, 1)
         self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
 
         response2 = c.get(self.url,
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'page': '2'})
         self.assertEquals(response2.context[2]['page_obj'].number, 2)
         self.assertEquals(len(response2.context[2]['page_obj'].object_list),
@@ -1459,26 +1430,23 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         self.assert_(c.login(username='admin', password='admin'))
         response = c.get(self.url,
-                         {'query': 'search string'})
-        metasearch_video = response.context[2]['page_obj'].object_list[0]
-        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
+                         {'q': 'search string'})
+        fake_video = response.context[2]['page_obj'].object_list[0]
+        fake_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'video_id': metasearch_video.id},
+                         {'q': 'search string',
+                          'video_id': fake_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], "http://www.getmiro.com/")
 
         v = Video.objects.get()
         self.assertEquals(v.site, self.site_location.site)
-        self.assertEquals(v.name, metasearch_video.name)
-        self.assertEquals(
-            v.description,
-            vidscraper.auto_scrape(v.website_url,
-                                   fields=['description'])['description'])
-        self.assertEquals(v.file_url, metasearch_video.file_url)
-        self.assertEquals(v.embed_code, metasearch_video.embed_code)
+        self.assertEquals(v.name, fake_video.name)
+        self.assertEquals(v.description, fake_video.description)
+        self.assertEquals(v.file_url, fake_video.file_url)
+        self.assertEquals(v.embed_code, fake_video.embed_code)
         self.assertTrue(v.last_featured is None)
 
         user = User.objects.get(username=v.video_service_user)
@@ -1488,9 +1456,9 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(list(v.authors.all()), [user])
 
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
-                          metasearch_video2.id)
+                          fake_video2.id)
 
     @mock.patch('localtv.tiers.Tier.can_add_more_videos', mock.Mock(return_value=False))
     def test_GET_approve_refuses_when_limit_exceeded(self):
@@ -1502,12 +1470,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
         metasearch_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'video_id': metasearch_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 402)
@@ -1532,11 +1500,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'feature': 'yes',
                           'video_id': metasearch_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
@@ -1555,11 +1523,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_display'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
         self.assertEquals(response.template[0].name,
@@ -1576,7 +1544,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(reverse('localtv_admin_search_add'),
-                         {'query': 'search string'},
+                         {'q': 'search string'},
                          HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], 'http://www.getmiro.com/')
@@ -1587,7 +1555,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(saved_search.user.username, 'admin')
 
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
     def test_GET_create_saved_search_authentication(self):
@@ -3071,9 +3039,8 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
         """
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-
         c = Client()
-        c.login(username="admin", password="admin")
+        c.login(username="superuser", password="superuser")
         POST_data = {
             'submit': 'Add',
             'username': 'new',
@@ -4174,9 +4141,9 @@ class TestTiersComplianceEmail(BaseTestCase):
         self.assertEqual(0,
                          len(mail.outbox))
 
-    def test_no_email_when_within_limits(self):
+    def test_email_when_within_limits(self):
         self.cmd.handle()
-        self.assertEqual(0,
+        self.assertEqual(1,
                          len(mail.outbox))
 
     def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
