@@ -71,12 +71,12 @@ else:
 @patch_settings
 def update_sources(using='default'):
     feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
-    for feed in feeds:
-        feed_update_items.delay(feed.pk, using=using)
+    for feed_pk in feeds.values_list('pk', flat=True):
+        feed_update_items.delay(feed_pk, using=using)
 
-    searches = SavedSearch.objects.using(using).all()
-    for search in searches:
-        search_update_items.delay(search.pk, using=using)
+    searches = SavedSearch.objects.using(using)
+    for search_pk in searches.values_list('pk', flat=True):
+        search_update_items.delay(search_pk, using=using)
 
 def _max_results(using):
     sl = SiteLocation.objects.db_manager(using).get_current()
