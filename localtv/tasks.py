@@ -130,8 +130,23 @@ def _oldest_video(qs):
     """
     return qs.order_by('when_published',
                        'feedimportindex__feedimport__start',
-                       'feedimportindex__index')[0]
-        
+                       '-feedimportindex__index')[0]
+
+def _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
+    if 'feedimport' in kwargs:
+        # take the video indexes into account
+        oldest_cmp = (oldest.when_published,
+                      oldest.feedimportindex.feedimport.start.replace(
+                microsecond=0),
+                      -oldest.feedimportindex.index)
+        this_cmp = (vidscraper_video.publish_datetime,
+                    kwargs['feedimport'].start.replace(microsecond=0),
+                    -vidscraper_video.index)
+    else:
+        oldest_cmp = oldest.when_published
+        this_cmp = vidscraper_video.publish_datetime
+    return oldest_cmp <= this_cmp
+
 @task(ignore_result=True)
 @patch_settings
 def video_from_vidscraper_video(vidscraper_video, source,
@@ -153,7 +168,7 @@ def video_from_vidscraper_video(vidscraper_video, source,
             guid=vidscraper_video.guid)
         if guids.exists():
             oldest = _oldest_video(guids)
-            if oldest.when_published <= vidscraper_video.publish_datetime:
+            if _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
                 logging.debug('skipping %r: duplicate guid',
                               vidscraper_video.url)
                 return
@@ -168,7 +183,7 @@ def video_from_vidscraper_video(vidscraper_video, source,
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
             oldest = _oldest_video(videos_with_link)
-            if oldest.when_published <= vidscraper_video.publish_datetime:
+            if _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
                 logging.debug('skipping %r: duplicate link',
                               vidscraper_video.url)
             else:

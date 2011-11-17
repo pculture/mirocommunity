@@ -972,7 +972,7 @@ class FeedImport(models.Model):
     end = models.DateTimeField(null=True)
 
     class Meta:
-        get_latest_by = 'start'
+        get_latest_by = 'pk'
 
     @property
     def video_set(self):
@@ -1538,7 +1538,7 @@ class VideoManager(StatusedThumbnailableManager):
         if feed:
             qs = qs.filter(feed=feed)
         return qs.order_by('-feedimportindex__feedimport__start',
-                           '-feedimportindex__index',
+                           'feedimportindex__index',
                            '-id')
 
 

@@ -418,16 +418,7 @@ Dr. Janice Key, Professor of Adolescent Medicine at the Medical \
 University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertEquals(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
-        self.assertEquals(
-            video.embed_code,
-            '<object width="480" height="270"><param name="movie" value="'
-            'http://www.youtube.com/v/BBwtzeZdoHQ?version=3&feature=oembed">'
-            '</param><param name="allowFullScreen" value="true"></param>'
-            '<param name="allowscriptaccess" value="always"></param><embed '
-            'src="http://www.youtube.com/v/BBwtzeZdoHQ?version=3&feature='
-            'oembed" type="application/x-shockwave-flash" width="480" '
-            'height="270" allowscriptaccess="always" allowfullscreen="true">'
-            '</embed></object>')
+        self.assertTrue('/BBwtzeZdoHQ' in video.embed_code)
         self.assertEquals(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertEquals(video.thumbnail_url,
@@ -581,12 +572,12 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
         self.assertEquals(feed.feedimport_set.latest().video_set.count(), 1)
-        v = feed.video_set.all()[0]
+        v = feed.video_set.get()
         # didn't get any updates
         feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
         self.assertEquals(feed.video_set.count(), 1)
         self.assertEquals(feed.feedimport_set.latest().video_set.count(), 0)
-        v2 = feed.video_set.all()[0]
+        v2 = feed.video_set.get()
         self.assertEquals(v.pk, v2.pk)
 
     def test_video_service(self):
