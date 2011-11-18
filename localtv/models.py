@@ -714,7 +714,7 @@ class Source(Thumbnailable):
             initial_video_status = Video.UNAPPROVED
         return initial_video_status
 
-    def bulk_import(self, videos, verbose=False, clear_rejected=True,
+    def bulk_import(self, videos, clear_rejected=True,
                     actually_save_thumbnails=True, **kwargs):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
@@ -722,11 +722,6 @@ class Source(Thumbnailable):
         :method:`.Video.from_vidscraper_video to map the Vidscraper fields to
         Video attributes.
         """
-        def skip(video, reason, *args):
-            m = "Skipping %r: %s" % (video.title, reason % args)
-            logging.debug(m)
-            if verbose:
-                print m
 
         if 'status' not in kwargs:
             kwargs['status'] = self._default_video_status()
@@ -739,31 +734,13 @@ class Source(Thumbnailable):
         if 'categories' not in kwargs:
             kwargs['categories'] = list(self.auto_categories.all())
 
-        #guids = set(self.video_set.values_list('guid', 'when_published'))
-        if verbose:
-            print 'Starting video iterator'
-
         from localtv.tasks import video_from_vidscraper_video
 
         for vidscraper_video in iter(videos):
             if not vidscraper_video.title:
-                skip(vidscraper_video, 'failed to scrape basic data')
+                logging.debug("Skipping %r: failed to scrape basic data"
+                              % vidscraper_video.title)
                 continue
-            # elif (vidscraper_video.guid and
-            #       (vidscraper_video.guid,
-            #        vidscraper_video.publish_datetime) in guids):
-            #     skip(vidscraper_video, 'duplicate guid')
-            #     continue
-            # elif vidscraper_video.link:
-            #     videos_with_link = Video.objects.using(self._state.db).filter(
-                    
-            #         website_url=vidscraper_video.link)
-            #     if clear_rejected:
-            #         videos_with_link.rejected().delete()
-            #     if videos_with_link.filter(
-            #         when_published=vidscraper_video.publish_datetime).exists():
-            #         skip(vidscraper_video, 'duplicate link')
-            #         continue
             
             video_from_vidscraper_video.delay(
                 vidscraper_video,
@@ -885,7 +862,7 @@ class Feed(Source, StatusedThumbnailable):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, clear_rejected=False, video_iter=None):
+    def update_items(self, clear_rejected=False, video_iter=None):
         """
         Fetch and import new videos from this feed.
 
@@ -895,8 +872,7 @@ class Feed(Source, StatusedThumbnailable):
         feedimport, created = FeedImport.objects.db_manager(
             self._state.db).get_or_create(feed=self, end=None)
         if not created:
-            if verbose:
-                print 'Skipping import of %s: already in progress' % self
+            logging.debug('Skipping import of %s: already in progress' % self)
             return
         if video_iter is None:
             video_iter = vidscraper.auto_feed(
@@ -909,8 +885,7 @@ class Feed(Source, StatusedThumbnailable):
             video_iter.load()
             self.bulk_import(video_iter,
                              feed=self,
-                             feedimport=feedimport,
-                             verbose=verbose)
+                             feedimport=feedimport)
 
             self.etag = getattr(video_iter, 'etag', None) or ''
             self.last_updated = (getattr(video_iter, 'last_modified', None) or
@@ -1118,7 +1093,7 @@ class SavedSearch(Source):
     def __unicode__(self):
         return self.query_string
 
-    def update_items(self, verbose=False, video_iter=None):
+    def update_items(self, video_iter=None):
         if video_iter is None:
             searches = vidscraper.auto_search(
                 self.query_string,
@@ -1132,8 +1107,7 @@ class SavedSearch(Source):
                         yield video
             video_iter = video_gen()
 
-        self.bulk_import(video_iter, search=self,
-                         verbose=verbose)
+        self.bulk_import(video_iter, search=self)
 
     def source_type(self):
         return u'Search'
