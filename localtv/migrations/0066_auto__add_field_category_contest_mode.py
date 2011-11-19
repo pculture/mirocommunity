@@ -87,6 +87,23 @@ class Migration(SchemaMigration):
             'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_submitted': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
         },
+        'localtv.newslettersettings': {
+            'Meta': {'object_name': 'NewsletterSettings'},
+            'facebook_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'intro': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
+            'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'sitelocation': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteLocation']", 'unique': 'True'}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
+            'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video2': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter2'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video3': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter3'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video4': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter4'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video5': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter5'", 'null': 'True', 'to': "orm['localtv.Video']"})
+        },
         'localtv.originalvideo': {
             'Meta': {'object_name': 'OriginalVideo'},
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
