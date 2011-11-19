@@ -10,4 +10,9 @@ from django.dispatch import Signal
 #: - ``vidscraper_video``: The :class:`vidscraper.suites.base.Video` instance
 #                          it was created from.
 post_video_from_vidscraper = Signal(providing_args=["instance",
-                                                    "vidscraper_video",])
+                                                    "vidscraper_video",
+                                                    "using"])
+source_import_video_skipped = Signal(providing_args=["source_import",
+											  "vidscraper_video",
+											  "exception",
+											  "using"])

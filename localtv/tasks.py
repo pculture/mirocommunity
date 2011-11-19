@@ -30,8 +30,9 @@ from django.contrib.auth.models import User
 from haystack import site
 
 from localtv import utils
-from localtv.models import (Video, Feed, SiteLocation, SavedSearch,
+from localtv.models import (Video, Feed, SiteLocation, SavedSearch, Category,
                             CannotOpenImageUrl)
+from localtv.signals import source_import_video_skipped
 
 #import eventlet.debug
 #eventlet.debug.hub_blocking_detection(True)
@@ -72,11 +73,11 @@ else:
 def update_sources(using='default'):
     feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
     for feed_pk in feeds.values_list('pk', flat=True):
-        feed_update_items.delay(feed_pk, using=using)
+        feed_update.delay(feed_pk, using=using)
 
     searches = SavedSearch.objects.using(using)
     for search_pk in searches.values_list('pk', flat=True):
-        search_update_items.delay(search_pk, using=using)
+        search_update.delay(search_pk, using=using)
 
 def _max_results(using):
     sl = SiteLocation.objects.db_manager(using).get_current()
@@ -87,136 +88,133 @@ def _max_results(using):
 
 @task(ignore_result=True)
 @patch_settings
-def feed_update_items(feed_id, crawl=False, using='default'):
+def feed_update(feed_id, using='default'):
     try:
         feed = Feed.objects.using(using).get(pk=feed_id)
     except Feed.DoesNotExist:
-        logging.warn('feed_update_items(%s, using=%r) could not find feed',
+        logging.warn('feed_update(%s, using=%r) could not find feed',
                      feed_id, using)
         return
 
-    video_iter = vidscraper.auto_feed(
-        feed.feed_url, crawl=crawl, max_results=_max_results(using))
-    video_iter.load()
-    logging.debug('loaded object: %r', video_iter)
-    logging.debug('loaded feed: %r', video_iter.title)
-    logging.debug('entry count: %s', video_iter.entry_count)
-    try:
-        feed.update_items(
-            clear_rejected=True,
-            video_iter=video_iter)
-    finally:
-        feed.status = Feed.ACTIVE
-        feed.save()
+    feed.update(using=using, clear_rejected=True)
 
 @task(ignore_result=True)
 @patch_settings
-def search_update_items(search_id, using='default'):
+def search_update(search_id, using='default'):
     try:
         search = SavedSearch.objects.using(using).get(pk=search_id)
     except SavedSearch.DoesNotExist:
-        logging.warn('search_update_items(%s, using=%r) could not find search',
+        logging.warn('search_update(%s, using=%r) could not find search',
                      search_id, using)
         return
-    video_dicts = vidscraper.auto_search(search.query_string,
-                                        max_results=_max_results(using))
-    
-    logging.debug('loaded objects: %r', video_dicts)
-    search.update_items(video_iter=itertools.chain(*video_dicts.values()))
+    search.update(using=using, clear_rejected=True)
 
-def _oldest_video(qs):
-    """
-    Returns the oldest video from a ``QuerySet``.
-    """
-    return qs.order_by('when_published',
-                       'feedimportindex__feedimport__start',
-                       '-feedimportindex__index')[0]
-
-def _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
-    if 'feedimport' in kwargs:
-        # take the video indexes into account
-        oldest_cmp = (oldest.when_published,
-                      oldest.feedimportindex.feedimport.start.replace(
-                microsecond=0),
-                      -oldest.feedimportindex.index)
-        this_cmp = (vidscraper_video.publish_datetime,
-                    kwargs['feedimport'].start.replace(microsecond=0),
-                    -vidscraper_video.index)
-    else:
-        oldest_cmp = oldest.when_published
-        this_cmp = vidscraper_video.publish_datetime
-    return oldest_cmp <= this_cmp
 
 @task(ignore_result=True)
 @patch_settings
-def video_from_vidscraper_video(vidscraper_video, source,
-                                clear_rejected=False, using='default',
-                                **kwargs):
+def video_from_vidscraper_video(vidscraper_video, site_pk,
+                                import_app_label=None, import_model=None,
+                                import_pk=None, status=None, author_pks=None,
+                                category_pks=None, clear_rejected=False,
+                                using='default'):
+    if import_app_label is None or import_model is None or import_pk is None:
+        source_import = None
+    else:
+        import_class = get_model(import_app_label, import_model)
+        try:
+            source_import = import_class.objects.using(using).get(pk=import_pk)
+        except import_class.DoesNotExist:
+            logging.debug('Skipping %r: expected import instance missing.',
+                          vidscraper_video.url)
+
     try:
         vidscraper_video.load()
-    except Exception:
-        logging.debug('exception loading video from %r', vidscraper_video.url,
-                      with_exception=True)
+    except Exception, e:
+        logging.debug('Skipping %r: error loading video data',
+                      vidscraper_video.url, with_exception=True)
+        source_import_video_skipped.send(source_import=source_import,
+                                  vidscraper_video=vidscraper_video,
+                                  exception=e,
+                                  using=using)
+        return
+        
+
+    if not vidscraper_video.title:
+        logging.debug('Skipping %r: Failed to scrape basic data',
+                      vidscraper_video.url)
+        source_import_video_skipped.send(source_import=source_import,
+                                  vidscraper_video=vidscraper_video,
+                                  exception=None,
+                                  using=using)
+        return
 
     if not vidscraper_video.file_url and not vidscraper_video.embed_code:
-        logging.debug('skipping %r: no file_url or embed code',
+        logging.debug('Skipping %r: no file_url or embed code',
                       vidscraper_video.url)
+        source_import_video_skipped.send(source_import=source_import,
+                                  vidscraper_video=vidscraper_video,
+                                  exception=None,
+                                  using=using)
         return
-    to_remove = set()
+
+    site_videos = Video.objects.using(using).filter(site_id=site_pk)
+
     if vidscraper_video.guid:
-        guids = source.video_set.using(using).filter(
-            guid=vidscraper_video.guid)
-        if guids.exists():
-            oldest = _oldest_video(guids)
-            if _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
-                logging.debug('skipping %r: duplicate guid',
-                              vidscraper_video.url)
-                return
-            else:
-                logging.debug('removing %s which should have been skipped',
-                              oldest)
-                to_remove.update(set(guids))
+        guid_videos = site_videos.filter(guid=vidscraper_video.guid)
+        if clear_rejected:
+            guid_videos.rejected().delete()
+        if guid_videos:
+            logging.debug('Skipping %r: duplicate guid', vidscraper_video.url)
+            source_import_video_skipped.send(source_import=source_import,
+                                      vidscraper_video=vidscraper_video,
+                                      exception=None,
+                                      using=using)
+            return
+
     if vidscraper_video.link:
-        videos_with_link = Video.objects.using(using).filter(
-            website_url=vidscraper_video.link)
+        videos_with_link = site_videos.filter(website_url=vidscraper_video.link)
         if clear_rejected:
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
-            oldest = _oldest_video(videos_with_link)
-            if _is_vidscraper_newer(oldest, vidscraper_video, **kwargs):
-                logging.debug('skipping %r: duplicate link',
-                              vidscraper_video.url)
+            logging.debug('Skipping %r: duplicate link', vidscraper_video.url)
+            source_import_video_skipped.send(source_import=source_import,
+                                      vidscraper_video=vidscraper_video,
+                                      exception=None,
+                                      using=using)
+            return
+
+    categories = Category.objects.using(using).filter(pk__in=category_pks)
+
+    if author_pks is not None:
+        authors = User.objects.using(using).filter(pk__in=author_pks)
+    else:
+        if vidscraper_video.user:
+            name = vidscraper_video.user
+            if ' ' in name:
+                first, last = name.split(' ', 1)
             else:
-                logging.debug('removing %s which should have been skipped',
-                              oldest)
-                to_remove.update(set(videos_with_link))
-    if not kwargs.get('authors') and vidscraper_video.user:
-        name = vidscraper_video.user
-        if ' ' in name:
-            first, last = name.split(' ', 1)
+                first, last = name, ''
+            author, created = User.objects.db_manager(using).get_or_create(
+                username=name[:30],
+                defaults={'first_name': first[:30],
+                          'last_name': last[:30]})
+            if created:
+                author.set_unusable_password()
+                author.save()
+                utils.get_profile_model().objects.db_manager(using).create(
+                    user=author,
+                    website=vidscraper_video.user_url or '')
+            authors = [author]
         else:
-            first, last = name, ''
-        author, created = User.objects.db_manager(using).get_or_create(
-            username=name[:30],
-            defaults={'first_name': first[:30],
-                      'last_name': last[:30]})
-        if created:
-            author.set_unusable_password()
-            author.save()
-            utils.get_profile_model().objects.db_manager(using).create(
-                user=author,
-                website=vidscraper_video.user_url or '')
-        kwargs['authors'] = [author]
+            authors = []
         
-    video = Video.from_vidscraper_video(vidscraper_video,
-                                        using=using,
-                                        **kwargs)
+    video = Video.from_vidscraper_video(vidscraper_video, status=status,
+                                        using=using, source_import=source_import,
+                                        authors=authors, categories=categories,
+                                        site_id=site_pk)
     logging.debug('Made video %i: %r', video.pk, video.name)
     if video.thumbnail_url:
         video_save_thumbnail.delay(video.pk, using=using)
-
-    for video in to_remove:
-        video.delete()
 
 @task(ignore_result=True)
 @patch_settings
