@@ -727,7 +727,7 @@ class Source(Thumbnailable):
 
         total_videos = 0
 
-        for vidscraper_video in iter(videos):
+        for vidscraper_video in video_iter:
             total_videos += 1
             
             video_from_vidscraper_video.delay(
@@ -1184,10 +1184,10 @@ class SourceImport(models.Model):
         """
         raise NotImplementedError
 
-    def mark_complete(self, using):
+    def mark_complete(self, using='default'):
         if self.end is None:
             if self.auto_approve:
-                if SiteLocation.enforce_tiers(using='using'):
+                if SiteLocation.enforce_tiers(using=using):
                     remaining_videos = (Tier.get().videos_limit() -
                                         Video.objects.using(using
                                         ).filter(status=Video.ACTIVE).count())
@@ -1266,18 +1266,28 @@ def create_source_import_index(sender, instance, vidscraper_video, using,
         else:
             if (source_import.videos_imported + source_import.videos_skipped
                         >= source_import.total_videos):
-                source_import.mark_complete()
+                source_import.mark_complete(using)
 post_video_from_vidscraper.connect(create_source_import_index)
 
 
 def mark_import_video_skipped(sender, source_import, vidscraper_video,
                               exception, using, **kwargs):
     if source_import is not None:
-        source_import.__class__._default_manager.using(using).filter(
+        import_class = source_import.__class__
+        import_class._default_manager.using(using).filter(
             pk=source_import.pk
         ).update(
             videos_skipped=models.F('videos_skipped') + 1
         )
+        try:
+            source_import = import_class.objects.using(using).get(
+                                        pk=source_import.pk, end__isnull=True)
+        except import_class.DoesNotExist:
+            pass
+        else:
+            if (source_import.videos_imported + source_import.videos_skipped
+                        >= source_import.total_videos):
+                source_import.mark_complete(using)
 source_import_video_skipped.connect(mark_import_video_skipped)
 
 

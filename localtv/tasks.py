@@ -132,7 +132,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     except Exception, e:
         logging.debug('Skipping %r: error loading video data',
                       vidscraper_video.url, with_exception=True)
-        source_import_video_skipped.send(source_import=source_import,
+        source_import_video_skipped.send(sender=None,
+                                  source_import=source_import,
                                   vidscraper_video=vidscraper_video,
                                   exception=e,
                                   using=using)
@@ -142,7 +143,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     if not vidscraper_video.title:
         logging.debug('Skipping %r: Failed to scrape basic data',
                       vidscraper_video.url)
-        source_import_video_skipped.send(source_import=source_import,
+        source_import_video_skipped.send(sender=None,
+                                  source_import=source_import,
                                   vidscraper_video=vidscraper_video,
                                   exception=None,
                                   using=using)
@@ -151,13 +153,14 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     if not vidscraper_video.file_url and not vidscraper_video.embed_code:
         logging.debug('Skipping %r: no file_url or embed code',
                       vidscraper_video.url)
-        source_import_video_skipped.send(source_import=source_import,
+        source_import_video_skipped.send(sender=None,
+                                  source_import=source_import,
                                   vidscraper_video=vidscraper_video,
                                   exception=None,
                                   using=using)
         return
 
-    site_videos = Video.objects.using(using).filter(site_id=site_pk)
+    site_videos = Video.objects.using(using).filter(site=site_pk)
 
     if vidscraper_video.guid:
         guid_videos = site_videos.filter(guid=vidscraper_video.guid)
@@ -165,7 +168,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
             guid_videos.rejected().delete()
         if guid_videos:
             logging.debug('Skipping %r: duplicate guid', vidscraper_video.url)
-            source_import_video_skipped.send(source_import=source_import,
+            source_import_video_skipped.send(sender=None,
+                                      source_import=source_import,
                                       vidscraper_video=vidscraper_video,
                                       exception=None,
                                       using=using)
@@ -177,7 +181,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
             logging.debug('Skipping %r: duplicate link', vidscraper_video.url)
-            source_import_video_skipped.send(source_import=source_import,
+            source_import_video_skipped.send(sender=None,
+                                      source_import=source_import,
                                       vidscraper_video=vidscraper_video,
                                       exception=None,
                                       using=using)
