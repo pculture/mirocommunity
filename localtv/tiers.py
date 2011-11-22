@@ -251,9 +251,9 @@ class Tier(object):
     @staticmethod
     def NAME_TO_COST():
         prices = {'basic': 0,
-                   'plus': 15,
-                   'premium': 35,
-                   'max': 75}
+                   'plus': 79,
+                   'premium': 149,
+                   'max': 299}
         overrides = getattr(settings, "LOCALTV_COST_OVERRIDE", None)
         if overrides:
             for key in overrides:
