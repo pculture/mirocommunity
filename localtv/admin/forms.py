@@ -40,7 +40,6 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
-from tagging.utils import edit_string_for_tags
 
 import localtv.settings
 from localtv import models
@@ -419,7 +418,7 @@ class BulkEditVideoForm(EditVideoForm):
         # We have to initialize tags manually because the model form
         # (django.forms.models.model_to_dict) only collects fields and
         # relations, and not descriptors like Video.tags
-        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+        self.initial['tags'] = util.get_or_create_tags(self.instance.tags)
 
         # cache the querysets so that we don't hit the DB for each form
         cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)

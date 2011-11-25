@@ -154,9 +154,11 @@ def get_or_create_tags(tag_list):
     for tag_text in tag_list:
         if isinstance(tag_text, basestring):
             tag_text = tag_text[:50] # tags can only by 50 chars
-        if settings.FORCE_LOWERCASE_TAGS:
-            tag_text = tag_text.lower()
-        tag = get_tag(tag_text);
+    	    if settings.FORCE_LOWERCASE_TAGS:
+                tag_text = tag_text.lower()
+            tag = get_tag(tag_text)
+        else:
+            tag = tag_text
         tag.name = force_unicode(tag.name)
         tag_set.add(tag)
     edit_string = tagging.utils.edit_string_for_tags(list(tag_set))
