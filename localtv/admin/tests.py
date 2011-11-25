@@ -32,8 +32,6 @@ from django.test.client import Client
 from django.utils.encoding import force_unicode
 from django.conf import settings
 
-from tagging.utils import edit_string_for_tags
-
 from localtv.admin.util import MetasearchVideo
 from localtv.tests import BaseTestCase
 from localtv import models, util
@@ -2387,7 +2385,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEquals(
             [form.initial['tags'] for form in
              response.context[0]['formset'].initial_forms],
-            list (edit_string_for_tags(video.tags) for video in
+            list (util.get_or_create_tags(video.tags) for video in
                   self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEquals(list(response.context[0]['categories']),
