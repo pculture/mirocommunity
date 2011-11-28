@@ -1803,7 +1803,7 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2011, 10, 28, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2011, 11, 02, 6, 56, 41),
         }
 
 
@@ -1854,7 +1854,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         resets the field.
         """
         setattr(self.original, field, value)
-        self.assertEquals(self.original.changed_fields(), {field: old_value})
+        changed_fields = self.original.changed_fields()
+        self.assertEquals(changed_fields, {field: old_value})
         setattr(self.original, field, old_value)
 
     def test_name_change(self):
