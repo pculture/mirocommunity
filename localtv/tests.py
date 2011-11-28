@@ -49,7 +49,9 @@ import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
-from localtv.models import Watch, Category, SiteLocation, Video, TierInfo, Feed, OriginalVideo, SavedSearch
+from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
+                            Feed, OriginalVideo, SavedSearch, FeedImport,
+                            Source)
 from localtv import utils
 import localtv.feeds.views
 from localtv import tiers
@@ -190,9 +192,13 @@ class BaseTestCase(TestCase):
 # Feed tests
 # -----------------------------------------------------------------------------
 
-class FeedModelTestCase(BaseTestCase):
+class FeedImportTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds']
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._parsed_feed = list(self._parse_feed('feed.rss'))
 
     def _parse_feed(self, filename, force_url=False):
         """
@@ -209,6 +215,12 @@ class FeedModelTestCase(BaseTestCase):
             vidscraper_feed = vidscraper.auto_feed(path)
         return vidscraper_feed
 
+    def _update_with_video_iter(self, video_iter, feed):
+        feed_import = FeedImport.objects.create(feed=feed,
+                                                auto_approve=feed.auto_approve)
+        Source.update(feed, video_iter, feed_import)
+
+
     def test_auto_approve_True(self):
         """
         If Feed.auto_approve is True, the imported videos should be marked as
@@ -216,20 +228,22 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.update_items(video_iter=self._parse_feed('feed.rss'))
+        self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.ACTIVE).count(), 5)
 
-    @mock.patch('localtv.tiers.Tier.can_add_more_videos', lambda *args: False)
+    @mock.patch('localtv.tiers.Tier.videos_limit', lambda *args: 4)
     def test_auto_approve_True_when_user_past_video_limit(self):
         """
-        If Feed.auto_approve is True, but the site is past the video limit,
-        the imported videos should be marked as unapproved.
+        If FeedImport.auto_approve is True, but approving the videos in the feed
+        would put the site past the video limit, the imported videos should be
+        marked as unapproved.
+
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
-        feed.update_items(video_iter=self._parse_feed('feed.rss'))
+        self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
@@ -241,23 +255,10 @@ class FeedModelTestCase(BaseTestCase):
         """
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = False
-        feed.update_items(video_iter=self._parse_feed('feed.rss'))
+        self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEquals(Video.objects.count(), 5)
         self.assertEquals(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
-
-    def test_uses_given_video_iter(self):
-        """
-        When adding entries in update_items with a given FeedParser instance,
-        the method should not download the feed itself.
-        """
-        video_iter = self._parse_feed('feed.rss')
-        feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=video_iter)
-        parsed_guids = [entry.guid for entry in video_iter]
-        db_guids = Video.objects.in_feed_order().values_list('guid',
-                                                             flat=True)
-        self.assertEquals(list(parsed_guids), list(db_guids))
 
     def test_entries_inserted_in_feed_order(self):
         """
@@ -265,32 +266,39 @@ class FeedModelTestCase(BaseTestCase):
         first item in the feed is the first item returned.
         """
         feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed.rss')
-        feed.update_items(video_iter=video_iter)
-        parsed_guids = [entry.guid for entry in video_iter]
+        self._update_with_video_iter(self._parsed_feed, feed)
+        parsed_guids = [entry.guid for entry in self._parsed_feed]
         db_guids = Video.objects.in_feed_order().values_list('guid',
                                                              flat=True)
         self.assertEquals(list(parsed_guids), list(db_guids))
 
     def test_ignore_duplicate_guid(self):
         """
-        If the GUID already exists for this item, the newer item should be
-        skipped.
+        If an item with a certain GUID is in a feed twice, but not in the
+        database at all, the newer version of the item should be used.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_duplicate_guid.rss'))
+        video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
+        self._update_with_video_iter(video_iter, feed)
+        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        self.assertEquals(feed_import.videos_skipped, 1)
+        self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
-        self.assertEquals(Video.objects.get().name, 'Old Item')
+        self.assertEquals(Video.objects.get().name, 'New Item')
 
     def test_ignore_duplicate_link(self):
         """
-        If the link already exists for this item, the newer item should be
-        skipped.
+        If an item with a certain link is in a feed twice, but not in the
+        database at all, the newer version of the item should be used.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_duplicate_link.rss'))
+        video_iter = self._parse_feed('feed_with_duplicate_link.rss')
+        self._update_with_video_iter(video_iter, feed)
+        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        self.assertEquals(feed_import.videos_skipped, 1)
+        self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
-        self.assertEquals(Video.objects.get().name, 'Old Item')
+        self.assertEquals(Video.objects.get().name, 'New Item')
 
     def test_entries_include_feed_data(self):
         """
@@ -307,7 +315,7 @@ class FeedModelTestCase(BaseTestCase):
         * tags
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed.rss'))
+        self._update_with_video_iter(self._parsed_feed, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
@@ -339,7 +347,8 @@ class FeedModelTestCase(BaseTestCase):
         A link in the feed to the original source should be optional.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_without_link.rss'))
+        video_iter = self._parse_feed('feed_without_link.rss')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -350,7 +359,8 @@ class FeedModelTestCase(BaseTestCase):
         think is media, should be imported.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_without_mime_type.rss'))
+        video_iter = self._parse_feed('feed_without_mime_type.rss')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
@@ -364,7 +374,7 @@ class FeedModelTestCase(BaseTestCase):
         video_iter = vidscraper.auto_feed('http://vimeo.com/user1751935/videos/')
         video_iter.get_url_response = lambda u: json.load(file(
                 self._data_file('vimeo.json')))
-        feed.update_items(video_iter=video_iter)
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
@@ -405,7 +415,8 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         user = User.objects.get(pk=1)
         feed.auto_authors = [user]
         feed.save()
-        feed.update_items(video_iter=self._parse_feed('youtube.rss', force_url=True))
+        video_iter = self._parse_feed('youtube.rss', force_url=True)
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -442,7 +453,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Atom feeds should be handled correctly,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed.atom'))
+        video_iter = self._parse_feed('feed.atom')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid, u'http://www.example.org/entries/1')
@@ -469,7 +481,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         self.maxDiff = None
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_from_mc.atom'))
+        video_iter = self._parse_feed('feed_from_mc.rss')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.guid,
@@ -513,7 +526,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         URL.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_link_via.atom'))
+        video_iter = self._parse_feed('feed_with_link_via.atom')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.website_url,
@@ -525,7 +539,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         their content imported,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_media.atom'))
+        video_iter = self._parse_feed('feed_with_media.atom')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.file_url,
@@ -540,7 +555,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         embeddable player (with <media:player> should have that code included,
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_media_player.atom'))
+        video_iter = self._parse_feed('feed_with_media_player.atom')
+        self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
         self.assertEquals(video.feed, feed)
         self.assertEquals(video.embed_code,
@@ -552,7 +568,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         don't specify a video another way) should be ignored.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_invalid_media.atom'))
+        video_iter = self._parse_feed('feed_with_invalid_media.atom')
+        self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 0)
 
     def test_entries_atom_with_long_item(self):
@@ -561,7 +578,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         so they fit in the database.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
+        video_iter = self._parse_feed('feed_with_long_item.atom')
+        self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
 
     def test_entries_multiple_imports(self):
@@ -569,14 +587,15 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Importing a feed multiple times shouldn't overwrite the existing videos.
         """
         feed = Feed.objects.get(pk=1)
-        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
+        video_iter = list(self._parse_feed('feed_with_long_item.atom'))
+        self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().video_set.count(), 1)
+        self.assertEquals(feed.feedimport_set.latest().videos_imported, 1)
         v = feed.video_set.get()
         # didn't get any updates
-        feed.update_items(video_iter=self._parse_feed('feed_with_long_item.atom'))
+        self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().video_set.count(), 0)
+        self.assertEquals(feed.feedimport_set.latest().videos_imported, 0)
         v2 = feed.video_set.get()
         self.assertEquals(v.pk, v2.pk)
 
@@ -1739,29 +1758,29 @@ class WatchModelTestCase(BaseTestCase):
 # SavedSearch model tests
 # -----------------------------------------------------------------------------
 
-class SavedSearchModelTestCase(BaseTestCase):
+class SavedSearchImportTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['savedsearches']
 
-    def test_update_items(self):
+    def test_update(self):
         """
-        SavedSearch.update_items() should create new Video objects linked to
+        SavedSearch.update() should create new Video objects linked to
         the search.
         """
         ss = SavedSearch.objects.get(pk=1)
         self.assertEquals(ss.video_set.count(), 0)
-        ss.update_items()
+        ss.update()
         self.assertNotEquals(ss.video_set.count(), 0)
 
-    def test_update_items_ignore_duplicates(self):
+    def test_update_ignore_duplicates(self):
         """
         A search that includes the same video should should not add the video a
         second time.
         """
         ss = SavedSearch.objects.get(pk=1)
-        ss.update_items()
+        ss.update()
         count = ss.video_set.count()
-        ss.update_items()
+        ss.update()
         self.assertEquals(ss.video_set.count(), count)
 
     def test_attribution_auto(self):
@@ -1771,7 +1790,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         """
         ss = SavedSearch.objects.get(pk=1)
         ss.auto_authors = [User.objects.get(pk=1)]
-        ss.update_items()
+        ss.update()
         video = ss.video_set.all()[0]
         self.assertEquals(list(ss.auto_authors.all()),
                           list(video.authors.all()))
@@ -1782,8 +1801,7 @@ class SavedSearchModelTestCase(BaseTestCase):
         based on the user on the original video service.
         """
         ss = SavedSearch.objects.get(pk=1)
-        ss.save()
-        ss.update_items()
+        ss.update()
         video = ss.video_set.all()[0]
         user = User.objects.get(username='dpikop')
         self.assertEquals(user.get_profile().website,

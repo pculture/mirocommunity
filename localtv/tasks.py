@@ -17,12 +17,14 @@
 #import eventlet
 #eventlet.monkey_patch()
 
+import datetime
 import os
 import itertools
 import logging
 
 import vidscraper
 
+from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
@@ -33,6 +35,7 @@ from localtv import utils
 from localtv.models import (Video, Feed, SiteLocation, SavedSearch, Category,
                             CannotOpenImageUrl)
 from localtv.signals import source_import_video_skipped
+from localtv.tiers import Tier
 
 #import eventlet.debug
 #eventlet.debug.hub_blocking_detection(True)
@@ -79,13 +82,6 @@ def update_sources(using='default'):
     for search_pk in searches.values_list('pk', flat=True):
         search_update.delay(search_pk, using=using)
 
-def _max_results(using):
-    sl = SiteLocation.objects.db_manager(using).get_current()
-    if not sl.enforce_tiers(using=using):
-        return None
-    else:
-        return sl.get_tier().remaining_videos()
-
 @task(ignore_result=True)
 @patch_settings
 def feed_update(feed_id, using='default'):
@@ -112,6 +108,40 @@ def search_update(search_id, using='default'):
 
 @task(ignore_result=True)
 @patch_settings
+def mark_import_complete(import_app_label, import_model, import_pk,
+                         using='default'):
+    """
+    Checks whether an import is complete, and if it is, gives it an end time.
+
+    """
+    import_class = get_model(import_app_label, import_model)
+    try:
+        source_import = import_class._default_manager.using(using).get(
+                                                            pk=import_pk,
+                                                            end__isnull=True)
+    except import_class.DoesNotExist:
+        return
+
+    if (source_import.total_videos is not None and
+            (source_import.videos_imported + source_import.videos_skipped
+             >= source_import.total_videos)):
+        if source_import.auto_approve:
+            if SiteLocation.enforce_tiers(using=using):
+                remaining_videos = (Tier.get().videos_limit()
+                                    - Video.objects.using(using
+                                        ).filter(status=Video.ACTIVE).count())
+                if remaining_videos > source_import.videos_imported:
+                    source_import.get_videos(using).filter(
+                                                        status=Video.UNAPPROVED
+                                                    ).update(
+                                                        status=Video.ACTIVE
+                                                    )
+        source_import.end = datetime.datetime.now()
+        source_import.save()
+
+
+@task(ignore_result=True)
+@patch_settings
 def video_from_vidscraper_video(vidscraper_video, site_pk,
                                 import_app_label=None, import_model=None,
                                 import_pk=None, status=None, author_pks=None,
@@ -122,10 +152,12 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     else:
         import_class = get_model(import_app_label, import_model)
         try:
-            source_import = import_class.objects.using(using).get(pk=import_pk)
+            source_import = import_class.objects.using(using).get(pk=import_pk,
+                                                              end__isnull=True)
         except import_class.DoesNotExist:
             logging.debug('Skipping %r: expected import instance missing.',
                           vidscraper_video.url)
+            return
 
     try:
         vidscraper_video.load()
@@ -190,7 +222,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
 
     categories = Category.objects.using(using).filter(pk__in=category_pks)
 
-    if author_pks is not None:
+    if author_pks:
         authors = User.objects.using(using).filter(pk__in=author_pks)
     else:
         if vidscraper_video.user:
@@ -228,13 +260,19 @@ def video_save_thumbnail(video_pk, using='default'):
         v = Video.objects.using(using).get(pk=video_pk)
     except Video.DoesNotExist:
         logging.warn(
-            'video_save_thumbnails(%s, using=%r) could not find video',
+            'video_save_thumbnail(%s, using=%r) could not find video',
             video_pk, using)
         return
     try:
         v.save_thumbnail()
     except CannotOpenImageUrl:
-        return video_save_thumbnail.retry((video_pk,), {'using': using})
+        try:
+            return video_save_thumbnail.retry()
+        except MaxRetriesExceededError:
+            logging.warn(
+                'video_save_thumbnail(%s, using=%r) exceeded max retries',
+                video_pk, using
+            )
         
 
 @task(ignore_result=True)
@@ -250,6 +288,7 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
     :meth:`update_object` method.
 
     """
+    return
     model_class = get_model(app_label, model_name)
     search_index = site.get_index(model_class)
     if is_removal:

@@ -723,7 +723,7 @@ class Source(Thumbnailable):
 
         import_opts = source_import.__class__._meta
 
-        from localtv.tasks import video_from_vidscraper_video
+        from localtv.tasks import video_from_vidscraper_video, mark_import_complete
 
         total_videos = 0
 
@@ -745,8 +745,12 @@ class Source(Thumbnailable):
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
         ).update(
-            total_videos=models.F('total_videos') + total_videos
+            total_videos=total_videos
         )
+        mark_import_complete.delay(import_app_label=import_opts.app_label,
+                                   import_model=import_opts.module_name,
+                                   import_pk=source_import.pk,
+                                   using=using)
 
 
 class StatusedThumbnailableQuerySet(models.query.QuerySet):
@@ -1101,7 +1105,7 @@ class SavedSearch(Source):
             return
 
         search_import = SearchImport.objects.db_manager(using).create(
-            saved_search=self,
+            search=self,
             auto_approve=self.auto_approve
         )
 
@@ -1118,7 +1122,7 @@ class SavedSearch(Source):
         # Mark the import as "ended" immediately if none of the searches can
         # load.
         should_end = True
-        for video_iter in searches.values:
+        for video_iter in searches.values():
             try:
                 video_iter.load()
             except Exception:
@@ -1161,7 +1165,7 @@ class SearchImportIndex(SourceImportIndex):
 class SourceImport(models.Model):
     start = models.DateTimeField(auto_now_add=True)
     end = models.DateTimeField(blank=True, null=True)
-    total_videos = models.PositiveIntegerField(default=0)
+    total_videos = models.PositiveIntegerField(blank=True, null=True)
     videos_imported = models.PositiveIntegerField(default=0)
     videos_skipped = models.PositiveIntegerField(default=0)
     #: Caches the auto_approve of the search on the import, so that the imported
@@ -1183,20 +1187,7 @@ class SourceImport(models.Model):
         """
         raise NotImplementedError
 
-    def mark_complete(self, using='default'):
-        if self.end is None:
-            if self.auto_approve:
-                if SiteLocation.enforce_tiers(using=using):
-                    remaining_videos = (Tier.get().videos_limit() -
-                                        Video.objects.using(using
-                                        ).filter(status=Video.ACTIVE).count())
-                    if remaining_videos > self.videos_imported:
-                        self.get_videos(using).filter(status=Video.UNAPPROVED
-                                         ).update(status=Video.ACTIVE)
-            self.end = datetime.datetime.now()
-            self.save()
-
-    def get_videos(self, using):
+    def get_videos(self, using='default'):
         raise NotImplementedError
 
 
@@ -1206,20 +1197,20 @@ class FeedImport(SourceImport):
     def set_video_source(self, video):
         video.feed_id = self.feed_id
 
-    def get_videos(self, using):
+    def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
-                                        feedimportindex__feedimport=self)
+                                        feedimportindex__source_import=self)
 
 
 class SearchImport(SourceImport):
     search = models.ForeignKey(SavedSearch)
 
     def set_video_source(self, video):
-        video.search_id = self.saved_search_id
+        video.search_id = self.search_id
 
-    def get_videos(self, using):
+    def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
-                                        searchimportindex__searchimport=self)
+                                        searchimportindex__source_import=self)
 
 
 def create_source_import_index(sender, instance, vidscraper_video, using,
@@ -1239,14 +1230,14 @@ def create_source_import_index(sender, instance, vidscraper_video, using,
                 'search': instance.search
             }
             extra_index_kwargs = {
-                'suite': vidscraper_video.suite.__class__.name
+                'suite': vidscraper_video.suite.__class__.__name__
             }
 
 
         try:
             source_import = import_class.objects.using(using).get(
-                                    end__isnull=True, **kwargs)
-        except import_clsas.DoesNotExist:
+                                    end__isnull=True, **extra_import_kwargs)
+        except import_class.DoesNotExist:
             return
         import_index_class.objects.using(using).create(
             source_import=source_import,
@@ -1257,15 +1248,11 @@ def create_source_import_index(sender, instance, vidscraper_video, using,
         import_class.objects.using(using).filter(pk=source_import.pk).update(
                              videos_imported=models.F('videos_imported') + 1)
 
-        try:
-            source_import = import_class.objects.using(using).get(
-                                        pk=source_import.pk, end__isnull=True)
-        except import_class.DoesNotExist:
-            pass
-        else:
-            if (source_import.videos_imported + source_import.videos_skipped
-                        >= source_import.total_videos):
-                source_import.mark_complete(using)
+        from localtv.tasks import mark_import_complete
+        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
+                                 import_model=import_class._meta.module_name,
+                                 import_pk=source_import.pk,
+                                 using=using)
 post_video_from_vidscraper.connect(create_source_import_index)
 
 
@@ -1278,15 +1265,12 @@ def mark_import_video_skipped(sender, source_import, vidscraper_video,
         ).update(
             videos_skipped=models.F('videos_skipped') + 1
         )
-        try:
-            source_import = import_class.objects.using(using).get(
-                                        pk=source_import.pk, end__isnull=True)
-        except import_class.DoesNotExist:
-            pass
-        else:
-            if (source_import.videos_imported + source_import.videos_skipped
-                        >= source_import.total_videos):
-                source_import.mark_complete(using)
+
+        from localtv.tasks import mark_import_complete
+        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
+                                 import_model=import_class._meta.module_name,
+                                 import_pk=source_import.pk,
+                                 using=using)
 source_import_video_skipped.connect(mark_import_video_skipped)
 
 
@@ -1688,7 +1672,7 @@ class VideoManager(StatusedThumbnailableManager):
             qs = self.all()
         if feed:
             qs = qs.filter(feed=feed)
-        return qs.order_by('-feedimportindex__feedimport__start',
+        return qs.order_by('-feedimportindex__source_import__start',
                            'feedimportindex__index',
                            '-id')
 
@@ -1860,7 +1844,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                         using).create(
                         tag=tag, object=instance)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
-                                            vidscraper_video=video)
+                                            vidscraper_video=video, using=using)
 
         if commit:
             instance.save(using=using)
