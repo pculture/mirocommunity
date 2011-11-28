@@ -37,15 +37,15 @@ from localtv.models import (Video, Feed, SiteLocation, SavedSearch, Category,
 from localtv.signals import source_import_video_skipped
 from localtv.tiers import Tier
 
-#import eventlet.debug
-#eventlet.debug.hub_blocking_detection(True)
+
+CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
+
 
 if hasattr(settings.DATABASES, 'module'):
     def patch_settings(func):
         def wrapper(*args, **kwargs):
             using = kwargs.get('using', None)
-            if using in (None, 'default',
-                         settings.SETTINGS_MODULE.split('.')[0]):
+            if using in (None, 'default', CELERY_USING):
                 logging.info('running %s(*%s, **%s) on default',
                              func, args, kwargs)
                 kwargs['using'] = 'default'
@@ -288,7 +288,6 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
     :meth:`update_object` method.
 
     """
-    return
     model_class = get_model(app_label, model_name)
     search_index = site.get_index(model_class)
     if is_removal:

@@ -134,10 +134,9 @@ def add_feed(request):
                 feed.auto_authors.add(user)
             feed.save()
 
-            tasks.feed_update_items.delay(
+            tasks.feed_update.delay(
                 feed.pk,
-                crawl=True,
-                using=settings.SETTINGS_MODULE.split('.')[0])
+                using=tasks.CELERY_USING)
             
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
