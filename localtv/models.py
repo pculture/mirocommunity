@@ -1093,8 +1093,7 @@ class SavedSearch(Source):
 
         """
         try:
-            SearchImport.objects.using(using).get(saved_search=self,
-                                                       end=None)
+            SearchImport.objects.using(using).get(search=self, end=None)
         except SearchImport.DoesNotExist:
             pass
         else:
