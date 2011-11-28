@@ -481,7 +481,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         """
         self.maxDiff = None
         feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_from_mc.rss')
+        video_iter = self._parse_feed('feed_from_mc.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.order_by('id')[0]
         self.assertEquals(video.feed, feed)
