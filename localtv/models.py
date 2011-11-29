@@ -61,7 +61,8 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.signals import post_video_from_vidscraper
+from localtv.signals import (post_video_from_vidscraper,
+                             source_import_video_skipped)
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -741,73 +742,52 @@ class Source(Thumbnailable):
     class Meta:
         abstract = True
 
-    def _default_video_status(self):
-        # Check that if we want to add an active
-        sl = SiteLocation.objects.using(self._state.db).get(site=self.site)
-        if self.auto_approve and sl.get_tier().can_add_more_videos():
-            initial_video_status = Video.ACTIVE
-        else:
-            initial_video_status = Video.UNAPPROVED
-        return initial_video_status
-
-    def bulk_import(self, videos, verbose=False, clear_rejected=True,
-                    actually_save_thumbnails=True, **kwargs):
+    def update(self, video_iter, source_import, using='default',
+               clear_rejected=True):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
         returns :class:`vidscraper.suites.base.Video` objects.  We use
-        :method:`.Video.from_vidscraper_video to map the Vidscraper fields to
+        :method:`.Video.from_vidscraper_video` to map the Vidscraper fields to
         Video attributes.
+
+        If ``clear_rejected`` is ``True``, rejected versions of videos that are
+        found in the ``video_iter`` will be deleted and re-imported.
+
         """
-        def skip(video, reason, *args):
-            m = "Skipping %r: %s" % (video.title, reason % args)
-            logging.debug(m)
-            if verbose:
-                print m
+        author_pks = list(self.auto_authors.values_list('pk', flat=True))
+        category_pks = list(self.auto_categories.values_list('pk', flat=True))
 
-        if 'status' not in kwargs:
-            kwargs['status'] = self._default_video_status()
+        import_opts = source_import.__class__._meta
 
-        if 'site' not in kwargs:
-            kwargs['site'] = self.site
+        from localtv.tasks import video_from_vidscraper_video, mark_import_complete
 
-        if 'authors' not in kwargs:
-            kwargs['authors'] = list(self.auto_authors.all())
-        if 'categories' not in kwargs:
-            kwargs['categories'] = list(self.auto_categories.all())
+        total_videos = 0
 
-        #guids = set(self.video_set.values_list('guid', 'when_published'))
-        if verbose:
-            print 'Starting video iterator'
-
-        from localtv.tasks import video_from_vidscraper_video
-
-        for vidscraper_video in iter(videos):
-            if not vidscraper_video.title:
-                skip(vidscraper_video, 'failed to scrape basic data')
-                continue
-            # elif (vidscraper_video.guid and
-            #       (vidscraper_video.guid,
-            #        vidscraper_video.publish_datetime) in guids):
-            #     skip(vidscraper_video, 'duplicate guid')
-            #     continue
-            # elif vidscraper_video.link:
-            #     videos_with_link = Video.objects.using(self._state.db).filter(
-                    
-            #         website_url=vidscraper_video.link)
-            #     if clear_rejected:
-            #         videos_with_link.rejected().delete()
-            #     if videos_with_link.filter(
-            #         when_published=vidscraper_video.publish_datetime).exists():
-            #         skip(vidscraper_video, 'duplicate link')
-            #         continue
+        for vidscraper_video in video_iter:
+            total_videos += 1
             
             video_from_vidscraper_video.delay(
                 vidscraper_video,
-                source=self,
+                site_pk=self.site_id,
+                import_app_label=import_opts.app_label,
+                import_model=import_opts.module_name,
+                import_pk=source_import.pk,
+                status=Video.UNAPPROVED,
+                author_pks=author_pks,
+                category_pks=category_pks,
                 clear_rejected=clear_rejected,
-                using=self._state.db,
-                **kwargs)
-                
+                using=using)
+
+        source_import.__class__._default_manager.using(using).filter(
+            pk=source_import.pk
+        ).update(
+            total_videos=total_videos
+        )
+        mark_import_complete.delay(import_app_label=import_opts.app_label,
+                                   import_model=import_opts.module_name,
+                                   import_pk=source_import.pk,
+                                   using=using)
+
 
 class StatusedThumbnailableQuerySet(models.query.QuerySet):
 
@@ -921,40 +901,49 @@ class Feed(Source, StatusedThumbnailable):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update_items(self, verbose=False, clear_rejected=False, video_iter=None):
+    def update(self, using='default', **kwargs):
         """
         Fetch and import new videos from this feed.
 
-        If clear_rejected is True, rejected videos that are part of this
-        feed will be deleted and re-imported.
         """
-        feedimport, created = FeedImport.objects.db_manager(
-            self._state.db).get_or_create(feed=self, end=None)
-        if not created:
-            if verbose:
-                print 'Skipping import of %s: already in progress' % self
+        try:
+            FeedImport.objects.using(using).get(feed=self, end=None)
+        except FeedImport.DoesNotExist:
+            pass
+        else:
+            logging.debug('Skipping import of %s: already in progress' % self)
             return
-        if video_iter is None:
-            video_iter = vidscraper.auto_feed(
-                self.feed_url,
-                fields=['title', 'file_url', 'embed_code', 'flash_enclosure_url',
-                        'publish_datetime', 'thumbnail_url', 'link',
-                        'file_url_is_flaky', 'user', 'user_url',
-                        'tags', 'description', 'file_url', 'guid'])
+
+        feed_import = FeedImport.objects.db_manager(using).create(feed=self,
+                                                auto_approve=self.auto_approve)
+
+        video_iter = vidscraper.auto_feed(
+            self.feed_url,
+            crawl=True,
+            api_keys={
+                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
+                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
+                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
+            }
+        )
+
         try:
             video_iter.load()
-            self.bulk_import(video_iter,
-                             feed=self,
-                             feedimport=feedimport,
-                             verbose=verbose)
+        except Exception:
+            # TODO: Record exceptions like this on the FeedImport so that
+            # users can easily see what went wrong.
+            feed_import.end = datetime.datetime.now()
+            feed_import.save()
+            logging.debug('Skipping import of %s: error loading the feed' % self)
+            return
 
-            self.etag = getattr(video_iter, 'etag', None) or ''
-            self.last_updated = (getattr(video_iter, 'last_modified', None) or
+        super(Feed, self).update(video_iter, source_import=feed_import,
+                                 using=using, **kwargs)
+
+        self.etag = getattr(video_iter, 'etag', None) or ''
+        self.last_updated = (getattr(video_iter, 'last_modified', None) or
                                  datetime.datetime.now())
-            self.save()
-        finally:
-            feedimport.end = datetime.datetime.now()
-            feedimport.save()
+        self.save()
 
     def source_type(self):
         return self.calculated_source_type
@@ -997,22 +986,6 @@ def pre_save_set_calculated_source_type(instance, **kwargs):
 models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
 
-class FeedImportIndex(models.Model):
-    feedimport = models.ForeignKey('FeedImport')
-    video = models.OneToOneField('Video')
-    index = models.IntegerField()
-
-class FeedImport(models.Model):
-    feed = models.ForeignKey(Feed)
-    start = models.DateTimeField(auto_now_add=True)
-    end = models.DateTimeField(null=True)
-
-    class Meta:
-        get_latest_by = 'pk'
-
-    @property
-    def video_set(self):
-        return Video.objects.filter(feedimportindex__feedimport=self)
 
 class Category(models.Model):
     """
@@ -1158,25 +1131,187 @@ class SavedSearch(Source):
     def __unicode__(self):
         return self.query_string
 
-    def update_items(self, verbose=False, video_iter=None):
-        if video_iter is None:
-            searches = vidscraper.auto_search(
-                self.query_string,
-                fields=['title', 'file_url', 'embed_code',
-                        'flash_enclosure_url', 'publish_datetime',
-                        'thumbnail_url', 'link', 'file_url_is_flaky', 'user',
-                        'user_url', 'tags', 'description', 'file_url', 'guid'])
-            def video_gen():
-                for suite in searches.values():
-                    for video in iter(suite):
-                        yield video
-            video_iter = video_gen()
+    def update(self, using='default', **kwargs):
+        """
+        Fetch and import new videos from this search.
 
-        self.bulk_import(video_iter, search=self,
-                         verbose=verbose)
+        """
+        try:
+            SearchImport.objects.using(using).get(search=self, end=None)
+        except SearchImport.DoesNotExist:
+            pass
+        else:
+            logging.debug('Skipping import of %s: already in progress' % self)
+            return
+
+        search_import = SearchImport.objects.db_manager(using).create(
+            search=self,
+            auto_approve=self.auto_approve
+        )
+
+        searches = vidscraper.auto_search(
+            self.query_string,
+            crawl=True,
+            api_keys={
+                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
+                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
+                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
+            }
+        )
+
+        # Mark the import as "ended" immediately if none of the searches can
+        # load.
+        should_end = True
+        for video_iter in searches.values():
+            try:
+                video_iter.load()
+            except Exception:
+                # TODO: Record exceptions like this on the SearchImport so that
+                # users can easily see what went wrong.
+                logging.debug('Skipping import of search results from %s'
+                                % video_iter.suite.__class__.__name__)
+                continue
+            should_end = False
+            super(SavedSearch, self).update(video_iter,
+                                            source_import=search_import,
+                                            using=using, **kwargs)
+        if should_end:
+            search_import.end = datetime.datetime.now()
+            search_import.save()
+            logging.debug('All searches failed for %s' % self)
 
     def source_type(self):
         return u'Search'
+
+
+class SourceImportIndex(models.Model):
+    video = models.OneToOneField('Video', unique=True)
+    index = models.PositiveIntegerField(blank=True, null=True)
+    
+    class Meta:
+        abstract = True
+
+
+class FeedImportIndex(SourceImportIndex):
+    source_import = models.ForeignKey('FeedImport')
+
+
+class SearchImportIndex(SourceImportIndex):
+    source_import = models.ForeignKey('SearchImport')
+    #: This is just the name of the suite that was used to get this index.
+    suite = models.CharField(max_length=30)
+
+
+class SourceImport(models.Model):
+    start = models.DateTimeField(auto_now_add=True)
+    end = models.DateTimeField(blank=True, null=True)
+    total_videos = models.PositiveIntegerField(blank=True, null=True)
+    videos_imported = models.PositiveIntegerField(default=0)
+    videos_skipped = models.PositiveIntegerField(default=0)
+    #: Caches the auto_approve of the search on the import, so that the imported
+    #: videos can be approved en masse at the end of the import based on the
+    #: settings at the beginning of the import.
+    auto_approve = models.BooleanField()
+
+    class Meta:
+        get_latest_by = 'start'
+        ordering = ['-start']
+        abstract = True
+
+    def set_video_source(self, video):
+        """
+        Sets the value of the correct field on the ``video`` to mark it as
+        having the same source as this import. Must be implemented by
+        subclasses.
+
+        """
+        raise NotImplementedError
+
+    def get_videos(self, using='default'):
+        raise NotImplementedError
+
+
+class FeedImport(SourceImport):
+    feed = models.ForeignKey(Feed)
+
+    def set_video_source(self, video):
+        video.feed_id = self.feed_id
+
+    def get_videos(self, using='default'):
+        return Video.objects.using(using).filter(
+                                        feedimportindex__source_import=self)
+
+
+class SearchImport(SourceImport):
+    search = models.ForeignKey(SavedSearch)
+
+    def set_video_source(self, video):
+        video.search_id = self.search_id
+
+    def get_videos(self, using='default'):
+        return Video.objects.using(using).filter(
+                                        searchimportindex__source_import=self)
+
+
+def create_source_import_index(sender, instance, vidscraper_video, using,
+                              **kwargs):
+    if instance.feed is not None or instance.search is not None:
+        if instance.feed is not None:
+            import_class = FeedImport
+            import_index_class = FeedImportIndex
+            extra_import_kwargs = {
+                'feed': instance.feed
+            }
+            extra_index_kwargs = {}
+        else:
+            import_class = SearchImport
+            import_index_class = SearchImportIndex
+            extra_import_kwargs = {
+                'search': instance.search
+            }
+            extra_index_kwargs = {
+                'suite': vidscraper_video.suite.__class__.__name__
+            }
+
+
+        try:
+            source_import = import_class.objects.using(using).get(
+                                    end__isnull=True, **extra_import_kwargs)
+        except import_class.DoesNotExist:
+            return
+        import_index_class.objects.using(using).create(
+            source_import=source_import,
+            video=instance,
+            index=vidscraper_video.index,
+            **extra_index_kwargs
+        )
+        import_class.objects.using(using).filter(pk=source_import.pk).update(
+                             videos_imported=models.F('videos_imported') + 1)
+
+        from localtv.tasks import mark_import_complete
+        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
+                                 import_model=import_class._meta.module_name,
+                                 import_pk=source_import.pk,
+                                 using=using)
+post_video_from_vidscraper.connect(create_source_import_index)
+
+
+def mark_import_video_skipped(sender, source_import, vidscraper_video,
+                              exception, using, **kwargs):
+    if source_import is not None:
+        import_class = source_import.__class__
+        import_class._default_manager.using(using).filter(
+            pk=source_import.pk
+        ).update(
+            videos_skipped=models.F('videos_skipped') + 1
+        )
+
+        from localtv.tasks import mark_import_complete
+        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
+                                 import_model=import_class._meta.module_name,
+                                 import_pk=source_import.pk,
+                                 using=using)
+source_import_video_skipped.connect(mark_import_video_skipped)
 
 
 class VideoBase(models.Model):
@@ -1577,7 +1712,7 @@ class VideoManager(StatusedThumbnailableManager):
             qs = self.all()
         if feed:
             qs = qs.filter(feed=feed)
-        return qs.order_by('-feedimportindex__feedimport__start',
+        return qs.order_by('-feedimportindex__source_import__start',
                            'feedimportindex__index',
                            '-id')
 
@@ -1676,7 +1811,8 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                  'slug': slugify(self.name)[:30]})
 
     @classmethod
-    def from_vidscraper_video(cls, video, status=None, commit=True, using='default', **kwargs):
+    def from_vidscraper_video(cls, video, status=None, commit=True,
+                              using='default', source_import=None, **kwargs):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
@@ -1689,12 +1825,11 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
         if status is None:
             status = cls.UNAPPROVED
-        if 'site' not in kwargs:
-            kwargs['site'] = Site.objects.get_current()
+        if 'site_id' not in kwargs:
+            kwargs['site_id'] = settings.SITE_ID
 
         authors = kwargs.pop('authors', None)
         categories = kwargs.pop('categories', None)
-        feedimport = kwargs.pop('feedimport', None)
 
         now = datetime.datetime.now()
 
@@ -1729,17 +1864,14 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
         instance._vidscraper_video = video
 
+        if source_import is not None:
+            source_import.set_video_source(instance)
+
         def save_m2m():
             if authors:
                 instance.authors = authors
             if categories:
                 instance.categories = categories
-            if feedimport and video.index is not None:
-                FeedImportIndex._default_manager.db_manager(
-                    using).create(
-                    feedimport=feedimport,
-                    video=instance,
-                    index=video.index)
             if video.tags:
                 tags = set(tag.strip() for tag in video.tags if tag.strip())
                 for tag_name in tags:
@@ -1752,7 +1884,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                         using).create(
                         tag=tag, object=instance)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
-                                            vidscraper_video=video)
+                                            vidscraper_video=video, using=using)
 
         if commit:
             instance.save(using=using)

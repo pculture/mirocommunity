@@ -29,4 +29,4 @@ class Command(NoArgsCommand):
         from localtv import tasks
         
         tasks.update_sources.delay(
-            using=settings.SETTINGS_MODULE.split('.')[0])
+            using=tasks.CELERY_USING)

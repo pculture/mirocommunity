@@ -22,7 +22,7 @@ from haystack import indexes
 from haystack import site
 from localtv.models import Video
 from localtv.search.utils import SortFilterMixin
-from localtv.tasks import haystack_update_index
+from localtv.tasks import haystack_update_index, CELERY_USING
 
 
 class QueuedSearchIndex(indexes.SearchIndex):
@@ -50,8 +50,7 @@ class QueuedSearchIndex(indexes.SearchIndex):
                                     instance._meta.module_name,
                                     instance.pk,
                                     is_removal,
-                                    using=settings.SETTINGS_MODULE.split(
-                '.')[0])
+                                    using=CELERY_USING)
 
 
 class VideoIndex(QueuedSearchIndex):
