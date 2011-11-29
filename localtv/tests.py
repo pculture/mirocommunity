@@ -275,7 +275,7 @@ class FeedImportTestCase(BaseTestCase):
     def test_ignore_duplicate_guid(self):
         """
         If an item with a certain GUID is in a feed twice, but not in the
-        database at all, the newer version of the item should be used.
+        database at all, it should only be imported once.
         """
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
@@ -284,12 +284,11 @@ class FeedImportTestCase(BaseTestCase):
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
-        self.assertEquals(Video.objects.get().name, 'New Item')
 
     def test_ignore_duplicate_link(self):
         """
         If an item with a certain link is in a feed twice, but not in the
-        database at all, the newer version of the item should be used.
+        database at all, it should only be imported once.
         """
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_link.rss')
@@ -298,7 +297,6 @@ class FeedImportTestCase(BaseTestCase):
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
-        self.assertEquals(Video.objects.get().name, 'New Item')
 
     def test_entries_include_feed_data(self):
         """
