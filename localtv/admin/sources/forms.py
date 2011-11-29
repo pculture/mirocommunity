@@ -18,6 +18,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
+from vidscraper import auto_feed
+from vidscraper.errors import CantIdentifyUrl
 
 from localtv.models import Feed, SavedSearch, Category
 
@@ -52,6 +55,27 @@ class SourceUpdateForm(forms.ModelForm):
         elif thumbnail is not None:
             self.instance.save_thumbnail_from_file(thumbnail)
         return super(SourceUpdateForm, self).save(*args, **kwargs)
+
+
+class FeedCreateForm(forms.ModelForm):
+    class Meta:
+        model = Feed
+        fields = ('feed_url', 'auto_approve')
+
+    def clean_feed_url(self):
+        url = self.cleaned_data['feed_url']
+        try:
+            self._vidscraper_feed = auto_feed(url)
+        except CantIdentifyUrl:
+            raise ValidationError("%s doesn't seem to be a valid RSS/Atom feed "
+                                  "URL" % url)
+
+        return self._vidscraper_feed.url
+
+    def save(self, *args, **kwargs):
+        self.instance.name = self.instance.feed_url
+        self.instance.site = Site.objects.get_current()
+        return super(FeedCreateForm, self).save(*args, **kwargs)
 
 
 class FeedUpdateForm(SourceUpdateForm):

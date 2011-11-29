@@ -65,6 +65,7 @@ from localtv.signals import (post_video_from_vidscraper,
                              source_import_video_skipped)
 import localtv.tiers
 
+
 def delete_if_exists(path):
     if default_storage.exists(path):
         default_storage.delete(path)
@@ -879,11 +880,18 @@ class Feed(Source, StatusedThumbnailable):
       - auto_authors: authors that are automatically applied to videos on
         import
     """
+    VIDEO_SERVICE_TITLES = (
+        re.compile(r'Uploads by (.+)'),
+        re.compile(r"Vimeo / (.+)'s? uploaded videos"),
+        re.compile(r'Vimeo / (.+)'),
+        re.compile(r"Dailymotion - (.+)'s")
+    )
+
     feed_url = models.URLField(verify_exists=False)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
-    description = models.TextField()
-    last_updated = models.DateTimeField()
+    description = models.TextField(blank=True)
+    last_updated = models.DateTimeField(blank=True, null=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
@@ -901,7 +909,7 @@ class Feed(Source, StatusedThumbnailable):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update(self, using='default', **kwargs):
+    def update(self, using='default', initial=False, **kwargs):
         """
         Fetch and import new videos from this feed.
 
@@ -937,13 +945,50 @@ class Feed(Source, StatusedThumbnailable):
             logging.debug('Skipping import of %s: error loading the feed' % self)
             return
 
-        super(Feed, self).update(video_iter, source_import=feed_import,
-                                 using=using, **kwargs)
+        if self.last_updated is None:
+            # Then this video has never been updated before. Fill in additional
+            # fields.
+            if video_iter.title:
+                name = video_iter.title
+                for regexp in Feed.VIDEO_SERVICE_TITLES:
+                    match = regexp.match(name)
+                    if match:
+                        name = match.group(1)
+                        break
+                self.name = name
+            self.webpage = video_iter.webpage or ''
+            self.description = video_iter.description or ''
+
+            # TODO: Handle this in a task
+            if scraped_feed.thumbnail_url:
+                try:
+                    thumbnail_file = ContentFile(urllib2.urlopen(
+                                        utils.quote_unicode_url(
+                                            scraped_feed.thumbnail_url)))
+                except IOError:
+                    pass
+                else:
+                    self.save_thumbnail_from_file(thumbnail_file)
+
+            if self.video_service():
+                user, created = User.objects.get_or_create(
+                    username=self.name[:30],
+                    defaults={'email': ''})
+                if created:
+                    user.set_unusable_password()
+                    utils.get_profile_model()._default_manager.create(
+                        user=user,
+                        website=defaults['webpage'])
+                    user.save()
+                self.auto_authors.add(user)
 
         self.etag = getattr(video_iter, 'etag', None) or ''
         self.last_updated = (getattr(video_iter, 'last_modified', None) or
                                  datetime.datetime.now())
         self.save()
+
+        super(Feed, self).update(video_iter, source_import=feed_import,
+                                 using=using, **kwargs)
 
     def source_type(self):
         return self.calculated_source_type

@@ -21,13 +21,19 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView
 
 from localtv.admin.base import MiroCommunityAdminSection, registry, CRUDSection
-from localtv.admin.sources.forms import SearchUpdateForm, FeedUpdateForm
+from localtv.admin.sources.forms import SearchUpdateForm, FeedUpdateForm, FeedCreateForm
+from localtv.admin.sources.views import SourceCreateView
 from localtv.decorators import require_site_admin
 from localtv.models import Feed, SavedSearch
+from localtv.tasks import feed_update, search_update
 
 
 class FeedSection(CRUDSection):
+    create_form_class = FeedCreateForm
     update_form_class = FeedUpdateForm
+
+    create_view_class = SourceCreateView
+
     template_prefixes = (
         'localtv/admin/sources/feeds/',
         'localtv/admin/sources/',
@@ -38,9 +44,17 @@ class FeedSection(CRUDSection):
         current_site = Site.objects.get_current()
         return Feed.objects.filter(site=current_site)
 
+    def get_create_view_kwargs(self):
+        kwargs = super(FeedSection, self).get_create_view_kwargs()
+        kwargs.update({
+            'import_task': feed_update
+        })
+        return kwargs
+
 
 class SearchSection(CRUDSection):
     update_form_class = SearchUpdateForm
+    create_view_class = SourceCreateView
     url_prefix = 'searches'
     template_prefixes = (
         'localtv/admin/sources/searches/',
@@ -51,6 +65,13 @@ class SearchSection(CRUDSection):
     def get_queryset(self):
         current_site = Site.objects.get_current()
         return SavedSearch.objects.filter(site=current_site)
+
+    def get_create_view_kwargs(self):
+        kwargs = super(SearchSection, self).get_create_view_kwargs()
+        kwargs.update({
+            'import_task': search_update
+        })
+        return kwargs
 
 
 class SourceSection(MiroCommunityAdminSection):
