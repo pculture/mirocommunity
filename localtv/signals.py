@@ -12,7 +12,3 @@ from django.dispatch import Signal
 post_video_from_vidscraper = Signal(providing_args=["instance",
                                                     "vidscraper_video",
                                                     "using"])
-source_import_video_skipped = Signal(providing_args=["source_import",
-											  "vidscraper_video",
-											  "exception",
-											  "using"])

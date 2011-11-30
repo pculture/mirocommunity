@@ -25,6 +25,8 @@ import mimetypes
 import base64
 import os
 import logging
+import sys
+import traceback
 
 try:
     from PIL import Image
@@ -61,8 +63,7 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.signals import (post_video_from_vidscraper,
-                             source_import_video_skipped)
+from localtv.signals import post_video_from_vidscraper
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -894,11 +895,11 @@ class Feed(Source, StatusedThumbnailable):
         try:
             video_iter.load()
         except Exception:
-            # TODO: Record exceptions like this on the FeedImport so that
-            # users can easily see what went wrong.
             feed_import.end = datetime.datetime.now()
             feed_import.save()
-            logging.debug('Skipping import of %s: error loading the feed' % self)
+            feed_import.handle_error(u'Skipping import of %s: error loading the'
+                                     u' feed' % self,
+                                     with_exception=True, using=using)
             return
 
         super(Feed, self).update(video_iter, source_import=feed_import,
@@ -1126,10 +1127,9 @@ class SavedSearch(Source):
             try:
                 video_iter.load()
             except Exception:
-                # TODO: Record exceptions like this on the SearchImport so that
-                # users can easily see what went wrong.
-                logging.debug('Skipping import of search results from %s'
-                                % video_iter.suite.__class__.__name__)
+                search_import.handle_error(u'Skipping import of search results '
+                               u'from %s' % video_iter.suite.__class__.__name__,
+                               with_exception=True, using=using)
                 continue
             should_end = False
             super(SavedSearch, self).update(video_iter,
@@ -1162,6 +1162,25 @@ class SearchImportIndex(SourceImportIndex):
     suite = models.CharField(max_length=30)
 
 
+class SourceImportError(models.Model):
+    message = models.TextField()
+    traceback = models.TextField(blank=True)
+    is_skip = models.BooleanField(help_text="Whether this error represents a "
+                                            "video that was skipped.")
+    datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class FeedImportError(SourceImportError):
+    source_import = models.ForeignKey('FeedImport')
+
+
+class SearchImportError(SourceImportError):
+    source_import = models.ForeignKey('SearchImport')
+
+
 class SourceImport(models.Model):
     start = models.DateTimeField(auto_now_add=True)
     end = models.DateTimeField(blank=True, null=True)
@@ -1172,6 +1191,8 @@ class SourceImport(models.Model):
     #: videos can be approved en masse at the end of the import based on the
     #: settings at the beginning of the import.
     auto_approve = models.BooleanField()
+    error_model = None
+    index_model = None
 
     class Meta:
         get_latest_by = 'start'
@@ -1190,9 +1211,72 @@ class SourceImport(models.Model):
     def get_videos(self, using='default'):
         raise NotImplementedError
 
+    def handle_error(self, message, is_skip=False, with_exception=False,
+                     using='default'):
+        """
+        Logs the error with the default logger and to the database.
+
+        :param message: A human-friendly description of the error that does
+                        not contain sensitive information.
+        :param is_skip: ``True`` if the error results in a video being skipped.
+                        Default: False.
+        :param with_exception: ``True`` if exception information should be
+                               recorded. Default: False.
+        :param using: The database to use. Default: 'default'.
+
+        """
+        if with_exception:
+            logging.debug(message, with_exception=True)
+            tb = ''.join(traceback.format_exception(*sys.exc_info()))
+        else:
+            logging.debug(message)
+            tb = ''
+        if self.error_model is not None:
+            self.error_model._default_manager.db_manager(using).create(
+                                                    message=message,
+                                                    source_import=self,
+                                                    traceback=tb,
+                                                    is_skip=is_skip)
+        if is_skip:
+            self.__class__._default_manager.using(using).filter(pk=self.pk
+                        ).update(videos_skipped=models.F('videos_skipped') + 1)
+            from localtv.tasks import mark_import_complete
+            mark_import_complete.delay(import_app_label=self._meta.app_label,
+                                       import_model=self._meta.module_name,
+                                       import_pk=self.pk,
+                                       using=using)
+
+    def get_index_creation_kwargs(self, video, vidscraper_video):
+        return {
+            'source_import': self,
+            'video': video,
+            'index': vidscraper_video.index
+        }
+
+    def handle_video(self, video, vidscraper_video, using='default'):
+        """
+        Creates an index instance connecting the video to this import.
+
+        :param video: The :class:`Video` instance which was imported.
+        :param vidscraper_video: The original video from :mod:`vidscraper`.
+        :param using: The database alias to use. Default: 'default'
+
+        """
+        self.index_model._default_manager.db_manager(using).create(
+                    **self.get_index_creation_kwargs(video, vidscraper_video))
+        self.__class__._default_manager.using(using).filter(pk=self.pk
+                    ).update(videos_imported=models.F('videos_imported') + 1)
+        from localtv.tasks import mark_import_complete
+        mark_import_complete.delay(import_app_label=self._meta.app_label,
+                                   import_model=self._meta.module_name,
+                                   import_pk=self.pk,
+                                   using=using)
+
 
 class FeedImport(SourceImport):
     feed = models.ForeignKey(Feed)
+    index_model = FeedImportIndex
+    error_model = FeedImportError
 
     def set_video_source(self, video):
         video.feed_id = self.feed_id
@@ -1204,6 +1288,8 @@ class FeedImport(SourceImport):
 
 class SearchImport(SourceImport):
     search = models.ForeignKey(SavedSearch)
+    index_model = SearchImportIndex
+    error_model = SearchImportError
 
     def set_video_source(self, video):
         video.search_id = self.search_id
@@ -1212,66 +1298,11 @@ class SearchImport(SourceImport):
         return Video.objects.using(using).filter(
                                         searchimportindex__source_import=self)
 
-
-def create_source_import_index(sender, instance, vidscraper_video, using,
-                              **kwargs):
-    if instance.feed is not None or instance.search is not None:
-        if instance.feed is not None:
-            import_class = FeedImport
-            import_index_class = FeedImportIndex
-            extra_import_kwargs = {
-                'feed': instance.feed
-            }
-            extra_index_kwargs = {}
-        else:
-            import_class = SearchImport
-            import_index_class = SearchImportIndex
-            extra_import_kwargs = {
-                'search': instance.search
-            }
-            extra_index_kwargs = {
-                'suite': vidscraper_video.suite.__class__.__name__
-            }
-
-
-        try:
-            source_import = import_class.objects.using(using).get(
-                                    end__isnull=True, **extra_import_kwargs)
-        except import_class.DoesNotExist:
-            return
-        import_index_class.objects.using(using).create(
-            source_import=source_import,
-            video=instance,
-            index=vidscraper_video.index,
-            **extra_index_kwargs
-        )
-        import_class.objects.using(using).filter(pk=source_import.pk).update(
-                             videos_imported=models.F('videos_imported') + 1)
-
-        from localtv.tasks import mark_import_complete
-        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
-                                 import_model=import_class._meta.module_name,
-                                 import_pk=source_import.pk,
-                                 using=using)
-post_video_from_vidscraper.connect(create_source_import_index)
-
-
-def mark_import_video_skipped(sender, source_import, vidscraper_video,
-                              exception, using, **kwargs):
-    if source_import is not None:
-        import_class = source_import.__class__
-        import_class._default_manager.using(using).filter(
-            pk=source_import.pk
-        ).update(
-            videos_skipped=models.F('videos_skipped') + 1
-        )
-
-        from localtv.tasks import mark_import_complete
-        mark_import_complete.delay(import_app_label=import_class._meta.app_label,
-                                 import_model=import_class._meta.module_name,
-                                 import_pk=source_import.pk,
-                                 using=using)
-source_import_video_skipped.connect(mark_import_video_skipped)
+    def get_index_creation_kwargs(self, video, vidscraper_video):
+        kwargs = super(SearchImport, self).get_index_creation_kwargs(video,
+                                                            vidscraper_video)
+        kwargs['suite'] = vidscraper_video.suite.__class__.__name__
+        return kwargs
 
 
 class VideoBase(models.Model):
@@ -1843,6 +1874,8 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                     tagging.models.TaggedItem._default_manager.db_manager(
                         using).create(
                         tag=tag, object=instance)
+            if source_import is not None:
+                source_import.handle_video(instance, video, using)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video, using=using)
 
