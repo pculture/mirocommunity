@@ -872,7 +872,8 @@ class Feed(Source, StatusedThumbnailable):
 
         """
         try:
-            FeedImport.objects.using(using).get(feed=self, end=None)
+            FeedImport.objects.using(using).get(feed=self,
+                                                status=FeedImport.STARTED)
         except FeedImport.DoesNotExist:
             pass
         else:
@@ -895,7 +896,8 @@ class Feed(Source, StatusedThumbnailable):
         try:
             video_iter.load()
         except Exception:
-            feed_import.end = datetime.datetime.now()
+            feed_import.last_activity = datetime.datetime.now()
+            feed_import.status = FeedImport.FAILED
             feed_import.save()
             feed_import.handle_error(u'Skipping import of %s: error loading the'
                                      u' feed' % self,
@@ -1098,7 +1100,8 @@ class SavedSearch(Source):
 
         """
         try:
-            SearchImport.objects.using(using).get(search=self, end=None)
+            SearchImport.objects.using(using).get(search=self,
+                                                  status=SearchImport.STARTED)
         except SearchImport.DoesNotExist:
             pass
         else:
@@ -1136,7 +1139,8 @@ class SavedSearch(Source):
                                             source_import=search_import,
                                             using=using, **kwargs)
         if should_end:
-            search_import.end = datetime.datetime.now()
+            search_import.status = SearchImport.FAILED
+            search_import.last_activity = datetime.datetime.now()
             search_import.save()
             logging.debug('All searches failed for %s' % self)
 
@@ -1182,8 +1186,16 @@ class SearchImportError(SourceImportError):
 
 
 class SourceImport(models.Model):
+    STARTED = 'started'
+    COMPLETE = 'complete'
+    FAILED = 'failed'
+    STATUS_CHOICES = (
+        (STARTED, _('Started')),
+        (COMPLETE, _('Complete')),
+        (FAILED, _('Failed'))
+    )
     start = models.DateTimeField(auto_now_add=True)
-    end = models.DateTimeField(blank=True, null=True)
+    last_activity = models.DateTimeField(blank=True, null=True)
     total_videos = models.PositiveIntegerField(blank=True, null=True)
     videos_imported = models.PositiveIntegerField(default=0)
     videos_skipped = models.PositiveIntegerField(default=0)
@@ -1191,6 +1203,8 @@ class SourceImport(models.Model):
     #: videos can be approved en masse at the end of the import based on the
     #: settings at the beginning of the import.
     auto_approve = models.BooleanField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES,
+                              default=STARTED)
     error_model = None
     index_model = None
 

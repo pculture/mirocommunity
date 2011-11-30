@@ -116,8 +116,8 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     import_class = get_model(import_app_label, import_model)
     try:
         source_import = import_class._default_manager.using(using).get(
-                                                            pk=import_pk,
-                                                            end__isnull=True)
+                                                    pk=import_pk,
+                                                    status=import_class.STARTED)
     except import_class.DoesNotExist:
         return
 
@@ -135,8 +135,10 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     ).update(
                                                         status=Video.ACTIVE
                                                     )
-        source_import.end = datetime.datetime.now()
-        source_import.save()
+        source_import.status = import_class.COMPLETE
+
+    source_import.last_activity = datetime.datetime.now()
+    source_import.save()
 
 
 @task(ignore_result=True)
@@ -152,7 +154,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         import_class = get_model(import_app_label, import_model)
         try:
             source_import = import_class.objects.using(using).get(pk=import_pk,
-                                                              end__isnull=True)
+                                                    status=import_class.STARTED)
         except import_class.DoesNotExist:
             logging.debug('Skipping %r: expected import instance missing.',
                           vidscraper_video.url)
