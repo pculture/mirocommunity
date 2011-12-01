@@ -34,7 +34,6 @@ from haystack import site
 from localtv import utils
 from localtv.models import (Video, Feed, SiteLocation, SavedSearch, Category,
                             CannotOpenImageUrl)
-from localtv.signals import source_import_video_skipped
 from localtv.tiers import Tier
 
 
@@ -117,8 +116,8 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     import_class = get_model(import_app_label, import_model)
     try:
         source_import = import_class._default_manager.using(using).get(
-                                                            pk=import_pk,
-                                                            end__isnull=True)
+                                                    pk=import_pk,
+                                                    status=import_class.STARTED)
     except import_class.DoesNotExist:
         return
 
@@ -136,8 +135,10 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     ).update(
                                                         status=Video.ACTIVE
                                                     )
-        source_import.end = datetime.datetime.now()
-        source_import.save()
+        source_import.status = import_class.COMPLETE
+
+    source_import.last_activity = datetime.datetime.now()
+    source_import.save()
 
 
 @task(ignore_result=True)
@@ -153,7 +154,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         import_class = get_model(import_app_label, import_model)
         try:
             source_import = import_class.objects.using(using).get(pk=import_pk,
-                                                              end__isnull=True)
+                                                    status=import_class.STARTED)
         except import_class.DoesNotExist:
             logging.debug('Skipping %r: expected import instance missing.',
                           vidscraper_video.url)
@@ -162,34 +163,23 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     try:
         vidscraper_video.load()
     except Exception, e:
-        logging.debug('Skipping %r: error loading video data',
-                      vidscraper_video.url, with_exception=True)
-        source_import_video_skipped.send(sender=None,
-                                  source_import=source_import,
-                                  vidscraper_video=vidscraper_video,
-                                  exception=e,
-                                  using=using)
+        source_import.handle_error(('Skipped %r: Could not load video data.'
+                                     % vidscraper_video.url),
+                                   using=using, is_skip=True,
+                                   with_exception=True)
         return
         
 
     if not vidscraper_video.title:
-        logging.debug('Skipping %r: Failed to scrape basic data',
-                      vidscraper_video.url)
-        source_import_video_skipped.send(sender=None,
-                                  source_import=source_import,
-                                  vidscraper_video=vidscraper_video,
-                                  exception=None,
-                                  using=using)
+        source_import.handle_error(('Skipped %r: Failed to scrape basic data.'
+                                     % vidscraper_video.url),
+                                   is_skip=True, using=using)
         return
 
     if not vidscraper_video.file_url and not vidscraper_video.embed_code:
-        logging.debug('Skipping %r: no file_url or embed code',
-                      vidscraper_video.url)
-        source_import_video_skipped.send(sender=None,
-                                  source_import=source_import,
-                                  vidscraper_video=vidscraper_video,
-                                  exception=None,
-                                  using=using)
+        source_import.handle_error(('Skipping %r: no file or embed code.'
+                                     % vidscraper_video.url),
+                                   is_skip=True, using=using)
         return
 
     site_videos = Video.objects.using(using).filter(site=site_pk)
@@ -198,13 +188,10 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         guid_videos = site_videos.filter(guid=vidscraper_video.guid)
         if clear_rejected:
             guid_videos.rejected().delete()
-        if guid_videos:
-            logging.debug('Skipping %r: duplicate guid', vidscraper_video.url)
-            source_import_video_skipped.send(sender=None,
-                                      source_import=source_import,
-                                      vidscraper_video=vidscraper_video,
-                                      exception=None,
-                                      using=using)
+        if guid_videos.exists():
+            source_import.handle_error(('Skipping %r: duplicate guid.'
+                                        % vidscraper_video.url),
+                                       is_skip=True, using=using)
             return
 
     if vidscraper_video.link:
@@ -212,12 +199,9 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         if clear_rejected:
             videos_with_link.rejected().delete()
         if videos_with_link.exists():
-            logging.debug('Skipping %r: duplicate link', vidscraper_video.url)
-            source_import_video_skipped.send(sender=None,
-                                      source_import=source_import,
-                                      vidscraper_video=vidscraper_video,
-                                      exception=None,
-                                      using=using)
+            source_import.handle_error(('Skipping %r: duplicate link.'
+                                        % vidscraper_video.url),
+                                       is_skip=True, using=using)
             return
 
     categories = Category.objects.using(using).filter(pk__in=category_pks)
