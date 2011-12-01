@@ -218,7 +218,7 @@ class FeedImportTestCase(BaseTestCase):
         return vidscraper_feed
 
     def _update_with_video_iter(self, video_iter, feed):
-        feed_import = FeedImport.objects.create(feed=feed,
+        feed_import = FeedImport.objects.create(source=feed,
                                                 auto_approve=feed.auto_approve)
         Source.update(feed, video_iter, feed_import)
 
@@ -290,7 +290,7 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
         self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        feed_import = FeedImport.objects.filter(source=feed).latest()
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
@@ -303,7 +303,7 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_link.rss')
         self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        feed_import = FeedImport.objects.filter(source=feed).latest()
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
@@ -598,12 +598,12 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = list(self._parse_feed('feed_with_long_item.atom'))
         self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().videos_imported, 1)
+        self.assertEquals(feed.imports.latest().videos_imported, 1)
         v = feed.video_set.get()
         # didn't get any updates
         self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().videos_imported, 0)
+        self.assertEquals(feed.imports.latest().videos_imported, 0)
         v2 = feed.video_set.get()
         self.assertEquals(v.pk, v2.pk)
 
