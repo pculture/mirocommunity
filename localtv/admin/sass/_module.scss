@@ -147,3 +147,10 @@
 	.pagination-hellip{
 		display:inline;
 	}
+
+.object-list-header{
+	& > h1{
+		display: inline-block;
+		margin-right: 3 * $em;
+	}
+}

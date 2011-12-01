@@ -12,7 +12,26 @@ a, a:visited{
 	}
 }
 
-th{vertical-align:top;}
+table{
+	width: 100%;
+}
+	tbody > tr{
+		border: solid #bbb 1px;
+		@include background(linear-gradient(#fdfdfd, #ddd));
+	}
+
+	th, td{
+		padding: $em;
+	}
+
+	th{
+		vertical-align: top;
+		text-align: left;
+	}
+	
+	td{
+		font-style: italic;
+	}
 
 body{
 	@include background-image(linear-gradient(#e3e3e3, #cecece 5 * $em - 1px, #e1e1e1 5 * $em - 1px, #e1e1e1 5 * $em, #b8b8b8 5 * $em, #b8b8b8 5 * $em + 1px, #eee 5 * $em + 1px));

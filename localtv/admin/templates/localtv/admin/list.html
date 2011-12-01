@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 <section>
-	<header>
+	<header class="object-list-header">
 		<h1>{{ verbose_name_plural|title }}</h1>
     {% if create_view_name %}
       <a href="{% url create_view_name %}">{% block create_link_text %}Add a {{ verbose_name }}{% endblock %}</a>
@@ -40,11 +40,25 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </header>
 
   {% if object_list %}
-  <ul class='object_list'>
-    {% for object in object_list %}
-      <li class='object_list-item'>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}
-    {% endfor %}
-  </ul>
+  <table>
+    <thead>
+      <tr>
+        {% block object_list_item_headers %}
+          {# placeholder for the name of the object #}
+          <th></th>
+        {% endblock %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for object in object_list %}
+        <tr>
+          {% block object_list_item_fields %}
+            <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}</th>
+          {% endblock %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   {% endif %}
 </section>
 {% endblock %}
