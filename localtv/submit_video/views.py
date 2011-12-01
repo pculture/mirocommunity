@@ -74,7 +74,7 @@ def submit_lock(func):
 @csrf_protect
 def submit_video(request):
     sitelocation = SiteLocation.objects.get_current()
-    if not request.user_is_admin() or sitelocation.display_submit_button:
+    if not (request.user_is_admin() or sitelocation.display_submit_button):
         raise Http404
 
     # Extract construction hint, if it exists.
