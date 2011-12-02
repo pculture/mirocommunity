@@ -1,5 +1,3 @@
-{% extends "localtv/admin/__base.html" %}
-
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -19,25 +17,21 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{# This inclusion template expects a form instance as ``form`` #}
 
-{% load i18n %}
+{% if form.non_field_errors %}
+	{{ form.non_field_errors }}
+{% endif %}
 
-{% block body_classes %}{{ block.super }} create {{ verbose_name_plural }}{% endblock %}
-
-{% block title %}{% blocktrans with verbose_name=verbose_name|capfirst %}Add a {{ verbose_name }}{% endblocktrans %} — {{ block.super }}{% endblock %}
-
-{% block content %}
-<section>
-	<header>
-		<h1>Add a {{ verbose_name|capfirst }}</h1>
-  </header>
-
-  <form class="create-form" action="{{ request.path }}" method="post">
-    {% csrf_token %}
-    {% block form %}
-      {% include 'localtv/admin/_form.html' %}
-    {% endblock %}
-    <button type="submit">Save {{ verbose_name|capfirst }}</button>
-  </form>
-</section>
-{% endblock %}
+<dl class='form-fields'>
+	{% for field in form %}
+		<dt class='form-fields-label'>{{ field.label_tag }}</dd>
+		{% if field.help_text %}
+			<dd class='form-fields-help-text'>{{ field.help_text }}</dd>
+		{% endif %}
+		{% if field.errors %}
+			<dd class='form-fields-errors'>{{ field.errors }}</dd>
+		{% endif %}
+		<dd class='form-fields-field'>{{ field }}</dd>
+	{% endfor %}
+</dl>

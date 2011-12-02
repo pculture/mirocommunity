@@ -154,3 +154,33 @@
 		margin-right: 3 * $em;
 	}
 }
+
+
+.form-fields{}
+
+	.form-fields-label{
+		font-size: 1.1 * $em;
+		line-height: 1.5 * $em;
+		display: inline;
+	}
+	.form-fields-help-text{
+		margin: 0;
+		font-style: italic;
+		display: inline;
+
+		&:before{
+			content: " — ";
+		}
+	}
+
+	.form-fields-field{
+		margin: 0 0 2 * $em;
+
+		& > ul > li{
+			list-style:none;
+		}
+
+		& > input[type="text"], & > textarea{
+			width: $content-width - 3 * $em - 2px;
+		}
+	}

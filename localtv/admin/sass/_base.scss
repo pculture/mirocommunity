@@ -12,6 +12,21 @@ a, a:visited{
 	}
 }
 
+ul{
+	padding: 0;
+}
+
+input[type="text"], textarea{
+	padding: $em / 2;
+	border: 1px solid #999;
+	@include border-radius(5px);
+	@include box-shadow(#ccc 0 0 3px inset);
+}
+
+textarea{
+	resize: vertical;
+}
+
 table{
 	width: 100%;
 }
