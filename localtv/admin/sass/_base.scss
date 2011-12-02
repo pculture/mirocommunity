@@ -16,16 +16,32 @@ ul{
 	padding: 0;
 }
 
-input[type="text"], textarea{
-	padding: $em / 2;
-	border: 1px solid #999;
-	@include border-radius(5px);
-	@include box-shadow(#ccc 0 0 3px inset);
+form{
+	display: inline;
 }
 
-textarea{
-	resize: vertical;
-}
+	input[type="text"], textarea{
+		padding: $em / 2;
+		border: 1px solid #999;
+		@include border-radius(5px);
+		@include box-shadow(#ccc 0 0 3px inset);
+	}
+
+	textarea{
+		resize: vertical;
+	}
+
+	button{
+		padding: $em / 2;
+		background: #bbb;
+		border:1px solid;
+		border-color:#ddd #aaa #aaa #ddd;
+		@include border-radius(5px);
+		@include background(linear-gradient(#fff, #f9f9f9 50%, #ececec 50%, #e5e5e5));
+		&:hover{
+			@include background(linear-gradient(#fff, #fcfcfc 50%, #f2f2f2 50%, #ededed));
+		}
+	}
 
 table{
 	width: 100%;
