@@ -4452,7 +4452,9 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
-        expected = {'recurring': PREMIUM_COST, 'cost_for_prorated_period': 18, 'days_covered_by_prorating': 28}
+        expected = {'recurring': PREMIUM_COST,
+                    'cost_for_prorated_period': int(PREMIUM_COST * 0.44),
+                    'days_covered_by_prorating': 28}
         self.assertEqual(data, expected)
 
     def test_end_of_month(self):
