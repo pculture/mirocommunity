@@ -73,11 +73,12 @@ else:
 @task(ignore_result=True)
 @patch_settings
 def update_sources(using='default'):
-    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
+    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE,
+                                             auto_update=True)
     for feed_pk in feeds.values_list('pk', flat=True):
         feed_update.delay(feed_pk, using=using)
 
-    searches = SavedSearch.objects.using(using)
+    searches = SavedSearch.objects.using(using).filter(auto_update=True)
     for search_pk in searches.values_list('pk', flat=True):
         search_update.delay(search_pk, using=using)
 

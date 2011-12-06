@@ -697,6 +697,10 @@ class Source(Thumbnailable):
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
     auto_approve = models.BooleanField(default=False)
+    auto_update = models.BooleanField(default=True,
+                                      help_text=_("If selected, new videos will"
+                                                  " automatically be imported "
+                                                  "from this source."))
     user = models.ForeignKey('auth.User', null=True, blank=True)
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
