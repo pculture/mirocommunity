@@ -1809,12 +1809,10 @@ class SavedSearchImportTestCase(BaseTestCase):
         based on the user on the original video service.
         """
         ss = SavedSearch.objects.get(pk=1)
+        self.assertFalse(ss.auto_authors.all().exists())
         ss.update()
         video = ss.video_set.all()[0]
-        user = User.objects.get(username='dpikop')
-        self.assertEquals(user.get_profile().website,
-                          'http://www.youtube.com/user/dpikop')
-        self.assertEquals(list(video.authors.all()), [user])
+        self.assertTrue(video.authors.all().exists())
 
 class OriginalVideoModelTestCase(BaseTestCase):
 
