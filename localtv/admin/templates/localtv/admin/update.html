@@ -33,16 +33,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<h1>{% block content_title %}Edit {{ verbose_name|capfirst }}: {{ object }}{% endblock %}</h1>
   </header>
 
-  <form class="update-form" action="{{ request.path }}" method="post">
+  {% block pre_form %}
+  {% endblock %}
+
+  <form class="update-form" action="{{ request.path }}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% block form %}
       {% include 'localtv/admin/_form.html' %}
     {% endblock %}
     <button type="submit">Save {{ verbose_name|capfirst }}</button>
   </form>
+  {% if delete_view_name %}
   <form class="delete-form" action="{% url delete_view_name pk=object.pk %}" method="post">
     {% csrf_token %}
     <button type="submit">Delete {{ verbose_name|capfirst }}</button>
   </form>
+  {% endif %}
 </section>
 {% endblock %}
