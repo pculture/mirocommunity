@@ -96,3 +96,13 @@ class PlaylistForm(forms.ModelForm):
             self.instance.validate_unique()
         except ValidationError, e:
             self._update_errors(e.message_dict)
+
+
+class PlaylistCreateForm(PlaylistForm):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(PlaylistCreateForm, self).__init__(*args, **kwargs)
+
+    def _post_clean(self):
+        self.instance.user = self.user
+        super(PlaylistCreateForm, self)._post_clean()
