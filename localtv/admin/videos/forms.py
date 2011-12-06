@@ -58,7 +58,7 @@ class VideoForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        exclude = ['site']
+        exclude = ['site', 'contest_mode']
 
     def __init__(self, *args, **kwargs):
         super(CategoryForm, self).__init__(*args, **kwargs)
@@ -74,7 +74,10 @@ class CategoryForm(forms.ModelForm):
         return self.cleaned_data['parent']
 
     def _post_clean(self):
-        super(CategoryForm, self)._post_clean(self)
+        self._validate_unique = False
+        if self.instance.pk is None:
+            self.instance.site = Site.objects.get_current()
+        super(CategoryForm, self)._post_clean()
         try:
             self.instance.validate_unique()
         except ValidationError, e:
@@ -87,7 +90,8 @@ class PlaylistForm(forms.ModelForm):
         fields = ['name', 'slug', 'description']
 
     def _post_clean(self):
-        super(PlaylistForm, self)._post_clean(self)
+        self._validate_unique = False
+        super(PlaylistForm, self)._post_clean()
         try:
             self.instance.validate_unique()
         except ValidationError, e:
