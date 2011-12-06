@@ -25,6 +25,32 @@ from vidscraper.errors import CantIdentifyUrl
 from localtv.models import Feed, SavedSearch, Category
 
 
+class FeedCreateForm(forms.ModelForm):
+    class Meta:
+        model = Feed
+        fields = ('feed_url', 'auto_approve')
+
+    def clean_feed_url(self):
+        url = self.cleaned_data['feed_url']
+        try:
+            self._vidscraper_feed = auto_feed(url)
+        except CantIdentifyUrl:
+            raise ValidationError("%s doesn't seem to be a valid RSS/Atom feed "
+                                  "URL" % url)
+
+        return self._vidscraper_feed.url
+
+    def _post_clean(self):
+        self._validate_unique = False
+        super(FeedCreateForm, self)._post_clean()
+        self.instance.name = self.instance.feed_url
+        self.instance.site = Site.objects.get_current()
+        try:
+            self.instance.validate_unique()
+        except ValidationError, e:
+            self._update_errors(e.message_dict)
+
+
 class SourceUpdateForm(forms.ModelForm):
     thumbnail = forms.ImageField(required=False)
     delete_thumbnail = forms.BooleanField(required=False)
@@ -55,27 +81,6 @@ class SourceUpdateForm(forms.ModelForm):
         elif thumbnail is not None:
             self.instance.save_thumbnail_from_file(thumbnail)
         return super(SourceUpdateForm, self).save(*args, **kwargs)
-
-
-class FeedCreateForm(forms.ModelForm):
-    class Meta:
-        model = Feed
-        fields = ('feed_url', 'auto_approve')
-
-    def clean_feed_url(self):
-        url = self.cleaned_data['feed_url']
-        try:
-            self._vidscraper_feed = auto_feed(url)
-        except CantIdentifyUrl:
-            raise ValidationError("%s doesn't seem to be a valid RSS/Atom feed "
-                                  "URL" % url)
-
-        return self._vidscraper_feed.url
-
-    def save(self, *args, **kwargs):
-        self.instance.name = self.instance.feed_url
-        self.instance.site = Site.objects.get_current()
-        return super(FeedCreateForm, self).save(*args, **kwargs)
 
 
 class FeedUpdateForm(SourceUpdateForm):
