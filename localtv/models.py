@@ -1011,33 +1011,28 @@ class Category(models.Model):
     site = models.ForeignKey(Site)
     name = models.CharField(
         max_length=80, verbose_name='Category Name',
-        help_text=("The name is used to identify the "
-                   "category almost everywhere; for "
-                   "example under the post or in the "
-                   "category widget."))
+        help_text=_("The name is used to identify the category almost "
+                    "everywhere; for example, under a video or in a "
+                    "category widget."))
     slug = models.SlugField(
         verbose_name='Category Slug',
-        help_text=('The "slug" is the URL-friendly version '
-                   "of the name.  It is usually lower-case "
-                   "and contains only letters, numbers and "
-                   "hyphens."))
+        help_text=_("The \"slug\" is the URL-friendly version of the name.  It "
+                    "is usually lower-case and contains only letters, numbers "
+                    "and hyphens."))
     logo = models.ImageField(
         upload_to="localtv/category_logos", blank=True,
         verbose_name='Thumbnail/Logo',
-        help_text=("For example: a leaf for 'environment' "
-                   "or the logo of a university "
-                   "department."))
+        help_text=_("Optional. For example: a leaf for 'environment' or the "
+                    "logo of a university department."))
     description = models.TextField(
         blank=True, verbose_name='Description (HTML)',
-        help_text=("The description is not prominent "
-                   "by default, but some themes may "
-                   "show it."))
+        help_text=_("Optional. The description is not prominent by default, but"
+                    " some themes may show it."))
     parent = models.ForeignKey(
         'self', blank=True, null=True,
         related_name='child_set',
         verbose_name='Category Parent',
-        help_text=("Categories, unlike tags, can have a "
-                   "hierarchy."))
+        help_text=_("Categories, unlike tags, can have a hierarchy."))
 
     # only relevant is voting is enabled for the site
     contest_mode = models.DateTimeField('Turn on Contest',
