@@ -44,7 +44,7 @@ class SourceCreateForm(forms.ModelForm):
 class FeedCreateForm(SourceCreateForm):
     class Meta:
         model = Feed
-        fields = ('feed_url', 'auto_approve')
+        fields = ('feed_url', 'auto_approve', 'auto_update')
 
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
@@ -62,9 +62,13 @@ class FeedCreateForm(SourceCreateForm):
 
 
 class SearchCreateForm(SourceCreateForm):
+    # HACK until query_string is a CharField.
+    query_string = SavedSearch._meta.get_field('query_string').formfield(
+                                                        widget=forms.TextInput)
+
     class Meta:
         model = SavedSearch
-        fields = ('query_string', 'auto_approve')
+        fields = ('query_string', 'auto_approve', 'auto_update')
 
     def clean_query_string(self):
         # HACK until query_string/site uniqueness is enforced on the model.
