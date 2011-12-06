@@ -62,6 +62,7 @@ class LiveSearchForm(forms.Form):
             results = list(intersperse_results(results, 40))
             cache.set(cache_key, results)
         for vidscraper_video in results:
+            vidscraper_video.load()
             try:
                 yield Video.from_vidscraper_video(vidscraper_video,
                                                   commit=False)
