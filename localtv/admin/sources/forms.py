@@ -25,7 +25,23 @@ from vidscraper.errors import CantIdentifyUrl
 from localtv.models import Feed, SavedSearch, Category
 
 
-class FeedCreateForm(forms.ModelForm):
+class SourceCreateForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(SourceCreateForm, self).__init__(*args, **kwargs)
+
+    def _post_clean(self):
+        self._validate_unique = False
+        super(SourceCreateForm, self)._post_clean()
+        self.instance.site = Site.objects.get_current()
+        self.instance.user = self.user
+        try:
+            self.instance.validate_unique()
+        except ValidationError, e:
+            self._update_errors(e.message_dict)
+
+
+class FeedCreateForm(SourceCreateForm):
     class Meta:
         model = Feed
         fields = ('feed_url', 'auto_approve')
@@ -41,14 +57,25 @@ class FeedCreateForm(forms.ModelForm):
         return self._vidscraper_feed.url
 
     def _post_clean(self):
-        self._validate_unique = False
-        super(FeedCreateForm, self)._post_clean()
         self.instance.name = self.instance.feed_url
-        self.instance.site = Site.objects.get_current()
+        super(FeedCreateForm, self)._post_clean()
+
+
+class SearchCreateForm(SourceCreateForm):
+    class Meta:
+        model = SavedSearch
+        fields = ('query_string', 'auto_approve')
+
+    def clean_query_string(self):
+        # HACK until query_string/site uniqueness is enforced on the model.
+        query_string = self.cleaned_data['query_string']
         try:
-            self.instance.validate_unique()
-        except ValidationError, e:
-            self._update_errors(e.message_dict)
+            SavedSearch.objects.get(site=Site.objects.get_current(),
+                                    query_string=query_string)
+        except SavedSearch.DoesNotExist:
+            pass
+        else:
+            raise ValidationError('That query has already been saved.')
 
 
 class SourceUpdateForm(forms.ModelForm):

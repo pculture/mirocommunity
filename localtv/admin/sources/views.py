@@ -28,6 +28,13 @@ class SourceCreateView(MiroCommunityAdminCreateView):
     #: The task for importing the source. Default: None.
     import_task = None
 
+    def get_form_kwargs(self):
+        kwargs = super(SourceCreateView, self).get_form_kwargs()
+        kwargs.update({
+            'user': self.request.user
+        })
+        return kwargs
+
     def form_valid(self, form):
         response = super(SourceCreateView, self).form_valid(form)
         self.import_task.delay(self.object.pk, using=CELERY_USING)
