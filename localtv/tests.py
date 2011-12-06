@@ -54,14 +54,16 @@ from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
                             Source)
 from localtv import utils
 import localtv.feeds.views
-from localtv import tiers
-import localtv.feeds.views
 
 from notification import models as notification
 from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
+NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
+PLUS_COST = NAME_TO_COST['plus']
+PREMIUM_COST = NAME_TO_COST['premium']
+MAX_COST = NAME_TO_COST['max']
 
 
 class FakeRequestFactory(RequestFactory):
@@ -1669,7 +1671,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'plus'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(15, tier.dollar_cost())
+        self.assertEqual(PLUS_COST, tier.dollar_cost())
         self.assertEqual(1000, tier.videos_limit())
         self.assertEqual(5, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
@@ -1680,7 +1682,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'premium'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(35, tier.dollar_cost())
+        self.assertEqual(PREMIUM_COST, tier.dollar_cost())
         self.assertEqual(5000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
@@ -1690,7 +1692,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'max'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(75, tier.dollar_cost())
+        self.assertEqual(MAX_COST, tier.dollar_cost())
         self.assertEqual(25000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
