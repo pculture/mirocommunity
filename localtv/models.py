@@ -885,7 +885,7 @@ class Feed(Source, StatusedThumbnailable):
 
         video_iter = vidscraper.auto_feed(
             self.feed_url,
-            crawl=True,
+            crawl=(getattr(self, 'status', True) == 0),
             api_keys={
                 'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
                 'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
