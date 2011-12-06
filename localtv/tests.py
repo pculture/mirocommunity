@@ -1829,7 +1829,7 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2011, 11, 02, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2011, 12, 06, 19, 18, 23),
         }
 
 
