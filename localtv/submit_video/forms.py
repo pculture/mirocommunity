@@ -221,42 +221,42 @@ class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
 
 class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
     def __init__(self, *args, **kwargs):
-        self.scraped_data = kwargs.pop('scraped_data', {})
-        if self.scraped_data.get('tags'):
+        self.vidscraper_video = kwargs.pop('vidscraper_video', {})
+        if self.vidscraper_video.tags:
             kwargs.setdefault('initial', {})['tags'] = \
-                get_or_create_tags(self.scraped_data['tags'])
+                get_or_create_tags(self.vidscraper_video.tags)
         SecondStepSubmitVideoForm.__init__(self, *args, **kwargs)
 
     def save(self, **kwargs):
-        scraped_data = self.scraped_data
-        if scraped_data.get('file_url_is_flaky'):
+        vidscraper_video = self.vidscraper_video
+        instance = self.instance
+        if vidscraper_video.file_url_is_flaky:
             file_url = None
         else:
-            file_url = scraped_data.get('file_url', '')
+            file_url = vidscraper_video.file_url
 
-        self.instance.name=scraped_data.get('title') or ''
-        self.instance.site=self.sitelocation.site
-        self.instance.status=models.Video.UNAPPROVED
-        self.instance.description=sanitize(scraped_data.get('description') or \
+        instance.name=vidscraper_video.title or ''
+        instance.site=self.sitelocation.site
+        instance.status=models.Video.UNAPPROVED
+        instance.description=sanitize(vidscraper_video.description or \
                                                '',
                                            extra_filters=['img'])
-        self.instance.file_url=file_url or ''
-        self.instance.embed_code=scraped_data.get('embed') or ''
-        self.instance.flash_enclosure_url=scraped_data.get(
-            'flash_enclosure_url') or ''
-        self.instance.website_url=self.cleaned_data['url']
-        self.instance.thumbnail_url=scraped_data.get('thumbnail_url') or ''
-        self.instance.when_published=scraped_data.get('publish_date')
-        self.instance.video_service_user=scraped_data.get('user') or ''
-        self.instance.video_service_url=scraped_data.get('user_url') or ''
+        instance.file_url=file_url or ''
+        instance.embed_code=vidscraper_video.embed_code or ''
+        instance.flash_enclosure_url=vidscraper_video.flash_enclosure_url or ''
+        instance.website_url=vidscraper_video.link
+        instance.thumbnail_url=vidscraper_video.thumbnail_url or ''
+        instance.when_published=vidscraper_video.publish_datetime
+        instance.video_service_user=vidscraper_video.user or ''
+        instance.video_service_url=vidscraper_video.user_url or ''
 
         if file_url:
-            self.instance.try_to_get_file_url_data()
+            instance.try_to_get_file_url_data()
 
-        if self.instance.embed_code and not scraped_data.get('is_embedable',
-                                                             True):
-            self.instance.embed_code = '<span class="embed-warning">\
-Warning: Embedding disabled by request.</span>' + self.instance.embed_code
+        # XXX re-implement this
+        #if instance.embed_code and not vidscraper_video.is_embedable:
+        #    instance.embed_code = '<span class="embed-warning">\
+        #Warning: Embedding disabled by request.</span>' + instance.embed_code
 
         commit = kwargs.get('commit', True)
         kwargs['commit'] = False
@@ -264,17 +264,17 @@ Warning: Embedding disabled by request.</span>' + self.instance.embed_code
 
         old_m2m = self.save_m2m
         def save_m2m():
-            video = self.instance
-            if scraped_data.get('user'):
+            video = instance
+            if vidscraper_video.user:
                 author, created = User.objects.get_or_create(
-                    username=scraped_data.get('user'),
-                    defaults={'first_name': scraped_data.get('user')})
+                    username=vidscraper_video.user,
+                    defaults={'first_name': vidscraper_video.user})
                 if created:
                     author.set_unusable_password()
                     author.save()
                     get_profile_model().objects.create(
                         user=author,
-                        website=scraped_data.get('user_url'))
+                        website=vidscraper_video.user_url)
                 video.authors.add(author)
             old_m2m()
 
