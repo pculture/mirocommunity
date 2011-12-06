@@ -2009,9 +2009,9 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''
     try:
-        if self.search:
+        if self.id and self.search:
             return u'Search: %s' % self.search
-        elif self.feed:
+        elif self.id and self.feed:
             if feed__video_service(self.feed):
                 return u'User: %s: %s' % (
                     feed__video_service(self.feed),
