@@ -17,6 +17,7 @@
 
 from django.conf.urls.defaults import url, patterns, include
 from django.contrib.sites.models import Site
+from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DeleteView
 
@@ -44,6 +45,12 @@ class FeedSection(CRUDSection):
         current_site = Site.objects.get_current()
         return Feed.objects.filter(site=current_site)
 
+    def get_list_view_kwargs(self):
+        kwargs = super(FeedSection, self).get_list_view_kwargs()
+        kwargs['queryset'] = kwargs['queryset'].annotate(
+                                                    video_count=Count('video'))
+        return kwargs
+
     def get_create_view_kwargs(self):
         kwargs = super(FeedSection, self).get_create_view_kwargs()
         kwargs.update({
@@ -65,6 +72,12 @@ class SearchSection(CRUDSection):
     def get_queryset(self):
         current_site = Site.objects.get_current()
         return SavedSearch.objects.filter(site=current_site)
+
+    def get_list_view_kwargs(self):
+        kwargs = super(SearchSection, self).get_list_view_kwargs()
+        kwargs['queryset'] = kwargs['queryset'].annotate(
+                                                    video_count=Count('video'))
+        return kwargs
 
     def get_create_view_kwargs(self):
         kwargs = super(SearchSection, self).get_create_view_kwargs()

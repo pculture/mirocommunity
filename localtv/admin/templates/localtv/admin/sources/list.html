@@ -22,22 +22,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load filters %}
 
 {% block object_list_item_headers %}
-{{ block.super }}
+<th>Name</th>
+<th>Total videos</th>
 <th>Last import</th>
+<th></th>
 {% endblock %}
 
 {% block object_list_item_fields %}
 {{ block.super }}
+<td>{{ object.video_count }}</td>
 {% with import=object.feedimport_set.latest %}
-  <td>
-    {% if import %}
-     {{ import.get_status_display }} {% if import.status == import.STARTED %}{{ import.start|simpletimesince }}{% else %}{{ import.last_activity|simpletimesince }}{% endif %} ago
-
-     {% if import.status == import.COMPLETE %}({{ import.videos_imported }} videos imported){% endif %}
-
-     {% if import.status == import.FAILED %}{% with error_count=import.feedimporterror_set.count %}({{ error_count }} error{{ error_count|pluralize }}){% endwith %}{% endif %}
+  <td>{% if import %}
+      {{ import.get_status_display }} {% if import.status == import.STARTED %}{{ import.start|simpletimesince }}{% else %}{{ import.last_activity|simpletimesince }}{% endif %} ago
     {% else %}
       No imports found
+    {% endif %}</td>
+
+  <td>{% if import %}
+      {% if import.status == import.COMPLETE %}{{ import.videos_imported }} video{{ import.videos_imported|pluralize }} imported{% endif %}
+
+     {% if import.status == import.FAILED %}{% with error_count=import.feedimporterror_set.count %}{{ error_count }} error{{ error_count|pluralize }}{% endwith %}{% endif %}
     {% endif %}</td>
 {% endwith %}
 {% endblock %}
