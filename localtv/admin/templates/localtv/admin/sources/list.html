@@ -19,7 +19,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load filters %}
+{% load filters localtv_imports %}
 
 {% block object_list_item_headers %}
 <th>Name</th>
@@ -29,19 +29,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block object_list_item_fields %}
-{{ block.super }}
-<td>{{ object.video_count }}</td>
-{% with import=object.feedimport_set.latest %}
-  <td>{% if import %}
-      {{ import.get_status_display }} {% if import.status == import.STARTED %}{{ import.start|simpletimesince }}{% else %}{{ import.last_activity|simpletimesince }}{% endif %} ago
+  {{ block.super }}
+  <td>{{ object.video_count }}</td>
+  {% get_source_import_info object as info %}
+  <td>{% if info.import %}
+      {{ info.import.get_status_display }} {% if info.import.status == info.import.STARTED %}{{ info.import.start|simpletimesince }}{% else %}{{ info.import.last_activity|simpletimesince }}{% endif %} ago
     {% else %}
       No imports found
     {% endif %}</td>
 
-  <td>{% if import %}
-      {% if import.status == import.COMPLETE %}{{ import.videos_imported }} video{{ import.videos_imported|pluralize }} imported{% endif %}
+  <td>{% if info.import %}
+      {% if info.import.status == info.import.COMPLETE %}{{ info.import.videos_imported }} video{{ info.import.videos_imported|pluralize }} imported{% endif %}
 
-     {% if import.status == import.FAILED %}{% with error_count=import.feedimporterror_set.count %}{{ error_count }} error{{ error_count|pluralize }}{% endwith %}{% endif %}
+     {% if info.import.status == info.import.FAILED %}{% with error_count=info.errors.count %}{{ error_count }} error{{ error_count|pluralize }}{% endwith %}{% endif %}
     {% endif %}</td>
-{% endwith %}
 {% endblock %}
