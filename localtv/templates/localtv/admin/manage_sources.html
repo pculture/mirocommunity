@@ -152,9 +152,17 @@ $(document).ready(function() {
 {% with form.instance.feedimport_set.latest as latest_import %}
 {% if latest_import %}
   {% if form.instance.status == 0 %}First{% else %}Latest{% endif %}
-  {% if latest_import.end %}import ended {{ latest_import.end|simpletimesince }} ago
+  {% if latest_import.status != latest_import.STARTED %}import ended {{ latest_import.last_activity|simpletimesince }} ago
   {% else %}import started {{ latest_import.start|simpletimesince }} ago{% endif %}<br/>
-Imported {{ latest_import.video_set.count }} videos.
+{% if latest_import.videos_imported and latest_import.videos_skipped %}
+Imported {{ latest_import.videos_imported }} videos, skipped {{ latest_import.videos_skipped }} videos.
+{% else %}
+{% if latest_import.videos_skipped %}
+Skipped {{ latest_import.videos_skipped }} videos.
+{% else %}
+Imported {{ latest_import.videos_imported }} videos.
+{% endif %}
+{% endif %}
 {% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}
