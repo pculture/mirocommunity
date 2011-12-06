@@ -221,6 +221,14 @@ class FeedImportTestCase(BaseTestCase):
         Source.update(feed, video_iter, feed_import)
 
 
+    def test_update_approved_feed(self):
+        feed = Feed.objects.get(pk=1)
+        feed.status = Feed.UNAPPROVED
+        feed.save()
+        self._update_with_video_iter(self._parsed_feed, feed)
+        feed = Feed.objects.get(pk=1)
+        self.assertEquals(feed.status, Feed.ACTIVE)
+
     def test_auto_approve_True(self):
         """
         If Feed.auto_approve is True, the imported videos should be marked as
