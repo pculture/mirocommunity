@@ -20,7 +20,6 @@ import time
 import urllib
 import urlparse
 
-from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.core import cache
 from django.db.models import Q
@@ -84,8 +83,10 @@ def submit_video(request):
                          request.GET.get('construction_hint', None))
 
     url = request.POST.get('url') or request.GET.get('url', '')
+
     if request.method == "GET" and not url:
-        submit_form = forms.SubmitVideoForm(construction_hint=construction_hint)
+        submit_form = forms.SubmitVideoForm(
+            construction_hint=construction_hint)
         return render_to_response(
             'localtv/submit_video/submit.html',
             {'form': submit_form},
@@ -130,26 +131,26 @@ def submit_video(request):
                          'video': video},
                         context_instance=RequestContext(request))
 
-            scraped_data = utils.get_scraped_data(
+            vidscraper_video = utils.get_vidscraper_video(
                 submit_form.cleaned_data['url'])
 
             get_dict = {'url': submit_form.cleaned_data['url']}
-            if 'construction_hint':
+            if 'construction_hint' in request.GET:
                 get_dict['construction_hint'] = construction_hint
             if 'bookmarklet' in request.GET:
                 get_dict['bookmarklet'] = '1'
             get_params = urllib.urlencode(get_dict)
-            if scraped_data:
-                if scraped_data.get('link', None) and \
-                        scraped_data['link'] != get_dict['url']:
+            if vidscraper_video:
+                if (vidscraper_video.link and
+                    vidscraper_video.link != get_dict['url']):
                     request.POST = {
-                        'url': scraped_data['link'].encode('utf8')}
+                        'url': vidscraper_video.link.encode('utf8')}
                     # rerun the view, but with the canonical URL
                     return submit_video(request)
 
-                if (scraped_data.get('embed')
-                    or (scraped_data.get('file_url')
-                        and not scraped_data.get('file_url_is_flaky'))):
+                if (vidscraper_video.embed_code
+                    or (vidscraper_video.file_url
+                        and not vidscraper_video.file_url_expires)):
                     return HttpResponseRedirect(
                         reverse('localtv_submit_scraped_video') + '?' +
                         get_params)
@@ -192,24 +193,25 @@ def scraped_submit_video(request):
                 url_re.match(request.REQUEST['url'])):
         return HttpResponseRedirect(reverse('localtv_submit_video'))
 
-    scraped_data = utils.get_scraped_data(request.REQUEST['url'])
+    vidscraper_video = utils.get_vidscraper_video(request.REQUEST['url'])
 
-    url = scraped_data.get('link', request.REQUEST['url'])
+    url = vidscraper_video.link or request.REQUEST['url']
     sitelocation = SiteLocation.objects.get_current()
     existing =  Video.objects.filter(site=sitelocation.site,
-                                            website_url=url)
+                                     website_url=url)
     existing.rejected().delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
     if request.method == "GET":
-        scraped_form = forms.ScrapedSubmitVideoForm(initial=initial,
-                                                    scraped_data=scraped_data)
+        scraped_form = forms.ScrapedSubmitVideoForm(
+            initial=initial,
+            vidscraper_video=vidscraper_video)
 
         return render_to_response(
             'localtv/submit_video/scraped.html',
-            {'data': scraped_data,
+            {'video': vidscraper_video,
              'form': scraped_form},
             context_instance=RequestContext(request))
 
@@ -217,10 +219,10 @@ def scraped_submit_video(request):
         request.POST,
         sitelocation=sitelocation,
         user=request.user,
-        scraped_data=scraped_data)
+        vidscraper_video=vidscraper_video)
     return _submit_finish(scraped_form,
             'localtv/submit_video/scraped.html',
-            {'data': scraped_data,
+            {'video': vidscraper_video,
              'form': scraped_form},
             context_instance=RequestContext(request))
 
@@ -242,12 +244,12 @@ def embedrequest_submit_video(request):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
-    scraped_data = utils.get_scraped_data(request.REQUEST['url']) or {}
+    vidscraper_video = utils.get_vidscraper_video(request.REQUEST['url']) or {}
     initial = {
         'url': url,
-        'name': scraped_data.get('title', ''),
-        'description': scraped_data.get('description', ''),
-        'thumbnail': scraped_data.get('thumbnail_url', '')
+        'name': vidscraper_video.title or '',
+        'description': vidscraper_video.description or '',
+        'thumbnail': vidscraper_video.thumbnail_url or '',
         }
     if request.method == "GET":
         embed_form = forms.EmbedSubmitVideoForm(initial=initial)

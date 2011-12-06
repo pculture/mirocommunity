@@ -100,7 +100,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_video')))
 
     def test_GET_existing(self):
@@ -118,7 +118,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
         self.assertEquals(models.Video.objects.filter(
@@ -156,7 +156,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
         self.assertEquals(models.Video.objects.filter(
@@ -179,7 +179,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -206,7 +206,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -249,7 +249,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
         self.assertTrue(video.has_thumbnail)
@@ -322,7 +322,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -446,7 +446,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
                 urlencode({'url': video.website_url})))
         self.assertEquals(models.Video.objects.count(), 0)
@@ -470,7 +470,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -515,7 +515,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -560,7 +560,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
@@ -580,7 +580,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_directlink_video'),
                 urlencode(GET_data)))
 
@@ -593,14 +593,15 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, {
-                'url': 'http://blip.tv/file/10'})
+                'url': 'http://blip.tv/searching-for-mike/fixing-otter-267'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
                 urlencode({
-                        'url': 'http://blip.tv/file/10'
+                        'url': ('http://blip.tv/searching-for-mike/'
+                                'fixing-otter-267')
                         })))
 
     def test_POST_succeed_directlink(self):
@@ -617,7 +618,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_directlink_video'),
                 urlencode({'url': ('http://blip.tv/file/get/'
                                    'Miropcf-Miro20Introduction119.mp4'),
@@ -638,7 +639,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_directlink_video'),
                 urlencode(GET_data)))
 
@@ -655,24 +656,9 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
                 urlencode({'url': 'http://pculture.org/'})))
-
-    def test_POST_succeed_googlevideo(self):
-        """
-        The the URL represents a Google Video video, the user should be
-        redirect to the embedrequest_submit_video view.
-        """
-        url = 'http://video.google.com/videoplay?docid=-8547688006951024237'
-        c = Client()
-        response = c.post(self.url, {'url': url})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
-                          "http://%s%s?%s" %(
-                self.site_location.site.domain,
-                reverse('localtv_submit_scraped_video'),
-                urlencode({'url': url})))
 
     def test_POST_succeed_canonical(self):
         """
@@ -690,7 +676,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
                 urlencode({'url': youtube_url})))
 
@@ -707,7 +693,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           "http://%s%s?%s" %(
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
                 urlencode({'url': url})))
 
@@ -719,15 +705,14 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
         self.template_name = 'localtv/submit_video/scraped.html'
         self.video_data = {
             'name': 'Fixing Otter',
-            'description': """<span><br />
-
- In my first produced vlog, I talk a bit about breaking blip.tv, and fixing\
- it.  The audio's pretty bad, sorry about that.<br /></span>""",
+            'description': u"<p>In my first produced vlog, I talk a bit about \
+breaking blip.tv, and fixing it. The audio's pretty bad, sorry \
+about that.</p>",
             'thumbnail': 'http://a.images.blip.tv/'
                           '11156136631.95334664852457-424.jpg'
             }
         self.POST_data = {
-            'url': 'http://blip.tv/file/10',
+            'url': 'http://blip.tv/searching-for-mike/fixing-otter-267',
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',
             'notes': "here's a note!"
@@ -742,13 +727,13 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
         the context should have the scraped data.
         """
         response = SecondStepSubmitBaseTestCase.test_GET(self)
-        data = response.context[0]['data']
-        self.assertEquals(data['title'], self.video_data['name'])
-        self.assertEquals(data['description'], """<span><br>
-
- In my first produced vlog, I talk a bit about breaking blip.tv, and fixing\
- it.  The audio's pretty bad, sorry about that.<br></span>""")
-        self.assertEquals(data['thumbnail_url'],
+        video = response.context[0]['video']
+        self.assertEquals(video.title, self.video_data['name'])
+        self.assertEquals(video.description,
+                          """<p>In my first produced vlog, I talk a bit \
+about breaking blip.tv, and fixing it. The audio's pretty bad, sorry about \
+that.</p>""")
+        self.assertEquals(video.thumbnail_url,
                           self.video_data['thumbnail'])
 
     def test_POST_fail(self):
@@ -771,11 +756,10 @@ class ScrapedTestCase(SecondStepSubmitBaseTestCase):
                           'http://blip.tv/file/get/'
                           '11156136631.95334664852457.mp4')
         self.assertEquals(video.embed_code,
-                          '<embed src="http://blip.tv/play/hbF4gm8C" '
-                          'type="application/x-shockwave-flash" '
-                          'width="480" height="390" '
-                          'allowscriptaccess="always" allowfullscreen="true">'
-                          '</embed>')
+                          u'<iframe src="http://blip.tv/play/hbF4gm8C.html" \
+width="480" height="390" frameborder="0" allowfullscreen></iframe>\
+<embed type="application/x-shockwave-flash" \
+src="http://a.blip.tv/api.swf#hbF4gm8C" style="display:none"></embed>')
         self.assertEquals(video.file_url_length, 9236973)
         self.assertEquals(video.file_url_mimetype, 'video/mp4')
 
@@ -850,7 +834,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
         self.assertEquals(models.Video.objects.filter(
@@ -870,7 +854,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
         self.assertEquals(models.Video.objects.filter(
