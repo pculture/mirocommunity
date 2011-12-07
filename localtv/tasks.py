@@ -126,17 +126,16 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             (source_import.videos_imported + source_import.videos_skipped
              >= source_import.total_videos)):
         if source_import.auto_approve:
-            if SiteLocation.enforce_tiers(using=using):
+            should_approve = False
+            if not SiteLocation.enforce_tiers(using=using):
+                should_approve = True
+            else:
                 remaining_videos = (Tier.get().videos_limit()
                                     - Video.objects.using(using
                                         ).filter(status=Video.ACTIVE).count())
                 if remaining_videos > source_import.videos_imported:
-                    source_import.get_videos(using).filter(
-                                                        status=Video.UNAPPROVED
-                                                    ).update(
-                                                        status=Video.ACTIVE
-                                                    )
-            else:
+                    should_approve = True
+            if should_approve:
                 source_import.get_videos(using).filter(
                     status=Video.UNAPPROVED).update(
                         status=Video.ACTIVE)
