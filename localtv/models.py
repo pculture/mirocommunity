@@ -734,6 +734,10 @@ class Source(Thumbnailable):
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
     auto_approve = models.BooleanField(default=False)
+    auto_update = models.BooleanField(default=True,
+                                      help_text=_("If selected, new videos will"
+                                                  " automatically be imported "
+                                                  "from this source."))
     user = models.ForeignKey('auth.User', null=True, blank=True)
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
@@ -916,7 +920,7 @@ class Feed(Source, StatusedThumbnailable):
 
         """
         try:
-            FeedImport.objects.using(using).get(feed=self,
+            FeedImport.objects.using(using).get(source=self,
                                                 status=FeedImport.STARTED)
         except FeedImport.DoesNotExist:
             pass
@@ -924,12 +928,12 @@ class Feed(Source, StatusedThumbnailable):
             logging.debug('Skipping import of %s: already in progress' % self)
             return
 
-        feed_import = FeedImport.objects.db_manager(using).create(feed=self,
+        feed_import = FeedImport.objects.db_manager(using).create(source=self,
                                                 auto_approve=self.auto_approve)
 
         video_iter = vidscraper.auto_feed(
             self.feed_url,
-            crawl=True,
+            crawl=(getattr(self, 'status', True) == 0),
             api_keys={
                 'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
                 'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
@@ -1056,33 +1060,28 @@ class Category(models.Model):
     site = models.ForeignKey(Site)
     name = models.CharField(
         max_length=80, verbose_name='Category Name',
-        help_text=("The name is used to identify the "
-                   "category almost everywhere; for "
-                   "example under the post or in the "
-                   "category widget."))
+        help_text=_("The name is used to identify the category almost "
+                    "everywhere; for example, under a video or in a "
+                    "category widget."))
     slug = models.SlugField(
         verbose_name='Category Slug',
-        help_text=('The "slug" is the URL-friendly version '
-                   "of the name.  It is usually lower-case "
-                   "and contains only letters, numbers and "
-                   "hyphens."))
+        help_text=_("The \"slug\" is the URL-friendly version of the name.  It "
+                    "is usually lower-case and contains only letters, numbers "
+                    "and hyphens."))
     logo = models.ImageField(
         upload_to="localtv/category_logos", blank=True,
         verbose_name='Thumbnail/Logo',
-        help_text=("For example: a leaf for 'environment' "
-                   "or the logo of a university "
-                   "department."))
+        help_text=_("Optional. For example: a leaf for 'environment' or the "
+                    "logo of a university department."))
     description = models.TextField(
         blank=True, verbose_name='Description (HTML)',
-        help_text=("The description is not prominent "
-                   "by default, but some themes may "
-                   "show it."))
+        help_text=_("Optional. The description is not prominent by default, but"
+                    " some themes may show it."))
     parent = models.ForeignKey(
         'self', blank=True, null=True,
         related_name='child_set',
         verbose_name='Category Parent',
-        help_text=("Categories, unlike tags, can have a "
-                   "hierarchy."))
+        help_text=_("Categories, unlike tags, can have a hierarchy."))
 
     # only relevant is voting is enabled for the site
     contest_mode = models.DateTimeField('Turn on Contest',
@@ -1185,7 +1184,7 @@ class SavedSearch(Source):
 
         """
         try:
-            SearchImport.objects.using(using).get(search=self,
+            SearchImport.objects.using(using).get(source=self,
                                                   status=SearchImport.STARTED)
         except SearchImport.DoesNotExist:
             pass
@@ -1194,7 +1193,7 @@ class SavedSearch(Source):
             return
 
         search_import = SearchImport.objects.db_manager(using).create(
-            search=self,
+            source=self,
             auto_approve=self.auto_approve
         )
 
@@ -1242,11 +1241,11 @@ class SourceImportIndex(models.Model):
 
 
 class FeedImportIndex(SourceImportIndex):
-    source_import = models.ForeignKey('FeedImport')
+    source_import = models.ForeignKey('FeedImport', related_name='indexes')
 
 
 class SearchImportIndex(SourceImportIndex):
-    source_import = models.ForeignKey('SearchImport')
+    source_import = models.ForeignKey('SearchImport', related_name='indexes')
     #: This is just the name of the suite that was used to get this index.
     suite = models.CharField(max_length=30)
 
@@ -1263,11 +1262,11 @@ class SourceImportError(models.Model):
 
 
 class FeedImportError(SourceImportError):
-    source_import = models.ForeignKey('FeedImport')
+    source_import = models.ForeignKey('FeedImport', related_name='errors')
 
 
 class SearchImportError(SourceImportError):
-    source_import = models.ForeignKey('SearchImport')
+    source_import = models.ForeignKey('SearchImport', related_name='errors')
 
 
 class SourceImport(models.Model):
@@ -1290,8 +1289,6 @@ class SourceImport(models.Model):
     auto_approve = models.BooleanField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES,
                               default=STARTED)
-    error_model = None
-    index_model = None
 
     class Meta:
         get_latest_by = 'start'
@@ -1330,12 +1327,10 @@ class SourceImport(models.Model):
         else:
             logging.debug(message)
             tb = ''
-        if self.error_model is not None:
-            self.error_model._default_manager.db_manager(using).create(
-                                                    message=message,
-                                                    source_import=self,
-                                                    traceback=tb,
-                                                    is_skip=is_skip)
+        self.errors.db_manager(using).create(message=message,
+                                             source_import=self,
+                                             traceback=tb,
+                                             is_skip=is_skip)
         if is_skip:
             self.__class__._default_manager.using(using).filter(pk=self.pk
                         ).update(videos_skipped=models.F('videos_skipped') + 1)
@@ -1361,7 +1356,7 @@ class SourceImport(models.Model):
         :param using: The database alias to use. Default: 'default'
 
         """
-        self.index_model._default_manager.db_manager(using).create(
+        self.indexes.db_manager(using).create(
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
@@ -1373,12 +1368,10 @@ class SourceImport(models.Model):
 
 
 class FeedImport(SourceImport):
-    feed = models.ForeignKey(Feed)
-    index_model = FeedImportIndex
-    error_model = FeedImportError
+    source = models.ForeignKey(Feed, related_name='imports')
 
     def set_video_source(self, video):
-        video.feed_id = self.feed_id
+        video.feed_id = self.source_id
 
     def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
@@ -1386,12 +1379,10 @@ class FeedImport(SourceImport):
 
 
 class SearchImport(SourceImport):
-    search = models.ForeignKey(SavedSearch)
-    index_model = SearchImportIndex
-    error_model = SearchImportError
+    source = models.ForeignKey(SavedSearch, related_name='imports')
 
     def set_video_source(self, video):
-        video.search_id = self.search_id
+        video.search_id = self.source_id
 
     def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
@@ -2094,9 +2085,9 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 def video__source_type(self):
     '''This is not a method of the Video so that we can can call it from South.'''
     try:
-        if self.search:
+        if self.id and self.search:
             return u'Search: %s' % self.search
-        elif self.feed:
+        elif self.id and self.feed:
             if feed__video_service(self.feed):
                 return u'User: %s: %s' % (
                     feed__video_service(self.feed),

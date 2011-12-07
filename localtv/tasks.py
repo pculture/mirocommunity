@@ -73,11 +73,12 @@ else:
 @task(ignore_result=True)
 @patch_settings
 def update_sources(using='default'):
-    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE)
+    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE,
+                                             auto_update=True)
     for feed_pk in feeds.values_list('pk', flat=True):
         feed_update.delay(feed_pk, using=using)
 
-    searches = SavedSearch.objects.using(using)
+    searches = SavedSearch.objects.using(using).filter(auto_update=True)
     for search_pk in searches.values_list('pk', flat=True):
         search_update.delay(search_pk, using=using)
 
@@ -135,7 +136,14 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     ).update(
                                                         status=Video.ACTIVE
                                                     )
+            else:
+                source_import.get_videos(using).filter(
+                    status=Video.UNAPPROVED).update(
+                        status=Video.ACTIVE)
         source_import.status = import_class.COMPLETE
+        if import_app_label == 'localtv' and import_model == 'feedimport':
+            source_import.feed.status = source_import.feed.ACTIVE
+            source_import.feed.save()
 
     source_import.last_activity = datetime.datetime.now()
     source_import.save()

@@ -22,7 +22,7 @@ from haystack import indexes
 from haystack import site
 from localtv.models import Video
 from localtv.search.utils import SortFilterMixin
-from localtv.tasks import haystack_update_index, CELERY_USING
+from localtv.tasks import haystack_update_index
 
 
 class QueuedSearchIndex(indexes.SearchIndex):
@@ -45,12 +45,11 @@ class QueuedSearchIndex(indexes.SearchIndex):
         self._enqueue_instance(instance, True)
 
     def _enqueue_instance(self, instance, is_removal):
-        from django.conf import settings
         haystack_update_index.delay(instance._meta.app_label,
                                     instance._meta.module_name,
                                     instance.pk,
                                     is_removal,
-                                    using=CELERY_USING)
+                                    using=instance._state.db)
 
 
 class VideoIndex(QueuedSearchIndex):

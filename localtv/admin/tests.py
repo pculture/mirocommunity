@@ -45,6 +45,11 @@ import localtv.tiers
 
 Profile = utils.get_profile_model()
 
+NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
+PLUS_COST = NAME_TO_COST['plus']
+PREMIUM_COST = NAME_TO_COST['premium']
+MAX_COST = NAME_TO_COST['max']
+
 class AdministrationBaseTestCase(BaseTestCase):
 
     abstract = True
@@ -4246,7 +4251,7 @@ class IpnIntegration(BaseTestCase):
         self.assertFalse('until midnight on None' in message)
 
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4283,7 +4288,7 @@ class IpnIntegration(BaseTestCase):
         if override_amount3:
             amount3 = override_amount3
         else:
-            amount3 = u'15.00'
+            amount3 = unicode(PLUS_COST)
 
         # Now, PayPal sends us the IPN.
         ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
@@ -4309,7 +4314,7 @@ class IpnIntegration(BaseTestCase):
         if override_amount3:
             amount3 = override_amount3
         else:
-            amount3 = u'15.00'
+            amount3 = unicode(PLUS_COST)
 
         if override_subscr_id:
             subscr_id = override_subscr_id
@@ -4353,7 +4358,7 @@ class IpnIntegration(BaseTestCase):
         # Now, we get an IPN for $35, which should move us to 'premium'
         # Now, PayPal sends us the IPN.
         mail.outbox = []
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJR', u'amount3': u'35.00', u'amount1': u'0.00', u'mc_amount3': u'35.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJR', u'amount3': unicode(PREMIUM_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PREMIUM_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4375,7 +4380,7 @@ class IpnIntegration(BaseTestCase):
 
         # PayPal eventually sends us the IPN cancelling the old subscription, because someone
         # in the MC team ends it.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4399,7 +4404,7 @@ class IpnIntegration(BaseTestCase):
         self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
 
         # Send ourselves a payment IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': u'15.00', u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': unicode(PLUS_COST), u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4424,7 +4429,8 @@ class IpnIntegration(BaseTestCase):
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_downgrade_during_free_trial(self):
         # First, upgrade to 'premium' during the free trial.
-        self.upgrade_and_submit_ipn_skipping_free_trial_post('35.00')
+        self.upgrade_and_submit_ipn_skipping_free_trial_post(
+            unicode(PREMIUM_COST))
 
         # Make sure it worked
         tierinfo = TierInfo.objects.get_current()
@@ -4433,7 +4439,7 @@ class IpnIntegration(BaseTestCase):
 
         # Now, submit an IPN event for changing the payment amount to '15.00'
         # This should move us down to 'plus'
-        self.submit_ipn_subscription_modify('15.00')
+        self.submit_ipn_subscription_modify(unicode(PLUS_COST))
 
         # Make sure it worked
         self.assertEqual('plus', SiteLocation.objects.get_current().tier_name)
@@ -4446,7 +4452,9 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
-        expected = {'recurring': 35, 'cost_for_prorated_period': 18, 'days_covered_by_prorating': 28}
+        expected = {'recurring': PREMIUM_COST,
+                    'cost_for_prorated_period': int(PREMIUM_COST * 0.44),
+                    'days_covered_by_prorating': 28}
         self.assertEqual(data, expected)
 
     def test_end_of_month(self):
@@ -4454,7 +4462,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
-        expected = {'recurring': 35, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
+        expected = {'recurring': PREMIUM_COST, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
         self.assertEqual(data, expected)
 
 class TestUpgradePage(BaseTestCase):
@@ -4731,7 +4739,7 @@ class TestUpgradePage(BaseTestCase):
             self._run_method_from_ipn_integration_test_case(
                 'upgrade_including_prorated_duration_and_amount', 
                 '%d.00' % premium['cost_for_prorated_period'],
-                '35.00',
+                str(PREMIUM_COST),
                 '%d D' % premium['days_covered_by_prorating'])
             sl = SiteLocation.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
@@ -4744,7 +4752,7 @@ class TestUpgradePage(BaseTestCase):
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
         # First, switch into a free trial of 'max'.
-        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '75.00')
+        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', str(MAX_COST))
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
@@ -4810,7 +4818,7 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(response.context['can_modify'])
         self.assertTrue('"modify" value="1"' in response.content)
 
-        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00', old_profile)
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', str(PLUS_COST), old_profile)
 
         ti = TierInfo.objects.get_current()
         self.assertEqual(old_profile, ti.current_paypal_profile_id)

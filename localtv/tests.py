@@ -54,14 +54,16 @@ from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
                             Source)
 from localtv import utils
 import localtv.feeds.views
-from localtv import tiers
-import localtv.feeds.views
 
 from notification import models as notification
 from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
+NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
+PLUS_COST = NAME_TO_COST['plus']
+PREMIUM_COST = NAME_TO_COST['premium']
+MAX_COST = NAME_TO_COST['max']
 
 
 class FakeRequestFactory(RequestFactory):
@@ -216,10 +218,18 @@ class FeedImportTestCase(BaseTestCase):
         return vidscraper_feed
 
     def _update_with_video_iter(self, video_iter, feed):
-        feed_import = FeedImport.objects.create(feed=feed,
+        feed_import = FeedImport.objects.create(source=feed,
                                                 auto_approve=feed.auto_approve)
         Source.update(feed, video_iter, feed_import)
 
+
+    def test_update_approved_feed(self):
+        feed = Feed.objects.get(pk=1)
+        feed.status = Feed.UNAPPROVED
+        feed.save()
+        self._update_with_video_iter(self._parsed_feed, feed)
+        feed = Feed.objects.get(pk=1)
+        self.assertEquals(feed.status, Feed.ACTIVE)
 
     def test_auto_approve_True(self):
         """
@@ -280,7 +290,7 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
         self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        feed_import = FeedImport.objects.filter(source=feed).latest()
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
@@ -293,7 +303,7 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_duplicate_link.rss')
         self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(feed=feed).latest()
+        feed_import = FeedImport.objects.filter(source=feed).latest()
         self.assertEquals(feed_import.videos_skipped, 1)
         self.assertEquals(feed_import.videos_imported, 1)
         self.assertEquals(Video.objects.count(), 1)
@@ -588,12 +598,12 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = list(self._parse_feed('feed_with_long_item.atom'))
         self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().videos_imported, 1)
+        self.assertEquals(feed.imports.latest().videos_imported, 1)
         v = feed.video_set.get()
         # didn't get any updates
         self._update_with_video_iter(video_iter, feed)
         self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.feedimport_set.latest().videos_imported, 0)
+        self.assertEquals(feed.imports.latest().videos_imported, 0)
         v2 = feed.video_set.get()
         self.assertEquals(v.pk, v2.pk)
 
@@ -1661,7 +1671,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'plus'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(15, tier.dollar_cost())
+        self.assertEqual(PLUS_COST, tier.dollar_cost())
         self.assertEqual(1000, tier.videos_limit())
         self.assertEqual(5, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
@@ -1672,7 +1682,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'premium'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(35, tier.dollar_cost())
+        self.assertEqual(PREMIUM_COST, tier.dollar_cost())
         self.assertEqual(5000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
@@ -1682,7 +1692,7 @@ class SiteTierTests(BaseTestCase):
         self.site_location.tier_name = 'max'
         self.site_location.save()
         tier = self.site_location.get_tier()
-        self.assertEqual(75, tier.dollar_cost())
+        self.assertEqual(MAX_COST, tier.dollar_cost())
         self.assertEqual(25000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
         self.assertTrue(tier.permit_custom_css())
@@ -1799,12 +1809,10 @@ class SavedSearchImportTestCase(BaseTestCase):
         based on the user on the original video service.
         """
         ss = SavedSearch.objects.get(pk=1)
+        self.assertFalse(ss.auto_authors.all().exists())
         ss.update()
         video = ss.video_set.all()[0]
-        user = User.objects.get(username='dpikop')
-        self.assertEquals(user.get_profile().website,
-                          'http://www.youtube.com/user/dpikop')
-        self.assertEquals(list(video.authors.all()), [user])
+        self.assertTrue(video.authors.all().exists())
 
 class OriginalVideoModelTestCase(BaseTestCase):
 
@@ -1819,7 +1827,7 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2011, 11, 02, 6, 56, 41),
+        'thumbnail_updated': datetime.datetime(2011, 12, 06, 19, 18, 23),
         }
 
 
