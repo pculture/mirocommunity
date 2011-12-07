@@ -97,23 +97,23 @@ def unicode_set(iterable):
     return output
 
 
-def get_scraped_data(url):
+def get_vidscraper_video(url):
     cache_key = 'vidscraper_data-' + url
     if len(cache_key) >= 250:
         # too long, use the hash
         cache_key = 'vidscraper_data-hash-' + hashlib.sha1(url).hexdigest()
-    scraped_data = cache.get(cache_key)
+    vidscraper_video = cache.get(cache_key)
 
-    if not scraped_data:
+    if not vidscraper_video:
         # try and scrape the url
         try:
-            scraped_data = vidscraper.auto_scrape(url)
+            vidscraper_video = vidscraper.auto_scrape(url)
         except vidscraper.errors.Error:
-            scraped_data = None
+            vidscraper_video = None
 
-        cache.add(cache_key, scraped_data)
+        cache.add(cache_key, vidscraper_video)
 
-    return scraped_data
+    return vidscraper_video
 
 
 def normalize_newlines(s):
