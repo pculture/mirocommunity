@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import hashlib
+
 from django import forms
 from django.conf import settings
 from django.core.cache import cache
@@ -33,10 +35,16 @@ class LiveSearchForm(forms.Form):
         (RELEVANT, _('Relevant')),
     )
     q = forms.CharField()
-    order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST)
+    order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST,
+                                 required=False)
+
+    def clean_order_by(self):
+        return self.cleaned_data.get('order_by') or self.LATEST
 
     def _get_cache_key(self):
-        return 'localtv-livesearch-%(q)s-%(order_by)s' % self.cleaned_data
+        return 'localtv-livesearch-%s' % (
+            hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
+                        ).hexdigest())
 
     def get_search_api_keys(self):
         return {
@@ -54,6 +62,7 @@ class LiveSearchForm(forms.Form):
             results = list(intersperse_results(results, 40))
             cache.set(cache_key, results)
         for vidscraper_video in results:
+            vidscraper_video.load()
             try:
                 yield Video.from_vidscraper_video(vidscraper_video,
                                                   commit=False)

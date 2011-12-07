@@ -49,6 +49,7 @@ def manage_sources(request):
             ('Categories', None),
             ('User Attribution', None),
             ('Type', 'type'),
+            ('Import', None),
             ('Auto Approve', 'auto_approve')))
 
     sort = headers.order_by()
@@ -61,8 +62,7 @@ def manage_sources(request):
         orm_sort = sort
     sitelocation = SiteLocation.objects.get_current()
     feeds = Feed.objects.filter(
-        site=sitelocation.site,
-        status=Feed.ACTIVE).extra(select={
+        site=sitelocation.site).extra(select={
             'name__lower': 'LOWER(name)'}).order_by(orm_sort)
     searches = SavedSearch.objects.filter(
         site=sitelocation.site).extra(select={

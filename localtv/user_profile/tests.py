@@ -218,6 +218,7 @@ class NotificationsFormTestCase(TestCase):
                 'notifications': [
                     'video_approved',
                     'video_comment',
+                    'comment_post_comment',
                     'newsletter'
                 ]
             })
@@ -252,6 +253,7 @@ class NotificationsFormTestCase(TestCase):
         self.assertEquals(len(form.fields['notifications'].choices), choice_len)
         self.assertEquals(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
+                                  'comment_post_comment',
                                   'newsletter', 'admin_new_playlist']
                 })
 
