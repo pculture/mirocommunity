@@ -45,7 +45,6 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
-import django.dispatch
 from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
@@ -63,7 +62,7 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.signals import post_video_from_vidscraper
+from localtv.signals import post_video_from_vidscraper, submit_finished
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -1316,10 +1315,12 @@ class VideoBase(models.Model):
     duplicate these fields, but this way it's easier to add more points of
     duplication in the future.
     """
-    name = models.CharField(max_length=250)
-    description = models.TextField(blank=True)
-    thumbnail_url = models.URLField(
-        verify_exists=False, blank=True, max_length=400)
+    name = models.CharField(verbose_name="Video Name", max_length=250)
+    description = models.TextField(verbose_name="Video Description (optional)",
+                                   blank=True)
+    thumbnail_url = models.URLField(verbose_name="Thumbnail URL (optional)",
+                                    verify_exists=False, blank=True,
+                                    max_length=400)
 
     class Meta:
         abstract = True
@@ -1774,19 +1775,17 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     website_url = BitLyWrappingURLField(verbose_name='Website URL',
                                         verify_exists=False,
                                         blank=True)
-    embed_code = models.TextField(blank=True)
+    embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)
     flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
                                                 blank=True)
     guid = models.CharField(max_length=250, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
-    video_service_user = models.CharField(max_length=250, blank=True,
-                                          default='')
-    video_service_url = models.URLField(verify_exists=False, blank=True,
-                                        default='')
-    contact = models.CharField(max_length=250, blank=True,
-                               default='')
-    notes = models.TextField(blank=True)
+    video_service_user = models.CharField(max_length=250, blank=True)
+    video_service_url = models.URLField(verify_exists=False, blank=True)
+    contact = models.CharField(verbose_name='E-mail (optional)', max_length=250,
+                               blank=True)
+    notes = models.TextField(verbose_name='Notes (optional)', blank=True)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
@@ -2164,7 +2163,6 @@ def tag_unicode(self):
 
 tagging.models.Tag.__unicode__ = tag_unicode
 
-submit_finished = django.dispatch.Signal()
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)

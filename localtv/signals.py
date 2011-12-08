@@ -12,3 +12,4 @@ from django.dispatch import Signal
 post_video_from_vidscraper = Signal(providing_args=["instance",
                                                     "vidscraper_video",
                                                     "using"])
+submit_finished = Signal()
