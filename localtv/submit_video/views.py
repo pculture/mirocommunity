@@ -24,6 +24,7 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic import FormView, CreateView
 from django.utils.decorators import method_decorator
+from tagging.utils import parse_tag_input
 import vidscraper
 
 from localtv.decorators import request_passes_test
@@ -159,9 +160,17 @@ class SubmitVideoView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(SubmitVideoView, self).get_context_data(**kwargs)
-        # TODO: This is deceptive, since we already have an instantiated video
-        # based on this that we could easily be using instead.
-        context['video'] = self.video
+        # Provided for backwards-compatibility.
+        context['data'] = {
+            'link': self.object.website_url,
+            'publish_date': self.object.when_published,
+            'tags': parse_tag_input(context['form'].initial.get('tags', '')),
+            'title': self.object.name,
+            'description': self.object.description,
+            'thumbnail_url': self.object.thumbnail_url,
+            'user': self.object.video_service_user,
+            'user_url': self.object.video_service_url,
+        }
         return context
 
 
