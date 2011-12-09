@@ -19,6 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% block form_action %}{% url localtv_submit_video %}{% endblock %}
+{% block form_method %}get{% endblock %}
 {% block pre-table %}
   {% if was_duplicate %}
     <h1>That video has already been submitted!</h1>

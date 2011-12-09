@@ -453,26 +453,10 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
 
     def test_POST_fail_existing_video_approved_admin(self):
         """
-        If the URL represents the website URL of an approved video on the site
-        and the user is an admin, the user should be redirected to the thanks
-        page.
+        The behavior on duplicates should be identical for admins and ordinary
+        users; moderating videos should be done through the admin.
         """
-        video = models.Video.objects.create(
-            site=self.site_location.site,
-            name='Participatory Culture',
-            status=models.Video.ACTIVE,
-            website_url='http://www.pculture.org/')
-
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.post(self.url,
-                          {'url': video.website_url})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
-                          'http://%s%s' % (
-                'testserver', #self.site_location.site.domain,
-                reverse('localtv_submit_thanks',
-                        args=[video.pk])))
+        self.test_POST_fail_existing_video_approved()
 
     def test_POST_fail_existing_video_file_url(self):
         """
@@ -499,25 +483,10 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
 
     def test_POST_fail_existing_video_file_url_admin(self):
         """
-        If the URL represents the file URL of an approved video on the site and
-        the user is an admin, the user should be redirected to the thanks page.
+        The behavior on duplicates should be identical for admins and ordinary
+        users; moderating videos should be done through the admin.
         """
-        video = models.Video.objects.create(
-            site=self.site_location.site,
-            name='Participatory Culture',
-            status=models.Video.ACTIVE,
-            file_url='http://www.pculture.org/')
-
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.post(self.url,
-                          {'url': video.file_url})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
-                          'http://%s%s' % (
-                'testserver', #self.site_location.site.domain,
-                reverse('localtv_submit_thanks',
-                        args=[video.pk])))
+        self.test_POST_fail_existing_video_file_url()
 
     def test_POST_fail_existing_video_unapproved(self):
         """
@@ -543,29 +512,10 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
 
     def test_POST_fail_existing_video_unapproved_admin(self):
         """
-        If the URL represents an unapproved video on the site and the user is
-        an admin, the video should be approved and the user should be
-        redirected to the thanks page.
+        The behavior on duplicates should be identical for admins and ordinary
+        users; moderating videos should be done through the admin.
         """
-        video = models.Video.objects.create(
-            site=self.site_location.site,
-            name='Participatory Culture',
-            status=models.Video.UNAPPROVED,
-            website_url='http://www.pculture.org/')
-
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.post(self.url,
-                          {'url': video.website_url})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
-                          'http://%s%s' % (
-                'testserver', #self.site_location.site.domain,
-                reverse('localtv_submit_thanks',
-                        args=[video.pk])))
-
-        video = models.Video.objects.get(pk=video.pk)
-        self.assertEquals(video.status,models.Video.ACTIVE)
+        self.test_POST_fail_existing_video_unapproved()
 
     def test_GET_bookmarklet(self):
         """
@@ -781,6 +731,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
 
     def setUp(self):
         SecondStepSubmitBaseTestCase.setUp(self)
+
         self.url = reverse('localtv_submit_directlink_video')
         self.template_name = 'localtv/submit_video/direct.html'
         self.POST_data = self.video_data = {

@@ -18,7 +18,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
@@ -43,6 +43,8 @@ def _has_submit_permissions(request):
         if sitelocation.display_submit_button:
             return request.user.is_authenticated() and request.user.is_active
         else:
+            import pdb
+            pdb.set_trace()
             return request.user_is_admin()
 
 
@@ -52,12 +54,23 @@ class SubmitURLView(FormView):
     template_name = "localtv/submit_video/submit.html"
 
     @method_decorator(request_passes_test(_has_submit_permissions))
+    def get(self, request, *args, **kwargs):
+        return FormView.post(self, request, *args, **kwargs)
+
     @method_decorator(csrf_protect)
-    def dispatch(self, *args, **kwargs):
-        return super(SubmitURLView, self).dispatch(*args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        # This method should be disallowed. Some forms may still use it in old
+        # templates, so we handle it for backwards-compatibility.
+        return self.get(request, *args, **kwargs)
 
     def get_session_key(self):
         return self.session_key
+
+    def get_form(self, form_class):
+        kwargs = self.get_form_kwargs()
+        if set(self.request.GET) & set(form_class.base_fields):
+            kwargs['data'] = self.request.GET
+        return form_class(**kwargs)
 
     def form_valid(self, form):
         video = form.video_cache
@@ -81,6 +94,14 @@ class SubmitURLView(FormView):
             'url': url
         }
         return super(SubmitURLView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SubmitURLView, self).get_context_data(**kwargs)
+        # HACK to provide backwards-compatible context.
+        context['was_duplicate'] = getattr(context['form'], 'was_duplicate',
+                                           False)
+        context['video'] = getattr(context['form'], 'duplicate_video', None)
+        return context
 
 
 class SubmitVideoView(CreateView):

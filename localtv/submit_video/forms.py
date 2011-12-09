@@ -48,8 +48,17 @@ class SubmitURLForm(forms.Form):
                                       site=Site.objects.get_current()
             )
         except Video.DoesNotExist:
-            pass
+            # Setting these attributes is a HACK to make it possible to provide
+            # backwards-compatible context. Should be removed once that's been
+            # deprecated.
+            self.was_duplicate = False
+            self.duplicate_video = None
         else:
+            self.was_duplicate = True
+            if video.status == Video.ACTIVE:
+                self.duplicate_video = video
+            else:
+                self.duplicate_video = None
             raise ValidationError("That video has already been submitted!")
 
     def clean_url(self):
