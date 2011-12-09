@@ -48,7 +48,8 @@ class QueuedSearchIndex(indexes.SearchIndex):
         haystack_update_index.delay(instance._meta.app_label,
                                     instance._meta.module_name,
                                     instance.pk,
-                                    is_removal)
+                                    is_removal,
+                                    using=instance._state.db)
 
 
 class VideoIndex(QueuedSearchIndex):
@@ -117,5 +118,13 @@ class VideoIndex(QueuedSearchIndex):
             return video.watch_count
         except AttributeError:
             return video.watch_set.count()
+
+    def _enqueue_instance(self, instance, is_removal):
+        if (not instance.name and not instance.description
+            and not instance.website_url and not instance.file_url):
+            # fake instance for testing
+            return
+        else:
+            super(VideoIndex, self)._enqueue_instance(instance, is_removal)
 
 site.register(Video, VideoIndex)

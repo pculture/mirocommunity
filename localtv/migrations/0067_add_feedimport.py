@@ -1,22 +1,37 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
-        # Adding field 'Category.contest_mode'
-        db.add_column('localtv_category', 'contest_mode', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
+        # Adding model 'FeedImport'
+        db.create_table('localtv_feedimport', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('feed', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['localtv.Feed'])),
+            ('start', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('end', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+        ))
+        db.send_create_signal('localtv', ['FeedImport'])
 
+        # Adding model 'FeedImportIndex'
+        db.create_table('localtv_feedimportindex', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('feedimport', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['localtv.FeedImport'])),
+            ('video', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['localtv.Video'], unique=True)),
+            ('index', self.gf('django.db.models.fields.IntegerField')()),
+        ))
+        db.send_create_signal('localtv', ['FeedImportIndex'])
 
     def backwards(self, orm):
-        
-        # Deleting field 'Category.contest_mode'
-        db.delete_column('localtv_category', 'contest_mode')
+        # Deleting model 'FeedImport'
+        db.delete_table('localtv_feedimport')
 
+        # Deleting model 'FeedImportIndex'
+        db.delete_table('localtv_feedimportindex')
 
     models = {
         'auth.group': {
@@ -64,7 +79,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'child_set'", 'null': 'True', 'to': "orm['localtv.Category']"}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
         },
         'localtv.feed': {
             'Meta': {'unique_together': "(('feed_url', 'site'),)", 'object_name': 'Feed'},
@@ -81,11 +96,42 @@ class Migration(SchemaMigration):
             'last_updated': ('django.db.models.fields.DateTimeField', [], {}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
-            'status': ('django.db.models.fields.IntegerField', [], {}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_submitted': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
+        },
+        'localtv.feedimport': {
+            'Meta': {'object_name': 'FeedImport'},
+            'end': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'feed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Feed']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'start': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
+        },
+        'localtv.feedimportindex': {
+            'Meta': {'object_name': 'FeedImportIndex'},
+            'feedimport': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.FeedImport']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'index': ('django.db.models.fields.IntegerField', [], {}),
+            'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
+        },
+        'localtv.newslettersettings': {
+            'Meta': {'object_name': 'NewsletterSettings'},
+            'facebook_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'intro': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
+            'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'sitelocation': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteLocation']", 'unique': 'True'}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
+            'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video2': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter2'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video3': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter3'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video4': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter4'", 'null': 'True', 'to': "orm['localtv.Video']"}),
+            'video5': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter5'", 'null': 'True', 'to': "orm['localtv.Video']"})
         },
         'localtv.originalvideo': {
             'Meta': {'object_name': 'OriginalVideo'},

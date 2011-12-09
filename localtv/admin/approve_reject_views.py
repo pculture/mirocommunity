@@ -91,7 +91,7 @@ def approve_video(request):
         site=sitelocation.site)
 
     # If the site would exceed its video allotment, then fail
-    # with a HTTP 403 and a clear message about why.
+    # with a HTTP 402 and a clear message about why.
     if (SiteLocation.enforce_tiers() and
         sitelocation.get_tier().remaining_videos() < 1):
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)

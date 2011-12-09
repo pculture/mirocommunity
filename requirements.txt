@@ -1,6 +1,6 @@
 git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs-0.0.1-py2.6-dev
 git+http://git.participatoryculture.org/djvideo@master#egg=djvideo-0.0.1-py2.6-dev
--e git+git://github.com/pculture/vidscraper.git@feature/develop#egg=vidscraper-0.0.1-py2.6-dev
+-e git+git://github.com/pculture/vidscraper.git@develop#egg=vidscraper-0.0.1-py2.6-dev
 git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share-0.0.1-py2.6-dev
 git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_uploadtemplate-0.0.1-py2.6-dev
 BeautifulSoup==3.2.0
@@ -18,8 +18,7 @@ django-tagging==0.3
 svn+http://recaptcha.googlecode.com/svn/trunk/recaptcha-plugins/python@124#egg=recaptcha_client-dev_r124
 svn+http://recaptcha-django.googlecode.com/svn/trunk@6#egg=recaptcha_django-0.1-py2.6-dev_r6
 django-haystack>=1.1
-# whoosh or another Haystack backend
-celery==1.0.0
+django-celery>=2.3.0
 git+http://git.participatoryculture.org/python-bitly@master#egg=python_bitly-trunk-py2.6-dev
 oauth2==1.2.0
 hg+http://bitbucket.org/ubernostrum/django-registration/#egg=django-registration

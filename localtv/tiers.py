@@ -250,9 +250,9 @@ class Tier(object):
     @staticmethod
     def NAME_TO_COST():
         prices = {'basic': 0,
-                   'plus': 15,
-                   'premium': 35,
-                   'max': 75}
+                   'plus': 79,
+                   'premium': 149,
+                   'max': 299}
         overrides = getattr(settings, "LOCALTV_COST_OVERRIDE", None)
         if overrides:
             for key in overrides:
@@ -278,8 +278,9 @@ class Tier(object):
 
         return prices
 
-    def __init__(self, tier_name):
+    def __init__(self, tier_name, sitelocation=None):
         self.tier_name = tier_name
+        self.sitelocation = sitelocation
 
     @staticmethod
     def get(log_warnings=False):
@@ -339,7 +340,10 @@ class Tier(object):
         the tier limits us to.
 
         Returns False if it is *not* okay to add more videos to the site.'''
-        enforce = localtv.models.SiteLocation.enforce_tiers()
+        if self.sitelocation:
+            enforce = self.sitelocation.enforce_tiers(using=self.sitelocation._state.db)
+        else:
+            enforce = localtv.models.SiteLocation.enforce_tiers()
         if not enforce:
             return True
 
@@ -369,8 +373,11 @@ class Tier(object):
         return special_cases.get(self.tier_name, default)
 
     def enforce_permit_custom_template(self):
-        import localtv.models
-        sl = localtv.models.SiteLocation.objects.get_current()
+        if self.sitelocation:
+            sl = self.sitelocation
+        else:
+            import localtv.models
+            sl = localtv.models.SiteLocation.objects.get_current()
         if not sl.enforce_tiers():
             return True
         return self.permit_custom_template()

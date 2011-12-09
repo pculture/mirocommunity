@@ -43,12 +43,14 @@ import vidscraper
 from notification import models as notification
 
 
-def get_tag(tag_text):
+def get_tag(tag_text, using='default'):
     while True:
         try:
-            tags = tagging.models.Tag.objects.filter(name=tag_text)
+            tags = tagging.models.Tag.objects.using(using).filter(
+                name=tag_text)
             if not tags.count():
-                return tagging.models.Tag.objects.create(name=tag_text)
+                return tagging.models.Tag.objects.using(using).create(
+                    name=tag_text)
             elif tags.count() == 1:
                 return tags[0]
             else:
@@ -60,14 +62,14 @@ def get_tag(tag_text):
             pass # try again to create the tag
 
 
-def get_or_create_tags(tag_list):
+def get_or_create_tags(tag_list, using='default'):
     tag_set = set()
     for tag_text in tag_list:
         if isinstance(tag_text, basestring):
             tag_text = tag_text[:50] # tags can only by 50 chars
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
-        tag = get_tag(tag_text);
+        tag = get_tag(tag_text, using);
         tag.name = force_unicode(tag.name)
         tag_set.add(tag)
     edit_string = tagging.utils.edit_string_for_tags(list(tag_set))
@@ -95,23 +97,23 @@ def unicode_set(iterable):
     return output
 
 
-def get_scraped_data(url):
+def get_vidscraper_video(url):
     cache_key = 'vidscraper_data-' + url
     if len(cache_key) >= 250:
         # too long, use the hash
         cache_key = 'vidscraper_data-hash-' + hashlib.sha1(url).hexdigest()
-    scraped_data = cache.get(cache_key)
+    vidscraper_video = cache.get(cache_key)
 
-    if not scraped_data:
+    if not vidscraper_video:
         # try and scrape the url
         try:
-            scraped_data = vidscraper.auto_scrape(url)
+            vidscraper_video = vidscraper.auto_scrape(url)
         except vidscraper.errors.Error:
-            scraped_data = None
+            vidscraper_video = None
 
-        cache.add(cache_key, scraped_data)
+        cache.add(cache_key, vidscraper_video)
 
-    return scraped_data
+    return vidscraper_video
 
 
 def normalize_newlines(s):
@@ -467,8 +469,8 @@ def pull_downloaded_file_from_cache(url):
     return data
 
 
-def resize_image_returning_list_of_content_files(original_image,
-                                                 THUMB_SIZES):
+def resize_image_returning_list_of_strings(original_image,
+                                           THUMB_SIZES):
     ret = []
     # Hackishly copying this constant in for now.
     FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
@@ -532,7 +534,7 @@ def resize_image_returning_list_of_content_files(original_image,
         sio_img.seek(0)
         ret.append(
             ((width, height),
-             ContentFile(sio_img.read())))
+             sio_img.read()))
     return ret
 
 

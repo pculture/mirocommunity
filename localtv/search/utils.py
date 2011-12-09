@@ -41,7 +41,8 @@ class SearchQuerysetSliceHack(object):
     def __getitem__(self, k):
         results = self.searchqueryset[k]
         if isinstance(results, list):
-            return [result.object for result in results]
+            return [result.object for result in results
+                    if result is not None]
         return result.object
 
     def __len__(self):
