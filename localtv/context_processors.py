@@ -19,7 +19,8 @@ import os
 
 from django.conf import settings
 
-from localtv.models import SiteLocation, Video, Category, ENABLE_CHANGE_STAMPS
+from localtv.models import SiteLocation, Video, Category
+from localtv.settings import ENABLE_CHANGE_STAMPS
 
 
 def localtv(request):
@@ -34,7 +35,7 @@ def localtv(request):
         if request.user_is_admin():
             display_submit_button = True
 
-    if ENABLE_CHANGE_STAMPS:
+    if getattr(settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False):
         try:
             cache_invalidator = os.stat(
                 os.path.join(settings.MEDIA_ROOT,

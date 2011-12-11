@@ -32,8 +32,8 @@ from django.contrib.auth.models import User
 from haystack import site
 
 from localtv import utils
-from localtv.models import (Video, Feed, SiteLocation, SavedSearch, Category,
-                            CannotOpenImageUrl)
+from localtv.exceptions import CannotOpenImageUrl
+from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
 from localtv.tiers import Tier
 
 
