@@ -31,7 +31,8 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv import utils
 from localtv.decorators import request_passes_test
-from localtv.models import SiteLocation, Video, submit_finished
+from localtv.models import SiteLocation, Video
+from localtv.signals import submit_finished
 from localtv.submit_video import forms
 from localtv.submit_video.utils import is_video_url
 

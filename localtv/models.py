@@ -67,7 +67,7 @@ from localtv.settings import (voting_enabled, ENABLE_ORIGINAL_VIDEO,
                               ENABLE_CHANGE_STAMPS, USE_ZENDESK,
                               DISABLE_TIERS_ENFORCEMENT, SHOW_ADMIN_DASHBOARD,
                               SHOW_ADMIN_ACCOUNT_LEVEL)
-from localtv.signals import post_video_from_vidscraper
+from localtv.signals import post_video_from_vidscraper, submit_finished
 import localtv.tiers
 
 def delete_if_exists(path):
@@ -2163,8 +2163,6 @@ def tag_unicode(self):
     return self.name
 
 tagging.models.Tag.__unicode__ = tag_unicode
-
-submit_finished = django.dispatch.Signal()
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
