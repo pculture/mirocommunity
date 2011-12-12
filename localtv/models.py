@@ -63,7 +63,11 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.signals import post_video_from_vidscraper
+from localtv.settings import (voting_enabled, ENABLE_ORIGINAL_VIDEO,
+                              ENABLE_CHANGE_STAMPS, USE_ZENDESK,
+                              DISABLE_TIERS_ENFORCEMENT, SHOW_ADMIN_DASHBOARD,
+                              SHOW_ADMIN_ACCOUNT_LEVEL)
+from localtv.signals import post_video_from_vidscraper, submit_finished
 import localtv.tiers
 
 
@@ -97,10 +101,6 @@ VIDEO_SERVICE_REGEXES = (
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
     ('Vimeo', r'http://(www\.)?vimeo\.com/'),
     ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
-
-
-POPULAR_QUERY_TIMEOUT = getattr(settings, 'LOCALTV_POPULAR_QUERY_TIMEOUT',
-                                120 * 60) # 120 minutes
 
 
 class BitLyWrappingURLField(models.URLField):
@@ -332,7 +332,7 @@ class TierInfo(models.Model):
         LOCALTV_USE_ZENDESK setting. Then this method will return False,
         and the parts of the tiers system that check it will avoid
         making calls out to ZenDesk.'''
-        return getattr(settings, 'LOCALTV_USE_ZENDESK', False)
+        return USE_ZENDESK
 
 
 class SiteLocation(Thumbnailable):
@@ -469,7 +469,7 @@ class SiteLocation(Thumbnailable):
         '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
         then this function returns False. Otherwise, it returns True.'''
         if override_setting is None:
-            disabled = getattr(settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
+            disabled = DISABLE_TIERS_ENFORCEMENT
         else:
             disabled = override_setting
 
@@ -536,7 +536,7 @@ class SiteLocation(Thumbnailable):
         will omit the link to the Dashboard, and also the dashboard itself
         will be an empty page with a META REFRESH that points to
         /admin/approve_reject/.'''
-        return getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
+        return SHOW_ADMIN_DASHBOARD
 
     def should_show_account_level(self):
         '''On /admin/upgrade/, most sites will see an info page that
@@ -547,7 +547,7 @@ class SiteLocation(Thumbnailable):
 
         This simply removes the link from the sidebar; if you visit the
         /admin/upgrade/ page, it renders as usual.'''
-        return getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL', True)
+        return SHOW_ADMIN_ACCOUNT_LEVEL
 
 
 class NewsletterSettings(models.Model):
@@ -1148,7 +1148,7 @@ class Category(models.Model):
         """
         Returns True if this category has videos with votes.
         """
-        if not localtv.settings.voting_enabled():
+        if not VOTING_ENABLED:
             return False
         import voting
         return voting.models.Vote.objects.filter(
@@ -2078,7 +2078,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             return 'posted'
 
     def voting_enabled(self):
-        if not localtv.settings.voting_enabled():
+        if not voting_enabled():
             return False
         return self.categories.filter(contest_mode__isnull=False).exists()
 
@@ -2249,8 +2249,6 @@ def tag_unicode(self):
 
 tagging.models.Tag.__unicode__ = tag_unicode
 
-submit_finished = django.dispatch.Signal()
-
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
     if sender.is_active():
@@ -2370,8 +2368,6 @@ def save_original_tags(sender, instance, created=False, **kwargs):
     tagging.models.TaggedItem.objects.db_manager(instance._state.db).create(
         tag=instance.tag, object=original)
 
-ENABLE_ORIGINAL_VIDEO = not getattr(settings, 'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY', None)
-
 if ENABLE_ORIGINAL_VIDEO:
     models.signals.post_save.connect(create_original_video,
                                      sender=Video)
@@ -2384,9 +2380,6 @@ if ENABLE_ORIGINAL_VIDEO:
 ### The VIDEO_PUBLISHED_STAMP updates the mtime of a file whenever a Video instance
 ### is created or modified. If the stamp file is really old, then you can
 ### safely skip running management commands like update_index.
-
-ENABLE_CHANGE_STAMPS = getattr(
-    settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
 
 def video_published_stamp_signal_listener(sender=None, instance=None, created=False, override_date=None, **kwargs):
     '''The purpose of the change stamp is to create a file on-disk that

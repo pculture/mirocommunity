@@ -12,3 +12,9 @@ from django.dispatch import Signal
 post_video_from_vidscraper = Signal(providing_args=["instance",
                                                     "vidscraper_video",
                                                     "using"])
+
+
+#: This signal is fired when a :class:`.Video` is successfully submitted.
+#: TODO: Depending on what happens with submit_video, this should perhaps be
+#: moved elsewhere.
+submit_finished = Signal()
