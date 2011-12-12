@@ -141,8 +141,8 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                         status=Video.ACTIVE)
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
-            source_import.feed.status = source_import.feed.ACTIVE
-            source_import.feed.save()
+            source_import.source.status = source_import.source.ACTIVE
+            source_import.source.save()
 
     source_import.last_activity = datetime.datetime.now()
     source_import.save()
