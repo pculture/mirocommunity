@@ -28,7 +28,6 @@ from django.views.generic.list_detail import object_list
 from localtv.models import Video, SiteLocation
 from localtv.utils import SortHeaders
 
-from localtv.playlists import forms
 from localtv.playlists.models import Playlist
 
 def playlist_enabled(func):
