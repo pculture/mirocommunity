@@ -21,13 +21,13 @@ from django.core.urlresolvers import reverse
 from localtv import models
 from localtv.inline_edit import forms
 from localtv.playlists.models import Playlist
-from localtv.playlists.forms import PlaylistForm
+#from localtv.playlists.forms import PlaylistForm
 
 WIDGET_DIRECTORY = {
-    Playlist: {
-        'info': {
-            'form': PlaylistForm},
-        },
+    #Playlist: {
+    #    'info': {
+    #        'form': PlaylistForm},
+    #    },
     models.Video: {
         'name': {
             'form': forms.VideoNameForm},

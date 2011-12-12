@@ -20,7 +20,6 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.templatetags.editable_widget import editable_widget
 
-from localtv.playlists.forms import PlaylistForm
 from localtv.playlists.views import playlist_enabled, playlist_authorized
 
 @playlist_enabled
