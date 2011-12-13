@@ -43,13 +43,31 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <p>Videos here require moderator approval before appearing on the site.</p>
 
     <form method="post" action="{{ request.path }}">
+
+      <button type="submit">Run all actions</button>
+      {% csrf_token %}
       {{ formset.management_form }}
       {{ formset.non_form_errors }}
 
       {{ block.super }}
 
-      <button type="submit">Save all decisions</button>
-      <button type="reset">Reset all decisions</button>
+      <button type="submit">Run all actions</button>
     </form>
   {% endif %}
+{% endblock %}
+
+
+{% block object_list_item_headers %}
+  {{ block.super }}
+  <th>{% trans 'Action' %}</th>
+{% endblock %}
+
+
+{% block object_list_item_fields %}
+  {{ form.id }}
+<th>
+  {% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a>{% endif %}
+  {% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}
+</th>
+  <td class='form-fields-field'>{{ form.action }}{% if form.action.errors %}{{ form.action.errors }}{% endif %}</td>
 {% endblock %}

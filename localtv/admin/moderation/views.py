@@ -15,18 +15,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib import comments
+from django.contrib import comments, messages
 from django.contrib.sites.models import Site
+from django.template.defaultfilters import pluralize
 from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.feeds import generate_secret
-from localtv.admin.moderation.forms import CommentModerationFormSet
+from localtv.admin.moderation.forms import (RequestModelFormSet,
+                                            CommentModerationForm,
+                                            VideoModerationForm,
+                                            VideoLimitFormSet)
 from localtv.admin.views import MiroCommunityAdminListView
 from localtv.decorators import require_site_admin
 from localtv.models import Video
 
 
 class VideoModerationQueueView(MiroCommunityAdminListView):
+    form_class = VideoModerationForm
+    formset_class = VideoLimitFormSet
     paginate_by = 10
     context_object_name = 'videos'
     template_name = 'localtv/admin/moderation/videos/queue.html'
@@ -54,9 +61,27 @@ class VideoModerationQueueView(MiroCommunityAdminListView):
         })
         return context
 
+    def formset_valid(self, formset):
+        if formset._approved_count > 0:
+            messages.add_message(
+                self.request,
+                messages.SUCCESS,
+                _("Approved %d video%s." % (formset._approved_count,
+                                            pluralize(formset._approved_count)))
+            )
+        if formset._rejected_count > 0:
+            messages.add_message(
+                self.request,
+                messages.SUCCESS,
+                _("Rejected %d video%s." % (formset._rejected_count,
+                                            pluralize(formset._rejected_count)))
+            )
+        return super(VideoModerationQueueView, self).formset_valid(formset)
+
 
 class CommentModerationQueueView(MiroCommunityAdminListView):
-    formset_class = CommentModerationFormSet
+    formset_class = RequestModelFormSet
+    form_class = CommentModerationForm
     paginate_by = 10
     context_object_name = 'comments'
     template_name = 'localtv/admin/moderation/comments/queue.html'

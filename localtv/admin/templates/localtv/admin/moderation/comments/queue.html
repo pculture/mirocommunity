@@ -29,19 +29,35 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content_title %}<h1>{% trans "Comment Review Queue" %}</h1>{% endblock %}
 
+
 {% block content %}
   {% if not object_list %}
     <p>{% trans "No comments to moderate" %}</p>
   {% else %}
     <form method="post" action="{{ request.path }}">
+
+      <button type="submit">Run all actions</button>
+      {% csrf_token %}
       {{ formset.management_form }}
       {{ formset.non_form_errors }}
 
       {{ block.super }}
 
-      <button type="submit">Save all decisions</button>
-      <button type="reset">Reset all decisions</button>
+      <button type="submit">Run all actions</button>
     </form>
   {% endif %}
 </section>
+{% endblock %}
+
+
+{% block object_list_item_headers %}
+  {{ block.super }}
+  <th>{% trans 'Action' %}</th>
+{% endblock %}
+
+
+{% block object_list_item_fields %}
+  {{ form.id }}
+  {{ block.super }}
+  <td class='form-fields-field'>{{ form.action }}</td>
 {% endblock %}

@@ -57,7 +57,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           {% block object_list_item %}
           <tr class='object-list-item'>
             {% block object_list_item_fields %}
-              <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}</th>
+              <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a>{% endif %}</th>
             {% endblock %}
           </tr>
           {% endblock %}

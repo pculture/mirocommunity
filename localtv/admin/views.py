@@ -16,11 +16,12 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
+from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 from django.forms.formsets import BaseFormSet, formset_factory
 from django.forms.models import (ModelForm, BaseModelFormSet,
                                  modelformset_factory)
-from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
@@ -40,6 +41,7 @@ class FormSetMixin(object):
     factory_kwargs = {
         'extra': 0,
         'can_delete': True,
+        'max_num': 0,
     }
 
     def get_initial(self):
@@ -122,7 +124,7 @@ class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
 
     def formset_valid(self, formset):
         self.object_list = formset.save()
-        return super(ModelFormSetMixin, self).formset_valid()
+        return super(ModelFormSetMixin, self).formset_valid(formset)
 
     def get_context_data(self, **kwargs):
         return MultipleObjectMixin.get_context_data(self, **kwargs)
@@ -155,7 +157,11 @@ class ModelFormSetView(MultipleObjectTemplateResponseMixin, ModelFormSetMixin, V
         if formset.is_valid():
             return self.formset_valid(formset)
         else:
-            return self.formset_invalid(formset)
+            return self.formset_invalid(formset, context)
+
+    def formset_invalid(self, formset, context):
+        context['formset'] = formset
+        return self.render_to_response(context)
 
 
 class MiroCommunityAdminCRUDMixin(object):
@@ -202,6 +208,9 @@ class MiroCommunityAdminListView(MiroCommunityAdminCRUDMixin, ModelFormSetView):
             MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
         )
         return context
+
+    def get_success_url(self):
+        return self.request.path
 
 
 class MiroCommunityAdminCreateView(MiroCommunityAdminCRUDMixin, CreateView):
