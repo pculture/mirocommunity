@@ -1,4 +1,4 @@
-{% extends "localtv/admin/__base.html" %}
+{% extends "localtv/admin/list.html" %}
 
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
@@ -24,41 +24,32 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_classes %}{{ block.super }} moderation videos queue{% endblock %}
 
 
-{% block title %}{% trans "Review Queue" %} — {% trans "Videos" %} — {{ block.super }}{% endblock %}
+{% block title %}{% trans "Video Review Queue" %} — {% trans "Moderation" %}{{ block.super }}{% endblock %}
+
+
+{% block content_title %}<h1>{% trans "Video Review Queue" %}</h1>{% endblock %}
+
+
+{% block content_header_tools %}
+  <a class="content-header-tool content-header-tool-rss" href="{# {% url localtv_admin_feed_unapproved_user feed_secret %} #}">Feed of unreviewed user submissions</a>
+  <a class="content-header-tool content-header-tool-rss" href="{# {% url localtv_admin_feed_unapproved feed_secret %} #}">Feed of all unreviewed videos</a>
+{% endblock %}
 
 
 {% block content %}
-<section>
-  <header>
-    <h1>Video Review Queue</h1>
-    <h2><a class="rss" href="{# {% url localtv_admin_feed_unapproved feed_secret %} #}">Feed of unreviewed videos</a></h2>
-    <h2><a class="rss" href="{# {% url localtv_admin_feed_unapproved_user feed_secret %} #}">Feed of unreviewed user submissions</a></h2>
-  </header>
+  {% if not object_list %}
+    <p>You have no videos that need reviewing.  <a href="{# {% url localtv_admin_manage_page %} #}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</p>
+  {% else %}
+    <p>Videos here require moderator approval before appearing on the site.</p>
 
-  <ul class="messages">
-    {% if not paginator.count %}
-      <li class="messages-info">You have no videos that need reviewing.  <a href="{# {% url localtv_admin_manage_page %} #}">Manage your Sources</a> to import YouTube user videos, searches of video sites and other automated sources.</li>
-    {% else %}
-      <li class="messages-info">Videos here require moderator approval before appearing on the site.</li>
-    {% endif %}
-  </ul>
-
-  {% if paginator.count %}
-    {% if page.has_other_pages %}
-      {% include "localtv/admin/_pagination.html" %}
-    {% endif %}
-    <form class="bulk-edit-form" method="post" action="">
+    <form method="post" action="{{ request.path }}">
       {{ formset.management_form }}
       {{ formset.non_form_errors }}
-      {% for form in formset.forms %}
-        <article>
-          <table>
-            {{ form }}
-          </table>
-        </article>
-      {% endfor %}
-      <button type="submit">Save all changes</button>
+
+      {{ block.super }}
+
+      <button type="submit">Save all decisions</button>
+      <button type="reset">Reset all decisions</button>
     </form>
   {% endif %}
-</section>
 {% endblock %}

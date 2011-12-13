@@ -1,4 +1,4 @@
-{% extends "localtv/admin/__base.html" %}
+{% extends "localtv/admin/list.html" %}
 
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
@@ -24,36 +24,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_classes %}{{ block.super }} comments{% endblock %}
 
 
-{% block title %}{% trans "Review Queue" %} — {% trans "Videos" %} — {{ block.super }}{% endblock %}
+{% block title %}{% trans "Comment Review Queue" %} — {% trans "Moderation" %}{{ block.super }}{% endblock %}
 
+
+{% block content_title %}<h1>{% trans "Comment Review Queue" %}</h1>{% endblock %}
 
 {% block content %}
-<section>
-  <header>
-    <h1>Comment Review Queue</h1>
-  </header>
-
-  <ul class="messages">
-    {% if not paginator.count %}
-      <li class="messages-info">{% trans "No comments to moderate" %}</li>
-    {% endif %}
-  </ul>
-
-  {% if paginator.count %}
-    {% if page.has_other_pages %}
-      {% include "localtv/admin/_pagination.html" %}
-    {% endif %}
-    <form class="bulk-edit" method="post" action="">
+  {% if not object_list %}
+    <p>{% trans "No comments to moderate" %}</p>
+  {% else %}
+    <form method="post" action="{{ request.path }}">
       {{ formset.management_form }}
       {{ formset.non_form_errors }}
-      {% for form in formset.forms %}
-        <article>
-          <table>
-            {{ form }}
-          </table>
-        </article>
-      {% endfor %}
-      <button type="submit">Save all changes</button>
+
+      {{ block.super }}
+
+      <button type="submit">Save all decisions</button>
+      <button type="reset">Reset all decisions</button>
     </form>
   {% endif %}
 </section>
