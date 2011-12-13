@@ -22,16 +22,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
+
 {% block body_classes %}{{ block.super }} create {{ verbose_name_plural }}{% endblock %}
+
 
 {% block title %}{% blocktrans with verbose_name=verbose_name|capfirst %}Add a {{ verbose_name }}{% endblocktrans %} — {{ block.super }}{% endblock %}
 
-{% block content %}
-<section>
-	<header>
-		<h1>Add a {{ verbose_name|capfirst }}</h1>
-  </header>
 
+{% block content_title %}<h1>Add a {{ verbose_name|capfirst }}</h1>{% endblock %}
+
+
+{% block content %}
   <form class="create-form" action="{{ request.path }}" method="post">
     {% csrf_token %}
     {% block form %}
@@ -39,5 +40,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endblock %}
     <button type="submit">Save {{ verbose_name|capfirst }}</button>
   </form>
-</section>
 {% endblock %}

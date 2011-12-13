@@ -19,16 +19,17 @@
 
 {% load i18n %}
 
+
 {% block title %}{% trans "Dashboard" %} — {{ block.super }}{% endblock %}
+
 
 {% block body_classes %}{{ block.super }} dashboard{% if sitelocation.hide_get_started %} hide_get_started{% endif %}{% endblock %}
 
-{% block content %}
-<section>
-  <header>
-    <h1>Activity</h1>
-  </header>
 
+{% block content_title %}<h1>Activity</h1>{% endblock %}
+
+
+{% block content %}
   <figure>
     <figcaption>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</figcaption>
     <div class="progress_bar">
@@ -43,17 +44,15 @@
     <li class="overview-item overview-moderate"><a class="overview-action" href="{# {% url comments-moderation-queue %} #}">Moderate</a> <span class="overview-count">{{ comment_count }}</span> <span class="overview-type">comments</span> <span class="overview-status">pending moderation</span></li>
     <li class="overview-item overview-view"><a class="overview-action" href="{% url localtv_list_this_week %}">View</a> <span class="overview-count">{{ unreviewed_count }}</span> <span class="overview-type">videos</span> <span class="overview-status">added this week</span></li>
   </ul>
-</section>
 
-<section>
-  <header>
+  <div class="tutorial">
     <h1>Get Started</h1>
-  </header>
-  <ol>
-    <li><a href="{# {% url localtv_admin_manage_page %} #}">Add Video Feeds</a> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
-    <li><a href="{# {% url uploadtemplate-index %} #}">Change Your Theme</a> — <span>Choose from four default theme choices.</span></li>
-    <li><a href="{# {% url localtv_admin_settings %} #}">Edit Your Site Info &amp; Design</a> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
-    <li><a href="{# {% url localtv_user_notifications %} #}">Set Your Notification Preferences</a> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
-  </ol>
+    <ol>
+      <li><a href="{# {% url localtv_admin_manage_page %} #}">Add Video Feeds</a> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
+      <li><a href="{# {% url uploadtemplate-index %} #}">Change Your Theme</a> — <span>Choose from four default theme choices.</span></li>
+      <li><a href="{# {% url localtv_admin_settings %} #}">Edit Your Site Info &amp; Design</a> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
+      <li><a href="{# {% url localtv_user_notifications %} #}">Set Your Notification Preferences</a> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
+    </ol>
+  </div>
 </section>
 {% endblock %}

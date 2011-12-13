@@ -23,26 +23,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% load url from future %}
 
+
 {% block title %}{{ verbose_name_plural|title }} — {{ block.super }}{% endblock %}
+
 
 {% block body_classes %}{{ block.super }} list {{ verbose_name_plural }}{% endblock %}
 
-{% block content %}
-<section>
-	<header class="object-list-header">
-		<h1>{{ verbose_name_plural|title }}</h1>
-    {% if create_view_name %}
-      <a href="{% url create_view_name %}">{% block create_link_text %}Add a {{ verbose_name }}{% endblock %}</a>
-    {% endif %}
-    {% if is_paginated %}
-      {% include 'localtv/admin/_pagination.html' %}
-    {% endif %}
-  </header>
 
+{% block content_title %}<h1>{{ verbose_name_plural|title }}</h1>{% endblock %}
+
+
+{% block content_header_tools %}
+  {% if create_view_name %}
+    <a class="content-header-tool" href="{% url create_view_name %}">{% block create_link_text %}Add a {{ verbose_name }}{% endblock %}</a>
+  {% endif %}
+{% endblock %}
+
+
+{% block content %}
   {% if object_list %}
-  <table>
+  <table class='object-list'>
     <thead>
-      <tr>
+      <tr class='object-list-header'>
         {% block object_list_item_headers %}
           {# placeholder for the name of the object #}
           <th></th>
@@ -51,14 +53,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </thead>
     <tbody>
       {% for object in object_list %}
-        <tr>
+        {% block object_list_item %}
+        <tr class='object-list-item'>
           {% block object_list_item_fields %}
             <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}</th>
           {% endblock %}
         </tr>
+        {% endblock %}
       {% endfor %}
     </tbody>
   </table>
   {% endif %}
-</section>
 {% endblock %}

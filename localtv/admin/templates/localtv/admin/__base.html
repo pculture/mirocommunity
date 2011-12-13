@@ -102,7 +102,36 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
       {% endif %}
 
       <div id="content">
-        {% block content %}
+        {% block content_outer %}
+        <section>
+          <header class="content-header">
+            {% block content_header %}
+              {% block content_title %}{% if content_title %}<h1>{{ content_title }}</h1>{% endif %}{% endblock %}
+
+              {% block content_header_tools %}
+              {% endblock %}
+
+              {% block pagination %}
+                {% if is_paginated %}
+                  {% include 'localtv/admin/_pagination.html' %}
+                {% endif %}
+              {% endblock %}
+
+              {% block messages %}
+                {% if messages %}
+                  <ul class="messages">
+                    {% for message in messages %}
+                    <li class="messages-item {{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endblock %}
+            {% endblock %}
+          </header>
+
+          {% block content %}
+          {% endblock %}
+        </section>
         {% endblock %}
       </div>
     </div>

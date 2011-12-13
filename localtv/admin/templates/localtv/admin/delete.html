@@ -22,23 +22,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
+
 {% block body_classes %}{{ block.super }} create {{ verbose_name_plural }}{% endblock %}
+
 
 {% block title %}{% blocktrans with verbose_name=verbose_name|capfirst %}Delete {{ verbose_name }}{% endblocktrans %} — {{ block.super }}{% endblock %}
 
-{% block content %}
-<section>
-	<header>
-		<h1>Delete {{ verbose_name|capfirst }}: {{ object }}</h1>
-  </header>
 
+{% block content_title %}<h1>Delete {{ verbose_name|capfirst }}: {{ object }}</h1>{% endblock %}
+
+
+{% block content %}
   <form class="delete-form" action="{{ request.path }}" method="post">
     {% csrf_token %}
     {% block confirmation_message %}
     <p>Are you sure you want to delete {{ object }} and all related objects?</p>
     {% endblock %}
 
-    <button type="submit">Delete it!</button>
+    <button type="submit">Delete them!</button>
   </form>
-</section>
 {% endblock %}

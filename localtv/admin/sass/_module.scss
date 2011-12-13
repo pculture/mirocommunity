@@ -148,12 +148,14 @@
 		display:inline;
 	}
 
-.object-list-header{
+.content-header{
 	& > h1{
 		display: inline-block;
 		margin-right: 3 * $em;
 	}
 }
+
+	.content-header-tool{}
 
 
 .form-fields{}
