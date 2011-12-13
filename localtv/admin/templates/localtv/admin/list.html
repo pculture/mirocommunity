@@ -52,14 +52,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       </tr>
     </thead>
     <tbody>
-      {% for object in object_list %}
-        {% block object_list_item %}
-        <tr class='object-list-item'>
-          {% block object_list_item_fields %}
-            <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}</th>
+      {% for form in formset.forms %}
+        {% with object=form.instance %}
+          {% block object_list_item %}
+          <tr class='object-list-item'>
+            {% block object_list_item_fields %}
+              <th>{% if update_view_name %}<a href="{% url update_view_name pk=object.pk %}">{% endif %}{{ object }}{% if update_view_name %}</a></li>{% endif %}</th>
+            {% endblock %}
+          </tr>
           {% endblock %}
-        </tr>
-        {% endblock %}
+        {% endwith %}
       {% endfor %}
     </tbody>
   </table>

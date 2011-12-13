@@ -18,17 +18,15 @@
 from django.contrib import comments
 from django.contrib.sites.models import Site
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView
 
 from localtv.admin.feeds import generate_secret
 from localtv.admin.moderation.forms import CommentModerationFormSet
-from localtv.admin.views import BulkEditView
+from localtv.admin.views import MiroCommunityAdminListView
 from localtv.decorators import require_site_admin
 from localtv.models import Video
 
 
-# TODO: This should also use BulkEditView
-class VideoModerationQueueView(ListView):
+class VideoModerationQueueView(MiroCommunityAdminListView):
     paginate_by = 10
     context_object_name = 'videos'
     template_name = 'localtv/admin/moderation/videos/queue.html'
@@ -57,7 +55,7 @@ class VideoModerationQueueView(ListView):
         return context
 
 
-class CommentModerationQueueView(BulkEditView):
+class CommentModerationQueueView(MiroCommunityAdminListView):
     formset_class = CommentModerationFormSet
     paginate_by = 10
     context_object_name = 'comments'

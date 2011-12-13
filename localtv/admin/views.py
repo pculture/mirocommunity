@@ -16,16 +16,146 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
+from django.forms.formsets import BaseFormSet, formset_factory
+from django.forms.models import (ModelForm, BaseModelFormSet,
+                                 modelformset_factory)
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from django.views.generic.base import View, TemplateResponseMixin
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.list import MultipleObjectMixin, ListView
+from django.views.generic.list import (MultipleObjectMixin,
+                                       MultipleObjectTemplateResponseMixin)
 
 from localtv.decorators import require_site_admin
+
+
+class FormSetMixin(object):
+    factory_function = staticmethod(formset_factory)
+    formset_class = BaseFormSet
+    form_class = None
+    initial = {}
+    factory_kwargs = {
+        'extra': 0,
+        'can_delete': True,
+    }
+
+    def get_initial(self):
+        return self.initial
+
+    def get_factory_kwargs(self):
+        kwargs = self.factory_kwargs.copy()
+        kwargs.update({
+            'form': self.form_class,
+            'formset': self.formset_class,
+        })
+        return kwargs
+
+    def get_form_class(self):
+        return self.form_class
+
+    def get_formset_class(self):
+        return self.factory_function(**self.get_factory_kwargs())
+
+    def get_formset_kwargs(self):
+        kwargs = {
+            'initial': self.get_initial()
+        }
+        if self.request.method == 'POST':
+            kwargs['data'] = self.request.POST
+        return kwargs
+
+    def get_formset(self, formset_class, **kwargs):
+        return formset_class(**self.get_formset_kwargs(**kwargs))
+
+    def get_context_data(self, **kwargs):
+        return kwargs
+
+    def get_success_url(self):
+        if self.success_url:
+            url = self.success_url
+        else:
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
+        return url
+
+    def formset_valid(self, formset):
+        return HttpResponseRedirect(self.get_success_url())
+
+    def formset_invalid(self, formset):
+        return self.render_to_response(self.get_context_data(formset=formset))
+
+
+class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
+    factory_function = staticmethod(modelformset_factory)
+    formset_class = BaseModelFormSet
+    form_class = ModelForm
+
+    def get_queryset(self):
+        qs = super(ModelFormSetMixin, self).get_queryset()
+        # Force ordering on the queryset here so that it isn't tried by the
+        # formset later.
+        if not qs.ordered:
+            qs = qs.order_by(qs.model._meta.pk.name)
+        return qs
+
+    def get_factory_kwargs(self):
+        if self.model is not None:
+            model = self.model
+        elif self.object_list is not None:
+            model = self.object_list.model
+        else:
+            raise ImproperlyConfigured
+
+        kwargs = super(ModelFormSetMixin, self).get_factory_kwargs()
+        kwargs['model'] = model
+        return kwargs
+
+    def get_formset_kwargs(self, queryset=None):
+        kwargs = super(ModelFormSetMixin, self).get_formset_kwargs()
+        kwargs.update({
+            'queryset': queryset or self.object_list
+        })
+        return kwargs
+
+    def formset_valid(self, formset):
+        self.object_list = formset.save()
+        return super(ModelFormSetMixin, self).formset_valid()
+
+    def get_context_data(self, **kwargs):
+        return MultipleObjectMixin.get_context_data(self, **kwargs)
+
+
+class ModelFormSetView(MultipleObjectTemplateResponseMixin, ModelFormSetMixin, View):
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        allow_empty = self.get_allow_empty()
+        if not allow_empty and len(self.object_list) == 0:
+            raise Http404
+
+        context = self.get_context_data(object_list=self.object_list)
+        queryset = context['object_list']
+        formset_class = self.get_formset_class()
+        formset = self.get_formset(formset_class, queryset=queryset)
+        context['formset'] = formset
+        return self.render_to_response(context)
+    
+    def post(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        allow_empty = self.get_allow_empty()
+        if not allow_empty and len(self.object_list) == 0:
+            raise Http404
+
+        context = self.get_context_data(object_list=self.object_list)
+        queryset = context['object_list']
+        formset_class = self.get_formset_class()
+        formset = self.get_formset(formset_class, queryset=queryset)
+        if formset.is_valid():
+            return self.formset_valid(formset)
+        else:
+            return self.formset_invalid(formset)
 
 
 class MiroCommunityAdminCRUDMixin(object):
@@ -65,9 +195,9 @@ class MiroCommunityAdminCRUDMixin(object):
         }
 
 
-class MiroCommunityAdminListView(MiroCommunityAdminCRUDMixin, ListView):
+class MiroCommunityAdminListView(MiroCommunityAdminCRUDMixin, ModelFormSetView):
     def get_context_data(self, **kwargs):
-        context = ListView.get_context_data(self, **kwargs)
+        context = ModelFormSetView.get_context_data(self, **kwargs)
         context.update(
             MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
         )
@@ -99,94 +229,3 @@ class MiroCommunityAdminDeleteView(MiroCommunityAdminCRUDMixin, DeleteView):
             MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
         )
         return context
-
-
-class FormSetMixin(object):
-    formset_class = None
-    initial = {}
-
-    def get_initial(self):
-        return self.initial
-
-    def get_formset_class(self):
-        return self.formset_class
-
-    def get_formset_kwargs(self):
-        kwargs = {
-            'initial': self.get_initial()
-        }
-        if self.request.method == 'POST':
-            kwargs['data'] = self.request.POST
-        return kwargs
-
-    def get_formset(self, formset_class):
-        return formset_class(**self.get_formset_kwargs())
-
-    def get_context_data(self, **kwargs):
-        return kwargs
-
-    def get_success_url(self):
-        if self.success_url:
-            url = self.success_url
-        else:
-            raise ImproperlyConfigured(
-                "No URL to redirect to. Provide a success_url.")
-        return url
-
-    def formset_valid(self, formset):
-        return HttpResponseRedirect(self.get_success_url())
-
-    def formset_invalid(self, formset):
-        return self.render_to_response(self.get_context_data(formset=formset))
-
-
-class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
-    def get_formset_kwargs(self):
-        kwargs = super(ModelFormSetMixin, self).get_formset_kwargs()
-        kwargs.update({
-            'queryset': self.object_list
-        })
-        return kwargs
-
-    def formset_valid(self, formset):
-        self.object_list = formset.save()
-        return super(ModelFormSetMixin, self).formset_valid()
-
-    def get_context_data(self, **kwargs):
-        return MultipleObjectMixin.get_context_data(self, **kwargs)
-
-
-
-class ProcessFormSetView(View):
-    def get(self, request, *args, **kwargs):
-        formset_class = self.get_formset_class()
-        formset = self.get_formset(formset_class)
-        return self.render_to_response(self.get_context_data(formset=formset))
-    
-    def post(self, request, *args, **kwargs):
-        formset_class = self.get_formset_class()
-        formset = self.get_formset(formset_class)
-        if formset.is_valid():
-            return self.formset_valid(formset)
-        else:
-            return self.formset_invalid(formset)
-
-
-class BulkEditView(TemplateResponseMixin, ModelFormSetMixin, ProcessFormSetView):
-    def get(self, request, *args, **kwargs):
-        self.object_list = self.get_queryset()
-        allow_empty = self.get_allow_empty()
-        if not allow_empty and len(self.object_list) == 0:
-            raise Http404
-        return super(BulkEditView, self).get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.object_list = self.get_queryset()
-        allow_empty = self.get_allow_empty()
-        if not allow_empty and len(self.object_list) == 0:
-            raise Http404
-        return super(BulkEditView, self).post(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        kwargs['object_list'] = self.object_list
-        return super(BulkEditView, self).get_context_data(**kwargs)
