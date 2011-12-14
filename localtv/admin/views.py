@@ -25,7 +25,7 @@ from django.forms.models import (ModelForm, BaseModelFormSet,
 from django.http import HttpResponseRedirect, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from django.views.generic.base import View
+from django.views.generic.base import View, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import (MultipleObjectMixin,
                                        MultipleObjectTemplateResponseMixin)
@@ -238,3 +238,16 @@ class MiroCommunityAdminDeleteView(MiroCommunityAdminCRUDMixin, DeleteView):
             MiroCommunityAdminCRUDMixin.get_context_data(self, **kwargs)
         )
         return context
+
+
+class ViewNameRedirectView(RedirectView):
+    """
+    A RedirectView which can reverse a view's name.
+
+    """
+    view_name = None
+    def get_redirect_url(self, **kwargs):
+        if self.view_name is not None:
+            return reverse(self.view_name, kwargs=kwargs)
+        else:
+            return super(ViewNameRedirectView, self).get_redirect_url(**kwargs)

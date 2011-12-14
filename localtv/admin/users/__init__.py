@@ -19,7 +19,8 @@ from django.conf.urls.defaults import patterns, url
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
-from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
+from localtv.admin.base import (MiroCommunityAdminSection, CRUDSection,
+                                registry, user_registry)
 from localtv.admin.users.forms import AdminProfileForm
 from localtv.admin.users.views import UserProfileUpdateView
 from localtv.utils import get_profile_model
@@ -56,4 +57,4 @@ class ProfileSection(MiroCommunityAdminSection):
 
 
 registry.register(UserSection)
-registry.register(ProfileSection)
+user_registry.register(ProfileSection)

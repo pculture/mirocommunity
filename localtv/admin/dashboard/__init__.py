@@ -19,7 +19,7 @@ from django.conf.urls.defaults import url, patterns
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import RedirectView
 
-from localtv.admin.base import MiroCommunityAdminSection, registry
+from localtv.admin.base import MiroCommunityAdminSection, user_registry
 from localtv.admin.dashboard.views import DashboardView
 
 
@@ -35,4 +35,4 @@ class DashboardSection(MiroCommunityAdminSection):
     )
 
 
-registry.register(DashboardSection)
+user_registry.register(DashboardSection)
