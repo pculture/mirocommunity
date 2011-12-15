@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
   <div id="main">
   
-  <img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url "/images/logo.gif" %}{% endif %}" />
+  <img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' %}{% endif %}" />
 
   
     <h2 class="page_title">About {{ sitelocation.site.name }}</h2>

@@ -24,7 +24,7 @@
 {% block head %}
   {{ block.super }}
   {% include "localtv/inline_edit/header.html" %}
-  <script type="text/javascript" src="/js/admin/urlify.js?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="{% get_static_url 'localtv/js/admin/urlify.js' %}?version={{ mc_version }}"></script>
   </script>
   <script type="text/javascript">
       $(document).ready(function() {
@@ -75,8 +75,8 @@
   </div>
 </td>
 <td valign="middle">{{ form.ORDER }}
-<img class="up" src="{% get_static_url "/images/playlist/up.png" %}" alt="Up" />
-<img class="down" src="{% get_static_url "/images/playlist/down.png" %}" alt="Down" />
+<img class="up" src="{% get_static_url 'localtv/images/playlist/up.png' %}" alt="Up" />
+<img class="down" src="{% get_static_url 'localtv/images/playlist/down.png' %}" alt="Down" />
 </td>
 {% endblock %}
 

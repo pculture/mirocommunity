@@ -38,9 +38,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           Recaptcha.create("{{ settings.RECAPTCHA_PUBLIC_KEY }}", "recaptcha_ajax_field", {})
       }
   </script>{% endif %}
-  <script type="text/javascript" src="{% get_static_url "/js/extern/jquery.form.js" %}?version={{ mc_version }}"></script>
-  <script type="text/javascript" src="{% get_static_url "/js/comment.js" %}?version={{ mc_version }}"></script>
-  {% if playlistitem_set or playlists or user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url "/js/playlist.js" %}?version={{ mc_version }}"></script>{% endif %}
+  <script type="text/javascript" src="{% get_static_url 'localtv/js/extern/jquery.form.js' %}?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="{% get_static_url 'localtv/js/comment.js' %}?version={{ mc_version }}"></script>
+  {% if playlistitem_set or playlists or user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' %}?version={{ mc_version }}"></script>{% endif %}
   {% include "localtv/view_video_meta.html" %}
   {% if current_video.video_service %}<style>
   .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
@@ -105,11 +105,11 @@ margin: 0 auto;
 
     <div class="action">
       <a href="#" id="flag_button" class="med_button">
-        <span>Flag Video<img src="{% get_static_url "/images/arrow_down.png" %}" alt="Down arrow" /></span>
+        <span>Flag Video<img src="{% get_static_url 'localtv/images/arrow_down.png' %}" alt="Down arrow" /></span>
       </a>
 
       <a href="#" id="share_button" class="med_button">
-        <span>Share Video<img src="{% get_static_url "/images/arrow_down.png" %}" alt="Down arrow" /></span>
+        <span>Share Video<img src="{% get_static_url 'localtv/images/arrow_down.png' %}" alt="Down arrow" /></span>
       </a>
       {% if current_video.website_url %}
       <a href="{{ current_video.website_url }}" id="seperate" class="med_button">
@@ -158,7 +158,7 @@ margin: 0 auto;
   {% comment %}
       <form id="add_tag">
         <input type="text" class="text_field" />
-        <input type="image" id="suggest_tag" src="{% get_static_url "/images/suggest.png" %}" value="submit" />
+        <input type="image" id="suggest_tag" src="{% get_static_url 'localtv/images/suggest.png' %}" value="submit" />
 
         <a href="#" class="log_push">Login to add a tag</a>
       </form>

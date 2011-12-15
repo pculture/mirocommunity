@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <div class="video">
   <a href="{{ video.get_absolute_url }}" class="thumbnail rounded {transparent}" style="background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;">
-  <img src="{% get_static_url "/images/vid_overlay.png" %}" alt="Thumbnail for {{ video.name }}"/></a>
+  <img src="{% get_static_url 'localtv/images/vid_overlay.png' %}" alt="Thumbnail for {{ video.name }}"/></a>
   <div class="title_desc">
     <h3><a href="{{ video.get_absolute_url }}">
       {% if video.name %}

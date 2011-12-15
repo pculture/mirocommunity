@@ -1,4 +1,4 @@
-{% load localtv_thumbnail filters uploadtemplate_tags %}
+{% load localtv_thumbnail filters uploadtemplate_tags staticfiles %}
 <html lang="en">
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -21,7 +21,7 @@
           <tr>
             {% if newsletter.show_icon and sitelocation.logo %}
             <td>
-              <img src="{% if sitelocation.logo %}{% get_thumbnail_url absolute sitelocation 130 110 %}{% else %}{% get_static_url "/images/logo.gif" %}{% endif %}" alt="Logo for {{ site.name }}" />
+              <img src="{% if sitelocation.logo %}{% get_thumbnail_url absolute sitelocation 130 110 %}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" alt="Logo for {{ site.name }}" />
             </td>
             {% endif %}
             <td style="width: 450px; padding: 0 0 0 15px;">
@@ -29,8 +29,8 @@
               <h2 style="color: #555; font-size: 14px; margin: 0; padding: 0;">{{ sitelocation.tagline|truncatewords_html:"10" }}</h2>
             </td>
             <td style="padding: 5px 0 0 0; text-align: right;">
-              {% if newsletter.twitter_url %}<a style="margin: 0 10px 0 0;" href="{{ newsletter.twitter_url }}"><img src="http://{{ site.domain }}/images/newsletter/icon_twitter.png" alt="Twitter page for {{ site.domain }}"/></a>{% endif %}
-              {% if newsletter.facebook_url %}<a href="{{ newsletter.facebook_url }}"><img src="http://{{ site.domain }}/images/newsletter/icon_facebook.png" alt="Facbook page for {{ site.domain }}" /></a>{% endif %}
+              {% if newsletter.twitter_url %}<a style="margin: 0 10px 0 0;" href="{{ newsletter.twitter_url }}"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/icon_twitter.png' %}" alt="Twitter page for {{ site.domain }}"/></a>{% endif %}
+              {% if newsletter.facebook_url %}<a href="{{ newsletter.facebook_url }}"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/icon_facebook.png' %}" alt="Facbook page for {{ site.domain }}" /></a>{% endif %}
             </td>
           </tr>
         </table>
@@ -48,17 +48,17 @@
               <h1 style="font-size: 16px; color: #333; margin: -5px 0 5px 10px; padding: 0; max-width: 400px; overflow: hidden; text-overflow: ellipsis;">{{ video.name }}</h1>
               {% if authors %}<p style="font-size: 13px; color: #656565; margin: 0 0 0 10px;">Posted by {% for user in authors %}<a style="color: #109f53;" href="http://{{ site.domain }}{% url localtv_author user.pk %}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
               <p style="font-size: 15px; line-height: 20px; color: #656565; margin: 10px 0 0 10px;">{{ video.description|sanitize|truncatewords:"50" }}</p>
-              <p style="margin: 5px 0 0 10px;"><a href="http://{{ site.domain }}{{ video.get_absolute_url }}"><img src="http://{{ site.domain }}/images/newsletter/btn_view.jpg" alt="View video" /></a></p>
+              <p style="margin: 5px 0 0 10px;"><a href="http://{{ site.domain }}{{ video.get_absolute_url }}"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/btn_view.jpg' %}" alt="View video" /></a></p>
               {% endwith %}
             </td>
           </tr>
           {% endfor %}
         </table>
       </div><!-- // content -->
-      <div id="footer"><img src="http://{{ site.domain }}/images/newsletter/footer_bg.jpg" alt="footer image" /></div>
+      <div id="footer"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/footer_bg.jpg' %}" alt="footer image" /></div>
       <table>
         <tr>
-          <td style="width: 335px;"><a href="http://mirocommunity.org"><img src="http://{{ site.domain }}/images/newsletter/poweredby.jpg" alt="Powered by Miro Community" /></a></td>
+          <td style="width: 335px;"><a href="http://mirocommunity.org"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/poweredby.jpg' %}" alt="Powered by Miro Community" /></a></td>
           <td style="text-align: right;"><p style="font-size: 13px; color: #777;">Not interested in receiving the newsletter? <a href="http://{{ site.domain }}{% url localtv_user_notifications %}">You can unsubscribe</a></p>
         </tr>
       </table>

@@ -18,8 +18,8 @@
 {% endcomment %}
 
 {% block extrahead %}
-<link rel="stylesheet" type="text/css" href="/css/admin/dashboard.css" />
-<script type="text/javascript" src="/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/dashboard.css" />
+<script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
 {% if not sitelocation.should_show_dashboard %}
 <meta http-equiv="refresh" content="0; url={% url localtv_admin_approve_reject %}">
 {% endif %}
