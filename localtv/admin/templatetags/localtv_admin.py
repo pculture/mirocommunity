@@ -18,20 +18,25 @@
 from django import template
 from django.core.urlresolvers import reverse
 
-from localtv.admin import registry
+from localtv.admin import registry, user_registry
 
 
 register = template.Library()
 
 
 class RegistryNode(template.Node):
+    registry = registry
+
     def __init__(self, as_var):
         self.as_var = as_var
     
     def render(self, context):
-        context[self.as_var] = registry._registry.values()
+        context[self.as_var] = self.registry._registry.values()
         return ''
 
+
+class UserRegistryNode(RegistryNode):
+    registry = user_registry
 
 
 @register.tag
@@ -56,6 +61,30 @@ def get_admin_sections(parser, token):
                         "Second argument to `%s` tag must be 'as'" % tag_name)
 
     return RegistryNode(bits[2])
+
+
+@register.tag
+def get_user_sections(parser, token):
+    """
+    Sets a list of current user sections for the admin to a variable in the
+    context.
+
+    Example::
+
+        {% get_user_sections as user_sections %}
+    """
+    bits = token.split_contents()
+    tag_name = bits[0]
+
+    if len(bits) != 3:
+        raise template.TemplateSyntaxError(
+                        "`%s` tag expects exactly three arguments" % tag_name)
+    
+    if bits[1] != "as":
+        raise template.TemplateSyntaxError(
+                        "Second argument to `%s` tag must be 'as'" % tag_name)
+
+    return UserRegistryNode(bits[2])
 
 
 @register.filter

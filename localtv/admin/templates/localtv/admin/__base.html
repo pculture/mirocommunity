@@ -69,9 +69,13 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
         <img src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" />
         <h1>{{ sitelocation.site.name }}</h1>
       </a>
+      {% get_user_sections as user_sections %}
       <ul class="standalone-links">
-        <li>Logged in as <strong>{{ request.user.username }}</strong></li>
-        <li><a href="{{ settings.LOGOUT_URL }}">Sign out</a></li>
+        <li class='standalone-links-item'>Logged in as <strong>{{ request.user.username }}</strong></li>
+        {% for section in user_sections %}
+          <li class='standalone-links-item'><a href="{% url section.pages.0.1 %}">{{ section.navigation_text }}</a></li>
+        {% endfor %}
+        <li class='standalone-links-item'><a href="{{ settings.LOGOUT_URL }}">Sign out</a></li>
       </ul>
     </header>
     <div id="main" role="main">
