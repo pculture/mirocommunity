@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from django import forms
 from django.contrib import comments
 from django.contrib.comments.models import CommentFlag, Comment
@@ -42,14 +44,7 @@ class ModerationForm(forms.ModelForm):
         fields = []
 
     def save(self, commit=True):
-        action = self.cleaned_data['action']
-        if action == self.NONE:
-            return self.instance
-
-        if action == self.APPROVE:
-            self.approve(commit)
-        elif action == self.REJECT:
-            self.reject(commit)
+        self.handle_action(self.cleaned_data['action'], commit)
         return self.instance
 
     def approve(self, commit=True):
@@ -57,6 +52,14 @@ class ModerationForm(forms.ModelForm):
 
     def reject(self, commit=True):
         raise NotImplementedError
+
+    def handle_action(self, action, commit=True):
+        if action == self.NONE:
+            return
+        elif action == self.APPROVE:
+            self.approve(commit)
+        elif action == self.REJECT:
+            self.reject(commit)
 
 
 class CommentModerationForm(ModerationForm):
@@ -91,15 +94,39 @@ class CommentModerationForm(ModerationForm):
 
 
 class VideoModerationForm(ModerationForm):
+    FEATURE = 'feature'
+
+    ACTION_CHOICES = ModerationForm.ACTION_CHOICES[:-1] + (
+        (FEATURE, _('Feature')),
+    ) + ModerationForm.ACTION_CHOICES[-1:]
+
+    action = forms.ChoiceField(choices=ACTION_CHOICES,
+                               initial=ModerationForm.NONE,
+                               widget=forms.RadioSelect)
+
     def approve(self, commit=True):
-        self.instance.status = Video.ACTIVE
-        if commit:
-            self.instance.save()
+        if not self.instance.is_active():
+            self.instance.status = Video.ACTIVE
+            self.instance.when_approved = datetime.datetime.now()
+            if commit:
+                self.instance.save()
 
     def reject(self, commit=True):
         self.instance.status = Video.REJECTED
         if commit:
             self.instance.save()
+
+    def feature(self, commit=True):
+        self.approve(commit=False)
+        self.instance.last_featured = datetime.datetime.now()
+        if commit:
+            self.instance.save()
+
+    def handle_action(self, action, commit=True):
+        if action == self.FEATURE:
+            self.feature(commit)
+        else:
+            super(VideoModerationForm, self).handle_action(action, commit)
 
 
 class VideoLimitFormSet(forms.models.BaseModelFormSet):
@@ -112,14 +139,19 @@ class VideoLimitFormSet(forms.models.BaseModelFormSet):
         self._rejected_count = sum(1 for f in self.forms
                                    if hasattr(self, 'cleaned_data') and
                                    f.cleaned_data['action'] == f.REJECT)
+        self._featured_count = sum(1 for f in self.forms
+                                   if hasattr(self, 'cleaned_data') and
+                                   f.cleaned_data['action'] == f.FEATURE)
         sitelocation = SiteLocation.objects.get_current()
         remaining_videos = sitelocation.get_tier().remaining_videos()
+        approved_count = self._approved_count + self._featured_count
         if (SiteLocation.enforce_tiers() and remaining_videos < approved_count):
             raise ValidationError(_("You have selected %d videos, but may only "
                                     "approve %d more in your current tier. "
-                                    "Upgrade to the next tier to approve more "
-                                    "videos." % (approved_count,
-                                                 remaining_videos)))
+                                    "Please upgrade your account to increase "
+                                    "your limit, or unapprove some older videos"
+                                    " to make space for newer ones." % (
+                                    approved_count, remaining_videos)))
         
 
 

@@ -15,11 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.contrib import comments, messages
 from django.contrib.sites.models import Site
+from django.core.mail import EmailMessage
+from django.template import loader, Context
 from django.template.defaultfilters import pluralize
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
+
+if 'notification' in settings.INSTALLED_APPS:
+    from notification import models as notification
+else:
+    notification = None
 
 from localtv.admin.feeds import generate_secret
 from localtv.admin.moderation.forms import (RequestModelFormSet,
@@ -62,6 +70,8 @@ class VideoModerationQueueView(MiroCommunityAdminListView):
         return context
 
     def formset_valid(self, formset):
+        response = super(VideoModerationQueueView, self).formset_valid(formset)
+
         if formset._approved_count > 0:
             messages.add_message(
                 self.request,
@@ -76,7 +86,33 @@ class VideoModerationQueueView(MiroCommunityAdminListView):
                 _("Rejected %d video%s." % (formset._rejected_count,
                                             pluralize(formset._rejected_count)))
             )
-        return super(VideoModerationQueueView, self).formset_valid(formset)
+        if formset._featured_count > 0:
+            messages.add_message(
+                self.request,
+                messages.SUCCESS,
+                _("Featured %d video%s." % (formset._featured_count,
+                                            pluralize(formset._featured_count)))
+            )
+        if (notification and
+            (formset._approved_count > 0 or formset._featured_count > 0)):
+            notice_type = notification.NoticeType.objects.get(
+                                                        label="video_approved")
+            t = loader.get_template(
+                        'localtv/submit_video/approval_notification_email.txt')
+            for instance in self.object_list:
+                if (instance.status == Video.ACTIVE and
+                    instance.user is not None and instance.user.email and
+                    notification.should_send(instance.user, notice_type, "1")):
+                    c = Context({
+                        'current_video': instance
+                    })
+                    subject = '[%s] "%s" was approved!' % (instance.site.name,
+                                                           instance.name)
+                    body = t.render(c)
+                    EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL,
+                                [instance.user.email]).send(fail_silently=True)
+
+        return response
 
 
 class CommentModerationQueueView(MiroCommunityAdminListView):
