@@ -66,6 +66,8 @@ class SubmitURLView(FormView):
 
     def get_form(self, form_class):
         kwargs = self.get_form_kwargs()
+        # If it looks like the form has been submitted via GET, set the data
+        # kwarg to the GET data.
         if set(self.request.GET) & set(form_class.base_fields):
             kwargs['data'] = self.request.GET
         return form_class(**kwargs)
