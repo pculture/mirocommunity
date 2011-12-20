@@ -43,8 +43,6 @@ def _has_submit_permissions(request):
         if sitelocation.display_submit_button:
             return request.user.is_authenticated() and request.user.is_active
         else:
-            import pdb
-            pdb.set_trace()
             return request.user_is_admin()
 
 
