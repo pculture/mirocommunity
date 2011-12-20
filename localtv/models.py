@@ -177,7 +177,7 @@ class Thumbnailable(models.Model):
             thumb = Image.open(
                 default_storage.open(self.get_original_thumb_storage_path()))
         if resized_images is None:
-            resized_images = localtv.utils.resize_image_returning_list_of_strings(
+            resized_images = utils.resize_image_returning_list_of_strings(
                 thumb, self.THUMB_SIZES)
         for ( (width, height), data) in resized_images:
             # write file, deleting old thumb if it exists
