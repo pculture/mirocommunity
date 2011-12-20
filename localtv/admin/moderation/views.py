@@ -128,7 +128,8 @@ class CommentModerationQueueView(MiroCommunityAdminListView):
     def dispatch(self, *args, **kwargs):
         return super(CommentModerationQueueView, self).dispatch(*args, **kwargs)
 
-    def get_formset_kwargs(self):
-        kwargs = super(CommentModerationQueueView, self).get_formset_kwargs()
+    def get_formset_kwargs(self, queryset=None):
+        kwargs = super(CommentModerationQueueView, self).get_formset_kwargs(
+                                                            queryset=queryset)
         kwargs['request'] = self.request
         return kwargs

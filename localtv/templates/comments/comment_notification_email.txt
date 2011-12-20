@@ -13,4 +13,3 @@ You can moderate this comment here:
 http://{{ content_object.site.domain }}{% url comments-moderation-queue %}
 {% endif %}
 Delete it: http://{{ content_object.site.domain }}{% url comments-delete comment.pk %}
-Spam it: http://{{ content_object.site.domain }}{% url comments-spam comment.pk %}{% endif %}

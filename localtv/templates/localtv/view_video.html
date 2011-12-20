@@ -185,10 +185,6 @@ margin: 0 auto;
               <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
               <button type="submit">delete</button>
             </form>
-            <form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-              <button type="submit">spam</button>
-            </form>
           </div>
           {% endif %}
         </div>
