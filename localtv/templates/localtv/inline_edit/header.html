@@ -15,5 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-<link rel="StyleSheet" type="text/css" href="/css/inline_edit.css" />
-<script src="/js/admin/inline_edit.js" type="text/javascript"></script>
+
+{% load uploadtemplate_tags %}
+
+<link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/inline_edit.css' %}" />
+<script src="{% get_static_url 'localtv/js/admin/inline_edit.js' %}" type="text/javascript"></script>

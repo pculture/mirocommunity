@@ -23,13 +23,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}widgetcreater{% endblock body_class %}
 
 
-{% load i18n localtv_thumbnail %}
+{% load i18n localtv_thumbnail uploadtemplate_tags %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
 {% if sitelocation.site.widgetsettings.css and not sitelocation.site.widgetsettings.css_editable %}
-<link rel="stylesheet" href="{{ sitelocation.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="/css/widget.css">{% endif %}
-<script src="/js/widget.js"></script>
+<link rel="stylesheet" href="{{ sitelocation.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{% get_static_url 'localtv/css/widget.css' %}">{% endif %}
+<script src="{% get_static_url 'localtv/js/widget.js' %}"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
 function full_url(path) {

@@ -21,16 +21,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="/css/admin/reset.css" />
-    <link rel="StyleSheet" type="text/css" href="/css/admin.css" />
-    <link rel="StyleSheet" type="text/css" href="/css/admin/new_admin.css" />
-    <link rel="StyleSheet" type="text/css" href="/css/overlay.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/reset.css" />
+    <link rel="StyleSheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin.css" />
+    <link rel="StyleSheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/new_admin.css" />
+    <link rel="StyleSheet" type="text/css" href="{{ STATIC_URL }}localtv/css/overlay.css" />
 <!--[if lt IE 8]>
-   <link rel="StyleSheet" type="text/css" href="/css/msie7.css" />
+   <link rel="StyleSheet" type="text/css" href="{{ STATIC_URL }}localtv/css/msie7.css" />
 <![endif]-->
-    <script src="/js/extern/jquery.tools-1.1.2.min.js"></script>
-    <script src="/js/extern/jquery.form.js" type="text/javascript"></script>
-    <script src="/js/miro_community.js?version={{ mc_version }}" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}localtv/js/extern/jquery.tools-1.1.2.min.js"></script>
+    <script src="{{ STATIC_URL }}localtv/js/extern/jquery.form.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}localtv/js/miro_community.js?version={{ mc_version }}" type="text/javascript"></script>
     <title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
     {% block extrahead %}
     {% endblock extrahead %}
@@ -59,7 +59,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <div id="logo">
           {% url localtv_index as localtv_index %}
             <a href="{{ localtv_index }}">
-              <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}/images/logo.gif{% endif %}" />
+              <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" />
               <span class="site_name">{{ sitelocation.site.name }}</span>
             </a>
         </div><!-- // logo -->

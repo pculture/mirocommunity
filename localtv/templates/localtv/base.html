@@ -24,11 +24,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if not request.is_ajax %}
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/reset.css" %}" />
-    <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/lights-on.css" %}" />
-    <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/overlay.css" %}" />
+    <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/reset.css' %}" />
+    <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/lights-on.css' %}" />
+    <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/overlay.css' %}" />
 <!--[if lt IE 8]>
-   <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/msie7.css" %}" />
+   <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/msie7.css' %}" />
 <![endif]-->
     {% if sitelocation.css or sitelocation.background %}
     <style type="text/css">
@@ -38,11 +38,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     }{% endif %}
     </style>
     {% endif %}
-    <script src="{% get_static_url "/js/extern/jquery.tools-1.2.4.min.js" %}" type="text/javascript"></script>
-    <script src="{% get_static_url "/js/extern/jquery.form.js" %}"
+    <script src="{% get_static_url 'localtv/js/extern/jquery.tools-1.2.4.min.js' %}" type="text/javascript"></script>
+    <script src="{% get_static_url 'localtv/js/extern/jquery.form.js' %}"
             type="text/javascript">
     </script>
-    <script src="{% get_static_url "/js/miro_community.js" %}?version={{ mc_version }}"
+    <script src="{% get_static_url 'localtv/js/miro_community.js' %}?version={{ mc_version }}"
             type="text/javascript">
     </script>
     <title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
@@ -61,7 +61,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <div id="logo">
           {% url localtv_index as localtv_index %}
           <a href="{{ localtv_index }}">
-            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url "/images/logo.gif" %}{% endif %}" />
+            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' %}{% endif %}" />
           </a>
           <h1 style="text-decoration: none;">
             <a href="{{ localtv_index }}">
@@ -79,7 +79,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               action="{% url localtv_search %}"
               method="get">
           <input name="q" type="text" id="search_field" value="{{ query }}"/>
-          <input type="image" id="searchbutton" src="{% get_static_url "/images/search.png" %}" alt="Search" />
+          <input type="image" id="searchbutton" src="{% get_static_url 'localtv/images/search.png' %}" alt="Search" />
         </form>
         <ul id="nav">
           <li class="home_page">
@@ -201,7 +201,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 </div>
 
       <div id="load-indicator">
-        <img alt="Loading..." src="{% get_static_url "/images/load-indicator.gif" %}" />
+        <img alt="Loading..." src="{% get_static_url 'localtv/images/load-indicator.gif' %}" />
       </div>
 
     {% if settings.GOOGLE_ANALYTICS_UA %}

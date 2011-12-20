@@ -84,13 +84,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     <div id="login_tab_facebook" {% if settings.LOCALTV_LOGIN_FACEBOOK_DEFAULT and not form.errors %} style="display: block;" class="active" %}{% else %} class="inactive"{% endif %}>
       <div class="left">
-        <a href="{% url socialauth_facebook_login %}?next={{ next }}"><img src="{% get_static_url "/images/facebook_login.png" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+        <a href="{% url socialauth_facebook_login %}?next={{ next }}"><img src="{% get_static_url 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Twitter" /></a>
       </div>
       <div class="clear"></div>
     </div>
     <div id="login_tab_twitter" class="inactive">
       <div class="left">
-        <a href="{% url socialauth_twitter_login %}?next={{ next }}"><img src="{% get_static_url "/images/twitter_login.gif" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+        <a href="{% url socialauth_twitter_login %}?next={{ next }}"><img src="{% get_static_url 'localtv/images/twitter_login.gif' %}" width="151" height="24" alt="Sign In with Twitter" /></a>
       </div>
       <div class="clear"></div>
     </div>

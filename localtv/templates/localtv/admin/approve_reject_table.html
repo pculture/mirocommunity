@@ -27,7 +27,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block head %}
   {% include "localtv/inline_edit/header.html" %}
-  <script src="/js/admin/admin_tables.js?version={{ mc_version }}"
+  <script src="{{ STATIC_URL }}localtv/js/admin/admin_tables.js?version={{ mc_version }}"
           type="text/javascript">
   </script>
   

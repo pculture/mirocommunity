@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load uploadtemplate_tags %}
 {% block top %}
   {% if request.GET.bookmarklet %}
-  <link rel="StyleSheet" type="text/css" href="{% get_static_url "/css/overlay.css" %}" />
+  <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/overlay.css' %}" />
   {% endif %}
 {% endblock %}
 {% block title %}Submit a Video{% endblock %}
@@ -33,7 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <table>
     {% block table %}{% endblock %}
     <tr>
-      <td><input type="image" src="{% get_static_url "/images/submit.gif" %}" value="Submit" /></td>
+      <td><input type="image" src="{% get_static_url 'localtv/images/submit.gif' %}" value="Submit" /></td>
     </tr>
   </table>
   {% block post-table %}{% endblock %}

@@ -31,7 +31,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <tr>
       <td>
         <a href="{{ video.website_url }}" class="thumbnail">
-          {% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{% get_static_url "/images/default.jpg" %}" />{% endif %}
+          {% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{% get_static_url "localtv/images/default.jpg" %}" />{% endif %}
         </a>
         <div class="scraped_details">
           {% if video.name %}
