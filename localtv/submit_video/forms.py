@@ -74,7 +74,7 @@ class SubmitURLForm(forms.Form):
         except CantIdentifyUrl:
             pass
         else:
-            if url != self.video_cache.link:
+            if self.video_cache.link is not None and url != self.video_cache.link:
                 url = self.video_cache.link
                 self._validate_unique(url=url, guid=self.video_cache.guid)
             elif self.video_cache.guid is not None:

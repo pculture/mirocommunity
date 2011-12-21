@@ -23,7 +23,7 @@ from django.core import mail
 from django.template import Context, loader
 from django.test.client import Client
 
-from localtv import models
+from localtv.models import Video
 from localtv.submit_video.management.commands import review_status_email
 from localtv.tests import BaseTestCase
 
@@ -110,7 +110,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
-        video = models.Video.objects.create(site=self.site_location.site,
+        video = Video.objects.create(site=self.site_location.site,
                                             name='test video',
                                             website_url = self.GET_data['url'])
         c = Client()
@@ -121,7 +121,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
-        self.assertEqual(models.Video.objects.filter(
+        self.assertEqual(Video.objects.filter(
                 site=self.site_location.site,
                 website_url = self.GET_data['url']).count(), 1)
 
@@ -148,7 +148,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
-        video = models.Video.objects.create(site=self.site_location.site,
+        video = Video.objects.create(site=self.site_location.site,
                                             name='test video',
                                             website_url = self.GET_data['url'])
         c = Client()
@@ -159,7 +159,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
-        self.assertEqual(models.Video.objects.filter(
+        self.assertEqual(Video.objects.filter(
                 site=self.site_location.site,
                 website_url = self.GET_data['url']).count(), 1)
 
@@ -168,14 +168,14 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         If the URL represents an existing but rejected video, the rejected
         video should be deleted to allow a resubmission..
         """
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
-            status=models.Video.REJECTED,
+            status=Video.REJECTED,
             name='test video',
             website_url = self.GET_data['url'])
         c = Client()
         response = c.post(self.url, self.POST_data)
-        video = models.Video.objects.get()
+        video = Video.objects.get()
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -183,7 +183,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEqual(video.status, models.Video.UNAPPROVED)
+        self.assertEqual(video.status, Video.UNAPPROVED)
         self.assertEqual(video.name, self.video_data['name'])
         self.assertEqual(video.description, self.video_data['description'])
         self.assertEqual(video.thumbnail_url, self.video_data['thumbnail'])
@@ -201,7 +201,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         c = Client()
         response = c.post(self.url, self.POST_data)
-        video = models.Video.objects.all()[0]
+        video = Video.objects.all()[0]
 
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
@@ -210,7 +210,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEqual(video.status, models.Video.UNAPPROVED)
+        self.assertEqual(video.status, Video.UNAPPROVED)
         self.assertEqual(video.name, self.video_data['name'])
         self.assertEqual(video.description, self.video_data['description'])
         self.assertEqual(video.thumbnail_url, self.video_data['thumbnail'])
@@ -230,7 +230,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
 <img src='http://www.google.com/' alt='this should be stripped' />"
         c = Client()
         c.post(self.url, self.POST_data)
-        video = models.Video.objects.all()[0]
+        video = Video.objects.all()[0]
 
         self.assertEqual(video.description, original_description)
 
@@ -244,7 +244,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         POST_data['thumbnail_file'] = file(self._data_file('logo.png'))
 
         response = c.post(self.url, POST_data)
-        video = models.Video.objects.all()[0]
+        video = Video.objects.all()[0]
 
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
@@ -274,7 +274,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         c.post(self.url, self.POST_data)
 
-        video = models.Video.objects.all()[0]
+        video = Video.objects.all()[0]
 
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
@@ -317,7 +317,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.post(self.url, self.POST_data)
-        video = models.Video.objects.all()[0]
+        video = Video.objects.all()[0]
 
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
@@ -326,7 +326,7 @@ class SecondStepSubmitBaseTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
 
-        self.assertEqual(video.status, models.Video.ACTIVE)
+        self.assertEqual(video.status, Video.ACTIVE)
         self.assertEqual(video.when_approved, video.when_submitted)
         self.assertEqual(video.user, User.objects.get(username='admin'))
 
@@ -374,12 +374,13 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         A GET request to the thanks view from an admin should include the video
         referenced in the URL.
         """
+        self._rebuild_index()
         user = User.objects.get(username='admin')
 
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.Video.ACTIVE,
+            status=Video.ACTIVE,
             website_url='http://www.pculture.org/',
             user=user)
 
@@ -392,13 +393,13 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                           'localtv/submit_video/thanks.html')
         self.assertEqual(response.context['video'], video)
 
-    def test_POST_fail_invalid_form(self):
+    def test_GET_fail_invalid_form(self):
         """
         If submitting the form fails, the template should be re-rendered with
         the form errors present.
         """
         c = Client()
-        response = c.post(self.url,
+        response = c.get(self.url,
                           {'url': 'not a URL'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
@@ -407,20 +408,20 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(getattr(
                 response.context['form'], 'errors') is not None)
 
-    def test_POST_fail_existing_video_approved(self):
+    def test_GET_fail_existing_video_approved(self):
         """
         If the URL represents an approved video on the site, the form should be
         rerendered.  A 'was_duplicate' variable bound to True, and a 'video'
         variable bound to the Video object should be added to the context.
         """
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.Video.ACTIVE,
+            status=Video.ACTIVE,
             website_url='http://www.pculture.org/')
 
         c = Client()
-        response = c.post(self.url,
+        response = c.get(self.url,
                           {'url': video.website_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
@@ -429,19 +430,20 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertEqual(response.context['video'], video)
 
-    def test_POST_existing_rejected(self):
+    def test_GET_existing_rejected(self):
         """
-        If the URL represents an existing but rejected video, the video should
-        be put into the review queue.
+        If the URL represents an existing but rejected video, the user should be
+        redirected to the correct submission view, but the existing video should
+        not yet be deleted.
         """
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
-            status=models.Video.REJECTED,
+            status=Video.REJECTED,
             name='test video',
             website_url = 'http://www.pculture.org/')
 
         c = Client()
-        response = c.post(self.url,
+        response = c.get(self.url,
                           {'url': video.website_url})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
@@ -449,30 +451,30 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
                 urlencode({'url': video.website_url})))
-        self.assertEqual(models.Video.objects.count(), 0)
+        self.assertEqual(Video.objects.count(), 1)
 
-    def test_POST_fail_existing_video_approved_admin(self):
+    def test_GET_fail_existing_video_approved_admin(self):
         """
         The behavior on duplicates should be identical for admins and ordinary
         users; moderating videos should be done through the admin.
         """
-        self.test_POST_fail_existing_video_approved()
+        self.test_GET_fail_existing_video_approved()
 
-    def test_POST_fail_existing_video_file_url(self):
+    def test_GET_fail_existing_video_file_url(self):
         """
         If the URL represents the file URL of an existing video, the form
         should be rerendered.  A 'was_duplicate' variable bound to True, and a
         'video' variable bound to the Video object should be added to the
         context.
         """
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.Video.ACTIVE,
+            status=Video.ACTIVE,
             file_url='http://www.pculture.org/')
 
         c = Client()
-        response = c.post(self.url,
+        response = c.get(self.url,
                           {'url': video.file_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
@@ -481,27 +483,27 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertEqual(response.context['video'], video)
 
-    def test_POST_fail_existing_video_file_url_admin(self):
+    def test_GET_fail_existing_video_file_url_admin(self):
         """
         The behavior on duplicates should be identical for admins and ordinary
         users; moderating videos should be done through the admin.
         """
-        self.test_POST_fail_existing_video_file_url()
+        self.test_GET_fail_existing_video_file_url()
 
-    def test_POST_fail_existing_video_unapproved(self):
+    def test_GET_fail_existing_video_unapproved(self):
         """
         If the URL represents an unapproved video on the site, the form should
         be rerendered.  A 'was_duplicate' variable bound to True, and a 'video'
         variable bound to None should be added to the context.
         """
-        video = models.Video.objects.create(
+        video = Video.objects.create(
             site=self.site_location.site,
             name='Participatory Culture',
-            status=models.Video.UNAPPROVED,
+            status=Video.UNAPPROVED,
             website_url='http://www.pculture.org/')
 
         c = Client()
-        response = c.post(self.url,
+        response = c.get(self.url,
                           {'url': video.website_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
@@ -510,12 +512,12 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertTrue(response.context['video'] is None)
 
-    def test_POST_fail_existing_video_unapproved_admin(self):
+    def test_GET_fail_existing_video_unapproved_admin(self):
         """
         The behavior on duplicates should be identical for admins and ordinary
         users; moderating videos should be done through the admin.
         """
-        self.test_POST_fail_existing_video_unapproved()
+        self.test_GET_fail_existing_video_unapproved()
 
     def test_GET_bookmarklet(self):
         """
@@ -534,47 +536,42 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_directlink_video'),
                 urlencode(GET_data)))
 
-    def test_POST_succeed_scraped(self):
+    def test_GET_succeed_scraped(self):
         """
         If the URL represents a site that VidScraper understands, the user
         should be redirected to the scraped_submit_video view.
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
+        GET_data = {'url': 'http://blip.tv/searching-for-mike/fixing-otter-267'}
         c = Client()
-        response = c.post(self.url, {
-                'url': 'http://blip.tv/searching-for-mike/fixing-otter-267'})
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           "http://%s%s?%s" %(
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
-                urlencode({
-                        'url': ('http://blip.tv/searching-for-mike/'
-                                'fixing-otter-267')
-                        })))
+                urlencode(GET_data)))
 
-    def test_POST_succeed_directlink(self):
+    def test_GET_succeed_directlink(self):
         """
         If the URL represents a video file, the user should be redirected to
         the directlink_submit_video.
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
+        GET_data = {'url': ('http://blip.tv/file/get/'
+                            'Miropcf-Miro20Introduction119.mp4')}
         c = Client()
-        response = c.post(self.url, {
-                'url': ('http://blip.tv/file/get/'
-                        'Miropcf-Miro20Introduction119.mp4')})
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
-                          "http://%s%s?%s" %(
+                          "http://%s%s?%s" % (
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_directlink_video'),
-                urlencode({'url': ('http://blip.tv/file/get/'
-                                   'Miropcf-Miro20Introduction119.mp4'),
-                           })))
+                urlencode(GET_data)))
 
-    def test_POST_succeed_directlink_HEAD(self):
+    def test_GET_succeed_directlink_HEAD(self):
         """
         If the URL represents a video file, but doesn't have a standard video
         extension, a HEAD request should be made to figure out that the URL is
@@ -585,7 +582,7 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
         c = Client()
-        response = c.post(self.url, GET_data)
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           "http://%s%s?%s" %(
@@ -593,24 +590,24 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
                 reverse('localtv_submit_directlink_video'),
                 urlencode(GET_data)))
 
-    def test_POST_succeed_embedrequest(self):
+    def test_GET_succeed_embedrequest(self):
         """
         If the URL isn't something we understand normally, the user should be
         redirected to the embedrequest_submit_video view and include the tags.
         """
         # TODO(pswartz) this should probably be mocked, instead of actually
         # hitting the network
+        GET_data = {'url': 'http://pculture.org/'}
         c = Client()
-        response = c.post(self.url, {
-                'url': 'http://pculture.org/'})
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           "http://%s%s?%s" %(
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
-                urlencode({'url': 'http://pculture.org/'})))
+                urlencode(GET_data)))
 
-    def test_POST_succeed_canonical(self):
+    def test_GET_succeed_canonical(self):
         """
         If the URL is a scraped video but the URL we were given is not the
         canonical URL for that video, the user should be redirected as normal,
@@ -622,15 +619,16 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         youtube_url = 'http://www.youtube.com/watch?v=AfsZzeNF8A4'
         long_url = ('http://www.youtube.com/watch?gl=US&v=AfsZzeNF8A4'
                     '&feature=player_embedded')
-        response = c.post(self.url, {'url': long_url})
+        GET_data = {'url': long_url}
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           "http://%s%s?%s" %(
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_scraped_video'),
-                urlencode({'url': youtube_url})))
+                urlencode(GET_data)))
 
-    def test_POST_succeed_pound(self):
+    def test_GET_succeed_pound(self):
         """
         If the URL has a # in it, it should be stripped but the submission
         should continue normally..
@@ -639,13 +637,14 @@ class SubmitVideoTestCase(SubmitVideoBaseTestCase):
         # hitting the network
         url = 'http://www.msnbc.msn.com/id/21134540/vp/35294347'
         c = Client()
-        response = c.post(self.url, {'url': url + '#28863649'})
+        GET_data = {'url': url + '#28863649'}
+        response = c.get(self.url, GET_data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           "http://%s%s?%s" %(
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_embedrequest_video'),
-                urlencode({'url': url})))
+                urlencode(GET_data)))
 
 class ScrapedTestCase(SecondStepSubmitBaseTestCase):
 
@@ -777,7 +776,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         If the URL represents an existing file URL, the user should be
         redirected to the thanks page.
         """
-        video = models.Video.objects.create(site=self.site_location.site,
+        video = Video.objects.create(site=self.site_location.site,
                                             name='test video',
                                             file_url = self.GET_data['url'])
         c = Client()
@@ -788,7 +787,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
-        self.assertEqual(models.Video.objects.filter(
+        self.assertEqual(Video.objects.filter(
                 site=self.site_location.site,
                 file_url = self.GET_data['url']).count(), 1)
 
@@ -797,7 +796,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
         If the URL represents an existing file URL, the user should be
         redirected to the thanks page.
         """
-        video = models.Video.objects.create(site=self.site_location.site,
+        video = Video.objects.create(site=self.site_location.site,
                                             name='test video',
                                             file_url = self.GET_data['url'])
         c = Client()
@@ -808,7 +807,7 @@ class DirectLinkTestCase(SecondStepSubmitBaseTestCase):
                 'testserver', #self.site_location.site.domain,
                 reverse('localtv_submit_thanks',
                         args=[video.pk])))
-        self.assertEqual(models.Video.objects.filter(
+        self.assertEqual(Video.objects.filter(
                 site=self.site_location.site,
                 file_url = self.GET_data['url']).count(), 1)
 
@@ -873,8 +872,8 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         If there is a video submitted in the previous day, an e-mail should be
         sent
         """
-        queue_videos = models.Video.objects.filter(
-            status=models.Video.UNAPPROVED)
+        queue_videos = Video.objects.filter(
+            status=Video.UNAPPROVED)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now() - \
@@ -907,8 +906,8 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
             setting.send = False
             setting.save()
 
-        queue_videos = models.Video.objects.filter(
-            status=models.Video.UNAPPROVED)
+        queue_videos = Video.objects.filter(
+            status=Video.UNAPPROVED)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now()
