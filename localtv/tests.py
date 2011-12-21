@@ -145,7 +145,7 @@ class BaseTestCase(TestCase):
         Assert that the response has the given status code.  If not, give a
         useful error mesage.
         """
-        self.assertEquals(response.status_code, status_code,
+        self.assertEqual(response.status_code, status_code,
                           'Status Code: %i != %i\nData: %s' % (
                 response.status_code, status_code,
                 response.content or response.get('Location', '')))
@@ -172,7 +172,7 @@ class BaseTestCase(TestCase):
         if args and args[0]:
             url = '%s?%s' % (url, urlencode(args[0]))
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s?next=%s' %
                           ('testserver',
                            settings.LOGIN_URL,
@@ -229,7 +229,7 @@ class FeedImportTestCase(BaseTestCase):
         feed.save()
         self._update_with_video_iter(self._parsed_feed, feed)
         feed = Feed.objects.get(pk=1)
-        self.assertEquals(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.status, Feed.ACTIVE)
 
     def test_auto_approve_True(self):
         """
@@ -239,8 +239,8 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
         self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEquals(Video.objects.count(), 5)
-        self.assertEquals(Video.objects.filter(
+        self.assertEqual(Video.objects.count(), 5)
+        self.assertEqual(Video.objects.filter(
                 status=Video.ACTIVE).count(), 5)
 
     @mock.patch('localtv.tiers.Tier.videos_limit', lambda *args: 4)
@@ -254,8 +254,8 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = True
         self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEquals(Video.objects.count(), 5)
-        self.assertEquals(Video.objects.filter(
+        self.assertEqual(Video.objects.count(), 5)
+        self.assertEqual(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
 
     def test_auto_approve_False(self):
@@ -266,8 +266,8 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         feed.auto_approve = False
         self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEquals(Video.objects.count(), 5)
-        self.assertEquals(Video.objects.filter(
+        self.assertEqual(Video.objects.count(), 5)
+        self.assertEqual(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 5)
 
     def test_entries_inserted_in_feed_order(self):
@@ -280,7 +280,7 @@ class FeedImportTestCase(BaseTestCase):
         parsed_guids = [entry.guid for entry in self._parsed_feed]
         db_guids = Video.objects.in_feed_order().values_list('guid',
                                                              flat=True)
-        self.assertEquals(list(parsed_guids), list(db_guids))
+        self.assertEqual(list(parsed_guids), list(db_guids))
 
     def test_ignore_duplicate_guid(self):
         """
@@ -291,9 +291,9 @@ class FeedImportTestCase(BaseTestCase):
         video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
         self._update_with_video_iter(video_iter, feed)
         feed_import = FeedImport.objects.filter(source=feed).latest()
-        self.assertEquals(feed_import.videos_skipped, 1)
-        self.assertEquals(feed_import.videos_imported, 1)
-        self.assertEquals(Video.objects.count(), 1)
+        self.assertEqual(feed_import.videos_skipped, 1)
+        self.assertEqual(feed_import.videos_imported, 1)
+        self.assertEqual(Video.objects.count(), 1)
 
     def test_ignore_duplicate_link(self):
         """
@@ -304,9 +304,9 @@ class FeedImportTestCase(BaseTestCase):
         video_iter = self._parse_feed('feed_with_duplicate_link.rss')
         self._update_with_video_iter(video_iter, feed)
         feed_import = FeedImport.objects.filter(source=feed).latest()
-        self.assertEquals(feed_import.videos_skipped, 1)
-        self.assertEquals(feed_import.videos_imported, 1)
-        self.assertEquals(Video.objects.count(), 1)
+        self.assertEqual(feed_import.videos_skipped, 1)
+        self.assertEqual(feed_import.videos_imported, 1)
+        self.assertEqual(Video.objects.count(), 1)
 
     def test_entries_include_feed_data(self):
         """
@@ -325,29 +325,29 @@ class FeedImportTestCase(BaseTestCase):
         feed = Feed.objects.get(pk=1)
         self._update_with_video_iter(self._parsed_feed, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
-        self.assertEquals(video.name, u'Dave Glassco Supports Miro')
-        self.assertEquals(video.description,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
+        self.assertEqual(video.name, u'Dave Glassco Supports Miro')
+        self.assertEqual(video.description,
                           '>\n\n<br />\n\nDave is a great advocate and '
                           'supporter of Miro.')
-        self.assertEquals(video.website_url, 'http://blip.tv/file/779122')
-        self.assertEquals(video.file_url,
+        self.assertEqual(video.website_url, 'http://blip.tv/file/779122')
+        self.assertEqual(video.file_url,
                           'http://blip.tv/file/get/'
                           'Miropcf-DaveGlasscoSupportsMiro942.mp4')
-        self.assertEquals(video.file_url_length, 16018279)
-        self.assertEquals(video.file_url_mimetype, 'video/mp4')
+        self.assertEqual(video.file_url_length, 16018279)
+        self.assertEqual(video.file_url_mimetype, 'video/mp4')
         self.assertTrue(video.has_thumbnail)
-        self.assertEquals(video.thumbnail_url,
+        self.assertEqual(video.thumbnail_url,
                           'http://a.images.blip.tv/'
                           'Miropcf-DaveGlasscoSupportsMiro959.jpg')
-        self.assertEquals(video.when_published,
+        self.assertEqual(video.when_published,
                           datetime.datetime(2008, 3, 27, 23, 25, 51))
-        self.assertEquals(video.video_service(), 'blip.tv')
+        self.assertEqual(video.video_service(), 'blip.tv')
         category = ['Default Category']
         if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
             category = [category[0].lower()]
-        self.assertEquals([tag.name for tag in video.tags.all()],
+        self.assertEqual([tag.name for tag in video.tags.all()],
                           category)
 
     def test_entries_link_optional(self):
@@ -358,8 +358,8 @@ class FeedImportTestCase(BaseTestCase):
         video_iter = self._parse_feed('feed_without_link.rss')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
     def test_entries_enclosure_type_optional(self):
         """
@@ -370,8 +370,8 @@ class FeedImportTestCase(BaseTestCase):
         video_iter = self._parse_feed('feed_without_mime_type.rss')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
 
     def test_entries_vimeo(self):
         """
@@ -384,35 +384,35 @@ class FeedImportTestCase(BaseTestCase):
                 self._data_file('vimeo.json')))
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
-        self.assertEquals(video.name, u'Tishana - Pro-Choicers on Stupak')
-        self.assertEquals(video.description, '\
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
+        self.assertEqual(video.name, u'Tishana - Pro-Choicers on Stupak')
+        self.assertEqual(video.description, '\
 Tishana from SPARK Reproductive Justice talking about the right to choose \
 after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
-        self.assertEquals(video.website_url, 'http://vimeo.com/7981161')
-        self.assertEquals(
+        self.assertEqual(video.website_url, 'http://vimeo.com/7981161')
+        self.assertEqual(
             video.embed_code,
             '<iframe src="http://player.vimeo.com/video/7981161" width="320" '
             'height="240" frameborder="0" webkitAllowFullScreen '
             'allowFullScreen></iframe>')
-        self.assertEquals(video.file_url, '')
+        self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertTrue(video.thumbnail_url.endswith('.jpg'),
                         video.thumbnail_url)
-        self.assertEquals(video.when_published,
+        self.assertEqual(video.when_published,
                           datetime.datetime(2009, 12, 4, 8, 23, 47))
-        self.assertEquals(video.video_service(), 'Vimeo')
+        self.assertEqual(video.video_service(), 'Vimeo')
         category = ['Pro-Choice', 'Stupak-Pitts']
         if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
             category = [cat.lower() for cat in category]
-        self.assertEquals([tag.name for tag in video.tags.all()],
+        self.assertEqual([tag.name for tag in video.tags.all()],
                           category)
 
         # no automatic author, so it should be the user from the site
-        self.assertEquals(list(video.authors.values_list('username')),
+        self.assertEqual(list(video.authors.values_list('username')),
                           [('Latoya Peterson',)])
-        self.assertEquals(video.authors.get().get_profile().website,
+        self.assertEqual(video.authors.get().get_profile().website,
                           'http://vimeo.com/user1751935')
 
     def test_entries_youtube(self):
@@ -426,34 +426,34 @@ after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         video_iter = self._parse_feed('youtube.rss', force_url=True)
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid,
                           u'http://gdata.youtube.com/feeds/api/videos/BBwtzeZdoHQ')
-        self.assertEquals(video.name,
+        self.assertEqual(video.name,
                           'Dr. Janice Key Answers Questions about Preventing '
                           'Teen Pregnancy')
-        self.assertEquals(video.description, "\
+        self.assertEqual(video.description, "\
 Dr. Janice Key, Professor of Adolescent Medicine at the Medical \
 University South Carolina, answers questions about teen pregnancy prevention.")
-        self.assertEquals(video.website_url,
+        self.assertEqual(video.website_url,
                           'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
         self.assertTrue('/BBwtzeZdoHQ' in video.embed_code)
-        self.assertEquals(video.file_url, '')
+        self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
-        self.assertEquals(video.thumbnail_url,
+        self.assertEqual(video.thumbnail_url,
                           'http://i.ytimg.com/vi/BBwtzeZdoHQ/0.jpg'
                           )
-        self.assertEquals(video.when_published,
+        self.assertEqual(video.when_published,
                           datetime.datetime(2010, 1, 18, 19, 41, 21))
-        self.assertEquals(video.video_service(), 'YouTube')
+        self.assertEqual(video.video_service(), 'YouTube')
         category = ['Nonprofit']
         if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
             category = [cat.lower() for cat in category]
-        self.assertEquals([tag.name for tag in video.tags.all()],
+        self.assertEqual([tag.name for tag in video.tags.all()],
                           category)
 
         # auto author should be assigned
-        self.assertEquals(list(video.authors.all()),
+        self.assertEqual(list(video.authors.all()),
                           [user])
 
     def test_entries_atom(self):
@@ -464,18 +464,18 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = self._parse_feed('feed.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.order_by('id')[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid, u'http://www.example.org/entries/1')
-        self.assertEquals(video.name, u'Atom 1.0')
-        self.assertEquals(video.when_published, datetime.datetime(2005, 7, 15,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid, u'http://www.example.org/entries/1')
+        self.assertEqual(video.name, u'Atom 1.0')
+        self.assertEqual(video.when_published, datetime.datetime(2005, 7, 15,
                                                                   12, 0, 0))
-        self.assertEquals(video.file_url,
+        self.assertEqual(video.file_url,
                           u'http://www.example.org/myvideo.ogg')
-        self.assertEquals(video.file_url_length, 1234)
-        self.assertEquals(video.file_url_mimetype, u'application/ogg')
-        self.assertEquals(video.website_url,
+        self.assertEqual(video.file_url_length, 1234)
+        self.assertEqual(video.file_url_mimetype, u'application/ogg')
+        self.assertEqual(video.website_url,
                           u'http://www.example.org/entries/1')
-        self.assertEquals(video.description, u"""<h1>Show Notes</h1>
+        self.assertEqual(video.description, u"""<h1>Show Notes</h1>
 <ul>
 <li>00:01:00 -- Introduction</li>
 <li>00:15:00 -- Talking about Atom 1.0</li>
@@ -492,28 +492,28 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = self._parse_feed('feed_from_mc.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.order_by('id')[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.guid,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.guid,
                           u'http://www.onnetworks.com/5843 at '
                           'http://www.onnetworks.com')
-        self.assertEquals(video.name, u'"The Dancer & Kenaudra"')
-        self.assertEquals(video.when_published,
+        self.assertEqual(video.name, u'"The Dancer & Kenaudra"')
+        self.assertEqual(video.when_published,
                           datetime.datetime(2009, 1, 13, 6, 0))
-        self.assertEquals(video.file_url,
+        self.assertEqual(video.file_url,
                           u'http://podcast.onnetworks.com/videos/'
                           'sgatp_0108_kenaudra_480x270.mp4?feed=video'
                           '&key=6100&target=itunes')
-        self.assertEquals(video.file_url_length, 1)
-        self.assertEquals(video.file_url_mimetype, u'video/mp4')
-        self.assertEquals(video.website_url,
+        self.assertEqual(video.file_url_length, 1)
+        self.assertEqual(video.file_url_mimetype, u'video/mp4')
+        self.assertEqual(video.website_url,
                           u'http://www.onnetworks.com/videos/'
                           'smart-girls-at-the-party/the-dancer-kenaudra')
-        self.assertEquals(video.description,
+        self.assertEqual(video.description,
                           u'Kenaudra displays her many talents including a '
                           'new dance called Praise Dancing.<br />'
                           '<a href="http://www.onnetworks.com/videos/'
                           'smart-girls-at-the-party/the-dancer-kenaudra"></a>')
-        self.assertEquals(video.embed_code,
+        self.assertEqual(video.embed_code,
                           u'<object width="425" height="271">'
                           '<embed id="ONPlayerEmbed" width="425" height="271" '
                           'allowfullscreen="true" flashvars="configFileName='
@@ -537,8 +537,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = self._parse_feed('feed_with_link_via.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.website_url,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.website_url,
                           u'http://www.example.org/entries/1')
 
     def test_entries_atom_with_media(self):
@@ -550,11 +550,11 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = self._parse_feed('feed_with_media.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.file_url,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.file_url,
                           u'http://www.example.org/myvideo.ogg')
-        self.assertEquals(video.file_url_mimetype, u'application/ogg')
-        self.assertEquals(video.thumbnail_url,
+        self.assertEqual(video.file_url_mimetype, u'application/ogg')
+        self.assertEqual(video.thumbnail_url,
                           'http://www.example.org/myvideo.jpg')
 
     def test_entries_atom_with_media_player(self):
@@ -566,8 +566,8 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         video_iter = self._parse_feed('feed_with_media_player.atom')
         self._update_with_video_iter(video_iter, feed)
         video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEquals(video.feed, feed)
-        self.assertEquals(video.embed_code,
+        self.assertEqual(video.feed, feed)
+        self.assertEqual(video.embed_code,
                           '<embed src="http://www.example.org/?a=b&c=d">')
 
     def test_entries_atom_with_invalid_media(self):
@@ -578,7 +578,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_invalid_media.atom')
         self._update_with_video_iter(video_iter, feed)
-        self.assertEquals(feed.video_set.count(), 0)
+        self.assertEqual(feed.video_set.count(), 0)
 
     def test_entries_atom_with_long_item(self):
         """
@@ -588,7 +588,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_long_item.atom')
         self._update_with_video_iter(video_iter, feed)
-        self.assertEquals(feed.video_set.count(), 1)
+        self.assertEqual(feed.video_set.count(), 1)
 
     def test_entries_multiple_imports(self):
         """
@@ -597,15 +597,15 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed = Feed.objects.get(pk=1)
         video_iter = list(self._parse_feed('feed_with_long_item.atom'))
         self._update_with_video_iter(video_iter, feed)
-        self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.imports.latest().videos_imported, 1)
+        self.assertEqual(feed.video_set.count(), 1)
+        self.assertEqual(feed.imports.latest().videos_imported, 1)
         v = feed.video_set.get()
         # didn't get any updates
         self._update_with_video_iter(video_iter, feed)
-        self.assertEquals(feed.video_set.count(), 1)
-        self.assertEquals(feed.imports.latest().videos_imported, 0)
+        self.assertEqual(feed.video_set.count(), 1)
+        self.assertEqual(feed.imports.latest().videos_imported, 0)
         v2 = feed.video_set.get()
-        self.assertEquals(v.pk, v2.pk)
+        self.assertEqual(v.pk, v2.pk)
 
     def test_video_service(self):
         """
@@ -624,7 +624,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         feed = Feed.objects.get(pk=1)
         for service, url in services:
             feed.feed_url = url
-            self.assertEquals(feed.video_service(), service,
+            self.assertEqual(feed.video_service(), service,
                               '%s was incorrectly described as %s' %
                               (url, feed.video_service()))
 
@@ -653,16 +653,16 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/index.html')
         featured = list(Video.objects.get_featured_videos(self.site_location))
-        self.assertEquals(list(response.context['featured_videos']),
+        self.assertEqual(list(response.context['featured_videos']),
                           featured)
-        self.assertEquals(list(response.context['popular_videos']),
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(self.site_location)))
-        self.assertEquals(list(response.context['new_videos']),
+        self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_location)))
-        self.assertEquals(list(response.context['comments']), [])
+        self.assertEqual(list(response.context['comments']), [])
 
     def test_index_feeds_avoid_frontpage(self):
         """
@@ -700,8 +700,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(len(response.context['comments']), 1)
-        self.assertEquals(response.context['comments'][0].content_object,
+        self.assertEqual(len(response.context['comments']), 1)
+        self.assertEqual(response.context['comments'][0].content_object,
                           approved)
 
         approved.status = Video.REJECTED
@@ -710,7 +710,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(len(response.context['comments']), 0)
+        self.assertEqual(len(response.context['comments']), 0)
 
     def test_about(self):
         """
@@ -719,7 +719,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_about'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/about.html')
 
     def test_view_video(self):
@@ -738,10 +738,10 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/view_video.html')
-        self.assertEquals(response.context[0]['current_video'], video)
-        self.assertEquals(list(response.context[0]['popular_videos']),
+        self.assertEqual(response.context[0]['current_video'], video)
+        self.assertEqual(list(response.context[0]['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location)))
 
@@ -772,7 +772,7 @@ class ViewTestCase(BaseTestCase):
                                  args=[20, 'wrong-slug']))
         # 301 is a permanent redirect
         self.assertStatusCodeEquals(response, 301)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 video.get_absolute_url()))
@@ -780,7 +780,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_view_video',
                                  args=[20, '']))
         self.assertStatusCodeEquals(response, 301)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 video.get_absolute_url()))
@@ -799,8 +799,8 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['category'].pk, 2)
-        self.assertEquals(list(response.context[0]['popular_videos']),
+        self.assertEqual(response.context['category'].pk, 2)
+        self.assertEqual(list(response.context[0]['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=2)))
 
@@ -823,8 +823,8 @@ class ViewTestCase(BaseTestCase):
                 reverse('localtv_category',
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['category'].pk, 1)
-        self.assertEquals(list(response.context[0]['popular_videos']),
+        self.assertEqual(response.context['category'].pk, 1)
+        self.assertEqual(list(response.context[0]['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=1)))
 
@@ -839,10 +839,10 @@ class ViewTestCase(BaseTestCase):
         start = (page_num - 1) * per_page
         end = page_num * per_page
         
-        self.assertEquals(page_num, expected_page_num)
-        self.assertEquals(len(paginator.object_list),
+        self.assertEqual(page_num, expected_page_num)
+        self.assertEqual(len(paginator.object_list),
                           expected_object_count)
-        self.assertEquals(videos, expected_sqs_results[start:end])
+        self.assertEqual(videos, expected_sqs_results[start:end])
 
     def test_video_search(self):
         """
@@ -855,7 +855,7 @@ class ViewTestCase(BaseTestCase):
                          {'q': 'blender'}) # lots of Blender videos in the test
                                            # data
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response, 
                                  SearchQuerySet().models(models.Video).filter(
@@ -870,7 +870,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response,
                                  SearchQuerySet().models(models.Video).filter(
@@ -885,7 +885,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_search'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_search.html')
 
     def test_video_search_pagination(self):
@@ -918,19 +918,19 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'tag1'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                           {'q': 'tag2'})
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'tag2 tag1'})
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_categories(self):
@@ -946,19 +946,19 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'Miro'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'Linux'})
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'Miro Linux'})
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_user(self):
@@ -977,19 +977,19 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'superuser'}) # username
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'firstname'}) # first name
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
         response = c.get(reverse('localtv_search'),
                          {'q': 'lastname'}) # last name
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_video_service_user(self):
@@ -1005,9 +1005,9 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'video_service_user'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
     def test_video_search_includes_feed_name(self):
@@ -1021,9 +1021,9 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': 'miropcf'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']),
                           [video])
 
     def test_video_search_exclude_terms(self):
@@ -1047,9 +1047,9 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': u'espa\xf1a'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.context['page_obj'].number, 1)
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['video_list']), [])
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['video_list']), [])
 
     def test_category_index(self):
         """
@@ -1060,10 +1060,10 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_category_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/categories.html')
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Category.objects.filter(parent=None,
                                site=Site.objects.get_current())))
 
@@ -1076,9 +1076,9 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/category.html')
-        self.assertEquals(response.context['category'], category)
+        self.assertEqual(response.context['category'], category)
 
     def test_author_index(self):
         """
@@ -1088,10 +1088,10 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_author_index'))
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/author_list.html')
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(list(response.context['authors']),
+        self.assertEqual(list(response.context['authors']),
                           list(User.objects.all()))
 
     def test_author(self):
@@ -1111,11 +1111,11 @@ class ViewTestCase(BaseTestCase):
             ).distinct().order_by('-best_date')
         )
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/author.html')
-        self.assertEquals(response.context['author'], author)
-        self.assertEquals(len(videos), 2)
-        self.assertEquals(videos, expected)
+        self.assertEqual(response.context['author'], author)
+        self.assertEqual(len(videos), 2)
+        self.assertEqual(videos, expected)
 
 
 # -----------------------------------------------------------------------------
@@ -1135,7 +1135,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/browse.html')
 
     def test_latest_videos(self):
@@ -1147,11 +1147,11 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_new'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_new.html')
-        self.assertEquals(response.context['paginator'].num_pages, 2)
-        self.assertEquals(len(response.context['page_obj'].object_list), 15)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 2)
+        self.assertEqual(len(response.context['page_obj'].object_list), 15)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_latest_videos(
                               self.site_location)[:15]))
 
@@ -1168,11 +1168,11 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_popular.html')
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(len(response.context['page_obj'].object_list), 2)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(len(response.context['page_obj'].object_list), 2)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_popular_videos(
                                  self.site_location).filter(
                                      watch__timestamp__gte=datetime.datetime.min
@@ -1187,11 +1187,11 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_featured'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_featured.html')
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(len(response.context['page_obj'].object_list), 2)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(len(response.context['page_obj'].object_list), 2)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.active().filter(
                                last_featured__isnull=False)))
 
@@ -1210,11 +1210,11 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_tag',
                          args=['tag1']))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_tag.html')
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(len(response.context['page_obj'].object_list), 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(len(response.context['page_obj'].object_list), 1)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           [video])
 
     def test_feed_videos(self):
@@ -1229,11 +1229,11 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_feed',
                                  args=[feed.pk]))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/video_listing_feed.html')
-        self.assertEquals(response.context['paginator'].num_pages, 1)
-        self.assertEquals(len(response.context['page_obj'].object_list), 1)
-        self.assertEquals(list(response.context['page_obj'].object_list),
+        self.assertEqual(response.context['paginator'].num_pages, 1)
+        self.assertEqual(len(response.context['page_obj'].object_list), 1)
+        self.assertEqual(list(response.context['page_obj'].object_list),
                           list(feed.video_set.filter(
                     status=Video.ACTIVE)))
 
@@ -1267,7 +1267,7 @@ class CommentModerationTestCase(BaseTestCase):
         """
         c = Client()
         c.post(self.url, self.POST_data)
-        self.assertEquals(Comment.objects.count(), 1)
+        self.assertEqual(Comment.objects.count(), 1)
         self.video.delete()
         self.assertFalse(Comment.objects.exists())
 
@@ -1281,11 +1281,11 @@ class CommentModerationTestCase(BaseTestCase):
         c = Client()
         c.post(self.url, self.POST_data)
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertFalse(comment.is_public)
-        self.assertEquals(comment.name, 'postname')
-        self.assertEquals(comment.email, '')
-        self.assertEquals(comment.url, '')
+        self.assertEqual(comment.name, 'postname')
+        self.assertEqual(comment.email, '')
+        self.assertEqual(comment.url, '')
 
     def test_screen_all_comments_False(self):
         """
@@ -1299,11 +1299,11 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertTrue(comment.is_public)
-        self.assertEquals(comment.name, 'postname')
-        self.assertEquals(comment.email, 'post@email.com')
-        self.assertEquals(comment.url, 'http://posturl.com/')
+        self.assertEqual(comment.name, 'postname')
+        self.assertEqual(comment.email, 'post@email.com')
+        self.assertEqual(comment.url, 'http://posturl.com/')
 
     def test_screen_all_comments_True(self):
         """
@@ -1323,13 +1323,13 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertFalse(comment.is_public)
-        self.assertEquals(comment.name, 'postname')
-        self.assertEquals(comment.email, 'post@email.com')
-        self.assertEquals(comment.url, 'http://posturl.com/')
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(comment.name, 'postname')
+        self.assertEqual(comment.email, 'post@email.com')
+        self.assertEqual(comment.url, 'http://posturl.com/')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
 
@@ -1343,7 +1343,7 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertTrue(comment.is_public)
         comment.delete()
 
@@ -1351,7 +1351,7 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertTrue(comment.is_public)
 
     def test_comments_email_admins_False(self):
@@ -1362,7 +1362,7 @@ class CommentModerationTestCase(BaseTestCase):
         c = Client()
         c.post(self.url, self.POST_data)
 
-        self.assertEquals(mail.outbox, [])
+        self.assertEqual(mail.outbox, [])
 
     def test_comments_email_admins_True(self):
         """
@@ -1381,8 +1381,8 @@ class CommentModerationTestCase(BaseTestCase):
         c = Client()
         c.post(self.url, self.POST_data)
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
 
@@ -1396,11 +1396,11 @@ class CommentModerationTestCase(BaseTestCase):
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertFalse(comment.is_public)
-        self.assertEquals(comment.name, 'postname')
-        self.assertEquals(comment.email, 'post@email.com')
-        self.assertEquals(comment.url, 'http://posturl.com/')
+        self.assertEqual(comment.name, 'postname')
+        self.assertEqual(comment.email, 'post@email.com')
+        self.assertEqual(comment.url, 'http://posturl.com/')
 
     def test_comments_required_login_True(self):
         """
@@ -1413,17 +1413,17 @@ class CommentModerationTestCase(BaseTestCase):
         c = Client()
         response = c.post(self.url, self.POST_data)
         self.assertStatusCodeEquals(response, 400)
-        self.assertEquals(Comment.objects.count(), 0)
+        self.assertEqual(Comment.objects.count(), 0)
 
         c.login(username='user', password='password')
         c.post(self.url, self.POST_data)
 
         comment = Comment.objects.get()
-        self.assertEquals(comment.content_object, self.video)
+        self.assertEqual(comment.content_object, self.video)
         self.assertFalse(comment.is_public)
-        self.assertEquals(comment.name, 'Firstname Lastname')
-        self.assertEquals(comment.email, 'user@testserver.local')
-        self.assertEquals(comment.url, 'http://posturl.com/')
+        self.assertEqual(comment.name, 'Firstname Lastname')
+        self.assertEqual(comment.email, 'user@testserver.local')
+        self.assertEqual(comment.url, 'http://posturl.com/')
 
     def test_comments_email_submitter(self):
         """
@@ -1448,8 +1448,8 @@ class CommentModerationTestCase(BaseTestCase):
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           [video.user.email])
 
     def test_comments_email_submitter_once(self):
@@ -1478,8 +1478,8 @@ class CommentModerationTestCase(BaseTestCase):
         c = Client()
         c.post(self.url, self.POST_data)
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           [admin.email])
 
     def test_comments_email_previous_commenter(self):
@@ -1500,7 +1500,7 @@ class CommentModerationTestCase(BaseTestCase):
         c.login(username='user', password='password')
         self.assertStatusCodeEquals(c.post(self.url, self.POST_data), 302)
 
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
         mail.outbox = []
 
@@ -1509,8 +1509,8 @@ class CommentModerationTestCase(BaseTestCase):
         self.POST_data['comment'] = 'another comment'
         self.assertStatusCodeEquals(c.post(self.url, self.POST_data), 302)
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           [user.email])
 
 
@@ -1531,11 +1531,11 @@ class VideoModelTestCase(BaseTestCase):
         3) when_submitted (when it was submitted to the site)
         """
         v = Video.objects.get(pk=11)
-        self.assertEquals(v.when(), v.when_published)
+        self.assertEqual(v.when(), v.when_published)
         v.when_published = None
-        self.assertEquals(v.when(), v.when_approved)
+        self.assertEqual(v.when(), v.when_approved)
         v.when_approved = None
-        self.assertEquals(v.when(), v.when_submitted)
+        self.assertEqual(v.when(), v.when_submitted)
 
     def test_when_use_original_date_False(self):
         """
@@ -1545,7 +1545,7 @@ class VideoModelTestCase(BaseTestCase):
         self.site_location.use_original_date = False
         self.site_location.save()
         v = Video.objects.get(pk=11)
-        self.assertEquals(v.when(), v.when_approved)
+        self.assertEqual(v.when(), v.when_approved)
 
 
     def test_when_prefix(self):
@@ -1554,9 +1554,9 @@ class VideoModelTestCase(BaseTestCase):
         when_published, otherwise it returns 'posted'..
         """
         v = Video.objects.get(pk=11)
-        self.assertEquals(v.when_prefix(), 'published')
+        self.assertEqual(v.when_prefix(), 'published')
         v.when_published = None
-        self.assertEquals(v.when_prefix(), 'posted')
+        self.assertEqual(v.when_prefix(), 'posted')
 
     def test_when_prefix_use_original_date_False(self):
         """
@@ -1566,7 +1566,7 @@ class VideoModelTestCase(BaseTestCase):
         self.site_location.use_original_date = False
         self.site_location.save()
         v = Video.objects.get(pk=11)
-        self.assertEquals(v.when_prefix(), 'posted')
+        self.assertEqual(v.when_prefix(), 'posted')
 
     def test_latest(self):
         """
@@ -1585,7 +1585,7 @@ class VideoModelTestCase(BaseTestCase):
 COALESCE(localtv_video.when_published,localtv_video.when_approved,
 localtv_video.when_submitted)"""}
         ).filter(site=self.site_location.site).order_by('-date'))
-        self.assertEquals(results, expected)
+        self.assertEqual(results, expected)
 
     def test_latest_use_original_date_False(self):
         """
@@ -1594,7 +1594,7 @@ localtv_video.when_submitted)"""}
         """
         self.site_location.use_original_date = False
         self.site_location.save()
-        self.assertEquals(list(Video.objects.get_latest_videos(
+        self.assertEqual(list(Video.objects.get_latest_videos(
                     self.site_location)),
                           list(Video.objects.active().extra(select={'date': """
 COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
@@ -1630,12 +1630,12 @@ COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
             )
         v.tags = 'foo bar "baz bum"'
         self.assertFalse(v.original is None)
-        self.assertEquals(v.original.name, v.name)
-        self.assertEquals(v.original.description, v.description)
+        self.assertEqual(v.original.name, v.name)
+        self.assertEqual(v.original.description, v.description)
         self.assertTrue(v.original.thumbnail_updated -
                         datetime.datetime.now() <
                         datetime.timedelta(seconds=15))
-        self.assertEquals(set(v.tags), set(Tag.objects.filter(
+        self.assertEqual(set(v.tags), set(Tag.objects.filter(
                     name__in=('foo', 'bar', 'baz bum'))))
 
     def test_no_original_video_without_website_url(self):
@@ -1720,11 +1720,11 @@ class WatchModelTestCase(BaseTestCase):
         Watch.add(request, video)
 
         watch = Watch.objects.get()
-        self.assertEquals(watch.video, video)
+        self.assertEqual(watch.video, video)
         self.assertTrue(watch.timestamp - datetime.datetime.now() <
                         datetime.timedelta(seconds=1))
-        self.assertEquals(watch.user, request.user)
-        self.assertEquals(watch.ip_address, request.META['REMOTE_ADDR'])
+        self.assertEqual(watch.user, request.user)
+        self.assertEqual(watch.ip_address, request.META['REMOTE_ADDR'])
 
     def test_add_unauthenticated(self):
         """
@@ -1739,11 +1739,11 @@ class WatchModelTestCase(BaseTestCase):
         Watch.add(request, video)
 
         watch = Watch.objects.get()
-        self.assertEquals(watch.video, video)
+        self.assertEqual(watch.video, video)
         self.assertTrue(watch.timestamp - datetime.datetime.now() <
                         datetime.timedelta(seconds=1))
-        self.assertEquals(watch.user, None)
-        self.assertEquals(watch.ip_address, request.META['REMOTE_ADDR'])
+        self.assertEqual(watch.user, None)
+        self.assertEqual(watch.ip_address, request.META['REMOTE_ADDR'])
 
     def test_add_invalid_ip(self):
         """
@@ -1758,8 +1758,8 @@ class WatchModelTestCase(BaseTestCase):
         Watch.add(request, video)
 
         w = Watch.objects.get()
-        self.assertEquals(w.video, video)
-        self.assertEquals(w.ip_address, '0.0.0.0')
+        self.assertEqual(w.video, video)
+        self.assertEqual(w.ip_address, '0.0.0.0')
 
 
 # -----------------------------------------------------------------------------
@@ -1776,7 +1776,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         the search.
         """
         ss = SavedSearch.objects.get(pk=1)
-        self.assertEquals(ss.video_set.count(), 0)
+        self.assertEqual(ss.video_set.count(), 0)
         ss.update()
         self.assertNotEquals(ss.video_set.count(), 0)
 
@@ -1789,7 +1789,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         ss.update()
         count = ss.video_set.count()
         ss.update()
-        self.assertEquals(ss.video_set.count(), count)
+        self.assertEqual(ss.video_set.count(), count)
 
     def test_attribution_auto(self):
         """
@@ -1800,7 +1800,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         ss.auto_authors = [User.objects.get(pk=1)]
         ss.update()
         video = ss.video_set.all()[0]
-        self.assertEquals(list(ss.auto_authors.all()),
+        self.assertEqual(list(ss.auto_authors.all()),
                           list(video.authors.all()))
 
     def test_attribution_default(self):
@@ -1860,16 +1860,16 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
             utils.normalize_newlines(unix_style))
 
     def test_normalize_newlines_weird_input(self):
-        self.assert_(utils.normalize_newlines(None)
+        self.assertTrue(utils.normalize_newlines(None)
                      is None)
-        self.assert_(utils.normalize_newlines(True) is True)
+        self.assertTrue(utils.normalize_newlines(True) is True)
 
     def test_no_changes(self):
         """
         If nothing has changed, then OriginalVideo.changed_fields() should
         return an empty dictionary.
         """
-        self.assertEquals(self.original.changed_fields(), {})
+        self.assertEqual(self.original.changed_fields(), {})
 
     def assertChanges(self, field, value, old_value):
         """
@@ -1879,7 +1879,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         """
         setattr(self.original, field, value)
         changed_fields = self.original.changed_fields()
-        self.assertEquals(changed_fields, {field: old_value})
+        self.assertEqual(changed_fields, {field: old_value})
         setattr(self.original, field, old_value)
 
     def test_name_change(self):
@@ -1947,7 +1947,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         e-mails.
         """
         self.original.update()
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_update_modified(self):
         """
@@ -1963,20 +1963,20 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
 
         self.original.update()
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
         original = OriginalVideo.objects.get(pk=self.original.pk)
-        self.assertEquals(original.name,
+        self.assertEqual(original.name,
                           self.BASE_DATA['name'])
-        self.assertEquals(original.thumbnail_url,
+        self.assertEqual(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
-        self.assertEquals(set(tag.name for tag in original.tags),
+        self.assertEqual(set(tag.name for tag in original.tags),
                           set())
-        self.assertEquals(original.video.thumbnail_url,
+        self.assertEqual(original.video.thumbnail_url,
                           self.video.thumbnail_url) # didn't change
-        self.assertEquals(set(original.video.tags),
+        self.assertEqual(set(original.video.tags),
                           set(self.video.tags))
 
     def test_update_unmodified(self):
@@ -1994,19 +1994,19 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.update()
 
 
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
         original = OriginalVideo.objects.get(pk=self.original.pk)
-        self.assertEquals(original.name,
+        self.assertEqual(original.name,
                           self.BASE_DATA['name'])
-        self.assertEquals(original.thumbnail_url,
+        self.assertEqual(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
-        self.assertEquals(set(tag.name for tag in original.tags),
+        self.assertEqual(set(tag.name for tag in original.tags),
                           set())
-        self.assertEquals(original.video.name,
+        self.assertEqual(original.video.name,
                           original.name)
-        self.assertEquals(original.video.thumbnail_url,
+        self.assertEqual(original.video.thumbnail_url,
                           original.thumbnail_url)
-        self.assertEquals(set(original.video.tags),
+        self.assertEqual(set(original.video.tags),
                           set(original.tags))
 
     def test_update_both(self):
@@ -2025,22 +2025,22 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
 
         self.original.update()
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
         original = OriginalVideo.objects.get(pk=self.original.pk)
-        self.assertEquals(original.name,
+        self.assertEqual(original.name,
                           self.BASE_DATA['name'])
-        self.assertEquals(original.thumbnail_url,
+        self.assertEqual(original.thumbnail_url,
                           self.BASE_DATA['thumbnail_url'])
-        self.assertEquals(set(original.tags),
+        self.assertEqual(set(original.tags),
                           set())
-        self.assertEquals(original.video.name,
+        self.assertEqual(original.video.name,
                           original.name)
-        self.assertEquals(original.video.thumbnail_url,
+        self.assertEqual(original.video.thumbnail_url,
                           original.thumbnail_url)
-        self.assertEquals(set(original.video.tags),
+        self.assertEqual(set(original.video.tags),
                           set(original.tags))
 
     def test_remote_video_deletion(self):
@@ -2054,22 +2054,22 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertTrue(self.original.remote_video_was_deleted)
-        self.assertEquals(len(mail.outbox), 0) # not e-mailed yet
+        self.assertEqual(len(mail.outbox), 0) # not e-mailed yet
 
         # second try sends the e-mail
         self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertTrue(self.original.remote_video_was_deleted)
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           ['admin@testserver.local',
                            'superuser@testserver.local'])
-        self.assert_(u'Deleted' in unicode(mail.outbox[0].message()))
+        self.assertTrue(u'Deleted' in unicode(mail.outbox[0].message()))
         # Now, imagine a day goes by.
         # Clear the outbox, and do the same query again.
         mail.outbox = []
         self.original.update(override_vidscraper_result=vidscraper_result)
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_remote_video_spurious_delete(self):
         """
@@ -2082,7 +2082,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertTrue(self.original.remote_video_was_deleted)
-        self.assertEquals(len(mail.outbox), 0) # not e-mailed yet
+        self.assertEqual(len(mail.outbox), 0) # not e-mailed yet
 
         # second try doesn't sends the e-mail
         vidscraper_result.__dict__.update({
@@ -2094,7 +2094,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.update(override_vidscraper_result=vidscraper_result)
 
         self.assertFalse(self.original.remote_video_was_deleted)
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_remote_video_newline_fiddling(self):
         """

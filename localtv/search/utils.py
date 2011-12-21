@@ -167,10 +167,12 @@ class SortFilterMixin(object):
                     sq = None
 
                     for field in filter_def['fields']:
-                        if field.endswith('s'): # plural fields us __in
+                        if len(pks) > 1:
+                            # Use __in if there are multiple pks.
                             new_sq = SQ(**{"%s__in" % field: pks})
-                        else: # regular fields use ==
-                            new_sq = SQ(**{field: pks})
+                        else:
+                            # Otherwise do an exact query on the single pk.
+                            new_sq = SQ(**{field: pks[0]})
                         if sq is None:
                             sq = new_sq
                         else:
