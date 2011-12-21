@@ -62,14 +62,14 @@ class ProfileFormTestCase(TestCase):
         form = forms.ProfileForm(data, instance=self.user)
         self.assertTrue(form.is_valid())
         instance = form.save()
-        self.assertEquals(instance.username, 'newusername')
-        self.assertEquals(instance.first_name, 'First')
-        self.assertEquals(instance.last_name, 'Last')
-        self.assertEquals(instance.email, 'test@foo.bar.com')
-        self.assertEquals(instance.get_profile().description,
+        self.assertEqual(instance.username, 'newusername')
+        self.assertEqual(instance.first_name, 'First')
+        self.assertEqual(instance.last_name, 'Last')
+        self.assertEqual(instance.email, 'test@foo.bar.com')
+        self.assertEqual(instance.get_profile().description,
                           'New Description')
-        self.assertEquals(instance.get_profile().location, 'Where I am')
-        self.assertEquals(instance.get_profile().website,
+        self.assertEqual(instance.get_profile().location, 'Where I am')
+        self.assertEqual(instance.get_profile().website,
                           'http://www.google.com/')
 
     def test_save_no_changes(self):
@@ -85,15 +85,15 @@ class ProfileFormTestCase(TestCase):
         form = forms.ProfileForm(initial, instance=self.user)
         self.assertTrue(form.is_valid(), form.errors)
         instance = form.save()
-        self.assertEquals(instance.username, self.user.username)
-        self.assertEquals(instance.first_name, self.user.first_name)
-        self.assertEquals(instance.last_name, self.user.last_name)
-        self.assertEquals(instance.email, self.user.email)
-        self.assertEquals(instance.get_profile().description,
+        self.assertEqual(instance.username, self.user.username)
+        self.assertEqual(instance.first_name, self.user.first_name)
+        self.assertEqual(instance.last_name, self.user.last_name)
+        self.assertEqual(instance.email, self.user.email)
+        self.assertEqual(instance.get_profile().description,
                           self.profile.description)
-        self.assertEquals(instance.get_profile().location,
+        self.assertEqual(instance.get_profile().location,
                           self.profile.location)
-        self.assertEquals(instance.get_profile().website,
+        self.assertEqual(instance.get_profile().website,
                           self.profile.website)
 
 
@@ -121,7 +121,7 @@ class ProfileViewTestCase(BaseTestCase):
         c.login(username='user', password='password')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/user_profile/edit.html')
         self.assertTrue('form' in response.context[0])
 
@@ -154,20 +154,20 @@ class ProfileViewTestCase(BaseTestCase):
         c.login(username='user', password='password')
         response = c.post(self.url, data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
                 self.url))
 
         user = User.objects.get(pk=self.user.pk)
-        self.assertEquals(user.username, 'newusername')
-        self.assertEquals(user.first_name, 'First')
-        self.assertEquals(user.last_name, 'Last')
-        self.assertEquals(user.email, 'test@foo.bar.com')
-        self.assertEquals(user.get_profile().description,
+        self.assertEqual(user.username, 'newusername')
+        self.assertEqual(user.first_name, 'First')
+        self.assertEqual(user.last_name, 'Last')
+        self.assertEqual(user.email, 'test@foo.bar.com')
+        self.assertEqual(user.get_profile().description,
                           'New Description')
-        self.assertEquals(user.get_profile().location, 'Where I am')
-        self.assertEquals(user.get_profile().website,
+        self.assertEqual(user.get_profile().location, 'Where I am')
+        self.assertEqual(user.get_profile().website,
                           'http://www.google.com/')
 
     def test_POST_delete_logo(self):
@@ -191,7 +191,7 @@ class ProfileViewTestCase(BaseTestCase):
         c.login(username='user', password='password')
         response = c.post(self.url, data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 self.site_location.site.domain,
                 self.url))
@@ -212,9 +212,9 @@ class NotificationsFormTestCase(TestCase):
         """
         user = User.objects.get(username='user')
         form = forms.NotificationsForm(instance=user)
-        self.assertEquals(len(form.fields['notifications'].choices),
+        self.assertEqual(len(form.fields['notifications'].choices),
                           len(form.CHOICES))
-        self.assertEquals(form.initial, {
+        self.assertEqual(form.initial, {
                 'notifications': [
                     'video_approved',
                     'video_comment',
@@ -250,8 +250,8 @@ class NotificationsFormTestCase(TestCase):
         admin = User.objects.get(username='admin')
         form = forms.NotificationsForm(instance=admin)
         choice_len = len(form.CHOICES + form.ADMIN_CHOICES)
-        self.assertEquals(len(form.fields['notifications'].choices), choice_len)
-        self.assertEquals(form.initial, {
+        self.assertEqual(len(form.fields['notifications'].choices), choice_len)
+        self.assertEqual(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
                                   'comment_post_comment',
                                   'newsletter', 'admin_new_playlist']
@@ -259,8 +259,8 @@ class NotificationsFormTestCase(TestCase):
 
         superuser = User.objects.get(username='superuser')
         form = forms.NotificationsForm(instance=superuser)
-        self.assertEquals(len(form.fields['notifications'].choices), choice_len)
-        self.assertEquals(form.initial, {
+        self.assertEqual(len(form.fields['notifications'].choices), choice_len)
+        self.assertEqual(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
                                   'newsletter', 'admin_new_playlist']
                 })
