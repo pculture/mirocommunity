@@ -1814,7 +1814,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         method that must be called after you call `save()`.
 
         """
-        if not video.embed_code and not video.file_url:
+        if video.file_url_expires:
+            file_url = None
+        else:
+            file_url = video.file_url
+
+        if not video.embed_code and not file_url:
             raise InvalidVideo
 
         if status is None:
@@ -1833,7 +1838,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             description=video.description or '',
             website_url=video.link or '',
             when_published=video.publish_datetime,
-            file_url=video.file_url or '',
+            file_url=file_url or '',
             file_url_mimetype=video.file_url_mimetype or '',
             file_url_length=video.file_url_length,
             when_submitted=now,
