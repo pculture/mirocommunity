@@ -91,9 +91,8 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        self.old_DISABLE = getattr(
-            settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
-        settings.LOCALTV_DISABLE_TIERS_ENFORCEMENT = False
+        self.old_DISABLE = localtv.settings.DISABLE_TIERS_ENFORCEMENT
+        localtv.settings.DISABLE_TIERS_ENFORCEMENT = False
         SiteLocation.objects.clear_cache()
         self.site_location = SiteLocation.objects.get_current()
         self.tier_info = TierInfo.objects.get_current()
@@ -124,7 +123,7 @@ class BaseTestCase(TestCase):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
-        settings.LOCALTV_DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
+        localtv.settings.DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
         settings.CACHES = self.old_CACHES
         Profile.__dict__['logo'].field.storage = \
             storage.default_storage

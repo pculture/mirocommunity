@@ -4167,10 +4167,9 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
 
     def setUp(self):
         super(DowngradingCanNotifySupportAboutCustomDomain, self).setUp()
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
     def test(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
@@ -4198,7 +4197,7 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
 
     def tearDown(self):
         super(DowngradingCanNotifySupportAboutCustomDomain, self).tearDown()
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
 class IpnIntegration(BaseTestCase):
     def setUp(self):
@@ -4221,12 +4220,12 @@ class IpnIntegration(BaseTestCase):
         self.c = Client()
         self.c.login(username='superuser', password='superuser')
 
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
     def tearDown(self):
         super(IpnIntegration, self).tearDown()
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
     def upgrade_and_submit_ipn(self):
         self.assertTrue(TierInfo.objects.get_current().free_trial_available)
@@ -4477,14 +4476,14 @@ class TestUpgradePage(BaseTestCase):
         localtv.zendesk.outbox = []
         c.handle_noargs()
 
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
     def tearDown(self):
         # Note: none of these tests should cause email to be sent.
         self.assertEqual([],
                          [str(k.body) for k in mail.outbox])
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
     ## assertion helpers
     def _assert_upgrade_extra_payments_always_false(self, response):
