@@ -1237,8 +1237,9 @@ class SourceImport(models.Model):
 
         """
         if with_exception:
-            logging.debug(message, with_exception=True)
-            tb = ''.join(traceback.format_exception(*sys.exc_info()))
+            exc_info = sys.exc_info()
+            logging.debug(message, exc_info=exc_info)
+            tb = ''.join(traceback.format_exception(*exc_info))
         else:
             logging.debug(message)
             tb = ''
