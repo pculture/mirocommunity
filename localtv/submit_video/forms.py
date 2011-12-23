@@ -230,7 +230,7 @@ class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
     def save(self, **kwargs):
         vidscraper_video = self.vidscraper_video
         instance = self.instance
-        if vidscraper_video.file_url_is_flaky:
+        if vidscraper_video.file_url_expires:
             file_url = None
         else:
             file_url = vidscraper_video.file_url
