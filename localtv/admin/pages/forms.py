@@ -63,3 +63,19 @@ class FlatPageForm(forms.ModelForm):
             raise ValidationError(
                 'View with that URL already exists.')
         return url
+
+    def save(self, commit=True):
+        """On creation, adds the current site to the instance's sites."""
+        created = self.instance.pk is None
+        instance = super(FlatPageForm, self).save(commit)
+
+        if created:
+            if commit:
+                instance.sites.add(Site.objects.get_current())
+            else:
+                old_save_m2m = self.save_m2m
+                def save_m2m():
+                    instance.sites.add(Site.objects.get_current())
+                    old_save_m2m()
+                self.save_m2m = save_m2m
+        return instance
