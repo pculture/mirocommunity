@@ -30,7 +30,7 @@ else:
     notification = None
 
 from localtv.admin.feeds import generate_secret
-from localtv.admin.moderation.forms import (RequestModelFormSet,
+from localtv.admin.moderation.forms import (RequestModerationFormSet,
                                             CommentModerationForm,
                                             VideoModerationForm,
                                             VideoLimitFormSet)
@@ -39,16 +39,42 @@ from localtv.decorators import require_site_admin
 from localtv.models import Video
 
 
-class VideoModerationQueueView(MiroCommunityAdminListView):
+class ModerationQueueView(MiroCommunityAdminListView):
+    @method_decorator(require_site_admin)
+    def dispatch(self, *args, **kwargs):
+        return super(ModerationQueueView, self).dispatch(*args, **kwargs)
+
+    def formset_valid(self, formset):
+        response = super(ModerationQueueView, self).formset_valid(formset)
+
+        for action, count in formset._action_counts.iteritems():
+            if count > 0:
+                if count > 1:
+                    model_text = formset.model._meta.verbose_name_plural
+                else:
+                    model_text = formset.model._meta.verbose_name
+                messages.add_message(
+                    self.request,
+                    messages.SUCCESS,
+                    _(u"%s %d %s" % (self.get_action_text(action),
+                                    count, model_text))
+                )
+        return response
+
+    def get_action_text(self, action):
+        if action == self.form_class.APPROVE:
+            return "Approved"
+        if action == self.form_class.REJECT:
+            return "Rejected"
+        return "Unknown action taken with"
+
+
+class VideoModerationQueueView(ModerationQueueView):
     form_class = VideoModerationForm
     formset_class = VideoLimitFormSet
     paginate_by = 10
     context_object_name = 'videos'
     template_name = 'localtv/admin/moderation/videos/queue.html'
-
-    @method_decorator(require_site_admin)
-    def dispatch(self, *args, **kwargs):
-        return super(VideoModerationQueueView, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
         return Video.objects.filter(
@@ -69,32 +95,17 @@ class VideoModerationQueueView(MiroCommunityAdminListView):
         })
         return context
 
+    def get_action_text(self, action):
+        if action == self.form_class.FEATURE:
+            return "Featured"
+        return super(VideoModerationQueueView, self).get_action_text(action)
+
     def formset_valid(self, formset):
         response = super(VideoModerationQueueView, self).formset_valid(formset)
 
-        if formset._approved_count > 0:
-            messages.add_message(
-                self.request,
-                messages.SUCCESS,
-                _("Approved %d video%s." % (formset._approved_count,
-                                            pluralize(formset._approved_count)))
-            )
-        if formset._rejected_count > 0:
-            messages.add_message(
-                self.request,
-                messages.SUCCESS,
-                _("Rejected %d video%s." % (formset._rejected_count,
-                                            pluralize(formset._rejected_count)))
-            )
-        if formset._featured_count > 0:
-            messages.add_message(
-                self.request,
-                messages.SUCCESS,
-                _("Featured %d video%s." % (formset._featured_count,
-                                            pluralize(formset._featured_count)))
-            )
-        if (notification and
-            (formset._approved_count > 0 or formset._featured_count > 0)):
+        approved_count = (formset._action_counts[formset.form.APPROVE] +
+                          formset._action_counts[formset.form.FEATURE])
+        if notification and approved_count > 0:
             notice_type = notification.NoticeType.objects.get(
                                                         label="video_approved")
             t = loader.get_template(
@@ -115,18 +126,14 @@ class VideoModerationQueueView(MiroCommunityAdminListView):
         return response
 
 
-class CommentModerationQueueView(MiroCommunityAdminListView):
-    formset_class = RequestModelFormSet
+class CommentModerationQueueView(ModerationQueueView):
+    formset_class = RequestModerationFormSet
     form_class = CommentModerationForm
     paginate_by = 10
     context_object_name = 'comments'
     template_name = 'localtv/admin/moderation/comments/queue.html'
     queryset = comments.get_model()._default_manager.filter(is_public=False,
                                                             is_removed=False)
-
-    @method_decorator(require_site_admin)
-    def dispatch(self, *args, **kwargs):
-        return super(CommentModerationQueueView, self).dispatch(*args, **kwargs)
 
     def get_formset_kwargs(self, queryset=None):
         kwargs = super(CommentModerationQueueView, self).get_formset_kwargs(

@@ -129,22 +129,29 @@ class VideoModerationForm(ModerationForm):
             super(VideoModerationForm, self).handle_action(action, commit)
 
 
-class VideoLimitFormSet(forms.models.BaseModelFormSet):
+class ModerationFormSet(forms.models.BaseModelFormSet):
+    def clean(self):
+        super(ModerationFormSet, self).clean()
+        if hasattr(self, 'cleaned_data'):
+            actions = zip(*self.form.ACTION_CHOICES)[0]
+            self._action_counts = dict((action, sum(1 for f in self.forms
+                                        if f.cleaned_data['action'] == action))
+                                        for action in actions
+                                        if action != self.form.NONE)
+
+
+class VideoLimitFormSet(ModerationFormSet):
+    """
+    Ensures that users do not exceed their video limit when moderating the
+    queue.
+
+    """
     def clean(self):
         super(VideoLimitFormSet, self).clean()
-        self._approved_count = sum(1 for f in self.forms
-                                   if hasattr(self, 'cleaned_data') and
-                                   f.cleaned_data['action'] == f.APPROVE)
-
-        self._rejected_count = sum(1 for f in self.forms
-                                   if hasattr(self, 'cleaned_data') and
-                                   f.cleaned_data['action'] == f.REJECT)
-        self._featured_count = sum(1 for f in self.forms
-                                   if hasattr(self, 'cleaned_data') and
-                                   f.cleaned_data['action'] == f.FEATURE)
         sitelocation = SiteLocation.objects.get_current()
         remaining_videos = sitelocation.get_tier().remaining_videos()
-        approved_count = self._approved_count + self._featured_count
+        approved_count = (self._action_counts[self.form.APPROVE] +
+                          self._action_counts[self.form.FEATURE])
         if (SiteLocation.enforce_tiers() and remaining_videos < approved_count):
             raise ValidationError(_("You have selected %d videos, but may only "
                                     "approve %d more in your current tier. "
@@ -155,11 +162,11 @@ class VideoLimitFormSet(forms.models.BaseModelFormSet):
         
 
 
-class RequestModelFormSet(forms.models.BaseModelFormSet):
+class RequestModerationFormSet(ModerationFormSet):
     def __init__(self, request, **kwargs):
         self.request = request
-        super(RequestModelFormSet, self).__init__(**kwargs)
+        super(RequestModerationFormSet, self).__init__(**kwargs)
 
     def _construct_form(self, i, **kwargs):
         kwargs['request'] = self.request
-        return super(RequestModelFormSet, self)._construct_form(i, **kwargs)
+        return super(RequestModerationFormSet, self)._construct_form(i, **kwargs)
