@@ -27,7 +27,7 @@ oauth2==1.2.0
 -e git+http://github.com/paulswartz/Django-Socialauth.git@master#egg=Django-Socialauth
 -e git+http://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
 oauth
--e git+https://github.com/dcramer/django-paypal.git@master#egg=django-paypal
+-e git+http://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 mock
 django-notification
 -e git+git://git.pculture.org/localtv@master#egg=miro-community
