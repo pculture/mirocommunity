@@ -60,12 +60,9 @@ from notification import models as notification
 import tagging
 
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
-from localtv.settings import (voting_enabled, ENABLE_ORIGINAL_VIDEO,
-                              ENABLE_CHANGE_STAMPS, USE_ZENDESK,
-                              DISABLE_TIERS_ENFORCEMENT, SHOW_ADMIN_DASHBOARD,
-                              SHOW_ADMIN_ACCOUNT_LEVEL)
 from localtv.templatetags.filters import sanitize
 from localtv import utils
+from localtv import settings as lsettings
 from localtv.signals import post_video_from_vidscraper, submit_finished
 import localtv.tiers
 
@@ -267,7 +264,7 @@ class SingletonManager(models.Manager):
         singleton, created = self.get_or_create(
             sitelocation = current_site_location)
         if created:
-            logging.info("Created %s." % self.model.__class__.__name__)
+            logging.debug("Created %s." % self.model)
         return singleton
 
 
@@ -329,7 +326,7 @@ class TierInfo(models.Model):
         LOCALTV_USE_ZENDESK setting. Then this method will return False,
         and the parts of the tiers system that check it will avoid
         making calls out to ZenDesk.'''
-        return USE_ZENDESK
+        return lsettings.USE_ZENDESK
 
 
 class SiteLocation(Thumbnailable):
@@ -431,7 +428,7 @@ class SiteLocation(Thumbnailable):
         '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
         then this function returns False. Otherwise, it returns True.'''
         if override_setting is None:
-            disabled = DISABLE_TIERS_ENFORCEMENT
+            disabled = lsettings.DISABLE_TIERS_ENFORCEMENT
         else:
             disabled = override_setting
 
@@ -498,7 +495,7 @@ class SiteLocation(Thumbnailable):
         will omit the link to the Dashboard, and also the dashboard itself
         will be an empty page with a META REFRESH that points to
         /admin/approve_reject/.'''
-        return SHOW_ADMIN_DASHBOARD
+        return lsettings.SHOW_ADMIN_DASHBOARD
 
     def should_show_account_level(self):
         '''On /admin/upgrade/, most sites will see an info page that
@@ -509,7 +506,7 @@ class SiteLocation(Thumbnailable):
 
         This simply removes the link from the sidebar; if you visit the
         /admin/upgrade/ page, it renders as usual.'''
-        return SHOW_ADMIN_ACCOUNT_LEVEL
+        return lsettings.SHOW_ADMIN_ACCOUNT_LEVEL
 
 
 class NewsletterSettings(models.Model):
@@ -1065,7 +1062,7 @@ class Category(models.Model):
         """
         Returns True if this category has videos with votes.
         """
-        if not VOTING_ENABLED:
+        if not lsettings.voting_enabled():
             return False
         import voting
         return voting.models.Vote.objects.filter(
@@ -1236,8 +1233,9 @@ class SourceImport(models.Model):
 
         """
         if with_exception:
-            logging.debug(message, with_exception=True)
-            tb = ''.join(traceback.format_exception(*sys.exc_info()))
+            exc_info = sys.exc_info()
+            logging.debug(message, exc_info=exc_info)
+            tb = ''.join(traceback.format_exception(*exc_info))
         else:
             logging.debug(message)
             tb = ''
@@ -1815,7 +1813,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
         method that must be called after you call `save()`.
 
         """
-        if not video.embed_code and not video.file_url:
+        if video.file_url_expires:
+            file_url = None
+        else:
+            file_url = video.file_url
+
+        if not video.embed_code and not file_url:
             raise InvalidVideo
 
         if status is None:
@@ -1834,7 +1837,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             description=video.description or '',
             website_url=video.link or '',
             when_published=video.publish_datetime,
-            file_url=video.file_url or '',
+            file_url=file_url or '',
             file_url_mimetype=video.file_url_mimetype or '',
             file_url_length=video.file_url_length,
             when_submitted=now,
@@ -1992,7 +1995,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             return 'posted'
 
     def voting_enabled(self):
-        if not voting_enabled():
+        if not lsettings.voting_enabled():
             return False
         return self.categories.filter(contest_mode__isnull=False).exists()
 
@@ -2283,7 +2286,7 @@ def save_original_tags(sender, instance, created=False, **kwargs):
     tagging.models.TaggedItem.objects.db_manager(instance._state.db).create(
         tag=instance.tag, object=original)
 
-if ENABLE_ORIGINAL_VIDEO:
+if lsettings.ENABLE_ORIGINAL_VIDEO:
     models.signals.post_save.connect(create_original_video,
                                      sender=Video)
     models.signals.post_save.connect(save_original_tags,
@@ -2371,7 +2374,7 @@ def update_stamp(name, override_date=None, delete_stamp=False):
     except Exception, e:
         logging.error(e)
 
-if ENABLE_CHANGE_STAMPS:
+if lsettings.ENABLE_CHANGE_STAMPS:
     models.signals.post_save.connect(video_published_stamp_signal_listener,
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,

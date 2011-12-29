@@ -48,21 +48,28 @@ class LiveSearchForm(forms.Form):
 
     def get_search_api_keys(self):
         return {
-            'vimeo_api_key': getattr(settings, 'VIMEO_API_KEY', None),
-            'vimeo_api_secret': getattr(settings, 'VIMEO_API_SECRET', None),
+            'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
+            'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
         }
 
     def get_results(self):
         cache_key = self._get_cache_key()
         results = cache.get(cache_key)
         if results is None:
-            results = auto_search(self.cleaned_data['q'],
+            search_results = auto_search(self.cleaned_data['q'],
                                   order_by=self.cleaned_data['order_by'],
                                   api_keys=self.get_search_api_keys())
-            results = list(intersperse_results(results, 40))
+            results = []
+            for vidscraper_video in intersperse_results(search_results, 40):
+                try:
+                    vidscraper_video.load()
+                except InvalidVideo:
+                    pass
+                else:
+                    results.append(vidscraper_video)
             cache.set(cache_key, results)
+
         for vidscraper_video in results:
-            vidscraper_video.load()
             try:
                 yield Video.from_vidscraper_video(vidscraper_video,
                                                   commit=False)

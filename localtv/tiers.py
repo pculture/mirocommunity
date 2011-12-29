@@ -22,6 +22,8 @@ import django.contrib.auth.models
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.template import Context, loader
 
+from localtv import settings as lsettings
+
 import uploadtemplate.models
 
 def nightly_warnings():
@@ -513,8 +515,7 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
         #
         # A non-PCF deployment of localtv would not want to set the
         # LOCALTV_USE_ZENDESK setting.
-        use_zendesk = getattr(settings, 'LOCALTV_USE_ZENDESK', False)
-        if use_zendesk:
+        if lsettings.USE_ZENDESK:
             import localtv.zendesk
             localtv.zendesk.create_ticket("Remove custom domain for %s" % instance.site.domain,
                                           message,

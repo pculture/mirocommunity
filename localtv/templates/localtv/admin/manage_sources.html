@@ -149,7 +149,7 @@ $(document).ready(function() {
 </td>
 <td>{{ form.instance.source_type }}</td>
 <td>
-{% with form.instance.feedimport_set.latest as latest_import %}
+{% with form.instance.imports.latest as latest_import %}
 {% if latest_import %}
   {% if form.instance.status == 0 %}First{% else %}Latest{% endif %}
   {% if latest_import.status != latest_import.STARTED %}import ended {{ latest_import.last_activity|simpletimesince }} ago
