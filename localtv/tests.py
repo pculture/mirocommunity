@@ -33,6 +33,7 @@ from django.contrib.comments import get_model, get_form, get_form_target
 Comment = get_model()
 CommentForm = get_form()
 
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.files import storage
@@ -72,6 +73,7 @@ class FakeRequestFactory(RequestFactory):
         request = super(FakeRequestFactory, self).request(**request)
         request.user = AnonymousUser()
         UserIsAdminMiddleware().process_request(request)
+        SessionMiddleware().process_request(request)
         return request
 
 

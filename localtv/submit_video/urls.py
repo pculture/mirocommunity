@@ -17,11 +17,16 @@
 
 from django.conf.urls.defaults import patterns, url
 
+from localtv.decorators import request_passes_test
 from localtv.submit_video.views import (SubmitURLView, SubmitVideoView,
-                                        submit_thanks)
-submit_video = SubmitVideoView.as_view()
+                                        submit_thanks, _has_submit_permissions)
+
+
+request_has_submit_permissions = request_passes_test(_has_submit_permissions)
+submit_video = request_has_submit_permissions(SubmitVideoView.as_view())
 urlpatterns = patterns('',
-    url(r'^$', SubmitURLView.as_view(), name='localtv_submit_video'),
+    url(r'^$', request_has_submit_permissions(SubmitURLView.as_view()),
+    	name='localtv_submit_video'),
     url(r'^scraped/$', submit_video, name='localtv_submit_scraped_video'),
     url(r'^embed/$', submit_video, name='localtv_submit_embedrequest_video'),
     url(r'^directlink/$', submit_video, name='localtv_submit_directlink_video'),

@@ -27,7 +27,6 @@ from django.utils.decorators import method_decorator
 from tagging.utils import parse_tag_input
 import vidscraper
 
-from localtv.decorators import request_passes_test
 from localtv.models import SiteLocation, Video
 from localtv.signals import submit_finished
 from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
@@ -50,10 +49,6 @@ class SubmitURLView(FormView):
     form_class = SubmitURLForm
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
-
-    @method_decorator(request_passes_test(_has_submit_permissions))
-    def get(self, request, *args, **kwargs):
-        return FormView.post(self, request, *args, **kwargs)
 
     @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
@@ -108,7 +103,6 @@ class SubmitVideoView(CreateView):
     form_class = SubmitVideoForm
     session_key = "localtv_submit_video_info"
 
-    @method_decorator(request_passes_test(_has_submit_permissions))
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         session_key = self.get_session_key()
