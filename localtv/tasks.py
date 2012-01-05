@@ -195,7 +195,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                    is_skip=True, using=using)
         return
 
-    if not vidscraper_video.file_url and not vidscraper_video.embed_code:
+    if ((vidscraper_video.file_url_expires or not vidscraper_video.file_url)
+        and not vidscraper_video.embed_code):
         source_import.handle_error(('Skipping %r: no file or embed code.'
                                      % vidscraper_video.url),
                                    is_skip=True, using=using)
@@ -247,7 +248,9 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
             authors = [author]
         else:
             authors = []
-        
+
+    # Since we check above whether the vidscraper_video is valid, we don't catch
+    # InvalidVideo here, since it would be unexpected.
     video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                         using=using, source_import=source_import,
                                         authors=authors, categories=categories,
