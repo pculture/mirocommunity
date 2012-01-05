@@ -26,6 +26,7 @@ from vidscraper.utils.search import intersperse_results
 from localtv.exceptions import InvalidVideo
 from localtv.models import Video
 
+from vidscraper.errors import Error as VidscraperError
 
 class LiveSearchForm(forms.Form):
     LATEST = 'latest'
@@ -63,7 +64,7 @@ class LiveSearchForm(forms.Form):
             for vidscraper_video in intersperse_results(search_results, 40):
                 try:
                     vidscraper_video.load()
-                except InvalidVideo:
+                except VidscraperError:
                     pass
                 else:
                     results.append(vidscraper_video)

@@ -239,7 +239,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
     video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                         using=using, source_import=source_import,
                                         authors=authors, categories=categories,
-                                        site_id=site_pk)
+                                        site_pk=site_pk)
     logging.debug('Made video %i: %r', video.pk, video.name)
     if video.thumbnail_url:
         video_save_thumbnail.delay(video.pk, using=using)
