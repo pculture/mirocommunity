@@ -1770,7 +1770,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     when_published = models.DateTimeField(null=True, blank=True)
     last_featured = models.DateTimeField(null=True, blank=True)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = BitLyWrappingURLField(verbose_name='Website URL',
+    website_url = BitLyWrappingURLField(verbose_name='Original Video Page URL (optional)',
                                         verify_exists=False,
                                         blank=True)
     embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)

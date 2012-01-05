@@ -137,12 +137,14 @@ class SubmitVideoView(CreateView):
 
         if self.video is not None:
             self.object = Video.from_vidscraper_video(self.video, commit=False)
+        else:
+            self.object = Video()
 
         return modelform_factory(Video, form=self.form_class, fields=fields)
 
     def get_initial(self):
         initial = super(SubmitVideoView, self).get_initial()
-        if self.video.tags:
+        if getattr(self.video, 'tags', None):
             initial.update({
                 'tags': get_or_create_tags(self.video.tags),
             })

@@ -95,8 +95,6 @@ class SubmitVideoForm(forms.ModelForm):
                               required=True)
     thumbnail_file = forms.ImageField(required=False,
                                       label="Thumbnail File (optional)")
-    website_url = Video._meta.get_field('website_url').formfield(
-                              label='Original Video Page URL (optional)')
 
     def __init__(self, request, url, *args, **kwargs):
         self.request = request
