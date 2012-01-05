@@ -1806,29 +1806,28 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
-                              using='default', source_import=None, **kwargs):
+                              using='default', source_import=None, site_pk=None,
+                              authors=None, categories=None):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
-        the :class:`Video` will not be saved.  There will be a `save_m2m()`
-        method that must be called after you call `save()`.
+        the :class:`Video` will not be saved, and the created instance will have
+        a `save_m2m()` method that must be called after you call `save()`.
+
+        :raises: :class:`localtv.exceptions.InvalidVideo` if `commit` is
+                 ``True`` and the created :class:`Video` does not have a valid
+                 ``file_url`` or ``embed_code``.
 
         """
-        if video.file_url_expires:
-            file_url = None
-        else:
+        if video.file_url_expires is None:
             file_url = video.file_url
-
-        if not video.embed_code and not file_url:
-            raise InvalidVideo
+        else:
+            file_url = None
 
         if status is None:
             status = cls.UNAPPROVED
-        if 'site_id' not in kwargs:
-            kwargs['site_id'] = settings.SITE_ID
-
-        authors = kwargs.pop('authors', None)
-        categories = kwargs.pop('categories', None)
+        if site_pk is None:
+            site_pk = settings.SITE_ID
 
         now = datetime.datetime.now()
 
@@ -1849,7 +1848,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             flash_enclosure_url=video.flash_enclosure_url or '',
             video_service_user=video.user or '',
             video_service_url=video.user_url or '',
-            **kwargs
+            site_id=site_pk
         )
 
         if instance.description:
@@ -1888,6 +1887,11 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                                             vidscraper_video=video, using=using)
 
         if commit:
+            # Only run this check if they want to immediately commit the
+            # instance; otherwise, the calling code is responsible for ensuring
+            # that the instance makes sense before being saved.
+            if not (instance.embed_code or instance.file_url):
+                raise InvalidVideo
             instance.save(using=using)
             save_m2m()
         else:
