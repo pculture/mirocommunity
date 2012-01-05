@@ -171,7 +171,7 @@ class SubmitVideoView(CreateView):
 
     def form_valid(self, form):
         response = super(SubmitVideoView, self).form_valid(form)
-        del request.session[self.get_session_key()]
+        del self.request.session[self.get_session_key()]
         submit_finished.send(sender=self.object)
         return response
 

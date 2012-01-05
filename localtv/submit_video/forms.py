@@ -116,7 +116,7 @@ class SubmitVideoForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super(SubmitVideoForm, self).save(commit=False)
 
-        if self.request.user_is_admin(self.user):
+        if self.request.user_is_admin():
             sitelocation = SiteLocation.objects.get_current()
             if (not sitelocation.enforce_tiers() or
                 sitelocation.get_tier().remaining_videos() >= 1):
@@ -137,7 +137,7 @@ class SubmitVideoForm(forms.ModelForm):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
             
-            if 'thumbnail_file' in self.cleaned_data:
+            if self.cleaned_data.get('thumbnail_file', None):
                 instance.thumbnail_url = ''
                 instance.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail_file'])

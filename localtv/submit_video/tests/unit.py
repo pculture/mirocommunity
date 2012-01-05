@@ -19,12 +19,15 @@ import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from tagging.models import Tag
 from vidscraper.suites import Video as VidscraperVideo
 
 from localtv.models import Video
+from localtv.signals import submit_finished
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
                                         SubmitVideoView)
 from localtv.tests import BaseTestCase
+from localtv.utils import get_or_create_tags
 
 
 class SubmitPermissionsTestCase(BaseTestCase):
@@ -384,3 +387,140 @@ class SubmitVideoViewTestCase(BaseTestCase):
         self.assertEqual(set(form_class.base_fields),
                          expected_fields)
         self.assertIsInstance(view.object, Video)
+
+    def test_get_initial_tags(self):
+        """
+        Tests that tags are in the initial data only if tags are defined on the
+        video, and that the tags are correctly formatted.
+
+        """
+        view = SubmitVideoView()
+        view.video = VidscraperVideo('http://google.com')
+        initial = view.get_initial()
+        self.assertFalse('tags' in initial)
+
+        tags = ['hello', 'goodbye']
+        view.video.tags = tags
+        initial = view.get_initial()
+        self.assertTrue('tags' in initial)
+        # This is perhaps not the best way to test this.
+        self.assertEqual(get_or_create_tags(tags), initial['tags'])
+
+    def test_get_template_names__scraped(self):
+        """
+        Tests whether template names are correctly generated for a scraped
+        video.
+
+        """
+        view = SubmitVideoView()
+        expected_template_names = ['localtv/submit_video/scraped.html']
+        view.video = VidscraperVideo('http://google.com')
+        view.url = 'http://google.com'
+
+        # Option one: Video with embed code
+        view.video.embed_code = 'hola'
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+        # Option two: Video with non-expiring file_url.
+        view.video.embed_code = None
+        view.video.file_url = 'hola'
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+    def test_get_template_names__directlink(self):
+        """
+        Tests whether template names are correctly generated for a direct link
+        to a video file.
+
+        """
+        view = SubmitVideoView()
+        video_url = 'http://google.com/video.mov'
+        view.url = video_url
+        expected_template_names = ['localtv/submit_video/direct.html']
+
+        # Option one: No video, but a video file url.
+        view.video = None
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+        # Option two: A video missing embed_code and file_url data, but a video
+        # file url.
+        view.video = VidscraperVideo(video_url)
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+    def test_get_template_names__embedrequest(self):
+        """
+        Tests whether template names are correctly generated for an embedrequest
+        video - i.e. a video that we can't parse and which doesn't look like a
+        direct link.
+
+        """
+        view = SubmitVideoView()
+        video_url = 'http://google.com'
+        view.url = video_url
+        expected_template_names = ['localtv/submit_video/embed.html']
+
+        # Option 1: no video
+        view.video = None
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+        # Option two: video missing embed & file_url
+        view.video = VidscraperVideo(video_url)
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+        # Option three: video with expiring file_url.
+        view.video.file_url = 'hola'
+        view.video.file_url_expires = datetime.datetime.now() + datetime.timedelta(1)
+        template_names = view.get_template_names()
+        self.assertEqual(template_names, expected_template_names)
+
+    def test_form_valid(self):
+        """
+        Tests that when the form_valid method is run, the session information is
+        cleared, and the submit_finished signal is sent.
+
+        """
+        view = SubmitVideoView()
+        view.request = self.factory.get('/')
+        view.request.session[view.get_session_key()] = True
+        view.object = Video.objects.all()[0]
+        view.url = view.object.website_url or view.object.file_url
+        view.video = VidscraperVideo(view.url)
+
+        submit_dict = {'hit': False}
+        def test_submit_finished(sender, **kwargs):
+            submit_dict['hit'] = True
+        submit_finished.connect(test_submit_finished)
+
+        form = view.form_class(data={'url': view.url}, **view.get_form_kwargs())
+        form.is_valid()
+        view.form_valid(form)
+
+        self.assertEqual(submit_dict['hit'], True)
+        self.assertFalse(view.get_session_key() in view.request.session)
+        submit_finished.disconnect(test_submit_finished)
+
+    def test_compatible_context(self):
+        """
+        Tests that the get_context_data method supplies backwards-compatible
+        context.
+
+        """
+        view = SubmitVideoView()
+        view.request = self.factory.get('/')
+        view.request.session[view.get_session_key()] = True
+        view.object = Video.objects.all()[0]
+        view.url = view.object.website_url or view.object.file_url
+        view.video = VidscraperVideo(view.url)
+        form = view.form_class(**view.get_form_kwargs())
+
+        context_data = view.get_context_data(form=form)
+        self.assertTrue('data' in context_data)
+        self.assertEqual(set(context_data['data']),
+                         set(['link', 'publish_date', 'tags', 'title',
+                              'description', 'thumbnail_url', 'user',
+                              'user_url']))
