@@ -1,3 +1,4 @@
+{% load static %}
 {% comment %}
 Copyright 2009 - Participatory Culture Foundation
 
@@ -16,6 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
+{% get_static_prefix as STATIC_URL %}
 <!DOCTYPE html>
 <html>
   {% if not request.is_ajax %}

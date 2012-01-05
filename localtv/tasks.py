@@ -121,24 +121,36 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     status=import_class.STARTED)
     except import_class.DoesNotExist:
         return
-
     if (source_import.total_videos is not None and
             (source_import.videos_imported + source_import.videos_skipped
              >= source_import.total_videos)):
+        active_set = None
+        unapproved_set = source_import.get_videos(using).filter(
+            status=Video.PENDING)
         if source_import.auto_approve:
-            should_approve = False
             if not SiteLocation.enforce_tiers(using=using):
-                should_approve = True
+                active_set = unapproved_set
+                unapproved_set = None
             else:
                 remaining_videos = (Tier.get().videos_limit()
                                     - Video.objects.using(using
                                         ).filter(status=Video.ACTIVE).count())
                 if remaining_videos > source_import.videos_imported:
-                    should_approve = True
-            if should_approve:
-                source_import.get_videos(using).filter(
-                    status=Video.UNAPPROVED).update(
-                        status=Video.ACTIVE)
+                    active_set = unapproved_set
+                    unapproved_set = None
+                else:
+                    unapproved_set = unapproved_set.order_by('when_submitted')
+                    # only approve `remaining_videos` videos
+                    when_submitted = unapproved_set[
+                        remaining_videos].when_submitted
+                    active_set = unapproved_set.filter(
+                        when_submitted__lt=when_submitted)
+                    unapproved_set = unapproved_set.filter(
+                        when_submitted__gte=when_submitted)
+        if active_set is not None:
+            active_set.update(status=Video.ACTIVE)
+        if unapproved_set is not None:
+            unapproved_set.update(status=Video.UNAPPROVED)
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
             source_import.source.status = source_import.source.ACTIVE
@@ -183,7 +195,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                    is_skip=True, using=using)
         return
 
-    if not vidscraper_video.file_url and not vidscraper_video.embed_code:
+    if ((vidscraper_video.file_url_expires or not vidscraper_video.file_url)
+        and not vidscraper_video.embed_code):
         source_import.handle_error(('Skipping %r: no file or embed code.'
                                      % vidscraper_video.url),
                                    is_skip=True, using=using)
@@ -235,7 +248,9 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
             authors = [author]
         else:
             authors = []
-        
+
+    # Since we check above whether the vidscraper_video is valid, we don't catch
+    # InvalidVideo here, since it would be unexpected.
     video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                         using=using, source_import=source_import,
                                         authors=authors, categories=categories,

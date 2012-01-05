@@ -257,7 +257,9 @@ class FeedImportTestCase(BaseTestCase):
         self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEqual(Video.objects.count(), 5)
         self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 5)
+                status=Video.ACTIVE).count(), 4)
+        self.assertEqual(Video.objects.filter(
+                status=Video.UNAPPROVED).count(), 1)
 
     def test_auto_approve_False(self):
         """
@@ -392,11 +394,9 @@ class FeedImportTestCase(BaseTestCase):
 Tishana from SPARK Reproductive Justice talking about the right to choose \
 after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         self.assertEqual(video.website_url, 'http://vimeo.com/7981161')
-        self.assertEqual(
-            video.embed_code,
-            '<iframe src="http://player.vimeo.com/video/7981161" width="320" '
-            'height="240" frameborder="0" webkitAllowFullScreen '
-            'allowFullScreen></iframe>')
+        self.assertTrue('vimeo.com' in video.embed_code)
+        self.assertTrue('<iframe ' in video.embed_code or
+                        '<object ' in video.embed_code)
         self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertTrue(video.thumbnail_url.endswith('.jpg'),
@@ -441,9 +441,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertTrue('/BBwtzeZdoHQ' in video.embed_code)
         self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
-        self.assertEqual(video.thumbnail_url,
-                          'http://i.ytimg.com/vi/BBwtzeZdoHQ/0.jpg'
-                          )
+        self.assertTrue('BBwtzeZdoHQ' in video.thumbnail_url)
         self.assertEqual(video.when_published,
                           datetime.datetime(2010, 1, 18, 19, 41, 21))
         self.assertEqual(video.video_service(), 'YouTube')

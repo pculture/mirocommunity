@@ -75,7 +75,7 @@ EMPTY = object()
 UNAPPROVED_STATUS_TEXT = _(u'Unapproved')
 ACTIVE_STATUS_TEXT = _(u'Active')
 REJECTED_STATUS_TEXT = _(u'Rejected')
-PENDING_THUMBNAIL_STATUS_TEXT = _(u'Waiting on thumbnail')
+PENDING_STATUS_TEXT = _(u'Waiting on import to finish')
 DISABLED_STATUS_TEXT = _(u'Disabled')
 
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
@@ -737,7 +737,7 @@ class Source(Thumbnailable):
                 import_app_label=import_opts.app_label,
                 import_model=import_opts.module_name,
                 import_pk=source_import.pk,
-                status=Video.UNAPPROVED,
+                status=Video.PENDING,
                 author_pks=author_pks,
                 category_pks=category_pks,
                 clear_rejected=clear_rejected,
@@ -765,8 +765,8 @@ class StatusedThumbnailableQuerySet(models.query.QuerySet):
     def rejected(self):
         return self.filter(status=StatusedThumbnailable.REJECTED)
 
-    def pending_thumbnail(self):
-        return self.filter(status=StatusedThumbnailable.PENDING_THUMBNAIL)
+    def pending(self):
+        return self.filter(status=StatusedThumbnailable.PENDING)
 
 
 class StatusedThumbnailableManager(models.Manager):
@@ -796,13 +796,14 @@ class StatusedThumbnailable(models.Model):
     ACTIVE = 1
     #: This feed was rejected by an admin.
     REJECTED = 2
-    PENDING_THUMBNAIL = 3
+    # This is still being imported
+    PENDING = 3
 
     STATUS_CHOICES = (
         (UNAPPROVED, UNAPPROVED_STATUS_TEXT),
         (ACTIVE, ACTIVE_STATUS_TEXT),
         (REJECTED, REJECTED_STATUS_TEXT),
-        (PENDING_THUMBNAIL, PENDING_THUMBNAIL_STATUS_TEXT),
+        (PENDING, PENDING_STATUS_TEXT),
     )
 
     objects = StatusedThumbnailableManager()

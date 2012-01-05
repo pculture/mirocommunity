@@ -71,9 +71,6 @@ class LiveSearchForm(forms.Form):
             cache.set(cache_key, results)
 
         for vidscraper_video in results:
-            try:
-                yield Video.from_vidscraper_video(vidscraper_video,
-                                                  commit=False)
-            except InvalidVideo:
-                pass
-
+            video = Video.from_vidscraper_video(vidscraper_video, commit=False)
+            if video.embed_code or video.file_url:
+                yield video
