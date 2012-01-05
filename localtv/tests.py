@@ -255,7 +255,9 @@ class FeedImportTestCase(BaseTestCase):
         self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEqual(Video.objects.count(), 5)
         self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 5)
+                status=Video.ACTIVE).count(), 4)
+        self.assertEqual(Video.objects.filter(
+                status=Video.UNAPPROVED).count(), 1)
 
     def test_auto_approve_False(self):
         """
