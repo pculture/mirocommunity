@@ -106,13 +106,13 @@ class SubmitURLViewTestCase(BaseTestCase):
 
         """
         view = SubmitURLView()
-        expected_success_url = "%s?%s" % (
-                                reverse('localtv_submit_scraped_video'),
-                                view.request.GET.urlencode())
         video_url = "http://google.com"
         url = "%s?url=%s" % (reverse('localtv_submit_video'),
                              video_url)
         view.request = self.factory.get(url)
+        expected_success_url = "%s?%s" % (
+                                reverse('localtv_submit_scraped_video'),
+                                view.request.GET.urlencode())
         form = view.get_form(view.get_form_class())
 
         # Option one: Video with embed code
@@ -144,12 +144,12 @@ class SubmitURLViewTestCase(BaseTestCase):
         """
         view = SubmitURLView()
         video_url = "http://google.com/file.mov"
-        expected_success_url = "%s?%s" % (
-                                    reverse('localtv_submit_directlink_video'),
-                                    view.request.GET.urlencode())
         url = "%s?url=%s" % (reverse('localtv_submit_video'),
                              video_url)
         view.request = self.factory.get(url)
+        expected_success_url = "%s?%s" % (
+                                    reverse('localtv_submit_directlink_video'),
+                                    view.request.GET.urlencode())
         form = view.get_form(view.get_form_class())
 
         # Option one: No video, but a video file url.
@@ -179,13 +179,13 @@ class SubmitURLViewTestCase(BaseTestCase):
 
         """
         view = SubmitURLView()
-        expected_success_url = "%s?%s" % (
-                                reverse('localtv_submit_embedrequest_video'),
-                                view.request.GET.urlencode())
         video_url = 'http://google.com'
         url = "%s?url=%s" % (reverse('localtv_submit_video'),
                              video_url)
         view.request = self.factory.get(url)
+        expected_success_url = "%s?%s" % (
+                                reverse('localtv_submit_embedrequest_video'),
+                                view.request.GET.urlencode())
         form = view.get_form(view.get_form_class())
 
         # Option 1: no video
