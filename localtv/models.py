@@ -63,10 +63,7 @@ import tagging
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
-from localtv.settings import (voting_enabled, ENABLE_ORIGINAL_VIDEO,
-                              ENABLE_CHANGE_STAMPS, USE_ZENDESK,
-                              DISABLE_TIERS_ENFORCEMENT, SHOW_ADMIN_DASHBOARD,
-                              SHOW_ADMIN_ACCOUNT_LEVEL)
+from localtv import settings as lsettings
 from localtv.signals import post_video_from_vidscraper, submit_finished
 import localtv.tiers
 
@@ -80,7 +77,7 @@ EMPTY = object()
 UNAPPROVED_STATUS_TEXT = _(u'Unapproved')
 ACTIVE_STATUS_TEXT = _(u'Active')
 REJECTED_STATUS_TEXT = _(u'Rejected')
-PENDING_THUMBNAIL_STATUS_TEXT = _(u'Waiting on thumbnail')
+PENDING_STATUS_TEXT = _(u'Waiting on import to finish')
 DISABLED_STATUS_TEXT = _(u'Disabled')
 
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
@@ -270,7 +267,7 @@ class SingletonManager(models.Manager):
         singleton, created = self.get_or_create(
             sitelocation = current_site_location)
         if created:
-            logging.info("Created %s." % self.model.__class__.__name__)
+            logging.debug("Created %s." % self.model)
         return singleton
 
 
@@ -332,7 +329,7 @@ class TierInfo(models.Model):
         LOCALTV_USE_ZENDESK setting. Then this method will return False,
         and the parts of the tiers system that check it will avoid
         making calls out to ZenDesk.'''
-        return USE_ZENDESK
+        return lsettings.USE_ZENDESK
 
 
 class SiteLocation(Thumbnailable):
@@ -469,7 +466,7 @@ class SiteLocation(Thumbnailable):
         '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
         then this function returns False. Otherwise, it returns True.'''
         if override_setting is None:
-            disabled = DISABLE_TIERS_ENFORCEMENT
+            disabled = lsettings.DISABLE_TIERS_ENFORCEMENT
         else:
             disabled = override_setting
 
@@ -536,7 +533,7 @@ class SiteLocation(Thumbnailable):
         will omit the link to the Dashboard, and also the dashboard itself
         will be an empty page with a META REFRESH that points to
         /admin/approve_reject/.'''
-        return SHOW_ADMIN_DASHBOARD
+        return lsettings.SHOW_ADMIN_DASHBOARD
 
     def should_show_account_level(self):
         '''On /admin/upgrade/, most sites will see an info page that
@@ -547,7 +544,7 @@ class SiteLocation(Thumbnailable):
 
         This simply removes the link from the sidebar; if you visit the
         /admin/upgrade/ page, it renders as usual.'''
-        return SHOW_ADMIN_ACCOUNT_LEVEL
+        return lsettings.SHOW_ADMIN_ACCOUNT_LEVEL
 
 
 class NewsletterSettings(models.Model):
@@ -771,18 +768,24 @@ class Source(Thumbnailable):
 
         for vidscraper_video in video_iter:
             total_videos += 1
-            
-            video_from_vidscraper_video.delay(
-                vidscraper_video,
-                site_pk=self.site_id,
-                import_app_label=import_opts.app_label,
-                import_model=import_opts.module_name,
-                import_pk=source_import.pk,
-                status=Video.UNAPPROVED,
-                author_pks=author_pks,
-                category_pks=category_pks,
-                clear_rejected=clear_rejected,
-                using=using)
+            try:
+                video_from_vidscraper_video.delay(
+                    vidscraper_video,
+                    site_pk=self.site_id,
+                    import_app_label=import_opts.app_label,
+                    import_model=import_opts.module_name,
+                    import_pk=source_import.pk,
+                    status=Video.PENDING,
+                    author_pks=author_pks,
+                    category_pks=category_pks,
+                    clear_rejected=clear_rejected,
+                    using=using)
+            except:
+                source_import.handle_error('during import of %r' % (
+                        vidscraper_video.url,),
+                                           is_skip=True,
+                                           with_exception=True,
+                                           using=using)
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
@@ -806,8 +809,8 @@ class StatusedThumbnailableQuerySet(models.query.QuerySet):
     def rejected(self):
         return self.filter(status=StatusedThumbnailable.REJECTED)
 
-    def pending_thumbnail(self):
-        return self.filter(status=StatusedThumbnailable.PENDING_THUMBNAIL)
+    def pending(self):
+        return self.filter(status=StatusedThumbnailable.PENDING)
 
 
 class StatusedThumbnailableManager(models.Manager):
@@ -837,13 +840,14 @@ class StatusedThumbnailable(models.Model):
     ACTIVE = 1
     #: This feed was rejected by an admin.
     REJECTED = 2
-    PENDING_THUMBNAIL = 3
+    # This is still being imported
+    PENDING = 3
 
     STATUS_CHOICES = (
         (UNAPPROVED, UNAPPROVED_STATUS_TEXT),
         (ACTIVE, ACTIVE_STATUS_TEXT),
         (REJECTED, REJECTED_STATUS_TEXT),
-        (PENDING_THUMBNAIL, PENDING_THUMBNAIL_STATUS_TEXT),
+        (PENDING, PENDING_STATUS_TEXT),
     )
 
     objects = StatusedThumbnailableManager()
@@ -1148,7 +1152,7 @@ class Category(models.Model):
         """
         Returns True if this category has videos with votes.
         """
-        if not VOTING_ENABLED:
+        if not lsettings.voting_enabled():
             return False
         import voting
         return voting.models.Vote.objects.filter(
@@ -1322,8 +1326,9 @@ class SourceImport(models.Model):
 
         """
         if with_exception:
-            logging.debug(message, with_exception=True)
-            tb = ''.join(traceback.format_exception(*sys.exc_info()))
+            exc_info = sys.exc_info()
+            logging.debug(message, exc_info=exc_info)
+            tb = ''.join(traceback.format_exception(*exc_info))
         else:
             logging.debug(message)
             tb = ''
@@ -1893,24 +1898,28 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
 
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
-                              using='default', source_import=None, **kwargs):
+                              using='default', source_import=None, site_pk=None,
+                              authors=None, categories=None):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
-        the :class:`Video` will not be saved.  There will be a `save_m2m()`
-        method that must be called after you call `save()`.
+        the :class:`Video` will not be saved, and the created instance will have
+        a `save_m2m()` method that must be called after you call `save()`.
+
+        :raises: :class:`localtv.exceptions.InvalidVideo` if `commit` is
+                 ``True`` and the created :class:`Video` does not have a valid
+                 ``file_url`` or ``embed_code``.
 
         """
-        if not video.embed_code and not video.file_url:
-            raise InvalidVideo
+        if video.file_url_expires is None:
+            file_url = video.file_url
+        else:
+            file_url = None
 
         if status is None:
             status = cls.UNAPPROVED
-        if 'site_id' not in kwargs:
-            kwargs['site_id'] = settings.SITE_ID
-
-        authors = kwargs.pop('authors', None)
-        categories = kwargs.pop('categories', None)
+        if site_pk is None:
+            site_pk = settings.SITE_ID
 
         now = datetime.datetime.now()
 
@@ -1920,7 +1929,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             description=video.description or '',
             website_url=video.link or '',
             when_published=video.publish_datetime,
-            file_url=video.file_url or '',
+            file_url=file_url or '',
             file_url_mimetype=video.file_url_mimetype or '',
             file_url_length=video.file_url_length,
             when_submitted=now,
@@ -1931,7 +1940,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             flash_enclosure_url=video.flash_enclosure_url or '',
             video_service_user=video.user or '',
             video_service_url=video.user_url or '',
-            **kwargs
+            site_id=site_pk
         )
 
         if instance.description:
@@ -1970,6 +1979,11 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
                                             vidscraper_video=video, using=using)
 
         if commit:
+            # Only run this check if they want to immediately commit the
+            # instance; otherwise, the calling code is responsible for ensuring
+            # that the instance makes sense before being saved.
+            if not (instance.embed_code or instance.file_url):
+                raise InvalidVideo
             instance.save(using=using)
             save_m2m()
         else:
@@ -2078,7 +2092,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             return 'posted'
 
     def voting_enabled(self):
-        if not voting_enabled():
+        if not lsettings.voting_enabled():
             return False
         return self.categories.filter(contest_mode__isnull=False).exists()
 
@@ -2368,7 +2382,7 @@ def save_original_tags(sender, instance, created=False, **kwargs):
     tagging.models.TaggedItem.objects.db_manager(instance._state.db).create(
         tag=instance.tag, object=original)
 
-if ENABLE_ORIGINAL_VIDEO:
+if lsettings.ENABLE_ORIGINAL_VIDEO:
     models.signals.post_save.connect(create_original_video,
                                      sender=Video)
     models.signals.post_save.connect(save_original_tags,
@@ -2456,7 +2470,7 @@ def update_stamp(name, override_date=None, delete_stamp=False):
     except Exception, e:
         logging.error(e)
 
-if ENABLE_CHANGE_STAMPS:
+if lsettings.ENABLE_CHANGE_STAMPS:
     models.signals.post_save.connect(video_published_stamp_signal_listener,
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,

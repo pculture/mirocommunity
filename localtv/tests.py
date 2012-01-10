@@ -91,9 +91,8 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        self.old_DISABLE = getattr(
-            settings, 'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
-        settings.LOCALTV_DISABLE_TIERS_ENFORCEMENT = False
+        self.old_DISABLE = localtv.settings.DISABLE_TIERS_ENFORCEMENT
+        localtv.settings.DISABLE_TIERS_ENFORCEMENT = False
         SiteLocation.objects.clear_cache()
         self.site_location = SiteLocation.objects.get_current()
         self.tier_info = TierInfo.objects.get_current()
@@ -124,7 +123,7 @@ class BaseTestCase(TestCase):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
-        settings.LOCALTV_DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
+        localtv.settings.DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
         settings.CACHES = self.old_CACHES
         Profile.__dict__['logo'].field.storage = \
             storage.default_storage
@@ -256,7 +255,9 @@ class FeedImportTestCase(BaseTestCase):
         self._update_with_video_iter(self._parsed_feed, feed)
         self.assertEqual(Video.objects.count(), 5)
         self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 5)
+                status=Video.ACTIVE).count(), 4)
+        self.assertEqual(Video.objects.filter(
+                status=Video.UNAPPROVED).count(), 1)
 
     def test_auto_approve_False(self):
         """
@@ -391,11 +392,9 @@ class FeedImportTestCase(BaseTestCase):
 Tishana from SPARK Reproductive Justice talking about the right to choose \
 after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
         self.assertEqual(video.website_url, 'http://vimeo.com/7981161')
-        self.assertEqual(
-            video.embed_code,
-            '<iframe src="http://player.vimeo.com/video/7981161" width="320" '
-            'height="240" frameborder="0" webkitAllowFullScreen '
-            'allowFullScreen></iframe>')
+        self.assertTrue('vimeo.com' in video.embed_code)
+        self.assertTrue('<iframe ' in video.embed_code or
+                        '<object ' in video.embed_code)
         self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
         self.assertTrue(video.thumbnail_url.endswith('.jpg'),
@@ -440,9 +439,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         self.assertTrue('/BBwtzeZdoHQ' in video.embed_code)
         self.assertEqual(video.file_url, '')
         self.assertTrue(video.has_thumbnail)
-        self.assertEqual(video.thumbnail_url,
-                          'http://i.ytimg.com/vi/BBwtzeZdoHQ/0.jpg'
-                          )
+        self.assertTrue('BBwtzeZdoHQ' in video.thumbnail_url)
         self.assertEqual(video.when_published,
                           datetime.datetime(2010, 1, 18, 19, 41, 21))
         self.assertEqual(video.video_service(), 'YouTube')

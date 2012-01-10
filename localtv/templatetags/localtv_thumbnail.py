@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
@@ -51,7 +52,7 @@ class ThumbnailNode(template.Node):
             thumbnail = video.search
 
         if not thumbnail:
-            return '/images/default_vid.gif'
+            return settings.STATIC_URL + 'localtv/images/default_vid.gif'
 
         url = default_storage.url(
             thumbnail.get_resized_thumb_storage_path(*self.size))
