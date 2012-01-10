@@ -731,18 +731,24 @@ class Source(Thumbnailable):
 
         for vidscraper_video in video_iter:
             total_videos += 1
-            
-            video_from_vidscraper_video.delay(
-                vidscraper_video,
-                site_pk=self.site_id,
-                import_app_label=import_opts.app_label,
-                import_model=import_opts.module_name,
-                import_pk=source_import.pk,
-                status=Video.PENDING,
-                author_pks=author_pks,
-                category_pks=category_pks,
-                clear_rejected=clear_rejected,
-                using=using)
+            try:
+                video_from_vidscraper_video.delay(
+                    vidscraper_video,
+                    site_pk=self.site_id,
+                    import_app_label=import_opts.app_label,
+                    import_model=import_opts.module_name,
+                    import_pk=source_import.pk,
+                    status=Video.PENDING,
+                    author_pks=author_pks,
+                    category_pks=category_pks,
+                    clear_rejected=clear_rejected,
+                    using=using)
+            except:
+                source_import.handle_error('during import of %r' % (
+                        vidscraper_video.url,),
+                                           is_skip=True,
+                                           with_exception=True,
+                                           using=using)
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
