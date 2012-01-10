@@ -50,6 +50,9 @@ class SubmitURLView(FormView):
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
 
+    def get(self, request, *args, **kwargs):
+        return FormView.post(self, request, *args, **kwargs)
+
     @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
         # This method should be disallowed. Some forms may still use it in old
