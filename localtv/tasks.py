@@ -68,7 +68,15 @@ if hasattr(settings.DATABASES, 'module'):
         return wrapper
 else:
     def patch_settings(func):
-        return func # noop
+        def wrapper(*args, **kwargs):
+            using = kwargs.get('using', None)
+            if using == CELERY_USING:
+                kwargs['using'] = 'default'
+            return func(*args, **kwargs)
+        wrapper.func_name = func.func_name
+        wrapper.func_doc = func.func_doc
+        wrapper.func_defaults = func.func_defaults
+        return wrapper
 
 @task(ignore_result=True)
 @patch_settings
