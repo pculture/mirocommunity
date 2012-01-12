@@ -744,11 +744,12 @@ class Source(Thumbnailable):
                     clear_rejected=clear_rejected,
                     using=using)
             except:
-                source_import.handle_error('during import of %r' % (
+                source_import.handle_error(
+                    'Import task creation failed for %r' % (
                         vidscraper_video.url,),
-                                           is_skip=True,
-                                           with_exception=True,
-                                           using=using)
+                    is_skip=True,
+                    with_exception=True,
+                    using=using)
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
