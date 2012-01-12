@@ -24,7 +24,7 @@ import logging
 try:
    from xapian import DatabaseLockError
 except ImportError:
-    class DatabaseLockError(Error):
+    class DatabaseLockError(Exception):
         """
         Dummy exception; nothing raises me.
         """
@@ -196,13 +196,12 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
 
     try:
         vidscraper_video.load()
-    except Exception, e:
+    except Exception:
         source_import.handle_error(('Skipped %r: Could not load video data.'
                                      % vidscraper_video.url),
                                    using=using, is_skip=True,
                                    with_exception=True)
         return
-        
 
     if not vidscraper_video.title:
         source_import.handle_error(('Skipped %r: Failed to scrape basic data.'
