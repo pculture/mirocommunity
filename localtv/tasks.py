@@ -312,23 +312,24 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
     """
     model_class = get_model(app_label, model_name)
     search_index = site.get_index(model_class)
-    if is_removal:
-        instance = model_class(pk=pk)
-        search_index.remove_object(instance)
-    else:
-        try:
-            instance = search_index.read_queryset().using(using).get(pk=pk)
-        except model_class.DoesNotExist:
-            pass
-        except DatabaseLockError:
-            backoff += 1
-            countdown = random.random() * (2 ** backoff - 1)
-            haystack_update_index.retry(
-                args=(app_label, model_name, pk, is_removal),
-                kwargs={'using': using, 'backoff': backoff},
-                countdown=countdown)
+    try:
+        if is_removal:
+            instance = model_class(pk=pk)
+            search_index.remove_object(instance)
         else:
-            search_index.update_object(instance)
+            try:
+                instance = search_index.read_queryset().using(using).get(pk=pk)
+            except model_class.DoesNotExist:
+                pass
+            else:
+                search_index.update_object(instance)
+    except DatabaseLockError:
+        backoff += 1
+        countdown = random.random() * (2 ** backoff - 1)
+        haystack_update_index.retry(
+            args=(app_label, model_name, pk, is_removal),
+            kwargs={'using': using, 'backoff': backoff},
+            countdown=countdown)
 
 @task
 @patch_settings
