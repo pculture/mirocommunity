@@ -19,10 +19,17 @@
 
 import datetime
 import os
-import itertools
 import logging
 
-import vidscraper
+try:
+   from xapian import DatabaseLockError
+except ImportError:
+    class DatabaseLockError(Error):
+        """
+        Dummy exception; nothing raises me.
+        """
+else:
+    import random # don't need this otherwise
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
@@ -289,10 +296,11 @@ def video_save_thumbnail(video_pk, using='default'):
             )
         
 
-@task(ignore_result=True)
+@task(ignore_result=True,
+      max_retries=None)
 @patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
-                          using='default'):
+                          using='default', backoff=0):
     """
     Updates a haystack index for the given model (specified by ``app_label``
     and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
@@ -312,6 +320,13 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             instance = search_index.read_queryset().using(using).get(pk=pk)
         except model_class.DoesNotExist:
             pass
+        except DatabaseLockError:
+            backoff += 1
+            countdown = random.random() * (2 ** backoff - 1)
+            haystack_update_index.retry(
+                args=(app_label, model_name, pk, is_removal),
+                kwargs={'using': using, 'backoff': backoff},
+                countdown=countdown)
         else:
             search_index.update_object(instance)
 
