@@ -61,7 +61,7 @@ $(document).ready(function() {
 <a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
 <a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
 <h2>Videos | Manage Your Video Sources</h2>
-<div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
+<div class="helpful clear rounded">Videos imported from sources become available once the import has completed. You can see a source's import status in the "import" column. Videos may be skipped if they have been imported before, or if they do not have basic information &#8211; for example, if they don't have either embed code or a link to a video file.</div>
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
 <div id="admin_feed_add" class="simple_overlay displaynone">
