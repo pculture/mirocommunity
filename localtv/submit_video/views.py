@@ -16,7 +16,9 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
@@ -174,6 +176,15 @@ class SubmitVideoView(CreateView):
 
     def form_valid(self, form):
         response = super(SubmitVideoView, self).form_valid(form)
+        identifiers = Q()
+        if self.object.website_url:
+            identifiers |= Q(website_url=self.object.website_url)
+        if self.object.file_url:
+            identifiers |= Q(file_url=self.object.file_url)
+        if self.object.guid:
+            identifiers |= Q(guid=self.object.guid)
+        Video.objects.filter(identifiers, site=Site.objects.get_current(),
+                             status=Video.REJECTED).delete()
         del self.request.session[self.get_session_key()]
         submit_finished.send(sender=self.object)
         return response
@@ -191,6 +202,7 @@ class SubmitVideoView(CreateView):
             'user': self.object.video_service_user,
             'user_url': self.object.video_service_url,
         }
+        context['video'] = self.video
         return context
 
 

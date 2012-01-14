@@ -18,12 +18,15 @@ import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files import File
 from django.core.urlresolvers import reverse
+from django.forms.models import modelform_factory
 from tagging.models import Tag
 from vidscraper.suites import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
+from localtv.submit_video.forms import SubmitVideoForm
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
                                         SubmitVideoView)
 from localtv.tests import BaseTestCase
@@ -238,7 +241,7 @@ class SubmitURLViewTestCase(BaseTestCase):
 
 
 class SubmitVideoViewTestCase(BaseTestCase):
-    base_fields = set(['url', 'tags', 'contact', 'thumbnail_file', 'notes'])
+    base_fields = set(['tags', 'contact', 'thumbnail_file', 'notes'])
     fixtures = BaseTestCase.fixtures + ['videos']
 
     def setUp(self):
@@ -519,8 +522,43 @@ class SubmitVideoViewTestCase(BaseTestCase):
         form = view.form_class(**view.get_form_kwargs())
 
         context_data = view.get_context_data(form=form)
+        self.assertEqual(context_data.get('video'), view.video)
         self.assertTrue('data' in context_data)
         self.assertEqual(set(context_data['data']),
                          set(['link', 'publish_date', 'tags', 'title',
                               'description', 'thumbnail_url', 'user',
                               'user_url']))
+
+
+class SubmitVideoFormTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.form_class = modelform_factory(Video, SubmitVideoForm)
+
+    def test_sanitize_description(self):
+        """
+        Tests that the video description is sanitized, and that in
+        particular, img tags are removed.
+
+        """
+        request = self.factory.get('/')
+        form = self.form_class(request, 'http://google.com')
+        form.cleaned_data = {'description': "<img src='http://www.google.com/' alt='this should be stripped' />"}
+        self.assertEqual(form.clean_description(), '')
+
+    def test_thumbnail_file_override(self):
+        """
+        Tests that if a thumbnail_file is given to the form, it will override
+        the thumbnail_url.
+
+        """
+        request = self.factory.get('/')
+        form = self.form_class(request, 'http://google.com')
+        form.cleaned_data = {
+            'thumbnail_file': File(file(self._data_file('logo.png'))),
+            'thumbnail_url': 'http://google.com'
+        }
+        video = form.save()
+        self.assertTrue(video.has_thumbnail)
+        self.assertEqual(video.thumbnail_url, '')
+        self.assertEqual(video.thumbnail_extension, 'png')

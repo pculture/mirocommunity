@@ -1,6 +1,10 @@
 from localtv.submit_video.tests.unit import (SubmitPermissionsTestCase,
                                              SubmitURLViewTestCase,
-                                             SubmitVideoViewTestCase)
+                                             SubmitVideoViewTestCase,
+                                             SubmitVideoFormTestCase)
 from localtv.submit_video.tests.functional import (SubmitThanksFunctionalTestCase,
-											 SubmitURLFunctionalTestCase,
-											 ReviewStatusEmailCommandTestCase)
+                                             SubmitURLViewFunctionalTestCase,
+                                             ReviewStatusEmailCommandTestCase,
+                                             DirectLinkFunctionalTestCase,
+                                             ScrapedFunctionalTestCase,
+                                             EmbedRequestFunctionalTestCase)

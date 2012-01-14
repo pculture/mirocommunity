@@ -20,7 +20,7 @@ import urlparse
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.conf import settings
 from django.db.models import Q
 from tagging.forms import TagField
@@ -37,20 +37,21 @@ class SubmitURLForm(forms.Form):
     url = forms.URLField(verify_exists=False)
 
     def _validate_unique(self, url=None, guid=None):
-        try:
-            identifiers = Q()
-            if url is not None:
-                identifiers |= Q(website_url=url) | Q(file_url=url)
-            if guid is not None:
-                identifiers |= Q(guid=guid)
-            video = Video.objects.get(identifiers,
+        identifiers = Q()
+        if url is not None:
+            identifiers |= Q(website_url=url) | Q(file_url=url)
+        if guid is not None:
+            identifiers |= Q(guid=guid)
+        videos = Video.objects.filter(identifiers,
                                       ~Q(status=Video.REJECTED),
-                                      site=Site.objects.get_current()
-            )
-        except Video.DoesNotExist:
-            # Setting these attributes is a HACK to make it possible to provide
-            # backwards-compatible context. Should be removed once that's been
-            # deprecated.
+                                      site=Site.objects.get_current())
+
+        # HACK: We set attributes on the form so that we can provide
+        # backwards-compatible template context. We should remove this when it's
+        # no longer needed.
+        try:
+            video = videos[0]
+        except IndexError:
             self.was_duplicate = False
             self.duplicate_video = None
         else:
@@ -83,8 +84,6 @@ class SubmitURLForm(forms.Form):
 
 
 class SubmitVideoForm(forms.ModelForm):
-    url = forms.URLField(verify_exists=True,
-                         widget=forms.widgets.HiddenInput)
     tags = TagField(required=False, label="Tags (optional)",
                     help_text=("You can also <span class='url'>optionally add "
                                "tags</span> for the video (below)."))
@@ -109,6 +108,24 @@ class SubmitVideoForm(forms.ModelForm):
         elif not self.instance.website_url:
             self.instance.website_url = url
 
+    def _post_clean(self):
+        super(SubmitVideoForm, self)._post_clean()
+        # By this time, cleaned data has been applied to the instance.
+        identifiers = Q()
+        if self.instance.website_url:
+            identifiers |= Q(website_url=self.instance.website_url)
+        if self.instance.file_url:
+            identifiers |= Q(file_url=self.instance.file_url)
+        if self.instance.guid:
+            identifiers |= Q(guid=self.instance.guid)
+
+        videos = Video.objects.filter(identifiers,
+                                      ~Q(status=Video.REJECTED),
+                                      site=Site.objects.get_current())
+        if videos.exists():
+            self._update_errors({NON_FIELD_ERRORS: ["That video has already "
+                                                    "been submitted!"]})
+
     def clean_description(self):
         return sanitize(self.cleaned_data['description'],
                                  extra_filters=['img'])
@@ -132,7 +149,7 @@ class SubmitVideoForm(forms.ModelForm):
             if instance.is_active():
                 # when_submitted isn't set until after the save
                 instance.when_approved = instance.when_submitted
-                intance.save()
+                instance.save()
             if hasattr(instance, 'save_m2m'):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
