@@ -48,6 +48,9 @@ VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
     re.compile(r"Vimeo / (.+)'s? uploaded videos"),
     re.compile(r'Vimeo / (.+)'),
+    re.compile(r"(.+)'s videos on Vimeo"),
+    re.compile(r"Videos (.+) likes on Vimeo"),
+    re.compile(r"(.+) on Vimeo"),
     re.compile(r"Dailymotion - (.+)'s")
     )
 

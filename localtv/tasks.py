@@ -19,10 +19,17 @@
 
 import datetime
 import os
-import itertools
 import logging
 
-import vidscraper
+try:
+   from xapian import DatabaseLockError
+except ImportError:
+    class DatabaseLockError(Exception):
+        """
+        Dummy exception; nothing raises me.
+        """
+else:
+    import random # don't need this otherwise
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
@@ -68,7 +75,15 @@ if hasattr(settings.DATABASES, 'module'):
         return wrapper
 else:
     def patch_settings(func):
-        return func # noop
+        def wrapper(*args, **kwargs):
+            using = kwargs.get('using', None)
+            if using == CELERY_USING:
+                kwargs['using'] = 'default'
+            return func(*args, **kwargs)
+        wrapper.func_name = func.func_name
+        wrapper.func_doc = func.func_doc
+        wrapper.func_defaults = func.func_defaults
+        return wrapper
 
 @task(ignore_result=True)
 @patch_settings
@@ -181,13 +196,12 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
 
     try:
         vidscraper_video.load()
-    except Exception, e:
+    except Exception:
         source_import.handle_error(('Skipped %r: Could not load video data.'
                                      % vidscraper_video.url),
                                    using=using, is_skip=True,
                                    with_exception=True)
         return
-        
 
     if not vidscraper_video.title:
         source_import.handle_error(('Skipped %r: Failed to scrape basic data.'
@@ -281,10 +295,11 @@ def video_save_thumbnail(video_pk, using='default'):
             )
         
 
-@task(ignore_result=True)
+@task(ignore_result=True,
+      max_retries=None)
 @patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
-                          using='default'):
+                          using='default', backoff=0):
     """
     Updates a haystack index for the given model (specified by ``app_label``
     and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
@@ -296,16 +311,24 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
     """
     model_class = get_model(app_label, model_name)
     search_index = site.get_index(model_class)
-    if is_removal:
-        instance = model_class(pk=pk)
-        search_index.remove_object(instance)
-    else:
-        try:
-            instance = search_index.read_queryset().using(using).get(pk=pk)
-        except model_class.DoesNotExist:
-            pass
+    try:
+        if is_removal:
+            instance = model_class(pk=pk)
+            search_index.remove_object(instance)
         else:
-            search_index.update_object(instance)
+            try:
+                instance = search_index.read_queryset().using(using).get(pk=pk)
+            except model_class.DoesNotExist:
+                pass
+            else:
+                search_index.update_object(instance)
+    except DatabaseLockError:
+        backoff += 1
+        countdown = random.random() * (2 ** backoff - 1)
+        haystack_update_index.retry(
+            args=(app_label, model_name, pk, is_removal),
+            kwargs={'using': using, 'backoff': backoff},
+            countdown=countdown)
 
 @task
 @patch_settings
