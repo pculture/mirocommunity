@@ -831,7 +831,7 @@ class Feed(Source, StatusedThumbnailable):
     """
     Feed to pull videos in from.
 
-    If the same feed is used on two different , they will require two
+    If the same feed is used on two different sites, they will require two
     separate entries here.
 
     Fields:
