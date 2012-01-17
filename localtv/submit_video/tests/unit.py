@@ -509,7 +509,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_compatible_context(self):
         """
-        Tests that the get_context_data method supplies backwards-compatible
+        Tests that the get_context_data method supplies a backwards-compatible
+        "data" context variable in addition to adding the form and video to the
         context.
 
         """
@@ -522,7 +523,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
         form = view.form_class(**view.get_form_kwargs())
 
         context_data = view.get_context_data(form=form)
-        self.assertEqual(context_data.get('video'), view.video)
+        self.assertEqual(context_data.get('video'), view.object)
+        self.assertIsInstance(context_data.get('form'), view.form_class)
         self.assertTrue('data' in context_data)
         self.assertEqual(set(context_data['data']),
                          set(['link', 'publish_date', 'tags', 'title',

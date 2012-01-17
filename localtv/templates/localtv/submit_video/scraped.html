@@ -51,7 +51,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           </span>
           {% if form.initial.tags %}
           <div class="tags">
-            Tags: form.initial.tags
+            Tags: {{ form.initial.tags }}
           </div>
           {% endif %}
           <div class="description">{{ video.description }}</div>

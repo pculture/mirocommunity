@@ -202,7 +202,6 @@ class SubmitVideoView(CreateView):
             'user': self.object.video_service_user,
             'user_url': self.object.video_service_url,
         }
-        context['video'] = self.video
         return context
 
 
