@@ -183,95 +183,109 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                 category_pks=None, clear_rejected=False,
                                 using='default'):
     if import_app_label is None or import_model is None or import_pk is None:
+        # XXX what is this for?
         source_import = None
     else:
         import_class = get_model(import_app_label, import_model)
         try:
-            source_import = import_class.objects.using(using).get(pk=import_pk,
-                                                    status=import_class.STARTED)
+            source_import = import_class.objects.using(using).get(
+               pk=import_pk,
+               status=import_class.STARTED)
         except import_class.DoesNotExist:
             logging.debug('Skipping %r: expected import instance missing.',
                           vidscraper_video.url)
             return
-
     try:
-        vidscraper_video.load()
-    except Exception:
-        source_import.handle_error(('Skipped %r: Could not load video data.'
-                                     % vidscraper_video.url),
-                                   using=using, is_skip=True,
-                                   with_exception=True)
-        return
+        try:
+            vidscraper_video.load()
+        except Exception:
+            source_import.handle_error(
+                ('Skipped %r: Could not load video data.'
+                 % vidscraper_video.url),
+                using=using, is_skip=True,
+                with_exception=True)
+            return
 
-    if not vidscraper_video.title:
-        source_import.handle_error(('Skipped %r: Failed to scrape basic data.'
-                                     % vidscraper_video.url),
-                                   is_skip=True, using=using)
-        return
+        if not vidscraper_video.title:
+            source_import.handle_error(
+                ('Skipped %r: Failed to scrape basic data.'
+                 % vidscraper_video.url),
+                is_skip=True, using=using)
+            return
 
-    if ((vidscraper_video.file_url_expires or not vidscraper_video.file_url)
-        and not vidscraper_video.embed_code):
-        source_import.handle_error(('Skipping %r: no file or embed code.'
-                                     % vidscraper_video.url),
-                                   is_skip=True, using=using)
-        return
-
-    site_videos = Video.objects.using(using).filter(site=site_pk)
-
-    if vidscraper_video.guid:
-        guid_videos = site_videos.filter(guid=vidscraper_video.guid)
-        if clear_rejected:
-            guid_videos.rejected().delete()
-        if guid_videos.exists():
-            source_import.handle_error(('Skipping %r: duplicate guid.'
+        if ((vidscraper_video.file_url_expires or
+             not vidscraper_video.file_url)
+            and not vidscraper_video.embed_code):
+            source_import.handle_error(('Skipping %r: no file or embed code.'
                                         % vidscraper_video.url),
                                        is_skip=True, using=using)
             return
 
-    if vidscraper_video.link:
-        videos_with_link = site_videos.filter(website_url=vidscraper_video.link)
-        if clear_rejected:
-            videos_with_link.rejected().delete()
-        if videos_with_link.exists():
-            source_import.handle_error(('Skipping %r: duplicate link.'
-                                        % vidscraper_video.url),
-                                       is_skip=True, using=using)
-            return
+        site_videos = Video.objects.using(using).filter(site=site_pk)
 
-    categories = Category.objects.using(using).filter(pk__in=category_pks)
+        if vidscraper_video.guid:
+            guid_videos = site_videos.filter(guid=vidscraper_video.guid)
+            if clear_rejected:
+                guid_videos.rejected().delete()
+            if guid_videos.exists():
+                source_import.handle_error(('Skipping %r: duplicate guid.'
+                                            % vidscraper_video.url),
+                                           is_skip=True, using=using)
+                return
 
-    if author_pks:
-        authors = User.objects.using(using).filter(pk__in=author_pks)
-    else:
-        if vidscraper_video.user:
-            name = vidscraper_video.user
-            if ' ' in name:
-                first, last = name.split(' ', 1)
-            else:
-                first, last = name, ''
-            author, created = User.objects.db_manager(using).get_or_create(
-                username=name[:30],
-                defaults={'first_name': first[:30],
-                          'last_name': last[:30]})
-            if created:
-                author.set_unusable_password()
-                author.save()
-                utils.get_profile_model().objects.db_manager(using).create(
-                    user=author,
-                    website=vidscraper_video.user_url or '')
-            authors = [author]
+        if vidscraper_video.link:
+            videos_with_link = site_videos.filter(
+                website_url=vidscraper_video.link)
+            if clear_rejected:
+                videos_with_link.rejected().delete()
+            if videos_with_link.exists():
+                source_import.handle_error(('Skipping %r: duplicate link.'
+                                            % vidscraper_video.url),
+                                           is_skip=True, using=using)
+                return
+
+        categories = Category.objects.using(using).filter(pk__in=category_pks)
+
+        if author_pks:
+            authors = User.objects.using(using).filter(pk__in=author_pks)
         else:
-            authors = []
+            if vidscraper_video.user:
+                name = vidscraper_video.user
+                if ' ' in name:
+                    first, last = name.split(' ', 1)
+                else:
+                    first, last = name, ''
+                author, created = User.objects.db_manager(using).get_or_create(
+                    username=name[:30],
+                    defaults={'first_name': first[:30],
+                              'last_name': last[:30]})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    utils.get_profile_model().objects.db_manager(using).create(
+                       user=author,
+                       website=vidscraper_video.user_url or '')
+                authors = [author]
+            else:
+                authors = []
 
-    # Since we check above whether the vidscraper_video is valid, we don't catch
-    # InvalidVideo here, since it would be unexpected.
-    video = Video.from_vidscraper_video(vidscraper_video, status=status,
-                                        using=using, source_import=source_import,
-                                        authors=authors, categories=categories,
-                                        site_pk=site_pk)
-    logging.debug('Made video %i: %r', video.pk, video.name)
-    if video.thumbnail_url:
-        video_save_thumbnail.delay(video.pk, using=using)
+        # Since we check above whether the vidscraper_video is valid, we don't
+        # catch InvalidVideo here, since it would be unexpected.
+        video = Video.from_vidscraper_video(vidscraper_video, status=status,
+                                            using=using,
+                                            source_import=source_import,
+                                            authors=authors,
+                                            categories=categories,
+                                            site_pk=site_pk)
+        logging.debug('Made video %i: %r', video.pk, video.name)
+        if video.thumbnail_url:
+            video_save_thumbnail.delay(video.pk, using=using)
+    except Exception:
+        source_import.handle_error(('Unknown error during import of %r'
+                                    % vidscraper_video.url),
+                                   is_skip=True, using=using,
+                                   with_exception=True)
+        raise # so it shows up in the Celery log
 
 @task(ignore_result=True)
 @patch_settings
