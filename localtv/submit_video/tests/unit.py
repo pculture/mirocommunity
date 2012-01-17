@@ -104,8 +104,9 @@ class SubmitURLViewTestCase(BaseTestCase):
 
     def test_form_valid__scraped(self):
         """
-        Checks that the success_url and session data are correctly set if the
-        form represents a scraped video.
+        Checks that, if the form represents a scraped video, the success_url is
+        the url of the scraped_video view, and that the session data contains
+        the scraped video as 'video' and the video's url as 'url'.
 
         """
         view = SubmitURLView()
@@ -141,8 +142,14 @@ class SubmitURLViewTestCase(BaseTestCase):
 
     def test_form_valid__directlink(self):
         """
-        Checks that the success_url and session data are correctly set if the
-        form represents a direct link to a video file.
+        Checks that, if the form represents a direct link to a video file, the
+        success_url is the url of the direct_link view, and that the session
+        data contains the video (or ``None``) as 'video' and the video's url
+        as 'url'.
+
+        NOTE:: Direct link videos will probably not actually result in the
+        creation of VidscraperVideo instances; this is tested only to maintain
+        the exact behavior which previously existed.
 
         """
         view = SubmitURLView()
@@ -176,9 +183,11 @@ class SubmitURLViewTestCase(BaseTestCase):
 
     def test_form_valid__embedrequest(self):
         """
-        Checks that the success_url and session data are correctly set if the
-        form represents an embedrequest video - i.e. a video that we can't
-        scrape and which doesn't look like a direct link.
+        Checks that, if the form represents an embedrequest video - i.e. a video
+        that vidscraper can't scrape and which doesn't look like a direct link -
+        the success_url is set to the url of the embedrequest view, and that the
+        session data contains the scraped video (or ``None``) as 'video' and the
+        video's url as 'url'.
 
         """
         view = SubmitURLView()
@@ -278,13 +287,13 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_form_class__scraped(self):
         """
-        Tests whether fields are correctly defined for the form based on a
-        scraped video.
+        Tests that a form for a scraped video only provides the most basic
+        fields for additional information.
 
         """
         view = SubmitVideoView()
         view.request = self.factory.get('/')
-        expected_fields = self.base_fields
+        expected_fields = set(self.base_fields)
         video = VidscraperVideo('http://google.com')
 
         # Option one: Video with embed code
@@ -312,8 +321,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_form_class__directlink(self):
         """
-        Tests whether fields are correctly defined for the form based on a
-        direct link to a video file.
+        Tests that a form for a direct link provides name, description, and
+        website_url fields in addition to the basic fields.
 
         """
         view = SubmitVideoView()
@@ -346,9 +355,10 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_form_class__embedrequest(self):
         """
-        Tests whether fields are correctly defined for the form based on an
-        embedrequest video - i.e. a video that we can't parse and which doesn't
-        look like a direct link.
+        Tests that a form for an embedrequest video - i.e. a video that
+        vidscraper can't parse and which doesn't look like a direct link - 
+        provides name, description, and embed_code fields in addition to the
+        basic fields.
 
         """
         view = SubmitVideoView()
@@ -394,7 +404,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
     def test_get_initial_tags(self):
         """
         Tests that tags are in the initial data only if tags are defined on the
-        video, and that the tags are correctly formatted.
+        video, and that the tags in the expected format - at the moment, this is
+        the return value of get_or_create_tags(tags).
 
         """
         view = SubmitVideoView()
@@ -407,12 +418,12 @@ class SubmitVideoViewTestCase(BaseTestCase):
         initial = view.get_initial()
         self.assertTrue('tags' in initial)
         # This is perhaps not the best way to test this.
-        self.assertEqual(get_or_create_tags(tags), initial['tags'])
+        self.assertEqual(initial['tags'], get_or_create_tags(tags))
 
     def test_get_template_names__scraped(self):
         """
-        Tests whether template names are correctly generated for a scraped
-        video.
+        Tests that if the video is a scraped video, the scraped video template
+        will be used.
 
         """
         view = SubmitVideoView()
@@ -433,8 +444,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_template_names__directlink(self):
         """
-        Tests whether template names are correctly generated for a direct link
-        to a video file.
+        Tests that if the video is a direct link, the direct link template
+        will be used.
 
         """
         view = SubmitVideoView()
@@ -455,9 +466,9 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_template_names__embedrequest(self):
         """
-        Tests whether template names are correctly generated for an embedrequest
-        video - i.e. a video that we can't parse and which doesn't look like a
-        direct link.
+        Tests that if the video is an embedrequest video - i.e. a video that
+        vidscraper can't parse and which doesn't look like a direct link - the
+        embedrequest template will be used.
 
         """
         view = SubmitVideoView()

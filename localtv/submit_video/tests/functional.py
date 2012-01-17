@@ -281,8 +281,8 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         be redisplayed. Additionally, the context should contain two variables
         for backwards-compatibility:
 
-            * ``was_duplicate``: True
-            * ``video``: The duplicate video instance
+            * ``was_duplicate``: ``True``
+            * ``video``: ``None``
         
         """
         expected_error = "That video has already been submitted!"
