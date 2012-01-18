@@ -23,9 +23,9 @@ from localtv.admin.moderation.views import (VideoModerationQueueView,
                                             CommentModerationQueueView)
 
 
-class ModerationSection(MiroCommunityAdminSection):
-    url_prefix = 'moderation'
-    navigation_text = _('Moderation')
+class VideoModerationSection(MiroCommunityAdminSection):
+    url_prefix = 'videos'
+    navigation_text = _('Videos')
     root_url_name = 'localtv_admin_video_queue'
     site_admin_required = True
 
@@ -33,10 +33,23 @@ class ModerationSection(MiroCommunityAdminSection):
     def urlpatterns(self):
         urlpatterns = patterns('',
             url(
-                r'^videos/$',
+                r'^$',
                 self.wrap_view(VideoModerationQueueView.as_view()),
                 name='localtv_admin_video_queue'
-            ),
+            )
+        )
+        return urlpatterns
+
+
+class CommentModerationSection(MiroCommunityAdminSection):
+    url_prefix = 'comments'
+    navigation_text = _('Comments')
+    root_url_name = 'localtv_admin_comment_queue'
+    site_admin_required = True
+
+    @property
+    def urlpatterns(self):
+        urlpatterns = patterns('',
             url(
                 r'^comments/$',
                 self.wrap_view(CommentModerationQueueView.as_view()),
@@ -44,10 +57,14 @@ class ModerationSection(MiroCommunityAdminSection):
             )
         )
         return urlpatterns
-    pages = (
-        (_('Videos'), 'localtv_admin_video_queue'),
-        (_('Comments'), 'localtv_admin_comment_queue')
-    )
+
+
+class ModerationSection(MiroCommunityAdminSection):
+    url_prefix = 'moderation'
+    navigation_text = _('Moderation')
+    root_url_name = 'localtv_admin_video_queue'
+    site_admin_required = True
+    subsection_classes = (VideoModerationSection, CommentModerationSection)
 
 
 registry.register(ModerationSection)
