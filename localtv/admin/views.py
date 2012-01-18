@@ -30,8 +30,6 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import (MultipleObjectMixin,
                                        MultipleObjectTemplateResponseMixin)
 
-from localtv.decorators import require_site_admin
-
 
 class FormSetMixin(object):
     factory_function = staticmethod(formset_factory)
@@ -170,7 +168,6 @@ class MiroCommunityAdminCRUDMixin(object):
     update_view_name = None
     delete_view_name = None
 
-    @method_decorator(require_site_admin)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         return View.dispatch(self, request, *args, **kwargs)
@@ -242,12 +239,13 @@ class MiroCommunityAdminDeleteView(MiroCommunityAdminCRUDMixin, DeleteView):
 
 class ViewNameRedirectView(RedirectView):
     """
-    A RedirectView which can reverse a view's name.
+    A RedirectView which can reverse a url name.
 
     """
-    view_name = None
+    url_name = None
+
     def get_redirect_url(self, **kwargs):
-        if self.view_name is not None:
-            return reverse(self.view_name, kwargs=kwargs)
+        if self.url_name is not None:
+            return reverse(self.url_name, kwargs=kwargs)
         else:
             return super(ViewNameRedirectView, self).get_redirect_url(**kwargs)

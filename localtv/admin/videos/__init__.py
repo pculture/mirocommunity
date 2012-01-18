@@ -22,14 +22,18 @@ from django.utils.translation import ugettext_lazy as _
 from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
 from localtv.admin.videos.forms import (VideoForm, CategoryForm, PlaylistForm,
                                         PlaylistCreateForm)
-from localtv.admin.videos.views import (PlaylistCreateView, PlaylistUpdateView,
-                                        PlaylistDeleteView)
+from localtv.admin.videos.views import (PlaylistCreateView, UserUpdateView,
+                                        UserDeleteView, UserListView)
 from localtv.models import Video, Category, SiteLocation
 from localtv.playlists.models import Playlist
 
 
 class VideoCRUDSection(CRUDSection):
     update_form_class = VideoForm
+    list_view_class = UserListView
+    update_view_class = UserUpdateView
+    delete_view_class = UserDeleteView
+    site_admin_required = False
 
     def get_queryset(self):
         return Video.objects.filter(site=Site.objects.get_current())
@@ -46,9 +50,10 @@ class PlaylistCRUDSection(CRUDSection):
     create_form_class = PlaylistCreateForm
     update_form_class = PlaylistForm
 
+    list_view_class = UserListView
     create_view_class = PlaylistCreateView
-    update_view_class = PlaylistUpdateView
-    delete_view_class = PlaylistDeleteView
+    update_view_class = UserUpdateView
+    delete_view_class = UserDeleteView
 
     model = Playlist
 

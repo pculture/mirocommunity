@@ -22,17 +22,12 @@ from django.contrib import comments
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
-from localtv.decorators import require_site_admin
 from localtv.models import Video, SiteLocation
 from localtv.tiers import current_videos_that_count_toward_limit
 
 
 class DashboardView(TemplateView):
     template_name = 'localtv/admin/dashboard.html'
-
-    @method_decorator(require_site_admin)
-    def dispatch(self, *args, **kwargs):
-        return super(DashboardView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self):
         sitelocation = SiteLocation.objects.get_current()

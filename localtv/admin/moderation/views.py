@@ -35,15 +35,10 @@ from localtv.admin.moderation.forms import (RequestModerationFormSet,
                                             VideoModerationForm,
                                             VideoLimitFormSet)
 from localtv.admin.views import MiroCommunityAdminListView
-from localtv.decorators import require_site_admin
 from localtv.models import Video
 
 
 class ModerationQueueView(MiroCommunityAdminListView):
-    @method_decorator(require_site_admin)
-    def dispatch(self, *args, **kwargs):
-        return super(ModerationQueueView, self).dispatch(*args, **kwargs)
-
     def formset_valid(self, formset):
         response = super(ModerationQueueView, self).formset_valid(formset)
 

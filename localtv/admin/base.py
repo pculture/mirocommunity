@@ -18,6 +18,7 @@
 from functools import wraps
 
 from django.conf.urls.defaults import url, patterns, include
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import (reverse, resolve, RegexURLPattern,
                                       RegexURLResolver)
@@ -94,6 +95,7 @@ class MiroCommunityAdminSection(object):
 
     def wrap_view(self, view_func):
         @wraps(view_func)
+        @login_required
         def wrapped(request, *args, **kwargs):
             if not self.is_available(request):
                 raise Http404

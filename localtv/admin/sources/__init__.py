@@ -25,7 +25,6 @@ from localtv.admin.base import MiroCommunityAdminSection, registry, CRUDSection
 from localtv.admin.sources.forms import (SearchUpdateForm, FeedUpdateForm,
                                          FeedCreateForm, SearchCreateForm)
 from localtv.admin.sources.views import SourceCreateView
-from localtv.decorators import require_site_admin
 from localtv.models import Feed, SavedSearch
 from localtv.tasks import feed_update, search_update
 
