@@ -270,13 +270,13 @@ class CRUDSection(MiroCommunityAdminSection):
         view_names = self.get_view_names()
 
         urlpatterns = patterns('',
-            url(r'^$', self.get_list_view(),
+            url(r'^$', self.wrap_view(self.get_list_view()),
                 name=view_names['list_view_name']),
-            url(r'^add/$', self.get_create_view(),
+            url(r'^add/$', self.wrap_view(self.get_create_view()),
                 name=view_names['create_view_name']),
-            url(r'^(?P<pk>\d+)/$', self.get_update_view(),
+            url(r'^(?P<pk>\d+)/$', self.wrap_view(self.get_update_view()),
                 name=view_names['update_view_name']),
-            url(r'^(?P<pk>\d+)/delete/$', self.get_delete_view(),
+            url(r'^(?P<pk>\d+)/delete/$', self.wrap_view(self.get_delete_view()),
                 name=view_names['delete_view_name'])
         )
         urlpatterns += self.get_subsection_urlpatterns()

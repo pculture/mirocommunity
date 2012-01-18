@@ -72,9 +72,9 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
       {% get_user_sections as user_sections %}
       <ul class="standalone-links">
         <li class='standalone-links-item'>Logged in as <strong>{{ request.user.username }}</strong></li>
-        {% for section in user_sections %}
+        {% for section in user_sections %}{% if section|is_available:request %}
           <li class='standalone-links-item{% if section|is_active:request %} standalone-links-selected{% endif %}'><a href="{% url section.root_url_name %}">{{ section.navigation_text }}</a></li>
-        {% endfor %}
+        {% endif %}{% endfor %}
         <li class='standalone-links-item'><a href="{{ settings.LOGOUT_URL }}">Sign out</a></li>
       </ul>
     </header>
@@ -84,9 +84,9 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
         {% block navigation_left %}
         <nav class='sidenav'>
           <ul>
-            {% for section in admin_sections %}
+            {% for section in admin_sections %}{% if section|is_available:request %}
               <li class="sidenav-item{% if section|is_active:request %} sidenav-selected{% endif %}"><a href="{% url section.root_url_name %}">{{ section.navigation_text }}</a></li>
-            {% endfor %}
+            {% endif %}{% endfor %}
           </ul>
         </nav>
         {% endblock %}
@@ -95,9 +95,9 @@ This template is heavily based on the work of the HTML5 Boilerplate developers. 
             {% if section|is_active:request and section.subsections|length > 1 %}
               <nav class='tabbednav'>
                 <ul>
-                  {% for subsection in section.subsections %}
+                  {% for subsection in section.subsections %}{% if subsection|is_available:request %}
                     <li class="tabbednav-item{% if subsection|is_active:request %} tabbednav-selected{% endif %}"><a href="{% url subsection.root_url_name %}">{{ subsection.navigation_text }}</a></li>
-                  {% endfor %}
+                  {% endif %}{% endfor %}
                 </ul>
               </nav>
             {% endif %}

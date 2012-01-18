@@ -369,10 +369,13 @@ class SiteLocation(Thumbnailable):
         (ACTIVE, ACTIVE_STATUS_TEXT),
     )
 
+    PLAYLISTS_DISABLED = 0
+    PLAYLISTS_ENABLED = 1
+    PLAYLISTS_ADMIN_ONLY = 2
     PLAYLISTS_ENABLED_CHOICES = (
-        (0, 'No'),
-        (1, 'Yes'),
-        (2, 'Admins Only')
+        (PLAYLISTS_DISABLED, 'No'),
+        (PLAYLISTS_ENABLED, 'Yes'),
+        (PLAYLISTS_ADMIN_ONLY, 'Admins Only')
     )
 
     site = models.ForeignKey(Site, unique=True)
@@ -412,7 +415,7 @@ class SiteLocation(Thumbnailable):
                 verbose_name=_("Display the 'submit a video' navigation item?"))
     submission_requires_login = models.BooleanField(default=False,
                    verbose_name=_("Require users to log in to submit a video?"))
-    playlists_enabled = models.IntegerField(default=0,
+    playlists_enabled = models.IntegerField(default=PLAYLISTS_DISABLED,
                                             verbose_name=_("Enable Playlists?"),
                                             choices=PLAYLISTS_ENABLED_CHOICES)
 

@@ -24,7 +24,7 @@ from localtv.admin.videos.forms import (VideoForm, CategoryForm, PlaylistForm,
                                         PlaylistCreateForm)
 from localtv.admin.videos.views import (PlaylistCreateView, PlaylistUpdateView,
                                         PlaylistDeleteView)
-from localtv.models import Video, Category
+from localtv.models import Video, Category, SiteLocation
 from localtv.playlists.models import Playlist
 
 
@@ -51,6 +51,18 @@ class PlaylistCRUDSection(CRUDSection):
     delete_view_class = PlaylistDeleteView
 
     model = Playlist
+
+    def is_available(self, request):
+        sitelocation = SiteLocation.objects.get_current()
+
+        if sitelocation.playlists_enabled == SiteLocation.PLAYLISTS_DISABLED:
+            return False
+
+        if (sitelocation.playlists_enabled == SiteLocation.PLAYLISTS_ADMIN_ONLY
+            and not request.user_is_admin):
+            return False
+
+        return True
 
 
 class VideoSection(MiroCommunityAdminSection):
