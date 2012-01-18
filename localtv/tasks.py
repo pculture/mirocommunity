@@ -136,9 +136,20 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     status=import_class.STARTED)
     except import_class.DoesNotExist:
         return
-    if (source_import.total_videos is not None and
-            (source_import.videos_imported + source_import.videos_skipped
-             >= source_import.total_videos)):
+    source_import.last_activity = datetime.datetime.now()
+    if source_import.total_videos is None:
+        source_import.save()
+        return
+    # get the correct counts from the database, rather than the race-condition
+    # prone count fields
+    import_count = source_import.indexes.count()
+    skipped_count = source_import.errors.filter(is_skip=True).count()
+    if import_count != source_import.videos_imported:
+        source_import.videos_imported = import_count
+    if skipped_count != source_import.videos_skipped:
+        source_import.videos_skipped = skipped_count
+    if (source_import.videos_imported + source_import.videos_skipped
+        >= source_import.total_videos):
         active_set = None
         unapproved_set = source_import.get_videos(using).filter(
             status=Video.PENDING)
@@ -171,7 +182,6 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             source_import.source.status = source_import.source.ACTIVE
             source_import.source.save()
 
-    source_import.last_activity = datetime.datetime.now()
     source_import.save()
 
 
