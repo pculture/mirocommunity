@@ -31,7 +31,9 @@ class RegistryNode(template.Node):
         self.as_var = as_var
     
     def render(self, context):
-        context[self.as_var] = self.registry._registry.values()
+        request = context.get('request', None)
+        if request is not None:
+            context[self.as_var] = self.registry._registry.values()
         return ''
 
 
@@ -88,18 +90,9 @@ def get_user_sections(parser, token):
 
 
 @register.filter
-def is_active_page(page, request):
-    """
-    Returns ``True`` if the "page" is active for the request and ``False``
-    otherwise.
-
-    """
-    return request.path.startswith(reverse(page[1]))
-
+def is_active(section, request):
+    return section.is_active(request)
 
 @register.filter
-def is_active_section(section, request):
-    if not hasattr(request, '_localtv_admin_root_url'):
-        request._localtv_admin_root_url = reverse('localtv_admin_root')
-    prefix = "%s%s/" % (request._localtv_admin_root_url, section.url_prefix)
-    return request.path.startswith(prefix)
+def is_available(section, request):
+    return section.is_available(request)

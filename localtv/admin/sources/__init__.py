@@ -41,6 +41,7 @@ class FeedSection(CRUDSection):
         'localtv/admin/sources/',
         'localtv/admin/',
     )
+    site_admin_required = True
 
     def get_queryset(self):
         current_site = Site.objects.get_current()
@@ -70,6 +71,7 @@ class SearchSection(CRUDSection):
         'localtv/admin/sources/',
         'localtv/admin/',
     )
+    site_admin_required = True
 
     def get_queryset(self):
         current_site = Site.objects.get_current()
@@ -94,25 +96,11 @@ class SourceSection(MiroCommunityAdminSection):
     navigation_text = _('Sources')
     site_admin_required = True
 
-    def __init__(self):
-        self.subsections = [FeedSection(), SearchSection()]
+    subsection_classes = (FeedSection, SearchSection)
 
     @property
-    def urlpatterns(self):
-        urlpatterns = patterns('')
-
-        for section in self.subsections:
-            urlpatterns += patterns('',
-                url(r'^%s/' % section.url_prefix, include(section.urlpatterns))
-            )
-        return urlpatterns
-
-    @property
-    def pages(self):
-        pages = ()
-        for section in self.subsections:
-            pages += section.pages
-        return pages
+    def root_url_name(self):
+        return self.subsections[0].root_url_name
 
 
 registry.register(SourceSection)

@@ -42,10 +42,7 @@ class ProfileSection(MiroCommunityAdminSection):
     url_prefix = 'profile'
     navigation_text = _("Profile")
     update_view_class = UserProfileUpdateView
-
-    pages = (
-        (_("Profile"), 'localtv_admin_profile'),
-    )
+    root_url_name = 'localtv_admin_profile'
 
     @property
     def urlpatterns(self):

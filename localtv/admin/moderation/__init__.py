@@ -26,19 +26,24 @@ from localtv.admin.moderation.views import (VideoModerationQueueView,
 class ModerationSection(MiroCommunityAdminSection):
     url_prefix = 'moderation'
     navigation_text = _('Moderation')
-    urlpatterns = patterns('',
-        url(
-            r'^videos/$',
-            VideoModerationQueueView.as_view(),
-            name='localtv_admin_video_queue'
-        ),
-        url(
-            r'^comments/$',
-            CommentModerationQueueView.as_view(),
-            name='localtv_admin_comment_queue'
-        )
-    )
+    root_url_name = 'localtv_admin_video_queue'
     site_admin_required = True
+
+    @property
+    def urlpatterns(self):
+        urlpatterns = patterns('',
+            url(
+                r'^videos/$',
+                self.wrap_view(VideoModerationQueueView.as_view()),
+                name='localtv_admin_video_queue'
+            ),
+            url(
+                r'^comments/$',
+                self.wrap_view(CommentModerationQueueView.as_view()),
+                name='localtv_admin_comment_queue'
+            )
+        )
+        return urlpatterns
     pages = (
         (_('Videos'), 'localtv_admin_video_queue'),
         (_('Comments'), 'localtv_admin_comment_queue')

@@ -15,10 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from functools import wraps
+
 from django.conf.urls.defaults import url, patterns, include
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.core.urlresolvers import (reverse, resolve, RegexURLPattern,
+                                      RegexURLResolver)
+from django.http import HttpResponseRedirect, Http404
 from django.template.defaultfilters import slugify, capfirst
 from django.utils.datastructures import SortedDict
 
@@ -40,17 +43,103 @@ class MiroCommunityAdminSection(object):
     #: The text which will be displayed for this section in the navigation.
     navigation_text = None
 
-    #: URL patterns for this section.
-    urlpatterns = None
-
-    #: An tuple containing at least one ``(verbose_name, url_reverse_name)``
-    #: tuple.
-    pages = ()
+    #: The name of the url pattern which is at the root of this section. This
+    #: is used to create the navigation link for the section.
+    root_url_name = None
 
     #: Whether the section should only be displayed to admins for the current
-    #: site. Note that this does not affect who can *access* the views supplied
-    #: by the section. Restricted access must be handled by the views.
+    #: site.
+    #:
+    #: .. note:: This automatically affects which sections are *displayed*, but
+    #:           not which views can be *accessed*. That must be handled by
+    #:           section urlconfs.
     site_admin_required = False
+
+    #: A tuple containing classes for subsections of this section. The classes
+    #: will be instantiated when an instance of the section is created.
+    subsection_classes = ()
+    
+    def __init__(self):
+        if self.__class__.root_url_name is None:
+            raise ImproperlyConfigured("%s must define a root_url_name "
+                                       "attribute." % self.__class__.__name__)
+        self.subsections = [subsection_class()
+                            for subsection_class in self.subsection_classes]
+
+    def _get_url_names(self, urlpatterns):
+        names = set()
+        for pattern in urlpatterns:
+            if isinstance(pattern, RegexURLPattern):
+                names.add(pattern.name)
+            elif isinstance(pattern, RegexURLResolver):
+                names |= self._get_url_names(pattern.url_patterns)
+        return names
+
+    @property
+    def urlpatterns(self):
+        """Returns urlpatterns for this section."""
+        return self.get_subsection_urlpatterns()
+
+    @property
+    def url_names(self):
+        """
+        Caches and returns a set of all the names of urlpatterns contained in
+        this section. This is primarily used to determine whether the section
+        is 'active'.
+
+        """
+        if not hasattr(self, '_url_names'):
+            self._url_names = self._get_url_names(self.urlpatterns)
+        return self._url_names
+
+    def wrap_view(self, view_func):
+        @wraps(view_func)
+        def wrapped(request, *args, **kwargs):
+            if not self.is_available(request):
+                raise Http404
+            return view_func(request, *args, **kwargs)
+        return wrapped
+
+    def is_active(self, request):
+        """
+        Returns ``True`` if the section is "active" for the given request and
+        ``False`` otherwise.
+
+        """
+        match = resolve(request.path)
+        return match.url_name in self.url_names
+
+    def is_available(self, request):
+        """
+        Returns ``True`` if the section is available for the given request and
+        ``False`` otherwise. By default, simply checks whether the user is an
+        admin if :attr:`site_admin_required` is ``True``.
+
+        .. note:: This method will automatically be used to determine if a
+                  section will be displayed; however, it cannot be automatically
+                  used to prevent the availability of the views. Section authors
+                  can use the :meth:`wrap_view` decorator to add a simple check
+                  to any view.
+
+        """
+        if self.site_admin_required and not request.user_is_admin():
+            return False
+        return True
+
+    def get_subsection_urlpatterns(self):
+        """
+        Returns urlpatterns which include the urlpatterns of each subsection.
+
+        """
+        urlpatterns = patterns('')
+
+        for section in self.subsections:
+            urlpatterns += patterns('',
+                url(r'^%s/' % section.url_prefix, include(section.urlpatterns))
+            )
+
+        return urlpatterns
+
 
 
 class CRUDSection(MiroCommunityAdminSection):
@@ -88,6 +177,10 @@ class CRUDSection(MiroCommunityAdminSection):
     @property
     def url_prefix(self):
         return slugify(self.get_model_class()._meta.verbose_name_plural)
+
+    @property
+    def root_url_name(self):
+        return self.get_view_names()['list_view_name']
 
     def get_model_class(self):
         if self.model is not None:
@@ -186,14 +279,9 @@ class CRUDSection(MiroCommunityAdminSection):
             url(r'^(?P<pk>\d+)/delete/$', self.get_delete_view(),
                 name=view_names['delete_view_name'])
         )
-        return urlpatterns
+        urlpatterns += self.get_subsection_urlpatterns()
 
-    @property
-    def pages(self):
-        view_names = self.get_view_names()
-        return (
-            (self.navigation_text, view_names['list_view_name']),
-        )
+        return urlpatterns
 
 
 
@@ -224,6 +312,7 @@ class MiroCommunitySectionRegistry(object):
                 url(r'^%s/' % url_prefix, include(section.urlpatterns))
             )
         return urlpatterns
+
 
 
 #: Registry for "user" sections - dashboard, account preferences, etc.

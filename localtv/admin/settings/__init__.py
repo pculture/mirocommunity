@@ -27,10 +27,7 @@ class SiteSettingsSection(MiroCommunityAdminSection):
     url_prefix = "settings"
     update_view_class = SettingsUpdateView
     site_admin_required = True
-
-    pages = (
-    	(_("Settings"), 'localtv_admin_settings'),
-    )
+    root_url_name = 'localtv_admin_settings'
 
     @property
     def urlpatterns(self):

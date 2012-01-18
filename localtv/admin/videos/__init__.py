@@ -56,30 +56,12 @@ class PlaylistCRUDSection(CRUDSection):
 class VideoSection(MiroCommunityAdminSection):
     url_prefix = 'videos'
     navigation_text = _('Videos')
-
-    def __init__(self):
-        self.subsections = [
-            VideoCRUDSection(),
-            CategoryCRUDSection(),
-            PlaylistCRUDSection(),
-        ]
+    subsection_classes = [VideoCRUDSection, CategoryCRUDSection,
+                          PlaylistCRUDSection]
 
     @property
-    def urlpatterns(self):
-        urlpatterns = patterns('')
-
-        for section in self.subsections:
-            urlpatterns += patterns('',
-                url(r'^%s/' % section.url_prefix, include(section.urlpatterns))
-            )
-        return urlpatterns
-
-    @property
-    def pages(self):
-        pages = ()
-        for section in self.subsections:
-            pages += section.pages
-        return pages
+    def root_url_name(self):
+        return self.subsections[0].root_url_name
 
 
 registry.register(VideoSection)
