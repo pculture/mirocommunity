@@ -831,7 +831,7 @@ class Feed(Source, StatusedThumbnailable):
     """
     Feed to pull videos in from.
 
-    If the same feed is used on two different , they will require two
+    If the same feed is used on two different sites, they will require two
     separate entries here.
 
     Fields:
@@ -1879,10 +1879,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             if categories:
                 instance.categories = categories
             if video.tags:
-                tags = set(tag.strip() for tag in video.tags if tag.strip())
+                if settings.FORCE_LOWERCASE_TAGS:
+                    fix = lambda t: t.lower().strip()
+                else:
+                    fix = lambda t: t.strip()
+                tags = set(fix(tag) for tag in video.tags if tag.strip())
                 for tag_name in tags:
-                    if settings.FORCE_LOWERCASE_TAGS:
-                        tag_name = tag_name.lower()
                     tag, created = \
                         tagging.models.Tag._default_manager.db_manager(
                         using).get_or_create(name=tag_name)
