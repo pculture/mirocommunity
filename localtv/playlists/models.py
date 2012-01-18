@@ -36,15 +36,13 @@ class Playlist(models.Model):
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
         verbose_name='Slug',
-        help_text=('The "slug" is the URL-friendly version '
-                   "of the name.  It is usually lower-case "
-                   "and contains only letters, numbers and "
+        help_text=('The "slug" is the URL-friendly version of the name.  It is '
+                   "usually lower-case and contains only letters, numbers and "
                    "hyphens."))
     description = models.TextField(
         blank=True, verbose_name='Description (HTML)',
-        help_text=("The description is not prominent "
-                   "by default, but some themes may "
-                   "show it."))
+        help_text=("The description will be displayed at the top of the list, "
+                   "above the videos."))
     user = models.ForeignKey('auth.User')
 
     items = models.ManyToManyField(Video,
