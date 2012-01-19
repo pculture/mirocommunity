@@ -20,7 +20,7 @@ from django.utils.encoding import force_unicode
 
 from haystack import indexes
 from haystack import site
-from localtv.models import Video
+from localtv.models import Video, Watch
 from localtv.search.utils import SortFilterMixin
 from localtv.tasks import haystack_update_index
 
@@ -83,6 +83,19 @@ class VideoIndex(QueuedSearchIndex):
                             default=SortFilterMixin._empty_value['featured'])
     when_approved = indexes.DateTimeField(model_attr='when_approved',
                             default=SortFilterMixin._empty_value['approved'])
+
+    def _setup_save(self, model):
+        super(VideoIndex, self)._setup_save(model)
+        signals.post_save.connect(self._enqueue_watch_update,
+                                  sender=Watch)
+
+    def _teardown_save(self, model):
+        super(VideoIndex, self)._teardown_save(model)
+        signals.post_save.disconnect(self._enqueue_watch_update,
+                                     sender=Watch)
+
+    def _enqueue_watch_update(self, instance, **kwargs):
+        self._enqueue_instance(instance.video, False)
 
     def index_queryset(self):
         """
