@@ -30,13 +30,13 @@ class Command(NoArgsCommand):
             return
         for v in models.Video.objects.filter(when_published__isnull=True):
             try:
-                d = vidscraper.auto_scrape(v.website_url, fields=[
-                        'publish_date'])
+                video = vidscraper.auto_scrape(v.website_url, fields=[
+                        'publish_datetime'])
             except:
                 pass
             else:
-                if d:
-                    v.when_published = d['publish_date']
+                if video:
+                    v.when_published = video.publish_datetime
                     v.save()
 
         # Finally, at the end, if stamps are enabled, update them.
