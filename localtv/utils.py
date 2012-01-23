@@ -37,10 +37,17 @@ from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
 from django.utils.encoding import force_unicode
 from django.core.files.base import ContentFile
-
 import tagging
 import vidscraper
 from notification import models as notification
+
+try:
+    from backends.s3 import S3Storage
+except ImportError:
+    try:
+        from storages.backends.s3 import S3Storage
+    except ImportError:
+        S3Storage = None
 
 
 def get_tag(tag_text, using='default'):
@@ -336,18 +343,8 @@ def quote_unicode_url(url):
     return urllib.quote(url, safe=SAFE_URL_CHARACTERS)
 
 
-try:
-    import backends
-except ImportError:
-    import storages.backends as backends
-
-
-try:
-    import backends.s3
-except (AttributeError, ImportError):
-    pass
-else:
-    class SimplerS3Storage(backends.s3.S3Storage):
+if S3Storage is not None:
+    class SimplerS3Storage(S3Storage):
         EVEN = set(['0', '2', '4', '6', '8', 'a', 'c', 'e'])
         ODD  = set(['1', '3', '5', '7', '8', 'b', 'd', 'f'])
         '''This is just like the normal S3Storage backend, only
