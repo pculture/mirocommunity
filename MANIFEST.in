@@ -1,6 +1,6 @@
 include README COPYING JQUERY_MIT-LICENSE.txt LICENSE MANIFEST.in
 recursive-include localtv/templates *.html *.txt
 recursive-include localtv/fixtures *.json
-recursive-include localtv/static *.css *.js
+recursive-include localtv/static *.css *.js *.gif *.png
 recursive-include docs *.py *.rst *.bat *.txt Makefile
 prune docs/_build
