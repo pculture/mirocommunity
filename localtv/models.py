@@ -118,8 +118,12 @@ class BitLyWrappingURLField(models.URLField):
             return unicode(value)[:self.max_length]
 
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+except ImportError:
+    pass
+else:
+    add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 
 class Thumbnailable(models.Model):
