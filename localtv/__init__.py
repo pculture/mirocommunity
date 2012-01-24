@@ -14,3 +14,5 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
+__version__ = (1, 8, 0)
