@@ -1,4 +1,5 @@
-{% extends "localtv/__video_list.html" %}
+{% extends "localtv/__base.html" %}
+
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -18,23 +19,34 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load pagetabs %}
 
-{% load i18n %}
-
-{% block title %}{{ block.super }} - {% trans "Search" %}{% endblock %}
-
-{% block body_classes %}{{ block.super }} search-results{% endblock %}
-
-{% block page_title %}{% blocktrans with query=query %}Search Results for {{ query }}{% endblocktrans %}{% endblock %}
-
-{% block rss_link %}{% if query %}{{ block.super }}{% endif %}{% endblock %}
-
-{% block rss_url %}{% url localtv_feeds_search query %}{% if request.GET.sort == 'latest' %}?sort=latest{% endif %}{% endblock %}
+{% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
 {% block content %}
-	{% if not video_list %}
-		<h2>{% trans "Sorry, we could not find any videos matching that query." %}</h2>
-	{% else %}
-		{{ block.super }}
-	{% endif %}
+	<header class="page-title">
+		<h1>{% block page_title %}Video List{% endblock %}</h1>
+		
+		<div class="page-actions">
+			{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>{% endblock %}
+		</div>
+		
+		<div class="pagination upper">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+		
+		<div class="video-list">
+			{% for video in video_list %}
+				{% include "localtv/_video_summary.html" %}
+			{% endfor %}
+		</div>
+		
+		<div class="pagination lower">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+	</header>
 {% endblock %}
