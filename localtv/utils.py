@@ -43,10 +43,10 @@ from notification import models as notification
 
 try:
     from backends.s3 import S3Storage
-except ImportError:
+except (ImportError, AttributeError): # AttributeError if S3 isn't configured
     try:
         from storages.backends.s3 import S3Storage
-    except ImportError:
+    except (ImportError, AttributeError):
         S3Storage = None
 
 
