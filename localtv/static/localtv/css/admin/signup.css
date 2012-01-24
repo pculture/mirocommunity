@@ -5,7 +5,7 @@
 #basic_plan {
   width: 942px;
   height: 83px;
-  background: transparent url(/images/admin/signup_basic_plan_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/signup_basic_plan_bg.png) 0 0 no-repeat;
   display: block;
   margin: 68px 0 0 0;
 }
@@ -31,7 +31,7 @@
 
 #basic_plan ul li {
   margin: 4px 0 4px 0;
-  list-style-image: url(/images/admin/plan_list_bullet.png);
+  list-style-image: url(../../images/admin/plan_list_bullet.png);
 }
 
 #basic_plan ul li strong {
@@ -43,7 +43,7 @@
   display: block;
   width: 187px;
   height: 43px;
-  background: transparent url(/images/admin/basic_plan_btn.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/basic_plan_btn.png) 0 0 no-repeat;
   text-indent: -9999px;
   margin: 19px 20px 0 0;
 }
@@ -100,7 +100,7 @@
 
 .plan ul li {
   padding: 20px;
-  background: transparent url(/images/admin/plan_li_bg.png) center bottom no-repeat;
+  background: transparent url(../../images/admin/plan_li_bg.png) center bottom no-repeat;
   color: #555;
   font-size: 15px;
   text-shadow: 0 1px 0 #FFF;
@@ -144,7 +144,7 @@
 }
 
 #starter_pack .hdr {
-  background: transparent url(/images/admin/starter_hdr_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/starter_hdr_bg.png) 0 0 no-repeat;
 }
 
 #starter_pack .hdr h1 {
@@ -161,7 +161,7 @@
 }
 
 #starter_pack .ft {
-  background: transparent url(/images/admin/starter_ft_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/starter_ft_bg.png) 0 0 no-repeat;
 }
 
 #starter_pack .ft a {
@@ -172,7 +172,7 @@
 }
 
 #value_added .hdr {
-  background: transparent url(/images/admin/value_hdr_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/value_hdr_bg.png) 0 0 no-repeat;
 }
 
 #value_added .hdr h1 {
@@ -190,7 +190,7 @@
 }
 
 #value_added .ft {
-  background: transparent url(/images/admin/value_ft_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/value_ft_bg.png) 0 0 no-repeat;
 }
 
 #value_added .ft a {
@@ -201,7 +201,7 @@
 }
 
 #delicious_plan .hdr {
-  background: transparent url(/images/admin/delicious_hdr_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/delicious_hdr_bg.png) 0 0 no-repeat;
 }
 
 #delicious_plan .hdr h1 {
@@ -218,7 +218,7 @@
 }
 
 #delicious_plan .ft {
-  background: transparent url(/images/admin/delicious_ft_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/delicious_ft_bg.png) 0 0 no-repeat;
 }
 
 #delicious_plan .ft a {
@@ -251,7 +251,7 @@
 }
 
 #signup_form #error_container h2 {
-  background: transparent url(/images/admin/icon_form_error.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_form_error.png) 0 0 no-repeat;
   font-weight: bold;
   font-size: 18px;
   color: #FFF;
@@ -281,18 +281,18 @@
 }
 
 #signup_form h1#account {
-  background: transparent url(/images/admin/icon_acct_info.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_acct_info.png) 0 0 no-repeat;
   padding: 2px 0 10px 35px;
 }
 
 #signup_form h1#billing {
-  background: transparent url(/images/admin/icon_cc.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_cc.png) 0 0 no-repeat;
   padding: 2px 0 10px 45px;
   margin: 40px 0 0 0;
 }
 
 #signup_form h1#billing span#secure {
-  background: transparent url(/images/admin/icon_secure.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_secure.png) 0 0 no-repeat;
   text-indent: -99999px;
   display: inline-block;
   width: 83px;
@@ -301,7 +301,7 @@
 }
 
 #signup_form h1#billing span#we_accept {
-  background: transparent url(/images/admin/icon_we_accept.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_we_accept.png) 0 0 no-repeat;
   text-indent: -99999px;
   display: inline-block;
   width: 214px;

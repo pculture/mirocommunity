@@ -18,7 +18,7 @@
   letter-spacing: -1px;
   padding: 0 0 0 48px;
   font-weight: bold;
-  background: transparent url(/images/admin/icon_dash_activity.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_dash_activity.png) 0 0 no-repeat;
   float: left;
 }
 
@@ -103,7 +103,7 @@
 
 #dashboard #video_limit #limit_bar #limit_progress a em {
   display: block;
-  background: transparent url(/images/admin/icon_upgrade_arrow.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_upgrade_arrow.png) 0 0 no-repeat;
   width: 11px;
   height: 11px;
   float: right;
@@ -151,7 +151,7 @@
 
 #dashboard #account_stats #comments_pending a, #dashboard #account_stats #videos_pending a,
 #dashboard #account_stats #videos_week a {
-  background: transparent url(/images/admin/btn_account_stats.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/btn_account_stats.png) 0 0 no-repeat;
   text-indent: -99999px;
   display: block;
   width: 138px;
@@ -233,7 +233,7 @@
   color: #1f526f;
   float: left;
   text-shadow: 0 1px 0 #FFF;
-  background: transparent url(/images/admin/icon_get_started.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_get_started.png) 0 0 no-repeat;
   padding: 8px 0 8px 55px;
 }
 
@@ -246,7 +246,7 @@
   text-shadow: 0 1px 0 #FFF;
   position: relative;
   top: 10px;
-  background: transparent url(/images/admin/icon_started_hide.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_started_hide.png) 0 0 no-repeat;
   padding: 7px 0 7px 35px;
 }
 
@@ -272,19 +272,19 @@
 }
 
 #dashboard #get_started ul li#step1 {
-  background: transparent url(/images/admin/icon_started_one.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_started_one.png) 0 0 no-repeat;
 }
 
 #dashboard #get_started ul li#step2 {
-  background: transparent url(/images/admin/icon_started_two.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_started_two.png) 0 0 no-repeat;
 }
 
 #dashboard #get_started ul li#step3 {
-  background: transparent url(/images/admin/icon_started_three.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_started_three.png) 0 0 no-repeat;
 }
 
 #dashboard #get_started ul li#step4 {
-  background: transparent url(/images/admin/icon_started_four.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_started_four.png) 0 0 no-repeat;
 }
 
 #dashboard #get_started ul li strong a {
@@ -313,19 +313,19 @@
 }
 
 #dashboard #video_views h1 {
-  background: transparent url(/images/admin/icon_video_views.png) 0 3px no-repeat;
+  background: transparent url(../../images/admin/icon_video_views.png) 0 3px no-repeat;
 }
 
 #dashboard #user_activity h1 {
-  background: transparent url(/images/admin/icon_user_activity.png) 0 -3px no-repeat;
+  background: transparent url(../../images/admin/icon_user_activity.png) 0 -3px no-repeat;
 }
 
 #dashboard #widget_stats h1 {
-  background: transparent url(/images/admin/icon_widget_stats.png) 0 -3px no-repeat;
+  background: transparent url(../../images/admin/icon_widget_stats.png) 0 -3px no-repeat;
 }
 
 #dashboard #site_referrals h1 {
-  background: transparent url(/images/admin/icon_site_referrals.png) 0 2px no-repeat;
+  background: transparent url(../../images/admin/icon_site_referrals.png) 0 2px no-repeat;
 }
 
 #dashboard .trending_stats ul li {
@@ -350,13 +350,13 @@
 
 #dashboard .trending_stats ul li em.stats_up {
   color: #47a700;
-  background: transparent url(/images/admin/icon_stats_up_arrow.png) 0 7px no-repeat;
+  background: transparent url(../../images/admin/icon_stats_up_arrow.png) 0 7px no-repeat;
   padding: 0 0 0 25px;
 }
 
 #dashboard .trending_stats ul li em.stats_down {
   color: #8f0000;
-  background: transparent url(/images/admin/icon_stats_down_arrow.png) 0 7px no-repeat;
+  background: transparent url(../../images/admin/icon_stats_down_arrow.png) 0 7px no-repeat;
   padding: 0 0 0 25px;
 }
 
@@ -436,7 +436,7 @@
 }
 
 #dashboard ul.stats_filter li a.filter_title em.icon {
-  background: url(/images/admin/icon_menu_arrow.png) 0 0 no-repeat;
+  background: url(../../images/admin/icon_menu_arrow.png) 0 0 no-repeat;
   display: block;
   width: 9px;
   height: 7px;
@@ -446,11 +446,11 @@
 }
 
 #dashboard ul.stats_filter li a:hover.filter_title em.icon {
-  background: url(/images/admin/icon_selected_menu_arrow.png) 0 0 no-repeat;
+  background: url(../../images/admin/icon_selected_menu_arrow.png) 0 0 no-repeat;
 }
 
 #dashboard ul.stats_filter li.selected a.filter_title em.icon {
-  background: url(/images/admin/icon_selected_menu_arrow.png) 0 0 no-repeat;
+  background: url(../../images/admin/icon_selected_menu_arrow.png) 0 0 no-repeat;
 }
 
 #dashboard ul.stats_filter li a ul.filter_menu {
