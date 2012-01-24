@@ -82,7 +82,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</h2>
 		</header>
 		
-		<form id="search" action="{% url localtv_search %}" method="get">
+		<form id="search" action="{% url 'localtv_search' %}" method="get">
 			<input name="q" type="text" id="search_field" value="{{ query }}"/>
 			<button>Search</button>
 		</form>
@@ -142,15 +142,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<nav class="footer-nav">
 				<ul>
 					<li class="footer-nav-item">
-						<a href="{% url localtv_index %}">Home</a>
+						<a href="{% url 'localtv_index' %}">Home</a>
 					</li>
 					{% if request.user.is_authenticated %}
 						<li class="footer-nav-item">
-							<a href="{% url localtv_user_profile %}">Your Profile</a>
+							<a href="{% url 'localtv_user_profile' %}">Your Profile</a>
 						</li>
 					{% endif %}
 					<li class="footer-nav-item">
-						<a href="{% url localtv_goodies_widget %}">Goodies</a>
+						<a href="{% url 'localtv_goodies_widget' %}">Goodies</a>
 					</li>
 					<li class="footer-nav-item">
 						{% if request.user.is_authenticated %}
