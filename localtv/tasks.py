@@ -350,9 +350,3 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             args=(app_label, model_name, pk, is_removal),
             kwargs={'using': using, 'backoff': backoff},
             countdown=countdown)
-
-@task
-@patch_settings
-def video_count(using='default'):
-    model_class = get_model('localtv', 'Video')
-    return settings.ROOT_URLCONF, model_class.objects.db_manager(using).count()
