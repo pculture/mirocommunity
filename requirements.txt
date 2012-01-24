@@ -1,4 +1,4 @@
-git+git://github.com/pculture/mirocommunity.git@release/1.8#egg=mirocommunity
+git+git://github.com/pculture/mirocommunity.git@develop#egg=mirocommunity
 git+git://github.com/pculture/vidscraper.git@develop#egg=vidscraper
 git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs
 git+http://git.participatoryculture.org/djvideo@master#egg=djvideo
