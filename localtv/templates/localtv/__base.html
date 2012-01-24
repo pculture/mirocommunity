@@ -1,0 +1,194 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load uploadtemplate_tags localtv_thumbnail %}
+{% load url from future %}
+
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head>
+	
+	{% block meta %}
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="description" content="{% if sitelocation.about_html|striptags %}{{ sitelocation.about_html|striptags }}{% else %}A Video Community for {{ sitelocation.site.name }}{% endif %}">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+	{% endblock meta %}
+	
+	{% if sitelocation.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url sitelocation 130 110 %}" />{% endif %}
+	
+	<title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
+	
+	{% block scripts %}
+		<script src="{% get_static_url 'localtv/js/libs/modernizr-2.0.6.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/js/libs/jquery-1.7.1.min.js' bundled %}"></script>
+	{% endblock %}
+	
+	{% block styles %}
+		{% if sitelocation.css or sitelocation.background %}
+			<style type="text/css">
+				{{ sitelocation.get_css_for_display_if_permitted|safe }}
+				{% if sitelocation.background %}
+					body {
+						background: url("{{ sitelocation.background.url }}") !important;
+					}
+				{% endif %}
+			</style>
+		{% endif %}
+	{% endblock %}
+	
+	{% block head %}
+		{% if sitelocation.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url sitelocation 130 110 %}" />{% endif %}
+	{% endblock %}
+	
+</head>
+<body class="{% block body_class %}miro_community{% endblock %}">
+	
+	{% url 'localtv_index' as localtv_index %}
+	
+	<div id="container">
+		
+		<header id="header">
+			<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
+				<img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" class="logo-img" />
+			</a>
+			<h1 id="SiteTitle">
+				<a href="{{ localtv_index }}" class="site-name">
+					{{ sitelocation.site.name }}
+				</a>
+			</h1>
+			<h2 id="SiteTagline">
+				{{ sitelocation.tagline|safe }}
+			</h2>
+		</header>
+		
+		<form id="search" action="{% url localtv_search %}" method="get">
+			<input name="q" type="text" id="search_field" value="{{ query }}"/>
+			<button>Search</button>
+		</form>
+		
+		<nav id="navigation" role="navigation">
+			<ul>
+				<li class="nav-item nav-home">
+					<a href="{{ localtv_index }}">Home</a>
+				</li>
+				<li class="nav-item nav-featured">
+					<a href="{% url 'localtv_list_featured' %}">Featured</a>
+				</li>
+				<li class="nav-item nav-new">
+					<a href="{% url 'localtv_list_new' %}">New Videos</a>
+				</li>
+				{% if categories %}
+					<li class="nav-item nav-categories">
+						<a href="{% url 'localtv_category_index' %}">Categories</a>
+						{% for category in categories %}
+							<li class="nav-category-item">
+								<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+							</li>
+						{% endfor %}
+					</li>
+				{% endif %}
+				<li class="nav-item nav-popular">
+					<a href="{% url 'localtv_list_popular' %}">Popular</a>
+				</li>
+				<li class="nav-item nav-submit">
+					<a href="{% url 'localtv_submit_video' %}">Submit A Video</a>
+				</li>
+				<li class="nav-item nav-about">
+					<a href="{% url 'localtv_about' %}">About Us</a>
+				</li>
+				{% if user_is_admin %}
+					<li class="nav-item nav-admin">
+						<a href="{% url 'localtv_admin_index' %}">View Admin</a>
+					</li>
+				{% endif %}
+			</ul>
+		</nav>
+		
+		<div id="main" role="main">
+			{% block content %}
+			{% endblock %}
+		</div>
+		
+		<footer id="footer">
+			{% if sitelocation.footer_html %}
+				<div class="local-footer">
+					{% autoescape off %}{{ sitelocation.footer_html }}{% endautoescape %}
+				</div>
+			{% endif %}
+			<div class="miro-footer">
+				<p>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>.
+			</div>
+			<nav class="footer-nav">
+				<ul>
+					<li class="footer-nav-item">
+						<a href="{% url localtv_index %}">Home</a>
+					</li>
+					{% if request.user.is_authenticated %}
+						<li class="footer-nav-item">
+							<a href="{% url localtv_index %}">Home</a>
+						</li>
+					{% endif %}
+					<li class="footer-nav-item">
+						<a href="{% url localtv_index %}">Home</a>
+					</li>
+					<li class="footer-nav-item">
+						{% if request.user.is_authenticated %}
+							<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout</a>
+						{% else %}
+							<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">Login</a>
+						{% endif %}
+					</li>
+				</ul>
+			</nav>
+		</footer>
+		
+	</div>{# /#container #}
+	
+	{% if settings.GOOGLE_ANALYTICS_UA %}
+		<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ?
+		"https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost +
+		"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+		</script>
+		<script type="text/javascript">
+		try {
+		  var pageTracker = _gat._getTracker("{{ settings.GOOGLE_ANALYTICS_UA }}");
+		  {% if settings.GOOGLE_ANALYTICS_DOMAIN %}
+		  pageTracker._setDomainName(".{{ settings.GOOGLE_ANALYTICS_DOMAIN }}");
+		  {% endif %}
+		  pageTracker._trackPageview();
+		} catch(err) {}</script>
+	{% endif %}
+	
+	{% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
+		{% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
+			<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+			<script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+		{% endif %}
+	{% endif %}
+	
+</body>
+
+</html>
