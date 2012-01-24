@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load uploadtemplate_tags localtv_thumbnail %}
+{% load uploadtemplate_tags localtv_thumbnail i18n %}
 {% load url from future %}
 
 <!doctype html>
@@ -84,23 +84,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		
 		<form id="search" action="{% url 'localtv_search' %}" method="get">
 			<input name="q" type="text" id="search_field" value="{{ query }}"/>
-			<button>Search</button>
+			<button>{% trans 'Search' %}</button>
 		</form>
 		
 		<nav id="navigation" role="navigation">
 			<ul>
 				<li class="nav-item nav-home">
-					<a href="{{ localtv_index }}">Home</a>
+					<a href="{{ localtv_index }}">{% trans 'Home' %}</a>
 				</li>
 				<li class="nav-item nav-featured">
-					<a href="{% url 'localtv_list_featured' %}">Featured</a>
+					<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
 				</li>
 				<li class="nav-item nav-new">
-					<a href="{% url 'localtv_list_new' %}">New Videos</a>
+					<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
 				</li>
 				{% if categories %}
 					<li class="nav-item nav-categories">
-						<a href="{% url 'localtv_category_index' %}">Categories</a>
+						<a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a>
 						{% for category in categories %}
 							<li class="nav-category-item">
 								<a href="{{ category.get_absolute_url }}">{{ category }}</a>
@@ -109,17 +109,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</li>
 				{% endif %}
 				<li class="nav-item nav-popular">
-					<a href="{% url 'localtv_list_popular' %}">Popular</a>
+					<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
 				</li>
 				<li class="nav-item nav-submit">
-					<a href="{% url 'localtv_submit_video' %}">Submit A Video</a>
+					<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit A Video' %}</a>
 				</li>
 				<li class="nav-item nav-about">
-					<a href="{% url 'localtv_about' %}">About Us</a>
+					<a href="{% url 'localtv_about' %}">{% trans 'About Us' %}</a>
 				</li>
 				{% if user_is_admin %}
 					<li class="nav-item nav-admin">
-						<a href="{% url 'localtv_admin_index' %}">View Admin</a>
+						<a href="{% url 'localtv_admin_index' %}">{% trans 'View Admin' %}</a>
 					</li>
 				{% endif %}
 			</ul>
@@ -137,26 +137,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			{% endif %}
 			<div class="miro-footer">
-				<p>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>.
+				<p>{% blocktrans with site_name=sitelocation.site.name %}{{ site_name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>{% endblocktrans %}</p>
 			</div>
 			<nav class="footer-nav">
 				<ul>
 					<li class="footer-nav-item">
-						<a href="{% url 'localtv_index' %}">Home</a>
+						<a href="{% url 'localtv_index' %}">{% trans 'Home' %}</a>
 					</li>
 					{% if request.user.is_authenticated %}
 						<li class="footer-nav-item">
-							<a href="{% url 'localtv_user_profile' %}">Your Profile</a>
+							<a href="{% url 'localtv_user_profile' %}">{% trans 'Your Profile' %}</a>
 						</li>
 					{% endif %}
 					<li class="footer-nav-item">
-						<a href="{% url 'localtv_goodies_widget' %}">Goodies</a>
+						<a href="{% url 'localtv_goodies_widget' %}">{% trans 'Goodies' %}</a>
 					</li>
 					<li class="footer-nav-item">
 						{% if request.user.is_authenticated %}
-							<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Logout</a>
+							<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
 						{% else %}
-							<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">Login</a>
+							<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
 						{% endif %}
 					</li>
 				</ul>
