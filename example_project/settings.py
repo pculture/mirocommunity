@@ -1,3 +1,19 @@
+# This file is part of Miro Community.
+# Copyright (C) 2010 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 # Example settings for a Miro Community project
 
 DEBUG = True
@@ -9,12 +25,22 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'localtv.db'             # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'example_project.sl3',
+    }
+}
+
+# Comment these lines out to use a celery server.
+CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+# Uncomment and modify these lines to use a celery server
+# BROKER_HOST = 'localhost'
+# BROKER_PORT = 5672
+# BROKER_USER = 'celery'
+# BROKER_PASSWORD = 'testing'
+# BROKER_VHOST = '/'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -31,48 +57,75 @@ SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = False
+USE_I18N = True
 
-# Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = 'media'
+# If you set this to False, Django will not format dates, numbers and
+# calendars according to the current locale
+USE_L10N = True
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/home/media/media.lawrence.com/media/"
+MEDIA_ROOT = 'media/'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/'
-
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
+MEDIA_URL = '/media/'
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = 'static/'
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = '/static/'
+
+# Additional locations of static files
+STATICFILES_DIRS = (
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+)
+
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+# 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = ''
+SECRET_KEY = 'example_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'uploadtemplate.loader.load_template_source',
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+# 'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
-    'localtv.FixAJAXMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'localtv.SiteLocationMiddleware',
-    'openid_consumer.middleware.OpenIDMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
-    )
+    # Uncomment the next line for simple clickjacking protection:
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'localtv.middleware.FixAJAXMiddleware',
+    'localtv.middleware.UserIsAdminMiddleware',
+    'openid_consumer.middleware.OpenIDMiddleware',
+)
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'example_project.urls'
 
-UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate'
-UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate'
+UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
+UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
 UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteLocation.objects.get_current().get_tier().enforce_permit_custom_template()
@@ -80,8 +133,7 @@ UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.g
-    "../src/miro-community/localtv/templates/",
+    # Don't forget to use absolute paths, not relative paths.
 )
 
 INSTALLED_APPS = (
@@ -91,7 +143,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.comments',
     'django.contrib.flatpages',
-    'south',
+    'django.contrib.staticfiles',
+    # Uncomment to use south migrations
+    # 'south',
     'djpagetabs',
     'djvideo',
     'localtv',
@@ -106,25 +160,29 @@ INSTALLED_APPS = (
     'uploadtemplate',
     'haystack',
     'email_share',
-    'celery',
+    'djcelery',
     'notification',
     'socialauth',
     'openid_consumer',
-    'paypal',
+    'paypal.standard.ipn',
+    'voting'
 )
 
-try:
-    import voting
-except ImportError:
-    pass
-else:
-    INSTALLED_APPS = INSTALLED_APPS + ('voting',)
-
 TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.core.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.media",
-    "localtv.context_processor")
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.request',
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
+    "localtv.context_processors.localtv",
+    'zinnia.context_processors.version',
+)
+
+# For debugging, don't redirect mistyped urls
+APPEND_SLASH = False
+
 
 LOGIN_REDIRECT_URL = '/'
 
@@ -167,13 +225,12 @@ FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
 
 CACHE_BACKEND = 'locmem://'
 
-# vidscraper keys
-from vidscraper.metasearch.sites import vimeo
-vimeo.VIMEO_API_KEY = None
-vimeo.VIMEO_API_SECRET = None
+# vimeo keys
+VIMEO_API_KEY = None
+VIMEO_API_SECRET = None
 
-from vidscraper.sites import ustream
-ustream.USTREAM_API_KEY = None
+# UStream key
+USTREAM_API_KEY = None
 
 # bit.ly keys
 BITLY_LOGIN = None
@@ -188,16 +245,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
-
-# celery
-CELERY_ALWAYS_EAGER = True # for debugging
-#BROKER_HOST = 'localhost'
-#BROKER_PORT = 5672
-#BROKER_USER = 'celery'
-#BROKER_PASSWORD = 'testing'
-#BROKER_VHOST = '/'
-CELERY_BACKEND = 'cache' # this MUST be set, otherwise the import page won't be
-                         # able to figure out if the task has ended
 
 # haystack search
 HAYSTACK_SITECONF = 'example_project.search_sites'
@@ -215,3 +262,7 @@ FACEBOOK_CONNECT_DOMAIN = None
 TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
 
+# For debugging
+LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
+LOCALTV_SKIP_PAYPAL = True
+PAYPAL_RECEIVER_EMAIL = ''
