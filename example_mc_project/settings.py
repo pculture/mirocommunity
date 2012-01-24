@@ -28,7 +28,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'example_project.sl3',
+        'NAME': 'example_mc_project.sl3',
     }
 }
 
@@ -98,7 +98,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'example_project_secret_key'
+SECRET_KEY = 'example_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -122,7 +122,7 @@ MIDDLEWARE_CLASSES = (
     'openid_consumer.middleware.OpenIDMiddleware',
 )
 
-ROOT_URLCONF = 'example_project.urls'
+ROOT_URLCONF = 'example_mc_project.urls'
 
 UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
@@ -247,7 +247,7 @@ ACCOUNT_ACTIVATION_DAYS = 7
 FORCE_LOWERCASE_TAGS = True
 
 # haystack search
-HAYSTACK_SITECONF = 'example_project.search_sites'
+HAYSTACK_SITECONF = 'example_mc_project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = 'whoosh_index'
 
