@@ -413,7 +413,7 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
                 else:
                     search_index.remove_object(instance)
     except (DatabaseLockError, LockError):
-        backoff += 1
+        backoff = min(backoff + 1, 5) # maximum wait is ~30s
         countdown = random.random() * (2 ** backoff - 1)
         haystack_update_index.retry(
             args=(app_label, model_name, pk, is_removal),
