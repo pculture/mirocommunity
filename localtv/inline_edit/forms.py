@@ -22,10 +22,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 
 from tagging.forms import TagField
-from tagging.utils import edit_string_for_tags
 
 from localtv import models
 from localtv.admin.forms import EditVideoForm, BulkChecklistField
+from localtv.utils import get_or_create_tags
 
 Comment = comments.get_model()
 
@@ -74,10 +74,7 @@ class VideoTagsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        tags = list(self.instance.tags)
-        for tag in tags:
-            tag.name = force_unicode(tag.name)
-        self.initial['tags'] = edit_string_for_tags(tags)
+        self.initial['tags'] = get_or_create_tags(self.instance.tags)
 
     def save(self, *args, **kwargs):
         self.instance.tags = self.cleaned_data.get('tags')
