@@ -103,8 +103,8 @@ class VideoIndex(QueuedSearchIndex):
         with the watch_count.
 
         """
-        return self.model._default_manager.active().annotate(
-                                                    watch_count=Count('watch'))
+        return self.model._default_manager.filter(status=self.model.ACTIVE
+                                         ).annotate(watch_count=Count('watch'))
 
     def read_queryset(self):
         """
