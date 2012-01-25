@@ -384,16 +384,19 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             search_index.remove_object(instance)
         else:
             try:
-                instance = search_index.read_queryset().using(using).get(pk=pk)
+                instance = Video.objects.get(pk=pk)
             except model_class.DoesNotExist:
                 logging.info(('haystack_update_index(%r, %r, %r, %r, '
                               'import_app_label=%r, import_model=%r, '
                               'import_pk=%r, using=%r, backoff=%i) could not '
-                              'find active video with pk %i'), app_label,
-                              model_name, pk, is_removal, import_app_label,
-                              import_model, import_pk, using, backoff, pk)
+                              'find video with pk %i'), app_label, model_name,
+                              pk, is_removal, import_app_label, import_model,
+                              import_pk, using, backoff, pk)
             else:
-                search_index.update_object(instance)
+                if instance.status == Video.ACTIVE:
+                    search_index.update_object(instance)
+                else:
+                    search_index.remove_object(instance)
     except DatabaseLockError:
         backoff += 1
         countdown = random.random() * (2 ** backoff - 1)

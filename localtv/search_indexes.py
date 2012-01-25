@@ -144,9 +144,8 @@ class VideoIndex(QueuedSearchIndex):
     def _enqueue_instance(self, instance, is_removal):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
-            # fake instance for testing
+            # fake instance for testing. TODO: This should probably not be done.
             return
-        else:
-            super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
 
 site.register(Video, VideoIndex)
