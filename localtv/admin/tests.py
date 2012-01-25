@@ -33,7 +33,6 @@ from django.utils.encoding import force_unicode
 from django.conf import settings
 import mock
 from notification import models as notification
-from tagging.utils import edit_string_for_tags
 from uploadtemplate.models import Theme
 import vidscraper
 
@@ -2338,7 +2337,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(
             [form.initial['tags'] for form in
              response.context[0]['formset'].initial_forms],
-            list (edit_string_for_tags(video.tags) for video in
+            list (utils.get_or_create_tags(video.tags) for video in
                   self.Video_sort_lower(status=Video.ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEqual(list(response.context[0]['categories']),

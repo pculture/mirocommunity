@@ -729,7 +729,7 @@ class Source(Thumbnailable):
 
         import_opts = source_import.__class__._meta
 
-        from localtv.tasks import video_from_vidscraper_video, mark_import_complete
+        from localtv.tasks import video_from_vidscraper_video, mark_import_pending
 
         total_videos = 0
 
@@ -760,10 +760,10 @@ class Source(Thumbnailable):
         ).update(
             total_videos=total_videos
         )
-        mark_import_complete.delay(import_app_label=import_opts.app_label,
-                                   import_model=import_opts.module_name,
-                                   import_pk=source_import.pk,
-                                   using=using)
+        mark_import_pending.delay(import_app_label=import_opts.app_label,
+                                  import_model=import_opts.module_name,
+                                  import_pk=source_import.pk,
+                                  using=using)
 
 
 class StatusedThumbnailableQuerySet(models.query.QuerySet):
@@ -1195,10 +1195,12 @@ class SearchImportError(SourceImportError):
 
 class SourceImport(models.Model):
     STARTED = 'started'
+    PENDING = 'pending'
     COMPLETE = 'complete'
     FAILED = 'failed'
     STATUS_CHOICES = (
         (STARTED, _('Started')),
+        (PENDING, _('Pending haystack updates')),
         (COMPLETE, _('Complete')),
         (FAILED, _('Failed'))
     )
@@ -1218,6 +1220,12 @@ class SourceImport(models.Model):
         get_latest_by = 'start'
         ordering = ['-start']
         abstract = True
+
+    def is_running(self):
+        """
+        Returns True if the SourceImport is currently running.
+        """
+        return self.status in (self.STARTED, self.PENDING)
 
     def set_video_source(self, video):
         """
@@ -1259,11 +1267,11 @@ class SourceImport(models.Model):
         if is_skip:
             self.__class__._default_manager.using(using).filter(pk=self.pk
                         ).update(videos_skipped=models.F('videos_skipped') + 1)
-            from localtv.tasks import mark_import_complete
-            mark_import_complete.delay(import_app_label=self._meta.app_label,
-                                       import_model=self._meta.module_name,
-                                       import_pk=self.pk,
-                                       using=using)
+            from localtv.tasks import mark_import_pending
+            mark_import_pending.delay(import_app_label=self._meta.app_label,
+                                      import_model=self._meta.module_name,
+                                      import_pk=self.pk,
+                                      using=using)
 
     def get_index_creation_kwargs(self, video, vidscraper_video):
         return {
@@ -1285,11 +1293,11 @@ class SourceImport(models.Model):
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
-        from localtv.tasks import mark_import_complete
-        mark_import_complete.delay(import_app_label=self._meta.app_label,
-                                   import_model=self._meta.module_name,
-                                   import_pk=self.pk,
-                                   using=using)
+        from localtv.tasks import mark_import_pending
+        mark_import_pending.delay(import_app_label=self._meta.app_label,
+                                  import_model=self._meta.module_name,
+                                  import_pk=self.pk,
+                                  using=using)
 
 
 class FeedImport(SourceImport):

@@ -152,10 +152,10 @@ $(document).ready(function() {
 {% with form.instance.imports.latest as latest_import %}
 {% if latest_import %}
   {% if form.instance.status == 0 %}First{% else %}Latest{% endif %}
-  {% if latest_import.status != latest_import.STARTED %}import ended {{ latest_import.last_activity|simpletimesince }} ago
+  {% if not latest_import.is_running %}import ended {{ latest_import.last_activity|simpletimesince }} ago
   {% else %}import started {{ latest_import.start|simpletimesince }} ago{% endif %}<br/>
 {% if latest_import.videos_imported and latest_import.videos_skipped %}
-Imported {{ latest_import.videos_imported }} videos, skipped {{ latest_import.videos_skipped }} videos.
+Imported {{ latest_import.videos_imported }} video{{ latest_import.videos_imported|pluralize }}, skipped {{ latest_import.videos_skipped }} video{{ latest_import.videos_skipped|pluralize }}.
 {% else %}
 {% if latest_import.videos_skipped %}
 Skipped {{ latest_import.videos_skipped }} videos.
@@ -164,6 +164,7 @@ Imported {{ latest_import.videos_imported }} videos.
 {% endif %}
 {% endif %}
 {% endif %}
+{% if latest_import.status == latest_import.PENDING %}<br/>Indexing in progress.{% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}
 {% url localtv_admin_search_auto_approve form.instance.pk as auto_approve_url %}

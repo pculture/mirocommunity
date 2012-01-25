@@ -146,7 +146,7 @@ ul#new_admin_nav li.active a {
   color: #333;
   font-size: 13px;
   text-shadow: 0 1px 0 #FFF;
-  background: transparent url(/images/admin/icon_admin_signout.png) 0 1px no-repeat;
+  background: transparent url(../../images/admin/icon_admin_signout.png) 0 1px no-repeat;
   padding: 0 0 7px 20px;
 }
 

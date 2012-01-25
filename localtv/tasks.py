@@ -34,6 +34,7 @@ from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from haystack import site
+from haystack.query import SearchQuerySet
 
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
@@ -120,10 +121,10 @@ def search_update(search_id, using='default'):
 
 @task(ignore_result=True)
 @patch_settings
-def mark_import_complete(import_app_label, import_model, import_pk,
-                         using='default'):
+def mark_import_pending(import_app_label, import_model, import_pk,
+                        using='default'):
     """
-    Checks whether an import is complete, and if it is, gives it an end time.
+    Checks whether an import's first stage is complete.
 
     """
     import_class = get_model(import_app_label, import_model)
@@ -150,6 +151,7 @@ def mark_import_complete(import_app_label, import_model, import_pk,
         active_set = None
         unapproved_set = source_import.get_videos(using).filter(
             status=Video.PENDING)
+        source_import.status = import_class.PENDING
         if source_import.auto_approve:
             if not SiteLocation.enforce_tiers(using=using):
                 active_set = unapproved_set
@@ -157,7 +159,8 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             else:
                 remaining_videos = (Tier.get().videos_limit()
                                     - Video.objects.using(using
-                                        ).filter(status=Video.ACTIVE).count())
+                                        ).filter(status=Video.ACTIVE
+                                        ).count())
                 if remaining_videos > source_import.videos_imported:
                     active_set = unapproved_set
                     unapproved_set = None
@@ -170,15 +173,61 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                         when_submitted__lt=when_submitted)
                     unapproved_set = unapproved_set.filter(
                         when_submitted__gte=when_submitted)
-        if active_set is not None:
-            active_set.update(status=Video.ACTIVE)
         if unapproved_set is not None:
             unapproved_set.update(status=Video.UNAPPROVED)
+        if active_set is not None:
+            active_set.update(status=Video.ACTIVE)
+
+    source_import.save()
+
+    if source_import.status == import_class.PENDING:
+        active_pks = source_import.get_videos(using).filter(
+                         status=Video.ACTIVE).values_list('pk', flat=True)
+        if not active_pks:
+            mark_import_complete.delay(import_app_label, import_model,
+                                       import_pk, using=using)
+        else:
+            opts = Video._meta
+            for pk in active_pks:
+                haystack_update_index.delay(opts.app_label, opts.module_name,
+                                            pk, is_removal=False,
+                                            using=using,
+                                            import_app_label=import_app_label,
+                                            import_model=import_model,
+                                            import_pk=import_pk)
+
+
+@task(ignore_result=True)
+@patch_settings
+def mark_import_complete(import_app_label, import_model, import_pk,
+                         using='default'):
+    """
+    Checks whether an import's second stage is complete.
+
+    """
+    import_class = get_model(import_app_label, import_model)
+    try:
+        source_import = import_class._default_manager.using(using).get(
+                                                    pk=import_pk,
+                                                    status=import_class.PENDING)
+    except import_class.DoesNotExist:
+        return
+
+    video_pks = list(source_import.get_videos(using).filter(
+                            status=Video.ACTIVE).values_list('pk', flat=True))
+    if not video_pks:
+        # Don't bother with the haystack query.
+        haystack_count = 0
+    else:
+        haystack_count = SearchQuerySet().models(Video).filter(
+                                                django_id__in=video_pks).count()
+    if haystack_count >= len(video_pks):
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
             source_import.source.status = source_import.source.ACTIVE
             source_import.source.save()
 
+    source_import.last_activity = datetime.datetime.now()
     source_import.save()
 
 
@@ -320,7 +369,8 @@ def video_save_thumbnail(video_pk, using='default'):
       max_retries=None)
 @patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
-                          using='default', backoff=0):
+                          import_app_label=None, import_model=None,
+                          import_pk=None, using='default', backoff=0):
     """
     Updates a haystack index for the given model (specified by ``app_label``
     and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
@@ -328,6 +378,9 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
     :meth:`remove_object` method. Otherwise, the latest version of the instance
     is fetched from the database and passed to the index's
     :meth:`update_object` method.
+
+    If an import_app_label, import_model, and import_pk are provided, this task
+    will spawn ``mark_import_complete``.
 
     """
     model_class = get_model(app_label, model_name)
@@ -338,21 +391,31 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             search_index.remove_object(instance)
         else:
             try:
-                instance = search_index.read_queryset().using(using).get(pk=pk)
+                instance = Video.objects.get(pk=pk)
             except model_class.DoesNotExist:
-                pass
+                logging.info(('haystack_update_index(%r, %r, %r, %r, '
+                              'import_app_label=%r, import_model=%r, '
+                              'import_pk=%r, using=%r, backoff=%i) could not '
+                              'find video with pk %i'), app_label, model_name,
+                              pk, is_removal, import_app_label, import_model,
+                              import_pk, using, backoff, pk)
             else:
-                search_index.update_object(instance)
+                if instance.status == Video.ACTIVE:
+                    search_index.update_object(instance)
+                else:
+                    search_index.remove_object(instance)
     except DatabaseLockError:
         backoff += 1
         countdown = random.random() * (2 ** backoff - 1)
         haystack_update_index.retry(
             args=(app_label, model_name, pk, is_removal),
-            kwargs={'using': using, 'backoff': backoff},
+            kwargs={'using': using, 'backoff': backoff,
+                    'import_app_label': import_app_label,
+                    'import_model': import_model,
+                    'import_pk': import_pk},
             countdown=countdown)
-
-@task
-@patch_settings
-def video_count(using='default'):
-    model_class = get_model('localtv', 'Video')
-    return settings.ROOT_URLCONF, model_class.objects.db_manager(using).count()
+    else:
+        if (import_app_label is not None and import_model is not None and
+            import_pk is not None):
+            mark_import_complete.delay(import_app_label, import_model,
+                                       import_pk, using)

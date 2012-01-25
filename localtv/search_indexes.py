@@ -103,8 +103,8 @@ class VideoIndex(QueuedSearchIndex):
         with the watch_count.
 
         """
-        return self.model._default_manager.active().annotate(
-                                                    watch_count=Count('watch'))
+        return self.model._default_manager.filter(status=self.model.ACTIVE
+                                         ).annotate(watch_count=Count('watch'))
 
     def read_queryset(self):
         """
@@ -144,9 +144,8 @@ class VideoIndex(QueuedSearchIndex):
     def _enqueue_instance(self, instance, is_removal):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
-            # fake instance for testing
+            # fake instance for testing. TODO: This should probably not be done.
             return
-        else:
-            super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
 
 site.register(Video, VideoIndex)
