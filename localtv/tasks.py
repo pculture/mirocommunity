@@ -151,6 +151,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
         active_set = None
         unapproved_set = source_import.get_videos(using).filter(
             status=Video.PENDING)
+        source_import.status = import_class.PENDING
         if source_import.auto_approve:
             if not SiteLocation.enforce_tiers(using=using):
                 active_set = unapproved_set
@@ -174,24 +175,26 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                         when_submitted__gte=when_submitted)
         if unapproved_set is not None:
             unapproved_set.update(status=Video.UNAPPROVED)
-        if active_set is None:
-            source_import.status = import_class.COMPLETE
-        else:
-            source_import.status = import_class.PENDING
+        if active_set is not None:
             active_set.update(status=Video.ACTIVE)
 
     source_import.save()
 
     if source_import.status == import_class.PENDING:
-        opts = Video._meta
-        for pk in source_import.get_videos(using).filter(
-            status=Video.ACTIVE).values_list('pk', flat=True):
-            haystack_update_index.delay(opts.app_label, opts.module_name,
-                                        pk, is_removal=False,
-                                        using=using,
-                                        import_app_label=import_app_label,
-                                        import_model=import_model,
-                                        import_pk=import_pk)
+        active_pks = source_import.get_videos(using).filter(
+                         status=Video.ACTIVE).values_list('pk', flat=True)
+        if not active_pks:
+            mark_import_complete.delay(import_app_label, import_model,
+                                       import_pk, using=using)
+        else:
+            opts = Video._meta
+            for pk in active_pks:
+                haystack_update_index.delay(opts.app_label, opts.module_name,
+                                            pk, is_removal=False,
+                                            using=using,
+                                            import_app_label=import_app_label,
+                                            import_model=import_model,
+                                            import_pk=import_pk)
 
 
 @task(ignore_result=True)
@@ -212,7 +215,11 @@ def mark_import_complete(import_app_label, import_model, import_pk,
 
     video_pks = list(source_import.get_videos(using).filter(
                             status=Video.ACTIVE).values_list('pk', flat=True))
-    haystack_count = SearchQuerySet().models(Video).filter(
+    if not video_pks:
+        # Don't bother with the haystack query.
+        haystack_count = 0
+    else:
+        haystack_count = SearchQuerySet().models(Video).filter(
                                                 django_id__in=video_pks).count()
     if haystack_count >= len(video_pks):
         source_import.status = import_class.COMPLETE
