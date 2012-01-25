@@ -40,6 +40,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -1351,6 +1352,10 @@ class OriginalVideo(VideoBase):
     remote_video_was_deleted = models.IntegerField(default=VIDEO_ACTIVE)
     remote_thumbnail_hash = models.CharField(max_length=64, default='')
 
+    taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
+
     def changed_fields(self, override_vidscraper_result=None):
         """
         Check our video for new data.
@@ -1808,6 +1813,10 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
+
+    taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
 
     THUMB_SIZES = THUMB_SIZES
 
