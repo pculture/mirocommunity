@@ -17,16 +17,7 @@
 import datetime
 import os
 import logging
-
-try:
-   from xapian import DatabaseLockError
-except ImportError:
-    class DatabaseLockError(Exception):
-        """
-        Dummy exception; nothing raises me.
-        """
-else:
-    import random # don't need this otherwise
+import random
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
@@ -35,6 +26,23 @@ from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from haystack import site
 from haystack.query import SearchQuerySet
+
+# Some haystack backends raise lock errors if concurrent processes try to update
+# the index.
+try:
+   from xapian import DatabaseLockError
+except ImportError:
+    class DatabaseLockError(Exception):
+        """
+        Dummy exception; nothing raises me.
+        """
+try:
+    from whoosh.store import LockError
+except ImportError:
+    class LockError(Exception):
+        """
+        Dummy exception; nothing raises me.
+        """
 
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
@@ -404,7 +412,7 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
                     search_index.update_object(instance)
                 else:
                     search_index.remove_object(instance)
-    except DatabaseLockError:
+    except (DatabaseLockError, LockError):
         backoff += 1
         countdown = random.random() * (2 ** backoff - 1)
         haystack_update_index.retry(
