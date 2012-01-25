@@ -179,16 +179,19 @@ def mark_import_pending(import_app_label, import_model, import_pk,
         else:
             source_import.status = import_class.PENDING
             active_set.update(status=Video.ACTIVE)
-            opts = Video._meta
-            for pk in active_set.values_list('pk', flat=True):
-                haystack_update_index.delay(opts.app_label, opts.module_name,
-                                            pk, is_removal=False,
-                                            using=using,
-                                            import_app_label=import_app_label,
-                                            import_model=import_model,
-                                            import_pk=import_pk)
 
     source_import.save()
+
+    if source_import.status == import_class.PENDING:
+        opts = Video._meta
+        for pk in source_import.get_videos(using).filter(
+            status=Video.ACTIVE).values_list('pk', flat=True):
+            haystack_update_index.delay(opts.app_label, opts.module_name,
+                                        pk, is_removal=False,
+                                        using=using,
+                                        import_app_label=import_app_label,
+                                        import_model=import_model,
+                                        import_pk=import_pk)
 
 
 @task(ignore_result=True)
@@ -210,7 +213,7 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     video_pks = list(source_import.get_videos(using).filter(
                             status=Video.ACTIVE).values_list('pk', flat=True))
     haystack_count = SearchQuerySet().models(Video).filter(
-                                                    pk__in=video_pks).count()
+                                                django_id__in=video_pks).count()
     if haystack_count >= len(video_pks):
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
@@ -383,7 +386,12 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             try:
                 instance = search_index.read_queryset().using(using).get(pk=pk)
             except model_class.DoesNotExist:
-                pass
+                logging.info(('haystack_update_index(%r, %r, %r, %r, '
+                              'import_app_label=%r, import_model=%r, '
+                              'import_pk=%r, using=%r, backoff=%i) could not '
+                              'find active video with pk %i'), app_label,
+                              model_name, pk, is_removal, import_app_label,
+                              import_model, import_pk, using, backoff, pk)
             else:
                 search_index.update_object(instance)
     except DatabaseLockError:
