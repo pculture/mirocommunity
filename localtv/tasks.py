@@ -391,7 +391,10 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
         countdown = random.random() * (2 ** backoff - 1)
         haystack_update_index.retry(
             args=(app_label, model_name, pk, is_removal),
-            kwargs={'using': using, 'backoff': backoff},
+            kwargs={'using': using, 'backoff': backoff,
+                    'import_app_label': import_app_label,
+                    'import_model': import_model,
+                    'import_pk': import_pk},
             countdown=countdown)
     else:
         if (import_app_label is not None and import_model is not None and
