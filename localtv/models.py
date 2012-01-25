@@ -1221,6 +1221,12 @@ class SourceImport(models.Model):
         ordering = ['-start']
         abstract = True
 
+    def is_running(self):
+        """
+        Returns True if the SourceImport is currently running.
+        """
+        return self.status in (self.STARTED, self.PENDING)
+
     def set_video_source(self, video):
         """
         Sets the value of the correct field on the ``video`` to mark it as
