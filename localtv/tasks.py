@@ -142,6 +142,8 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                                                     pk=import_pk,
                                                     status=import_class.STARTED)
     except import_class.DoesNotExist:
+        logging.debug('Expected %s instance (pk=%r) missing.',
+                      import_class.__name__, import_pk)
         return
     source_import.last_activity = datetime.datetime.now()
     if source_import.total_videos is None:
@@ -226,6 +228,8 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     pk=import_pk,
                                                     status=import_class.PENDING)
     except import_class.DoesNotExist:
+        logging.debug('Expected %s instance (pk=%r) missing.',
+                      import_class.__name__, import_pk)
         return
 
     video_pks = list(source_import.get_videos(using).filter(
@@ -258,19 +262,16 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                 import_pk=None, status=None, author_pks=None,
                                 category_pks=None, clear_rejected=False,
                                 using='default'):
-    if import_app_label is None or import_model is None or import_pk is None:
-        # XXX what is this for?
-        source_import = None
-    else:
-        import_class = get_model(import_app_label, import_model)
-        try:
-            source_import = import_class.objects.using(using).get(
-               pk=import_pk,
-               status=import_class.STARTED)
-        except import_class.DoesNotExist:
-            logging.debug('Skipping %r: expected import instance missing.',
-                          vidscraper_video.url)
-            return
+    import_class = get_model(import_app_label, import_model)
+    try:
+        source_import = import_class.objects.using(using).get(
+           pk=import_pk,
+           status=import_class.STARTED)
+    except import_class.DoesNotExist:
+        logging.debug('Skipping %r: expected %s instance (pk=%r) missing.',
+                      vidscraper_video.url, import_class.__name__, import_pk)
+        return
+
     try:
         try:
             vidscraper_video.load()
@@ -412,19 +413,24 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             try:
                 instance = Video.objects.using(using).get(pk=pk)
             except model_class.DoesNotExist:
-                logging.info(('haystack_update_index(%r, %r, %r, %r, using=%r, '
-                              'backoff=%i) could not find video with pk %i'),
-                              app_label, model_name, pk, is_removal, using,
-                              backoff, pk)
+                logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r,'
+                               ' backoff=%i) could not find video with pk %i'),
+                               app_label, model_name, pk, is_removal, using,
+                               backoff, pk)
             else:
                 if instance.status == Video.ACTIVE:
                     search_index.update_object(instance)
                 else:
                     search_index.remove_object(instance)
-    except (DatabaseLockError, LockError):
-        backoff = min(backoff + 1, 5) # maximum wait is ~30s
-        countdown = random.random() * (2 ** backoff - 1)
+    except (DatabaseLockError, LockError), e:
+        new_backoff = min(backoff + 1, 5) # maximum wait is ~30s
+        countdown = random.random() * (2 ** new_backoff - 1)
+        logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r, '
+                       'backoff=%i) retrying due to %s with backoff %i and '
+                       'countdown %r'), app_label, model_name, pk, is_removal,
+                       using, backoff, e.__class__.__name__, new_backoff,
+                       countdown)
         haystack_update_index.retry(
             args=(app_label, model_name, pk, is_removal),
-            kwargs={'using': using, 'backoff': backoff},
+            kwargs={'using': using, 'backoff': new_backoff},
             countdown=countdown)
