@@ -1206,11 +1206,6 @@ class SourceImport(models.Model):
         if is_skip:
             self.__class__._default_manager.using(using).filter(pk=self.pk
                         ).update(videos_skipped=models.F('videos_skipped') + 1)
-            from localtv.tasks import mark_import_pending
-            mark_import_pending.delay(import_app_label=self._meta.app_label,
-                                      import_model=self._meta.module_name,
-                                      import_pk=self.pk,
-                                      using=using)
 
     def get_index_creation_kwargs(self, video, vidscraper_video):
         return {
@@ -1232,11 +1227,6 @@ class SourceImport(models.Model):
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
-        from localtv.tasks import mark_import_pending
-        mark_import_pending.delay(import_app_label=self._meta.app_label,
-                                  import_model=self._meta.module_name,
-                                  import_pk=self.pk,
-                                  using=using)
 
 
 class FeedImport(SourceImport):

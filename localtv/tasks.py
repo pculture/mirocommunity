@@ -127,12 +127,13 @@ def search_update(search_id, using='default'):
     search.update(using=using, clear_rejected=True)
 
 
-@task(ignore_result=True)
+@task(ignore_result=True, max_retries=None)
 @patch_settings
 def mark_import_pending(import_app_label, import_model, import_pk,
                         using='default'):
     """
-    Checks whether an import's first stage is complete.
+    Checks whether an import's first stage is complete. If it's not, retries
+    the task with a countdown of 30.
 
     """
     import_class = get_model(import_app_label, import_model)
@@ -155,62 +156,68 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     if skipped_count != source_import.videos_skipped:
         source_import.videos_skipped = skipped_count
     if (source_import.videos_imported + source_import.videos_skipped
-        >= source_import.total_videos):
-        active_set = None
-        unapproved_set = source_import.get_videos(using).filter(
-            status=Video.PENDING)
-        source_import.status = import_class.PENDING
-        if source_import.auto_approve:
-            if not SiteLocation.enforce_tiers(using=using):
+        < source_import.total_videos):
+        # Then the import is incomplete. Requeue it.
+        source_import.save()
+        # Retry raises an exception, ending task execution.
+        mark_import_pending.retry(
+            args=(import_app_label, import_model, import_pk),
+            kwargs={'using': using}, countdown=30)
+
+    # Otherwise the first stage is complete. Check whether they can take all the
+    # videos.
+    active_set = None
+    unapproved_set = source_import.get_videos(using).filter(
+        status=Video.PENDING)
+    if source_import.auto_approve:
+        if not SiteLocation.enforce_tiers(using=using):
+            active_set = unapproved_set
+            unapproved_set = None
+        else:
+            remaining_videos = (Tier.get().videos_limit()
+                                - Video.objects.using(using
+                                    ).filter(status=Video.ACTIVE
+                                    ).count())
+            if remaining_videos > source_import.videos_imported:
                 active_set = unapproved_set
                 unapproved_set = None
             else:
-                remaining_videos = (Tier.get().videos_limit()
-                                    - Video.objects.using(using
-                                        ).filter(status=Video.ACTIVE
-                                        ).count())
-                if remaining_videos > source_import.videos_imported:
-                    active_set = unapproved_set
-                    unapproved_set = None
-                else:
-                    unapproved_set = unapproved_set.order_by('when_submitted')
-                    # only approve `remaining_videos` videos
-                    when_submitted = unapproved_set[
-                        remaining_videos].when_submitted
-                    active_set = unapproved_set.filter(
-                        when_submitted__lt=when_submitted)
-                    unapproved_set = unapproved_set.filter(
-                        when_submitted__gte=when_submitted)
-        if unapproved_set is not None:
-            unapproved_set.update(status=Video.UNAPPROVED)
-        if active_set is not None:
-            active_set.update(status=Video.ACTIVE)
+                unapproved_set = unapproved_set.order_by('when_submitted')
+                # only approve `remaining_videos` videos
+                when_submitted = unapproved_set[
+                    remaining_videos].when_submitted
+                active_set = unapproved_set.filter(
+                    when_submitted__lt=when_submitted)
+                unapproved_set = unapproved_set.filter(
+                    when_submitted__gte=when_submitted)
+    if unapproved_set is not None:
+        unapproved_set.update(status=Video.UNAPPROVED)
+    if active_set is not None:
+        active_set.update(status=Video.ACTIVE)
 
+    source_import.status = import_class.PENDING
     source_import.save()
 
-    if source_import.status == import_class.PENDING:
-        active_pks = source_import.get_videos(using).filter(
+    active_pks = source_import.get_videos(using).filter(
                          status=Video.ACTIVE).values_list('pk', flat=True)
-        if not active_pks:
-            mark_import_complete.delay(import_app_label, import_model,
-                                       import_pk, using=using)
-        else:
-            opts = Video._meta
-            for pk in active_pks:
-                haystack_update_index.delay(opts.app_label, opts.module_name,
-                                            pk, is_removal=False,
-                                            using=using,
-                                            import_app_label=import_app_label,
-                                            import_model=import_model,
-                                            import_pk=import_pk)
+    if active_pks:
+        opts = Video._meta
+        for pk in active_pks:
+            haystack_update_index.delay(opts.app_label, opts.module_name,
+                                        pk, is_removal=False,
+                                        using=using)
+
+    mark_import_complete.delay(import_app_label, import_model, import_pk,
+                               using=using)
 
 
-@task(ignore_result=True)
+@task(ignore_result=True, max_retries=None)
 @patch_settings
 def mark_import_complete(import_app_label, import_model, import_pk,
                          using='default'):
     """
-    Checks whether an import's second stage is complete.
+    Checks whether an import's second stage is complete. If it's not, retries
+    the task with a countdown of 30.
 
     """
     import_class = get_model(import_app_label, import_model)
@@ -237,6 +244,11 @@ def mark_import_complete(import_app_label, import_model, import_pk,
 
     source_import.last_activity = datetime.datetime.now()
     source_import.save()
+
+    if haystack_count < len(video_pks):
+        mark_import_complete.retry(
+            args=(import_app_label, import_model, import_pk),
+            kwargs={'using': using}, countdown=30)
 
 
 @task(ignore_result=True)
@@ -377,8 +389,7 @@ def video_save_thumbnail(video_pk, using='default'):
       max_retries=None)
 @patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
-                          import_app_label=None, import_model=None,
-                          import_pk=None, using='default', backoff=0):
+                          using='default', backoff=0):
     """
     Updates a haystack index for the given model (specified by ``app_label``
     and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
@@ -401,12 +412,10 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             try:
                 instance = Video.objects.using(using).get(pk=pk)
             except model_class.DoesNotExist:
-                logging.info(('haystack_update_index(%r, %r, %r, %r, '
-                              'import_app_label=%r, import_model=%r, '
-                              'import_pk=%r, using=%r, backoff=%i) could not '
-                              'find video with pk %i'), app_label, model_name,
-                              pk, is_removal, import_app_label, import_model,
-                              import_pk, using, backoff, pk)
+                logging.info(('haystack_update_index(%r, %r, %r, %r, using=%r, '
+                              'backoff=%i) could not find video with pk %i'),
+                              app_label, model_name, pk, is_removal, using,
+                              backoff, pk)
             else:
                 if instance.status == Video.ACTIVE:
                     search_index.update_object(instance)
@@ -417,13 +426,5 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
         countdown = random.random() * (2 ** backoff - 1)
         haystack_update_index.retry(
             args=(app_label, model_name, pk, is_removal),
-            kwargs={'using': using, 'backoff': backoff,
-                    'import_app_label': import_app_label,
-                    'import_model': import_model,
-                    'import_pk': import_pk},
+            kwargs={'using': using, 'backoff': backoff},
             countdown=countdown)
-    else:
-        if (import_app_label is not None and import_model is not None and
-            import_pk is not None):
-            mark_import_complete.delay(import_app_label, import_model,
-                                       import_pk, using=using)
