@@ -426,4 +426,4 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
         if (import_app_label is not None and import_model is not None and
             import_pk is not None):
             mark_import_complete.delay(import_app_label, import_model,
-                                       import_pk, using)
+                                       import_pk, using=using)
