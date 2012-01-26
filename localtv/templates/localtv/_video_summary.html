@@ -21,6 +21,12 @@ along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
 
 <article class="video-summary">
 
+	<figure class="thumb">
+		<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumb-link">
+			<img src="{% get_thumbnail_url video 140 110 %}" width="140" height="110" class="thumb-image">
+		</a>
+	</figure>
+
 	<header class="video-header">
 		<h1 class="video-title">
 			<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" title="{{ video.name }}">
@@ -32,12 +38,6 @@ along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
 			</a>
 		</h1>
 	</header>
-	
-	<figure class="thumb">
-		<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumb-link">
-			<img src="{% get_thumbnail_url video 140 110 %}" width="140" height="110" class="thumb-image">
-		</a>
-	</figure>
 	
 	<div class="description">
 		{% autoescape off %}

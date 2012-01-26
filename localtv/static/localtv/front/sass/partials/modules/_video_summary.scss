@@ -1,13 +1,15 @@
+@import "compass/css3/border-radius",
+		"compass/css3/box-shadow";
+
 .video-summary{
-	clear:both;
+	@include clearfix;
+	border-bottom:1px solid #CCC;
+	margin-bottom:-1px;
+	padding:1.5em 0;
 }
 
 .thumb{
 	@include column(2);
-}
-
-.thumb img{
-	display:block;
 }
 
 .video-summary .video-header h1{
@@ -18,4 +20,13 @@
 .video-summary .details{
 	color:#999;
 	margin-top:1.5em;
+}
+.details-list{
+	padding-left:0;
+	li{
+		list-style-type:none;
+	}
+}
+.video-summary .details, .video-summary .description{
+	padding-left:span(2)+$blueprint-grid-margin;
 }

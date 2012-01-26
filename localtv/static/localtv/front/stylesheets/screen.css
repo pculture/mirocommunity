@@ -76,12 +76,16 @@ a img {
   background-position: left top;
 }
 
-/* line 1, ../sass/partials/modules/_video_summary.scss */
+/* line 4, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
-  clear: both;
+  overflow: hidden;
+  *zoom: 1;
+  border-bottom: 1px solid #CCC;
+  margin-bottom: -1px;
+  padding: 1.5em 0;
 }
 
-/* line 5, ../sass/partials/modules/_video_summary.scss */
+/* line 11, ../sass/partials/modules/_video_summary.scss */
 .thumb {
   display: inline;
   float: left;
@@ -93,21 +97,30 @@ a img {
   overflow-x: hidden;
 }
 
-/* line 9, ../sass/partials/modules/_video_summary.scss */
-.thumb img {
-  display: block;
-}
-
-/* line 13, ../sass/partials/modules/_video_summary.scss */
+/* line 15, ../sass/partials/modules/_video_summary.scss */
 .video-summary .video-header h1 {
   font-weight: bold;
   font-size: inherit;
 }
 
-/* line 18, ../sass/partials/modules/_video_summary.scss */
+/* line 20, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 1.5em;
+}
+
+/* line 24, ../sass/partials/modules/_video_summary.scss */
+.details-list {
+  padding-left: 0;
+}
+/* line 26, ../sass/partials/modules/_video_summary.scss */
+.details-list li {
+  list-style-type: none;
+}
+
+/* line 30, ../sass/partials/modules/_video_summary.scss */
+.video-summary .details, .video-summary .description {
+  padding-left: 161.667px;
 }
 
 /* line 33, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_typography.scss */
