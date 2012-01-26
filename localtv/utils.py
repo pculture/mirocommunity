@@ -69,6 +69,24 @@ def get_tag(tag_text, using='default'):
             pass # try again to create the tag
 
 
+def edit_string_for_tags(tag_list):
+    """
+    Converts a list of tagging.Tag instances into an edit string. Thin wrapper
+    around :func:`tagging.utils.edit_string_for_tags` to fix some decoding
+    bugs.
+
+    """
+    for tag in tag_list:
+        tag.name = force_unicode(tag.name)
+    edit_string = tagging.utils.edit_string_for_tags(tag_list)
+
+    # HACK to work around a bug in django-tagging.
+    if (len(tag_list) == 1 and edit_string == tag_list[0].name
+        and " " in edit_string):
+        edit_string = '"%s"' % edit_string
+    return edit_string
+
+
 def get_or_create_tags(tag_list, using='default'):
     tag_set = set()
     for tag_text in tag_list:
@@ -76,16 +94,9 @@ def get_or_create_tags(tag_list, using='default'):
             tag_text = tag_text[:50] # tags can only by 50 chars
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
-        tag = get_tag(tag_text, using);
-        tag.name = force_unicode(tag.name)
+        tag = get_tag(tag_text, using)
         tag_set.add(tag)
-    edit_string = tagging.utils.edit_string_for_tags(list(tag_set))
-
-    # HACK to work around a bug in django-tagging.
-    if (len(tag_set) == 1 and edit_string == tag_set.pop().name
-        and " " in edit_string):
-        edit_string = '"%s"' % edit_string
-    return edit_string
+    return edit_string_for_tags(list(tag_set))
 
 
 def hash_file_obj(file_obj, hash_constructor=hashlib.sha1, close_it=True):

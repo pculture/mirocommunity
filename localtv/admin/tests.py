@@ -131,8 +131,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         first page is the 10 oldest videos, the second page is the next 10,
         etc.
         """
-        unapproved_videos = Video.objects.unapproved().order_by(
-            'when_submitted', 'when_published')
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED
+                                ).order_by('when_submitted', 'when_published')
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
@@ -160,7 +160,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'current_video' in the context.  The current_video should be the video
         with the primary key passed in as GET['video_id'].
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_preview_video')
         self.assertRequiresAuthentication(url, {'video_id': str(video.pk)})
 
@@ -179,7 +179,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -203,7 +203,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -218,7 +218,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         If the video is approved, and the submitter has the 'video_approved'
         notification on, they should receive an e-mail notifying them of it.
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         video.user = User.objects.get(username='user')
         video.save()
 
@@ -248,7 +248,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         video should also be featured.
         """
         # XXX why do we have this function
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk,
                                                 'feature': 'yes'})
@@ -273,7 +273,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_reject_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -296,7 +296,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         GET['video_id'].  If the video is unapproved, it should become
         approved.
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_feature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -321,7 +321,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         GET['video_id'].  If the video is unapproved, it should become
         approved.
         """
-        video = Video.objects.unapproved()[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_feature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -337,8 +337,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and redirect back to the referrer.  The video should be specified by
         GET['video_id'].  The video status is not affected.
         """
-        video = Video.objects.active().exclude(
-            last_featured=None)[0]
+        video = Video.objects.filter(status=Video.ACTIVE
+                            ).exclude(last_featured=None)[0]
 
         url = reverse('localtv_admin_unfeature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
@@ -360,7 +360,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         A GET request to the reject_all view should reject all the videos on
         the given page and redirect back to the referrer.
         """
-        unapproved_videos = Video.objects.unapproved()
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         page2_videos = unapproved_videos[10:20]
 
         url = reverse('localtv_admin_reject_all')
@@ -382,7 +382,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         A GET request to the reject_all view should approve all the videos on
         the given page and redirect back to the referrer.
         """
-        unapproved_videos = Video.objects.unapproved()
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         page2_videos = unapproved_videos[10:20]
 
         url = reverse('localtv_admin_approve_all')
@@ -407,7 +407,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'localtv/admin/clear_confirm.html' and have a 'videos' variable
         in the context which is a list of all the unapproved videos.
         """
-        unapproved_videos = Video.objects.unapproved()
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -423,7 +423,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
                           list(unapproved_videos))
 
         # nothing was rejected
-        self.assertEqual(Video.objects.unapproved().count(),
+        self.assertEqual(Video.objects.filter(status=Video.UNAPPROVED).count(),
                           unapproved_videos_count)
 
     def test_POST_clear_all_failure(self):
@@ -433,7 +433,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and have a 'videos' variable in the context which is a list of all the
         unapproved videos.
         """
-        unapproved_videos = Video.objects.unapproved()
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -448,7 +448,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
                           list(unapproved_videos))
 
         # nothing was rejected
-        self.assertEqual(Video.objects.unapproved().count(),
+        self.assertEqual(Video.objects.filter(status=Video.UNAPPROVED).count(),
                           unapproved_videos_count)
 
     def test_POST_clear_all_succeed(self):
@@ -456,10 +456,10 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         A POST request to the clear_all view with POST['confirm'] = 'yes'
         should reject all the videos and redirect to the approve_reject view.
         """
-        unapproved_videos = Video.objects.unapproved()
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
-        rejected_videos = Video.objects.rejected()
+        rejected_videos = Video.objects.filter(status=Video.REJECTED)
         rejected_videos_count = rejected_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -474,7 +474,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
                 reverse('localtv_admin_approve_reject')))
 
         # all the unapproved videos are now rejected
-        self.assertEqual(Video.objects.rejected().count(),
+        self.assertEqual(Video.objects.filter(status=Video.REJECTED).count(),
                           unapproved_videos_count + rejected_videos_count)
 
 
@@ -1105,7 +1105,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=Feed.UNAPPROVED,
+            status=Feed.INACTIVE,
             feed_url=self.feed_url)
         c = Client()
         c.login(username='admin', password='admin')
@@ -1126,7 +1126,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=Feed.UNAPPROVED,
+            status=Feed.INACTIVE,
             feed_url=urls[0])
         c = Client()
         c.login(username='admin', password='admin')
@@ -1240,7 +1240,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEqual(feed.name, 'Valid Feed with Relative Links')
         self.assertEqual(feed.feed_url, self.feed_url)
         # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
-        self.assertTrue(feed.status in (Feed.UNAPPROVED, Feed.ACTIVE))
+        self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
         self.assertEqual(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
 
@@ -2337,7 +2337,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(
             [form.initial['tags'] for form in
              response.context[0]['formset'].initial_forms],
-            list (utils.get_or_create_tags(video.tags) for video in
+            list (utils.edit_string_for_tags(video.tags) for video in
                   self.Video_sort_lower(status=Video.ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
         self.assertEqual(list(response.context[0]['categories']),
@@ -2757,7 +2757,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         checked.
         """
         # give the first video a category
-        video = Video.objects.active().order_by('name')[0]
+        video = Video.objects.filter(status=Video.ACTIVE).order_by('name')[0]
         video.categories =[Category.objects.get(pk=2)]
         video.save()
 
@@ -2815,7 +2815,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         checked.
         """
         # give the first video a category
-        video = Video.objects.active().order_by('name')[0]
+        video = Video.objects.filter(status=Video.ACTIVE).order_by('name')[0]
         video.categories =[Category.objects.get(pk=2)]
         video.save()
 
@@ -3535,13 +3535,16 @@ class CannotApproveVideoIfLimitExceeded(BaseTestCase):
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_videos_over_new_limit(self):
         # Let there be one video already approved
-        Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
+        Video.objects.create(site_id=self.site_location.site_id,
+                             status=Video.ACTIVE)
         # Create two in the queue
         for k in range(2):
-            Video.objects.create(site_id=self.site_location.site_id, status=Video.UNAPPROVED)
+            Video.objects.create(site_id=self.site_location.site_id,
+                                 status=Video.UNAPPROVED)
 
         first_video_id, second_video_id = [v.id for v in
-                                           Video.objects.unapproved()]
+                                           Video.objects.filter(
+                                               status=Video.UNAPPROVED)]
 
         # Try to activate all of them, but that would take us over the limit.
         c = Client()
@@ -3768,17 +3771,18 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Create three published videos
         for k in range(3):
-            Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
+            Video.objects.create(site_id=self.site_location.site_id,
+                                 status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # We can find 'em all, right?
-        self.assertEqual(3, Video.objects.active().count())
+        self.assertEqual(3, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should only be two active videos now
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-        self.assertEqual(2, Video.objects.active().count())
+        self.assertEqual(2, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Make sure it's video 0 that is disabled
         self.assertEqual(Video.UNAPPROVED,
@@ -3797,12 +3801,12 @@ class DowngradingDisablesThings(BaseTestCase):
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # We can find 'em all, right?
-        self.assertEqual(3,Video.objects.active().count())
+        self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should still be three videos because enforcement is disabled
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-        self.assertEqual(3,Video.objects.active().count())
+        self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
     def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
         '''Even if the custom themes are not the default ones, if they exist, we should

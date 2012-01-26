@@ -224,7 +224,7 @@ class FeedImportTestCase(BaseTestCase):
 
     def test_update_approved_feed(self):
         feed = Feed.objects.get(pk=1)
-        feed.status = Feed.UNAPPROVED
+        feed.status = Feed.INACTIVE
         feed.save()
         self._update_with_video_iter(self._parsed_feed, feed)
         feed = Feed.objects.get(pk=1)
@@ -1189,7 +1189,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.active().filter(
+                          list(Video.objects.filter(status=Video.ACTIVE,
                                last_featured__isnull=False)))
 
     def test_tag_videos(self):
@@ -1577,11 +1577,12 @@ class VideoModelTestCase(BaseTestCase):
         results = list(
             Video.objects.get_latest_videos(self.site_location)
         )
-        expected = list(Video.objects.active().extra(
-            select={'date': """
+        expected = list(Video.objects.extra(select={'date': """
 COALESCE(localtv_video.when_published,localtv_video.when_approved,
 localtv_video.when_submitted)"""}
-        ).filter(site=self.site_location.site).order_by('-date'))
+                                    ).filter(status=Video.ACTIVE,
+                                             site=self.site_location.site
+                                    ).order_by('-date'))
         self.assertEqual(results, expected)
 
     def test_latest_use_original_date_False(self):
@@ -1593,9 +1594,11 @@ localtv_video.when_submitted)"""}
         self.site_location.save()
         self.assertEqual(list(Video.objects.get_latest_videos(
                     self.site_location)),
-                          list(Video.objects.active().extra(select={'date': """
+                          list(Video.objects.extra(select={'date': """
 COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
-                      ).filter(site=self.site_location.site).order_by('-date')))
+                                           ).filter(status=Video.ACTIVE,
+                                                    site=self.site_location.site
+                                           ).order_by('-date')))
 
     def test_thumbnail_deleted(self):
         """
