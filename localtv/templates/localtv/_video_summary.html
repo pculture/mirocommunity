@@ -1,5 +1,5 @@
 {% comment %}
-Copyright 2012 - Participatory Culture Foundation
+Copyright 2009 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -10,15 +10,65 @@ option) any later version.
 
 Miro Community is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load i18n localtv_thumbnail filters uploadtemplate_tags %}
+
 <article class="video-summary">
-	<header>
-		<h1><a href="{{ video.get_absolute_url }}{{ video_url_extra }}">{{ video.name }}</a></h1>
+
+	<header class="video-header">
+		<h1 class="video-title">
+			<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" title="{{ video.name }}">
+				{% if video.name %}
+					{{ video.name }}
+				{% else %}
+					{% trans "(no title)" %}
+				{% endif %}
+			</a>
+		</h1>
 	</header>
+	
+	<figure class="thumb">
+		<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumb-link">
+			<img src="{% get_thumbnail_url video 140 110 %}" width="140" height="110" class="thumb-image">
+		</a>
+	</figure>
+	
+	<div class="description">
+		{% autoescape off %}
+			{{ video.description|sanitize:"whitelist|a br p|href" }}
+		{% endautoescape %}
+	</div>
+	
+	<footer class="details">
+		<ul class="details-list">
+			<li class="when">
+				{% if is_featured_video %}
+					Featured {{ video.last_featured|simpletimesince }} ago
+				{% else %}
+					{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago
+				{% endif %}
+			</li>
+			<li class="authors">
+				{% with authors=video.authors.all %}
+					{% if authors %}
+						By
+						{% for user in authors %}
+							<span class="author"><a href="{% url localtv_author user.pk %}" title="{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}
+						{% endfor %}
+					{% else %}
+						{% if video.feed %}
+							By <span class="author"><a href="{% url localtv_list_feed video.feed.pk %}" title="{{ video.feed.name }}">{{ video.feed.name }}</a></span>
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+			</li>
+		</ul>
+	</footer>
+	
 </article>
