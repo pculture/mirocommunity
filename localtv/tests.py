@@ -224,7 +224,7 @@ class FeedImportTestCase(BaseTestCase):
 
     def test_update_approved_feed(self):
         feed = Feed.objects.get(pk=1)
-        feed.status = Feed.UNAPPROVED
+        feed.status = Feed.INACTIVE
         feed.save()
         self._update_with_video_iter(self._parsed_feed, feed)
         feed = Feed.objects.get(pk=1)

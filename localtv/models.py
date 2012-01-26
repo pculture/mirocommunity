@@ -787,16 +787,12 @@ class Feed(Source):
       - auto_authors: authors that are automatically applied to videos on
         import
     """
-    UNAPPROVED = 0
+    INACTIVE = 0
     ACTIVE = 1
-    REJECTED = 2
-    PENDING = 3
 
     STATUS_CHOICES = (
-        (UNAPPROVED, _(u'Unapproved')),
+        (INACTIVE, _(u'Inactive')),
         (ACTIVE, _(u'Active')),
-        (REJECTED, _(u'Rejected')),
-        (PENDING, _(u'Waiting on import to finish')),
     )
 
     feed_url = models.URLField(verify_exists=False)
@@ -808,7 +804,7 @@ class Feed(Source):
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
-    status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
     class Meta:
         unique_together = (
@@ -2157,7 +2153,7 @@ tagging.models.Tag.__unicode__ = tag_unicode
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
-    if sender.is_active():
+    if sender.status == Video.ACTIVE:
         # don't send the e-mail for videos that are already active
         return
     t = loader.get_template('localtv/submit_video/new_video_email.txt')

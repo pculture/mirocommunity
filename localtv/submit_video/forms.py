@@ -159,7 +159,7 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
         old_m2m = self.save_m2m
         def save_m2m():
             video = self.instance
-            if video.is_active():
+            if video.status == models.Video.ACTIVE:
                 # when_submitted isn't set until after the save
                 video.when_approved = video.when_submitted
                 video.save()

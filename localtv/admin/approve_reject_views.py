@@ -141,7 +141,7 @@ def feature_video(request):
     sitelocation = SiteLocation.objects.get_current()
     current_video = get_object_or_404(
         Video, pk=video_id, site=sitelocation.site)
-    if not current_video.is_active():
+    if not current_video.status == Video.ACTIVE:
         if (SiteLocation.enforce_tiers() and
             sitelocation.get_tier().remaining_videos() < 1):
             return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)

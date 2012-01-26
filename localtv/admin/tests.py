@@ -1105,7 +1105,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=Feed.UNAPPROVED,
+            status=Feed.INACTIVE,
             feed_url=self.feed_url)
         c = Client()
         c.login(username='admin', password='admin')
@@ -1126,7 +1126,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=Feed.UNAPPROVED,
+            status=Feed.INACTIVE,
             feed_url=urls[0])
         c = Client()
         c.login(username='admin', password='admin')
@@ -1240,7 +1240,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEqual(feed.name, 'Valid Feed with Relative Links')
         self.assertEqual(feed.feed_url, self.feed_url)
         # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
-        self.assertTrue(feed.status in (Feed.UNAPPROVED, Feed.ACTIVE))
+        self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
         self.assertEqual(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
 

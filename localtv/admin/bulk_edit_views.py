@@ -171,13 +171,13 @@ def bulk_edit(request):
                             elif value == 'unapprove':
                                 form.instance.status = Video.UNAPPROVED
                             elif value == 'feature':
-                                if not form.instance.is_active():
+                                if not form.instance.status == Video.ACTIVE:
                                     if (sitelocation.enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
                                         form.instance.status = Video.ACTIVE
-                                if form.instance.is_active():
+                                if form.instance.status == Video.ACTIVE:
                                     form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None

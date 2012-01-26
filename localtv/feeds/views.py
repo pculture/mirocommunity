@@ -184,7 +184,7 @@ class BaseVideosFeed(Feed, SortFilterViewMixin):
         return value
 
     def item_pubdate(self, video):
-        if not video.is_active():
+        if not video.status == Video.ACTIVE:
             return None
         return video.when().replace(tzinfo=FixedOffset(0))
 
