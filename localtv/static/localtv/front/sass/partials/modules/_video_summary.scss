@@ -1,0 +1,21 @@
+.video-summary{
+	clear:both;
+}
+
+.thumb{
+	@include column(2);
+}
+
+.thumb img{
+	display:block;
+}
+
+.video-summary .video-header h1{
+	font-weight:bold;
+	font-size:inherit;
+}
+
+.video-summary .details{
+	color:#999;
+	margin-top:1.5em;
+}

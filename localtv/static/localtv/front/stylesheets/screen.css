@@ -76,6 +76,40 @@ a img {
   background-position: left top;
 }
 
+/* line 1, ../sass/partials/modules/_video_summary.scss */
+.video-summary {
+  clear: both;
+}
+
+/* line 5, ../sass/partials/modules/_video_summary.scss */
+.thumb {
+  display: inline;
+  float: left;
+  margin-right: 20px;
+  width: 141.667px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html .thumb {
+  overflow-x: hidden;
+}
+
+/* line 9, ../sass/partials/modules/_video_summary.scss */
+.thumb img {
+  display: block;
+}
+
+/* line 13, ../sass/partials/modules/_video_summary.scss */
+.video-summary .video-header h1 {
+  font-weight: bold;
+  font-size: inherit;
+}
+
+/* line 18, ../sass/partials/modules/_video_summary.scss */
+.video-summary .details {
+  color: #999;
+  margin-top: 1.5em;
+}
+
 /* line 33, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_typography.scss */
 body {
   line-height: 1.5;

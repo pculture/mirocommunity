@@ -1,6 +1,7 @@
 @import "partials/config";
 @import "blueprint/reset";
 @import "blueprint";
-@import "partials/layout";
+@import "partials/layout",
+		"partials/modules";
 
 @include blueprint-typography;
