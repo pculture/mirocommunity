@@ -399,7 +399,7 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             search_index.remove_object(instance)
         else:
             try:
-                instance = Video.objects.get(pk=pk)
+                instance = Video.objects.using(using).get(pk=pk)
             except model_class.DoesNotExist:
                 logging.info(('haystack_update_index(%r, %r, %r, %r, '
                               'import_app_label=%r, import_model=%r, '
