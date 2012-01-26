@@ -40,8 +40,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
 	
 	{% block scripts %}
-		<script src="{% get_static_url 'localtv/js/libs/modernizr-2.0.6.js' bundled %}"></script>
-		<script src="{% get_static_url 'localtv/js/libs/jquery-1.7.1.min.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/libs/modernizr-2.0.6.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/libs/jquery-1.7.1.min.js' bundled %}"></script>
 	{% endblock %}
 	
 	{% block styles %}
