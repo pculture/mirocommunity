@@ -829,7 +829,7 @@ class Feed(Source):
         except FeedImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         feed_import = FeedImport.objects.db_manager(using).create(source=self,
@@ -1052,7 +1052,7 @@ class SavedSearch(Source):
         except SearchImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         search_import = SearchImport.objects.db_manager(using).create(
@@ -1194,10 +1194,10 @@ class SourceImport(models.Model):
         """
         if with_exception:
             exc_info = sys.exc_info()
-            logging.debug(message, exc_info=exc_info)
+            logging.warn(message, exc_info=exc_info)
             tb = ''.join(traceback.format_exception(*exc_info))
         else:
-            logging.debug(message)
+            logging.warn(message)
             tb = ''
         self.errors.db_manager(using).create(message=message,
                                              source_import=self,
