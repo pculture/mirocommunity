@@ -20,7 +20,7 @@ import datetime
 from django.core.management.base import NoArgsCommand
 from django.template import Context, loader
 
-from localtv import models
+from localtv.models import Video, SiteLocation
 from localtv import utils
 
 class Command(NoArgsCommand):
@@ -36,11 +36,12 @@ class Command(NoArgsCommand):
                 'admin_queue_weekly')
 
     def send_email(self, delta, time_period, notice_type):
-        sitelocation = models.SiteLocation.objects.get_current()
+        sitelocation = SiteLocation.objects.get_current()
 
         previous = datetime.datetime.now() - delta
 
-        queue_videos = models.Video.objects.unapproved().filter(
+        queue_videos = Video.objects.filter(
+            status=Video.UNAPPROVED,
             site=sitelocation.site,
         )
         new_videos = queue_videos.filter(when_submitted__gte=previous)

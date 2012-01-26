@@ -290,7 +290,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         if vidscraper_video.guid:
             guid_videos = site_videos.filter(guid=vidscraper_video.guid)
             if clear_rejected:
-                guid_videos.rejected().delete()
+                guid_videos.filter(status=Video.REJECTED).delete()
             if guid_videos.exists():
                 source_import.handle_error(('Skipping %r: duplicate guid.'
                                             % vidscraper_video.url),
@@ -301,7 +301,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
             videos_with_link = site_videos.filter(
                 website_url=vidscraper_video.link)
             if clear_rejected:
-                videos_with_link.rejected().delete()
+                videos_with_link.filter(status=Video.REJECTED).delete()
             if videos_with_link.exists():
                 source_import.handle_error(('Skipping %r: duplicate link.'
                                             % vidscraper_video.url),

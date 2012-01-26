@@ -18,6 +18,7 @@
 import datetime
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
@@ -38,9 +39,9 @@ from notification import models as notification
 ## --------------------
 
 def get_video_paginator(sitelocation):
-    videos = Video.objects.unapproved().filter(
-        site=sitelocation.site).order_by(
-        'when_submitted', 'when_published')
+    videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                  site=sitelocation.site
+                         ).order_by('when_submitted', 'when_published')
 
     return Paginator(videos, 10)
 
@@ -74,7 +75,7 @@ def preview_video(request):
         Video,
         id=request.GET['video_id'],
         status=Video.UNAPPROVED,
-        site=SiteLocation.objects.get_current().site)
+        site=Site.objects.get_current())
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': current_video},
@@ -127,7 +128,7 @@ def reject_video(request):
     current_video = get_object_or_404(
         Video,
         id=request.GET['video_id'],
-        site=SiteLocation.objects.get_current().site)
+        site=Site.objects.get_current())
     current_video.status = Video.REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
@@ -157,7 +158,7 @@ def feature_video(request):
 def unfeature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        Video, pk=video_id, site=SiteLocation.objects.get_current().site)
+        Video, pk=video_id, site=Site.objects.get_current())
     current_video.last_featured = None
     current_video.save()
 
@@ -217,8 +218,8 @@ def approve_all(request):
 @require_site_admin
 @csrf_protect
 def clear_all(request):
-    videos = Video.objects.unapproved().filter(
-        site=SiteLocation.objects.get_current().site)
+    videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                  site=Site.objects.get_current())
     if request.POST.get('confirm') == 'yes':
         for video in videos:
             video.status = Video.REJECTED

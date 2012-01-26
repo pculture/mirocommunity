@@ -74,12 +74,6 @@ def delete_if_exists(path):
 
 EMPTY = object()
 
-UNAPPROVED_STATUS_TEXT = _(u'Unapproved')
-ACTIVE_STATUS_TEXT = _(u'Active')
-REJECTED_STATUS_TEXT = _(u'Rejected')
-PENDING_STATUS_TEXT = _(u'Waiting on import to finish')
-DISABLED_STATUS_TEXT = _(u'Disabled')
-
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (534, 430), # behind a video
     (375, 295), # featured on frontpage
@@ -368,8 +362,8 @@ class SiteLocation(Thumbnailable):
     ACTIVE = 1
 
     STATUS_CHOICES = (
-        (DISABLED, DISABLED_STATUS_TEXT),
-        (ACTIVE, ACTIVE_STATUS_TEXT),
+        (DISABLED, _(u'Disabled')),
+        (ACTIVE, _(u'Active')),
     )
 
     site = models.ForeignKey(Site, unique=True)
@@ -378,8 +372,7 @@ class SiteLocation(Thumbnailable):
                                    blank=True)
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=ACTIVE)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
@@ -388,7 +381,8 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False,
+                                 choices=localtv.tiers.CHOICES)
     hide_get_started = models.BooleanField(default=False)
 
     # ordering options
@@ -523,7 +517,7 @@ class NewsletterSettings(models.Model):
     LATEST = 4
     
     STATUS_CHOICES = (
-        (DISABLED, DISABLED_STATUS_TEXT),
+        (DISABLED, _(u'Disabled')),
         (FEATURED, _("5 most recently featured")),
         (POPULAR, _("5 most popular")),
         (LATEST, _("5 latest videos")),
@@ -767,72 +761,7 @@ class Source(Thumbnailable):
                                   using=using)
 
 
-class StatusedThumbnailableQuerySet(models.query.QuerySet):
-
-    def unapproved(self):
-        return self.filter(status=StatusedThumbnailable.UNAPPROVED)
-
-    def active(self):
-        return self.filter(status=StatusedThumbnailable.ACTIVE)
-
-    def rejected(self):
-        return self.filter(status=StatusedThumbnailable.REJECTED)
-
-    def pending(self):
-        return self.filter(status=StatusedThumbnailable.PENDING)
-
-
-class StatusedThumbnailableManager(models.Manager):
-
-    def get_query_set(self):
-        return StatusedThumbnailableQuerySet(self.model, using=self._db)
-
-    def unapproved(self):
-        return self.get_query_set().unapproved()
-
-    def active(self):
-        return self.get_query_set().active()
-
-    def rejected(self):
-        return self.get_query_set().rejected()
-
-    def pending_thumbnail(self):
-        return self.get_query_set().pending_thumbnail()
-
-
-class StatusedThumbnailable(models.Model):
-    """
-    Abstract class to provide the ``status`` field for Feeds and Videos.
-    """
-    #: An admin has not looked at this feed yet.
-    UNAPPROVED = 0
-    ACTIVE = 1
-    #: This feed was rejected by an admin.
-    REJECTED = 2
-    # This is still being imported
-    PENDING = 3
-
-    STATUS_CHOICES = (
-        (UNAPPROVED, UNAPPROVED_STATUS_TEXT),
-        (ACTIVE, ACTIVE_STATUS_TEXT),
-        (REJECTED, REJECTED_STATUS_TEXT),
-        (PENDING, PENDING_STATUS_TEXT),
-    )
-
-    objects = StatusedThumbnailableManager()
-
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=UNAPPROVED)
-
-    def is_active(self):
-        """Shortcut to check the common case of whether a video is active."""
-        return self.status == self.ACTIVE
-
-    class Meta:
-        abstract = True
-
-
-class Feed(Source, StatusedThumbnailable):
+class Feed(Source):
     """
     Feed to pull videos in from.
 
@@ -858,6 +787,18 @@ class Feed(Source, StatusedThumbnailable):
       - auto_authors: authors that are automatically applied to videos on
         import
     """
+    UNAPPROVED = 0
+    ACTIVE = 1
+    REJECTED = 2
+    PENDING = 3
+
+    STATUS_CHOICES = (
+        (UNAPPROVED, _(u'Unapproved')),
+        (ACTIVE, _(u'Active')),
+        (REJECTED, _(u'Rejected')),
+        (PENDING, _(u'Waiting on import to finish')),
+    )
+
     feed_url = models.URLField(verify_exists=False)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
@@ -867,6 +808,7 @@ class Feed(Source, StatusedThumbnailable):
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
+    status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
 
     class Meta:
         unique_together = (
@@ -1064,8 +1006,8 @@ class Category(models.Model):
         
         """
         categories = [self] + self.in_order(self.site, self.child_set.all())
-        return Video.objects.active().filter(
-            categories__in=categories).distinct()
+        return Video.objects.filter(status=Video.ACTIVE,
+                                    categories__in=categories).distinct()
     approved_set = property(approved_set)
 
     def unique_error_message(self, model_class, unique_check):
@@ -1591,7 +1533,7 @@ class OriginalVideo(VideoBase):
         self.save()
 
 
-class VideoQuerySet(StatusedThumbnailableQuerySet):
+class VideoQuerySet(models.query.QuerySet):
 
     def with_best_date(self, use_original_date=True):
         if use_original_date:
@@ -1618,7 +1560,7 @@ localtv_watch.timestamp > %s"""},
         )
 
 
-class VideoManager(StatusedThumbnailableManager):
+class VideoManager(models.Manager):
 
     def get_query_set(self):
         return VideoQuerySet(self.model, using=self._db)
@@ -1637,7 +1579,7 @@ class VideoManager(StatusedThumbnailableManager):
         """
         if sitelocation is None:
             sitelocation = SiteLocation.objects.get_current()
-        return self.active().filter(site=sitelocation.site)
+        return self.filter(status=Video.ACTIVE, site=sitelocation.site)
 
     def get_featured_videos(self, sitelocation=None):
         """
@@ -1700,13 +1642,11 @@ class VideoManager(StatusedThumbnailableManager):
         """
         if sitelocation is None:
             sitelocation = SiteLocation.objects.get_current()
-        return Video.tagged.with_all(tag).active().filter(
-            site=sitelocation.site
-        ).order_by(
-            '-when_approved',
-            '-when_published',
-            '-when_submitted'
-        )
+        return Video.tagged.with_all(tag).filter(status=Video.ACTIVE,
+                                                 site=sitelocation.site
+                                        ).order_by('-when_approved',
+                                                   '-when_published',
+                                                   '-when_submitted')
 
     def get_author_videos(self, author, sitelocation=None):
         """
@@ -1736,7 +1676,7 @@ class VideoManager(StatusedThumbnailableManager):
                            '-id')
 
 
-class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
+class Video(Thumbnailable, VideoBase):
     """
     Fields:
      - name: Name of this video
@@ -1779,6 +1719,18 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
        info
      - notes: a free-text field to add notes about the video
     """
+    UNAPPROVED = 0
+    ACTIVE = 1
+    REJECTED = 2
+    PENDING = 3
+
+    STATUS_CHOICES = (
+        (UNAPPROVED, _(u'Unapproved')),
+        (ACTIVE, _(u'Active')),
+        (REJECTED, _(u'Rejected')),
+        (PENDING, _(u'Waiting on import to finish')),
+    )
+
     site = models.ForeignKey(Site)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
@@ -1793,6 +1745,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     when_approved = models.DateTimeField(null=True, blank=True)
     when_published = models.DateTimeField(null=True, blank=True)
     last_featured = models.DateTimeField(null=True, blank=True)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = BitLyWrappingURLField(verbose_name='Website URL',
                                         verify_exists=False,

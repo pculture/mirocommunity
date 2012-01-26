@@ -57,21 +57,21 @@ def bulk_edit(request):
                                   context_instance=RequestContext(request))
 
     sitelocation = SiteLocation.objects.get_current()
-    videos = Video.objects.active().filter(
-        site=sitelocation.site)
+    videos = Video.objects.filter(status=Video.ACTIVE,
+                                  site=sitelocation.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = Video.objects.rejected()
+            videos = Video.objects.filter(status=Video.REJECTED)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = Video.objects.unapproved()
+            videos = Video.objects.filter(status=Video.UNAPPROVED)
 
     videos = videos.select_related('feed', 'search', 'site')
 
