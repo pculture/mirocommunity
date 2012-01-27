@@ -391,22 +391,22 @@ body {
 /* line 21, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   float: left;
-  border-left: 1px solid #FFF;
-  border-right: 1px solid #CCC;
 }
 
-/* line 27, ../sass/partials/modules/_navigation.scss */
+/* line 25, ../sass/partials/modules/_navigation.scss */
 .nav-item ul {
   display: none;
 }
 
-/* line 31, ../sass/partials/modules/_navigation.scss */
+/* line 29, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   list-style-type: none;
 }
 
-/* line 35, ../sass/partials/modules/_navigation.scss */
+/* line 33, ../sass/partials/modules/_navigation.scss */
 .nav-item a {
+  border-left: 1px solid #FFF;
+  border-right: 1px solid #CCC;
   display: block;
   padding: .75em 1.5em;
   font-weight: bold;
@@ -427,11 +427,24 @@ body {
   background: linear-gradient(#ffffff, #eeeeee);
   background-color: #FFF;
 }
+/* line 46, ../sass/partials/modules/_navigation.scss */
+.nav-item a:active {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #ffffff));
+  background: -webkit-linear-gradient(#eeeeee, #ffffff);
+  background: -moz-linear-gradient(#eeeeee, #ffffff);
+  background: -o-linear-gradient(#eeeeee, #ffffff);
+  background: -ms-linear-gradient(#eeeeee, #ffffff);
+  background: linear-gradient(#eeeeee, #ffffff);
+  -moz-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  border-left: 1px solid #DDD;
+}
 
-/* line 48, ../sass/partials/modules/_navigation.scss */
+/* line 53, ../sass/partials/modules/_navigation.scss */
 .nav-admin {
   float: right;
-  border-right: 0;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #348fbf), color-stop(100%, #26688b));
   background: -webkit-linear-gradient(#348fbf, #26688b);
   background: -moz-linear-gradient(#348fbf, #26688b);
@@ -439,13 +452,14 @@ body {
   background: -ms-linear-gradient(#348fbf, #26688b);
   background: linear-gradient(#348fbf, #26688b);
 }
-/* line 52, ../sass/partials/modules/_navigation.scss */
+/* line 56, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a {
+  border-right: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.75);
   color: #FFF;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
-/* line 56, ../sass/partials/modules/_navigation.scss */
+/* line 61, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3ba2d8), color-stop(100%, #2e80aa));
   background: -webkit-linear-gradient(#3ba2d8, #2e80aa);
@@ -453,4 +467,17 @@ body {
   background: -o-linear-gradient(#3ba2d8, #2e80aa);
   background: -ms-linear-gradient(#3ba2d8, #2e80aa);
   background: linear-gradient(#3ba2d8, #2e80aa);
+}
+/* line 64, ../sass/partials/modules/_navigation.scss */
+.nav-admin > a:active {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2e80aa), color-stop(100%, #3ba2d8));
+  background: -webkit-linear-gradient(#2e80aa, #3ba2d8);
+  background: -moz-linear-gradient(#2e80aa, #3ba2d8);
+  background: -o-linear-gradient(#2e80aa, #3ba2d8);
+  background: -ms-linear-gradient(#2e80aa, #3ba2d8);
+  background: linear-gradient(#2e80aa, #3ba2d8);
+  -moz-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
 }

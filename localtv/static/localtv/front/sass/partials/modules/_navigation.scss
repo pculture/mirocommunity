@@ -20,8 +20,6 @@
 
 .nav-item{
 	float:left;
-	border-left:1px solid #FFF;
-	border-right:1px solid #CCC;
 }
 
 .nav-item ul{
@@ -33,6 +31,8 @@
 }
 
 .nav-item a{
+	border-left:1px solid #FFF;
+	border-right:1px solid #CCC;
 	display:block;
 	padding:.75em 1.5em;
 	font-weight:bold;
@@ -43,18 +43,27 @@
 		@include background(linear-gradient(#FFF, #EEE));
 		background-color:#FFF;
 	}
+	&:active{
+		@include background(linear-gradient(#EEE, #FFF));
+		@include box-shadow(0 2px 6px 0 rgba(0,0,0,.15) inset);
+		border-left:1px solid #DDD;
+	}
 }
 
 .nav-admin{
 	float:right;
-	border-right:0;
 	@include background(linear-gradient(#348FBF, #26688B));
 	& > a{
+		border-right:0;
 		border-left:1px solid rgba(255,255,255,.75);
 		color:#FFF;
 		text-shadow:0 -1px 0 rgba(0,0,0,.35);
 		&:hover{
 			@include background(linear-gradient(#3BA2D8, #2E80AA));
+		}
+		&:active{
+			@include background(linear-gradient(#2E80AA, #3BA2D8));
+			@include box-shadow(0 2px 6px 0 rgba(0,0,0,.15) inset);
 		}
 	}
 }
