@@ -44,3 +44,17 @@
 		background-color:#FFF;
 	}
 }
+
+.nav-admin{
+	float:right;
+	border-right:0;
+	@include background(linear-gradient(#348FBF, #26688B));
+	& > a{
+		border-left:1px solid rgba(255,255,255,.75);
+		color:#FFF;
+		text-shadow:0 -1px 0 rgba(0,0,0,.35);
+		&:hover{
+			@include background(linear-gradient(#3BA2D8, #2E80AA));
+		}
+	}
+}
