@@ -1,0 +1,11 @@
+@include blueprint-typography;
+
+a{
+	text-decoration:none;
+}
+
+body{
+	font-size:$blueprint-font-size;
+	line-height:1.5;
+	background:#F5F5F5;
+}

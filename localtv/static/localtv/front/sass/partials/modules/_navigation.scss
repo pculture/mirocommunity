@@ -1,0 +1,46 @@
+@import "compass/css3/border-radius",
+		"compass/css3/images";
+
+#navigation{
+	margin:1.5em 0;
+}
+
+#navigation > ul{
+	@include background(linear-gradient(#F5F5F5, #E9E9E9));
+	background-color:#EEE;
+	@include border-radius(8px);
+	border:1px solid #CCC;
+	border-top-color:#DDD;
+	border-bottom-color:#BBB;
+	margin:-1px 0;
+	@include clearfix;
+	padding:0;
+	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.1));
+}
+
+.nav-item{
+	float:left;
+	border-left:1px solid #FFF;
+	border-right:1px solid #CCC;
+}
+
+.nav-item ul{
+	display:none;
+}
+
+.nav-item{
+	list-style-type:none;
+}
+
+.nav-item a{
+	display:block;
+	padding:.75em 1.5em;
+	font-weight:bold;
+	color:#666;
+	text-shadow:0 1px 0 #FFF;
+	@include box-shadow(0 1px 0 0 #FFF);
+	&:hover{
+		@include background(linear-gradient(#FFF, #EEE));
+		background-color:#FFF;
+	}
+}

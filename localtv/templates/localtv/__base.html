@@ -102,11 +102,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				{% if categories %}
 					<li class="nav-item nav-categories">
 						<a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a>
-						{% for category in categories %}
-							<li class="nav-category-item">
-								<a href="{{ category.get_absolute_url }}">{{ category }}</a>
-							</li>
-						{% endfor %}
+						<ul>
+							{% for category in categories %}
+								<li class="nav-category-item">
+									<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+								</li>
+							{% endfor %}
+						</ul>
 					</li>
 				{% endif %}
 				<li class="nav-item nav-popular">

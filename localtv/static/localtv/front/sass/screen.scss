@@ -1,7 +1,10 @@
 @import "partials/config";
 @import "blueprint/reset";
 @import "blueprint";
-@import "partials/layout",
+@import "partials/base",
+		"partials/layout",
 		"partials/modules";
 
-@include blueprint-typography;
+#container{
+//	@include showgrid;
+}
