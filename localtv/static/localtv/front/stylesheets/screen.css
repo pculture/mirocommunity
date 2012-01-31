@@ -307,6 +307,126 @@ body {
   margin: 0 auto;
   overflow: hidden;
   *zoom: 1;
+  position: relative;
+}
+
+/* line 6, ../sass/partials/_layout.scss */
+#search {
+  position: absolute;
+  top: 18px;
+  right: 0;
+}
+
+/* line 18, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+label {
+  font-weight: bold;
+}
+
+/* line 19, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+fieldset {
+  padding: 1.4em;
+  margin: 0 0 1.5em 0;
+}
+
+/* line 20, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+legend {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+/* line 26, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
+  margin: 0.5em 0;
+  background-color: white;
+  padding: 5px;
+}
+/* line 27, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+input.title, button.title {
+  font-size: 1.5em;
+}
+
+/* line 29, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+textarea {
+  margin: 0.5em 0;
+  padding: 5px;
+}
+
+/* line 30, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+select {
+  margin: 0.5em 0;
+}
+
+/* line 55, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+fieldset {
+  border: 1px solid #dddddd;
+}
+
+/* line 58, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password],
+textarea {
+  background-color: #fff;
+  border: 1px solid #dddddd;
+}
+/* line 61, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+input.text:focus, button.text:focus, input.title:focus, button.title:focus, input[type=email]:focus, button[type=email]:focus, input[type=text]:focus, button[type=text]:focus, input[type=password]:focus, button[type=password]:focus,
+textarea:focus {
+  border-color: #cccccc;
+}
+
+/* line 65, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+select {
+  background-color: #fff;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* line 44, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
+  width: 300px;
+}
+
+/* line 46, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+textarea {
+  width: 390px;
+  height: 250px;
+}
+
+/* line 10, ../sass/partials/modules/_forms.scss */
+input:focus, button:focus {
+  outline: none;
+}
+
+/* line 14, ../sass/partials/modules/_forms.scss */
+button {
+  box-sizing: content-box;
+  padding: 5px;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fdfdfd), color-stop(100%, #eeeeee));
+  background: -webkit-linear-gradient(top, #fdfdfd, #eeeeee);
+  background: -moz-linear-gradient(top, #fdfdfd, #eeeeee);
+  background: -o-linear-gradient(top, #fdfdfd, #eeeeee);
+  background: -ms-linear-gradient(top, #fdfdfd, #eeeeee);
+  background: linear-gradient(top, #fdfdfd, #eeeeee);
+}
+
+/* line 21, ../sass/partials/modules/_forms.scss */
+button:active {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #ffffff));
+  background: -webkit-linear-gradient(top, #f5f5f5, #ffffff);
+  background: -moz-linear-gradient(top, #f5f5f5, #ffffff);
+  background: -o-linear-gradient(top, #f5f5f5, #ffffff);
+  background: -ms-linear-gradient(top, #f5f5f5, #ffffff);
+  background: linear-gradient(top, #f5f5f5, #ffffff);
+}
+
+/* line 25, ../sass/partials/modules/_forms.scss */
+input, button, button {
+  border: 1px solid #DDD;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */

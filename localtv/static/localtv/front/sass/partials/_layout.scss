@@ -1,3 +1,10 @@
 #container{
 	@include container;
+	position: relative;
+}
+
+#search{
+	position:absolute;
+	top:$base-line-height;
+	right:0;
 }
