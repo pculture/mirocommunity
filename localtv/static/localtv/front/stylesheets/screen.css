@@ -517,6 +517,51 @@ input, button, button, textarea {
   padding-left: 161.667px;
 }
 
+/* line 1, ../sass/partials/modules/_site_header.scss */
+#header {
+  overflow: hidden;
+  *zoom: 1;
+  width: 950px;
+  margin: 0 auto;
+  overflow: hidden;
+  *zoom: 1;
+  margin-top: 18px;
+}
+
+/* line 7, ../sass/partials/modules/_site_header.scss */
+#SiteLogo {
+  display: inline;
+  float: left;
+  margin-right: 20px;
+  width: 141.667px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html #SiteLogo {
+  overflow-x: hidden;
+}
+/* line 9, ../sass/partials/modules/_site_header.scss */
+#SiteLogo img {
+  display: block;
+}
+
+/* line 14, ../sass/partials/modules/_site_header.scss */
+#SiteTitle, #SiteTagline {
+  display: inline;
+  float: left;
+  margin-right: 0;
+  width: 788.333px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html #SiteTitle, * html #SiteTagline {
+  overflow-x: hidden;
+}
+
+/* line 18, ../sass/partials/modules/_site_header.scss */
+#SiteTagline {
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* line 4, ../sass/partials/modules/_navigation.scss */
 #navigation {
   padding: 0;
