@@ -243,8 +243,10 @@ def mark_import_complete(import_app_label, import_model, import_pk,
         # Don't bother with the haystack query.
         haystack_count = 0
     else:
+        # pk_hack field shadows the model's pk/django_id because
+        # xapian-haystack's django_id filtering is broken.
         haystack_count = SearchQuerySet().models(Video).filter(
-                                                django_id__in=video_pks).count()
+                                                pk_hack__in=video_pks).count()
     
     logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
                    '%i, haystack_count: %i'), import_app_label, import_model,
