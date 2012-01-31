@@ -468,14 +468,9 @@ body {
   background: -o-linear-gradient(#eeeeee, #ffffff);
   background: -ms-linear-gradient(#eeeeee, #ffffff);
   background: linear-gradient(#eeeeee, #ffffff);
-  -moz-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  border-left: 1px solid #DDD;
 }
 
-/* line 59, ../sass/partials/modules/_navigation.scss */
+/* line 57, ../sass/partials/modules/_navigation.scss */
 .nav-admin {
   float: right;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #348fbf), color-stop(100%, #26688b));
@@ -485,13 +480,13 @@ body {
   background: -ms-linear-gradient(#348fbf, #26688b);
   background: linear-gradient(#348fbf, #26688b);
 }
-/* line 62, ../sass/partials/modules/_navigation.scss */
+/* line 60, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a {
   border-left: 1px solid rgba(255, 255, 255, 0.75);
   color: #FFF;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
-/* line 66, ../sass/partials/modules/_navigation.scss */
+/* line 64, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3ba2d8), color-stop(100%, #2e80aa));
   background: -webkit-linear-gradient(#3ba2d8, #2e80aa);
@@ -500,7 +495,7 @@ body {
   background: -ms-linear-gradient(#3ba2d8, #2e80aa);
   background: linear-gradient(#3ba2d8, #2e80aa);
 }
-/* line 69, ../sass/partials/modules/_navigation.scss */
+/* line 67, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2e80aa), color-stop(100%, #3ba2d8));
   background: -webkit-linear-gradient(#2e80aa, #3ba2d8);

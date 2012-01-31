@@ -51,8 +51,6 @@
 	}
 	&:active{
 		@include background(linear-gradient(#EEE, #FFF));
-		@include box-shadow(0 2px 6px 0 rgba(0,0,0,.15) inset);
-		border-left:1px solid #DDD;
 	}
 }
 
