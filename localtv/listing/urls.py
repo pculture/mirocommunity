@@ -15,14 +15,44 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import patterns
+import datetime
+
+from django.conf.urls.defaults import patterns, url
+from django.views.generic.base import TemplateView
+
+from localtv.listing.views import VideoSearchView
+from localtv.models import Video
+from localtv.search.query import SmartSearchQuerySet
 
 urlpatterns = patterns(
     'localtv.listing.views',
-    (r'^$', 'index', {}, 'localtv_list_index'),
-    (r'^new/$', 'new_videos', {}, 'localtv_list_new'),
-    (r'^this-week/$', 'this_week_videos', {}, 'localtv_list_this_week'),
-    (r'^popular/$', 'popular_videos', {}, 'localtv_list_popular'),
-    (r'^featured/$', 'featured_videos', {}, 'localtv_list_featured'),
-    (r'^tag/(.+)/$', 'tag_videos', {}, 'localtv_list_tag'),
-    (r'^feed/(\d+)/?$', 'feed_videos', {}, 'localtv_list_feed'))
+    url(r'^$', TemplateView.as_view(template_name="localtv/browse.html"),
+                name='localtv_list_index'),
+    url(r'^new/$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_new.html',
+                    default_sort='-date'
+                ), name='localtv_list_new'),
+    url(r'^this-week/$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_new.html',
+                    approved_since=datetime.timedelta(days=7),
+                    default_sort='-approved'
+                ), name='localtv_list_this_week'),
+    url(r'^popular/$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_popular.html',
+                    default_sort='-popular'
+                ), name='localtv_list_popular'),
+    url(r'^featured/$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_featured.html',
+                    default_sort='-featured'
+                ), name='localtv_list_featured'),
+    url(r'^tag/(?P<name>.+)/$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_tag.html',
+                    default_filter='tag',
+                    default_sort='-date'
+                ), name='localtv_list_tag'),
+    url(r'^feed/(?P<pk>\d+)/?$', VideoSearchView.as_view(
+                    template_name='localtv/video_listing_feed.html',
+                    default_filter='feed',
+                    default_sort='-date'
+                ), name='localtv_list_feed')
+)

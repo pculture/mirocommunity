@@ -19,7 +19,6 @@ import datetime
 import re
 import os.path
 import feedparser
-import datetime
 import urlparse
 
 import django.template.defaultfilters
@@ -43,13 +42,14 @@ from tagging.forms import TagField
 
 import localtv.settings
 from localtv import models
-from localtv import util
+from localtv import utils
 import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
-import vidscraper.sites.blip
+from vidscraper.errors import CantIdentifyUrl
+from vidscraper import auto_feed
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class BulkFormSetMixin(object):
     """
@@ -63,7 +63,7 @@ class BulkFormSetMixin(object):
     @property
     def bulk_forms(self):
         for form in self.initial_forms:
-            if form.cleaned_data['BULK'] and \
+            if form.cleaned_data and form.cleaned_data['BULK'] and \
                     not self._should_delete_form(form):
                 yield form
 
@@ -392,10 +392,10 @@ class BulkEditVideoForm(EditVideoForm):
 
         # Great. Fill the cache.
         if 'categories_qs' not in cache:
-            cache_for_form_optimization['categories_qs'] = util.MockQueryset(
+            cache_for_form_optimization['categories_qs'] = utils.MockQueryset(
                 models.Category.objects.filter(site=Site.objects.get_current()))
         if 'authors_qs' not in cache_for_form_optimization:
-            cache_for_form_optimization['authors_qs'] = util.MockQueryset(
+            cache_for_form_optimization['authors_qs'] = utils.MockQueryset(
                 User.objects.order_by('username'))
 
         return cache_for_form_optimization
@@ -418,7 +418,7 @@ class BulkEditVideoForm(EditVideoForm):
         # We have to initialize tags manually because the model form
         # (django.forms.models.model_to_dict) only collects fields and
         # relations, and not descriptors like Video.tags
-        self.initial['tags'] = util.get_or_create_tags(self.instance.tags)
+        self.initial['tags'] = utils.edit_string_for_tags(self.instance.tags)
 
         # cache the querysets so that we don't hit the DB for each form
         cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
@@ -1040,10 +1040,16 @@ class AddFeedForm(forms.Form):
          'dailymotion'),
         )
 
+    def _blip_add_rss_skin(url):
+        if '?' in url:
+            return url + '&skin=rss'
+        else:
+            return url + '?skin=rss'
+
     SERVICE_FEEDS = {
         'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
                     'uploads?alt=rss&v=2&orderby=published'),
-        'blip': vidscraper.sites.blip._blip_feedify,
+        'blip': _blip_add_rss_skin,
         'vimeo': 'http://www.vimeo.com/%s/videos/rss',
         'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
         }
@@ -1057,39 +1063,20 @@ class AddFeedForm(forms.Form):
         return 'localtv:add_feed_form:%i' % hash(feed_url)
 
     def clean_feed_url(self):
-        value = self.cleaned_data['feed_url']
-        for regexp, service in self.SERVICE_PROFILES:
-            match = regexp.search(value)
-            if match:
-                service_feed_generator = self.SERVICE_FEEDS[service]
-                if callable(service_feed_generator):
-                    value = service_feed_generator(value)
-                else:
-                    username = match.group('name')
-                    value = service_feed_generator % username
-                break
+        url = self.cleaned_data['feed_url']
+        try:
+            scraped_feed = auto_feed(url)
+            url = scraped_feed.url
+        except CantIdentifyUrl:
+            raise forms.ValidationError('It does not appear that %s is an '
+                                        'RSS/Atom feed URL.' % url)
 
         site = Site.objects.get_current()
-        if models.Feed.objects.filter(feed_url=value,
+        if models.Feed.objects.filter(feed_url=url,
                                       site=site):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
 
-        key = self._feed_url_key(value)
-        parsed = cache.get(key)
-        if parsed is None:
-            parsed = feedparser.parse(value)
-            if 'bozo_exception' in parsed:
-                # can't cache exceptions
-                del parsed['bozo_exception']
-            cache.set(key, parsed)
-        if not parsed.feed or not (parsed.entries or
-                                   parsed.feed.get('title')):
-            raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.' % value)
+        self.cleaned_data['scraped_feed'] = scraped_feed
 
-        # drop the parsed data into cleaned_data so that other code can re-use
-        # the data
-        self.cleaned_data['parsed_feed'] = parsed
-
-        return value
+        return url

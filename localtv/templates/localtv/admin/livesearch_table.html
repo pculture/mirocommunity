@@ -29,7 +29,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <span href="#" class="floatright"><span>This search is saved</span></span>
   {% else %}
   {% if query_string %}
-    <a href="{% url localtv_admin_search_add %}?query={{ query_string|urlencode }}" class="add">
+    <a href="{% url localtv_admin_search_add %}?q={{ query_string|urlencode }}" class="add">
       <span>Save as a Source</span></a>
   {% endif %}
   {% endif %}
@@ -41,7 +41,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <div class="fields">
 
     <input id="livesearch_query_input" class="left large_field"
-           name="query"
+           name="q"
            value="{{ query_string }}"/>
            <span class="left">and sort by</span>
     <select name="order_by" class="left">

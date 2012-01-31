@@ -14,154 +14,136 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django import template
-from django.contrib.auth.models import User
-from django.db.models import Q
+from django.utils.functional import curry
 
-from tagging.models import Tag
+from localtv.search.forms import VideoSearchForm
+from localtv.search.utils import SortFilterMixin, SearchQuerysetSliceHack
 
-from localtv import models
 
 register = template.Library()
 
-class BaseVideoListNode(template.Node):
+
+class BaseVideoListNode(template.Node, SortFilterMixin):
     """
     Base helper class (abstract) for handling the get_video_list_* template
     tags.  Based heavily on the template tags for django.contrib.comments.
-    """
 
+    Syntax::
+
+        {% get_video_list_FOO as <varname> %}
+        {% get_video_list_for_FOO <foo_instance> as <varname> %}
+
+    """
+    form_class = VideoSearchForm
     takes_argument = False # if True, takes an argument (tag/category/user
                            # lists)
+
+    sort = None
+    search_filter = None
+    field_name = None
 
     @classmethod
     def handle_token(cls, parser, token):
         """Class method to parse get_video_list_* and return a Node."""
-        tokens = token.split_contents()
-        argument_count = int(cls.takes_argument) + 3
-        if len(tokens) != argument_count:
+        bits = token.split_contents()
+        tag_name = bits[0]
+        bits = bits[1:]
+        argument_count = int(cls.takes_argument) + 2
+        if len(bits) != argument_count:
             raise template.TemplateSyntaxError(
-                "%r tag requires %i arguments" % (tokens[0], argument_count))
-        if not cls.takes_argument:
-            # {% get_whatever as varname %}
-            if tokens[1] != 'as':
-                raise template.TemplateSyntaxError(
-                    "Second argument in %r tag must be 'as'" % tokens[0])
-            return cls(as_varname=tokens[2])
-        else:
-            if tokens[2] != 'as':
-                raise template.TemplateSyntaxError(
-                    "Third argument in %r tag must be 'as'" % tokens[0])
-            return cls(item=tokens[1], as_varname=tokens[3])
+                "%r tag requires %i arguments" % (tag_name, argument_count))
+        item = None
+        if cls.takes_argument:
+            item = parser.compile_filter(bits[0])
+            bits = bits[1:]
+        if bits[0] != 'as':
+            raise template.TemplateSyntaxError(
+                    "%s argument in %r tag must be 'as'" % (
+                        "Third" if cls.takes_argument else "Second", tag_name))
+        return cls(item=item, as_varname=bits[1])
 
     def __init__(self, item=None, as_varname=None):
-        if item is not None:
-            if item.startswith('"') and item.endswith('"'):
-                self.item = item[1:-1]
-            elif item.startswith("'") and item.endswith("'"):
-                self.item = item[1:-1]
-            else:
-                self.item = template.Variable(item)
-        else:
-            self.item = item
+        self.item = item
         self.as_varname = as_varname
 
     def render(self, context):
-        context[self.as_varname] = self.get_query_set(context)
+        context[self.as_varname] = self.get_video_list(context)
         return ''
 
-    def get_query_set(self, context):
-        raise NotImplementedError
+    def get_video_list(self, context):
+        sqs = self._query("")
+        sqs = self._sort(sqs, self.sort)
+        if self.search_filter is not None:
+            filter_dict = self.filters.get(self.search_filter, None)
+            if filter_dict is not None:
+                item = self.item.resolve(context)
+                val = None
+                if isinstance(item, filter_dict['model']):
+                    val = [item]
+                elif isinstance(item, basestring):
+                    val = {self.field_name: item}
+                if val is not None:
+                    sqs, xxx = self._filter(sqs, **{self.search_filter:
+                                                           val})
+        sqs = sqs.load_all()
+        return SearchQuerysetSliceHack(sqs)
+
 
 class NewVideoListNode(BaseVideoListNode):
     """
     Insert a list of new videos into the context.
+
     """
-    def get_query_set(self, context):
-        return models.Video.objects.new(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE)
+    sort = '-date'
+
 
 class PopularVideoListNode(BaseVideoListNode):
     """
     Insert a list of popular videos into the context.
+
     """
-    def get_query_set(self, context):
-        return models.Video.objects.popular_since(
-            datetime.timedelta(days=7), sitelocation=context['sitelocation'],
-            status=models.VIDEO_STATUS_ACTIVE)
+    sort = '-popular'
+
 
 class FeaturedVideoListNode(BaseVideoListNode):
     """
     Insert a list of featured videos into the context.
+
     """
-    def get_query_set(self, context):
-        return models.Video.objects.filter(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE,
-            last_featured__isnull=False).order_by('-last_featured',
-                                                  '-when_approved',
-                                                  '-when_published',
-                                                  '-when_submitted')
+    sort = '-featured'
+
 
 class CategoryVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given category into the context.
+
     """
     takes_argument = True
+    search_filter = 'category'
+    field_name = 'slug'
+    sort = '-date'
 
-    def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            category = self.item.resolve(context)
-        else:
-            try:
-                category = models.Category.objects.get(
-                    slug=self.item,
-                    site=context['sitelocation'].site)
-            except models.Category.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.objects.new(
-            site=context['sitelocation'].site,
-            categories=category,
-            status=models.VIDEO_STATUS_ACTIVE)
 
 class TagVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given tag into the context.
+
     """
     takes_argument = True
+    search_filter = 'tag'
+    field_name = 'name'
 
-    def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            tag = self.item.resove(context)
-        else:
-            try:
-                tag = Tag.objects.get(name=self.item)
-            except Tag.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.tagged.with_all(tag).filter(
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE)
 
 class UserVideoListNode(BaseVideoListNode):
     """
     Insert a list of videos for the given user into the context.
+
     """
     takes_argument = True
+    search_filter = 'author'
+    field_name = 'username'
 
-    def get_query_set(self, context):
-        if isinstance(self.item, template.Variable):
-            author = self.item.resolve(context)
-        else:
-            try:
-                author = User.objects.get(username=self.item)
-            except User.DoesNotExist:
-                return models.Video.objects.none()
-        return models.Video.objects.filter(
-            Q(authors=author) | Q(user=author),
-            site=context['sitelocation'].site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)
 register.tag('get_video_list_popular', PopularVideoListNode.handle_token)

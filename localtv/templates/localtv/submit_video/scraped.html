@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
 {% block form %}
     {% if user_is_admin %}
-    {% if not data.title or not data.description %}
+    {% if not video.title or not video.description %}
     <tr>
       <td class="warning">Warning: not all information was received from the video service.  You may need to add the information manually once the video is added.</td>
     </tr>
@@ -30,31 +30,31 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
     <tr>
       <td>
-        <a href="{{ data.link }}" class="thumbnail">
-          {% if data.thumbnail_url %}<img src="{{ data.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{% get_static_url "/images/default.jpg" %}" />{% endif %}
+        <a href="{{ video.link }}" class="thumbnail">
+          {% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{{ STATIC_URL }}localtv/images/default.jpg" />{% endif %}
         </a>
         <div class="scraped_details">
-          {% if data.title %}
-          <h2><a href="{{ data.link }}" title="{{ data.title }}">{{ data.title }}</a></h2>
+          {% if video.title %}
+          <h2><a href="{{ video.link }}" title="{{ video.title }}">{{ video.title }}</a></h2>
           {% else %}
-          <h2><a href="{{ data.link }}">{% trans "(no title)" %}</a></h2>
+          <h2><a href="{{ video.link }}">{% trans "(no title)" %}</a></h2>
           {% endif %}
           <span class="credits">
-            {% if data.user %}
+            {% if video.user %}
             <span class="posted_by">
-              By <a href="{{ data.user_url }}">{{ data.user }}</a>
+              By <a href="{{ video.user_url }}">{{ video.user }}</a>
             </span>
             {% endif %}
-            {% if data.publish_date %}
-            <span class="posted_at">Published {{ data.publish_date|simpletimesince }} ago</span>
+            {% if video.publish_date %}
+            <span class="posted_at">Published {{ video.publish_date|simpletimesince }} ago</span>
             {% endif %}
           </span>
-          {% if data.tags %}
+          {% if video.tags %}
           <div class="tags">
-            Tags: {% for tag in data.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            Tags: {% for tag in video.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}
           </div>
           {% endif %}
-          <div class="description">{{ data.description|sanitize }}</div>
+          <div class="description">{{ video.description|sanitize }}</div>
         </div>
       </td>
     </tr>

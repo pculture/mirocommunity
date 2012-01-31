@@ -29,24 +29,28 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.utils import simplejson
 from django.views.decorators.csrf import csrf_protect
 
 import celery
 from importlib import import_module
-import simplejson
+
+import vidscraper
 
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv import models, tasks, util
+from localtv import tasks, utils
+from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
 
-from vidscraper import bulk_import
-
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 VIDEO_SERVICE_TITLES = (
     re.compile(r'Uploads by (.+)'),
     re.compile(r"Vimeo / (.+)'s? uploaded videos"),
     re.compile(r'Vimeo / (.+)'),
+    re.compile(r"(.+)'s videos on Vimeo"),
+    re.compile(r"Videos (.+) likes on Vimeo"),
+    re.compile(r"(.+) on Vimeo"),
     re.compile(r"Dailymotion - (.+)'s")
     )
 
@@ -60,38 +64,46 @@ def add_feed(request):
             add_form['feed_url'].errors.as_text())
 
     feed_url = add_form.cleaned_data['feed_url']
-    parsed_feed = add_form.cleaned_data['parsed_feed']
+    scraped_feed = add_form.cleaned_data['scraped_feed']
 
-    title = getattr(parsed_feed.feed, 'title', '') or feed_url
+    try:
+        scraped_feed.load()
+    except vidscraper.errors.CantIdentifyUrl:
+        return HttpResponseBadRequest(
+            '* It does not appear that %s is an RSS/Atom feed URL.' % (
+                scraped_feed.url,))
+    title = scraped_feed.title or ''
+
     for regexp in VIDEO_SERVICE_TITLES:
         match = regexp.match(title)
         if match:
             title = match.group(1)
             break
-
+        
     defaults = {
         'name': title,
         'feed_url': feed_url,
-        'webpage': parsed_feed.feed.get('link', ''),
-        'description': parsed_feed.feed.get('summary', ''),
+        'webpage': scraped_feed.webpage or '',
+        'description': scraped_feed.description or '',
+        'etag': scraped_feed.etag or '',
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
-        'status': models.FEED_STATUS_UNAPPROVED,
+        'status': Feed.INACTIVE,
         'user': request.user,
-        'etag': '',
+
         'auto_approve': bool(request.POST.get('auto_approve', False))}
 
-    video_count = bulk_import.video_count(feed_url, parsed_feed)
+    video_count = scraped_feed.entry_count
 
     if request.method == 'POST':
         if 'cancel' in request.POST:
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
-        form = forms.SourceForm(request.POST, instance=models.Feed(**defaults))
+        form = forms.SourceForm(request.POST, instance=Feed(**defaults))
         if form.is_valid():
-            feed, created = models.Feed.objects.get_or_create(
+            feed, created = Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=request.sitelocation().site,
+                site=SiteLocation.objects.get_current().site,
                 defaults=defaults)
 
             if not created:
@@ -101,12 +113,13 @@ def add_feed(request):
             for key, value in form.cleaned_data.items():
                 setattr(feed, key, value)
 
-            thumbnail_url = util.get_thumbnail_url(parsed_feed.feed)
+            thumbnail_url = scraped_feed.thumbnail_url
+
             if thumbnail_url:
                 try:
                     thumbnail_file = ContentFile(
                         urllib2.urlopen(
-                            util.quote_unicode_url(thumbnail_url)).read())
+                            utils.quote_unicode_url(thumbnail_url)).read())
                 except IOError: # couldn't get the thumbnail
                     pass
                 else:
@@ -124,70 +137,26 @@ def add_feed(request):
                 feed.auto_authors.add(user)
             feed.save()
 
-            return HttpResponseRedirect(reverse('localtv_admin_feed_add_done',
-                                                args=[feed.pk]))
+            tasks.feed_update.delay(
+                feed.pk,
+                using=tasks.CELERY_USING)
+            
+            return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
     else:
-        form = forms.SourceForm(instance=models.Feed(**defaults))
+        form = forms.SourceForm(instance=Feed(**defaults))
     return render_to_response('localtv/admin/add_feed.html',
                               {'form': form,
                                'video_count': video_count},
                               context_instance=RequestContext(request))
 
-
-@require_site_admin
-def add_feed_done(request, feed_id):
-    feed = get_object_or_404(models.Feed, pk=feed_id)
-    if 'task_id' in request.GET:
-        task_id = request.GET['task_id']
-        task = celery.result.AsyncResult(task_id)
-    else:
-        mod = import_module(settings.SETTINGS_MODULE)
-        manage_py = os.path.join(
-            os.path.dirname(mod.__file__),
-            'manage.py')
-        task = tasks.check_call.delay(
-            (getattr(settings, 'PYTHON_EXECUTABLE', sys.executable),
-             manage_py,
-             'bulk_import',
-             feed_id),
-            env={'DJANGO_SETTINGS_MODULE': settings.SETTINGS_MODULE})
-        if not task.ready():
-            return HttpResponseRedirect('%s?task_id=%s' % (
-                    request.path, task.task_id))
-
-    if task.ready(): # completed
-        context = {'feed': feed,
-                   'result': {
-                'status': task.status,
-                'result': task.result}}
-        if task.successful():
-            json = simplejson.loads(task.result)
-            context.update(json)
-        else:
-            feed.status = models.FEED_STATUS_ACTIVE
-            feed.save()
-        return render_to_response('localtv/admin/feed_done.html',
-                                  context,
-                                  context_instance=RequestContext(request))
-    else:
-        videos_that_are_fully_thumbnailed = feed.video_set.exclude(
-            status=models.FEED_STATUS_PENDING_THUMBNAIL)
-        fully_thumbnailed_count = videos_that_are_fully_thumbnailed.count()
-        return render_to_response('localtv/admin/feed_wait.html',
-                                  {'feed': feed,
-                                   'fully_thumbnailed_count': fully_thumbnailed_count,
-                                   'task_id': task_id},
-                                  context_instance=RequestContext(request))
-
-
 @referrer_redirect
 @require_site_admin
 def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
-        models.Feed,
+        Feed,
         id=feed_id,
-        site=request.sitelocation().site)
+        site=SiteLocation.objects.get_current().site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

@@ -17,257 +17,157 @@
 
 import datetime
 
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
-from django.views.generic.list_detail import object_list
+from django.contrib.sites.models import Site
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, Page
+from django.http import Http404
+from django.views.generic import ListView
 from django.conf import settings
-
-from tagging.models import Tag
+from voting.models import Vote
 
 import localtv.settings
-from localtv import models
+from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
+from localtv.search.utils import SortFilterViewMixin, SearchQuerysetSliceHack
 
-def count_or_default(count):
-    if count is None:
-        count = getattr(settings, 'VIDEOS_PER_PAGE', 15)
-    return count
 
-def get_args(func):
-    def wrapper(request, *args, **kwargs):
-        count = request.GET.get('count')
-        if count:
+VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
+MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
+
+
+class VideoSearchView(ListView, SortFilterViewMixin):
+    """
+    Generic view for videos; implements pagination, filtering and searching.
+
+    """
+    paginate_by = VIDEOS_PER_PAGE
+    form_class = VideoSearchForm
+    context_object_name = 'video_list'
+
+    #: Default sort method to use. Should be one of the keys from ``sorts``.
+    default_sort = None
+
+    #: Default filter to use. Should be one of the keys from ``filters``.
+    default_filter = None
+
+    #: Period of time within which the video was approved.
+    approved_since = None
+
+    def get_paginate_by(self, queryset):
+        paginate_by = self.request.GET.get('count')
+        if paginate_by:
             try:
-                count = int(count)
+                paginate_by = int(paginate_by)
             except ValueError:
-                count = None
-        if count:
-            kwargs['count'] = count
-        sort = request.GET.get('sort')
-        if sort not in ('latest',):
-            sort = None
-        if sort:
-            kwargs['sort'] = sort
-        return func(request, *args, **kwargs)
-    return wrapper
+                paginate_by = None
+        if paginate_by is None:
+            paginate_by = self.paginate_by
+        return paginate_by
 
-def index(request):
-    return render_to_response(
-        'localtv/browse.html', {},
-        context_instance=RequestContext(request))
+    def _get_query(self, request):
+        """Fetches the query for the current request."""
+        # Support old-style templates that used "query". Remove in 2.0.
+        key = 'q' if 'q' in request.GET else 'query'
+        return request.GET.get(key, "")
 
-@get_args
-def new_videos(request, count=None, sort=None):
-    count = count_or_default(count)
+    def get_queryset(self):
+        """
+        Returns a list based on the results of a haystack search.
 
-    videos = models.Video.objects.new(
-        site=request.sitelocation().site,
-        status=models.VIDEO_STATUS_ACTIVE)
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_new.html',
-        allow_empty=True, template_object_name='video')
+        """
+        sqs = self._query(self._get_query(self.request))
+        sqs = self._sort(sqs, self._get_sort(self.request))
+        filter_dict, self.filter_form = self._get_filter_info(self.request,
+                                                              self.kwargs)
+        sqs, self._filter_dict = self._filter(sqs, **filter_dict)
+        if self.approved_since is not None:
+            sqs = sqs.exclude(
+                when_approved=self._empty_value['approved']
+            ).filter(when_approved__gt=(
+                            datetime.datetime.now() - self.approved_since))
 
-@get_args
-def this_week_videos(request, count=None, sort=None):
-    count = count_or_default(count)
+        # :meth:`SearchQuerySet.load_all` sets the queryset up to load all, but
+        # doesn't actually perform any loading; this will only happen when the
+        # cache is filled.
+        return SearchQuerysetSliceHack(sqs.load_all())
 
-    videos = models.Video.objects.filter(
-        status=models.VIDEO_STATUS_ACTIVE,
-        when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
-        ).order_by('-when_approved')
+    def get_context_data(self, **kwargs):
+        """
+        In addition to the inherited get_context_data methods, populates a
+        ``sort_links`` variable in the template context, which contains the
+        querystring for the next sort if that option is chosen.
 
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_new.html',
-        allow_empty=True, template_object_name='video')
+        For example, if the sort is by descending popularity, choosing the
+        ``date`` option will sort by descending date, while choosing
+        ``popular`` would switch to sorting by ascending popularity.
 
-@get_args
-def popular_videos(request, count=None, sort=None):
-    count = count_or_default(count)
+        """
+        context = ListView.get_context_data(self, **kwargs)
+        form = self._make_search_form(self._get_query(self.request))
+        context['form'] = form
+        form.is_valid()
+        context['query'] = form.cleaned_data['q']
 
-    period = datetime.timedelta(days=7)
-    videos = models.Video.objects.popular_since(
-        period, request.sitelocation(),
-        watch__timestamp__gte=datetime.datetime.now() - period,
-        status=models.VIDEO_STATUS_ACTIVE,
-        )
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_popular.html',
-        allow_empty=True, template_object_name='video')
+        sort, desc = self._process_sort(self._get_sort(self.request))
+        sort_links = {}
 
-@get_args
-def featured_videos(request, count=None, sort=None):
-    count = count_or_default(count)
+        for s in self.sorts:
+            querydict = self.request.GET.copy()
+            querydict.pop('sort', None)
+            querydict.pop('page', None)
+            if s == sort:
+                # Reverse the current ordering if the sort is active.
+                querydict['sort'] = ''.join(('' if desc else '-', s))
+            else:
+                # Default to descending.
+                querydict['sort'] = ''.join(('-', s))
+            sort_links[s] = ''.join(('?', querydict.urlencode()))
+        context['sort_links'] = sort_links
 
-    kwargs = {
-        'site': request.sitelocation().site,
-        'last_featured__isnull': False,
-        'status': models.VIDEO_STATUS_ACTIVE}
-    if sort == 'latest':
-        videos = models.Video.objects.new(**kwargs)
-    else:
-        videos = models.Video.objects.filter(**kwargs)
-        videos = videos.order_by(
-            '-last_featured', '-when_approved', '-when_published',
-            '-when_submitted')
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_featured.html',
-        allow_empty=True, template_object_name='video')
+        context['filters'] = self._filter_dict
+        context['filter_form'] = self.filter_form
+        if self.default_filter in self._filter_dict:
+            context[self.default_filter] = (
+                self._filter_dict[self.default_filter][0])
 
-@get_args
-def tag_videos(request, tag_name, count=None, sort=None):
-    count = count_or_default(count)
-
-    tag = get_object_or_404(Tag, name=tag_name)
-    videos = models.Video.tagged.with_all(tag).filter(
-        site=request.sitelocation().site,
-        status=models.VIDEO_STATUS_ACTIVE)
-    videos = videos.order_by(
-        '-when_approved', '-when_published', '-when_submitted')
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_tag.html',
-        allow_empty=True, template_object_name='video',
-        extra_context={'tag': tag})
-
-@get_args
-def feed_videos(request, feed_id, count=None, sort=None):
-    count = count_or_default(count)
-
-    feed = get_object_or_404(models.Feed, pk=feed_id,
-                             site=request.sitelocation().site)
-    videos = models.Video.objects.new(site=request.sitelocation().site,
-                                      feed=feed,
-                                      status=models.VIDEO_STATUS_ACTIVE)
-    return object_list(
-        request=request, queryset=videos,
-        paginate_by=count,
-        template_name='localtv/video_listing_feed.html',
-        allow_empty=True, template_object_name='video',
-        extra_context={'feed': feed})
+        return context
 
 
-@get_args
-def video_search(request, count=None, sort=None):
-    count = count_or_default(count)
+class SiteListView(ListView):
+    """
+    Filters the ordinary queryset according to the current site.
+    
+    """
+    def get_queryset(self):
+        return super(SiteListView, self).get_queryset().filter(
+                                site=Site.objects.get_current())
 
-    query = ''
-    pks = []
 
-    if 'query' in request.GET and 'q' not in request.GET:
-        # old-style templates
-        GET = request.GET.copy()
-        GET['q'] = GET['query']
-        request.GET = GET
+class CategoryVideoSearchView(VideoSearchView):
+    """
+    Adds support for voting on categories. Essentially, all this means is that
+    a ``user_can_vote`` variable is added to the context.
 
-    if request.GET.get('q'):
-        form = VideoSearchForm(request.GET)
+    """
+    def get_context_data(self, **kwargs):
+        context = VideoSearchView.get_context_data(self, **kwargs)
+        category = context['category']
 
-        if form.is_valid():
-            query = form.cleaned_data['q']
-            results = form.search()
-            pks = [result.pk for result in results if result is not None]
-
-    if not pks:
-        queryset = models.Video.objects.none()
-    elif sort == 'latest':
-        queryset = models.Video.objects.new(
-            site=request.sitelocation().site,
-            status=models.VIDEO_STATUS_ACTIVE,
-            pk__in=pks)
-    else:
-        queryset = models.Video.objects.filter(
-                site=request.sitelocation().site,
-                status=models.VIDEO_STATUS_ACTIVE,
-                pk__in=pks).order_by()
-        order = ['-localtv_video.id = %i' % int(pk) for pk in pks]
-        queryset = queryset.extra(order_by=order)
-    return object_list(
-        request=request, queryset=queryset,
-        paginate_by=count,
-        template_name='localtv/video_listing_search.html',
-        allow_empty=True, template_object_name='video',
-        extra_context={'query': query})
-
-@get_args
-def category(request, slug=None, count=None, sort=None):
-    count = count_or_default(count)
-
-    if slug is None:
-        categories = models.Category.objects.filter(
-            site=request.sitelocation().site,
-            parent=None)
-
-        return object_list(
-            request=request, queryset=categories,
-            paginate_by=count,
-            template_name='localtv/categories.html',
-            allow_empty=True, template_object_name='category')
-    else:
-        category = get_object_or_404(models.Category, slug=slug,
-                                     site=request.sitelocation().site)
         user_can_vote = False
-        if localtv.settings.voting_enabled() and category.contest_mode:
+        if (localtv.settings.voting_enabled() and 
+                    category.contest_mode and
+                    request.user.is_authenticated()):
+            # TODO: Benchmark this against a version where the pk queryset is
+            # evaluated here instead of becoming a subquery.
+            pks = category.approved_set().filter(
+                site=Site.objects.get_current()).values_list('id', flat=True)
             user_can_vote = True
-            if request.user.is_authenticated():
-                import voting
-                MAX_VOTES_PER_CATEGORY = getattr(settings,
-                                                 'MAX_VOTES_PER_CATEGORY',
-                                                 3)
-                votes = voting.models.Vote.objects.filter(
-                    content_type=ContentType.objects.get_for_model(
-                        models.Video),
-                    object_id__in=category.approved_set.values_list('id',
-                                                                    flat=True),
-                    user=request.user).count()
-                if votes >= MAX_VOTES_PER_CATEGORY:
-                    user_can_vote = False
-        return object_list(
-            request=request, queryset=category.approved_set.all(),
-            paginate_by=count,
-            template_name='localtv/category.html',
-            allow_empty=True, template_object_name='video',
-            extra_context={'category': category,
-                           'user_can_vote': user_can_vote})
-
-@get_args
-def author(request, id=None, count=None, sort=True):
-    count = count_or_default(count)
-
-    if id is None:
-        return render_to_response(
-            'localtv/author_list.html',
-            {'authors': User.objects.all()},
-            context_instance=RequestContext(request))
-    else:
-        author = get_object_or_404(User,
-                                   pk=id)
-        if sort:
-            videos = models.Video.objects.new()
-        else:
-            videos = models.Video.objects.all()
-        videos = videos.filter(
-            Q(authors=author) | Q(user=author),
-            site=request.sitelocation().site,
-            status=models.VIDEO_STATUS_ACTIVE).distinct()
-        # Calls to DISTINCT in SQL can mess up the ordering. So,
-        # if sorting is enabled, re-do the sort at the last minute.
-        if sort:
-            videos = videos.order_by('-best_date')
-        return object_list(request=request, queryset=videos,
-                           paginate_by=count,
-                           template_name='localtv/author.html',
-                           allow_empty=True,
-                           template_object_name='video',
-                           extra_context={'author': author})
+            votes = Vote.objects.filter(
+                    content_type=ContentType.objects.get_for_model(Video),
+                    object_id__in=pks,
+                    user=self.request.user).count()
+            if votes >= MAX_VOTES_PER_CATEGORY:
+                user_can_vote = False
+        context['user_can_vote'] = user_can_vote
+        return context

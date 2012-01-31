@@ -41,7 +41,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <h4>Log in</h4>
         <form action="{{ settings.LOGIN_URL }}" method="POST">{% csrf_token %}
           {% if form.non_field_errors %}
-          {{ form.non_field_errors }}
+          <div style="color: red; padding-bottom: 10px;">
+            Username or password incorrect. Did you <a href="{% url auth_password_reset %}">forget your password?</a>
+          </div>
           {% endif %}
           <p>
             {{ form.username.errors }}
@@ -52,6 +54,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <label><input type="password" placeholder="Password" value="{{ form.data.password }}" name="password" id="id_password" /></label>
           </p>
           <input type="hidden" name="next" value="{{ next }}" />
+          {% if form.non_field_errors %}
+          <p>
+            {{ form.non_field_errors }}
+          </p>
+          {% endif %}
           <p>
             <a href="{% url auth_password_reset %}" class="forgot">Forgot?</a>
             <input type="submit" value="Log In" class="button" />
@@ -84,13 +91,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     <div id="login_tab_facebook" {% if settings.LOCALTV_LOGIN_FACEBOOK_DEFAULT and not form.errors %} style="display: block;" class="active" %}{% else %} class="inactive"{% endif %}>
       <div class="left">
-        <a href="{% url socialauth_facebook_login %}?next={{ next }}"><img src="{% get_static_url "/images/facebook_login.png" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+        <a href="{% url socialauth_facebook_login %}?next={{ next }}"><img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Twitter" /></a>
       </div>
       <div class="clear"></div>
     </div>
     <div id="login_tab_twitter" class="inactive">
       <div class="left">
-        <a href="{% url socialauth_twitter_login %}?next={{ next }}"><img src="{% get_static_url "/images/twitter_login.gif" %}" width="151" height="24" alt="Sign In with Twitter" /></a>
+        <a href="{% url socialauth_twitter_login %}?next={{ next }}"><img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" /></a>
       </div>
       <div class="clear"></div>
     </div>

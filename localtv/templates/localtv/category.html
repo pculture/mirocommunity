@@ -50,25 +50,29 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
 
 </div>
-{% if category.child_set.count %}
+{% with child_set=category.childset.all %}
+{% if child_set %}
 <div id="subcategory_sidebar">
   <div id="main_header" class="small">
     <h2>Subcategories</h2>
   </div>
   <ul class="cat_list">
-    {% for subcat in category.child_set.all %}
+    {% for subcat in child_set %}
     <li>
       <a class="top_cat_button" title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
-      {% if subcat.child_set.count %}
+      {% with subcat_child_set=subcat.child_set.all %}
+      {% if subcat_child_set %}
       <ul>
-        {% for subsubcat in subcat.child_set.all %}
+        {% for subsubcat in subcat_child_set %}
         <li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
         {% endfor %}
       </ul>
       {% endif %}
+      {% endwith %}
     </li>
     {% endfor %}
   </ul>
 </div>
 {% endif %}
+{% endwith %}
 {% endblock %}

@@ -18,16 +18,16 @@ from django.contrib.auth.models import User
 
 from localtv.tests import BaseTestCase
 
-from localtv import models
-from localtv.playlists.models import Playlist
 from localtv import search
+from localtv.models import Video, SavedSearch, Feed
+from localtv.playlists.models import Playlist
 
 class SearchTokenizeTestCase(BaseTestCase):
     """
     Tests for the search query tokenizer.
     """
     def assertTokenizes(self, query, result):
-        self.assertEquals(tuple(search.tokenize(query)),
+        self.assertEqual(tuple(search.tokenize(query)),
                           tuple(result))
 
     def test_split(self):
@@ -103,7 +103,7 @@ class AutoQueryTestCase(BaseTestCase):
         Rebuilds the search index.
         """
         from haystack import site
-        index = site.get_index(models.Video)
+        index = site.get_index(Video)
         index.reindex()
 
     def search(self, query):
@@ -142,43 +142,43 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the tags for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('tag1'), [video])
-        self.assertEquals(self.search('tag2'), [video])
-        self.assertEquals(self.search('tag2 tag1'), [video])
+        self.assertEqual(self.search('tag1'), [video])
+        self.assertEqual(self.search('tag2'), [video])
+        self.assertEqual(self.search('tag2 tag1'), [video])
 
-        self.assertEquals(self.search('tag:tag1'), [video])
-        self.assertEquals(self.search('tag:tag2'), [video])
-        self.assertEquals(self.search('tag:tag2 tag:tag1'), [video])
+        self.assertEqual(self.search('tag:tag1'), [video])
+        self.assertEqual(self.search('tag:tag2'), [video])
+        self.assertEqual(self.search('tag:tag2 tag:tag1'), [video])
 
     def test_search_includes_categories(self):
         """
         Search should search the category for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.categories = [1, 2] # Miro, Linux
         video.save()
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('Miro'), [video])
-        self.assertEquals(self.search('Linux'), [video])
-        self.assertEquals(self.search('Miro Linux'), [video])
+        self.assertEqual(self.search('Miro'), [video])
+        self.assertEqual(self.search('Linux'), [video])
+        self.assertEqual(self.search('Miro Linux'), [video])
 
-        self.assertEquals(self.search('category:Miro'), [video]) # name
-        self.assertEquals(self.search('category:linux'), [video]) # slug
-        self.assertEquals(self.search('category:1 category:2'), [video]) # pk
+        self.assertEqual(self.search('category:Miro'), [video]) # name
+        self.assertEqual(self.search('category:linux'), [video]) # slug
+        self.assertEqual(self.search('category:1 category:2'), [video]) # pk
 
     def test_search_includes_user(self):
         """
         Search should search the user who submitted videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
         video.user.username = 'SuperUser'
         video.user.first_name = 'firstname'
@@ -186,28 +186,28 @@ class AutoQueryTestCase(BaseTestCase):
         video.user.save()
         video.save()
 
-        video2 = models.Video.objects.get(pk=47)
+        video2 = Video.objects.get(pk=47)
         video2.authors = [video.user]
         video2.save()
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('superuser'), [video2, video])
-        self.assertEquals(self.search('firstname'), [video2, video])
-        self.assertEquals(self.search('lastname'), [video2, video])
+        self.assertEqual(self.search('superuser'), [video2, video])
+        self.assertEqual(self.search('firstname'), [video2, video])
+        self.assertEqual(self.search('lastname'), [video2, video])
 
-        self.assertEquals(self.search('user:SuperUser'),
+        self.assertEqual(self.search('user:SuperUser'),
                           [video2, video]) # name
-        self.assertEquals(self.search('user:superuser'),
+        self.assertEqual(self.search('user:superuser'),
                           [video2, video]) # case-insenstive name
-        self.assertEquals(self.search('user:%i' % video.user.pk),
+        self.assertEqual(self.search('user:%i' % video.user.pk),
                           [video2, video]) # pk
 
     def test_search_excludes_user(self):
         """
         -user:name should exclude that user's videos from the search results.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.user = User.objects.get(username='superuser')
         video.user.username = 'SuperUser'
         video.user.first_name = 'firstname'
@@ -215,7 +215,7 @@ class AutoQueryTestCase(BaseTestCase):
         video.user.save()
         video.save()
 
-        video2 = models.Video.objects.get(pk=47)
+        video2 = Video.objects.get(pk=47)
         video2.user = video.user
         video2.authors = [video.user]
         video2.save()
@@ -232,26 +232,32 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should search the video service user for videos.
         """
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
 
         self._rebuild_index()
-        self.assertEquals(self.search('video_service_user'), [video])
+        self.assertEqual(self.search('video_service_user'), [video])
 
     def test_search_includes_feed_name(self):
         """
         Search should search the feed name for videos.
         """
-        video = models.Video.objects.get(pk=20)
-        # feed is miropcf
+        feed = Feed.objects.get(name='miropcf')
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('miropcf'), [video])
+        videos = self.search('miropcf')
+        for video in videos:
+            self.assertEqual(video.feed_id, feed.pk)
 
-        self.assertEquals(self.search('feed:miropcf'), [video]) # name
-        self.assertEquals(self.search('feed:%i' % video.feed.pk), [video]) # pk
+        videos = self.search('feed:miropcf')
+        for video in videos:
+            self.assertEqual(video.feed_id, feed.pk)
+
+        videos = self.search('feed:%i' % feed.pk)
+        for video in videos:
+            self.assertEqual(video.feed_id, feed.pk)
 
     def test_search_exclude_terms(self):
         """
@@ -268,7 +274,7 @@ class AutoQueryTestCase(BaseTestCase):
         Search should handle Unicode strings.
         """
         self._rebuild_index()
-        self.assertEquals(self.search(u'espa\xf1a'), [])
+        self.assertEqual(self.search(u'espa\xf1a'), [])
 
     def test_search_includes_playlist(self):
         """
@@ -280,27 +286,27 @@ class AutoQueryTestCase(BaseTestCase):
             name='Test List',
             slug='test-list',
             description="This is a list for testing")
-        video = models.Video.objects.get(pk=20)
+        video = Video.objects.get(pk=20)
         playlist.add_video(video)
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('playlist:%i' % playlist.pk), [video])
-        self.assertEquals(self.search('playlist:user/test-list'), [video])
+        self.assertEqual(self.search('playlist:%i' % playlist.pk), [video])
+        self.assertEqual(self.search('playlist:user/test-list'), [video])
 
     def test_search_includes_search(self):
         """
         Search should include the saved search a video came from.
         """
-        video = models.Video.objects.get(pk=20)
-        search = models.SavedSearch.objects.get(pk=6) # Participatory Culture
+        video = Video.objects.get(pk=20)
+        search = SavedSearch.objects.get(pk=6) # Participatory Culture
         video.search = search
         video.save()
 
         self._rebuild_index()
 
-        self.assertEquals(self.search('search:%i' % search.pk), [video])
-        self.assertEquals(self.search('search:"Participatory Culture"'),
+        self.assertEqual(self.search('search:%i' % search.pk), [video])
+        self.assertEqual(self.search('search:"Participatory Culture"'),
                           [video])
 
     def test_search_or(self):

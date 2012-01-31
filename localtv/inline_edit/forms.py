@@ -26,6 +26,7 @@ from tagging.forms import TagField
 from localtv import models, util
 
 from localtv.admin.forms import EditVideoForm, BulkChecklistField
+from localtv.utils import edit_string_for_tags
 
 Comment = comments.get_model()
 
@@ -74,7 +75,7 @@ class VideoTagsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        self.initial['tags'] = util.get_or_create_tags(self.instance.tags)
+        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
 
     def save(self, *args, **kwargs):
         self.instance.tags = self.cleaned_data.get('tags')

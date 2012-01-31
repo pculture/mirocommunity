@@ -25,19 +25,18 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.views.generic.list_detail import object_list
 
-from localtv.models import Video
-from localtv.util import SortHeaders
+from localtv.models import Video, SiteLocation
+from localtv.utils import SortHeaders
 
 from localtv.playlists import forms
-from localtv.playlists.models import (Playlist, PLAYLIST_STATUS_PRIVATE,
-                                      PLAYLIST_STATUS_WAITING_FOR_MODERATION,
-                                      PLAYLIST_STATUS_PUBLIC)
+from localtv.playlists.models import Playlist
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        if not request.sitelocation().playlists_enabled:
+        sitelocation = SiteLocation.objects.get_current()
+        if not sitelocation.playlists_enabled:
             raise Http404
-        if request.sitelocation().playlists_enabled == 2 and \
+        if sitelocation.playlists_enabled == 2 and \
                 not request.user_is_admin():
             raise Http404
         return func(request, *args, **kwargs)
@@ -80,7 +79,7 @@ def index(request):
             playlists = Playlist.objects.all()
         else:
             playlists = Playlist.objects.filter(
-                status=PLAYLIST_STATUS_WAITING_FOR_MODERATION)
+                status=Playlist.WAITING_FOR_MODERATION)
     else:
         headers = SortHeaders(request, (
                 ('Playlist', 'name'),
@@ -108,16 +107,16 @@ def index(request):
                         form.instance.delete()
                 elif request.POST.get('bulk_action') == 'public':
                     if request.user_is_admin():
-                        new_status = PLAYLIST_STATUS_PUBLIC
+                        new_status = Playlist.PUBLIC
                     else:
-                        new_status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+                        new_status = Playlist.WAITING_FOR_MODERATION
                     for form in formset.bulk_forms:
-                        if form.instance.status < PLAYLIST_STATUS_PUBLIC:
+                        if form.instance.status < Playlist.PUBLIC:
                             form.instance.status = new_status
                             form.instance.save()
                 elif request.POST.get('bulk_action') == 'private':
                     for form in formset.bulk_forms:
-                        form.instance.status = PLAYLIST_STATUS_PRIVATE
+                        form.instance.status = Playlist.PRIVATE
                         form.instance.save()
                 return HttpResponseRedirect(request.path)
         else:
@@ -155,7 +154,7 @@ def view(request, pk, slug=None, count=15):
     """
     playlist = get_object_or_404(Playlist,
                                  pk=pk)
-    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+    if playlist.status != Playlist.PUBLIC:
         if not request.user_is_admin() and \
                 request.user != playlist.user:
             raise Http404
@@ -218,11 +217,11 @@ def add_video(request, video_pk):
 @playlist_enabled
 @playlist_authorized
 def public(request, playlist):
-    if playlist.status != PLAYLIST_STATUS_PUBLIC:
+    if not playlist.is_public():
         if request.user_is_admin():
-            playlist.status = PLAYLIST_STATUS_PUBLIC
+            playlist.status = Playlist.PUBLIC
         else:
-            playlist.status = PLAYLIST_STATUS_WAITING_FOR_MODERATION
+            playlist.status = Playlist.WAITING_FOR_MODERATION
         playlist.save()
     next = reverse('localtv_playlist_index')
     if request.user_is_admin():
@@ -233,7 +232,7 @@ def public(request, playlist):
 @playlist_enabled
 @playlist_authorized
 def private(request, playlist):
-    playlist.status = PLAYLIST_STATUS_PRIVATE
+    playlist.status = Playlist.PRIVATE
     playlist.save()
     next = reverse('localtv_playlist_index')
     if request.user_is_admin():

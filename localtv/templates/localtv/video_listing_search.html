@@ -32,7 +32,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_id %}video_listing_search{% endblock body_id %}
 
 {% block content %}
-  {% if not page_obj %}
+  {% if not video_list %}
   <h2>Sorry, we could not find any videos matching that query.</h2>
   {% else %}
   {{ block.super }}

@@ -1,0 +1,160 @@
+body.hide_get_started #dashboard #get_started {
+    display: none;
+}
+
+body.admin_dash #content {
+  margin: 30px 30px 30px 0 !important;
+}
+
+body.admin_dash ul#new_admin_nav {
+  margin: 30px 0 0 0 !important;
+}
+
+ul#new_admin_nav {
+  float: left;
+  width: 150px;
+  margin: 60px 0 0 0;
+  border-top: 1px #DFDFDF solid;
+}
+
+ul#new_admin_nav li a {
+  display: block;
+  font-weight: bold;
+  color: #000;
+  text-decoration: none;
+  padding: 15px 55px 15px 27px;
+  padding: 15px 25px 15px 27px;
+  border-bottom: 1px #DFDFDF solid;
+  text-align: right;
+  font-size: 14px;
+  text-shadow: 0 1px 0 #FFF;
+  line-height: 14px;
+  opacity: 0.6;
+}
+
+ul#new_admin_nav li a:hover {
+  opacity: 1.0;
+  color: #444;
+  background: #f5f5f5;
+  text-decoration: underline;
+}
+
+body#tier.account ul#new_admin_nav li#admin_account a,
+body#admin.admin_dash ul#new_admin_nav li#admin_dash a,
+body#admin.incomingvids ul#new_admin_nav li#admin_videos a,
+body#admin.settings ul#new_admin_nav li#admin_settings a,
+body#admin.user_admin ul#new_admin_nav li#admin_users a,
+body#admin.comments ul#new_admin_nav li#admin_comments a,
+body#user_profile ul#new_admin_nav li#admin_profile a,
+body#goodies ul#new_admin_nav li#admin_goodies a,
+ul#new_admin_nav li.active a {
+  background: #0077bb;
+  background: #e3e3e3;
+  background: -webkit-gradient(linear, left top, left bottom, from(#E3E3E3), to(#cecece));
+  background: -moz-linear-gradient(top,  #E3E3E3,  #cecece) no-repeat;
+  -moz-box-shadow: inset 0 -1px 0 #e1e1e1;
+  -webkit-box-shadow: inset 0 1px 0 #FFF, 0 1px 0 #FFF;
+  color: #444;
+  border-bottom: 1px #b8b8b8 solid;
+  border-top: 1px #b8b8b8 solid;
+  text-shadow: 0 1px 0 #FFF;
+  opacity: 1.0;
+  position: relative;
+  z-index: 999;
+}
+
+#footer_help {
+  font-size: 15px;
+  color: #888;
+}
+
+#footer_help a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #555;
+}
+
+#footer_help a:hover {
+  color: #000;
+}
+
+#header {
+  border-bottom: 1px solid #b8b8b8;
+  background: #e3e3e3;
+  background: -webkit-gradient(linear, left top, left bottom, from(#E3E3E3), to(#cecece));
+  background: -moz-linear-gradient(top,  #E3E3E3,  #cecece) no-repeat;
+  padding: 15px;
+  -moz-box-shadow: inset 0 -1px 0 #e1e1e1;
+  -webkit-box-shadow: inset 0 -1px 0 #e1e1e1;
+}
+
+#header #logo {
+  float: left;
+}
+
+#header #logo img {
+  float: left;
+  width: 45px;
+  margin: 0 10px 0 0;
+  border: 1px #BBB solid;
+}
+
+#header #logo a {
+  display: block;
+  text-decoration: none;
+  opacity: 1.0;
+}
+
+#header #logo a span {
+  display: block;
+  font-weight: bold;
+  font-size: 16px;
+  color: #444;
+  float: left;
+  padding: 15px 0 0 0;
+  text-shadow: 0 1px 0 #FFF;
+}
+
+#header #logo a:hover {
+  opacity: 0.7;
+}
+
+#header #user_panel {
+  float: right;
+  margin: 17px 15px 0 0;
+}
+
+#header #user_panel span {
+  font-size: 13px;
+  color: #656565;
+  letter-spacing: 0;
+  border-right: 1px #AAA solid;
+  padding: 5px 10px 5px 0;
+  margin: 0 10px 0 0;
+  text-shadow: 0 1px 0 #FFF;
+  -webkit-box-shadow: inset -1px 0 0 #EEE;
+}
+
+#header #user_panel span em {
+  font-weight: bold;
+  color: #333;
+}
+
+#header #user_panel a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #333;
+  font-size: 13px;
+  text-shadow: 0 1px 0 #FFF;
+  background: transparent url(../../images/admin/icon_admin_signout.png) 0 1px no-repeat;
+  padding: 0 0 7px 20px;
+}
+
+#header #user_panel a:hover {
+  text-decoration: underline;
+}
+
+#header #user_panel a:active {
+  position: relative;
+  top: 1px;
+}

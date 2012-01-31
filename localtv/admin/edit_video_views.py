@@ -20,7 +20,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-from localtv import models
+from localtv.models import Video, SiteLocation
 from localtv.decorators import require_site_admin
 from localtv.admin import forms
 
@@ -29,7 +29,7 @@ from localtv.admin import forms
 def edit_video(request):
     video_id = request.GET.get('video_id') or request.POST.get('video_id')
     video = get_object_or_404(
-        models.Video, pk=video_id, site=request.sitelocation().site)
+        Video, pk=video_id, site=SiteLocation.objects.get_current().site)
 
     if request.method == 'GET':
         edit_video_form = forms.EditVideoForm(instance=video)

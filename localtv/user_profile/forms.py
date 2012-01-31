@@ -18,10 +18,10 @@ from django import forms
 from django.contrib.auth.models import User
 from django.utils.encoding import force_unicode
 
-from localtv import models, util
+from localtv import models, utils
 from notification import models as notification
 
-Profile = util.get_profile_model()
+Profile = utils.get_profile_model()
 
 class ProfileForm(forms.ModelForm):
     name = forms.CharField(max_length=61, required=False)
@@ -108,7 +108,7 @@ class NotificationsForm(forms.Form):
         ('comment_post_comment',
          'Someone left a comment on a video you commented on'),
         ('newsletter', 'Receive an occasional newsletter'),
-        )
+    )
     ADMIN_CHOICES = (
         ('admin_new_comment', 'A new comment was left on the site'),
         ('admin_new_submission', 'A new video was submitted'),
@@ -117,7 +117,7 @@ class NotificationsForm(forms.Form):
          'The metadata of a video was updated on a remote site'),
         ('admin_queue_daily', 'A daily update of the review queue status'),
         ('admin_queue_weekly', 'A weekly update of the review queue status'),
-        )
+    )
 
     notifications = forms.MultipleChoiceField(
         required=False, choices=CHOICES,

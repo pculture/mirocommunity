@@ -27,9 +27,9 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv import models
+from localtv.models import Video, Category, SiteLocation
 from localtv.admin import forms
-from localtv.util import SortHeaders
+from localtv.utils import SortHeaders
 
 try:
     from operator import methodcaller
@@ -46,7 +46,7 @@ def bulk_edit(request):
         # generate just the particular form that the user wants
         template_data = {}
         form_prefix = request.GET['just_the_author_field']
-        video = get_object_or_404(models.Video, pk=int(request.GET['video_id']))
+        video = get_object_or_404(Video, pk=int(request.GET['video_id']))
         cache_for_form_optimization = {}
         form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix,
                                        cache_for_form_optimization=cache_for_form_optimization)
@@ -56,26 +56,22 @@ def bulk_edit(request):
                                   template_data,
                                   context_instance=RequestContext(request))
 
-    videos = models.Video.objects.filter(
-        status=models.VIDEO_STATUS_ACTIVE,
-        site=request.sitelocation().site)
+    sitelocation = SiteLocation.objects.get_current()
+    videos = Video.objects.filter(status=Video.ACTIVE,
+                                  site=sitelocation.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = models.Video.objects.filter(
-                status=models.VIDEO_STATUS_REJECTED,
-                site=request.sitelocation().site)
+            videos = Video.objects.filter(status=Video.REJECTED)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED,
-                site=request.sitelocation().site)
+            videos = Video.objects.filter(status=Video.UNAPPROVED)
 
     videos = videos.select_related('feed', 'search', 'site')
 
@@ -142,12 +138,12 @@ def bulk_edit(request):
                                      queryset=page.object_list)
         if formset.is_valid():
             tier_prevented_some_action = False
-            tier = request.sitelocation().get_tier()
+            tier = sitelocation.get_tier()
             videos_approved_so_far = 0
 
             for form in list(formset.deleted_forms):
                 form.cleaned_data[DELETION_FIELD_NAME] = False
-                form.instance.status = models.VIDEO_STATUS_REJECTED
+                form.instance.status = Video.REJECTED
                 form.instance.save()
             bulk_edits = formset.extra_forms[0].cleaned_data
             for key in list(bulk_edits.keys()): # get the list because we'll be
@@ -164,28 +160,24 @@ def bulk_edit(request):
                     for key, value in bulk_edits.items():
                         if key == 'action': # do something to the video
                             if value == 'delete':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_REJECTED
+                                form.instance.status = Video.REJECTED
                             elif value == 'approve':
-                                if (request.sitelocation().enforce_tiers() and
+                                if (sitelocation.enforce_tiers() and
                                     tier.remaining_videos() <= videos_approved_so_far):
                                     tier_prevented_some_action = True
                                 else:
-                                    form.instance.status = \
-                                        models.VIDEO_STATUS_ACTIVE
+                                    form.instance.status = Video.ACTIVE
                                     videos_approved_so_far += 1
                             elif value == 'unapprove':
-                                form.instance.status = \
-                                    models.VIDEO_STATUS_UNAPPROVED
+                                form.instance.status = Video.UNAPPROVED
                             elif value == 'feature':
-                                if form.instance.status != models.VIDEO_STATUS_ACTIVE:
-                                    if (request.sitelocation().enforce_tiers() and
+                                if not form.instance.status == Video.ACTIVE:
+                                    if (sitelocation.enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
-                                        form.instance.status = \
-                                            models.VIDEO_STATUS_ACTIVE
-                                if form.instance.status == models.VIDEO_STATUS_ACTIVE:
+                                        form.instance.status = Video.ACTIVE
+                                if form.instance.status == Video.ACTIVE:
                                     form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None
@@ -228,7 +220,7 @@ def bulk_edit(request):
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': models.Category.objects.filter(
-                site=request.sitelocation().site),
+                               'categories': Category.objects.filter(
+                site=sitelocation.site),
                                'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

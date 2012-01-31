@@ -23,16 +23,18 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-import localtv.models
+from localtv.models import SiteLocation, WidgetSettings, NewsletterSettings
+
 
 @require_site_admin
 @csrf_protect
 def edit_settings(request):
-    form = forms.EditSettingsForm(instance=request.sitelocation())
+    sitelocation = SiteLocation.objects.get_current()
+    form = forms.EditSettingsForm(instance=sitelocation)
 
     if request.method == 'POST':
         form = forms.EditSettingsForm(request.POST, request.FILES,
-                                      instance=request.sitelocation())
+                                      instance=sitelocation)
         if form.is_valid():
             sitelocation = form.save()
             if request.POST.get('delete_background'):
@@ -46,19 +48,21 @@ def edit_settings(request):
         {'form': form},
         context_instance=RequestContext(request))
 
+
 @require_site_admin
 @csrf_protect
 def widget_settings(request):
+    sitelocation = SiteLocation.objects.get_current()
     form = forms.WidgetSettingsForm(
-        instance=request.sitelocation().site.widgetsettings,
+        instance=sitelocation.site.widgetsettings,
         initial={'title': 
-                 localtv.models.WidgetSettings.objects.get().get_title_or_reasonable_default()})
+                 WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
     if request.method == 'POST':
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=request.sitelocation().site.widgetsettings)
+            instance=sitelocation.site.widgetsettings)
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):
@@ -75,10 +79,11 @@ def widget_settings(request):
         {'form': form},
         context_instance=RequestContext(request))
 
+
 @require_site_admin
 @csrf_protect
 def newsletter_settings(request):
-    newsletter = localtv.models.NewsletterSettings.objects.get_current()
+    newsletter = NewsletterSettings.objects.get_current()
     if not newsletter.sitelocation.get_tier().permit_newsletter():
         raise Http404
 

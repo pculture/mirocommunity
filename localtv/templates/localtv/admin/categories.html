@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block head %}
   {{ block.super }}
-  <script type="text/javascript" src="/js/admin/urlify.js?version={{ mc_version }}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/urlify.js?version={{ mc_version }}"></script>
   </script>
   <script type="text/javascript">
       $(document).ready(function() {

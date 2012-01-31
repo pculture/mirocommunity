@@ -18,7 +18,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 
 from localtv import models
-import localtv.util
+import localtv.utils
 
 class Command(BaseCommand):
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         thumbnail_data = None
         if video.thumbnail_url:
             try:
-                thumbnail_data = localtv.util.pull_downloaded_file_from_cache(video.thumbnail_url)
+                thumbnail_data = localtv.utils.pull_downloaded_file_from_cache(video.thumbnail_url)
             except IOError:
                 pass # Aw well, we can't have nice things.
 
@@ -53,9 +53,9 @@ class Command(BaseCommand):
         # Set the status.
         # However, if the video wants to become ACTIVE but we may not make it
         # ACTIVE, make it UNAPPROVED instead.
-        if future_status == models.VIDEO_STATUS_ACTIVE:
+        if future_status == models.Video.ACTIVE:
             if not models.SiteLocation.objects.get().get_tier().can_add_more_videos():
-                future_status = models.VIDEO_STATUS_UNAPPROVED
+                future_status = models.Video.UNAPPROVED
 
         video.status = future_status
         video.save()

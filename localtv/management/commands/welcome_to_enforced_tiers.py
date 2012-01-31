@@ -19,11 +19,11 @@ import sys
 import hashlib
 import os.path
 import re
-import simplejson
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import django.template
+from django.utils import simplejson
 
 import localtv.tiers
 import localtv.models

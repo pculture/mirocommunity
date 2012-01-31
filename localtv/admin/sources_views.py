@@ -27,8 +27,8 @@ from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv import models
-from localtv.util import SortHeaders, MockQueryset
+from localtv.models import SiteLocation, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
+from localtv.utils import SortHeaders, MockQueryset
 from localtv.admin import forms
 
 VIDEO_SERVICE_TITLES = (
@@ -49,6 +49,7 @@ def manage_sources(request):
             ('Categories', None),
             ('User Attribution', None),
             ('Type', 'type'),
+            ('Import', None),
             ('Auto Approve', 'auto_approve')))
 
     sort = headers.order_by()
@@ -59,12 +60,12 @@ def manage_sources(request):
             orm_sort = 'name__lower'
     else:
         orm_sort = sort
-    feeds = models.Feed.objects.filter(
-        site=request.sitelocation().site,
-        status=models.FEED_STATUS_ACTIVE).extra(select={
+    sitelocation = SiteLocation.objects.get_current()
+    feeds = Feed.objects.filter(
+        site=sitelocation.site).extra(select={
             'name__lower': 'LOWER(name)'}).order_by(orm_sort)
-    searches = models.SavedSearch.objects.filter(
-        site=request.sitelocation().site).extra(select={
+    searches = SavedSearch.objects.filter(
+        site=sitelocation.site).extra(select={
             'name__lower': 'LOWER(query_string)'}).order_by(
             orm_sort)
 
@@ -79,7 +80,7 @@ def manage_sources(request):
 
     category = request.GET.get('category')
     if category:
-        category = get_object_or_404(models.Category, pk=category)
+        category = get_object_or_404(Category, pk=category)
         feeds = feeds.filter(auto_categories=category)
         searches = searches.filter(auto_categories=category)
 
@@ -93,8 +94,8 @@ def manage_sources(request):
     if source_filter == 'search':
         queryset = searches
     elif source_filter in ('feed', 'user'):
-        q = Q(feed_url__iregex=models.VIDEO_SERVICE_REGEXES[0][1])
-        for service, regexp in models.VIDEO_SERVICE_REGEXES[1:]:
+        q = Q(feed_url__iregex=VIDEO_SERVICE_REGEXES[0][1])
+        for service, regexp in VIDEO_SERVICE_REGEXES[1:]:
             q = q | Q(feed_url__iregex=regexp)
         if source_filter == 'user':
             queryset = feeds.filter(q)
@@ -158,8 +159,8 @@ def manage_sources(request):
             'headers': headers,
             'search_string': search_string,
             'source_filter': source_filter,
-            'categories': models.Category.objects.filter(
-                site=request.sitelocation().site),
+            'categories': Category.objects.filter(
+                site=SiteLocation.objects.get_current().site),
             'users': User.objects.order_by('username'),
             'successful': 'successful' in request.GET,
             'formset': formset},

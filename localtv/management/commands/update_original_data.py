@@ -18,7 +18,7 @@ import traceback
 
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
-from localtv import models
+from localtv.models import Video, OriginalVideo
 import vidscraper.errors
 
 class Command(NoArgsCommand):
@@ -28,8 +28,8 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if site_too_old():
             return
-        for original in models.OriginalVideo.objects.exclude(
-            video__status=models.FEED_STATUS_REJECTED):
+        for original in OriginalVideo.objects.exclude(
+            video__status=Video.REJECTED):
             try:
                 original.update()
             except vidscraper.errors.CantIdentifyUrl, e:

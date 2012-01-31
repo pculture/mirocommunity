@@ -18,9 +18,10 @@
 import datetime
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import (Http404, HttpResponsePermanentRedirect,
                          HttpResponseRedirect, HttpResponse)
 from django.shortcuts import render_to_response, get_object_or_404
@@ -28,36 +29,25 @@ from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
 import localtv.settings
-from localtv import models
-from localtv.listing import views as listing_views
+from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
 
-from localtv.playlists.models import (Playlist, PlaylistItem,
-                                      PLAYLIST_STATUS_PUBLIC)
+from localtv.playlists.models import Playlist, PlaylistItem
+
+
+MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
+
 
 def index(request):
-    featured_videos = models.Video.objects.filter(
-        site=request.sitelocation().site_id,
-        status=models.VIDEO_STATUS_ACTIVE,
-        last_featured__isnull=False)
-    featured_videos = featured_videos.order_by(
-        '-last_featured', '-when_approved', '-when_published',
-        '-when_submitted')
+    featured_videos = Video.objects.get_featured_videos()
+    popular_videos = Video.objects.get_popular_videos()
+    new_videos = Video.objects.get_latest_videos().exclude(
+                                            feed__avoid_frontpage=True)
 
-    popular_videos = models.Video.objects.popular_since(
-        datetime.timedelta(days=7), sitelocation=request.sitelocation(),
-        status=models.VIDEO_STATUS_ACTIVE)
-
-    new_videos = models.Video.objects.new(
-        site=request.sitelocation().site,
-        status=models.VIDEO_STATUS_ACTIVE) \
-        .exclude(feed__avoid_frontpage=True)
-
+    sitelocation_videos = Video.objects.get_sitelocation_videos()
     recent_comments = comments.get_model().objects.filter(
-        site=request.sitelocation().site,
-        content_type__app_label='localtv',
-        content_type__model='video',
-        object_pk__in=models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE),
+        site=Site.objects.get_current(),
+        content_type=ContentType.objects.get_for_model(Video),
+        object_pk__in=sitelocation_videos.values_list('pk', flat=True),
         is_removed=False,
         is_public=True).order_by('-submit_date')
 
@@ -78,11 +68,11 @@ def about(request):
 
 @vary_on_headers('User-Agent', 'Referer')
 def view_video(request, video_id, slug=None):
-    video = get_object_or_404(models.Video, pk=video_id,
-                              site=request.sitelocation().site)
+    video_qs = Video.objects.annotate(watch_count=Count('watch'))
+    video = get_object_or_404(video_qs, pk=video_id,
+                              site=Site.objects.get_current())
 
-    if video.status != models.VIDEO_STATUS_ACTIVE and \
-            not request.user_is_admin():
+    if not video.status == Video.ACTIVE and not request.user_is_admin():
         raise Http404
 
     if slug is not None and request.path != video.get_absolute_url():
@@ -92,6 +82,9 @@ def view_video(request, video_id, slug=None):
                # set edit_video_form to True if the user is an admin for
                # backwards-compatibility
                'edit_video_form': request.user_is_admin()}
+
+    sitelocation = SiteLocation.objects.get_current()
+    popular_videos = Video.objects.get_popular_videos()
 
     if video.categories.count():
         category_obj = None
@@ -108,12 +101,13 @@ def view_video(request, video_id, slug=None):
                 except Resolver404:
                     pass
                 else:
-                    if view == listing_views.category:
+                    from localtv.urls import category_videos
+                    if view == category_videos:
                         try:
-                            category_obj = models.Category.objects.get(
-                                slug=args[0],
-                                site=request.sitelocation().site)
-                        except models.Category.DoesNotExist:
+                            category_obj = Category.objects.get(
+                                slug=kwargs['slug'],
+                                site=sitelocation.site)
+                        except Category.DoesNotExist:
                             pass
                         else:
                             if not video.categories.filter(
@@ -124,28 +118,18 @@ def view_video(request, video_id, slug=None):
             category_obj = video.categories.all()[0]
 
         context['category'] = category_obj
-        context['popular_videos'] = models.Video.objects.popular_since(
-            datetime.timedelta(days=7),
-            sitelocation=request.sitelocation(),
-            status=models.VIDEO_STATUS_ACTIVE,
-            categories__pk=category_obj.pk)
-    else:
-        context['popular_videos'] = models.Video.objects.popular_since(
-            datetime.timedelta(days=7),
-            sitelocation=request.sitelocation(),
-            status=models.VIDEO_STATUS_ACTIVE)
+        popular_videos = popular_videos.filter(categories=category_obj)
+
+    context['popular_videos'] = popular_videos
 
     if video.voting_enabled():
         import voting
         user_can_vote = True
         if request.user.is_authenticated():
-            MAX_VOTES_PER_CATEGORY = getattr(settings,
-                                             'MAX_VOTES_PER_CATEGORY',
-                                             3)
             max_votes = video.categories.filter(
                 contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
             votes = voting.models.Vote.objects.filter(
-                content_type=ContentType.objects.get_for_model(models.Video),
+                content_type=ContentType.objects.get_for_model(Video),
                 user=request.user).count()
             if votes >= max_votes:
                 user_can_vote = False
@@ -156,13 +140,12 @@ def view_video(request, video_id, slug=None):
             else:
                 context['contest_category'] = video.categories.filter(
                     contest_mode__isnull=False)[0]
-            
 
-    if request.sitelocation().playlists_enabled:
+    if sitelocation.playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
             if request.user_is_admin() or \
-                    request.sitelocation().playlists_enabled == 1:
+                    sitelocation.playlists_enabled == 1:
                 # user can add videos to playlists
                 context['playlists'] = Playlist.objects.filter(
                     user=request.user)
@@ -173,12 +156,12 @@ def view_video(request, video_id, slug=None):
         elif request.user.is_authenticated():
             # public playlists or my playlists
             context['playlistitem_set'] = video.playlistitem_set.filter(
-                Q(playlist__status=PLAYLIST_STATUS_PUBLIC) |
+                Q(playlist__status=Playlist.PUBLIC) |
                 Q(playlist__user=request.user))
         else:
             # just public playlists
             context['playlistitem_set'] = video.playlistitem_set.filter(
-                playlist__status=PLAYLIST_STATUS_PUBLIC)
+                playlist__status=Playlist.PUBLIC)
 
         if 'playlist' in request.GET:
             try:
@@ -186,54 +169,56 @@ def view_video(request, video_id, slug=None):
             except (Playlist.DoesNotExist, ValueError):
                 pass
             else:
-                if playlist.status == PLAYLIST_STATUS_PUBLIC or \
-                        request.user_is_admin() or \
-                        request.user.is_authenticated() and \
-                        playlist.user_id == request.user.pk:
+                if (playlist.is_public() or
+                        request.user_is_admin() or
+                        (request.user.is_authenticated() and
+                        playlist.user_id == request.user.pk)):
                     try:
                         context['playlistitem'] = video.playlistitem_set.get(
                             playlist=playlist)
                     except PlaylistItem.DoesNotExist:
                         pass
 
-    models.Watch.add(request, video)
+    Watch.add(request, video)
 
     return render_to_response(
         'localtv/view_video.html',
         context,
         context_instance=RequestContext(request))
 
+
 def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
+    sitelocation = SiteLocation.objects.get_current()
     return views.share_email(request, content_type_pk, object_id,
-                             {'site': request.sitelocation().site,
-                              'sitelocation': request.sitelocation()},
+                             {'site': sitelocation.site,
+                              'sitelocation': sitelocation},
                              form_class = forms.ShareMultipleEmailForm
                              )
+
 
 def video_vote(request, object_id, direction, **kwargs):
     if not localtv.settings.voting_enabled():
         raise Http404
     import voting.views
     if request.user.is_authenticated() and direction != 'clear':
-        video = get_object_or_404(models.Video, pk=object_id)
-        MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY',
-                                         3)
+        video = get_object_or_404(Video, pk=object_id)
         max_votes = video.categories.filter(
             contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
         votes = voting.models.Vote.objects.filter(
-            content_type=ContentType.objects.get_for_model(models.Video),
+            content_type=ContentType.objects.get_for_model(Video),
             user=request.user).count()
         if votes >= max_votes:
             return HttpResponseRedirect(video.get_absolute_url())
-    return voting.views.vote_on_object(request, models.Video,
+    return voting.views.vote_on_object(request, Video,
                                        direction=direction,
                                        object_id=object_id,
                                        **kwargs)
 
+
 def newsletter(request):
-    newsletter = models.NewsletterSettings.objects.get_current()
-    if not newsletter.status:
+    newsletter = NewsletterSettings.objects.get_current()
+    if newsletter.status == NewsletterSettings.DISABLED:
         raise Http404
     elif not newsletter.sitelocation.get_tier().permit_newsletter():
         raise Http404

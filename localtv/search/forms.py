@@ -14,15 +14,54 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from haystack import forms
-from localtv import models
-from localtv import search
+from django import forms
+from django.contrib.sites.models import Site
+from django.db.models.fields import FieldDoesNotExist
+from django.utils.translation import ugettext_lazy as _
+from haystack.forms import SearchForm
 
-class VideoSearchForm(forms.SearchForm):
+from localtv.models import Video
+from localtv.search.query import SmartSearchQuerySet
 
+
+class SmartSearchForm(SearchForm):
+    def __init__(self, *args, **kwargs):
+        sqs = kwargs.get('searchqueryset', None)
+        if sqs is None:
+            kwargs['searchqueryset'] = SmartSearchQuerySet()
+        super(SmartSearchForm, self).__init__(*args, **kwargs)
+
+    def no_query_found(self):
+        return self.searchqueryset.all()
+
+
+class VideoSearchForm(SmartSearchForm):
     def search(self):
-        self.clean()
-        sqs = self.searchqueryset.models(models.Video)
-        sqs = search.auto_query(self.cleaned_data['q'], sqs)
+        """
+        Adjusts the searchqueryset to return only videos associated with the
+        current site before performing the search.
 
-        return sqs
+        """
+        site = Site.objects.get_current()
+        self.searchqueryset = self.searchqueryset.models(
+                        Video).filter(site=site.pk)
+        return super(VideoSearchForm, self).search()
+
+
+class FilterForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(FilterForm, self).__init__(*args, **kwargs)
+        from localtv.search.utils import SortFilterMixin
+        for filter_name, filter_def in SortFilterMixin.filters.iteritems():
+            if filter_name not in self.fields:
+                model = filter_def['model']
+                qs = model._default_manager.all()
+                try:
+                    model._meta.get_field_by_name('site')
+                except FieldDoesNotExist:
+                    pass
+                else:
+                    qs = qs.filter(site=Site.objects.get_current())
+                self.fields[filter_name] = forms.ModelMultipleChoiceField(qs,
+                            required=False, widget=forms.CheckboxSelectMultiple,
+                            label=_(model._meta.verbose_name_plural))

@@ -20,25 +20,23 @@ from django.template import Context, loader
 
 from localtv.models import Video
 
-PLAYLIST_STATUS_PRIVATE = 0
-PLAYLIST_STATUS_WAITING_FOR_MODERATION = 1
-PLAYLIST_STATUS_PUBLIC = 2
 
 class Playlist(models.Model):
-    status = models.IntegerField(default=PLAYLIST_STATUS_PRIVATE)
+    PRIVATE = 0
+    WAITING_FOR_MODERATION = 1
+    PUBLIC = 2
+    status = models.IntegerField(default=PRIVATE)
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
         verbose_name='Slug',
-        help_text=('The "slug" is the URL-friendly version '
-                   "of the name.  It is usually lower-case "
-                   "and contains only letters, numbers and "
+        help_text=('The "slug" is the URL-friendly version of the name.  It is '
+                   "usually lower-case and contains only letters, numbers and "
                    "hyphens."))
     description = models.TextField(
         blank=True, verbose_name='Description (HTML)',
-        help_text=("The description is not prominent "
-                   "by default, but some themes may "
-                   "show it."))
+        help_text=("The description will be displayed at the top of the list, "
+                   "above the videos."))
     user = models.ForeignKey('auth.User')
 
     items = models.ManyToManyField(Video,
@@ -88,6 +86,12 @@ class Playlist(models.Model):
         except PlaylistItem.DoesNotExist:
             return None
 
+    def is_public(self):
+        return self.status == Playlist.PUBLIC
+
+    def is_private(self):
+        return self.status == Playlist.PRIVATE
+
 
 class PlaylistItem(models.Model):
     playlist = models.ForeignKey(Playlist)
@@ -128,9 +132,9 @@ class PlaylistItem(models.Model):
         return (previous, self)
 
 def send_notification(sender, instance, raw, created, **kwargs):
-    if instance.status == PLAYLIST_STATUS_WAITING_FOR_MODERATION:
+    if instance.status == Playlist.WAITING_FOR_MODERATION:
         from localtv.models import SiteLocation
-        from localtv.util import send_notice
+        from localtv.utils import send_notice
 
         sitelocation = SiteLocation.objects.get_current()
         t = loader.get_template('localtv/playlists/notification_email.txt')

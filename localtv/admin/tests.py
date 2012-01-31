@@ -32,20 +32,23 @@ from django.test.client import Client
 from django.utils.encoding import force_unicode
 from django.conf import settings
 
-from localtv.admin.util import MetasearchVideo
-from localtv.tests import BaseTestCase
-from localtv import models, util
 import mock
+from notification import models as notification
+from uploadtemplate.models import Theme
+import vidscraper
+
+from localtv import utils
+import localtv.management.commands.check_frequently_for_invalid_tiers_state
+from localtv.models import Feed, Video, SavedSearch, Category, SiteLocation, TierInfo
+from localtv.tests import BaseTestCase
 import localtv.tiers
 
-import uploadtemplate
+Profile = utils.get_profile_model()
 
-import vidscraper
-from notification import models as notification
-
-import localtv.management.commands.check_frequently_for_invalid_tiers_state
-
-Profile = util.get_profile_model()
+NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
+PLUS_COST = NAME_TO_COST['plus']
+PREMIUM_COST = NAME_TO_COST['premium']
+MAX_COST = NAME_TO_COST['max']
 
 class AdministrationBaseTestCase(BaseTestCase):
 
@@ -112,15 +115,15 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/approve_reject_table.html')
         self.assertIsInstance(response.context['current_video'],
-                              models.Video)
+                              Video)
         self.assertIsInstance(response.context['page_obj'],
                               Page)
         video_list = response.context['video_list']
-        self.assertEquals(video_list[0], response.context['current_video'])
-        self.assertEquals(len(video_list), 10)
+        self.assertEqual(video_list[0], response.context['current_video'])
+        self.assertEqual(len(video_list), 10)
 
     def test_GET_with_page(self):
         """
@@ -129,27 +132,26 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         first page is the 10 oldest videos, the second page is the next 10,
         etc.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED).order_by(
-            'when_submitted', 'when_published')
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED
+                                ).order_by('when_submitted', 'when_published')
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         page1_response = c.get(self.url,
                                {'page': '1'})
-        self.assertEquals(list(response.context['video_list']),
+        self.assertEqual(list(response.context['video_list']),
                           list(page1_response.context['video_list']))
-        self.assertEquals(list(page1_response.context['video_list']),
+        self.assertEqual(list(page1_response.context['video_list']),
                           list(unapproved_videos[:10]))
         page2_response = c.get(self.url,
                                {'page': '2'})
         self.assertNotEquals(page1_response, page2_response)
-        self.assertEquals(list(page2_response.context['video_list']),
+        self.assertEqual(list(page2_response.context['video_list']),
                           list(unapproved_videos[10:20]))
         page3_response = c.get(self.url,
                                {'page': '3'}) # doesn't exist, should return
                                               # page 2
-        self.assertEquals(list(page2_response.context['video_list']),
+        self.assertEqual(list(page2_response.context['video_list']),
                           list(page3_response.context['video_list']))
 
     def test_GET_preview(self):
@@ -159,8 +161,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'current_video' in the context.  The current_video should be the video
         with the primary key passed in as GET['video_id'].
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_preview_video')
         self.assertRequiresAuthentication(url, {'video_id': str(video.pk)})
 
@@ -168,9 +169,9 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url,
                          {'video_id': str(video.pk)})
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/video_preview.html')
-        self.assertEquals(response.context['current_video'],
+        self.assertEqual(response.context['current_video'],
                           video)
 
     def test_GET_approve(self):
@@ -179,8 +180,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -189,11 +189,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
-        video = models.Video.objects.get(pk=video.pk) # reload
-        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        video = Video.objects.get(pk=video.pk) # reload
+        self.assertEqual(video.status, Video.ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is None)
 
@@ -204,8 +204,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -220,8 +219,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         If the video is approved, and the submitter has the 'video_approved'
         notification on, they should receive an e-mail notifying them of it.
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         video.user = User.objects.get(username='user')
         video.save()
 
@@ -239,8 +237,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         c.get(url, {'video_id': str(video.pk)})
 
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEquals(mail.outbox[0].recipients(),
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].recipients(),
                           [video.user.email])
 
     def test_GET_approve_with_feature(self):
@@ -251,8 +249,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         video should also be featured.
         """
         # XXX why do we have this function
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_approve_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk,
                                                 'feature': 'yes'})
@@ -263,11 +260,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
                                'feature': 'yes'},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
-        video = models.Video.objects.get(pk=video.pk) # reload
-        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        video = Video.objects.get(pk=video.pk) # reload
+        self.assertEqual(video.status, Video.ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is not None)
 
@@ -277,8 +274,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         redirect back to the referrer.  The video should be specified by
         GET['video_id'].
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_reject_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -287,11 +283,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
-        video = models.Video.objects.get(pk=video.pk) # reload
-        self.assertEquals(video.status, models.VIDEO_STATUS_REJECTED)
+        video = Video.objects.get(pk=video.pk) # reload
+        self.assertEqual(video.status, Video.REJECTED)
         self.assertTrue(video.last_featured is None)
 
     def test_GET_feature(self):
@@ -301,8 +297,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         GET['video_id'].  If the video is unapproved, it should become
         approved.
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_feature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -311,11 +306,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
-        video = models.Video.objects.get(pk=video.pk) # reload
-        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        video = Video.objects.get(pk=video.pk) # reload
+        self.assertEqual(video.status, Video.ACTIVE)
         self.assertTrue(video.when_approved is not None)
         self.assertTrue(video.last_featured is not None)
 
@@ -327,8 +322,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         GET['video_id'].  If the video is unapproved, it should become
         approved.
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)[0]
+        video = Video.objects.filter(status=Video.UNAPPROVED)[0]
         url = reverse('localtv_admin_feature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
 
@@ -344,9 +338,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and redirect back to the referrer.  The video should be specified by
         GET['video_id'].  The video status is not affected.
         """
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE).exclude(
-            last_featured=None)[0]
+        video = Video.objects.filter(status=Video.ACTIVE
+                            ).exclude(last_featured=None)[0]
 
         url = reverse('localtv_admin_unfeature_video')
         self.assertRequiresAuthentication(url, {'video_id': video.pk})
@@ -356,11 +349,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'video_id': str(video.pk)},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
-        video = models.Video.objects.get(pk=video.pk) # reload
-        self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+        video = Video.objects.get(pk=video.pk) # reload
+        self.assertEqual(video.status, Video.ACTIVE)
         self.assertTrue(video.last_featured is None)
 
     def test_GET_reject_all(self):
@@ -368,8 +361,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         A GET request to the reject_all view should reject all the videos on
         the given page and redirect back to the referrer.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         page2_videos = unapproved_videos[10:20]
 
         url = reverse('localtv_admin_reject_all')
@@ -380,19 +372,18 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'page': 2},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
         for video in page2_videos:
-            self.assertEquals(video.status, models.VIDEO_STATUS_REJECTED)
+            self.assertEqual(video.status, Video.REJECTED)
 
     def test_GET_approve_all(self):
         """
         A GET request to the reject_all view should approve all the videos on
         the given page and redirect back to the referrer.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         page2_videos = unapproved_videos[10:20]
 
         url = reverse('localtv_admin_approve_all')
@@ -403,11 +394,11 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(url, {'page': 2},
                          HTTP_REFERER='http://referer.com')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://referer.com')
 
         for video in page2_videos:
-            self.assertEquals(video.status, models.VIDEO_STATUS_ACTIVE)
+            self.assertEqual(video.status, Video.ACTIVE)
             self.assertTrue(video.when_approved is not None)
 
 
@@ -417,8 +408,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'localtv/admin/clear_confirm.html' and have a 'videos' variable
         in the context which is a list of all the unapproved videos.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -428,14 +418,13 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/clear_confirm.html')
-        self.assertEquals(list(response.context['videos']),
+        self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
 
         # nothing was rejected
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(),
+        self.assertEqual(Video.objects.filter(status=Video.UNAPPROVED).count(),
                           unapproved_videos_count)
 
     def test_POST_clear_all_failure(self):
@@ -445,8 +434,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and have a 'videos' variable in the context which is a list of all the
         unapproved videos.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -455,14 +443,13 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/clear_confirm.html')
-        self.assertEquals(list(response.context['videos']),
+        self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
 
         # nothing was rejected
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED).count(),
+        self.assertEqual(Video.objects.filter(status=Video.UNAPPROVED).count(),
                           unapproved_videos_count)
 
     def test_POST_clear_all_succeed(self):
@@ -470,12 +457,10 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         A POST request to the clear_all view with POST['confirm'] = 'yes'
         should reject all the videos and redirect to the approve_reject view.
         """
-        unapproved_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
         unapproved_videos_count = unapproved_videos.count()
 
-        rejected_videos = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_REJECTED)
+        rejected_videos = Video.objects.filter(status=Video.REJECTED)
         rejected_videos_count = rejected_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -484,14 +469,13 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(url, {'confirm': 'yes'})
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 reverse('localtv_admin_approve_reject')))
 
         # all the unapproved videos are now rejected
-        self.assertEquals(models.Video.objects.filter(
-                status=models.VIDEO_STATUS_REJECTED).count(),
+        self.assertEqual(Video.objects.filter(status=Video.REJECTED).count(),
                           unapproved_videos_count + rejected_videos_count)
 
 
@@ -530,22 +514,22 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/manage_sources.html')
         self.assertTrue('add_feed_form' in response.context[0])
         self.assertTrue('page' in response.context[0])
         self.assertTrue('headers' in response.context[0])
-        self.assertEquals(response.context[0]['search_string'], '')
+        self.assertEqual(response.context[0]['search_string'], '')
         self.assertTrue(response.context[0]['source_filter'] is None)
-        self.assertEquals(response.context[0]['categories'].model,
-                          models.Category)
+        self.assertEqual(response.context[0]['categories'].model,
+                          Category)
         self.assertTrue(response.context[0]['users'].model, User)
         self.assertTrue('successful' in response.context[0])
         self.assertTrue('formset' in response.context[0])
 
         page = response.context['page']
-        self.assertEquals(len(page.object_list), 15)
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(len(page.object_list), 15)
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:unicode(x).lower())),
                           page.object_list)
 
@@ -559,14 +543,14 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:unicode(x).lower())),
                           page.object_list)
 
         # reversed name
         response = c.get(self.url, {'sort': '-name__lower'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:unicode(x).lower())),
                           page.object_list)
@@ -574,14 +558,14 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         # auto approve
         response = c.get(self.url, {'sort': 'auto_approve'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:x.auto_approve)),
                           page.object_list)
 
         # reversed auto_approve
         response = c.get(self.url, {'sort': '-auto_approve'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:x.auto_approve)),
                           page.object_list)
@@ -589,14 +573,14 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         # type (feed, search, user)
         response = c.get(self.url, {'sort': 'type'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:x.source_type().lower())),
                           page.object_list)
 
         # reversed type (user, search, feed)
         response = c.get(self.url, {'sort': '-type'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:x.source_type().lower())),
                           page.object_list)
@@ -613,23 +597,23 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         # search filter
         response = c.get(self.url, {'filter': 'search'})
         page = response.context['page']
-        self.assertEquals(
+        self.assertEqual(
             list(page.object_list),
-            list(models.SavedSearch.objects.extra({
+            list(SavedSearch.objects.extra({
                         'name__lower': 'LOWER(query_string)'}).order_by(
                     'name__lower')[:10]))
 
         # feed filter (ignores feeds that represent video service users)
         response = c.get(self.url, {'filter': 'feed'})
         page = response.context['page']
-        self.assertEquals(len(page.object_list), 4)
+        self.assertEqual(len(page.object_list), 4)
         for feed in page.object_list:
             self.assertTrue(feed.video_service() is None)
 
         # user filter (only includes feeds that represent video service users)
         response = c.get(self.url, {'filter': 'user'})
         page = response.context['page']
-        self.assertEquals(len(page.object_list), 6)
+        self.assertEqual(len(page.object_list), 6)
         for feed in page.object_list:
             self.assertTrue(feed.video_service() is not None)
 
@@ -654,11 +638,11 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertTrue(POST_response.context['formset'].is_bound)
         self.assertFalse(POST_response.context['formset'].is_valid())
-        self.assertEquals(len(POST_response.context['formset'].errors[0]), 2)
-        self.assertEquals(len(POST_response.context['formset'].errors[1]), 1)
+        self.assertEqual(len(POST_response.context['formset'].errors[0]), 2)
+        self.assertEqual(len(POST_response.context['formset'].errors[1]), 1)
 
         # make sure the data hasn't changed
-        self.assertEquals(POST_data,
+        self.assertEqual(POST_data,
                           self._POST_data_from_formset(
                 POST_response.context['formset']))
 
@@ -674,7 +658,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         formset = response.context['formset']
         POST_data = self._POST_data_from_formset(formset)
 
-        feed = models.Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
+        feed = Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
         feed.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
 
         POST_data.update({
@@ -689,22 +673,22 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data has been updated
-        feed = models.Feed.objects.get(pk=feed.pk)
-        self.assertEquals(feed.name, POST_data['form-0-name'])
-        self.assertEquals(feed.feed_url, POST_data['form-0-feed_url'])
-        self.assertEquals(feed.webpage, POST_data['form-0-webpage'])
+        feed = Feed.objects.get(pk=feed.pk)
+        self.assertEqual(feed.name, POST_data['form-0-name'])
+        self.assertEqual(feed.feed_url, POST_data['form-0-feed_url'])
+        self.assertEqual(feed.webpage, POST_data['form-0-webpage'])
         self.assertFalse(feed.has_thumbnail)
 
-        search = models.SavedSearch.objects.get(
+        search = SavedSearch.objects.get(
             pk=POST_data['form-1-id'].split('-')[1])
-        self.assertEquals(search.query_string,
+        self.assertEqual(search.query_string,
                           POST_data['form-1-query_string'])
         self.assertTrue(search.has_thumbnail)
 
@@ -725,7 +709,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url+"?page=2", POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
                         'testserver',
                         self.url), 302)])
@@ -737,18 +721,18 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         DELETE value for a source should remove that source along with all of
         its videos.`
         """
-        feed = models.Feed.objects.get(pk=3)
-        saved_search = models.SavedSearch.objects.get(pk=8)
+        feed = Feed.objects.get(pk=3)
+        saved_search = SavedSearch.objects.get(pk=8)
 
-        for v in models.Video.objects.all()[:5]:
+        for v in Video.objects.all()[:5]:
             v.feed = feed
             v.save()
 
-        for v in models.Video.objects.all()[5:10]:
+        for v in Video.objects.all()[5:10]:
             v.search = saved_search
             v.save()
 
-        video_count = models.Video.objects.count()
+        video_count = Video.objects.count()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -760,21 +744,21 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(
-            models.Feed.objects.filter(pk=3).count(), # form 0
+        self.assertEqual(
+            Feed.objects.filter(pk=3).count(), # form 0
             0)
 
-        self.assertEquals(
-            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+        self.assertEqual(
+            SavedSearch.objects.filter(pk=8).count(), # form 1
             0)
 
         # make sure the 10 videos got removed
-        self.assertEquals(models.Video.objects.count(),
+        self.assertEqual(Video.objects.count(),
                           video_count - 10)
 
     def test_POST_delete_keep_videos(self):
@@ -783,18 +767,18 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         value for a source and a 'keep' POST value, should remove the source
         but keep the videos.
         """
-        feed = models.Feed.objects.get(pk=3)
-        saved_search = models.SavedSearch.objects.get(pk=8)
+        feed = Feed.objects.get(pk=3)
+        saved_search = SavedSearch.objects.get(pk=8)
 
-        for v in models.Video.objects.all()[:5]:
+        for v in Video.objects.all()[:5]:
             v.feed = feed
             v.save()
 
-        for v in models.Video.objects.all()[5:10]:
+        for v in Video.objects.all()[5:10]:
             v.search = saved_search
             v.save()
 
-        video_count = models.Video.objects.count()
+        video_count = Video.objects.count()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -807,21 +791,21 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(
-            models.Feed.objects.filter(pk=3).count(), # form 0
+        self.assertEqual(
+            Feed.objects.filter(pk=3).count(), # form 0
             0)
 
-        self.assertEquals(
-            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+        self.assertEqual(
+            SavedSearch.objects.filter(pk=8).count(), # form 1
             0)
 
         # make sure the 10 videos are still there
-        self.assertEquals(models.Video.objects.count(),
+        self.assertEqual(Video.objects.count(),
                           video_count)
 
     def test_POST_bulk_edit(self):
@@ -831,9 +815,9 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         checked.
         """
         # give the feed a category
-        for source in (models.Feed.objects.get(pk=3), # form 0
-                       models.SavedSearch.objects.get(pk=8)): # form 1
-            source.auto_categories =[models.Category.objects.get(pk=2)]
+        for source in (Feed.objects.get(pk=3), # form 0
+                       SavedSearch.objects.get(pk=8)): # form 1
+            source.auto_categories =[Category.objects.get(pk=2)]
             source.save()
 
         c = Client()
@@ -850,26 +834,26 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        feed = models.Feed.objects.get(pk=3) # form 0
-        saved_search = models.SavedSearch.objects.get(pk=8) # form 1
+        feed = Feed.objects.get(pk=3) # form 0
+        saved_search = SavedSearch.objects.get(pk=8) # form 1
 
-        self.assertEquals(feed.auto_approve, True)
-        self.assertEquals(saved_search.auto_approve, True)
-        self.assertEquals(
+        self.assertEqual(feed.auto_approve, True)
+        self.assertEqual(saved_search.auto_approve, True)
+        self.assertEqual(
             set(feed.auto_categories.values_list('pk', flat=True)),
             set([1, 2]))
-        self.assertEquals(
+        self.assertEqual(
             set(saved_search.auto_categories.values_list('pk', flat=True)),
             set([1, 2]))
-        self.assertEquals(
+        self.assertEqual(
             set(feed.auto_authors.values_list('pk', flat=True)),
             set([1, 2]))
-        self.assertEquals(
+        self.assertEqual(
             set(saved_search.auto_authors.values_list('pk', flat=True)),
             set([1, 2]))
 
@@ -879,18 +863,18 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST['bulk_action'] of 'remove' should remove the sources with the bulk
         option checked.
         """
-        feed = models.Feed.objects.get(pk=3)
-        saved_search = models.SavedSearch.objects.get(pk=8)
+        feed = Feed.objects.get(pk=3)
+        saved_search = SavedSearch.objects.get(pk=8)
 
-        for v in models.Video.objects.all()[:5]:
+        for v in Video.objects.all()[:5]:
             v.feed = feed
             v.save()
 
-        for v in models.Video.objects.all()[5:10]:
+        for v in Video.objects.all()[5:10]:
             v.search = saved_search
             v.save()
 
-        video_count = models.Video.objects.count()
+        video_count = Video.objects.count()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -904,21 +888,21 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(
-            models.Feed.objects.filter(pk=3).count(), # form 0
+        self.assertEqual(
+            Feed.objects.filter(pk=3).count(), # form 0
             0)
 
-        self.assertEquals(
-            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+        self.assertEqual(
+            SavedSearch.objects.filter(pk=8).count(), # form 1
             0)
 
         # make sure the 10 videos got removed
-        self.assertEquals(models.Video.objects.count(),
+        self.assertEqual(Video.objects.count(),
                           video_count - 10)
 
     def test_POST_bulk_delete_keep_videos(self):
@@ -927,18 +911,18 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST['bulk_action'] of 'remove', and 'keep' in the POST data should
         remove the source with the bulk option checked but leave the videos.
         """
-        feed = models.Feed.objects.get(pk=3)
-        saved_search = models.SavedSearch.objects.get(pk=8)
+        feed = Feed.objects.get(pk=3)
+        saved_search = SavedSearch.objects.get(pk=8)
 
-        for v in models.Video.objects.all()[:5]:
+        for v in Video.objects.all()[:5]:
             v.feed = feed
             v.save()
 
-        for v in models.Video.objects.all()[5:10]:
+        for v in Video.objects.all()[5:10]:
             v.search = saved_search
             v.save()
 
-        video_count = models.Video.objects.count()
+        video_count = Video.objects.count()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -953,21 +937,21 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(
-            models.Feed.objects.filter(pk=3).count(), # form 0
+        self.assertEqual(
+            Feed.objects.filter(pk=3).count(), # form 0
             0)
 
-        self.assertEquals(
-            models.SavedSearch.objects.filter(pk=8).count(), # form 1
+        self.assertEqual(
+            SavedSearch.objects.filter(pk=8).count(), # form 1
             0)
 
         # make sure the 10 videos got removed
-        self.assertEquals(models.Video.objects.count(),
+        self.assertEqual(Video.objects.count(),
                           video_count)
 
     def test_POST_switching_categories_authors(self):
@@ -976,14 +960,14 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         includes changed categories or authors, videos that had the old
         categories/authors should be updated to the new values.
         """
-        feed = models.Feed.objects.get(pk=3)
-        saved_search = models.SavedSearch.objects.get(pk=8)
-        category = models.Category.objects.get(pk=1)
+        feed = Feed.objects.get(pk=3)
+        saved_search = SavedSearch.objects.get(pk=8)
+        category = Category.objects.get(pk=1)
         user = User.objects.get(pk=1)
-        category2 = models.Category.objects.get(pk=2)
+        category2 = Category.objects.get(pk=2)
         user2 = User.objects.get(pk=2)
 
-        for v in models.Video.objects.order_by('pk')[:3]:
+        for v in Video.objects.order_by('pk')[:3]:
             v.feed = feed
             if v.pk == 1:
                 v.categories.add(category)
@@ -996,7 +980,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
                 self.fail('invalid feed pk: %i' % v.pk)
             v.save()
 
-        for v in models.Video.objects.order_by('pk')[3:6]:
+        for v in Video.objects.order_by('pk')[3:6]:
             v.search = saved_search
             if v.pk == 4:
                 v.categories.add(category)
@@ -1022,64 +1006,64 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        for v in models.Video.objects.order_by('pk')[:3]:
-            self.assertEquals(v.feed, feed)
+        for v in Video.objects.order_by('pk')[:3]:
+            self.assertEqual(v.feed, feed)
             if v.pk == 1:
                 # nothing changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user]))
             elif v.pk == 2:
                 # user changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user2]))
             elif v.pk == 3:
                 # category changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category2]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user]))
             else:
                 self.fail('invalid feed video pk: %i' % v.pk)
 
-        for v in models.Video.objects.order_by('pk')[3:6]:
-            self.assertEquals(v.search, saved_search)
+        for v in Video.objects.order_by('pk')[3:6]:
+            self.assertEqual(v.search, saved_search)
             if v.pk == 4:
                 # nothing changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user]))
             elif v.pk == 5:
                 # user changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user2]))
             elif v.pk == 6:
                 # category changed
-                self.assertEquals(
+                self.assertEqual(
                     set(v.categories.all()),
                     set([category2]))
-                self.assertEquals(
+                self.assertEqual(
                     set(v.authors.all()),
                     set([user]))
             else:
@@ -1096,17 +1080,6 @@ class FeedAdministrationTestCase(BaseTestCase):
     url = reverse('localtv_admin_feed_add')
     feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
 
-    def test_authentication_done(self):
-        """
-        The localtv_admin_feed_add_done view should require administration
-        priviledges.
-        """
-        url = reverse('localtv_admin_feed_add_done', args=[1])
-        self.assertRequiresAuthentication(url)
-
-        self.assertRequiresAuthentication(url,
-                                          username='user', password='password')
-
     def test_GET(self):
         """
         A GET request to the add_feed view should render the
@@ -1119,21 +1092,21 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
-        self.assertEquals(response.context[2]['video_count'], 1)
+        self.assertEqual(response.context[2]['video_count'], 1)
 
     def test_GET_fail_existing(self):
         """
         A GET request to the add_feed view should fail if the feed already
         exists.
         """
-        models.Feed.objects.create(
+        Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=models.FEED_STATUS_UNAPPROVED,
+            status=Feed.INACTIVE,
             feed_url=self.feed_url)
         c = Client()
         c.login(username='admin', password='admin')
@@ -1145,19 +1118,22 @@ class FeedAdministrationTestCase(BaseTestCase):
         We accept a few different kinds of YouTube URLs.  We should make sure
         we only have one feed per base URL.
         """
-        url1 = ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
-                'alt=rss&v=2&orderby=published')
-        url2 = 'http://www.youtube.com/rss/user/CLPPrj/videos.rss'
-        models.Feed.objects.create(
+        urls = [
+            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
+             'alt=rss&v=2'),
+            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
+             'alt=rss&v=2&orderby=published'),
+            'http://www.youtube.com/rss/user/CLPPrj/videos.rss']
+        Feed.objects.create(
             site=self.site_location.site,
             last_updated=datetime.datetime.now(),
-            status=models.FEED_STATUS_UNAPPROVED,
-            feed_url=url1)
+            status=Feed.INACTIVE,
+            feed_url=urls[0])
         c = Client()
         c.login(username='admin', password='admin')
-        for url in url1, url2:
+        for url in urls:
             response = c.get(self.url, {'feed_url': url})
-            self.assertEquals(response.status_code, 400,
+            self.assertEqual(response.status_code, 400,
                               '%r not stopped as a duplicate' % url)
 
     def test_GET_vimeo(self):
@@ -1171,7 +1147,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1187,7 +1163,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1203,12 +1179,12 @@ class FeedAdministrationTestCase(BaseTestCase):
                           {'feed_url': self.feed_url,
                            'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
                         self.feed_url)
         self.assertFalse(response.context[0]['form'].is_valid())
-        self.assertEquals(response.context[0]['video_count'], 1)
+        self.assertEqual(response.context[0]['video_count'], 1)
 
     def test_POST_failure_bad_url(self):
         """
@@ -1235,17 +1211,17 @@ class FeedAdministrationTestCase(BaseTestCase):
                            'auto_approve': 'yes',
                            'cancel': 'yes'})
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 reverse('localtv_admin_manage_page')))
 
-        self.assertEquals(models.Feed.objects.count(), 0)
+        self.assertEqual(Feed.objects.count(), 0)
 
     def test_POST_succeed(self):
         """
         A POST request to the add_feed view with a valid form should redirect
-        the user to the localtv_admin_add_feed_done view.
+        the user to the localtv_admin_manage_page view.
 
         A Feed object should also be created, but not have any items.
         """
@@ -1256,38 +1232,18 @@ class FeedAdministrationTestCase(BaseTestCase):
                            'auto_approve': 'yes',
                            'avoid_frontpage': 'on'})
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
-                reverse('localtv_admin_feed_add_done', args=[1])))
+                reverse('localtv_admin_manage_page')))
 
-        feed = models.Feed.objects.get()
-        self.assertEquals(feed.name, 'Valid Feed with Relative Links')
-        self.assertEquals(feed.feed_url, self.feed_url)
-        self.assertEquals(feed.status, models.FEED_STATUS_UNAPPROVED)
-        self.assertEquals(feed.avoid_frontpage, True)
+        feed = Feed.objects.get()
+        self.assertEqual(feed.name, 'Valid Feed with Relative Links')
+        self.assertEqual(feed.feed_url, self.feed_url)
+        # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
+        self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
+        self.assertEqual(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
-
-    def test_GET_done(self):
-        """
-        A GET request to the add_feed_done view should start importing the
-        videos from the feed by starting a Celery task.  It should also render
-        the 'localtv/admin/feed_wait.html' template and have a 'feed' variable
-        in the context pointing to the Feed object and a 'task_id' variable
-        with the Celery task ID..
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % self.feed_url,
-               {'feed_url': self.feed_url,
-                'auto_approve': 'yes'})
-
-        response = c.get(reverse('localtv_admin_feed_add_done', args=[1]))
-        self.assertStatusCodeEquals(response, 302)
-        self.assertTrue(response['Location'].startswith(
-                'http://%s%s?task_id=' % (
-                    'testserver',
-                    reverse('localtv_admin_feed_add_done', args=[1]))))
 
     def test_GET_creates_user(self):
         """
@@ -1303,16 +1259,16 @@ class FeedAdministrationTestCase(BaseTestCase):
                {'feed_url': url,
                 'auto_approve': 'yes'})
 
-        feed = models.Feed.objects.get()
+        feed = Feed.objects.get()
         user = User.objects.get(username='mphtower')
-        self.assertEquals(feed.name, 'mphtower')
+        self.assertEqual(feed.name, 'mphtower')
 
         self.assertFalse(user.has_usable_password())
-        self.assertEquals(user.email, '')
-        self.assertEquals(user.get_profile().website,
-                          'http://www.youtube.com/profile_videos?'
-                          'user=mphtower')
-        self.assertEquals(list(feed.auto_authors.all()),
+        self.assertEqual(user.email, '')
+        self.assertEqual(user.get_profile().website,
+                          'http://www.youtube.com/profile?'
+                          'user=mphtower#p/u')
+        self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
     def test_GET_reuses_existing_user(self):
@@ -1336,12 +1292,12 @@ class FeedAdministrationTestCase(BaseTestCase):
 
         user = User.objects.get(username='mphtower') # reload user
         self.assertTrue(user.has_usable_password())
-        self.assertEquals(user.email, 'mph@tower.com')
-        self.assertEquals(user.get_profile().website,
+        self.assertEqual(user.email, 'mph@tower.com')
+        self.assertEqual(user.get_profile().website,
                           'http://www.mphtower.com/')
 
-        feed = models.Feed.objects.get()
-        self.assertEquals(list(feed.auto_authors.all()),
+        feed = Feed.objects.get()
+        self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
     def test_GET_auto_approve(self):
@@ -1350,12 +1306,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         bit on the feed specified in the URL and redirect back to the referrer.
         It should also require the user to be an administrator.
         """
-        feed = models.Feed.objects.create(site=self.site_location.site,
+        feed = Feed.objects.create(site=self.site_location.site,
                                           name='name',
                                           feed_url='feed_url',
                                           auto_approve=False,
                                           last_updated=datetime.datetime.now(),
-                                          status=models.FEED_STATUS_ACTIVE)
+                                          status=Feed.ACTIVE)
         url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
         self.assertRequiresAuthentication(url)
         self.assertRequiresAuthentication(url,
@@ -1366,9 +1322,9 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url,
                          HTTP_REFERER='http://www.google.com/')
-        self.assertEquals(feed.auto_approve, False)
+        self.assertEqual(feed.auto_approve, False)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://www.google.com/')
+        self.assertEqual(response['Location'], 'http://www.google.com/')
 
     def test_GET_auto_approve_disable(self):
         """
@@ -1376,21 +1332,21 @@ class FeedAdministrationTestCase(BaseTestCase):
         should remove the auto_approve bit on the feed specified in the URL and
         redirect back to the referrer.
         """
-        feed = models.Feed.objects.create(site=self.site_location.site,
+        feed = Feed.objects.create(site=self.site_location.site,
                                           name='name',
                                           feed_url='feed_url',
                                           auto_approve=True,
                                           last_updated=datetime.datetime.now(),
-                                          status=models.FEED_STATUS_ACTIVE)
+                                          status=Feed.ACTIVE)
         url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
 
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(url, {'disable': 'yes'},
                          HTTP_REFERER='http://www.google.com/')
-        self.assertEquals(feed.auto_approve, True)
+        self.assertEqual(feed.auto_approve, True)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://www.google.com/')
+        self.assertEqual(response['Location'], 'http://www.google.com/')
 
 
 # -----------------------------------------------------------------------------
@@ -1417,7 +1373,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertTrue('current_video' in response.context[0])
         self.assertTrue('page_obj' in response.context[0])
@@ -1427,41 +1383,41 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_query(self):
         """
-        A GET request to the livesearch view and GET['query'] argument should
-        list some videos that match the query.
+        A GET request to the livesearch view and GET['q'] argument should list
+        some videos that match the query.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/livesearch_table.html')
-        self.assertIsInstance(response.context[2]['current_video'],
-                              MetasearchVideo)
-        self.assertEquals(response.context[2]['page_obj'].number, 1)
-        self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
-        self.assertEquals(response.context[2]['query_string'], 'search string')
-        self.assertEquals(response.context[2]['order_by'], 'latest')
-        self.assertEquals(response.context[2]['is_saved_search'], False)
+        self.assertIsInstance(response.context['current_video'],
+                              Video)
+        self.assertEqual(response.context['page_obj'].number, 1)
+        self.assertEqual(len(response.context['page_obj'].object_list), 10)
+        self.assertEqual(response.context['query_string'], 'search string')
+        self.assertEqual(response.context['order_by'], 'latest')
+        self.assertEqual(response.context['is_saved_search'], False)
 
     def test_GET_query_pagination(self):
         """
-        A GET request to the livesearch view with GET['query'] and GET['page']
+        A GET request to the livesearch view with GET['q'] and GET['page']
         arguments should return another page of results.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
-        self.assertEquals(response.context[2]['page_obj'].number, 1)
-        self.assertEquals(len(response.context[2]['page_obj'].object_list), 10)
+                         {'q': 'search string'})
+        self.assertEqual(response.context[2]['page_obj'].number, 1)
+        self.assertEqual(len(response.context[2]['page_obj'].object_list), 10)
 
         response2 = c.get(self.url,
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'page': '2'})
-        self.assertEquals(response2.context[2]['page_obj'].number, 2)
-        self.assertEquals(len(response2.context[2]['page_obj'].object_list),
+        self.assertEqual(response2.context[2]['page_obj'].number, 2)
+        self.assertEqual(len(response2.context[2]['page_obj'].object_list),
                           10)
 
         self.assertNotEquals([v.id for v in
@@ -1477,40 +1433,37 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         removed from subsequent search listings.
         """
         c = Client()
-        self.assert_(c.login(username='admin', password='admin'))
+        self.assertTrue(c.login(username='admin', password='admin'))
         response = c.get(self.url,
-                         {'query': 'search string'})
-        metasearch_video = response.context[2]['page_obj'].object_list[0]
-        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
+                         {'q': 'search string'})
+        fake_video = response.context[2]['page_obj'].object_list[0]
+        fake_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'video_id': metasearch_video.id},
+                         {'q': 'search string',
+                          'video_id': fake_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], "http://www.getmiro.com/")
+        self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
-        v = models.Video.objects.get()
-        self.assertEquals(v.site, self.site_location.site)
-        self.assertEquals(v.name, metasearch_video.name)
-        self.assertEquals(
-            v.description,
-            vidscraper.auto_scrape(v.website_url,
-                                   fields=['description'])['description'])
-        self.assertEquals(v.file_url, metasearch_video.file_url)
-        self.assertEquals(v.embed_code, metasearch_video.embed_code)
+        v = Video.objects.get()
+        self.assertEqual(v.site, self.site_location.site)
+        self.assertEqual(v.name, fake_video.name)
+        self.assertEqual(v.description, fake_video.description)
+        self.assertEqual(v.file_url, fake_video.file_url)
+        self.assertEqual(v.embed_code, fake_video.embed_code)
         self.assertTrue(v.last_featured is None)
 
         user = User.objects.get(username=v.video_service_user)
         self.assertFalse(user.has_usable_password())
-        self.assertEquals(user.get_profile().website,
+        self.assertEqual(user.get_profile().website,
                           v.video_service_url)
-        self.assertEquals(list(v.authors.all()), [user])
+        self.assertEqual(list(v.authors.all()), [user])
 
         response = c.get(self.url,
-                         {'query': 'search string'})
-        self.assertEquals(response.context[2]['page_obj'].object_list[0].id,
-                          metasearch_video2.id)
+                         {'q': 'search string'})
+        self.assertEqual(response.context[2]['page_obj'].object_list[0].id,
+                          fake_video2.id)
 
     @mock.patch('localtv.tiers.Tier.can_add_more_videos', mock.Mock(return_value=False))
     def test_GET_approve_refuses_when_limit_exceeded(self):
@@ -1522,12 +1475,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
         metasearch_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'video_id': metasearch_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 402)
@@ -1552,18 +1505,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'feature': 'yes',
                           'video_id': metasearch_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], "http://www.getmiro.com/")
+        self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
-        v = models.Video.objects.get()
+        v = Video.objects.get()
         self.assertTrue(v.last_featured is not None)
 
     def test_GET_display(self):
@@ -1575,16 +1528,16 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_display'),
-                         {'query': 'search string',
+                         {'q': 'search string',
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/video_preview.html')
-        self.assertEquals(response.context[0]['current_video'].id,
+        self.assertEqual(response.context[0]['current_video'].id,
                           metasearch_video.id)
 
     def test_GET_create_saved_search(self):
@@ -1596,18 +1549,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(reverse('localtv_admin_search_add'),
-                         {'query': 'search string'},
+                         {'q': 'search string'},
                          HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'], 'http://www.getmiro.com/')
+        self.assertEqual(response['Location'], 'http://www.getmiro.com/')
 
-        saved_search = models.SavedSearch.objects.get()
-        self.assertEquals(saved_search.query_string, 'search string')
-        self.assertEquals(saved_search.site, self.site_location.site)
-        self.assertEquals(saved_search.user.username, 'admin')
+        saved_search = SavedSearch.objects.get()
+        self.assertEqual(saved_search.query_string, 'search string')
+        self.assertEqual(saved_search.site, self.site_location.site)
+        self.assertEqual(saved_search.user.username, 'admin')
 
         response = c.get(self.url,
-                         {'query': 'search string'})
+                         {'q': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
     def test_GET_create_saved_search_authentication(self):
@@ -1627,7 +1580,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         auto_approve bit to True on the given SavedSearch object and redirect
         back to the referrer
         """
-        saved_search = models.SavedSearch.objects.create(
+        saved_search = SavedSearch.objects.create(
             site=self.site_location.site,
             query_string='search string')
 
@@ -1637,10 +1590,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                                  args=[saved_search.pk]),
                          HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://www.getmiro.com/')
 
-        saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
+        saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         self.assertTrue(saved_search.auto_approve)
 
     def test_GET_search_auto_approve_authentication(self):
@@ -1661,7 +1614,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         should set the auto_approve bit to False on the given SavedSearch
         object and redirect back to the referrer
         """
-        saved_search = models.SavedSearch.objects.create(
+        saved_search = SavedSearch.objects.create(
             site=self.site_location.site,
             auto_approve=True,
             query_string='search string')
@@ -1673,10 +1626,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                                  {'disable': 'yes'},
                          HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://www.getmiro.com/')
 
-        saved_search = models.SavedSearch.objects.get(pk=saved_search.pk)
+        saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         self.assertFalse(saved_search.auto_approve)
 
 # -----------------------------------------------------------------------------
@@ -1698,7 +1651,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_user_form' in response.context[0])
@@ -1714,7 +1667,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -1731,7 +1684,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/users.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -1755,7 +1708,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
@@ -1765,10 +1718,10 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             if key == 'submit':
                 pass
             elif key == 'role':
-                new_site_location = models.SiteLocation.objects.get()
+                new_site_location = SiteLocation.objects.get()
                 self.assertFalse(new_site_location.user_is_admin(new))
             else:
-                self.assertEquals(getattr(new, key), value)
+                self.assertEqual(getattr(new, key), value)
 
         self.assertFalse(new.has_usable_password())
 
@@ -1791,7 +1744,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
@@ -1801,10 +1754,10 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             if key in ('submit', 'password_f', 'password_f2'):
                 pass
             elif key == 'role':
-                new_site_location = models.SiteLocation.objects.get()
+                new_site_location = SiteLocation.objects.get()
                 self.assertTrue(new_site_location.user_is_admin(new))
             else:
-                self.assertEquals(getattr(new, key), value)
+                self.assertEqual(getattr(new, key), value)
 
         self.assertTrue(new.check_password(POST_data['password_f']))
 
@@ -1834,15 +1787,15 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
                 formset,
                 submit='Save'))
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
         for old, new in zip(old_users, User.objects.values()):
-            self.assertEquals(old, new)
+            self.assertEqual(old, new)
         for old, new in zip(old_profiles, Profile.objects.values()):
-            self.assertEquals(old, new)
+            self.assertEqual(old, new)
 
     def test_POST_save_changes(self):
         """
@@ -1874,36 +1827,36 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(User.objects.count(), 4) # no one got added
+        self.assertEqual(User.objects.count(), 4) # no one got added
 
         new_admin = User.objects.get(username='new_admin')
-        self.assertEquals(new_admin.pk, 1)
+        self.assertEqual(new_admin.pk, 1)
         self.assertTrue(self.site_location.user_is_admin(new_admin))
         self.assertTrue(new_admin.check_password('new_admin'))
-        self.assertEquals(new_admin.get_profile().location, 'New Location')
+        self.assertEqual(new_admin.get_profile().location, 'New Location')
 
         superuser = User.objects.get(username='superuser')
-        self.assertEquals(superuser.pk, 2)
-        self.assertEquals(superuser.is_superuser, True)
-        self.assertEquals(superuser.first_name, '')
-        self.assertEquals(superuser.last_name, '')
+        self.assertEqual(superuser.pk, 2)
+        self.assertEqual(superuser.is_superuser, True)
+        self.assertEqual(superuser.first_name, '')
+        self.assertEqual(superuser.last_name, '')
         self.assertFalse(superuser in self.site_location.admins.all())
         self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
         self.assertTrue(profile.logo.name.endswith('logo.png'))
-        self.assertEquals(profile.website,
+        self.assertEqual(profile.website,
                           'http://google.com/ http://twitter.com/')
-        self.assertEquals(profile.description, 'Superuser Description')
+        self.assertEqual(profile.description, 'Superuser Description')
 
         old_admin = User.objects.get(username='admin')
-        self.assertEquals(old_admin.pk, 3)
-        self.assertEquals(old_admin.first_name, 'NewFirst')
-        self.assertEquals(old_admin.last_name, 'NewLast')
+        self.assertEqual(old_admin.pk, 3)
+        self.assertEqual(old_admin.first_name, 'NewFirst')
+        self.assertEqual(old_admin.last_name, 'NewLast')
         self.assertFalse(self.site_location.user_is_admin(old_admin))
         self.assertTrue(old_admin.check_password('admin'))
 
@@ -1929,15 +1882,15 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(User.objects.count(), 3) # one user got removed
+        self.assertEqual(User.objects.count(), 3) # one user got removed
 
-        self.assertEquals(User.objects.filter(username='user').count(), 0)
-        self.assertEquals(User.objects.filter(is_superuser=True).count(), 1)
+        self.assertEqual(User.objects.filter(username='user').count(), 0)
+        self.assertEqual(User.objects.filter(is_superuser=True).count(), 1)
 
     def test_POST_delete_nonhuman_user(self):
         """
@@ -1970,14 +1923,14 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(User.objects.count(), 3) # one user got removed
+        self.assertEqual(User.objects.count(), 3) # one user got removed
 
-        self.assertEquals(User.objects.filter(username='user').count(), 0)
+        self.assertEqual(User.objects.filter(username='user').count(), 0)
 
 
 # -----------------------------------------------------------------------------
@@ -2002,7 +1955,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_category_form' in response.context[0])
@@ -2017,7 +1970,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -2038,7 +1991,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -2062,7 +2015,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2085,7 +2038,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2110,7 +2063,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2134,14 +2087,14 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        new = models.Category.objects.order_by('-id')[0]
+        new = Category.objects.order_by('-id')[0]
 
-        self.assertEquals(new.site, self.site_location.site)
+        self.assertEqual(new.site, self.site_location.site)
 
         for key, value in POST_data.items():
             if key == 'submit':
@@ -2149,11 +2102,11 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             elif key == 'logo':
                 new.logo.open()
                 value.seek(0)
-                self.assertEquals(new.logo.read(), value.read())
+                self.assertEqual(new.logo.read(), value.read())
             elif key == 'parent':
-                self.assertEquals(new.parent.pk, value)
+                self.assertEqual(new.parent.pk, value)
             else:
-                self.assertEquals(getattr(new, key), value)
+                self.assertEqual(getattr(new, key), value)
 
     def test_POST_save_no_changes(self):
         """
@@ -2164,7 +2117,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username="admin", password="admin")
 
-        old_categories = models.Category.objects.values()
+        old_categories = Category.objects.values()
 
         GET_response = c.get(self.url)
         formset = GET_response.context['formset']
@@ -2174,13 +2127,13 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
                 submit='Save'))
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        for old, new in zip(old_categories, models.Category.objects.values()):
-            self.assertEquals(old, new)
+        for old, new in zip(old_categories, Category.objects.values()):
+            self.assertEqual(old, new)
 
     def test_POST_save_changes(self):
         """
@@ -2204,26 +2157,26 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(models.Category.objects.count(), 5) # no one got
+        self.assertEqual(Category.objects.count(), 5) # no one got
                                                               # added
 
-        new_slug = models.Category.objects.get(slug='newslug')
-        self.assertEquals(new_slug.pk, 5)
-        self.assertEquals(new_slug.name, 'New Name')
+        new_slug = Category.objects.get(slug='newslug')
+        self.assertEqual(new_slug.pk, 5)
+        self.assertEqual(new_slug.name, 'New Name')
 
-        new_logo = models.Category.objects.get(slug='miro')
+        new_logo = Category.objects.get(slug='miro')
         new_logo.logo.open()
-        self.assertEquals(new_logo.logo.read(),
+        self.assertEqual(new_logo.logo.read(),
                           file(self._data_file('logo.png')).read())
-        self.assertEquals(new_logo.description, 'New Description')
+        self.assertEqual(new_logo.description, 'New Description')
 
-        new_parent = models.Category.objects.get(slug='linux')
-        self.assertEquals(new_parent.parent.pk, 5)
+        new_parent = Category.objects.get(slug='linux')
+        self.assertEqual(new_parent.parent.pk, 5)
 
     def test_POST_delete(self):
         """
@@ -2245,16 +2198,16 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # three categories got removed
-        self.assertEquals(models.Category.objects.count(), 2)
+        self.assertEqual(Category.objects.count(), 2)
 
         # both of the other categories got their parents reassigned to None
-        self.assertEquals(models.Category.objects.filter(parent=None).count(),
+        self.assertEqual(Category.objects.filter(parent=None).count(),
                           2)
 
     def test_POST_bulk_delete(self):
@@ -2277,17 +2230,17 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
 
         # three categories got removed
-        self.assertEquals(models.Category.objects.count(), 2)
+        self.assertEqual(Category.objects.count(), 2)
 
         # both of the other categories got their parents reassigned to None
-        self.assertEquals(models.Category.objects.filter(parent=None).count(),
+        self.assertEqual(Category.objects.filter(parent=None).count(),
                           2)
 
 
@@ -2315,7 +2268,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
 
     @mock.patch('localtv.models.Video.save_thumbnail')
     def test_save_thumbnail_false(self, mock_save_thumbnail):
-        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        vid = Video.objects.exclude(thumbnail_url='')[0]
         import localtv.admin.forms
         data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
         form = localtv.admin.forms.EditVideoForm(data, instance=vid)
@@ -2325,7 +2278,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
 
     @mock.patch('localtv.models.Video.save_thumbnail')
     def test_save_thumbnail_true(self, mock_save_thumbnail):
-        vid = models.Video.objects.exclude(thumbnail_url='')[0]
+        vid = Video.objects.exclude(thumbnail_url='')[0]
         import localtv.admin.forms
         data = self._form2POST(localtv.admin.forms.EditVideoForm(instance=vid))
         data['thumbnail_url'] = 'http://www.google.com/logos/2011/persiannewyear11-hp.jpg'
@@ -2342,7 +2295,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
     @staticmethod
     def Video_sort_lower(*args, **kwargs):
-        videos = models.Video.objects.all()
+        videos = Video.objects.all()
         if args or kwargs:
             videos = videos.filter(*args, **kwargs)
         return videos.extra(select={
@@ -2364,7 +2317,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         * users: a Queryset for the users on the site
         """
         # Add tags to a video
-        video = self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[0];
+        video = self.Video_sort_lower(status=Video.ACTIVE)[0];
         video.tags = 'SomeSpecificTagString AnotherSpecificTagString'
         video.save()
         
@@ -2373,25 +2326,25 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
 
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/bulk_edit.html')
-        self.assertEquals(response.context[0]['page'].number, 1)
+        self.assertEqual(response.context[0]['page'].number, 1)
         self.assertTrue('formset' in response.context[0])
-        self.assertEquals(
+        self.assertEqual(
             [form.instance for form in
              response.context[0]['formset'].initial_forms],
             list(
-                self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
-        self.assertEquals(
+                self.Video_sort_lower(status=Video.ACTIVE)[:50]))
+        self.assertEqual(
             [form.initial['tags'] for form in
              response.context[0]['formset'].initial_forms],
-            list (util.get_or_create_tags(video.tags) for video in
-                  self.Video_sort_lower(status=models.VIDEO_STATUS_ACTIVE)[:50]))
+            list (utils.edit_string_for_tags(video.tags) for video in
+                  self.Video_sort_lower(status=Video.ACTIVE)[:50]))
         self.assertTrue('headers' in response.context[0])
-        self.assertEquals(list(response.context[0]['categories']),
-                          list(models.Category.objects.filter(
+        self.assertEqual(list(response.context[0]['categories']),
+                          list(Category.objects.filter(
                 site=self.site_location.site)))
-        self.assertEquals(list(response.context[0]['users']),
+        self.assertEqual(list(response.context[0]['users']),
                           list(User.objects.order_by('username')))
 
     def test_GET_sorting(self):
@@ -2404,14 +2357,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:unicode(x).lower())),
                           list(page.object_list))
 
         # reversed name
         response = c.get(self.url, {'sort': '-name'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:unicode(x).lower())),
                           list(page.object_list))
@@ -2419,14 +2372,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         # auto approve
         response = c.get(self.url, {'sort': 'when_published'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:x.when_published)),
                           list(page.object_list))
 
         # reversed auto_approve
         response = c.get(self.url, {'sort': '-when_published'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:x.when_published)),
                           list(page.object_list))
@@ -2434,14 +2387,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         # source (feed, search, user)
         response = c.get(self.url, {'sort': 'source'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       key=lambda x:x.source_type())),
                           list(page.object_list))
 
         # reversed source (user, search, feed)
         response = c.get(self.url, {'sort': '-source'})
         page = response.context['page']
-        self.assertEquals(list(sorted(page.object_list,
+        self.assertEqual(list(sorted(page.object_list,
                                       reverse=True,
                                       key=lambda x:x.source_type())),
                           list(page.object_list))
@@ -2454,10 +2407,10 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'category': '3'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
                     categories=3,
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     )))
 
     def test_GET_filter_authors(self):
@@ -2468,10 +2421,10 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'author': '3'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
                     authors=3,
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     )))
 
     def test_GET_filter_featured(self):
@@ -2482,9 +2435,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'featured'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     ).exclude(last_featured=None)))
 
     def test_GET_filter_no_attribution(self):
@@ -2496,9 +2449,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'no-attribution'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     authors=None)))
 
     def test_GET_filter_no_category(self):
@@ -2508,16 +2461,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         """
         # the first page of videos all don't have categories, so we give them
         # some so that there's something to filter
-        for video in models.Video.objects.order_by('name')[:20]:
+        for video in Video.objects.order_by('name')[:20]:
             video.categories = [1]
             video.save()
 
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'no-category'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     categories=None)))
 
     def test_GET_filter_rejected(self):
@@ -2528,9 +2481,9 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'filter': 'rejected'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
-                    status=models.VIDEO_STATUS_REJECTED)))
+                    status=Video.REJECTED)))
 
     def test_GET_search(self):
         """
@@ -2540,12 +2493,12 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'q': 'blend'})
-        self.assertEquals(list(response.context['page'].object_list),
+        self.assertEqual(list(response.context['page'].object_list),
                           list(self.Video_sort_lower(
                     Q(name__icontains="blend") |
                     Q(description__icontains="blend") |
                     Q(feed__name__icontains="blend"),
-                    status=models.VIDEO_STATUS_ACTIVE,
+                    status=Video.ACTIVE,
                     )))
 
     def test_POST_failure(self):
@@ -2568,11 +2521,11 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 200)
         self.assertTrue(POST_response.context['formset'].is_bound)
         self.assertFalse(POST_response.context['formset'].is_valid())
-        self.assertEquals(len(POST_response.context['formset'].errors[0]), 1)
-        self.assertEquals(len(POST_response.context['formset'].errors[1]), 1)
+        self.assertEqual(len(POST_response.context['formset'].errors[0]), 1)
+        self.assertEqual(len(POST_response.context['formset'].errors[1]), 1)
 
         # make sure the data hasn't changed
-        self.assertEquals(POST_data,
+        self.assertEqual(POST_data,
                           self._POST_data_from_formset(
                 POST_response.context['formset']))
 
@@ -2600,27 +2553,27 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        self.assertEquals(video1.name, POST_data['form-0-name'])
-        self.assertEquals(video1.file_url, POST_data['form-0-file_url'])
-        self.assertEquals(video1.embed_code, POST_data['form-0-embed_code'])
-        self.assertEquals(set(video1.tags.values_list('name', flat=True)),
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEqual(video1.name, POST_data['form-0-name'])
+        self.assertEqual(video1.file_url, POST_data['form-0-file_url'])
+        self.assertEqual(video1.embed_code, POST_data['form-0-embed_code'])
+        self.assertEqual(set(video1.tags.values_list('name', flat=True)),
                           set(['tag1', 'tag2']))
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
-        self.assertEquals(video2.description,
+        self.assertEqual(video2.description,
                           POST_data['form-1-description'])
-        self.assertEquals(video2.embed_code,
+        self.assertEqual(video2.embed_code,
                           POST_data['form-1-embed_code'])
-        self.assertEquals(set(video2.tags.values_list('name', flat=True)),
+        self.assertEqual(set(video2.tags.values_list('name', flat=True)),
                           set(['tag3', 'tag4']))
 
     def test_POST_change_just_one_video(self):
@@ -2643,16 +2596,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data has been updated
-        video = models.Video.objects.get(
+        video = Video.objects.get(
             pk=POST_data['form-11-id'])
-        self.assertEquals(video.description,
+        self.assertEqual(video.description,
                           POST_data['form-11-description'])
 
     def test_POST_change_just_one_video_without_authors(self):
@@ -2676,16 +2629,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data remains the same: in the form...
-        video = models.Video.objects.get(
+        video = Video.objects.get(
             pk=POST_data['form-11-id'])
-        self.assertEquals([unicode(x.id) for x in video.authors.all()],
+        self.assertEqual([unicode(x.id) for x in video.authors.all()],
                           original_POST_data['form-11-authors'])
 
         # ...in the database
@@ -2715,14 +2668,14 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?successful' % (
                         'testserver',
                         self.url), 302)])
         self.assertFalse(POST_response.context['formset'].is_bound)
 
         # make sure the data has changed in the DB
-        video = models.Video.objects.get(
+        video = Video.objects.get(
             pk=POST_data['form-11-id'])
         self.assertEqual([],
                          [x.id for x in video.authors.all()])
@@ -2743,7 +2696,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url+"?page=2", POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
                         'testserver',
                         self.url), 302)])
@@ -2764,7 +2717,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url+"?page=2&successful", POST_data,
                                follow=True)
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.redirect_chain,
+        self.assertEqual(POST_response.redirect_chain,
                           [('http://%s%s?page=2&successful' % (
                         'testserver',
                         self.url), 302)])
@@ -2785,18 +2738,18 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        self.assertEquals(video1.status, models.VIDEO_STATUS_REJECTED)
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEqual(video1.status, Video.REJECTED)
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
-        self.assertEquals(video2.status, models.VIDEO_STATUS_REJECTED),
+        self.assertEqual(video2.status, Video.REJECTED),
 
     def test_POST_bulk_edit(self):
         """
@@ -2805,9 +2758,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         checked.
         """
         # give the first video a category
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE).order_by('name')[0]
-        video.categories =[models.Category.objects.get(pk=2)]
+        video = Video.objects.filter(status=Video.ACTIVE).order_by('name')[0]
+        video.categories =[Category.objects.get(pk=2)]
         video.save()
 
         c = Client()
@@ -2828,33 +2780,33 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        video2 = models.Video.objects.get(
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
 
-        self.assertEquals(
+        self.assertEqual(
             set(video1.categories.values_list('pk', flat=True)),
             set([1, 2]))
-        self.assertEquals(
+        self.assertEqual(
             set(video2.categories.values_list('pk', flat=True)),
             set([1]))
 
         for video in video1, video2:
-            self.assertEquals(video.name, 'New Name')
-            self.assertEquals(video.description, 'New Description')
-            self.assertEquals(video.when_published,
+            self.assertEqual(video.name, 'New Name')
+            self.assertEqual(video.description, 'New Description')
+            self.assertEqual(video.when_published,
                               datetime.datetime(1985, 3, 24,
                                                 18, 55, 00))
-            self.assertEquals(
+            self.assertEqual(
                 set(video.authors.values_list('pk', flat=True)),
                 set([1, 2]))
-            self.assertEquals(set(video.tags.values_list('name', flat=True)),
+            self.assertEqual(set(video.tags.values_list('name', flat=True)),
                                   set(['tag3', 'tag4']))
 
     def test_POST_bulk_edit_no_authors(self):
@@ -2864,9 +2816,8 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         checked.
         """
         # give the first video a category
-        video = models.Video.objects.filter(
-            status=models.VIDEO_STATUS_ACTIVE).order_by('name')[0]
-        video.categories =[models.Category.objects.get(pk=2)]
+        video = Video.objects.filter(status=Video.ACTIVE).order_by('name')[0]
+        video.categories =[Category.objects.get(pk=2)]
         video.save()
 
         c = Client()
@@ -2881,27 +2832,27 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        video2 = models.Video.objects.get(
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
 
-        self.assertEquals(
+        self.assertEqual(
             set(video1.categories.values_list('pk', flat=True)),
             set([1, 2]))
-        self.assertEquals(
+        self.assertEqual(
             set(video2.categories.values_list('pk', flat=True)),
             set([1]))
 
         for video in video1, video2:
-            self.assertEquals(
+            self.assertEqual(
                 set(video.authors.values_list('pk', flat=True)), set())
-            self.assertEquals(set(video.tags.values_list('name', flat=True)),
+            self.assertEqual(set(video.tags.values_list('name', flat=True)),
                                   set(['tag3', 'tag4']))
 
     def test_POST_bulk_delete(self):
@@ -2922,18 +2873,18 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        self.assertEquals(video1.status, models.VIDEO_STATUS_REJECTED)
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEqual(video1.status, Video.REJECTED)
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
-        self.assertEquals(video2.status, models.VIDEO_STATUS_REJECTED)
+        self.assertEqual(video2.status, Video.REJECTED)
 
     def test_POST_bulk_unapprove(self):
         """
@@ -2953,18 +2904,18 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
-        self.assertEquals(video1.status, models.VIDEO_STATUS_UNAPPROVED)
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
+        self.assertEqual(video1.status, Video.UNAPPROVED)
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
-        self.assertEquals(video2.status, models.VIDEO_STATUS_UNAPPROVED)
+        self.assertEqual(video2.status, Video.UNAPPROVED)
 
     def test_POST_bulk_feature(self):
         """
@@ -2984,16 +2935,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
         self.assertTrue(video1.last_featured is not None)
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is not None)
 
@@ -3003,7 +2954,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         POST['bulk_action'] of 'feature' should feature the videos with the
         bulk option checked.
         """
-        for v in models.Video.objects.all():
+        for v in Video.objects.all():
             v.last_featured = datetime.datetime.now()
             v.save()
 
@@ -3019,16 +2970,16 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # make sure the data has been updated
-        video1 = models.Video.objects.get(pk=POST_data['form-0-id'])
+        video1 = Video.objects.get(pk=POST_data['form-0-id'])
         self.assertTrue(video1.last_featured is None)
 
-        video2 = models.Video.objects.get(
+        video2 = Video.objects.get(
             pk=POST_data['form-1-id'])
         self.assertTrue(video2.last_featured is None)
 
@@ -3064,7 +3015,7 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.template[0].name,
+        self.assertEqual(POST_response.template[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3093,9 +3044,8 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
         """
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-
         c = Client()
-        c.login(username="admin", password="admin")
+        c.login(username="superuser", password="superuser")
         POST_data = {
             'submit': 'Add',
             'username': 'new',
@@ -3149,7 +3099,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertTrue('form' in response.context[0])
 
@@ -3164,7 +3114,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, )
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.template[0].name,
+        self.assertEqual(POST_response.template[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3180,7 +3130,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEquals(POST_response.template[0].name,
+        self.assertEqual(POST_response.template[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3209,19 +3159,19 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        site_location = models.SiteLocation.objects.get(
+        site_location = SiteLocation.objects.get(
             pk=self.site_location.pk)
-        self.assertEquals(site_location.site.name, 'New Title')
-        self.assertEquals(site_location.tagline, 'New Tagline')
-        self.assertEquals(site_location.about_html, 'New About')
-        self.assertEquals(site_location.sidebar_html, 'New Sidebar')
-        self.assertEquals(site_location.footer_html, 'New Footer')
-        self.assertEquals(site_location.css, 'New Css')
+        self.assertEqual(site_location.site.name, 'New Title')
+        self.assertEqual(site_location.tagline, 'New Tagline')
+        self.assertEqual(site_location.about_html, 'New About')
+        self.assertEqual(site_location.sidebar_html, 'New Sidebar')
+        self.assertEqual(site_location.footer_html, 'New Footer')
+        self.assertEqual(site_location.css, 'New Css')
         self.assertTrue(site_location.display_submit_button)
         self.assertTrue(site_location.submission_requires_login)
         self.assertFalse(site_location.use_original_date)
@@ -3230,9 +3180,9 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
         logo_data = file(self._data_file('logo.png')).read()
         site_location.logo.open()
-        self.assertEquals(site_location.logo.read(), logo_data)
+        self.assertEqual(site_location.logo.read(), logo_data)
         site_location.background.open()
-        self.assertEquals(site_location.background.read(), logo_data)
+        self.assertEqual(site_location.background.read(), logo_data)
 
     def test_POST_logo_background_long_name(self):
         """
@@ -3249,18 +3199,18 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        site_location = models.SiteLocation.objects.get(
+        site_location = SiteLocation.objects.get(
             pk=self.site_location.pk)
         logo_data = file(self._data_file('logo.png')).read()
         site_location.logo.open()
-        self.assertEquals(site_location.logo.read(), logo_data)
+        self.assertEqual(site_location.logo.read(), logo_data)
         site_location.background.open()
-        self.assertEquals(site_location.background.read(), logo_data)
+        self.assertEqual(site_location.background.read(), logo_data)
 
         logo_name = site_location.logo.name
         background_name = site_location.background.name
@@ -3270,15 +3220,15 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, self.POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        site_location = models.SiteLocation.objects.get(
+        site_location = SiteLocation.objects.get(
             pk=self.site_location.pk)
-        self.assertEquals(site_location.logo.name, logo_name)
-        self.assertEquals(site_location.background.name,
+        self.assertEqual(site_location.logo.name, logo_name)
+        self.assertEqual(site_location.background.name,
                           background_name)
 
     def test_POST_delete_background(self):
@@ -3296,14 +3246,14 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        site_location = models.SiteLocation.objects.get(
+        site_location = SiteLocation.objects.get(
             pk=self.site_location.pk)
-        self.assertEquals(site_location.background, '')
+        self.assertEqual(site_location.background, '')
 
     def test_POST_delete_background_missing(self):
         """
@@ -3317,14 +3267,14 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 self.url))
 
-        site_location = models.SiteLocation.objects.get(
+        site_location = SiteLocation.objects.get(
             pk=self.site_location.pk)
-        self.assertEquals(site_location.background, '')
+        self.assertEqual(site_location.background, '')
 
 
 # -----------------------------------------------------------------------------
@@ -3349,7 +3299,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('form' in response.context[0])
@@ -3364,7 +3314,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3380,7 +3330,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -3402,20 +3352,20 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 302)
-        self.assertEquals(response['Location'],
+        self.assertEqual(response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         new = FlatPage.objects.order_by('-id')[0]
 
-        self.assertEquals(list(new.sites.all()), [self.site_location.site])
+        self.assertEqual(list(new.sites.all()), [self.site_location.site])
 
         for key, value in POST_data.items():
             if key == 'submit':
                 pass
             else:
-                self.assertEquals(getattr(new, key), value)
+                self.assertEqual(getattr(new, key), value)
 
     def test_POST_add_existing_flatpage(self):
         """
@@ -3432,7 +3382,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3454,7 +3404,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEquals(response.template[0].name,
+        self.assertEqual(response.template[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3480,13 +3430,13 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
                 submit='Save'))
 
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         for old, new in zip(old_flatpages, FlatPage.objects.values()):
-            self.assertEquals(old, new)
+            self.assertEqual(old, new)
 
     def test_POST_save_changes(self):
         """
@@ -3508,19 +3458,19 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
-        self.assertEquals(FlatPage.objects.count(), 5) # no one got added
+        self.assertEqual(FlatPage.objects.count(), 5) # no one got added
 
         new_url = FlatPage.objects.get(url='/newflatpage/')
-        self.assertEquals(new_url.pk, 1)
-        self.assertEquals(new_url.title, 'New Title')
+        self.assertEqual(new_url.pk, 1)
+        self.assertEqual(new_url.title, 'New Title')
 
         new_content = FlatPage.objects.get(url='/flatpage1/')
-        self.assertEquals(new_content.content, 'New Content')
+        self.assertEqual(new_content.content, 'New Content')
 
     def test_POST_delete(self):
         """
@@ -3542,13 +3492,13 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
         # three flatpages got removed
-        self.assertEquals(FlatPage.objects.count(), 2)
+        self.assertEqual(FlatPage.objects.count(), 2)
 
     def test_POST_bulk_delete(self):
         """
@@ -3570,14 +3520,14 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(POST_response, 302)
-        self.assertEquals(POST_response['Location'],
+        self.assertEqual(POST_response['Location'],
                           'http://%s%s?successful' % (
                 'testserver',
                 self.url))
 
 
         # three flatpages got removed
-        self.assertEquals(FlatPage.objects.count(), 2)
+        self.assertEqual(FlatPage.objects.count(), 2)
 
 def videos_limit_of_two(*args, **kwargs):
     return 2
@@ -3586,14 +3536,16 @@ class CannotApproveVideoIfLimitExceeded(BaseTestCase):
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_videos_over_new_limit(self):
         # Let there be one video already approved
-        models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+        Video.objects.create(site_id=self.site_location.site_id,
+                             status=Video.ACTIVE)
         # Create two in the queue
         for k in range(2):
-            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_UNAPPROVED)
+            Video.objects.create(site_id=self.site_location.site_id,
+                                 status=Video.UNAPPROVED)
 
         first_video_id, second_video_id = [v.id for v in
-                                           models.Video.objects.filter(
-                status=models.VIDEO_STATUS_UNAPPROVED)]
+                                           Video.objects.filter(
+                                               status=Video.UNAPPROVED)]
 
         # Try to activate all of them, but that would take us over the limit.
         c = Client()
@@ -3623,14 +3575,14 @@ class DowngradingDisablesThings(BaseTestCase):
     def test_videos_over_new_limit(self):
         # Create two videos
         for k in range(3):
-            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+            Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
     
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_videos_within_new_limit(self):
         # Create just one video
-        models.Video.objects.create(site_id=self.site_location.site_id)
+        Video.objects.create(site_id=self.site_location.site_id)
         self.assertTrue('videos' not in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
     
@@ -3739,7 +3691,7 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Now check what messages we would generate if we dropped down
         # to basic.
-        self.assert_(
+        self.assertTrue(
             'admins' not in localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # Try pushing the number of admins down to 1, which should change nothing.
@@ -3793,25 +3745,25 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(self.site_location.tier_name, 'max')
 
         # Create two themes -- one bundled, and one not.
-        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
-        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' in 
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='premium'))
         
         # For now, the default theme is still the bundled one.
-        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+        self.assertFalse(Theme.objects.get_default().bundled)
 
         # "Transition" from max to max, to make sure the theme stays
         self.site_location.save()
-        self.assertFalse(uploadtemplate.models.Theme.objects.get_default().bundled)
+        self.assertFalse(Theme.objects.get_default().bundled)
 
         # Now, force the transition
         self.site_location.tier_name = 'premium'
         self.site_location.save()
         # Check that the user is now on a bundled theme
-        self.assertTrue(uploadtemplate.models.Theme.objects.get_default().bundled)
+        self.assertTrue(Theme.objects.get_default().bundled)
 
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_go_to_basic_with_too_many_videos(self):
@@ -3820,23 +3772,22 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Create three published videos
         for k in range(3):
-            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+            Video.objects.create(site_id=self.site_location.site_id,
+                                 status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # We can find 'em all, right?
-        self.assertEqual(3,
-                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+        self.assertEqual(3, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should only be two active videos now
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-        self.assertEqual(2,
-                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+        self.assertEqual(2, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Make sure it's video 0 that is disabled
-        self.assertEqual(models.VIDEO_STATUS_UNAPPROVED,
-                         models.Video.objects.all().order_by('pk')[0].status)
+        self.assertEqual(Video.UNAPPROVED,
+                         Video.objects.all().order_by('pk')[0].status)
 
     @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
@@ -3846,19 +3797,17 @@ class DowngradingDisablesThings(BaseTestCase):
 
         # Create three published videos
         for k in range(3):
-            models.Video.objects.create(site_id=self.site_location.site_id, status=models.VIDEO_STATUS_ACTIVE)
+            Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
         # We can find 'em all, right?
-        self.assertEqual(3,
-                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+        self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should still be three videos because enforcement is disabled
         self.site_location.tier_name = 'basic'
         self.site_location.save()
-        self.assertEqual(3,
-                         models.Video.objects.filter(status=models.VIDEO_STATUS_ACTIVE).count())
+        self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
     def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
         '''Even if the custom themes are not the default ones, if they exist, we should
@@ -3868,8 +3817,8 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(self.site_location.tier_name, 'max')
 
         # Create two themes -- one bundled, and one not.
-        uploadtemplate.models.Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
-        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' in
@@ -3884,8 +3833,8 @@ class DowngradingDisablesThings(BaseTestCase):
         self.site_location.save()
 
         # Create two themes -- one bundled, and one not. Default is bundled.
-        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
-        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' not in
@@ -3900,8 +3849,8 @@ class DowngradingDisablesThings(BaseTestCase):
         self.site_location.save()
 
         # Create two themes -- one bundled, and one not. Default is bundled.
-        uploadtemplate.models.Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
-        uploadtemplate.models.Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' not in
@@ -3971,7 +3920,7 @@ class NightlyTiersEmails(BaseTestCase):
 
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
         self.admin = localtv.tiers.get_main_site_admin()
         self.admin.last_login = datetime.datetime.utcnow()
         self.admin.save()
@@ -3989,7 +3938,7 @@ class NightlyTiersEmails(BaseTestCase):
 
         # Make sure it sends an email...
         self.tiers_cmd.handle()
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         mail.outbox = []
 
         # And make sure the SiteLocation knows that the email was sent...
@@ -3997,18 +3946,18 @@ class NightlyTiersEmails(BaseTestCase):
 
         # ..so that the next time, it doesn't send any email.
         self.tiers_cmd.handle()
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
     def test_video_allotment(self):
         # First, it sends an email. But it saves a note in the SiteLocation...
         self.tiers_cmd.handle()
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         mail.outbox = []
 
         # ..so that the next time, it doesn't send any email.
         self.tiers_cmd.handle()
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     @mock.patch('localtv.models.TierInfo.time_until_free_trial_expires', mock.Mock(return_value=datetime.timedelta(days=7)))
     def test_free_trial_nearly_up_notification_false(self):
@@ -4072,29 +4021,29 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
 
         # No call yet.
         self.assertFalse(mock_send.called)
-        self.assertFalse(models.TierInfo.objects.get_current(
+        self.assertFalse(TierInfo.objects.get_current(
                 ).already_sent_welcome_email)
 
-        # Pre-requisite:
-        ti = models.TierInfo.objects.get_current()
+        # Prerequisite:
+        ti = TierInfo.objects.get_current()
         ti.should_send_welcome_email_on_paypal_event = True
         ti.save()
 
         # No call yet.
         self.assertFalse(mock_send.called)
-        self.assertTrue(models.TierInfo.objects.get_current(
+        self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
 
         # Whatever changes the user makes to the SiteLocation should not
         # cause sending, so long as they don't adjust the tier_name.
-        site_location = models.SiteLocation.objects.get_current()
+        site_location = SiteLocation.objects.get_current()
         site_location.tagline = 'my site rules'
         site_location.save()
         # No call yet. Tier Info still retains the flag.
         self.assertFalse(mock_send.called)
-        self.assertTrue(models.TierInfo.objects.get_current(
+        self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
-        site_location = models.SiteLocation.objects.get_current()
+        site_location = SiteLocation.objects.get_current()
         self.assertEqual('basic', site_location.tier_name)
 
         # Now, call _paypal_return() as if the user got there from PayPal.
@@ -4104,9 +4053,9 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         self.assertTrue(mock_send.called)
         # Make sure the tier_name is plus, really, and that the flag is
         # now set to False.
-        site_location = models.SiteLocation.objects.get_current()
+        site_location = SiteLocation.objects.get_current()
         self.assertEqual('plus', site_location.tier_name)
-        self.assertFalse(models.TierInfo.objects.get_current(
+        self.assertFalse(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
 
     @mock.patch('localtv.management.commands.send_welcome_email.Command.actually_send')
@@ -4133,25 +4082,25 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         # Pre-requisite:
         NOW = datetime.datetime.utcnow()
         PLUS_THIRTY_MIN = NOW + datetime.timedelta(minutes=30)
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.should_send_welcome_email_on_paypal_event = True
         ti.waiting_on_payment_until = PLUS_THIRTY_MIN
         ti.save()
 
         self.assertFalse(mock_send.called)
-        self.assertEqual(models.SiteLocation.objects.get_current().tier_name,
+        self.assertEqual(SiteLocation.objects.get_current().tier_name,
                          'basic')
 
         # Whatever changes the user makes to the SiteLocation should not
         # cause sending, so long as they don't adjust the tier_name.
-        site_location = models.SiteLocation.objects.get_current()
+        site_location = SiteLocation.objects.get_current()
         site_location.tagline = 'my site rules'
         site_location.save()
         # No call yet. Tier Info still retains the flag.
         self.assertFalse(mock_send.called)
-        self.assertTrue(models.TierInfo.objects.get_current(
+        self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
-        site_location = models.SiteLocation.objects.get_current()
+        site_location = SiteLocation.objects.get_current()
         self.assertEqual('basic', site_location.tier_name)
 
         PLUS_TEN_MIN = NOW + datetime.timedelta(minutes=10)
@@ -4166,18 +4115,18 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         # re-call even later
         cmd.stop_waiting_if_we_have_to(PLUS_FORTY_MIN)
         self.assertTrue(mock_send.called)
-        self.assertFalse(models.TierInfo.objects.get_current(
+        self.assertFalse(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
-        self.assertFalse(models.TierInfo.objects.get_current(
+        self.assertFalse(TierInfo.objects.get_current(
                 ).waiting_on_payment_until)
 
 class TestDisableEnforcement(BaseTestCase):
 
     def testTrue(self):
-        self.assertTrue(models.SiteLocation.enforce_tiers(override_setting=False))
+        self.assertTrue(SiteLocation.enforce_tiers(override_setting=False))
 
     def testFalse(self):
-        self.assertFalse(models.SiteLocation.enforce_tiers(override_setting=True))
+        self.assertFalse(SiteLocation.enforce_tiers(override_setting=True))
 
 class TestTiersComplianceEmail(BaseTestCase):
     def setUp(self):
@@ -4189,7 +4138,7 @@ class TestTiersComplianceEmail(BaseTestCase):
 
     def test_email_when_over_video_limit(self):
         for n in range(1000):
-            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+            Video.objects.create(site_id=1, status=Video.ACTIVE)
         # The first time round, we should get an email.
         self.cmd.handle()
         self.assertEqual(1,
@@ -4201,18 +4150,18 @@ class TestTiersComplianceEmail(BaseTestCase):
         self.assertEqual(0,
                          len(mail.outbox))
 
-    def test_no_email_when_within_limits(self):
+    def test_email_when_within_limits(self):
         self.cmd.handle()
-        self.assertEqual(0,
+        self.assertEqual(1,
                          len(mail.outbox))
 
     def test_no_email_when_over_video_limits_but_database_says_it_has_been_sent(self):
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.already_sent_tiers_compliance_email = True
         ti.save()
 
         for n in range(1000):
-            models.Video.objects.create(site_id=1, status=models.VIDEO_STATUS_ACTIVE)
+            Video.objects.create(site_id=1, status=Video.ACTIVE)
         self.cmd.handle()
         self.assertEqual(0,
                          len(mail.outbox))
@@ -4222,10 +4171,9 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
 
     def setUp(self):
         super(DowngradingCanNotifySupportAboutCustomDomain, self).setUp()
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
     def test(self):
         # Start out in Executive mode, by default
         self.assertEqual(self.site_location.tier_name, 'max')
@@ -4253,7 +4201,7 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
 
     def tearDown(self):
         super(DowngradingCanNotifySupportAboutCustomDomain, self).tearDown()
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
 class IpnIntegration(BaseTestCase):
     def setUp(self):
@@ -4265,7 +4213,7 @@ class IpnIntegration(BaseTestCase):
         self.site_location.save()
 
         # At the start of this test, we have no current recurring payment profile
-        new_tier_info = models.TierInfo.objects.get_current()
+        new_tier_info = TierInfo.objects.get_current()
         self.assertFalse(new_tier_info.current_paypal_profile_id)
 
         # Make sure there is a free trial available
@@ -4276,15 +4224,15 @@ class IpnIntegration(BaseTestCase):
         self.c = Client()
         self.c.login(username='superuser', password='superuser')
 
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
     def tearDown(self):
         super(IpnIntegration, self).tearDown()
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
     def upgrade_and_submit_ipn(self):
-        self.assertTrue(models.TierInfo.objects.get_current().free_trial_available)
+        self.assertTrue(TierInfo.objects.get_current().free_trial_available)
 
         # POST to the begin_free_trial element...
         url = reverse('localtv_admin_begin_free_trial',
@@ -4293,10 +4241,10 @@ class IpnIntegration(BaseTestCase):
                                {'target_tier_name': 'plus'})
 
         # Make sure we switched
-        self.assertEquals('plus', self.site_location.tier_name)
+        self.assertEqual('plus', self.site_location.tier_name)
 
         # Discover that we still have no paypal profile, because PayPal took a few sec to submit the IPN...
-        new_tier_info = models.TierInfo.objects.get_current()
+        new_tier_info = TierInfo.objects.get_current()
         self.assertFalse(new_tier_info.current_paypal_profile_id)
 
         # Check that we are in a free trial (should be!)
@@ -4306,7 +4254,7 @@ class IpnIntegration(BaseTestCase):
         self.assertFalse('until midnight on None' in message)
 
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4316,14 +4264,14 @@ class IpnIntegration(BaseTestCase):
         # Make sure SiteLocation recognizes we are in 'plus'
         self.assertEqual(self.site_location.tier_name, 'plus')
 
-        new_tier_info = models.TierInfo.objects.get_current()
+        new_tier_info = TierInfo.objects.get_current()
         self.assertTrue(new_tier_info.in_free_trial)
         self.assertFalse(new_tier_info.free_trial_available)
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_upgrade_and_submit_ipn_skipping_free_trial_post(self):
         # If the user upgrades but neglects to POST to the begin_free_trial handler
-        new_tier_info = models.TierInfo.objects.get_current()
+        new_tier_info = TierInfo.objects.get_current()
         self.assertFalse(new_tier_info.current_paypal_profile_id)
         self.assertFalse(new_tier_info.in_free_trial)
         self.assertTrue(new_tier_info.free_trial_available)
@@ -4334,7 +4282,7 @@ class IpnIntegration(BaseTestCase):
         self.assertEqual(self.site_location.tier_name, 'plus')
 
         # Make sure we are in a free trial, etc.
-        new_tier_info = models.TierInfo.objects.get_current()
+        new_tier_info = TierInfo.objects.get_current()
         self.assertTrue(new_tier_info.in_free_trial)
         self.assertFalse(new_tier_info.free_trial_available)
 
@@ -4343,7 +4291,7 @@ class IpnIntegration(BaseTestCase):
         if override_amount3:
             amount3 = override_amount3
         else:
-            amount3 = u'15.00'
+            amount3 = unicode(PLUS_COST)
 
         # Now, PayPal sends us the IPN.
         ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
@@ -4369,7 +4317,7 @@ class IpnIntegration(BaseTestCase):
         if override_amount3:
             amount3 = override_amount3
         else:
-            amount3 = u'15.00'
+            amount3 = unicode(PLUS_COST)
 
         if override_subscr_id:
             subscr_id = override_subscr_id
@@ -4413,7 +4361,7 @@ class IpnIntegration(BaseTestCase):
         # Now, we get an IPN for $35, which should move us to 'premium'
         # Now, PayPal sends us the IPN.
         mail.outbox = []
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJR', u'amount3': u'35.00', u'amount1': u'0.00', u'mc_amount3': u'35.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJR', u'amount3': unicode(PREMIUM_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PREMIUM_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4421,12 +4369,12 @@ class IpnIntegration(BaseTestCase):
                       ipn_data)
 
         # Make sure SiteLocation recognizes we are in 'premium'
-        fresh_site_location = models.SiteLocation.objects.get_current()
+        fresh_site_location = SiteLocation.objects.get_current()
         self.assertEqual(fresh_site_location.tier_name, 'premium')
 
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertEqual(ti.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
-        self.assert_(ti.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
+        self.assertTrue(ti.payment_due_date > datetime.datetime(2011, 3, 19, 0, 0, 0))
         import localtv.zendesk
         self.assertEqual(len([msg for msg in localtv.zendesk.outbox
                               if 'cancel a recurring payment profile' in msg['subject']]), 1)
@@ -4435,7 +4383,7 @@ class IpnIntegration(BaseTestCase):
 
         # PayPal eventually sends us the IPN cancelling the old subscription, because someone
         # in the MC team ends it.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': u'15.00', u'amount1': u'0.00', u'mc_amount3': u'15.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4443,40 +4391,40 @@ class IpnIntegration(BaseTestCase):
                       ipn_data)
 
         # Make sure SiteLocation still recognizes we are in 'premium'
-        fresh_site_location = models.SiteLocation.objects.get_current()
+        fresh_site_location = SiteLocation.objects.get_current()
         self.assertEqual(fresh_site_location.tier_name, 'premium')
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_success(self):
         self.upgrade_and_submit_ipn()
-        tier_info = models.TierInfo.objects.get_current()
+        tier_info = TierInfo.objects.get_current()
         self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_payment_success(self):
         self.upgrade_and_submit_ipn()
-        tier_info = models.TierInfo.objects.get_current()
+        tier_info = TierInfo.objects.get_current()
         self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
 
         # Send ourselves a payment IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': u'15.00', u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': unicode(PLUS_COST), u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
         Client().post(url,
                       ipn_data)
-        tier_info_new = models.TierInfo.objects.get_current()
+        tier_info_new = TierInfo.objects.get_current()
         self.assertEqual(tier_info_new.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
         # make sure that they've pushed the due date into the future
         self.assertTrue(tier_info_new.payment_due_date > tier_info.payment_due_date)
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='FAILURE'))
     def test_failure(self):
-        tier_info = models.TierInfo.objects.get_current()
+        tier_info = TierInfo.objects.get_current()
         self.assertFalse(tier_info.current_paypal_profile_id) # Should be false at the start
 
         self.upgrade_and_submit_ipn()
-        tier_info = models.TierInfo.objects.get_current()
+        tier_info = TierInfo.objects.get_current()
 
         # Because the IPN submitted was invalid, the payment profile ID has not changed.
         self.assertFalse(tier_info.current_paypal_profile_id)
@@ -4484,20 +4432,21 @@ class IpnIntegration(BaseTestCase):
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_downgrade_during_free_trial(self):
         # First, upgrade to 'premium' during the free trial.
-        self.upgrade_and_submit_ipn_skipping_free_trial_post('35.00')
+        self.upgrade_and_submit_ipn_skipping_free_trial_post(
+            unicode(PREMIUM_COST))
 
         # Make sure it worked
-        tierinfo = models.TierInfo.objects.get_current()
+        tierinfo = TierInfo.objects.get_current()
         self.assertEqual('premium', self.site_location.tier_name)
         self.assertTrue(tierinfo.in_free_trial)
 
         # Now, submit an IPN event for changing the payment amount to '15.00'
         # This should move us down to 'plus'
-        self.submit_ipn_subscription_modify('15.00')
+        self.submit_ipn_subscription_modify(unicode(PLUS_COST))
 
         # Make sure it worked
-        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
-        tierinfo = models.TierInfo.objects.get_current()
+        self.assertEqual('plus', SiteLocation.objects.get_current().tier_name)
+        tierinfo = TierInfo.objects.get_current()
         self.assertFalse(tierinfo.in_free_trial)
 
 class TestMidMonthPaymentAmounts(BaseTestCase):
@@ -4506,7 +4455,9 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 1, 30, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 1, 12, 0, 0))
-        expected = {'recurring': 35, 'cost_for_prorated_period': 18, 'days_covered_by_prorating': 28}
+        expected = {'recurring': PREMIUM_COST,
+                    'cost_for_prorated_period': int(PREMIUM_COST * 0.44),
+                    'days_covered_by_prorating': 28}
         self.assertEqual(data, expected)
 
     def test_end_of_month(self):
@@ -4514,7 +4465,7 @@ class TestMidMonthPaymentAmounts(BaseTestCase):
             start_tier_name='plus', target_tier_name='premium',
             current_payment_due_date=datetime.datetime(2011, 2, 1, 0, 0, 0),
             todays_date=datetime.datetime(2011, 1, 31, 12, 0, 0))
-        expected = {'recurring': 35, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
+        expected = {'recurring': PREMIUM_COST, 'cost_for_prorated_period': 0, 'days_covered_by_prorating': 0}
         self.assertEqual(data, expected)
 
 class TestUpgradePage(BaseTestCase):
@@ -4529,14 +4480,14 @@ class TestUpgradePage(BaseTestCase):
         localtv.zendesk.outbox = []
         c.handle_noargs()
 
-        self.old_zendesk_value = getattr(settings, 'LOCALTV_USE_ZENDESK', None)
-        settings.LOCALTV_USE_ZENDESK = True
+        self.old_zendesk_value = localtv.settings.USE_ZENDESK
+        localtv.settings.USE_ZENDESK = True
 
     def tearDown(self):
         # Note: none of these tests should cause email to be sent.
         self.assertEqual([],
                          [str(k.body) for k in mail.outbox])
-        settings.LOCALTV_USE_ZENDESK = self.old_zendesk_value
+        localtv.settings.USE_ZENDESK = self.old_zendesk_value
 
     ## assertion helpers
     def _assert_upgrade_extra_payments_always_false(self, response):
@@ -4572,7 +4523,7 @@ class TestUpgradePage(BaseTestCase):
         self._assert_modify_always_false(response)
 
     def test_upgrade_when_no_free_trial(self):
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.free_trial_available = False
         ti.save()
         c = self._log_in_as_superuser()
@@ -4588,14 +4539,14 @@ class TestUpgradePage(BaseTestCase):
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
 
         # We are in 'plus'. Let's consider what happens when
         # we want to upgrade to 'premium'
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4615,15 +4566,15 @@ class TestUpgradePage(BaseTestCase):
         # First, pretend the user went to the paypal_return view, and adjusted
         # the tier name, but without actually receiving the IPN.
         localtv.admin.tiers._paypal_return('premium')
-        self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
-        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(SiteLocation.objects.get_current().tier_name, 'premium')
+        ti = TierInfo.objects.get_current()
         self.assertEqual('plus', ti.fully_confirmed_tier_name)
         # The tier name is updated, so the backend updates its state.
         # That means we sent a "Congratulations" email:
         message, = [str(k.body) for k in mail.outbox]
         self.assertTrue('Congratulations' in message)
         mail.outbox = []
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertTrue(ti.in_free_trial)
 
         # Actually do the upgrade
@@ -4634,9 +4585,9 @@ class TestUpgradePage(BaseTestCase):
         #
         # It also simulates a support staff person actually cancelling the
         # old payment.
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
 
         # Now, make sure the backend knows that we are not in a free trial
@@ -4650,14 +4601,14 @@ class TestUpgradePage(BaseTestCase):
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
 
         # We are in 'plus'. Let's consider what happens when
         # we want to upgrade to 'premium'
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4682,16 +4633,16 @@ class TestUpgradePage(BaseTestCase):
         #
         # It also simulates a support staff person actually cancelling the
         # old payment.
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
 
         # First, pretend the user went to the paypal_return view, and adjusted
         # the tier name, but without actually receiving the IPN.
         localtv.admin.tiers._paypal_return('premium')
-        self.assertEqual(models.SiteLocation.objects.get_current().tier_name, 'premium')
-        ti = models.TierInfo.objects.get_current()
+        self.assertEqual(SiteLocation.objects.get_current().tier_name, 'premium')
+        ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
         # The tier name was already updated, so the backend need not update its state.
         # Therefore, we do a "Congratulations" email:
@@ -4707,7 +4658,7 @@ class TestUpgradePage(BaseTestCase):
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
@@ -4715,12 +4666,12 @@ class TestUpgradePage(BaseTestCase):
         # Cancelling the subscription should put empty out the current paypal ID.
         self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_cancel', ti.current_paypal_profile_id)
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertFalse(ti.in_free_trial)
         self.assertFalse(ti.current_paypal_profile_id)
         # We are in 'basic' now.
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('basic', sl.tier_name)
 
         # If we upgrade to a paid tier...
@@ -4737,12 +4688,12 @@ class TestUpgradePage(BaseTestCase):
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
         first_profile = ti.current_paypal_profile_id
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         # If we want to upgrade... let's look at the upgrade page state:
@@ -4755,7 +4706,7 @@ class TestUpgradePage(BaseTestCase):
         # This means that if someone changes the payment amount to $35/mo
         # we will be at 'premium'.
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
         ti = sl.tierinfo
         self.assertNotEqual(ti.current_paypal_profile_id, first_profile)
@@ -4764,7 +4715,7 @@ class TestUpgradePage(BaseTestCase):
         # First, upgrade and downgrade...
         self.test_downgrade_to_paid_not_during_a_trial()
 
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         # Travel to the future
@@ -4791,9 +4742,9 @@ class TestUpgradePage(BaseTestCase):
             self._run_method_from_ipn_integration_test_case(
                 'upgrade_including_prorated_duration_and_amount', 
                 '%d.00' % premium['cost_for_prorated_period'],
-                '35.00',
+                str(PREMIUM_COST),
                 '%d D' % premium['days_covered_by_prorating'])
-            sl = models.SiteLocation.objects.get_current()
+            sl = SiteLocation.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
             # Also, no emails.
             self.assertEqual(set(['superuser@testserver.local']),
@@ -4804,11 +4755,11 @@ class TestUpgradePage(BaseTestCase):
     def test_downgrade_to_paid_during_a_trial(self):
         # The test gets initialized in 'basic' with a free trial available.
         # First, switch into a free trial of 'max'.
-        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', '75.00')
+        self._run_method_from_ipn_integration_test_case('upgrade_and_submit_ipn_skipping_free_trial_post', str(MAX_COST))
         mail.outbox = [] # remove "Congratulations" email
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
@@ -4816,7 +4767,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'max'. Let's consider what happens when
         # we want to downgrade to 'premium'
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('max', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4830,7 +4781,7 @@ class TestUpgradePage(BaseTestCase):
 
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
 
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertNotEqual(old_profile, ti.current_paypal_profile_id)
         self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)
@@ -4841,7 +4792,7 @@ class TestUpgradePage(BaseTestCase):
         self.test_downgrade_to_paid_during_a_trial()
 
         # Sanity-check the free trial state.
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertFalse(ti.free_trial_available)
         self.assertFalse(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
@@ -4849,7 +4800,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'premium'. Let's consider what happens when
         # we want to downgrade to 'plus'
-        sl = models.SiteLocation.objects.get_current()
+        sl = SiteLocation.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4870,20 +4821,20 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(response.context['can_modify'])
         self.assertTrue('"modify" value="1"' in response.content)
 
-        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', '15.00', old_profile)
+        self._run_method_from_ipn_integration_test_case('submit_ipn_subscription_modify', str(PLUS_COST), old_profile)
 
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         self.assertEqual(old_profile, ti.current_paypal_profile_id)
         self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)
-        self.assertEqual('plus', models.SiteLocation.objects.get_current().tier_name)
+        self.assertEqual('plus', SiteLocation.objects.get_current().tier_name)
 
 class TestFreeTrial(BaseTestCase):
 
     @mock.patch('localtv.admin.tiers._start_free_trial_for_real')
     def test_does_nothing_if_already_in_free_trial(self, m):
         # If we are already in a free trial, then we refuse to continue:
-        ti = models.TierInfo.objects.get_current()
+        ti = TierInfo.objects.get_current()
         ti.in_free_trial = True
         ti.save()
         localtv.admin.tiers._start_free_trial_unconfirmed('basic')
