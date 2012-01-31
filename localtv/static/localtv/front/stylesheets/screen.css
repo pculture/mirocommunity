@@ -370,7 +370,7 @@ textarea {
 /* line 61, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text:focus, button.text:focus, input.title:focus, button.title:focus, input[type=email]:focus, button[type=email]:focus, input[type=text]:focus, button[type=text]:focus, input[type=password]:focus, button[type=password]:focus,
 textarea:focus {
-  border-color: #bbbbbb;
+  border-color: #88aacc;
 }
 
 /* line 65, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */

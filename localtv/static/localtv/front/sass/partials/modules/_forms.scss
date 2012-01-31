@@ -4,7 +4,7 @@
 		"compass/css3/box-shadow";
 
 @include blueprint-form-layout;
-@include blueprint-form-borders($unfocused-border-color: #CCC, $focus-border-color: #BBB, $fieldset-border-color: #DDD);
+@include blueprint-form-borders($unfocused-border-color: #CCC, $focus-border-color: #8AC, $fieldset-border-color: #DDD);
 @include blueprint-form-sizes;
 
 input:focus{
