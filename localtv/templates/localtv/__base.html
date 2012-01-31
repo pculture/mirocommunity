@@ -89,7 +89,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</form>
 		
 		<nav id="navigation" role="navigation">
-			<ul>
+			<ul class="navigation-list">
 				<li class="nav-item nav-home">
 					<a href="{{ localtv_index }}">{% trans 'Home' %}</a>
 				</li>
@@ -120,6 +120,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<li class="nav-item nav-about">
 					<a href="{% url 'localtv_about' %}">{% trans 'About Us' %}</a>
 				</li>
+			</ul>
+			
+			<ul class="navigation-list navigation-list-secondary">
+				{% if request.user.is_authenticated %}
+					<li class="nav-item nav-logout">
+						<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
+					</li>
+				{% else %}
+					<li class="nav-item nav-login">
+						<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
+					</li>
+				{% endif %}
+				
 				{% if user_is_admin %}
 					<li class="nav-item nav-admin">
 						<a href="{% url 'localtv_admin_index' %}">{% trans 'View Admin' %}</a>

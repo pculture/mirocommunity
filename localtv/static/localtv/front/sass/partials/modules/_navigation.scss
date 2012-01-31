@@ -2,27 +2,33 @@
 		"compass/css3/images";
 
 #navigation{
-	margin:1.5em 0;
+	padding:0;
+	margin:#{$base-line-height - 1px} 0;
+	border:1px solid #CCC;
+	background-color:#EEE;
+	border-top-color:#DDD;
+	border-bottom-color:#BBB;	@include border-radius(8px);
+	@include background(linear-gradient(#F5F5F5, #E9E9E9));
+	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.1));
+	@include clearfix;
 }
 
-#navigation > ul{
-	@include background(linear-gradient(#F5F5F5, #E9E9E9));
-	background-color:#EEE;
-	@include border-radius(8px);
-	border:1px solid #CCC;
-	border-top-color:#DDD;
-	border-bottom-color:#BBB;
-	margin:-1px 0;
-	@include clearfix;
-	padding:0;
-	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.1));
+.navigation-list{
+	@extend .unstyled-list;
+}
+.navigation-list-secondary{
+	float:right;
+	border-left:1px solid #CCC;
+	a:last-child{
+		border-right:0;
+	}
 }
 
 .nav-item{
 	float:left;
 }
 
-.nav-item ul{
+.nav-item > ul{
 	display:none;
 }
 
@@ -30,7 +36,7 @@
 	list-style-type:none;
 }
 
-.nav-item a{
+.nav-item > a{
 	border-left:1px solid #FFF;
 	border-right:1px solid #CCC;
 	display:block;
@@ -54,7 +60,6 @@
 	float:right;
 	@include background(linear-gradient(#348FBF, #26688B));
 	& > a{
-		border-right:0;
 		border-left:1px solid rgba(255,255,255,.75);
 		color:#FFF;
 		text-shadow:0 -1px 0 rgba(0,0,0,.35);
