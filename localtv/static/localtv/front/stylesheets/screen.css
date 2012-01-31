@@ -509,13 +509,13 @@ body {
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 1, ../sass/partials/modules/_page_title.scss */
+/* line 1, ../sass/partials/modules/_page_header.scss */
 .page-header {
   margin-bottom: 17px;
   border-bottom: 1px solid #CCC;
   position: relative;
 }
-/* line 5, ../sass/partials/modules/_page_title.scss */
+/* line 5, ../sass/partials/modules/_page_header.scss */
 .page-header .page-actions {
   position: absolute;
   top: 0;
