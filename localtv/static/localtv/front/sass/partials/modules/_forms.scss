@@ -4,7 +4,7 @@
 		"compass/css3/box-shadow";
 
 @include blueprint-form-layout;
-@include blueprint-form-borders($unfocused-border-color: #DDD, $focus-border-color: #CCC, $fieldset-border-color: #DDD);
+@include blueprint-form-borders($unfocused-border-color: #CCC, $focus-border-color: #BBB, $fieldset-border-color: #DDD);
 @include blueprint-form-sizes;
 
 input:focus{
@@ -18,11 +18,16 @@ button{
 	@include background(linear-gradient(top, #FDFDFD, #EEE));
 }
 
-button:active{
-	@include background(linear-gradient(top, #F5F5F5, #FFF));
+button:hover{
+	@include background(linear-gradient(top, #F5F5F5, #E5E5E5));
 }
 
-input, button{
-	border:1px solid #DDD;
+button:active{
+	@include background(linear-gradient(top, #E5E5E5, #F5F5F5));
+}
+
+input, button, textarea{
+	border:1px solid #CCC;
 	@include border-radius(3px);
+	@include box-shadow(0 1px 0 0 #FFF);
 }

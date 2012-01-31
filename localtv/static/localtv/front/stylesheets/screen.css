@@ -365,12 +365,12 @@ fieldset {
 input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password],
 textarea {
   background-color: #fff;
-  border: 1px solid #dddddd;
+  border: 1px solid #cccccc;
 }
 /* line 61, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text:focus, button.text:focus, input.title:focus, button.title:focus, input[type=email]:focus, button[type=email]:focus, input[type=text]:focus, button[type=text]:focus, input[type=password]:focus, button[type=password]:focus,
 textarea:focus {
-  border-color: #cccccc;
+  border-color: #bbbbbb;
 }
 
 /* line 65, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
@@ -409,24 +409,38 @@ button {
 }
 
 /* line 21, ../sass/partials/modules/_forms.scss */
-button:active {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #ffffff));
-  background: -webkit-linear-gradient(top, #f5f5f5, #ffffff);
-  background: -moz-linear-gradient(top, #f5f5f5, #ffffff);
-  background: -o-linear-gradient(top, #f5f5f5, #ffffff);
-  background: -ms-linear-gradient(top, #f5f5f5, #ffffff);
-  background: linear-gradient(top, #f5f5f5, #ffffff);
+button:hover {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e5e5e5));
+  background: -webkit-linear-gradient(top, #f5f5f5, #e5e5e5);
+  background: -moz-linear-gradient(top, #f5f5f5, #e5e5e5);
+  background: -o-linear-gradient(top, #f5f5f5, #e5e5e5);
+  background: -ms-linear-gradient(top, #f5f5f5, #e5e5e5);
+  background: linear-gradient(top, #f5f5f5, #e5e5e5);
 }
 
 /* line 25, ../sass/partials/modules/_forms.scss */
-input, button, button {
-  border: 1px solid #DDD;
+button:active {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e5e5e5), color-stop(100%, #f5f5f5));
+  background: -webkit-linear-gradient(top, #e5e5e5, #f5f5f5);
+  background: -moz-linear-gradient(top, #e5e5e5, #f5f5f5);
+  background: -o-linear-gradient(top, #e5e5e5, #f5f5f5);
+  background: -ms-linear-gradient(top, #e5e5e5, #f5f5f5);
+  background: linear-gradient(top, #e5e5e5, #f5f5f5);
+}
+
+/* line 29, ../sass/partials/modules/_forms.scss */
+input, button, button, textarea {
+  border: 1px solid #CCC;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
   -o-border-radius: 3px;
   -ms-border-radius: 3px;
   -khtml-border-radius: 3px;
   border-radius: 3px;
+  -moz-box-shadow: 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 0 0 white;
+  box-shadow: 0 1px 0 0 white;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
