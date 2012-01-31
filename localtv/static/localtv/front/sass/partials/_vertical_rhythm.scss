@@ -1,0 +1,35 @@
+$base-line-height: 18px;
+
+@mixin small{
+	font-size: 11px;
+	line-height: $base-line-height;
+}
+@mixin normal{
+	font-size: 13px;
+	line-height: $base-line-height;
+}
+@mixin large{
+	font-size: 16px;
+	line-height: $base-line-height;
+}
+@mixin x-large{
+	font-size: 24px;
+	line-height: $base-line-height * 2;
+}
+@mixin xx-large{
+	font-size: 30px;
+	line-height: $base-line-height * 2;
+}
+
+@mixin margin-leader($lines: 1){
+	margin-top: $base-line-height * $lines;
+}
+@mixin margin-trailer($lines: 1){
+	margin-bottom: $base-line-height * $lines;
+}
+@mixin padding-leader($lines: 1){
+	padding-top: $base-line-height * $lines;
+}
+@mixin padding-trailer($lines: 1){
+	padding-bottom: $base-line-height * $lines;
+}

@@ -1,10 +1,11 @@
-@import "partials/config";
+@import "partials/config",
+		"partials/vertical_rhythm";
 @import "blueprint/reset";
 @import "blueprint";
 @import "partials/base",
 		"partials/layout",
 		"partials/modules";
 
-#container{
-//	@include showgrid;
-}
+// #container{
+// 	@include showgrid;
+// }

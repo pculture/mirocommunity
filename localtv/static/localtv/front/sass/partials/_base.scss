@@ -1,14 +1,39 @@
-@include blueprint-typography;
-
-$base-line-height: 18px;
-
 a{
 	text-decoration:none;
 }
 
 body{
+	@extend .normal;
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	font-size:$blueprint-font-size;
-	line-height:1.5;
 	background:#F5F5F5;
+	color:#444;
+}
+
+h1, h2, h3, h4, h5, h6{
+	font-weight:bold;
+	font-smoothing:antialiased;
+}
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl{
+	@include margin-trailer;
+}
+
+h1{
+	@include xx-large;
+}
+h2{
+	@include x-large;
+}
+h3{
+	@include large;
+}
+h4{
+	@include normal;
+}
+h5{
+	@include normal;
+}
+h6{
+	@extend .normal;
+	color:#CCC;
 }
