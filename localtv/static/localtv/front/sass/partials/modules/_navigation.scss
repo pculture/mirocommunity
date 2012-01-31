@@ -40,7 +40,7 @@
 	border-left:1px solid #FFF;
 	border-right:1px solid #CCC;
 	display:block;
-	padding:.75em 1.5em;
+	padding: #{$base-line-height / 2} $base-line-height;
 	font-weight:bold;
 	color:#666;
 	text-shadow:0 1px 0 #FFF;
