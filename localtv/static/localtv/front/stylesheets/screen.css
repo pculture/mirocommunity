@@ -132,6 +132,12 @@ h6 {
   right: 0;
 }
 
+/* line 12, ../sass/partials/_layout.scss */
+#main {
+  overflow: hidden;
+  *zoom: 1;
+}
+
 /* line 18, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 label {
   font-weight: bold;
@@ -539,4 +545,28 @@ input, button, button, textarea {
   position: absolute;
   top: 0;
   right: 0;
+}
+
+/* line 1, ../sass/partials/pages/_author.scss */
+.author-info {
+  display: inline;
+  float: left;
+  margin-right: 0;
+  width: 303.333px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html .author-info {
+  overflow-x: hidden;
+}
+
+/* line 4, ../sass/partials/pages/_author.scss */
+.author-videos {
+  display: inline;
+  float: left;
+  margin-right: 20px;
+  width: 626.667px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html .author-videos {
+  overflow-x: hidden;
 }

@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,33 +18,30 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load filters pagetabs %}
+{% load filters %}
+
+{% block body_classes %}{{ block.super }} author-page{% endblock %}
+
 {% block content %}
-<div id="author_sidebar">
-  <div id="author_info">
-    {% if author.get_profile.logo %}<img src="{{ author.get_profile.logo.url }}">{% endif %}
-    <a class="rss" href="{% url localtv_feeds_author author.pk %}">RSS</a>
-    <h1>{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
-    {% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
-    {% if author.get_profile.website %}<div id="link">{{ author.get_profile.website|urlize }}</div>{% endif %}
-    <div>{{ author.get_profile.description|sanitize }}</div>
-  </div>
-</div>
-<div id="author">
-  {% if page_obj.has_other_pages %}
-  <div class="pag">
-    <b>Pages</b>
-    {% pagetabs page_obj %}
-  </div>
-  {% endif %}
-  <div id="author_videos">
-    <ul>
-      {% for video in video_list %}
-      <li>
-        {% include "localtv/video_listing_individual.html" %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
+	<header class="page-header">
+		<h1 class="page-title">{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
+		<div class="page-actions">
+			<ul class="action-list">
+				<li><a class="rss" href="{% url localtv_feeds_author author.pk %}">RSS</a></li>
+			</ul>
+		</div>
+	</header>
+
+	<aside class="author-info">
+		{% if author.get_profile.logo %}
+			<img src="{{ author.get_profile.logo.url }}">
+		{% endif %}
+		{% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
+		{% if author.get_profile.website %}<div id="link">{{ author.get_profile.website|urlize }}</div>{% endif %}
+		<div>{{ author.get_profile.description|sanitize }}</div>
+	</aside>
+	
+	<div class="author-videos">
+		{% include "localtv/_video_summary_list.html" %}
+	</div>
 {% endblock %}

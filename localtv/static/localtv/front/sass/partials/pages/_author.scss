@@ -1,0 +1,6 @@
+.author-info{
+	@include column(4, true);
+}
+.author-videos{
+	@include column(8);
+}

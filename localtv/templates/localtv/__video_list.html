@@ -19,8 +19,6 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs %}
-
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
 {% block content %}
@@ -32,22 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</ul>
 		</div>
 	</header>
-		
-		<div class="pagination upper">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
-		
-		<div class="video-list">
-			{% for video in video_list %}
-				{% include "localtv/_video_summary.html" %}
-			{% endfor %}
-		</div>
-		
-		<div class="pagination lower">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
+	
+	{% include "localtv/_video_summary_list.html" %}
+	
 {% endblock %}
