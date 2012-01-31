@@ -10,6 +10,9 @@
 
 .thumb{
 	@include column(2);
+	img{
+		display:block;
+	}
 }
 
 .video-summary .video-header h1{

@@ -352,29 +352,33 @@ body {
 * html .thumb {
   overflow-x: hidden;
 }
+/* line 13, ../sass/partials/modules/_video_summary.scss */
+.thumb img {
+  display: block;
+}
 
-/* line 15, ../sass/partials/modules/_video_summary.scss */
+/* line 18, ../sass/partials/modules/_video_summary.scss */
 .video-summary .video-header h1 {
   font-weight: bold;
   font-size: inherit;
 }
 
-/* line 20, ../sass/partials/modules/_video_summary.scss */
+/* line 23, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 1.5em;
 }
 
-/* line 24, ../sass/partials/modules/_video_summary.scss */
+/* line 27, ../sass/partials/modules/_video_summary.scss */
 .details-list {
   padding-left: 0;
 }
-/* line 26, ../sass/partials/modules/_video_summary.scss */
+/* line 29, ../sass/partials/modules/_video_summary.scss */
 .details-list li {
   list-style-type: none;
 }
 
-/* line 30, ../sass/partials/modules/_video_summary.scss */
+/* line 33, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details, .video-summary .description {
   padding-left: 161.667px;
 }
