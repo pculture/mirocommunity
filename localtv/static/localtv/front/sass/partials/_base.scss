@@ -1,10 +1,13 @@
 @include blueprint-typography;
 
+$base-line-height: 18px;
+
 a{
 	text-decoration:none;
 }
 
 body{
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	font-size:$blueprint-font-size;
 	line-height:1.5;
 	background:#F5F5F5;

@@ -288,13 +288,14 @@ caption {
   color: #111111;
 }
 
-/* line 3, ../sass/partials/_base.scss */
+/* line 5, ../sass/partials/_base.scss */
 a {
   text-decoration: none;
 }
 
-/* line 7, ../sass/partials/_base.scss */
+/* line 9, ../sass/partials/_base.scss */
 body {
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 12px;
   line-height: 1.5;
   background: #F5F5F5;
@@ -480,4 +481,10 @@ body {
   -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
   -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+}
+
+/* line 1, ../sass/partials/modules/_page_title.scss */
+.page-header {
+  margin-bottom: 17px;
+  border-bottom: 1px solid #CCC;
 }
