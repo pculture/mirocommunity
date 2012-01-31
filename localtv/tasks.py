@@ -151,7 +151,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     source_import.last_activity = datetime.datetime.now()
     if source_import.total_videos is None:
         source_import.save()
-        return
+        mark_import_pending.retry()
     # get the correct counts from the database, rather than the race-condition
     # prone count fields
     import_count = source_import.indexes.count()
@@ -243,10 +243,14 @@ def mark_import_complete(import_app_label, import_model, import_pk,
         # Don't bother with the haystack query.
         haystack_count = 0
     else:
-        # pk_hack field shadows the model's pk/django_id because
-        # xapian-haystack's django_id filtering is broken.
-        haystack_count = SearchQuerySet().models(Video).filter(
-                                                pk_hack__in=video_pks).count()
+        if settings.HAYSTACK_SEARCH_ENGINE == 'xapian':
+            # The pk_hack field shadows the model's pk/django_id because
+            # xapian-haystack's django_id filtering is broken.
+            haystack_filter = {'pk_hack__in': video_pks}
+        else:
+            haystack_filter = {'django_id__in': video_pks}
+        haystack_count = SearchQuerySet().models(Video).filter(**haystack_filter
+                                                      ).count()
     
     logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
                    '%i, haystack_count: %i'), import_app_label, import_model,
