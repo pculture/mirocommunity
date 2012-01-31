@@ -5,7 +5,8 @@
 	@include clearfix;
 	border-bottom:1px solid #CCC;
 	margin-bottom:-1px;
-	padding:1.5em 0;
+	@include padding-leader;
+	@include padding-trailer;
 }
 
 .thumb{
@@ -16,13 +17,12 @@
 }
 
 .video-summary .video-header h1{
-	font-weight:bold;
-	font-size:inherit;
+	@include normal;
 }
 
 .video-summary .details{
 	color:#999;
-	margin-top:1.5em;
+	@include margin-leader;
 }
 .details-list{
 	padding-left:0;

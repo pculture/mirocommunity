@@ -1,11 +1,11 @@
-/* line 4, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 4, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 html {
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-/* line 18, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 18, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, blockquote, q, th, td, caption, table,
 div, span, object, iframe, p,
 pre, a, abbr, acronym, address,
@@ -23,21 +23,21 @@ caption, tbody, tfoot, thead, tr {
   vertical-align: baseline;
 }
 
-/* line 20, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 20, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary {
   display: block;
 }
 
-/* line 21, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 21, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 blockquote, q {
   quotes: "" "";
 }
-/* line 67, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 67, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 blockquote:before, blockquote:after, q:before, q:after {
   content: "";
 }
 
-/* line 22, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 22, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 th, td, caption {
   float: none !important;
   text-align: left;
@@ -45,24 +45,24 @@ th, td, caption {
   vertical-align: middle;
 }
 
-/* line 23, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 23, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 table {
   border-collapse: separate;
   border-spacing: 0;
   vertical-align: middle;
 }
 
-/* line 24, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
+/* line 24, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/reset/_utilities.scss */
 a img {
   border: none;
 }
 
-/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 1, ../sass/partials/_base.scss */
 a {
   text-decoration: none;
 }
 
-/* line 5, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 5, ../sass/partials/_base.scss */
 body {
   font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 12px;
@@ -70,53 +70,53 @@ body {
   color: #444;
 }
 
-/* line 13, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 13, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   font-smoothing: antialiased;
 }
 
-/* line 17, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 17, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl {
   margin-bottom: 18px;
 }
 
-/* line 21, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 21, ../sass/partials/_base.scss */
 h1 {
   font-size: 30px;
   line-height: 36px;
 }
 
-/* line 24, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 24, ../sass/partials/_base.scss */
 h2 {
   font-size: 24px;
   line-height: 36px;
 }
 
-/* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 27, ../sass/partials/_base.scss */
 h3 {
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 30, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 30, ../sass/partials/_base.scss */
 h4 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 33, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 33, ../sass/partials/_base.scss */
 h5 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 36, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_base.scss */
+/* line 36, ../sass/partials/_base.scss */
 h6 {
   color: #CCC;
 }
 
-/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_layout.scss */
+/* line 1, ../sass/partials/_layout.scss */
 #container {
   width: 950px;
   margin: 0 auto;
@@ -125,93 +125,93 @@ h6 {
   position: relative;
 }
 
-/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/_layout.scss */
+/* line 6, ../sass/partials/_layout.scss */
 #search {
   position: absolute;
   top: 18px;
   right: 0;
 }
 
-/* line 18, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 18, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 label {
   font-weight: bold;
 }
 
-/* line 19, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 19, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 fieldset {
   padding: 1.4em;
   margin: 0 0 1.5em 0;
 }
 
-/* line 20, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 20, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 legend {
   font-weight: bold;
   font-size: 1.2em;
 }
 
-/* line 26, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 26, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
   margin: 0.5em 0;
   background-color: white;
   padding: 5px;
 }
-/* line 27, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 27, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.title, button.title {
   font-size: 1.5em;
 }
 
-/* line 29, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 29, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 textarea {
   margin: 0.5em 0;
   padding: 5px;
 }
 
-/* line 30, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 30, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 select {
   margin: 0.5em 0;
 }
 
-/* line 55, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 55, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 fieldset {
   border: 1px solid #dddddd;
 }
 
-/* line 58, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 58, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password],
 textarea {
   background-color: #fff;
   border: 1px solid #cccccc;
 }
-/* line 61, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 61, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text:focus, button.text:focus, input.title:focus, button.title:focus, input[type=email]:focus, button[type=email]:focus, input[type=text]:focus, button[type=text]:focus, input[type=password]:focus, button[type=password]:focus,
 textarea:focus {
   border-color: #88aacc;
 }
 
-/* line 65, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 65, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 select {
   background-color: #fff;
   border-width: 1px;
   border-style: solid;
 }
 
-/* line 44, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 44, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
   width: 300px;
 }
 
-/* line 46, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
+/* line 46, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
 textarea {
   width: 390px;
   height: 250px;
 }
 
-/* line 10, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
+/* line 10, ../sass/partials/modules/_forms.scss */
 input:focus, button:focus {
   outline: none;
 }
 
-/* line 14, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
+/* line 14, ../sass/partials/modules/_forms.scss */
 button {
   box-sizing: content-box;
   padding: 5px;
@@ -223,7 +223,7 @@ button {
   background: linear-gradient(top, #fdfdfd, #eeeeee);
 }
 
-/* line 21, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
+/* line 21, ../sass/partials/modules/_forms.scss */
 button:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e5e5e5));
   background: -webkit-linear-gradient(top, #f5f5f5, #e5e5e5);
@@ -233,7 +233,7 @@ button:hover {
   background: linear-gradient(top, #f5f5f5, #e5e5e5);
 }
 
-/* line 25, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
+/* line 25, ../sass/partials/modules/_forms.scss */
 button:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e5e5e5), color-stop(100%, #f5f5f5));
   background: -webkit-linear-gradient(top, #e5e5e5, #f5f5f5);
@@ -243,7 +243,7 @@ button:active {
   background: linear-gradient(top, #e5e5e5, #f5f5f5);
 }
 
-/* line 29, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
+/* line 29, ../sass/partials/modules/_forms.scss */
 input, button, button, textarea {
   border: 1px solid #CCC;
   -moz-border-radius: 3px;
@@ -258,17 +258,17 @@ input, button, button, textarea {
   box-shadow: 0 1px 0 0 white;
 }
 
-/* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
+/* line 3, ../sass/partials/modules/_lists.scss */
 .unstyled-list, .action-list, .navigation-list {
   margin: 0;
   padding: 0;
 }
-/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
+/* line 6, ../sass/partials/modules/_lists.scss */
 .unstyled-list li, .action-list li, .navigation-list li {
   list-style-type: none;
 }
 
-/* line 11, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
+/* line 11, ../sass/partials/modules/_lists.scss */
 .pill-list a, .action-list a {
   padding: 9px 18px;
   -moz-border-radius: 18px;
@@ -281,58 +281,59 @@ input, button, button, textarea {
   background: #CCC;
 }
 
-/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 4, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   overflow: hidden;
   *zoom: 1;
   border-bottom: 1px solid #CCC;
   margin-bottom: -1px;
-  padding: 1.5em 0;
+  padding-top: 18px;
+  padding-bottom: 18px;
 }
 
-/* line 11, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 12, ../sass/partials/modules/_video_summary.scss */
 .thumb {
   display: inline;
   float: left;
   margin-right: 20px;
   width: 141.667px;
 }
-/* line 147, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
 * html .thumb {
   overflow-x: hidden;
 }
-/* line 13, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 14, ../sass/partials/modules/_video_summary.scss */
 .thumb img {
   display: block;
 }
 
-/* line 18, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 19, ../sass/partials/modules/_video_summary.scss */
 .video-summary .video-header h1 {
-  font-weight: bold;
-  font-size: inherit;
+  font-size: 13px;
+  line-height: 18px;
 }
 
-/* line 23, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 23, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
-  margin-top: 1.5em;
+  margin-top: 18px;
 }
 
-/* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 27, ../sass/partials/modules/_video_summary.scss */
 .details-list {
   padding-left: 0;
 }
-/* line 29, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 29, ../sass/partials/modules/_video_summary.scss */
 .details-list li {
   list-style-type: none;
 }
 
-/* line 33, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
+/* line 33, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details, .video-summary .description {
   padding-left: 161.667px;
 }
 
-/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+/* line 1, ../sass/partials/modules/_site_header.scss */
 #header {
   overflow: hidden;
   *zoom: 1;
@@ -343,41 +344,41 @@ input, button, button, textarea {
   margin-top: 18px;
 }
 
-/* line 7, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+/* line 7, ../sass/partials/modules/_site_header.scss */
 #SiteLogo {
   display: inline;
   float: left;
   margin-right: 20px;
   width: 141.667px;
 }
-/* line 147, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
 * html #SiteLogo {
   overflow-x: hidden;
 }
-/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+/* line 9, ../sass/partials/modules/_site_header.scss */
 #SiteLogo img {
   display: block;
 }
 
-/* line 14, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+/* line 14, ../sass/partials/modules/_site_header.scss */
 #SiteTitle, #SiteTagline {
   display: inline;
   float: left;
   margin-right: 0;
   width: 788.333px;
 }
-/* line 147, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
 * html #SiteTitle, * html #SiteTagline {
   overflow-x: hidden;
 }
 
-/* line 18, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+/* line 18, ../sass/partials/modules/_site_header.scss */
 #SiteTagline {
   font-size: 18px;
   line-height: 1;
 }
 
-/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 4, ../sass/partials/modules/_navigation.scss */
 #navigation {
   padding: 0;
   margin: 17px 0;
@@ -405,32 +406,32 @@ input, button, button, textarea {
   *zoom: 1;
 }
 
-/* line 19, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 19, ../sass/partials/modules/_navigation.scss */
 .navigation-list-secondary {
   float: right;
   border-left: 1px solid #CCC;
 }
-/* line 22, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 22, ../sass/partials/modules/_navigation.scss */
 .navigation-list-secondary a:last-child {
   border-right: 0;
 }
 
-/* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 27, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   float: left;
 }
 
-/* line 31, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 31, ../sass/partials/modules/_navigation.scss */
 .nav-item > ul {
   display: none;
 }
 
-/* line 35, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 35, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   list-style-type: none;
 }
 
-/* line 39, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 39, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
   border-left: 1px solid #FFF;
   border-right: 1px solid #CCC;
@@ -444,7 +445,7 @@ input, button, button, textarea {
   -o-box-shadow: 0 1px 0 0 white;
   box-shadow: 0 1px 0 0 white;
 }
-/* line 48, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 48, ../sass/partials/modules/_navigation.scss */
 .nav-item > a:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #eeeeee));
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
@@ -454,7 +455,7 @@ input, button, button, textarea {
   background: linear-gradient(#ffffff, #eeeeee);
   background-color: #FFF;
 }
-/* line 52, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 52, ../sass/partials/modules/_navigation.scss */
 .nav-item > a:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #ffffff));
   background: -webkit-linear-gradient(#eeeeee, #ffffff);
@@ -464,7 +465,7 @@ input, button, button, textarea {
   background: linear-gradient(#eeeeee, #ffffff);
 }
 
-/* line 57, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 57, ../sass/partials/modules/_navigation.scss */
 .nav-admin {
   float: right;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #348fbf), color-stop(100%, #26688b));
@@ -474,13 +475,13 @@ input, button, button, textarea {
   background: -ms-linear-gradient(#348fbf, #26688b);
   background: linear-gradient(#348fbf, #26688b);
 }
-/* line 60, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 60, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a {
   border-left: 1px solid rgba(255, 255, 255, 0.75);
   color: #FFF;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
-/* line 64, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 64, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3ba2d8), color-stop(100%, #2e80aa));
   background: -webkit-linear-gradient(#3ba2d8, #2e80aa);
@@ -489,7 +490,7 @@ input, button, button, textarea {
   background: -ms-linear-gradient(#3ba2d8, #2e80aa);
   background: linear-gradient(#3ba2d8, #2e80aa);
 }
-/* line 67, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
+/* line 67, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2e80aa), color-stop(100%, #3ba2d8));
   background: -webkit-linear-gradient(#2e80aa, #3ba2d8);
@@ -503,13 +504,13 @@ input, button, button, textarea {
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_page_header.scss */
+/* line 1, ../sass/partials/modules/_page_header.scss */
 .page-header {
   margin-bottom: 17px;
   border-bottom: 1px solid #CCC;
   position: relative;
 }
-/* line 5, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_page_header.scss */
+/* line 5, ../sass/partials/modules/_page_header.scss */
 .page-header .page-actions {
   position: absolute;
   top: 0;
