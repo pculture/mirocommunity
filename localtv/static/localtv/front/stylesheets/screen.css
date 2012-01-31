@@ -281,6 +281,30 @@ input, button, button, textarea {
   background: #CCC;
 }
 
+/* line 2, ../sass/partials/modules/_grid.scss */
+.left-half {
+  display: inline;
+  float: left;
+  margin-right: 20px;
+  width: 465px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html .left-half {
+  overflow-x: hidden;
+}
+
+/* line 5, ../sass/partials/modules/_grid.scss */
+.right-half {
+  display: inline;
+  float: left;
+  margin-right: 0;
+  width: 465px;
+}
+/* line 147, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_grid.scss */
+* html .right-half {
+  overflow-x: hidden;
+}
+
 /* line 4, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   overflow: hidden;
