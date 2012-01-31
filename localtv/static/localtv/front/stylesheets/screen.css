@@ -309,6 +309,29 @@ body {
   *zoom: 1;
 }
 
+/* line 3, ../sass/partials/modules/_lists.scss */
+.unstyled-list, .action-list {
+  margin: 0;
+  padding: 0;
+}
+/* line 6, ../sass/partials/modules/_lists.scss */
+.unstyled-list li, .action-list li {
+  list-style-type: none;
+}
+
+/* line 11, ../sass/partials/modules/_lists.scss */
+.pill-list a, .action-list a {
+  padding: 9px 18px;
+  -moz-border-radius: 18px;
+  -webkit-border-radius: 18px;
+  -o-border-radius: 18px;
+  -ms-border-radius: 18px;
+  -khtml-border-radius: 18px;
+  border-radius: 18px;
+  float: right;
+  background: #CCC;
+}
+
 /* line 4, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   overflow: hidden;
@@ -487,4 +510,11 @@ body {
 .page-header {
   margin-bottom: 17px;
   border-bottom: 1px solid #CCC;
+  position: relative;
+}
+/* line 5, ../sass/partials/modules/_page_title.scss */
+.page-header .page-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
