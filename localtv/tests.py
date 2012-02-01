@@ -735,10 +735,10 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
-                          'localtv/view_video.html')
-        self.assertEqual(response.context[0]['current_video'], video)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertTrue('localtv/view_video.html' in [
+                template.name for template in response.templates])
+        self.assertEqual(response.context['current_video'], video)
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location)))
 
@@ -797,7 +797,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 2)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=2)))
 
@@ -821,7 +821,7 @@ class ViewTestCase(BaseTestCase):
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 1)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=1)))
 
@@ -835,7 +835,7 @@ class ViewTestCase(BaseTestCase):
                                 r.object.status == Video.ACTIVE]
         start = (page_num - 1) * per_page
         end = page_num * per_page
-        
+
         self.assertEqual(page_num, expected_page_num)
         self.assertEqual(len(paginator.object_list),
                           expected_object_count)
@@ -1245,6 +1245,8 @@ class CommentModerationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
+        self.old_COMMENTS_APP = getattr(settings, 'COMMENTS_APP', None)
+        settings.COMMENTS_APP = 'localtv.comments'
         self.video = Video.objects.get(pk=20)
         self.url = get_form_target()
         if 'captcha' in CommentForm.base_fields:
@@ -1256,6 +1258,9 @@ class CommentModerationTestCase(BaseTestCase):
                 'url': 'http://posturl.com/'})
         self.POST_data = self.form.initial
         self.POST_data['comment'] = 'comment string'
+
+    def tearDown(self):
+        settings.COMMENTS_APP = self.old_COMMENTS_APP
 
     def test_deleting_video_deletes_comments(self):
         """
@@ -1827,7 +1832,7 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2011, 12, 06, 19, 18, 23),
+        'thumbnail_updated': datetime.datetime(2012, 1, 4, 6, 56, 41),
         }
 
 

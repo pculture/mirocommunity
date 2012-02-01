@@ -127,7 +127,7 @@ def search_update(search_id, using='default'):
     search.update(using=using, clear_rejected=True)
 
 
-@task(ignore_result=True, max_retries=None)
+@task(ignore_result=True, max_retries=None, default_retry_delay=30)
 @patch_settings
 def mark_import_pending(import_app_label, import_model, import_pk,
                         using='default'):
@@ -142,11 +142,16 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                                                     pk=import_pk,
                                                     status=import_class.STARTED)
     except import_class.DoesNotExist:
-        return
+        logging.debug('Expected %s instance (pk=%r) missing.',
+                      import_class.__name__, import_pk)
+        # If this is the problem, don't retry indefinitely.
+        if mark_import_pending.request.retries > 10:
+            raise MaxRetriesExceededError
+        mark_import_pending.retry()
     source_import.last_activity = datetime.datetime.now()
     if source_import.total_videos is None:
         source_import.save()
-        return
+        mark_import_pending.retry()
     # get the correct counts from the database, rather than the race-condition
     # prone count fields
     import_count = source_import.indexes.count()
@@ -160,9 +165,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
         # Then the import is incomplete. Requeue it.
         source_import.save()
         # Retry raises an exception, ending task execution.
-        mark_import_pending.retry(
-            args=(import_app_label, import_model, import_pk),
-            kwargs={'using': using}, countdown=30)
+        mark_import_pending.retry()
 
     # Otherwise the first stage is complete. Check whether they can take all the
     # videos.
@@ -211,7 +214,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                                using=using)
 
 
-@task(ignore_result=True, max_retries=None)
+@task(ignore_result=True, max_retries=None, default_retry_delay=30)
 @patch_settings
 def mark_import_complete(import_app_label, import_model, import_pk,
                          using='default'):
@@ -226,17 +229,33 @@ def mark_import_complete(import_app_label, import_model, import_pk,
                                                     pk=import_pk,
                                                     status=import_class.PENDING)
     except import_class.DoesNotExist:
-        return
+        logging.warn('Expected %s instance (pk=%r) missing.',
+                     import_class.__name__, import_pk)
+        # If this is the problem, don't retry indefinitely.
+        if mark_import_complete.request.retries > 10:
+            raise MaxRetriesExceededError
+        mark_import_complete.retry()
 
     video_pks = list(source_import.get_videos(using).filter(
                             status=Video.ACTIVE).values_list('pk', flat=True))
+    video_count = len(video_pks)
     if not video_pks:
         # Don't bother with the haystack query.
         haystack_count = 0
     else:
-        haystack_count = SearchQuerySet().models(Video).filter(
-                                                django_id__in=video_pks).count()
-    if haystack_count >= len(video_pks):
+        if settings.HAYSTACK_SEARCH_ENGINE == 'xapian':
+            # The pk_hack field shadows the model's pk/django_id because
+            # xapian-haystack's django_id filtering is broken.
+            haystack_filter = {'pk_hack__in': video_pks}
+        else:
+            haystack_filter = {'django_id__in': video_pks}
+        haystack_count = SearchQuerySet().models(Video).filter(**haystack_filter
+                                                      ).count()
+    
+    logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
+                   '%i, haystack_count: %i'), import_app_label, import_model,
+                   import_pk, using, video_count, haystack_count)
+    if haystack_count >= video_count:
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
             source_import.source.status = source_import.source.ACTIVE
@@ -245,32 +264,28 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     source_import.last_activity = datetime.datetime.now()
     source_import.save()
 
-    if haystack_count < len(video_pks):
-        mark_import_complete.retry(
-            args=(import_app_label, import_model, import_pk),
-            kwargs={'using': using}, countdown=30)
+    if source_import.status == import_class.PENDING:
+        mark_import_complete.retry()
 
 
-@task(ignore_result=True)
+@task(ignore_result=True, max_retries=6, default_retry_delay=10)
 @patch_settings
 def video_from_vidscraper_video(vidscraper_video, site_pk,
                                 import_app_label=None, import_model=None,
                                 import_pk=None, status=None, author_pks=None,
                                 category_pks=None, clear_rejected=False,
                                 using='default'):
-    if import_app_label is None or import_model is None or import_pk is None:
-        # XXX what is this for?
-        source_import = None
-    else:
-        import_class = get_model(import_app_label, import_model)
-        try:
-            source_import = import_class.objects.using(using).get(
-               pk=import_pk,
-               status=import_class.STARTED)
-        except import_class.DoesNotExist:
-            logging.debug('Skipping %r: expected import instance missing.',
-                          vidscraper_video.url)
-            return
+    import_class = get_model(import_app_label, import_model)
+    try:
+        source_import = import_class.objects.using(using).get(
+           pk=import_pk,
+           status=import_class.STARTED)
+    except import_class.DoesNotExist, e:
+        logging.warn('Retrying %r: expected %s instance (pk=%r) missing.',
+                     vidscraper_video.url, import_class.__name__, import_pk)
+        request = video_from_vidscraper_video.request
+        video_from_vidscraper_video.retry()
+
     try:
         try:
             vidscraper_video.load()
@@ -385,11 +400,10 @@ def video_save_thumbnail(video_pk, using='default'):
             )
         
 
-@task(ignore_result=True,
-      max_retries=None)
+@task(ignore_result=True, max_retries=None)
 @patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
-                          using='default', backoff=0):
+                          using='default'):
     """
     Updates a haystack index for the given model (specified by ``app_label``
     and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
@@ -412,19 +426,20 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
             try:
                 instance = Video.objects.using(using).get(pk=pk)
             except model_class.DoesNotExist:
-                logging.info(('haystack_update_index(%r, %r, %r, %r, using=%r, '
-                              'backoff=%i) could not find video with pk %i'),
-                              app_label, model_name, pk, is_removal, using,
-                              backoff, pk)
+                logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r)'
+                               ' could not find video with pk %i'), app_label,
+                               model_name, pk, is_removal, using, pk)
             else:
                 if instance.status == Video.ACTIVE:
                     search_index.update_object(instance)
                 else:
                     search_index.remove_object(instance)
-    except (DatabaseLockError, LockError):
-        backoff = min(backoff + 1, 5) # maximum wait is ~30s
-        countdown = random.random() * (2 ** backoff - 1)
-        haystack_update_index.retry(
-            args=(app_label, model_name, pk, is_removal),
-            kwargs={'using': using, 'backoff': backoff},
-            countdown=countdown)
+    except (DatabaseLockError, LockError), e:
+        # maximum wait is ~30s
+        exp = min(haystack_update_index.request.retries, 4)
+        countdown = random.random() * (2 ** exp)
+        logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r) '
+                       'retrying due to %s with countdown %r'), app_label,
+                       model_name, pk, is_removal, using, e.__class__.__name__,
+                       countdown)
+        haystack_update_index.retry(countdown=countdown)

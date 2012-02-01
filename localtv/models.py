@@ -18,6 +18,7 @@
 import datetime
 import email.utils
 import httplib
+import itertools
 import re
 import urllib
 import urllib2
@@ -829,7 +830,7 @@ class Feed(Source):
         except FeedImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         feed_import = FeedImport.objects.db_manager(using).create(source=self,
@@ -1052,7 +1053,7 @@ class SavedSearch(Source):
         except SearchImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         search_import = SearchImport.objects.db_manager(using).create(
@@ -1070,9 +1071,7 @@ class SavedSearch(Source):
             }
         )
 
-        # Mark the import as "ended" immediately if none of the searches can
-        # load.
-        should_end = True
+        video_iters = []
         for video_iter in searches.values():
             try:
                 video_iter.load()
@@ -1081,11 +1080,14 @@ class SavedSearch(Source):
                                u'from %s' % video_iter.suite.__class__.__name__,
                                with_exception=True, using=using)
                 continue
-            should_end = False
-            super(SavedSearch, self).update(video_iter,
+            video_iters.append(video_iter)
+
+        if video_iters:
+            super(SavedSearch, self).update(itertools.chain(*video_iters),
                                             source_import=search_import,
                                             using=using, **kwargs)
-        if should_end:
+        else:
+            # Mark the import as failed if none of the searches could load.
             search_import.status = SearchImport.FAILED
             search_import.last_activity = datetime.datetime.now()
             search_import.save()
@@ -1194,10 +1196,10 @@ class SourceImport(models.Model):
         """
         if with_exception:
             exc_info = sys.exc_info()
-            logging.debug(message, exc_info=exc_info)
+            logging.warn(message, exc_info=exc_info)
             tb = ''.join(traceback.format_exception(*exc_info))
         else:
-            logging.debug(message)
+            logging.warn(message)
             tb = ''
         self.errors.db_manager(using).create(message=message,
                                              source_import=self,

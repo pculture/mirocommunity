@@ -31,6 +31,7 @@ from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
 from django.conf import settings
+
 import mock
 from notification import models as notification
 from uploadtemplate.models import Theme
