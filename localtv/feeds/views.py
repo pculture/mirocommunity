@@ -15,29 +15,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import urllib
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed, add_domain
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404
-from django.utils import feedgenerator
-from django.utils.cache import patch_vary_headers
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
-from haystack.query import SearchQuerySet
 from tagging.models import Tag
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
-from localtv.search.forms import VideoSearchForm
 from localtv.search.utils import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
 
@@ -371,10 +364,10 @@ class SearchVideosFeed(BaseVideosFeed):
         return obj
 
     def link(self, obj):
-        kwargs = {'q': obj['obj'].encode('utf-8')}
+        args = {'q': obj['obj'].encode('utf-8')}
         sort = obj['request'].GET.get('sort', None)
         if sort == 'latest':
-            kwargs['sort'] = 'latest'
+            args['sort'] = 'latest'
         return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
     def title(self, obj):
