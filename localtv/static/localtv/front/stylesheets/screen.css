@@ -276,12 +276,12 @@ input, button, button, textarea {
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .navigation-list {
+.unstyled-list, .action-list, .navigation-list, .pagetabs {
   margin: 0;
   padding: 0;
 }
 /* line 6, ../sass/partials/modules/_lists.scss */
-.unstyled-list li, .action-list li, .navigation-list li {
+.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li {
   list-style-type: none;
 }
 
@@ -543,6 +543,41 @@ input, button, button, textarea {
   -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
   -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
+}
+
+/* line 3, ../sass/partials/modules/_pagetabs.scss */
+.pagetabs {
+  overflow: hidden;
+  *zoom: 1;
+  border: 1px solid #C6C6C6;
+  -moz-box-shadow: 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 0 0 white;
+  box-shadow: 0 1px 0 0 white;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  background: #FFF;
+}
+/* line 10, ../sass/partials/modules/_pagetabs.scss */
+.pagetabs a, .pagetabs .ellipse span {
+  float: left;
+  border-right: 1px solid #CCC;
+  padding: 8px 18px;
+  /* the border at the top will only show up if the navigation spans more than one line */
+  border-top: 1px solid #CCC;
+  margin-top: -1px;
+}
+/* line 18, ../sass/partials/modules/_pagetabs.scss */
+.pagetabs a:hover {
+  background: #F5F5F5;
+}
+/* line 21, ../sass/partials/modules/_pagetabs.scss */
+.pagetabs .selected a {
+  background: #D0ECFE;
 }
 
 /* line 1, ../sass/partials/modules/_page_header.scss */
