@@ -15,29 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import urllib
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed, add_domain
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404
-from django.utils import feedgenerator
-from django.utils.cache import patch_vary_headers
+from django.http import HttpResponse
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
-from haystack.query import SearchQuerySet
 from tagging.models import Tag
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video, Category
 from localtv.playlists.models import Playlist
-from localtv.search.forms import VideoSearchForm
 from localtv.search.utils import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
 
@@ -135,7 +129,7 @@ class BaseVideosFeed(Feed, SortFilterViewMixin):
         end = start + opensearch['itemsperpage']
         opensearch['totalresults'] = len(sqs)
         sqs = sqs.load_all()[start:end]
-        return [result.object for result in sqs]
+        return [result.object for result in sqs if result is not None]
 
     def _get_opensearch_data(self, obj):
         """
@@ -255,7 +249,7 @@ class NewVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_new')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('New Videos'))
 
 
@@ -266,7 +260,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_featured')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('Featured Videos'))
 
 
@@ -277,7 +271,7 @@ class PopularVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_popular')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('Popular Videos'))
 
 
@@ -295,7 +289,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return obj['obj'].get_absolute_url()
 
     def title(self, obj):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
             _('Category: %s') % obj['obj'].name
         )
@@ -342,7 +336,7 @@ class FeedVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
     def title(self, obj):
-        return "%s: Videos imported from %s" % (
+        return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
             obj['obj'].name or '')
 
@@ -360,8 +354,8 @@ class TagVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
 
     def title(self, obj):
-        return "%s: %s" % (
-            Site.objects.get_current().name, _('Tag: %s') % obj['obj'].name)
+        return u"%s: %s" % (Site.objects.get_current().name,
+                          _(u'Tag: %s') % force_unicode(obj['obj'].name))
 
 
 class SearchVideosFeed(BaseVideosFeed):
@@ -371,10 +365,10 @@ class SearchVideosFeed(BaseVideosFeed):
         return obj
 
     def link(self, obj):
-        kwargs = {'q': obj['obj'].encode('utf-8')}
+        args = {'q': obj['obj'].encode('utf-8')}
         sort = obj['request'].GET.get('sort', None)
         if sort == 'latest':
-            kwargs['sort'] = 'latest'
+            args['sort'] = 'latest'
         return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
     def title(self, obj):
@@ -411,6 +405,6 @@ class PlaylistVideosFeed(BaseVideosFeed):
         return BaseVideosFeed.items(self, obj)
 
     def title(self, obj):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
             _('Playlist: %s') % obj['obj'].name)
