@@ -354,8 +354,8 @@ class TagVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
 
     def title(self, obj):
-        return u"%s: %s" % (
-            Site.objects.get_current().name, _('Tag: %s') % obj['obj'].name)
+        return u"%s: %s" % (Site.objects.get_current().name,
+                          _(u'Tag: %s') % force_unicode(obj['obj'].name))
 
 
 class SearchVideosFeed(BaseVideosFeed):
