@@ -18,6 +18,7 @@
 import datetime
 import email.utils
 import httplib
+import itertools
 import re
 import urllib
 import urllib2
@@ -40,6 +41,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -71,12 +73,6 @@ def delete_if_exists(path):
         default_storage.delete(path)
 
 EMPTY = object()
-
-UNAPPROVED_STATUS_TEXT = _(u'Unapproved')
-ACTIVE_STATUS_TEXT = _(u'Active')
-REJECTED_STATUS_TEXT = _(u'Rejected')
-PENDING_STATUS_TEXT = _(u'Waiting on import to finish')
-DISABLED_STATUS_TEXT = _(u'Disabled')
 
 THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
     (534, 430), # behind a video
@@ -117,8 +113,12 @@ class BitLyWrappingURLField(models.URLField):
             return unicode(value)[:self.max_length]
 
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+except ImportError:
+    pass
+else:
+    add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 
 class Thumbnailable(models.Model):
@@ -362,8 +362,8 @@ class SiteLocation(Thumbnailable):
     ACTIVE = 1
 
     STATUS_CHOICES = (
-        (DISABLED, DISABLED_STATUS_TEXT),
-        (ACTIVE, ACTIVE_STATUS_TEXT),
+        (DISABLED, _(u'Disabled')),
+        (ACTIVE, _(u'Active')),
     )
 
     site = models.ForeignKey(Site, unique=True)
@@ -372,8 +372,7 @@ class SiteLocation(Thumbnailable):
                                    blank=True)
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=ACTIVE)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
@@ -382,7 +381,8 @@ class SiteLocation(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)
+    tier_name = models.CharField(max_length=255, default='basic', blank=False,
+                                 choices=localtv.tiers.CHOICES)
     hide_get_started = models.BooleanField(default=False)
 
     # ordering options
@@ -517,7 +517,7 @@ class NewsletterSettings(models.Model):
     LATEST = 4
     
     STATUS_CHOICES = (
-        (DISABLED, DISABLED_STATUS_TEXT),
+        (DISABLED, _(u'Disabled')),
         (FEATURED, _("5 most recently featured")),
         (POPULAR, _("5 most popular")),
         (LATEST, _("5 latest videos")),
@@ -724,7 +724,7 @@ class Source(Thumbnailable):
 
         import_opts = source_import.__class__._meta
 
-        from localtv.tasks import video_from_vidscraper_video, mark_import_complete
+        from localtv.tasks import video_from_vidscraper_video, mark_import_pending
 
         total_videos = 0
 
@@ -755,82 +755,17 @@ class Source(Thumbnailable):
         ).update(
             total_videos=total_videos
         )
-        mark_import_complete.delay(import_app_label=import_opts.app_label,
-                                   import_model=import_opts.module_name,
-                                   import_pk=source_import.pk,
-                                   using=using)
+        mark_import_pending.delay(import_app_label=import_opts.app_label,
+                                  import_model=import_opts.module_name,
+                                  import_pk=source_import.pk,
+                                  using=using)
 
 
-class StatusedThumbnailableQuerySet(models.query.QuerySet):
-
-    def unapproved(self):
-        return self.filter(status=StatusedThumbnailable.UNAPPROVED)
-
-    def active(self):
-        return self.filter(status=StatusedThumbnailable.ACTIVE)
-
-    def rejected(self):
-        return self.filter(status=StatusedThumbnailable.REJECTED)
-
-    def pending(self):
-        return self.filter(status=StatusedThumbnailable.PENDING)
-
-
-class StatusedThumbnailableManager(models.Manager):
-
-    def get_query_set(self):
-        return StatusedThumbnailableQuerySet(self.model, using=self._db)
-
-    def unapproved(self):
-        return self.get_query_set().unapproved()
-
-    def active(self):
-        return self.get_query_set().active()
-
-    def rejected(self):
-        return self.get_query_set().rejected()
-
-    def pending_thumbnail(self):
-        return self.get_query_set().pending_thumbnail()
-
-
-class StatusedThumbnailable(models.Model):
-    """
-    Abstract class to provide the ``status`` field for Feeds and Videos.
-    """
-    #: An admin has not looked at this feed yet.
-    UNAPPROVED = 0
-    ACTIVE = 1
-    #: This feed was rejected by an admin.
-    REJECTED = 2
-    # This is still being imported
-    PENDING = 3
-
-    STATUS_CHOICES = (
-        (UNAPPROVED, UNAPPROVED_STATUS_TEXT),
-        (ACTIVE, ACTIVE_STATUS_TEXT),
-        (REJECTED, REJECTED_STATUS_TEXT),
-        (PENDING, PENDING_STATUS_TEXT),
-    )
-
-    objects = StatusedThumbnailableManager()
-
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=UNAPPROVED)
-
-    def is_active(self):
-        """Shortcut to check the common case of whether a video is active."""
-        return self.status == self.ACTIVE
-
-    class Meta:
-        abstract = True
-
-
-class Feed(Source, StatusedThumbnailable):
+class Feed(Source):
     """
     Feed to pull videos in from.
 
-    If the same feed is used on two different , they will require two
+    If the same feed is used on two different sites, they will require two
     separate entries here.
 
     Fields:
@@ -852,6 +787,14 @@ class Feed(Source, StatusedThumbnailable):
       - auto_authors: authors that are automatically applied to videos on
         import
     """
+    INACTIVE = 0
+    ACTIVE = 1
+
+    STATUS_CHOICES = (
+        (INACTIVE, _(u'Inactive')),
+        (ACTIVE, _(u'Active')),
+    )
+
     feed_url = models.URLField(verify_exists=False)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
@@ -861,6 +804,7 @@ class Feed(Source, StatusedThumbnailable):
     etag = models.CharField(max_length=250, blank=True)
     avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
+    status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
     class Meta:
         unique_together = (
@@ -885,7 +829,7 @@ class Feed(Source, StatusedThumbnailable):
         except FeedImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         feed_import = FeedImport.objects.db_manager(using).create(source=self,
@@ -1058,8 +1002,8 @@ class Category(models.Model):
         
         """
         categories = [self] + self.in_order(self.site, self.child_set.all())
-        return Video.objects.active().filter(
-            categories__in=categories).distinct()
+        return Video.objects.filter(status=Video.ACTIVE,
+                                    categories__in=categories).distinct()
     approved_set = property(approved_set)
 
     def unique_error_message(self, model_class, unique_check):
@@ -1108,7 +1052,7 @@ class SavedSearch(Source):
         except SearchImport.DoesNotExist:
             pass
         else:
-            logging.debug('Skipping import of %s: already in progress' % self)
+            logging.info('Skipping import of %s: already in progress' % self)
             return
 
         search_import = SearchImport.objects.db_manager(using).create(
@@ -1126,9 +1070,7 @@ class SavedSearch(Source):
             }
         )
 
-        # Mark the import as "ended" immediately if none of the searches can
-        # load.
-        should_end = True
+        video_iters = []
         for video_iter in searches.values():
             try:
                 video_iter.load()
@@ -1137,11 +1079,14 @@ class SavedSearch(Source):
                                u'from %s' % video_iter.suite.__class__.__name__,
                                with_exception=True, using=using)
                 continue
-            should_end = False
-            super(SavedSearch, self).update(video_iter,
+            video_iters.append(video_iter)
+
+        if video_iters:
+            super(SavedSearch, self).update(itertools.chain(*video_iters),
                                             source_import=search_import,
                                             using=using, **kwargs)
-        if should_end:
+        else:
+            # Mark the import as failed if none of the searches could load.
             search_import.status = SearchImport.FAILED
             search_import.last_activity = datetime.datetime.now()
             search_import.save()
@@ -1190,10 +1135,12 @@ class SearchImportError(SourceImportError):
 
 class SourceImport(models.Model):
     STARTED = 'started'
+    PENDING = 'pending'
     COMPLETE = 'complete'
     FAILED = 'failed'
     STATUS_CHOICES = (
         (STARTED, _('Started')),
+        (PENDING, _('Pending haystack updates')),
         (COMPLETE, _('Complete')),
         (FAILED, _('Failed'))
     )
@@ -1213,6 +1160,12 @@ class SourceImport(models.Model):
         get_latest_by = 'start'
         ordering = ['-start']
         abstract = True
+
+    def is_running(self):
+        """
+        Returns True if the SourceImport is currently running.
+        """
+        return self.status in (self.STARTED, self.PENDING)
 
     def set_video_source(self, video):
         """
@@ -1242,10 +1195,10 @@ class SourceImport(models.Model):
         """
         if with_exception:
             exc_info = sys.exc_info()
-            logging.debug(message, exc_info=exc_info)
+            logging.warn(message, exc_info=exc_info)
             tb = ''.join(traceback.format_exception(*exc_info))
         else:
-            logging.debug(message)
+            logging.warn(message)
             tb = ''
         self.errors.db_manager(using).create(message=message,
                                              source_import=self,
@@ -1254,11 +1207,6 @@ class SourceImport(models.Model):
         if is_skip:
             self.__class__._default_manager.using(using).filter(pk=self.pk
                         ).update(videos_skipped=models.F('videos_skipped') + 1)
-            from localtv.tasks import mark_import_complete
-            mark_import_complete.delay(import_app_label=self._meta.app_label,
-                                       import_model=self._meta.module_name,
-                                       import_pk=self.pk,
-                                       using=using)
 
     def get_index_creation_kwargs(self, video, vidscraper_video):
         return {
@@ -1280,11 +1228,6 @@ class SourceImport(models.Model):
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
-        from localtv.tasks import mark_import_complete
-        mark_import_complete.delay(import_app_label=self._meta.app_label,
-                                   import_model=self._meta.module_name,
-                                   import_pk=self.pk,
-                                   using=using)
 
 
 class FeedImport(SourceImport):
@@ -1339,6 +1282,10 @@ class OriginalVideo(VideoBase):
     thumbnail_updated = models.DateTimeField(blank=True)
     remote_video_was_deleted = models.IntegerField(default=VIDEO_ACTIVE)
     remote_thumbnail_hash = models.CharField(max_length=64, default='')
+
+    taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
 
     def changed_fields(self, override_vidscraper_result=None):
         """
@@ -1575,7 +1522,7 @@ class OriginalVideo(VideoBase):
         self.save()
 
 
-class VideoQuerySet(StatusedThumbnailableQuerySet):
+class VideoQuerySet(models.query.QuerySet):
 
     def with_best_date(self, use_original_date=True):
         if use_original_date:
@@ -1602,7 +1549,7 @@ localtv_watch.timestamp > %s"""},
         )
 
 
-class VideoManager(StatusedThumbnailableManager):
+class VideoManager(models.Manager):
 
     def get_query_set(self):
         return VideoQuerySet(self.model, using=self._db)
@@ -1621,7 +1568,7 @@ class VideoManager(StatusedThumbnailableManager):
         """
         if sitelocation is None:
             sitelocation = SiteLocation.objects.get_current()
-        return self.active().filter(site=sitelocation.site)
+        return self.filter(status=Video.ACTIVE, site=sitelocation.site)
 
     def get_featured_videos(self, sitelocation=None):
         """
@@ -1684,13 +1631,11 @@ class VideoManager(StatusedThumbnailableManager):
         """
         if sitelocation is None:
             sitelocation = SiteLocation.objects.get_current()
-        return Video.tagged.with_all(tag).active().filter(
-            site=sitelocation.site
-        ).order_by(
-            '-when_approved',
-            '-when_published',
-            '-when_submitted'
-        )
+        return Video.tagged.with_all(tag).filter(status=Video.ACTIVE,
+                                                 site=sitelocation.site
+                                        ).order_by('-when_approved',
+                                                   '-when_published',
+                                                   '-when_submitted')
 
     def get_author_videos(self, author, sitelocation=None):
         """
@@ -1720,7 +1665,7 @@ class VideoManager(StatusedThumbnailableManager):
                            '-id')
 
 
-class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
+class Video(Thumbnailable, VideoBase):
     """
     Fields:
      - name: Name of this video
@@ -1763,6 +1708,18 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
        info
      - notes: a free-text field to add notes about the video
     """
+    UNAPPROVED = 0
+    ACTIVE = 1
+    REJECTED = 2
+    PENDING = 3
+
+    STATUS_CHOICES = (
+        (UNAPPROVED, _(u'Unapproved')),
+        (ACTIVE, _(u'Active')),
+        (REJECTED, _(u'Rejected')),
+        (PENDING, _(u'Waiting on import to finish')),
+    )
+
     site = models.ForeignKey(Site)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
@@ -1777,6 +1734,7 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     when_approved = models.DateTimeField(null=True, blank=True)
     when_published = models.DateTimeField(null=True, blank=True)
     last_featured = models.DateTimeField(null=True, blank=True)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
     website_url = BitLyWrappingURLField(verbose_name='Original Video Page URL (optional)',
                                         verify_exists=False,
@@ -1795,6 +1753,10 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
+
+    taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
 
     THUMB_SIZES = THUMB_SIZES
 
@@ -1878,10 +1840,12 @@ class Video(Thumbnailable, VideoBase, StatusedThumbnailable):
             if categories:
                 instance.categories = categories
             if video.tags:
-                tags = set(tag.strip() for tag in video.tags if tag.strip())
+                if settings.FORCE_LOWERCASE_TAGS:
+                    fix = lambda t: t.lower().strip()
+                else:
+                    fix = lambda t: t.strip()
+                tags = set(fix(tag) for tag in video.tags if tag.strip())
                 for tag_name in tags:
-                    if settings.FORCE_LOWERCASE_TAGS:
-                        tag_name = tag_name.lower()
                     tag, created = \
                         tagging.models.Tag._default_manager.db_manager(
                         using).get_or_create(name=tag_name)
@@ -2181,7 +2145,7 @@ tagging.models.Tag.__unicode__ = tag_unicode
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)
-    if sender.is_active():
+    if sender.status == Video.ACTIVE:
         # don't send the e-mail for videos that are already active
         return
     t = loader.get_template('localtv/submit_video/new_video_email.txt')

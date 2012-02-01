@@ -61,7 +61,7 @@ $(document).ready(function() {
 <a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
 <a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
 <h2>Videos | Manage Your Video Sources</h2>
-<div class="helpful clear rounded">Use this page to keep track of and edit sources of incoming video.</div>
+<div class="helpful clear rounded">Videos imported from sources become available once the import has completed. You can see a source's import status in the "import" column. Videos may be skipped if they have been imported before, or if they do not have basic information &#8211; for example, if they don't have either embed code or a link to a video file.</div>
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
 <div id="admin_feed_add" class="simple_overlay displaynone">
@@ -151,18 +151,23 @@ $(document).ready(function() {
 <td>
 {% with form.instance.imports.latest as latest_import %}
 {% if latest_import %}
-  {% if form.instance.status == 0 %}First{% else %}Latest{% endif %}
-  {% if latest_import.status != latest_import.STARTED %}import ended {{ latest_import.last_activity|simpletimesince }} ago
-  {% else %}import started {{ latest_import.start|simpletimesince }} ago{% endif %}<br/>
-{% if latest_import.videos_imported and latest_import.videos_skipped %}
-Imported {{ latest_import.videos_imported }} videos, skipped {{ latest_import.videos_skipped }} videos.
-{% else %}
-{% if latest_import.videos_skipped %}
-Skipped {{ latest_import.videos_skipped }} videos.
-{% else %}
-Imported {{ latest_import.videos_imported }} videos.
-{% endif %}
-{% endif %}
+  {% if form.instance.status == 0 %}First{% else %}Latest{% endif %} import
+  {% if not latest_import.is_running %}
+    ended {{ latest_import.last_activity|simpletimesince }} ago
+  {% else %}
+    started {{ latest_import.start|simpletimesince }} ago
+  {% endif %}
+  <br/>
+  {% if latest_import.videos_imported and latest_import.videos_skipped %}
+    Imported {{ latest_import.videos_imported }} video{{ latest_import.videos_imported|pluralize }}, skipped {{ latest_import.videos_skipped }} video{{ latest_import.videos_skipped|pluralize }}.
+  {% else %}
+    {% if latest_import.videos_skipped %}
+      Skipped {{ latest_import.videos_skipped }} videos.
+    {% else %}
+      Imported {{ latest_import.videos_imported }} videos.
+    {% endif %}
+  {% endif %}
+  {% if latest_import.status == latest_import.PENDING %}<br/>Indexing in progress.{% endif %}
 {% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}

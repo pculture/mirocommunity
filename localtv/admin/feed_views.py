@@ -88,7 +88,7 @@ def add_feed(request):
         'etag': scraped_feed.etag or '',
         'when_submitted': datetime.datetime.now(),
         'last_updated': datetime.datetime.now(),
-        'status': Feed.UNAPPROVED,
+        'status': Feed.INACTIVE,
         'user': request.user,
 
         'auto_approve': bool(request.POST.get('auto_approve', False))}

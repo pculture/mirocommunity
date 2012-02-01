@@ -35,14 +35,16 @@ def index(request):
     total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
     percent_videos_used = math.floor(
         (100.0 * total_count) / sitelocation.get_tier().videos_limit())
-    videos_this_week_count = Video.objects.active().filter(
+    videos_this_week_count = Video.objects.filter(
+        status=Video.ACTIVE,
         when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
         ).count()
     return render_to_response(
         'localtv/admin/index.html',
         {'total_count': total_count,
          'percent_videos_used': percent_videos_used,
-         'unreviewed_count': Video.objects.unapproved().filter(
+         'unreviewed_count': Video.objects.filter(
+                status=Video.UNAPPROVED,
                 site=sitelocation.site).count(),
          'videos_this_week_count': videos_this_week_count,
          'comment_count': comments.get_model().objects.filter(

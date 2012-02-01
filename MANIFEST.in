@@ -1,8 +1,7 @@
-global-include *.py
-recursive-include localtv/templates *.html
-recursive-include static/css *.css
-recursive-include static/images *
-recursive-include static/swf *.swf
-include static/js/*.js
-include static/js/extern/*.js
-recursive-include docs *
+include README.rst COPYING JQUERY_MIT-LICENSE.txt LICENSE MANIFEST.in
+include example_project/requirements.txt
+recursive-include localtv/templates *.html *.txt
+recursive-include localtv/fixtures *.json
+recursive-include localtv/static *.css *.js *.gif *.png
+recursive-include docs *.py *.rst *.bat *.txt Makefile
+prune docs/_build

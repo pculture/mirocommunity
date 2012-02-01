@@ -15,6 +15,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
+import time
 
 from django import forms
 from django.conf import settings
@@ -57,6 +58,7 @@ class LiveSearchForm(forms.Form):
         cache_key = self._get_cache_key()
         results = cache.get(cache_key)
         if results is None:
+            finish_by = time.time() + 20
             search_results = auto_search(self.cleaned_data['q'],
                                   order_by=self.cleaned_data['order_by'],
                                   api_keys=self.get_search_api_keys())
@@ -68,6 +70,8 @@ class LiveSearchForm(forms.Form):
                     pass
                 else:
                     results.append(vidscraper_video)
+                if time.time() > finish_by:
+                    break # don't take forever!
             cache.set(cache_key, results)
 
         for vidscraper_video in results:

@@ -1,6 +1,5 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
 # This file is part of Miro Community.
+# Copyright (C) 2010 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -15,4 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (1, 8, 0)
+from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls.static import static
+from django.conf import settings
+
+
+urlpatterns = (
+    static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) +
+    static(settings.UPLOADTEMPLATE_MEDIA_URL,
+           document_root=settings.UPLOADTEMPLATE_MEDIA_ROOT) +
+    patterns('',
+        url(r'^', include('localtv.urls')),
+    )
+)

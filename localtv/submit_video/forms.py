@@ -92,6 +92,7 @@ class SubmitVideoForm(forms.ModelForm):
         contact = Video._meta.get_field('contact').formfield(
                               label='E-mail (required)',
                               required=True)
+
     thumbnail_file = forms.ImageField(required=False,
                                       label="Thumbnail File (optional)")
 
