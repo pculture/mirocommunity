@@ -18,6 +18,7 @@
 import datetime
 import email.utils
 import httplib
+import itertools
 import re
 import urllib
 import urllib2
@@ -1070,9 +1071,7 @@ class SavedSearch(Source):
             }
         )
 
-        # Mark the import as "ended" immediately if none of the searches can
-        # load.
-        should_end = True
+        video_iters = []
         for video_iter in searches.values():
             try:
                 video_iter.load()
@@ -1081,11 +1080,14 @@ class SavedSearch(Source):
                                u'from %s' % video_iter.suite.__class__.__name__,
                                with_exception=True, using=using)
                 continue
-            should_end = False
-            super(SavedSearch, self).update(video_iter,
+            video_iters.append(video_iter)
+
+        if video_iters:
+            super(SavedSearch, self).update(itertools.chain(*video_iters),
                                             source_import=search_import,
                                             using=using, **kwargs)
-        if should_end:
+        else:
+            # Mark the import as failed if none of the searches could load.
             search_import.status = SearchImport.FAILED
             search_import.last_activity = datetime.datetime.now()
             search_import.save()
