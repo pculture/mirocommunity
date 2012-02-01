@@ -249,7 +249,7 @@ class NewVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_new')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('New Videos'))
 
 
@@ -260,7 +260,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_featured')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('Featured Videos'))
 
 
@@ -271,7 +271,7 @@ class PopularVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_popular')
 
     def title(self):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('Popular Videos'))
 
 
@@ -289,7 +289,7 @@ class CategoryVideosFeed(BaseVideosFeed):
         return obj['obj'].get_absolute_url()
 
     def title(self, obj):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
             _('Category: %s') % obj['obj'].name
         )
@@ -336,7 +336,7 @@ class FeedVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
     def title(self, obj):
-        return "%s: Videos imported from %s" % (
+        return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
             obj['obj'].name or '')
 
@@ -354,7 +354,7 @@ class TagVideosFeed(BaseVideosFeed):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
 
     def title(self, obj):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name, _('Tag: %s') % obj['obj'].name)
 
 
@@ -405,6 +405,6 @@ class PlaylistVideosFeed(BaseVideosFeed):
         return BaseVideosFeed.items(self, obj)
 
     def title(self, obj):
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
             _('Playlist: %s') % obj['obj'].name)
