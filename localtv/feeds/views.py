@@ -19,7 +19,7 @@ import urllib
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.contrib.syndication.views import Feed, add_domain
+from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
@@ -30,7 +30,7 @@ from django.utils.tzinfo import FixedOffset
 from tagging.models import Tag
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
-from localtv.models import Video, Category
+from localtv.models import Video, Category, Feed
 from localtv.playlists.models import Playlist
 from localtv.search.utils import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
@@ -40,7 +40,7 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-class BaseVideosFeed(Feed, SortFilterViewMixin):
+class BaseVideosFeed(FeedView, SortFilterViewMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
