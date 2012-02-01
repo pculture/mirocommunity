@@ -23,6 +23,7 @@ from django.contrib.syndication.views import Feed, add_domain
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
