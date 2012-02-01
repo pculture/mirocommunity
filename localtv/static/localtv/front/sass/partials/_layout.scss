@@ -1,6 +1,17 @@
+@import "compass/css3/box-sizing";
+
 #container{
 	@include container;
 	position: relative;
+}
+
+
+@media screen and (max-width: 950px){
+	#container{
+		width:100%;
+		padding:10px;
+		@include box-sizing(border-box);
+	}
 }
 
 #search{

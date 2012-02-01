@@ -116,7 +116,7 @@ h6 {
   color: #CCC;
 }
 
-/* line 1, ../sass/partials/_layout.scss */
+/* line 3, ../sass/partials/_layout.scss */
 #container {
   width: 950px;
   margin: 0 auto;
@@ -125,14 +125,25 @@ h6 {
   position: relative;
 }
 
-/* line 6, ../sass/partials/_layout.scss */
+@media screen and (max-width: 950px) {
+  /* line 10, ../sass/partials/_layout.scss */
+  #container {
+    width: 100%;
+    padding: 10px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+}
+/* line 17, ../sass/partials/_layout.scss */
 #search {
   position: absolute;
   top: 18px;
   right: 0;
 }
 
-/* line 12, ../sass/partials/_layout.scss */
+/* line 23, ../sass/partials/_layout.scss */
 #main {
   overflow: hidden;
   *zoom: 1;
