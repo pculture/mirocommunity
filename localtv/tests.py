@@ -1245,6 +1245,8 @@ class CommentModerationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
+        self.old_COMMENTS_APP = getattr(settings, 'COMMENTS_APP', None)
+        settings.COMMENTS_APP = 'localtv.comments'
         self.video = Video.objects.get(pk=20)
         self.url = get_form_target()
         if 'captcha' in CommentForm.base_fields:
@@ -1256,6 +1258,9 @@ class CommentModerationTestCase(BaseTestCase):
                 'url': 'http://posturl.com/'})
         self.POST_data = self.form.initial
         self.POST_data['comment'] = 'comment string'
+
+    def tearDown(self):
+        settings.COMMENTS_APP = self.old_COMMENTS_APP
 
     def test_deleting_video_deletes_comments(self):
         """
