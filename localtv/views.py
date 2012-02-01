@@ -72,7 +72,7 @@ def view_video(request, video_id, slug=None):
     video = get_object_or_404(video_qs, pk=video_id,
                               site=Site.objects.get_current())
 
-    if not video.is_active() and not request.user_is_admin():
+    if not video.status == Video.ACTIVE and not request.user_is_admin():
         raise Http404
 
     if slug is not None and request.path != video.get_absolute_url():

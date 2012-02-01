@@ -147,7 +147,8 @@ def user_warnings_for_downgrade(new_tier_name):
 
 def current_videos_that_count_toward_limit():
     import localtv.models
-    return localtv.models.Video.objects.active()
+    return localtv.models.Video.objects.filter(
+                                status=localtv.models.Video.ACTIVE)
 
 def hide_videos_above_limit(future_tier_obj, actually_do_it=False):
     import localtv.models

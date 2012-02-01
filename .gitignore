@@ -1,4 +1,4 @@
 *.pyc
 Miro_Community.egg-info/*
-docs/build/*
+docs/_build/*
 .sass-cache

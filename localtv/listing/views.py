@@ -157,7 +157,7 @@ class CategoryVideoSearchView(VideoSearchView):
         user_can_vote = False
         if (localtv.settings.voting_enabled() and 
                     category.contest_mode and
-                    request.user.is_authenticated()):
+                    self.request.user.is_authenticated()):
             # TODO: Benchmark this against a version where the pk queryset is
             # evaluated here instead of becoming a subquery.
             pks = category.approved_set().filter(

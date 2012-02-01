@@ -20,7 +20,7 @@ from django.utils.encoding import force_unicode
 
 from haystack import indexes
 from haystack import site
-from localtv.models import Video
+from localtv.models import Video, Watch
 from localtv.search.utils import SortFilterMixin
 from localtv.tasks import haystack_update_index
 
@@ -64,6 +64,9 @@ class QueuedSearchIndex(indexes.SearchIndex):
 class VideoIndex(QueuedSearchIndex):
     text = indexes.CharField(document=True, use_template=True)
 
+    # HACK because xapian-haystack django_id/pk filtering is broken.
+    pk_hack = indexes.IntegerField(model_attr='pk')
+
     # ForeignKey relationships
     feed = indexes.IntegerField(model_attr='feed_id', null=True)
     search = indexes.IntegerField(model_attr='search_id', null=True)
@@ -84,14 +87,27 @@ class VideoIndex(QueuedSearchIndex):
     when_approved = indexes.DateTimeField(model_attr='when_approved',
                             default=SortFilterMixin._empty_value['approved'])
 
+    def _setup_save(self, model):
+        super(VideoIndex, self)._setup_save(model)
+        signals.post_save.connect(self._enqueue_watch_update,
+                                  sender=Watch)
+
+    def _teardown_save(self, model):
+        super(VideoIndex, self)._teardown_save(model)
+        signals.post_save.disconnect(self._enqueue_watch_update,
+                                     sender=Watch)
+
+    def _enqueue_watch_update(self, instance, **kwargs):
+        self._enqueue_instance(instance.video, False)
+
     def index_queryset(self):
         """
         Custom queryset to only search active videos and to annotate them
         with the watch_count.
 
         """
-        return self.model._default_manager.active().annotate(
-                                                    watch_count=Count('watch'))
+        return self.model._default_manager.filter(status=self.model.ACTIVE
+                                         ).annotate(watch_count=Count('watch'))
 
     def read_queryset(self):
         """
@@ -131,9 +147,8 @@ class VideoIndex(QueuedSearchIndex):
     def _enqueue_instance(self, instance, is_removal):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
-            # fake instance for testing
+            # fake instance for testing. TODO: This should probably not be done.
             return
-        else:
-            super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
 
 site.register(Video, VideoIndex)

@@ -100,7 +100,7 @@ def submit_video(request):
                 Q(website_url=submit_form.cleaned_data['url']) |
                 Q(file_url=submit_form.cleaned_data['url']),
                 site=sitelocation.site)
-            existing.rejected().delete()
+            existing.filter(status=Video.REJECTED).delete()
             if existing.count():
                 if request.user_is_admin():
                     # even if the video was rejected, an admin submitting it
@@ -119,7 +119,7 @@ def submit_video(request):
                                 args=[existing[0].pk]))
                 else:
                     # pick the first approved video to point the user at
-                    videos = existing.active()
+                    videos = existing.filter(status=Video.ACTIVE)
                     if videos.count():
                         video = videos[0]
                     else:
@@ -200,7 +200,7 @@ def scraped_submit_video(request):
     sitelocation = SiteLocation.objects.get_current()
     existing =  Video.objects.filter(site=sitelocation.site,
                                      website_url=url)
-    existing.rejected().delete()
+    existing.filter(status=Video.REJECTED).delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
@@ -240,7 +240,7 @@ def embedrequest_submit_video(request):
     sitelocation = SiteLocation.objects.get_current()
     existing =  Video.objects.filter(site=sitelocation.site,
                                             website_url=url)
-    existing.rejected().delete()
+    existing.filter(status=Video.REJECTED).delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
@@ -282,7 +282,7 @@ def directlink_submit_video(request):
     sitelocation = SiteLocation.objects.get_current()
     existing =  Video.objects.filter(Q(website_url=url)|Q(file_url=url),
                                             site=sitelocation.site)
-    existing.rejected().delete()
+    existing.filter(status=Video.REJECTED).delete()
     if existing.count():
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
