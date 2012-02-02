@@ -22,7 +22,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block form_method %}get{% endblock %}
 {% block pre-table %}
   {% if was_duplicate %}
-    <h1>That video has already been submitted!</h1>
     <div>
       {% if not request.user_is_admin %}
         It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}.. sorry! You can submit another video if you like.
@@ -37,7 +36,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
   <tr>
     <td>
-        {{ form.url.errors }}
+        {% if not was_duplicate %}{{ form.url.errors }}{% endif %}
         <label for="id_url">Enter the URL of your video</label>
         {{ form.url }}
     </td>
