@@ -224,7 +224,7 @@ class SiteLocationManager(models.Manager):
         sid = settings.SITE_ID
         try:
             # Dig it out of the cache.
-            current_site_location = SITE_LOCATION_CACHE[sid]
+            current_site_location = SITE_LOCATION_CACHE[(self._db, sid)]
         except KeyError:
             # Not in the cache? Time to put it in the cache.
             try:
@@ -232,10 +232,10 @@ class SiteLocationManager(models.Manager):
                 current_site_location = self.select_related().get(site__pk=sid)
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
-                current_site_location = localtv.models.SiteLocation.objects.create(
-                    site=Site.objects.get_current())
+                current_site_location = self.create(
+                    site=Site.objects.db_manager(self._db).get_current())
 
-            SITE_LOCATION_CACHE[sid] = current_site_location
+            SITE_LOCATION_CACHE[(self._db, sid)] = current_site_location
         return current_site_location
 
     def get(self, **kwargs):
@@ -245,11 +245,11 @@ class SiteLocationManager(models.Manager):
                 site = site.id
             site = int(site)
             try:
-                return SITE_LOCATION_CACHE[site]
+                return SITE_LOCATION_CACHE[(self._db, site)]
             except KeyError:
                 pass
         site_location = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[site_location.site_id] = site_location
+        SITE_LOCATION_CACHE[(self._db, site_location.site_id)] = site_location
         return site_location
 
     def clear_cache(self):
@@ -1946,7 +1946,7 @@ class Video(Thumbnailable, VideoBase):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteLocation.objects.using(self._state.db).get(
+        if SiteLocation.objects.db_manager(self._state.db).get(
             site=self.site_id).use_original_date and \
             self.when_published:
             return self.when_published

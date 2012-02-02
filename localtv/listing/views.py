@@ -128,8 +128,13 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         context['filters'] = self._filter_dict
         context['filter_form'] = self.filter_form
         if self.default_filter in self._filter_dict:
-            context[self.default_filter] = (
-                self._filter_dict[self.default_filter][0])
+            try:
+                context[self.default_filter] = (
+                    self._filter_dict[self.default_filter][0])
+            except IndexError:
+                # Then there are no items matching the default_filter - so we're
+                # on a page that shouldn't exist.
+                raise Http404
 
         return context
 
