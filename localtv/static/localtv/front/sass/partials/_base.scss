@@ -34,6 +34,6 @@ h5{
 	@include normal;
 }
 h6{
-	@extend .normal;
+	@include normal;
 	color:#CCC;
 }

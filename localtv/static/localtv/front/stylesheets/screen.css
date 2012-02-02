@@ -113,6 +113,8 @@ h5 {
 
 /* line 36, ../sass/partials/_base.scss */
 h6 {
+  font-size: 13px;
+  line-height: 18px;
   color: #CCC;
 }
 
