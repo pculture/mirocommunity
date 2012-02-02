@@ -3,9 +3,8 @@ a{
 }
 
 body{
-	@extend .normal;
+	@include normal;
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-	font-size:$blueprint-font-size;
 	background:#F5F5F5;
 	color:#444;
 }

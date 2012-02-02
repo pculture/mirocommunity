@@ -1,0 +1,60 @@
+@import "compass/css3/box-sizing";
+
+$gutter-width: 20px;
+$max-width-threshold: 950px;
+$single-column-threshold: 740px;
+
+/* This grid structure is not going to work in IE7 and below. */
+
+.container{
+	width:$max-width-threshold;
+	margin:0 auto;
+}
+
+.row{
+	margin-left:-$gutter-width;
+}
+
+.col{
+	@include box-sizing(border-box);
+	margin-left:$gutter-width;
+	float:left;
+}
+
+.col-one-half{
+	@extend .col;
+	width:50%;
+}
+.col-one-quarter{
+	@extend .col;
+	width:25%;
+}
+.col-three-quarters{
+	@extend .col;
+	width:75%;
+}
+.col-one-third{
+	@extend .col;
+	width:33%;
+}
+.col-two-thirds{
+	@extend .col;
+	width:66%;
+}
+
+@media screen and (max-width: 950px){
+	.container{
+		width:100%;
+		@include box-sizing(border-box);
+		margin:10px;
+	}
+}
+
+@media screen and (max-width: 740px){
+	.container{
+		margin:10px;
+	}
+	.col{
+		width:100%;
+	}
+}

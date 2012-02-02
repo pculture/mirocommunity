@@ -10,7 +10,6 @@
 }
 
 .thumb{
-	@include column(2);
 	img{
 		display:block;
 	}
@@ -29,7 +28,4 @@
 	li{
 		list-style-type:none;
 	}
-}
-.video-summary .details, .video-summary .description{
-	padding-left:span(2)+$blueprint-grid-margin;
 }

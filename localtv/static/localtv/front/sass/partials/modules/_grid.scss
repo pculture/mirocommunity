@@ -1,7 +1,0 @@
-// These classes are to be used when there is no good way to be semantic.
-.left-half{
-	@include column($blueprint-grid-columns / 2);
-}
-.right-half{
-	@include column($blueprint-grid-columns / 2, true);
-}
