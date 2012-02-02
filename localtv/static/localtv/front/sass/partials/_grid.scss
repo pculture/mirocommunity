@@ -47,15 +47,12 @@ $single-column-threshold: 740px;
 @media screen and (max-width: 950px){
 	.container{
 		width:100%;
+		padding:10px;
 		@include box-sizing(border-box);
-		margin:10px;
 	}
 }
 
 @media screen and (max-width: 740px){
-	.container{
-		margin:10px;
-	}
 	.col{
 		width:100%;
 	}

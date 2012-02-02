@@ -116,20 +116,15 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   /* line 48, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
+    padding: 10px;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -ms-box-sizing: border-box;
     box-sizing: border-box;
-    margin: 10px;
   }
 }
 @media screen and (max-width: 740px) {
   /* line 56, ../sass/partials/_grid.scss */
-  .container {
-    margin: 10px;
-  }
-
-  /* line 59, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
     width: 100%;
   }
