@@ -64,54 +64,57 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* This grid structure is not going to work in IE7 and below. */
-/* line 9, ../sass/partials/_grid.scss */
+/* line 10, ../sass/partials/_grid.scss */
 .container {
   width: 950px;
   margin: 0 auto;
 }
 
-/* line 14, ../sass/partials/_grid.scss */
+/* line 15, ../sass/partials/_grid.scss */
 .row {
   margin-left: -20px;
+  overflow: hidden;
+  *zoom: 1;
 }
 
-/* line 18, ../sass/partials/_grid.scss */
+/* line 20, ../sass/partials/_grid.scss */
 .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -ms-box-sizing: border-box;
   box-sizing: border-box;
-  margin-left: 20px;
+  padding-left: 20px;
   float: left;
+  overflow: hidden;
 }
 
-/* line 24, ../sass/partials/_grid.scss */
+/* line 27, ../sass/partials/_grid.scss */
 .col-one-half {
   width: 50%;
 }
 
-/* line 28, ../sass/partials/_grid.scss */
+/* line 31, ../sass/partials/_grid.scss */
 .col-one-quarter {
   width: 25%;
 }
 
-/* line 32, ../sass/partials/_grid.scss */
+/* line 35, ../sass/partials/_grid.scss */
 .col-three-quarters {
   width: 75%;
 }
 
-/* line 36, ../sass/partials/_grid.scss */
+/* line 39, ../sass/partials/_grid.scss */
 .col-one-third {
   width: 33%;
 }
 
-/* line 40, ../sass/partials/_grid.scss */
+/* line 43, ../sass/partials/_grid.scss */
 .col-two-thirds {
   width: 66%;
 }
 
 @media screen and (max-width: 950px) {
-  /* line 46, ../sass/partials/_grid.scss */
+  /* line 49, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
     -moz-box-sizing: border-box;
@@ -122,12 +125,12 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 54, ../sass/partials/_grid.scss */
+  /* line 57, ../sass/partials/_grid.scss */
   .container {
     margin: 10px;
   }
 
-  /* line 57, ../sass/partials/_grid.scss */
+  /* line 60, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
     width: 100%;
   }

@@ -1,4 +1,5 @@
-@import "compass/css3/box-sizing";
+@import "compass/css3/box-sizing",
+		"compass/utilities/general/clearfix";
 
 $gutter-width: 20px;
 $max-width-threshold: 950px;
@@ -13,12 +14,14 @@ $single-column-threshold: 740px;
 
 .row{
 	margin-left:-$gutter-width;
+	@include clearfix;
 }
 
 .col{
 	@include box-sizing(border-box);
-	margin-left:$gutter-width;
+	padding-left:$gutter-width;
 	float:left;
+	overflow:hidden;
 }
 
 .col-one-half{
