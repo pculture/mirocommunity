@@ -16,26 +16,20 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import patterns, url
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import (MiroCommunityAdminSection, CRUDSection,
                                 registry, user_registry)
-from localtv.admin.users.forms import AdminProfileForm
+from localtv.admin.users.forms import AdminUserForm
 from localtv.admin.users.views import UserProfileUpdateView
-from localtv.utils import get_profile_model
-
-
-Profile = get_profile_model()
 
 
 class UserSection(CRUDSection):
-    url_prefix = 'users'
-    navigation_text = _("Users")
-
-    model = Profile
-    create_form_class = AdminProfileForm
-    update_form_class = AdminProfileForm
+    model = User
+    create_form_class = AdminUserForm
+    update_form_class = AdminUserForm
 
 
 class ProfileSection(MiroCommunityAdminSection):

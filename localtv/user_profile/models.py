@@ -34,11 +34,11 @@ class Profile(models.Model):
     through the Django authentication system.
     """
     user = models.ForeignKey('auth.User')
-    logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
+    logo = models.ImageField(upload_to="localtv/profile_logos/%Y/%m/%d", blank=True,
                              verbose_name='Image')
     location = models.CharField(max_length=200, blank=True, default='')
     description = models.TextField(blank=True, default='')
-    website = models.URLField(blank=True, default='')
+    website = models.URLField(blank=True, default='', verify_exists=False)
 
     class Meta:
         db_table = 'localtv_profile'

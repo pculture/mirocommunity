@@ -16,7 +16,7 @@
 
 from django import forms
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.template.defaultfilters import pluralize
 from django.utils.translation import ugettext_lazy as _
 from notification.models import (NoticeType, NoticeSetting, should_send,
@@ -26,90 +26,100 @@ from localtv.models import SiteLocation
 from localtv.tiers import Tier, number_of_admins_including_superuser
 from localtv.utils import get_profile_model
 
-
 Profile = get_profile_model()
 
 
-class BaseProfileForm(forms.ModelForm):
-    first_name_field = User._meta.get_field('first_name')
-    last_name_field = User._meta.get_field('last_name')
-    username_field = User._meta.get_field('username')
-    email_field = User._meta.get_field('email')
-
-    first_name = first_name_field.formfield(required=False)
-    last_name = last_name_field.formfield(required=False)
-    username = username_field.formfield()
-    email = email_field.formfield()
-
-    password1 = forms.CharField(label=_("Password"), required=False,
+class BaseUserForm(forms.ModelForm):
+    password1 = forms.CharField(label=_("New Password"), required=False,
                                 widget=forms.PasswordInput)
-    password2 = forms.CharField(label=_("Password (again)"), required=False,
+    password2 = forms.CharField(label=_("New Password (again)"), required=False,
                                 widget=forms.PasswordInput)
+
+    logo_field = Profile._meta.get_field('logo')
+    location_field = Profile._meta.get_field('location')
+    description_field = Profile._meta.get_field('description')
+    website_field = Profile._meta.get_field('website')
+
+    logo = logo_field.formfield()
+    location = location_field.formfield()
+    description = description_field.formfield()
+    website = website_field.formfield()
 
     class Meta:
-        model = Profile
-        exclude = ['user']
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']
 
     def __init__(self, *args, **kwargs):
-        super(BaseProfileForm, self).__init__(*args, **kwargs)
-        if self.instance.user_id:
-            self.user = self.instance.user
-            self.fields['first_name'].initial = self.user.first_name
-            self.fields['last_name'].initial = self.user.last_name
-            self.fields['username'].initial = self.user.username
-            self.fields['email'].initial = self.user.email
+        super(BaseUserForm, self).__init__(*args, **kwargs)
+        if self.instance.pk is not None:
+            try:
+                self.profile = self.instance.get_profile()
+            except Profile.DoesNotExist:
+                self.profile = Profile(user_id=self.instance.pk)
         else:
-            self.user = User()
+            self.profile = Profile()
 
-    def clean_first_name(self):
-        return self.first_name_field.clean(self.cleaned_data['first_name'],
-                                           self.user)
-
-    def clean_last_name(self):
-        return self.last_name_field.clean(self.cleaned_data['last_name'],
-                                          self.user)
+        self.fields['logo'].initial = self.profile.logo
+        self.fields['location'].initial = self.profile.location
+        self.fields['description'].initial = self.profile.description
+        self.fields['website'].initial = self.profile.website
 
     def clean_username(self):
+        # This method is (strictly) unnecessary. We provide it to give a
+        # friendlier error message.
         username = self.cleaned_data["username"]
         try:
-            User.objects.exclude(pk=self.user.pk).get(username=username)
+            User.objects.exclude(pk=self.instance.pk).get(username=username)
         except User.DoesNotExist:
-            return self.username_field.clean(self.cleaned_data['username'],
-                                             self.user)
-        raise ValidationError(_("A user with that username already exists."))
-
-    def clean_email(self):
-        return self.email_field.clean(self.cleaned_data['email'], self.user)
+            return username
+        raise forms.ValidationError(_("A user with that username already exists."))
 
     def clean_password2(self):
         if self.cleaned_data['password1'] != self.cleaned_data['password2']:
             raise ValidationError(_("The two password fields didn't match."))
         return self.cleaned_data['password2']
 
-    def save_user(self, commit=True):
-        password = self.cleaned_data['password1']
-        if password:
-            self.user.set_password(password)
-        self.user.username = self.cleaned_data['username']
+    def _post_clean(self):
+        super(BaseUserForm, self)._post_clean()
+        # Admin form removes some fields if it's a user creation.
+        self.profile.logo = self.cleaned_data.get('logo', '')
+        self.profile.location = self.cleaned_data.get('location', '')
+        self.profile.description = self.cleaned_data.get('description', '')
+        self.profile.website = self.cleaned_data.get('website', '')
+        try:
+            self.profile.clean_fields(exclude=['user'])
+        except ValidationError, e:
+            self._update_errors(e.message_dict)
 
-        # first_name and last_name may be removed by a subclass
-        self.user.first_name = self.cleaned_data.get('first_name', '')
-        self.user.last_name = self.cleaned_data.get('last_name', '')
-
-        if commit:
-            self.user.save()
-        return self.user
+        try:
+            self.profile.clean()
+        except ValidationError, e:
+            self._update_errors({NON_FIELD_ERRORS: e.messages})
 
     def save(self, commit=True):
-        # Only save the user if the result is being committed.
+        password = self.cleaned_data['password1']
+        if password:
+            self.instance.set_password(password)
+
+        instance = super(BaseUserForm, self).save(commit=False)
+
+        old_save_m2m = self.save_m2m
+        def save_m2m():
+            old_save_m2m()
+
+            self.profile.user = instance
+            self.profile.save()
+
         if commit:
-            self.save_user()
-            self.instance.user = self.user
-        return super(BaseProfileForm, self).save(commit)
+            instance.save()
+            save_m2m()
+        else:
+            self.save_m2m = save_m2m
+        return instance
 
 
 
-class UserProfileForm(BaseProfileForm):
+class ProfileForm(BaseUserForm):
     """Form for a user to edit their own profile."""
 
     old_password = forms.CharField(required=False, label=_("Old password"),
@@ -122,12 +132,10 @@ class UserProfileForm(BaseProfileForm):
                                             widget=forms.CheckboxSelectMultiple)
 
     def __init__(self, *args, **kwargs):
-        super(UserProfileForm, self).__init__(*args, **kwargs)
-        self.fields['password1'].label = _("New password")
-        self.fields['password2'].label = _("New password confirmation")
+        super(ProfileForm, self).__init__(*args, **kwargs)
 
         sitelocation = SiteLocation.objects.get_current()
-        user_is_admin = sitelocation.user_is_admin(self.user)
+        user_is_admin = sitelocation.user_is_admin(self.instance)
 
         notification_field = self.fields['notifications']
         notice_types = NoticeType.objects.all()
@@ -140,10 +148,14 @@ class UserProfileForm(BaseProfileForm):
         notification_initial = [
             notice_type.pk for notice_type in notice_types
             if (user_is_admin or not notice_type.label.startswith('admin_')) and
-            should_send(self.user, notice_type, "1") 
+            should_send(self.instance, notice_type, "1") 
         ]
         notification_field.choices = notification_choices
         notification_field.initial = notification_initial
+        self.fields.keyOrder = ['first_name', 'last_name', 'username', 'email',
+                                'password1', 'password2', 'old_password',
+                                'logo', 'description', 'location', 'website',
+                                'notifications']
 
     def clean_old_password(self):
         old_password = self.cleaned_data["old_password"]
@@ -152,14 +164,14 @@ class UserProfileForm(BaseProfileForm):
                 raise ValidationError(_("You must enter your old password to "
                                         "change your password, username, or "
                                         "email."))
-            elif not self.user.check_password(old_password):
+            elif not self.instance.check_password(old_password):
                 raise ValidationError(_("Your old password was entered "
                                         "incorrectly. Please enter it again."))
         return old_password
 
     def save_notifications(self):
         notice_type_pks = [int(pk) for pk in self.cleaned_data['notifications']]
-        notice_settings = NoticeSetting.objects.filter(user=self.user)
+        notice_settings = NoticeSetting.objects.filter(user=self.instance)
 
         for notice_setting in notice_settings:
             send = notice_setting.notice_type_id in notice_type_pks
@@ -168,13 +180,13 @@ class UserProfileForm(BaseProfileForm):
                 notice_setting.save()
 
     def save(self, commit=True):
-        instance = super(UserProfileForm, self).save(commit)
+        instance = super(ProfileForm, self).save(commit)
         if commit:
             self.save_notifications()
         return instance
 
 
-class AdminProfileForm(BaseProfileForm):
+class AdminUserForm(BaseUserForm):
     """Form for an admin to edit a user's profile."""
     role = forms.ChoiceField(choices=(
             ('user', 'User'),
@@ -183,10 +195,13 @@ class AdminProfileForm(BaseProfileForm):
             required=False, initial='user')
 
     def __init__(self, *args, **kwargs):
-        super(AdminProfileForm, self).__init__(*args, **kwargs)
+        super(AdminUserForm, self).__init__(*args, **kwargs)
         self.sitelocation = SiteLocation.objects.get_current()
-        if self.instance.user_id:
-            if self.sitelocation.user_is_admin(self.instance.user):
+        self.fields.keyOrder = ['first_name', 'last_name', 'username', 'email',
+                                'password1', 'password2', 'logo', 'description',
+                                'location', 'website', 'role']
+        if self.profile.user_id:
+            if self.sitelocation.user_is_admin(self.profile.user):
                 self.fields['role'].initial = 'admin'
         else:
             for field in ('first_name', 'last_name', 'logo', 'location',
@@ -248,25 +263,20 @@ class AdminProfileForm(BaseProfileForm):
 
     def save(self, commit=True):
         created = not self.instance.pk
-        instance = super(AdminProfileForm, self).save(commit=False)
+        instance = super(AdminUserForm, self).save(commit=False)
 
-        user = self.save_user(commit=False)
         if created and not self.cleaned_data['password1']:
-            user.set_unusable_password()
-
-        if commit:
-            user.save()
-            instance.user = user
+            instance.set_unusable_password()
 
         old_save_m2m = self.save_m2m
         def save_m2m():
             old_save_m2m()
 
             if self.cleaned_data['role'] == 'admin':
-                if not user.is_superuser:
-                    self.sitelocation.admins.add(user)
+                if not instance.is_superuser:
+                    self.sitelocation.admins.add(instance)
             else:
-                self.sitelocation.admins.remove(user)
+                self.sitelocation.admins.remove(instance)
 
         if commit:
             instance.save()
@@ -274,8 +284,3 @@ class AdminProfileForm(BaseProfileForm):
         else:
             self.save_m2m = save_m2m
         return instance
-
-#AdminProfileFormSet = modelformset_factory(Profile,
-#                                     form=AdminProfileForm,
-#                                     can_delete=True,
-#                                     extra=0)#
