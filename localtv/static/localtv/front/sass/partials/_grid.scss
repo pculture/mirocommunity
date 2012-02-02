@@ -21,7 +21,6 @@ $single-column-threshold: 740px;
 	@include box-sizing(border-box);
 	padding-left:$gutter-width;
 	float:left;
-	overflow:hidden;
 }
 
 .col-one-half{
