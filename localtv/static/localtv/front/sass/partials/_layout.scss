@@ -1,11 +1,5 @@
 @import "compass/utilities/general/clearfix";
 
-#search{
-	position:absolute;
-	top:$base-line-height;
-	right:0;
-}
-
 #main{
 	@include clearfix;
 }

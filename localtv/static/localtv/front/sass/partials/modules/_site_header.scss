@@ -1,9 +1,44 @@
+$logo-width: 130px;
+
 #header{
 	@include clearfix;
-	margin-top:$base-line-height;
+	@include padding-trailer(2);
+	@include padding-leader;
+	@include margin-trailer(-2);
+	@include box-shadow(0 1px 0 0 #FFF, 0 -1px 0 0 rgba(0,0,0,.15) inset);
+	@include background(linear-gradient(top, #CCC, #DDD));
+	& > .container{
+		position:relative;
+	}
+}
+
+#SiteLogo{
+	width:$logo-width;
+	float:left;
 }
 
 #SiteTagline{
 	font-size:$base-line-height;
+	color:#999;
 	line-height:1;
+}
+
+#SiteTitle, #SiteTagline{
+	padding-left: $logo-width + $gutter-width;
+	& > a{
+		color:#444;
+	}
+}
+
+#search{
+	position:absolute;
+	top:0;
+	right:0;
+}
+
+@media screen and (max-width: 750px){
+	#search{
+		clear:both;
+		position:static;
+	}
 }
