@@ -54,8 +54,10 @@ class SubmitURLForm(forms.Form):
         except IndexError:
             self.was_duplicate = False
             self.duplicate_video = None
+            self.duplicate_video_pk = None
         else:
             self.was_duplicate = True
+            self.duplicate_video_pk = video.pk
             if video.status == Video.ACTIVE:
                 self.duplicate_video = video
             else:

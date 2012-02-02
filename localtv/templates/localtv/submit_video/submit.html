@@ -24,8 +24,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if was_duplicate %}
     <h1>That video has already been submitted!</h1>
     <div>
-      It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}.. sorry!
-      You can submit another video if you like.
+      {% if not request.user_is_admin %}
+        It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}.. sorry! You can submit another video if you like.
+      {% else %}
+        A video with that url has already been submitted. You can moderate it <a href="{% url localtv_view_video video_id=video_pk slug='' %}">here</a>.
+      {% endif %}
     </div>
   {% endif %}
 {% endblock %}

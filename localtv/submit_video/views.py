@@ -98,9 +98,14 @@ class SubmitURLView(FormView):
     def get_context_data(self, **kwargs):
         context = super(SubmitURLView, self).get_context_data(**kwargs)
         # HACK to provide backwards-compatible context.
-        context['was_duplicate'] = getattr(context['form'], 'was_duplicate',
-                                           False)
-        context['video'] = getattr(context['form'], 'duplicate_video', None)
+        form = context['form']
+        context['was_duplicate'] = getattr(form, 'was_duplicate', False)
+        context['video'] = getattr(form, 'duplicate_video', None)
+
+        # Provide the video pk explicitly since the backwards-compatible context
+        # doesn't allow access to the video's pk if the video's status is not
+        # ACTIVE.
+        context['video_pk'] = getattr(form, 'duplicate_video_pk', None)
         return context
 
 
