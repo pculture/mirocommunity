@@ -358,7 +358,7 @@ input, button, button, textarea {
   background: #CCC;
 }
 
-/* line 4, ../sass/partials/modules/_video_summary.scss */
+/* line 6, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   overflow: hidden;
   *zoom: 1;
@@ -366,30 +366,37 @@ input, button, button, textarea {
   margin-bottom: -1px;
   padding-top: 18px;
   padding-bottom: 18px;
+  padding-left: 160px;
 }
 
-/* line 13, ../sass/partials/modules/_video_summary.scss */
-.thumb img {
+/* line 15, ../sass/partials/modules/_video_summary.scss */
+.thumb {
+  width: 140px;
+  margin-left: -160px;
+  float: left;
+}
+/* line 19, ../sass/partials/modules/_video_summary.scss */
+.thumb > img {
   display: block;
 }
 
-/* line 18, ../sass/partials/modules/_video_summary.scss */
+/* line 24, ../sass/partials/modules/_video_summary.scss */
 .video-summary .video-header h1 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 22, ../sass/partials/modules/_video_summary.scss */
+/* line 28, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 18px;
 }
 
-/* line 26, ../sass/partials/modules/_video_summary.scss */
+/* line 32, ../sass/partials/modules/_video_summary.scss */
 .details-list {
   padding-left: 0;
 }
-/* line 28, ../sass/partials/modules/_video_summary.scss */
+/* line 34, ../sass/partials/modules/_video_summary.scss */
 .details-list li {
   list-style-type: none;
 }
@@ -408,9 +415,9 @@ input, button, button, textarea {
 }
 
 /* line 4, ../sass/partials/modules/_navigation.scss */
-#navigation {
+#navigation > .container {
   padding: 0;
-  margin: 17px 0;
+  margin: 17px auto;
   border: 1px solid #CCC;
   background-color: #EEE;
   border-top-color: #DDD;
@@ -496,7 +503,6 @@ input, button, button, textarea {
 
 /* line 57, ../sass/partials/modules/_navigation.scss */
 .nav-admin {
-  float: right;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #348fbf), color-stop(100%, #26688b));
   background: -webkit-linear-gradient(#348fbf, #26688b);
   background: -moz-linear-gradient(#348fbf, #26688b);
@@ -504,13 +510,13 @@ input, button, button, textarea {
   background: -ms-linear-gradient(#348fbf, #26688b);
   background: linear-gradient(#348fbf, #26688b);
 }
-/* line 60, ../sass/partials/modules/_navigation.scss */
+/* line 59, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a {
   border-left: 1px solid rgba(255, 255, 255, 0.75);
   color: #FFF;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
-/* line 64, ../sass/partials/modules/_navigation.scss */
+/* line 63, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:hover {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3ba2d8), color-stop(100%, #2e80aa));
   background: -webkit-linear-gradient(#3ba2d8, #2e80aa);
@@ -519,7 +525,7 @@ input, button, button, textarea {
   background: -ms-linear-gradient(#3ba2d8, #2e80aa);
   background: linear-gradient(#3ba2d8, #2e80aa);
 }
-/* line 67, ../sass/partials/modules/_navigation.scss */
+/* line 66, ../sass/partials/modules/_navigation.scss */
 .nav-admin > a:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2e80aa), color-stop(100%, #3ba2d8));
   background: -webkit-linear-gradient(#2e80aa, #3ba2d8);
