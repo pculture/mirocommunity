@@ -26,35 +26,35 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_id %}about_page{% endblock %}
 
 {% block content %}
-	
-	<div class="left-half">
-		<header class="page-header">
-			<h1 class="page-title">{% blocktrans with sitelocation.site.name as name %}About {{ name }}{% endblocktrans %}</h1>
-		</header>
+	<div class="row">
+		<div class="col-one-half">
+			<header class="page-header">
+				<h1 class="page-title">{% blocktrans with sitelocation.site.name as name %}About {{ name }}{% endblocktrans %}</h1>
+			</header>
 		
-		<img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
+			<img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
 		
-		{% autoescape off %}
-			{{ sitelocation.about_html }}
-		{% endautoescape %}
-	</div>
-	
-	<div class="right-half">
-		<header class="page-header">
-			<h1 class="page-title">{% trans "About Miro Community" %}</h1>
-		</header>
+			{% autoescape off %}
+				{{ sitelocation.about_html }}
+			{% endautoescape %}
+		</div>{# /.col-one-half #}
+		<div class="col-one-half">
+			<header class="page-header">
+				<h1 class="page-title">{% trans "About Miro Community" %}</h1>
+			</header>
 		
-		<img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>
+			<img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>
 		
-		<p>
-			{% blocktrans %}
-				<a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet.
-			{% endblocktrans %}
-		</p>
-		<p>
-			{% blocktrans %}
-				Sites are free and take less than a minute to start: <a href="http://mirocommunity.org/signup/">http://mirocommunity.org/signup/</a>. Miro Community is developed by the <a href="http://pculture.org">Participatory Culture Foundation</a>.
-			{% endblocktrans %}
-		</p>
-	</div>
+			<p>
+				{% blocktrans %}
+					<a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet.
+				{% endblocktrans %}
+			</p>
+			<p>
+				{% blocktrans %}
+					Sites are free and take less than a minute to start: <a href="http://mirocommunity.org/signup/">http://mirocommunity.org/signup/</a>. Miro Community is developed by the <a href="http://pculture.org">Participatory Culture Foundation</a>.
+				{% endblocktrans %}
+			</p>
+		</div>{# /.col-one-half #}
+	</div>{# /.row #}
 {% endblock %}
