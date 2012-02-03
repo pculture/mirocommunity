@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -17,71 +17,89 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load cache %}
+{% load cache i18n %}
 
 {% block body_id %}home_page{% endblock %}
 
 
 {% block content %}
-  <div id="main">
-    <div class="main_header">   
-      <a href="{% url localtv_list_featured %}"><h2>Editor's Picks</h2></a>
-      <div class="floatright">
-        {% url localtv_feeds_featured as featured_rss%}
-        <a href="{{ featured_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-  
-    {% for video in featured_videos|slice:":10" %}
-      {% if forloop.first %}
-        {% include "localtv/video_feature.html" %}
-      {% else %}
-        {% include "localtv/video_listing_individual.html" %}
-      {% endif %}
-    {% endfor %}
-  <br class="clear" /> 
-  <div class="main_header">
-      <a href="{% url localtv_list_popular %}"><h2>Popular in the Last 24 Hours</h2></a>
-      <div class="floatright">
-        <a href="{% url localtv_feeds_popular %}" class="rss">RSS</a> |
-        <a href="#" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-    {% cache 3600 index_list_popular sitelocation cache_invalidator %}{# one hour #}
-    {% for video in popular_videos|slice:":10" %}
-      {% if forloop.first %}
-        {% include "localtv/video_feature.html" %}
-      {% else %}
-        {% include "localtv/video_listing_individual.html" %}
-      {% endif %}
-    {% endfor %}
-    {% endcache %}
 
-  </div>
+<div class="row">
+	<div class="pod col-one-third">
+		<header class="pod-header">
+			{% url localtv_feeds_featured as featured_rss %}
+			<h1><a href="{% url localtv_list_featured %}">{% trans "Featured" %}</a></h1>
+			<ul class="pod-actions">
+				<li><a href="{{ featured_rss }}" class="rss">{% trans "RSS" %}</a></li>
+				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
+			</ul>
+		</header>{# /.pod-header #}
+		<div class="pod-content">
+			{% with featured_videos|slice:"10" as video_list %}
+				{% include "localtv/_video_summary_list.html" %}
+			{% endwith %}
+		</div>{# /.pod-content #}
+		<div class="pod-footer">
+			<ul class="pod-footer-actions">
+				<li><a href="{% url localtv_list_featured %}">{% trans "All Featured Videos" %}</a></li>
+			</ul>
+		</div>
+	</div>{# /.pod #}
 
-  <div id="sidebar">
-    {% if sitelocation.sidebar_html %}
-    <div id="about" class="rounded {transparent}">
-      {% autoescape off %}
-        {{ sitelocation.sidebar_html }}
-      {% endautoescape %}
-    </div>
-    {% endif %}
-
-    <div id="sidebar_header">   
-      <a href="{% url localtv_list_new %}"><h2>New Videos</h2></a>
-              
-      <div class="floatright">
+	<div class="pod col-one-third">
+		{% url localtv_feeds_popular as popular_rss %}
+		<header class="pod-header">
+			<h1><a href="{% url localtv_list_popular %}">{% trans "Popular" %}</a></h1>
+			<ul class="pod-actions">
+				<li><a href="{{ popular_rss }}" class="rss">{% trans "RSS" %}</a></li>
+				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
+			</ul>
+		</header>{# /.pod-header #}
+		{% cache 3600 index_list_popular sitelocation cache_invalidator %}{# one hour #}
+			<div class="pod-content">
+				{% with popular_videos|slice:"10" as video_list %}
+					{% include "localtv/_video_summary_list.html" %}
+				{% endwith %}
+			</div>{# /.pod-content #}
+		{% endcache %}
+		<div class="pod-footer">
+			<ul class="pod-footer-actions">
+				<li><a href="{% url localtv_list_popular %}">{% trans "All Popular Videos" %}</a></li>
+			</ul>
+		</div>
+	</div>{# /.pod #}
+	
+	<div class="pod col-one-third">
         {% url localtv_feeds_new as new_rss%}
-        <a href="{{ new_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
-      </div>
-    </div>
-    {% for video in new_videos|slice:":10" %}
-      {% include "localtv/sidebar_video.html" %}
-    {% endfor %}
-  </div>
+		<header class="pod-header">
+			<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
+			<ul class="pod-actions">
+				<li><a href="{% url localtv_feeds_popular %}" class="rss">{% trans "RSS" %}</a></li>
+				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
+			</ul>
+		</header>{# /.pod-header #}
+		<div class="pod-content">
+			{% with new_videos|slice:"10" as video_list %}
+				{% include "localtv/_video_summary_list.html" %}
+			{% endwith %}
+		</div>{# /.pod-content #}
+		<div class="pod-footer">
+			<ul class="pod-footer-actions">
+				<li><a href="{% url localtv_list_popular %}">{% trans "All New Videos" %}</a></li>
+			</ul>
+		</div>
+	</div>{# /.pod #}
+</div>{# /.row #}
+
+<div id="sidebar">
+	{% if sitelocation.sidebar_html %}
+		<div id="about" class="rounded {transparent}">
+			{% autoescape off %}
+				{{ sitelocation.sidebar_html }}
+			{% endautoescape %}
+		</div>
+	{% endif %}
+</div>
 
 {% endblock content %}
 

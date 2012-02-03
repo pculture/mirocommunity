@@ -1,10 +1,10 @@
 {% load pagetabs %}
 
-<div class="pagination upper">
-	{% if page_obj.has_other_pages %}
-		{% pagetabs page_obj %}
-	{% endif %}
-</div>
+{% if page_obj.has_other_pages %}
+	<div class="pagination upper">
+			{% pagetabs page_obj %}
+	</div>
+{% endif %}
 
 <div class="video-list">
 	{% for video in video_list %}
@@ -12,8 +12,8 @@
 	{% endfor %}
 </div>
 
-<div class="pagination lower">
-	{% if page_obj.has_other_pages %}
+{% if page_obj.has_other_pages %}
+	<div class="pagination lower">
 		{% pagetabs page_obj %}
-	{% endif %}
-</div>
+	</div>
+{% endif %}
