@@ -1,0 +1,7 @@
+.home-page .popular{
+	@include small;
+}
+.home-page .popular .description{
+	max-height: $base-line-height * 2;
+	overflow: hidden;
+}

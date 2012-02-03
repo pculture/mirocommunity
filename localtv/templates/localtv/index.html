@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load cache i18n %}
 
-{% block body_id %}home_page{% endblock %}
+{% block body_classes %}{{ block.super }} home-page{% endblock %}
 
 
 {% block content %}
@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		{% endif %}
 	</div>
 	
-	<div class="pod col-two-thirds">
+	<div class="pod col-two-thirds featured">
 		<header class="pod-header">
 			{% url localtv_feeds_featured as featured_rss %}
 			<h1><a href="{% url localtv_list_featured %}">{% trans "Featured" %}</a></h1>
@@ -57,7 +57,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</div>{# /.pod #}
 	
 	<div class="col-one-third right">
-		<div class="pod">
+		<div class="pod popular">
 			{% url localtv_feeds_popular as popular_rss %}
 			<header class="pod-header">
 				<h1><a href="{% url localtv_list_popular %}">{% trans "Popular" %}</a></h1>
@@ -81,26 +81,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>{# /.pod #}
 	</div>{# /.col-one-third #}
 	
-	<div class="pod col-one-third">
-        {% url localtv_feeds_new as new_rss%}
-		<header class="pod-header">
-			<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
-			<ul class="pod-actions">
-				<li><a href="{% url localtv_feeds_popular %}" class="rss">{% trans "RSS" %}</a></li>
-				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
-			</ul>
-		</header>{# /.pod-header #}
-		<div class="pod-content">
-			{% with new_videos|slice:"10" as video_list %}
-				{% include "localtv/_video_summary_list.html" %}
-			{% endwith %}
-		</div>{# /.pod-content #}
-		<div class="pod-footer">
-			<ul class="pod-footer-actions">
-				<li><a href="{% url localtv_list_popular %}">{% trans "All New Videos" %}</a></li>
-			</ul>
-		</div>
-	</div>{# /.pod #}
+	<div class="col-one-third">
+		<div class="pod">
+	        {% url localtv_feeds_new as new_rss%}
+			<header class="pod-header">
+				<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
+				<ul class="pod-actions">
+					<li><a href="{% url localtv_feeds_popular %}" class="rss">{% trans "RSS" %}</a></li>
+					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
+				</ul>
+			</header>{# /.pod-header #}
+			<div class="pod-content">
+				{% with new_videos|slice:"10" as video_list %}
+					{% include "localtv/_video_summary_list.html" %}
+				{% endwith %}
+			</div>{# /.pod-content #}
+			<div class="pod-footer">
+				<ul class="pod-footer-actions">
+					<li><a href="{% url localtv_list_popular %}">{% trans "All New Videos" %}</a></li>
+				</ul>
+			</div>
+		</div>{# /.pod #}
+	</div>{# /.col-one-third #}
 </div>{# /.row #}
 
 {% endblock content %}

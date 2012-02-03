@@ -1,5 +1,10 @@
 a{
 	text-decoration:none;
+	color:$color1;
+}
+a:hover{
+	color:darken($color1, 15%);
+	border-bottom:1px solid #CCC;
 }
 
 body{

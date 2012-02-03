@@ -153,9 +153,16 @@ h1, h2, h3, h4, h5, h6 {
 /* line 1, ../sass/partials/_base.scss */
 a {
   text-decoration: none;
+  color: #9e0007;
 }
 
 /* line 5, ../sass/partials/_base.scss */
+a:hover {
+  color: #520004;
+  border-bottom: 1px solid #CCC;
+}
+
+/* line 10, ../sass/partials/_base.scss */
 body {
   font-size: 13px;
   line-height: 18px;
@@ -164,48 +171,48 @@ body {
   color: #444;
 }
 
-/* line 12, ../sass/partials/_base.scss */
+/* line 17, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   font-smoothing: antialiased;
 }
 
-/* line 16, ../sass/partials/_base.scss */
+/* line 21, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl {
   margin-bottom: 18px;
 }
 
-/* line 20, ../sass/partials/_base.scss */
+/* line 25, ../sass/partials/_base.scss */
 h1 {
   font-size: 30px;
   line-height: 36px;
 }
 
-/* line 23, ../sass/partials/_base.scss */
+/* line 28, ../sass/partials/_base.scss */
 h2 {
   font-size: 24px;
   line-height: 36px;
 }
 
-/* line 26, ../sass/partials/_base.scss */
+/* line 31, ../sass/partials/_base.scss */
 h3 {
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 29, ../sass/partials/_base.scss */
+/* line 34, ../sass/partials/_base.scss */
 h4 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 32, ../sass/partials/_base.scss */
+/* line 37, ../sass/partials/_base.scss */
 h5 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 35, ../sass/partials/_base.scss */
+/* line 40, ../sass/partials/_base.scss */
 h6 {
   font-size: 13px;
   line-height: 18px;
@@ -696,4 +703,16 @@ input, button, button, textarea {
 .sidebar-about {
   background: #000;
   color: #FFF;
+}
+
+/* line 1, ../sass/partials/pages/_index.scss */
+.home-page .popular {
+  font-size: 11px;
+  line-height: 18px;
+}
+
+/* line 4, ../sass/partials/pages/_index.scss */
+.home-page .popular .description {
+  max-height: 36px;
+  overflow: hidden;
 }
