@@ -25,6 +25,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 
 <div class="row">
+	<div class="col-one-third right">
+		{% if sitelocation.sidebar_html %}	
+			<div class="sidebar-about">
+				{% autoescape off %}
+					{{ sitelocation.sidebar_html }}
+				{% endautoescape %}
+			</div>
+		{% endif %}
+	</div>
+	
 	<div class="pod col-two-thirds">
 		<header class="pod-header">
 			{% url localtv_feeds_featured as featured_rss %}
@@ -46,14 +56,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>
 	</div>{# /.pod #}
 	
-	<div class="col-one-third">
-		{% if sitelocation.sidebar_html %}	
-			<div class="sidebar-about">
-				{% autoescape off %}
-					{{ sitelocation.sidebar_html }}
-				{% endautoescape %}
-			</div>
-		{% endif %}
+	<div class="col-one-third right">
 		<div class="pod">
 			{% url localtv_feeds_popular as popular_rss %}
 			<header class="pod-header">

@@ -89,6 +89,12 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 27, ../sass/partials/_grid.scss */
+.right {
+  float: right;
+  clear: right;
+}
+
+/* line 32, ../sass/partials/_grid.scss */
 .padded, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
@@ -96,33 +102,33 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   padding-right: 10px;
 }
 
-/* line 34, ../sass/partials/_grid.scss */
+/* line 39, ../sass/partials/_grid.scss */
 .col-one-half {
   width: 50%;
 }
 
-/* line 38, ../sass/partials/_grid.scss */
+/* line 43, ../sass/partials/_grid.scss */
 .col-one-quarter {
   width: 25%;
 }
 
-/* line 42, ../sass/partials/_grid.scss */
+/* line 47, ../sass/partials/_grid.scss */
 .col-three-quarters {
   width: 75%;
 }
 
-/* line 46, ../sass/partials/_grid.scss */
+/* line 51, ../sass/partials/_grid.scss */
 .col-one-third {
   width: 33.333%;
 }
 
-/* line 50, ../sass/partials/_grid.scss */
+/* line 55, ../sass/partials/_grid.scss */
 .col-two-thirds {
   width: 66.667%;
 }
 
 @media screen and (max-width: 950px) {
-  /* line 56, ../sass/partials/_grid.scss */
+  /* line 61, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
     padding: 10px;
@@ -133,7 +139,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 64, ../sass/partials/_grid.scss */
+  /* line 69, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
     width: 100%;
   }
@@ -649,7 +655,7 @@ input, button, button, textarea {
   padding-left: 10px;
   padding-right: 10px;
   position: relative;
-  background: #9E0007;
+  background: #9e0007;
   color: #FFF;
 }
 /* line 14, ../sass/partials/modules/_pod.scss */

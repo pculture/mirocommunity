@@ -24,6 +24,11 @@ $single-column-threshold: 740px;
 	float:left;
 }
 
+.right{
+	float:right;
+	clear:right;
+}
+
 .padded{
 	@include padding-trailer(.5);
 	@include padding-leader(.5);
