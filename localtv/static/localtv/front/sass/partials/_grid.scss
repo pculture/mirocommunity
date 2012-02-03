@@ -2,7 +2,8 @@
 		"compass/utilities/general/clearfix";
 
 $gutter-width: 20px;
-$max-width-threshold: 950px;
+$column-gutter-width:0;
+$max-width-threshold: 960px;
 $single-column-threshold: 740px;
 
 /* This grid structure is not going to work in IE7 and below. */
@@ -13,14 +14,21 @@ $single-column-threshold: 740px;
 }
 
 .row{
-	margin-left:-$gutter-width;
+	margin-left:-$column-gutter-width;
 	@include clearfix;
 }
 
 .col{
 	@include box-sizing(border-box);
-	padding-left:$gutter-width;
+	padding-left:$column-gutter-width;
 	float:left;
+}
+
+.padded{
+	@include padding-trailer(.5);
+	@include padding-leader(.5);
+	padding-left:$gutter-width/2;
+	padding-right:$gutter-width/2;
 }
 
 .col-one-half{
@@ -37,11 +45,11 @@ $single-column-threshold: 740px;
 }
 .col-one-third{
 	@extend .col;
-	width:33%;
+	width:33.333%;
 }
 .col-two-thirds{
 	@extend .col;
-	width:66%;
+	width:66.667%;
 }
 
 @media screen and (max-width: 950px){

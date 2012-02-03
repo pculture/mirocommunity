@@ -1,6 +1,9 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,300,400,800);
+
 @import "compass/reset";
 @import "partials/vertical_rhythm",
-		"partials/grid";
+		"partials/grid",
+		"partials/fonts";
 @import "partials/base",
 		"partials/layout",
 		"partials/modules",

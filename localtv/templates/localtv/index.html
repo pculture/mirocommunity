@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 
 <div class="row">
-	<div class="pod col-one-third">
+	<div class="pod col-two-thirds">
 		<header class="pod-header">
 			{% url localtv_feeds_featured as featured_rss %}
 			<h1><a href="{% url localtv_list_featured %}">{% trans "Featured" %}</a></h1>
@@ -45,29 +45,38 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</ul>
 		</div>
 	</div>{# /.pod #}
-
-	<div class="pod col-one-third">
-		{% url localtv_feeds_popular as popular_rss %}
-		<header class="pod-header">
-			<h1><a href="{% url localtv_list_popular %}">{% trans "Popular" %}</a></h1>
-			<ul class="pod-actions">
-				<li><a href="{{ popular_rss }}" class="rss">{% trans "RSS" %}</a></li>
-				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
-			</ul>
-		</header>{# /.pod-header #}
-		{% cache 3600 index_list_popular sitelocation cache_invalidator %}{# one hour #}
-			<div class="pod-content">
-				{% with popular_videos|slice:"10" as video_list %}
-					{% include "localtv/_video_summary_list.html" %}
-				{% endwith %}
-			</div>{# /.pod-content #}
-		{% endcache %}
-		<div class="pod-footer">
-			<ul class="pod-footer-actions">
-				<li><a href="{% url localtv_list_popular %}">{% trans "All Popular Videos" %}</a></li>
-			</ul>
-		</div>
-	</div>{# /.pod #}
+	
+	<div class="col-one-third">
+		{% if sitelocation.sidebar_html %}	
+			<div class="sidebar-about">
+				{% autoescape off %}
+					{{ sitelocation.sidebar_html }}
+				{% endautoescape %}
+			</div>
+		{% endif %}
+		<div class="pod">
+			{% url localtv_feeds_popular as popular_rss %}
+			<header class="pod-header">
+				<h1><a href="{% url localtv_list_popular %}">{% trans "Popular" %}</a></h1>
+				<ul class="pod-actions">
+					<li><a href="{{ popular_rss }}" class="rss">{% trans "RSS" %}</a></li>
+					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
+				</ul>
+			</header>{# /.pod-header #}
+			{% cache 3600 index_list_popular sitelocation cache_invalidator %}{# one hour #}
+				<div class="pod-content">
+					{% with popular_videos|slice:"10" as video_list %}
+						{% include "localtv/_video_summary_list.html" %}
+					{% endwith %}
+				</div>{# /.pod-content #}
+			{% endcache %}
+			<div class="pod-footer">
+				<ul class="pod-footer-actions">
+					<li><a href="{% url localtv_list_popular %}">{% trans "All Popular Videos" %}</a></li>
+				</ul>
+			</div>
+		</div>{# /.pod #}
+	</div>{# /.col-one-third #}
 	
 	<div class="pod col-one-third">
         {% url localtv_feeds_new as new_rss%}
@@ -90,16 +99,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>
 	</div>{# /.pod #}
 </div>{# /.row #}
-
-<div id="sidebar">
-	{% if sitelocation.sidebar_html %}
-		<div id="about" class="rounded {transparent}">
-			{% autoescape off %}
-				{{ sitelocation.sidebar_html }}
-			{% endautoescape %}
-		</div>
-	{% endif %}
-</div>
 
 {% endblock content %}
 

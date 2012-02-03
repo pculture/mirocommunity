@@ -1,0 +1,42 @@
+.pod{
+	background:#F9F9F9;
+}
+
+.pod-header {
+	background: #FFF;
+	@include padding-leader(0.5);
+	@include padding-trailer(0.5);
+	padding-left: $gutter-width / 2;
+	padding-right: $gutter-width / 2;
+	position:relative;
+	background:#9E0007;
+	color:#FFF;
+	a{
+		color:#FFF;
+	}
+}
+
+.pod-header > h1 {
+	display: inline;
+	@include large;
+}
+
+.pod-actions {
+	@extend .unstyled-list;
+	position:absolute;
+	top:0;
+	right:0;
+	@include padding-leader(0.5);
+	@include padding-trailer(0.5);
+	padding-left: $gutter-width / 2;
+	padding-right: $gutter-width / 2;
+	li{
+		float:left;
+		margin-left: $gutter-width / 2;
+	}
+}
+
+.pod-content{
+	padding-left: $gutter-width / 2;
+	padding-right: $gutter-width / 2;
+}

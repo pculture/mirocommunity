@@ -1,3 +1,4 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,300,400,800);
 /* line 17, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -64,56 +65,64 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* This grid structure is not going to work in IE7 and below. */
-/* line 10, ../sass/partials/_grid.scss */
+/* line 11, ../sass/partials/_grid.scss */
 .container {
-  width: 950px;
+  width: 960px;
   margin: 0 auto;
 }
 
-/* line 15, ../sass/partials/_grid.scss */
+/* line 16, ../sass/partials/_grid.scss */
 .row {
-  margin-left: -20px;
+  margin-left: 0;
   overflow: hidden;
   *zoom: 1;
 }
 
-/* line 20, ../sass/partials/_grid.scss */
+/* line 21, ../sass/partials/_grid.scss */
 .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -ms-box-sizing: border-box;
   box-sizing: border-box;
-  padding-left: 20px;
+  padding-left: 0;
   float: left;
 }
 
-/* line 26, ../sass/partials/_grid.scss */
+/* line 27, ../sass/partials/_grid.scss */
+.padded, .sidebar-about {
+  padding-bottom: 9px;
+  padding-top: 9px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* line 34, ../sass/partials/_grid.scss */
 .col-one-half {
   width: 50%;
 }
 
-/* line 30, ../sass/partials/_grid.scss */
+/* line 38, ../sass/partials/_grid.scss */
 .col-one-quarter {
   width: 25%;
 }
 
-/* line 34, ../sass/partials/_grid.scss */
+/* line 42, ../sass/partials/_grid.scss */
 .col-three-quarters {
   width: 75%;
 }
 
-/* line 38, ../sass/partials/_grid.scss */
+/* line 46, ../sass/partials/_grid.scss */
 .col-one-third {
-  width: 33%;
+  width: 33.333%;
 }
 
-/* line 42, ../sass/partials/_grid.scss */
+/* line 50, ../sass/partials/_grid.scss */
 .col-two-thirds {
-  width: 66%;
+  width: 66.667%;
 }
 
 @media screen and (max-width: 950px) {
-  /* line 48, ../sass/partials/_grid.scss */
+  /* line 56, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
     padding: 10px;
@@ -124,11 +133,17 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 56, ../sass/partials/_grid.scss */
+  /* line 64, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
     width: 100%;
   }
 }
+/* line 10, ../sass/partials/_fonts.scss */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+  font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
 /* line 1, ../sass/partials/_base.scss */
 a {
   text-decoration: none;
@@ -139,7 +154,7 @@ body {
   font-size: 13px;
   line-height: 18px;
   font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-  background: #F5F5F5;
+  background: #EEE;
   color: #444;
 }
 
@@ -324,12 +339,12 @@ input, button, button, textarea {
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .navigation-list, .pagetabs {
+.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions {
   margin: 0;
   padding: 0;
 }
 /* line 6, ../sass/partials/modules/_lists.scss */
-.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li {
+.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li {
   list-style-type: none;
 }
 
@@ -619,4 +634,60 @@ input, button, button, textarea {
   position: absolute;
   top: 0;
   right: 0;
+}
+
+/* line 1, ../sass/partials/modules/_pod.scss */
+.pod {
+  background: #F9F9F9;
+}
+
+/* line 5, ../sass/partials/modules/_pod.scss */
+.pod-header {
+  background: #FFF;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  padding-left: 10px;
+  padding-right: 10px;
+  position: relative;
+  background: #9E0007;
+  color: #FFF;
+}
+/* line 14, ../sass/partials/modules/_pod.scss */
+.pod-header a {
+  color: #FFF;
+}
+
+/* line 19, ../sass/partials/modules/_pod.scss */
+.pod-header > h1 {
+  display: inline;
+  font-size: 16px;
+  line-height: 18px;
+}
+
+/* line 24, ../sass/partials/modules/_pod.scss */
+.pod-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* line 33, ../sass/partials/modules/_pod.scss */
+.pod-actions li {
+  float: left;
+  margin-left: 10px;
+}
+
+/* line 39, ../sass/partials/modules/_pod.scss */
+.pod-content {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* line 1, ../sass/partials/modules/_sidebar_about.scss */
+.sidebar-about {
+  background: #000;
+  color: #FFF;
 }
