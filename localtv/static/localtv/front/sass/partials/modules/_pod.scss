@@ -34,6 +34,18 @@
 		float:left;
 		margin-left: $gutter-width / 2;
 	}
+	a{
+		display:block;
+		background-color:darken($color1, 10%);
+		padding:3px $gutter-width/2;
+		margin-top:-2px;
+		@include border-radius($base-line-height/2+3px)
+	}
+	a:hover{
+		border:0;
+		background-color: #FFF;
+		color:darken($color1, 20%);
+	}
 }
 
 .pod-content{

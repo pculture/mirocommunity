@@ -692,8 +692,27 @@ input, button, button, textarea {
   float: left;
   margin-left: 10px;
 }
+/* line 37, ../sass/partials/modules/_pod.scss */
+.pod-actions a {
+  display: block;
+  background-color: #6b0005;
+  padding: 3px 10px;
+  margin-top: -2px;
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  -o-border-radius: 12px;
+  -ms-border-radius: 12px;
+  -khtml-border-radius: 12px;
+  border-radius: 12px;
+}
+/* line 44, ../sass/partials/modules/_pod.scss */
+.pod-actions a:hover {
+  border: 0;
+  background-color: #FFF;
+  color: #380002;
+}
 
-/* line 39, ../sass/partials/modules/_pod.scss */
+/* line 51, ../sass/partials/modules/_pod.scss */
 .pod-content {
   padding-left: 10px;
   padding-right: 10px;
