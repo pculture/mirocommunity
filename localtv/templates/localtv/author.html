@@ -32,16 +32,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>
 	</header>
 
-	<aside class="author-info">
-		{% if author.get_profile.logo %}
-			<img src="{{ author.get_profile.logo.url }}">
-		{% endif %}
-		{% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
-		{% if author.get_profile.website %}<div id="link">{{ author.get_profile.website|urlize }}</div>{% endif %}
-		<div>{{ author.get_profile.description|sanitize }}</div>
-	</aside>
-	
-	<div class="author-videos">
-		{% include "localtv/_video_summary_list.html" %}
+	<div class="page-content row">
+			<aside class="author-info col-one-third">
+				{% if author.get_profile.logo %}
+					<img src="{{ author.get_profile.logo.url }}">
+				{% endif %}
+				{% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
+				{% if author.get_profile.website %}<div id="link">{{ author.get_profile.website|urlize }}</div>{% endif %}
+				<div>{{ author.get_profile.description|sanitize }}</div>
+			</aside>
+			<div class="author-videos col-two-thirds right">
+				{% include "localtv/_video_summary_list.html" %}
+			</div>
 	</div>
 {% endblock %}
