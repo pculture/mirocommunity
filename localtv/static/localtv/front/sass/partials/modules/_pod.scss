@@ -9,7 +9,11 @@
 	padding-left: $gutter-width / 2;
 	padding-right: $gutter-width / 2;
 	position:relative;
-	background:$color1;
+	background-color:$color1;
+	@include background(linear-gradient($color1, darken($color1, 5%)));
+	border-bottom:1px solid darken($color1, 10%);
+	border-top:1px solid lighten($color1, 10%);
+	margin-bottom:-2px; // makes up for the borders
 	color:#FFF;
 	a{
 		color:#FFF;

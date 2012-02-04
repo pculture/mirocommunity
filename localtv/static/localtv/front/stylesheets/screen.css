@@ -663,22 +663,31 @@ input, button, button, textarea {
   padding-left: 10px;
   padding-right: 10px;
   position: relative;
-  background: #9e0007;
+  background-color: #9e0007;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #9e0007), color-stop(100%, #850006));
+  background: -webkit-linear-gradient(#9e0007, #850006);
+  background: -moz-linear-gradient(#9e0007, #850006);
+  background: -o-linear-gradient(#9e0007, #850006);
+  background: -ms-linear-gradient(#9e0007, #850006);
+  background: linear-gradient(#9e0007, #850006);
+  border-bottom: 1px solid #6b0005;
+  border-top: 1px solid #d10009;
+  margin-bottom: -2px;
   color: #FFF;
 }
-/* line 14, ../sass/partials/modules/_pod.scss */
+/* line 18, ../sass/partials/modules/_pod.scss */
 .pod-header a {
   color: #FFF;
 }
 
-/* line 19, ../sass/partials/modules/_pod.scss */
+/* line 23, ../sass/partials/modules/_pod.scss */
 .pod-header > h1 {
   display: inline;
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 24, ../sass/partials/modules/_pod.scss */
+/* line 28, ../sass/partials/modules/_pod.scss */
 .pod-actions {
   position: absolute;
   top: 0;
@@ -688,12 +697,12 @@ input, button, button, textarea {
   padding-left: 10px;
   padding-right: 10px;
 }
-/* line 33, ../sass/partials/modules/_pod.scss */
+/* line 37, ../sass/partials/modules/_pod.scss */
 .pod-actions li {
   float: left;
   margin-left: 10px;
 }
-/* line 37, ../sass/partials/modules/_pod.scss */
+/* line 41, ../sass/partials/modules/_pod.scss */
 .pod-actions a {
   display: block;
   background-color: #6b0005;
@@ -706,14 +715,14 @@ input, button, button, textarea {
   -khtml-border-radius: 12px;
   border-radius: 12px;
 }
-/* line 44, ../sass/partials/modules/_pod.scss */
+/* line 48, ../sass/partials/modules/_pod.scss */
 .pod-actions a:hover {
   border: 0;
   background-color: #FFF;
   color: #380002;
 }
 
-/* line 51, ../sass/partials/modules/_pod.scss */
+/* line 55, ../sass/partials/modules/_pod.scss */
 .pod-content {
   padding-left: 10px;
   padding-right: 10px;
