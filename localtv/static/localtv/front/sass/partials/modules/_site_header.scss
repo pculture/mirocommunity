@@ -2,35 +2,29 @@ $logo-width: 130px;
 
 #header{
 	@include clearfix;
+	background:#FFF;
+}
+
+#header > .container{
+	@extend .padded;
+	position:relative;
 }
 
 #SiteLogo{
 	width:$logo-width;
 	float:left;
-}
-
-#SiteTagline{
-	font-size:$base-line-height;
-	color:#999;
-	line-height:1;
+	img{
+		width:$logo-width;
+	}
 }
 
 #SiteTitle, #SiteTagline{
-	padding-left: $logo-width + $gutter-width;
-	& > a{
-		color:#444;
-	}
+	padding-left:$logo-width+$gutter-width;
 }
 
 #search{
+	@extend .padded;
 	position:absolute;
 	top:0;
 	right:0;
-}
-
-@media screen and (max-width: 750px){
-	#search{
-		clear:both;
-		position:static;
-	}
 }

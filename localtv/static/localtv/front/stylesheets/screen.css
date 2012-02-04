@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, .nav-item > a, .pod-footer, .sidebar-about {
+.padded, .button-wide, #header > .container, #search, .nav-item > a, .pod-footer, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -225,130 +225,9 @@ h6 {
   *zoom: 1;
 }
 
-/* line 18, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-label {
-  font-weight: bold;
-}
-
-/* line 19, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-fieldset {
-  padding: 1.4em;
-  margin: 0 0 1.5em 0;
-}
-
-/* line 20, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-legend {
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-/* line 26, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
-  margin: 0.5em 0;
-  background-color: white;
-  padding: 5px;
-}
-/* line 27, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-input.title, button.title {
-  font-size: 1.5em;
-}
-
-/* line 29, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-textarea {
-  margin: 0.5em 0;
-  padding: 5px;
-}
-
-/* line 30, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-select {
-  margin: 0.5em 0;
-}
-
-/* line 55, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-fieldset {
-  border: 1px solid #dddddd;
-}
-
-/* line 58, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password],
-textarea {
-  background-color: #fff;
-  border: 1px solid #cccccc;
-}
-/* line 61, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-input.text:focus, button.text:focus, input.title:focus, button.title:focus, input[type=email]:focus, button[type=email]:focus, input[type=text]:focus, button[type=text]:focus, input[type=password]:focus, button[type=password]:focus,
-textarea:focus {
-  border-color: #88aacc;
-}
-
-/* line 65, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-select {
-  background-color: #fff;
-  border-width: 1px;
-  border-style: solid;
-}
-
-/* line 44, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-input.text, button.text, input.title, button.title, input[type=email], button[type=email], input[type=text], button[type=text], input[type=password], button[type=password] {
-  width: 300px;
-}
-
-/* line 46, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/blueprint/stylesheets/blueprint/_form.scss */
-textarea {
-  width: 390px;
-  height: 250px;
-}
-
-/* line 11, ../sass/partials/modules/_forms.scss */
-input:focus, button:focus {
+/* line 6, ../sass/partials/modules/_forms.scss */
+input {
   outline: none;
-}
-
-/* line 15, ../sass/partials/modules/_forms.scss */
-button {
-  box-sizing: content-box;
-  padding: 5px;
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fdfdfd), color-stop(100%, #eeeeee));
-  background: -webkit-linear-gradient(top, #fdfdfd, #eeeeee);
-  background: -moz-linear-gradient(top, #fdfdfd, #eeeeee);
-  background: -o-linear-gradient(top, #fdfdfd, #eeeeee);
-  background: -ms-linear-gradient(top, #fdfdfd, #eeeeee);
-  background: linear-gradient(top, #fdfdfd, #eeeeee);
-}
-
-/* line 22, ../sass/partials/modules/_forms.scss */
-button:hover {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e5e5e5));
-  background: -webkit-linear-gradient(top, #f5f5f5, #e5e5e5);
-  background: -moz-linear-gradient(top, #f5f5f5, #e5e5e5);
-  background: -o-linear-gradient(top, #f5f5f5, #e5e5e5);
-  background: -ms-linear-gradient(top, #f5f5f5, #e5e5e5);
-  background: linear-gradient(top, #f5f5f5, #e5e5e5);
-}
-
-/* line 26, ../sass/partials/modules/_forms.scss */
-button:active {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e5e5e5), color-stop(100%, #f5f5f5));
-  background: -webkit-linear-gradient(top, #e5e5e5, #f5f5f5);
-  background: -moz-linear-gradient(top, #e5e5e5, #f5f5f5);
-  background: -o-linear-gradient(top, #e5e5e5, #f5f5f5);
-  background: -ms-linear-gradient(top, #e5e5e5, #f5f5f5);
-  background: linear-gradient(top, #e5e5e5, #f5f5f5);
-}
-
-/* line 30, ../sass/partials/modules/_forms.scss */
-input, button, button, textarea {
-  border: 1px solid #CCC;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -o-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
-  -moz-box-shadow: 0 1px 0 0 white;
-  -webkit-box-shadow: 0 1px 0 0 white;
-  -o-box-shadow: 0 1px 0 0 white;
-  box-shadow: 0 1px 0 0 white;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
@@ -474,28 +353,27 @@ input, button, button, textarea {
 #header {
   overflow: hidden;
   *zoom: 1;
+  background: #FFF;
 }
 
-/* line 7, ../sass/partials/modules/_site_header.scss */
+/* line 8, ../sass/partials/modules/_site_header.scss */
+#header > .container {
+  position: relative;
+}
+
+/* line 13, ../sass/partials/modules/_site_header.scss */
 #SiteLogo {
   width: 130px;
   float: left;
 }
-
-/* line 12, ../sass/partials/modules/_site_header.scss */
-#SiteTagline {
-  font-size: 18px;
-  color: #999;
-  line-height: 1;
+/* line 16, ../sass/partials/modules/_site_header.scss */
+#SiteLogo img {
+  width: 130px;
 }
 
-/* line 18, ../sass/partials/modules/_site_header.scss */
+/* line 21, ../sass/partials/modules/_site_header.scss */
 #SiteTitle, #SiteTagline {
   padding-left: 150px;
-}
-/* line 20, ../sass/partials/modules/_site_header.scss */
-#SiteTitle > a, #SiteTagline > a {
-  color: #444;
 }
 
 /* line 25, ../sass/partials/modules/_site_header.scss */
@@ -505,13 +383,6 @@ input, button, button, textarea {
   right: 0;
 }
 
-@media screen and (max-width: 750px) {
-  /* line 32, ../sass/partials/modules/_site_header.scss */
-  #search {
-    clear: both;
-    position: static;
-  }
-}
 /* line 4, ../sass/partials/modules/_navigation.scss */
 #navigation {
   background-color: #222;

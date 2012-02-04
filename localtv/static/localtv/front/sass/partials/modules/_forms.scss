@@ -1,34 +1,8 @@
-@import "blueprint/form",
-		"compass/css3/box-sizing",
+@import "compass/css3/box-sizing",
 		"compass/css3/border-radius",
 		"compass/css3/box-shadow",
 		"compass/css3/images";
 
-@include blueprint-form-layout;
-@include blueprint-form-borders($unfocused-border-color: #CCC, $focus-border-color: #8AC, $fieldset-border-color: #DDD);
-@include blueprint-form-sizes;
-
-input:focus{
+input{
 	outline:none;
-}
-
-button{
-	box-sizing:content-box;
-	@extend input;
-	padding:5px;
-	@include background(linear-gradient(top, #FDFDFD, #EEE));
-}
-
-button:hover{
-	@include background(linear-gradient(top, #F5F5F5, #E5E5E5));
-}
-
-button:active{
-	@include background(linear-gradient(top, #E5E5E5, #F5F5F5));
-}
-
-input, button, textarea{
-	border:1px solid #CCC;
-	@include border-radius(3px);
-	@include box-shadow(0 1px 0 0 #FFF);
 }
