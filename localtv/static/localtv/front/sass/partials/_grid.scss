@@ -60,7 +60,6 @@ $single-column-threshold: 740px;
 @media screen and (max-width: 950px){
 	.container{
 		width:100%;
-		padding:10px;
 		@include box-sizing(border-box);
 	}
 }

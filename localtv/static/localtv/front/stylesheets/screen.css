@@ -131,7 +131,6 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   /* line 61, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
-    padding: 10px;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -ms-box-sizing: border-box;
@@ -139,7 +138,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 69, ../sass/partials/_grid.scss */
+  /* line 68, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .nav-category-item, .col-two-thirds {
     width: 100%;
   }
