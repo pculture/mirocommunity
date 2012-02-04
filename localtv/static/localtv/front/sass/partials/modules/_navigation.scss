@@ -48,7 +48,7 @@
 .nav-categories:hover ul{
 	display:block;
 }
-.nav-categories ul{
+.nav-categories > ul{
 	display:none;
 	position:absolute;
 	z-index:1337;
@@ -83,4 +83,13 @@
 }
 
 .nav-admin{
+}
+
+@media screen and (max-width: 740px){
+	.nav-item, .navigation-list-secondary{
+		float:none;
+	}
+	.nav-categories > ul{
+		width:100%;
+	}
 }

@@ -452,7 +452,7 @@ input {
 }
 
 /* line 51, ../sass/partials/modules/_navigation.scss */
-.nav-categories ul {
+.nav-categories > ul {
   display: none;
   position: absolute;
   z-index: 1337;
@@ -512,6 +512,17 @@ input {
   background-image: linear-gradient(#111111, #333333);
 }
 
+@media screen and (max-width: 740px) {
+  /* line 89, ../sass/partials/modules/_navigation.scss */
+  .nav-item, .navigation-list-secondary {
+    float: none;
+  }
+
+  /* line 92, ../sass/partials/modules/_navigation.scss */
+  .nav-categories > ul {
+    width: 100%;
+  }
+}
 /* line 3, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs {
   overflow: hidden;
