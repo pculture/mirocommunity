@@ -13,8 +13,27 @@ $thumb-width: 140px;
 	width:$thumb-width;
 	margin-left:- $thumb-width - $gutter-width;
 	float:left;
-	& > img{
+	position:relative;
+	& > a{
+		border:0;
 		display:block;
+		position:relative;
+	}
+	& > a > img{
+		display:block;
+	}
+	// This adds gloss
+	& > a::after{
+		content: " ";
+		display:block;
+		position:absolute;
+		top:0;
+		left:0;
+		right:0;
+		bottom:0;
+		@include background(linear-gradient(-45deg, rgba(255,255,255,.15) 0, rgba(255,255,255,.15) 50%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%));
+		@include box-shadow(1px 1px 0 rgba(255,255,255,.25) inset);
+		border:1px solid #000;
 	}
 }
 
