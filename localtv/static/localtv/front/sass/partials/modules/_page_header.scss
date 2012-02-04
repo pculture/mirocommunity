@@ -1,10 +1,11 @@
 .page-header{
-	margin-bottom: $base-line-height - 1px;
-	border-bottom: 1px solid #CCC;
-	position:relative;
-	.page-actions{
-		position: absolute;
-		top:0;
-		right:0;
-	}
+	@extend .pod-header;
+}
+
+.page-actions{
+	@extend .pod-actions;
+}
+
+.page-content{
+	@extend .pod-content;
 }

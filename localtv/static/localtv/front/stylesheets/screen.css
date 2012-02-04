@@ -230,12 +230,12 @@ input {
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions, .pod-footer-actions {
+.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions {
   margin: 0;
   padding: 0;
 }
 /* line 6, ../sass/partials/modules/_lists.scss */
-.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li, .pod-footer-actions li {
+.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li, .page-actions li, .pod-footer-actions li {
   list-style-type: none;
 }
 
@@ -558,26 +558,13 @@ input {
   background: #D0ECFE;
 }
 
-/* line 1, ../sass/partials/modules/_page_header.scss */
-.page-header {
-  margin-bottom: 17px;
-  border-bottom: 1px solid #CCC;
-  position: relative;
-}
-/* line 5, ../sass/partials/modules/_page_header.scss */
-.page-header .page-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
 /* line 1, ../sass/partials/modules/_pod.scss */
 .pod {
   background: #F9F9F9;
 }
 
 /* line 5, ../sass/partials/modules/_pod.scss */
-.pod-header {
+.pod-header, .page-header {
   background: #FFF;
   padding-top: 9px;
   padding-bottom: 9px;
@@ -597,23 +584,23 @@ input {
   color: #FFF;
 }
 /* line 18, ../sass/partials/modules/_pod.scss */
-.pod-header a {
+.pod-header a, .page-header a {
   color: #FFF;
 }
 /* line 21, ../sass/partials/modules/_pod.scss */
-.pod-header h1 a:hover {
+.pod-header h1 a:hover, .page-header h1 a:hover {
   border-bottom: 0;
 }
 
 /* line 26, ../sass/partials/modules/_pod.scss */
-.pod-header > h1 {
+.pod-header > h1, .page-header > h1 {
   display: inline;
   font-size: 16px;
   line-height: 18px;
 }
 
 /* line 31, ../sass/partials/modules/_pod.scss */
-.pod-actions {
+.pod-actions, .page-actions {
   position: absolute;
   top: 0;
   right: 0;
@@ -623,12 +610,12 @@ input {
   padding-right: 10px;
 }
 /* line 40, ../sass/partials/modules/_pod.scss */
-.pod-actions li {
+.pod-actions li, .page-actions li {
   float: left;
   margin-left: 10px;
 }
 /* line 44, ../sass/partials/modules/_pod.scss */
-.pod-actions a {
+.pod-actions a, .page-actions a {
   display: block;
   background-color: #6b0005;
   padding: 3px 10px;
@@ -641,14 +628,14 @@ input {
   border-radius: 12px;
 }
 /* line 51, ../sass/partials/modules/_pod.scss */
-.pod-actions a:hover {
+.pod-actions a:hover, .page-actions a:hover {
   border: 0;
   background-color: #FFF;
   color: #380002;
 }
 
 /* line 58, ../sass/partials/modules/_pod.scss */
-.pod-content {
+.pod-content, .page-content {
   padding-left: 10px;
   padding-right: 10px;
 }
