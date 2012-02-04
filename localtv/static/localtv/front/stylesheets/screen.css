@@ -79,7 +79,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 21, ../sass/partials/_grid.scss */
-.col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
+.col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .nav-category-item, .col-two-thirds {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -ms-box-sizing: border-box;
@@ -118,7 +118,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 51, ../sass/partials/_grid.scss */
-.col-one-third {
+.col-one-third, .nav-category-item {
   width: 33.333%;
 }
 
@@ -140,7 +140,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 @media screen and (max-width: 740px) {
   /* line 69, ../sass/partials/_grid.scss */
-  .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .col-two-thirds {
+  .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .nav-category-item, .col-two-thirds {
     width: 100%;
   }
 }
@@ -543,16 +543,11 @@ input, button, button, textarea {
 }
 
 /* line 23, ../sass/partials/modules/_navigation.scss */
-.nav-item > ul {
-  display: none;
-}
-
-/* line 27, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   list-style-type: none;
 }
 
-/* line 31, ../sass/partials/modules/_navigation.scss */
+/* line 27, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
   display: block;
   color: #DDD;
@@ -561,8 +556,9 @@ input, button, button, textarea {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
 }
-/* line 39, ../sass/partials/modules/_navigation.scss */
-.nav-item > a:hover {
+
+/* line 37, ../sass/partials/modules/_navigation.scss */
+.nav-item:hover > a, .nav-item > a:hover {
   border-bottom: 1px solid #111;
   border-top: 1px solid #666;
   background-color: #444;
@@ -573,6 +569,77 @@ input, button, button, textarea {
   background-image: -ms-linear-gradient(#555555, #333333);
   background-image: linear-gradient(#555555, #333333);
   color: #FFF;
+}
+
+/* line 45, ../sass/partials/modules/_navigation.scss */
+.nav-categories {
+  position: relative;
+}
+
+/* line 48, ../sass/partials/modules/_navigation.scss */
+.nav-categories:hover ul {
+  display: block;
+}
+
+/* line 51, ../sass/partials/modules/_navigation.scss */
+.nav-categories ul {
+  display: none;
+  position: absolute;
+  z-index: 1337;
+  top: 36px;
+  left: 0;
+  background: #333;
+  width: 450px;
+}
+
+/* line 60, ../sass/partials/modules/_navigation.scss */
+.nav-category-item {
+  padding: 3px;
+}
+
+/* line 64, ../sass/partials/modules/_navigation.scss */
+.nav-category-item > a {
+  display: block;
+  border: 1px solid #111;
+  border-top-color: #222;
+  padding: 5px 6px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -o-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #333;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(100%, #1c1c1c));
+  background-image: -webkit-linear-gradient(#333333, #1c1c1c);
+  background-image: -moz-linear-gradient(#333333, #1c1c1c);
+  background-image: -o-linear-gradient(#333333, #1c1c1c);
+  background-image: -ms-linear-gradient(#333333, #1c1c1c);
+  background-image: linear-gradient(#333333, #1c1c1c);
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  -o-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  color: #CCC;
+  text-shadow: 0 -1px 0 black;
+}
+/* line 75, ../sass/partials/modules/_navigation.scss */
+.nav-category-item > a:hover {
+  color: #FFF;
+}
+/* line 78, ../sass/partials/modules/_navigation.scss */
+.nav-category-item > a:active {
+  background-color: #222;
+  -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #111111), color-stop(100%, #333333));
+  background-image: -webkit-linear-gradient(#111111, #333333);
+  background-image: -moz-linear-gradient(#111111, #333333);
+  background-image: -o-linear-gradient(#111111, #333333);
+  background-image: -ms-linear-gradient(#111111, #333333);
+  background-image: linear-gradient(#111111, #333333);
 }
 
 /* line 3, ../sass/partials/modules/_pagetabs.scss */
