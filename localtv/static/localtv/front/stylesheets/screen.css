@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, #header > .container, #search, .nav-item > a, .pod-content, .page-content, .pod-footer, .sidebar-about {
+.padded, .button-wide, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .page-content, .pod-footer, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -419,6 +419,11 @@ input {
   position: absolute;
   top: 0;
   right: 0;
+}
+
+/* line 1, ../sass/partials/modules/_site_footer.scss */
+#footer {
+  background: #222;
 }
 
 /* line 4, ../sass/partials/modules/_navigation.scss */

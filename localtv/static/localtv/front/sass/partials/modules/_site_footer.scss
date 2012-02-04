@@ -1,0 +1,6 @@
+#footer{
+	background:#222;
+}
+#footer > .container{
+	@extend .padded;
+}
