@@ -3,3 +3,15 @@
 #main{
 	@include clearfix;
 }
+
+#main > .container{
+	background:#FFF;
+	border:3px solid #E5E5E5;
+	border-width:0 3px;
+}
+
+@media screen and (max-width:950px){
+	#main > .container{
+		border-width:0;
+	}
+}
