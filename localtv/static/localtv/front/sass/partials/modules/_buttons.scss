@@ -1,0 +1,20 @@
+.button-wide{
+	display:block;
+	@include border-radius(5px);
+	@extend .padded;
+	border:1px solid #CCC;
+	@include background(linear-gradient(#F5F5F5, #E5E5E5));
+	@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 0 0 #FFF);
+	color:#666;
+	text-align:center;
+	text-shadow: 0 1px 0 #FFF;
+}
+.button-wide:hover{
+	color:#444;
+	@include background(linear-gradient(#EEE, #DDD));
+	@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 0 0 #FFF);
+}
+.button-wide:active{
+	@include background(linear-gradient(#CCC, #DDD));
+	@include box-shadow(0 1px 3px 0 #BBB inset, 0 1px 0 0 #FFF);
+}

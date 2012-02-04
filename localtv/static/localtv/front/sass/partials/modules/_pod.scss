@@ -18,6 +18,9 @@
 	a{
 		color:#FFF;
 	}
+	h1 a:hover{
+		border-bottom:0;
+	}
 }
 
 .pod-header > h1 {
@@ -55,4 +58,12 @@
 .pod-content{
 	padding-left: $gutter-width / 2;
 	padding-right: $gutter-width / 2;
+}
+
+.pod-footer{
+	@extend .padded;
+}
+
+.pod-footer-actions{
+	@extend .unstyled-list;
 }

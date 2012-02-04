@@ -5,10 +5,8 @@ $thumb-width: 140px;
 
 .video-summary{
 	@include clearfix;
-	border-bottom:1px solid #CCC;
-	margin-bottom:-1px;
-	@include padding-leader;
-	@include padding-trailer;
+	@include margin-leader;
+	@include margin-trailer;
 	padding-left:$thumb-width + $gutter-width;
 }
 

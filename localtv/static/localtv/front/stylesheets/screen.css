@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .sidebar-about {
+.padded, .button-wide, .pod-footer, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -352,12 +352,12 @@ input, button, button, textarea {
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions {
+.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions, .pod-footer-actions {
   margin: 0;
   padding: 0;
 }
 /* line 6, ../sass/partials/modules/_lists.scss */
-.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li {
+.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li, .pod-footer-actions li {
   list-style-type: none;
 }
 
@@ -374,46 +374,98 @@ input, button, button, textarea {
   background: #CCC;
 }
 
+/* line 1, ../sass/partials/modules/_buttons.scss */
+.button-wide {
+  display: block;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -o-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px solid #CCC;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e5e5e5));
+  background: -webkit-linear-gradient(#f5f5f5, #e5e5e5);
+  background: -moz-linear-gradient(#f5f5f5, #e5e5e5);
+  background: -o-linear-gradient(#f5f5f5, #e5e5e5);
+  background: -ms-linear-gradient(#f5f5f5, #e5e5e5);
+  background: linear-gradient(#f5f5f5, #e5e5e5);
+  -moz-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  color: #666;
+  text-align: center;
+  text-shadow: 0 1px 0 #FFF;
+}
+
+/* line 12, ../sass/partials/modules/_buttons.scss */
+.button-wide:hover {
+  color: #444;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #dddddd));
+  background: -webkit-linear-gradient(#eeeeee, #dddddd);
+  background: -moz-linear-gradient(#eeeeee, #dddddd);
+  background: -o-linear-gradient(#eeeeee, #dddddd);
+  background: -ms-linear-gradient(#eeeeee, #dddddd);
+  background: linear-gradient(#eeeeee, #dddddd);
+  -moz-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+  box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
+}
+
+/* line 17, ../sass/partials/modules/_buttons.scss */
+.button-wide:active {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cccccc), color-stop(100%, #dddddd));
+  background: -webkit-linear-gradient(#cccccc, #dddddd);
+  background: -moz-linear-gradient(#cccccc, #dddddd);
+  background: -o-linear-gradient(#cccccc, #dddddd);
+  background: -ms-linear-gradient(#cccccc, #dddddd);
+  background: linear-gradient(#cccccc, #dddddd);
+  -moz-box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
+  box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
+}
+
 /* line 6, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   overflow: hidden;
   *zoom: 1;
-  border-bottom: 1px solid #CCC;
-  margin-bottom: -1px;
-  padding-top: 18px;
-  padding-bottom: 18px;
+  margin-top: 18px;
+  margin-bottom: 18px;
   padding-left: 160px;
 }
 
-/* line 15, ../sass/partials/modules/_video_summary.scss */
+/* line 13, ../sass/partials/modules/_video_summary.scss */
 .thumb {
   width: 140px;
   margin-left: -160px;
   float: left;
 }
-/* line 19, ../sass/partials/modules/_video_summary.scss */
+/* line 17, ../sass/partials/modules/_video_summary.scss */
 .thumb > img {
   display: block;
 }
 
-/* line 24, ../sass/partials/modules/_video_summary.scss */
+/* line 22, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 29, ../sass/partials/modules/_video_summary.scss */
+/* line 27, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
 }
 
-/* line 33, ../sass/partials/modules/_video_summary.scss */
+/* line 31, ../sass/partials/modules/_video_summary.scss */
 .details-list {
   padding-left: 0;
 }
-/* line 35, ../sass/partials/modules/_video_summary.scss */
+/* line 33, ../sass/partials/modules/_video_summary.scss */
 .details-list li {
   list-style-type: none;
 }
@@ -679,15 +731,19 @@ input, button, button, textarea {
 .pod-header a {
   color: #FFF;
 }
+/* line 21, ../sass/partials/modules/_pod.scss */
+.pod-header h1 a:hover {
+  border-bottom: 0;
+}
 
-/* line 23, ../sass/partials/modules/_pod.scss */
+/* line 26, ../sass/partials/modules/_pod.scss */
 .pod-header > h1 {
   display: inline;
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 28, ../sass/partials/modules/_pod.scss */
+/* line 31, ../sass/partials/modules/_pod.scss */
 .pod-actions {
   position: absolute;
   top: 0;
@@ -697,12 +753,12 @@ input, button, button, textarea {
   padding-left: 10px;
   padding-right: 10px;
 }
-/* line 37, ../sass/partials/modules/_pod.scss */
+/* line 40, ../sass/partials/modules/_pod.scss */
 .pod-actions li {
   float: left;
   margin-left: 10px;
 }
-/* line 41, ../sass/partials/modules/_pod.scss */
+/* line 44, ../sass/partials/modules/_pod.scss */
 .pod-actions a {
   display: block;
   background-color: #6b0005;
@@ -715,14 +771,14 @@ input, button, button, textarea {
   -khtml-border-radius: 12px;
   border-radius: 12px;
 }
-/* line 48, ../sass/partials/modules/_pod.scss */
+/* line 51, ../sass/partials/modules/_pod.scss */
 .pod-actions a:hover {
   border: 0;
   background-color: #FFF;
   color: #380002;
 }
 
-/* line 55, ../sass/partials/modules/_pod.scss */
+/* line 58, ../sass/partials/modules/_pod.scss */
 .pod-content {
   padding-left: 10px;
   padding-right: 10px;
