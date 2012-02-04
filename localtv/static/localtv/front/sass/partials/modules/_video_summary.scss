@@ -5,7 +5,6 @@ $thumb-width: 140px;
 
 .video-summary{
 	@include clearfix;
-	@include margin-leader;
 	@include margin-trailer;
 	padding-left:$thumb-width + $gutter-width;
 }
@@ -29,8 +28,5 @@ $thumb-width: 140px;
 	@include margin-leader(.5);
 }
 .details-list{
-	padding-left:0;
-	li{
-		list-style-type:none;
-	}
+	@extend .unstyled-list;
 }

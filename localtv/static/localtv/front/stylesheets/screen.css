@@ -243,12 +243,12 @@ input {
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .navigation-list, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions {
+.unstyled-list, .action-list, .details-list, .navigation-list, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions {
   margin: 0;
   padding: 0;
 }
 /* line 6, ../sass/partials/modules/_lists.scss */
-.unstyled-list li, .action-list li, .navigation-list li, .pagetabs li, .pod-actions li, .page-actions li, .pod-footer-actions li {
+.unstyled-list li, .action-list li, .details-list li, .navigation-list li, .pagetabs li, .pod-actions li, .page-actions li, .pod-footer-actions li {
   list-style-type: none;
 }
 
@@ -323,42 +323,32 @@ input {
 .video-summary {
   overflow: hidden;
   *zoom: 1;
-  margin-top: 18px;
   margin-bottom: 18px;
   padding-left: 160px;
 }
 
-/* line 13, ../sass/partials/modules/_video_summary.scss */
+/* line 12, ../sass/partials/modules/_video_summary.scss */
 .thumb {
   width: 140px;
   margin-left: -160px;
   float: left;
 }
-/* line 17, ../sass/partials/modules/_video_summary.scss */
+/* line 16, ../sass/partials/modules/_video_summary.scss */
 .thumb > img {
   display: block;
 }
 
-/* line 22, ../sass/partials/modules/_video_summary.scss */
+/* line 21, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 27, ../sass/partials/modules/_video_summary.scss */
+/* line 26, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
-}
-
-/* line 31, ../sass/partials/modules/_video_summary.scss */
-.details-list {
-  padding-left: 0;
-}
-/* line 33, ../sass/partials/modules/_video_summary.scss */
-.details-list li {
-  list-style-type: none;
 }
 
 /* line 3, ../sass/partials/modules/_site_header.scss */
@@ -551,9 +541,10 @@ input {
   -ms-border-radius: 3px;
   -khtml-border-radius: 3px;
   border-radius: 3px;
+  margin-bottom: 18px;
   background: #FFF;
 }
-/* line 10, ../sass/partials/modules/_pagetabs.scss */
+/* line 11, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs a, .pagetabs .ellipse span {
   float: left;
   border-right: 1px solid #CCC;
@@ -562,11 +553,11 @@ input {
   border-top: 1px solid #CCC;
   margin-top: -1px;
 }
-/* line 18, ../sass/partials/modules/_pagetabs.scss */
+/* line 19, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs a:hover {
   background: #F5F5F5;
 }
-/* line 21, ../sass/partials/modules/_pagetabs.scss */
+/* line 22, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs .selected a {
   background: #D0ECFE;
 }
