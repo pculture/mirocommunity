@@ -19,6 +19,7 @@ Project
 :code:         https://github.com/pculture/mirocommunity
 :wiki:         http://develop.participatoryculture.org/index.php/MiroCommunityStart
 :mailing list: http://groups.google.com/group/miro-community-development
+:irc:          ``#miro-hackers`` on irc.freenode.net
 
 
 Installing
@@ -30,6 +31,14 @@ See the chapter on installation in ``docs/installation.rst``.
 Running tests
 =============
 
+To run the tests::
+
+    python manage.py test localtv
+    python manage.py test admin
+    python manage.py test submit_video
+    ...
+
+for each installed localtv app.
 
 
 Documentation
