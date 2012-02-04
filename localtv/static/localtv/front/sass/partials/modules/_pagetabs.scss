@@ -1,25 +1,23 @@
 @import "compass/css3/box-shadow";
 
 .pagetabs{
-	@extend .unstyled-list;
+	@extend .unpadded;
 	@include clearfix;
-	border:1px solid #C6C6C6;
 	@include box-shadow(0 1px 0 0 #FFF);
-	@include border-radius(3px);
 	@include margin-trailer;
+	border-bottom:1px solid #CCC;
+	border-top:1px solid #CCC;
 	background:#FFF;
 	a, .ellipse span{
 		float:left;
 		border-right:1px solid #CCC;
+		border-bottom:0;
 		padding:#{$base-line-height / 2 - 1px} $base-line-height;
-		/* the border at the top will only show up if the navigation spans more than one line */
-		border-top:1px solid #CCC;
-		margin-top:-1px;
 	}
 	a:hover{
 		background:#F5F5F5;
 	}
 	.selected a{
-		background:#D0ECFE;
+		background:lighten($color1, 60%);
 	}
 }
