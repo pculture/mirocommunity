@@ -21,13 +21,14 @@ $thumb-width: 140px;
 	}
 }
 
-.video-summary .video-header h1{
+.video-title{
 	@include normal;
+	@include margin-trailer(.5);
 }
 
 .video-summary .details{
 	color:#999;
-	@include margin-leader;
+	@include margin-leader(.5);
 }
 .details-list{
 	padding-left:0;

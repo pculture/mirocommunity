@@ -397,22 +397,23 @@ input, button, button, textarea {
 }
 
 /* line 24, ../sass/partials/modules/_video_summary.scss */
-.video-summary .video-header h1 {
+.video-title {
   font-size: 13px;
   line-height: 18px;
+  margin-bottom: 9px;
 }
 
-/* line 28, ../sass/partials/modules/_video_summary.scss */
+/* line 29, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
-  margin-top: 18px;
+  margin-top: 9px;
 }
 
-/* line 32, ../sass/partials/modules/_video_summary.scss */
+/* line 33, ../sass/partials/modules/_video_summary.scss */
 .details-list {
   padding-left: 0;
 }
-/* line 34, ../sass/partials/modules/_video_summary.scss */
+/* line 35, ../sass/partials/modules/_video_summary.scss */
 .details-list li {
   list-style-type: none;
 }
@@ -729,8 +730,16 @@ input, button, button, textarea {
   font-size: 11px;
   line-height: 18px;
 }
+/* line 3, ../sass/partials/pages/_index.scss */
+.home-page .popular .video-title {
+  margin-bottom: 0;
+}
+/* line 6, ../sass/partials/pages/_index.scss */
+.home-page .popular .video-summary .details {
+  margin-top: 0;
+}
 
-/* line 4, ../sass/partials/pages/_index.scss */
+/* line 10, ../sass/partials/pages/_index.scss */
 .home-page .popular .description {
   max-height: 36px;
   overflow: hidden;

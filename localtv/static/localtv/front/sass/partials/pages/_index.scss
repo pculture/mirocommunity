@@ -1,5 +1,11 @@
 .home-page .popular{
 	@include small;
+	.video-title{
+		margin-bottom:0;
+	}
+	.video-summary .details{
+		margin-top:0;
+	}
 }
 .home-page .popular .description{
 	max-height: $base-line-height * 2;
