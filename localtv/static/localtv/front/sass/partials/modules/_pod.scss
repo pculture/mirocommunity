@@ -47,8 +47,7 @@
 }
 
 .pod-content{
-	padding-left: $gutter-width / 2;
-	padding-right: $gutter-width / 2;
+	@extend .padded;
 }
 
 .pod-footer{
