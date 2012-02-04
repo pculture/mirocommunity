@@ -2,14 +2,6 @@ $logo-width: 130px;
 
 #header{
 	@include clearfix;
-	@include padding-trailer(2);
-	@include padding-leader;
-	@include margin-trailer(-2);
-	@include box-shadow(0 1px 0 0 #FFF, 0 -1px 0 0 rgba(0,0,0,.15) inset);
-	@include background(linear-gradient(top, #CCC, #DDD));
-	& > .container{
-		position:relative;
-	}
 }
 
 #SiteLogo{

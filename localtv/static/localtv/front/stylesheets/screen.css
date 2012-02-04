@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, .pod-footer, .sidebar-about {
+.padded, .button-wide, .nav-item > a, .pod-footer, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -474,48 +474,31 @@ input, button, button, textarea {
 #header {
   overflow: hidden;
   *zoom: 1;
-  padding-bottom: 36px;
-  padding-top: 18px;
-  margin-bottom: -36px;
-  -moz-box-shadow: 0 1px 0 0 white, 0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
-  -webkit-box-shadow: 0 1px 0 0 white, 0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
-  -o-box-shadow: 0 1px 0 0 white, 0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
-  box-shadow: 0 1px 0 0 white, 0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cccccc), color-stop(100%, #dddddd));
-  background: -webkit-linear-gradient(top, #cccccc, #dddddd);
-  background: -moz-linear-gradient(top, #cccccc, #dddddd);
-  background: -o-linear-gradient(top, #cccccc, #dddddd);
-  background: -ms-linear-gradient(top, #cccccc, #dddddd);
-  background: linear-gradient(top, #cccccc, #dddddd);
-}
-/* line 10, ../sass/partials/modules/_site_header.scss */
-#header > .container {
-  position: relative;
 }
 
-/* line 15, ../sass/partials/modules/_site_header.scss */
+/* line 7, ../sass/partials/modules/_site_header.scss */
 #SiteLogo {
   width: 130px;
   float: left;
 }
 
-/* line 20, ../sass/partials/modules/_site_header.scss */
+/* line 12, ../sass/partials/modules/_site_header.scss */
 #SiteTagline {
   font-size: 18px;
   color: #999;
   line-height: 1;
 }
 
-/* line 26, ../sass/partials/modules/_site_header.scss */
+/* line 18, ../sass/partials/modules/_site_header.scss */
 #SiteTitle, #SiteTagline {
   padding-left: 150px;
 }
-/* line 28, ../sass/partials/modules/_site_header.scss */
+/* line 20, ../sass/partials/modules/_site_header.scss */
 #SiteTitle > a, #SiteTagline > a {
   color: #444;
 }
 
-/* line 33, ../sass/partials/modules/_site_header.scss */
+/* line 25, ../sass/partials/modules/_site_header.scss */
 #search {
   position: absolute;
   top: 0;
@@ -523,135 +506,73 @@ input, button, button, textarea {
 }
 
 @media screen and (max-width: 750px) {
-  /* line 40, ../sass/partials/modules/_site_header.scss */
+  /* line 32, ../sass/partials/modules/_site_header.scss */
   #search {
     clear: both;
     position: static;
   }
 }
 /* line 4, ../sass/partials/modules/_navigation.scss */
-#navigation > .container {
-  padding: 0;
-  margin: 17px auto;
-  border: 1px solid #CCC;
-  background-color: #EEE;
-  border-top-color: #DDD;
-  border-bottom-color: #BBB;
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  -o-border-radius: 8px;
-  -ms-border-radius: 8px;
-  -khtml-border-radius: 8px;
-  border-radius: 8px;
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e9e9e9));
-  background: -webkit-linear-gradient(#f5f5f5, #e9e9e9);
-  background: -moz-linear-gradient(#f5f5f5, #e9e9e9);
-  background: -o-linear-gradient(#f5f5f5, #e9e9e9);
-  background: -ms-linear-gradient(#f5f5f5, #e9e9e9);
-  background: linear-gradient(#f5f5f5, #e9e9e9);
-  -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+#navigation {
+  background-color: #222;
   *zoom: 1;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(100%, #222222));
+  background-image: -webkit-linear-gradient(#333333, #222222);
+  background-image: -moz-linear-gradient(#333333, #222222);
+  background-image: -o-linear-gradient(#333333, #222222);
+  background-image: -ms-linear-gradient(#333333, #222222);
+  background-image: linear-gradient(#333333, #222222);
+  border-bottom: 1px solid #000;
+  border-top: 1px solid #444;
+}
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+#navigation:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* line 15, ../sass/partials/modules/_navigation.scss */
+.navigation-list-secondary {
+  float: right;
 }
 
 /* line 19, ../sass/partials/modules/_navigation.scss */
-.navigation-list-secondary {
-  float: right;
-  border-left: 1px solid #CCC;
-}
-/* line 22, ../sass/partials/modules/_navigation.scss */
-.navigation-list-secondary a:last-child {
-  border-right: 0;
-}
-
-/* line 27, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   float: left;
 }
 
-/* line 31, ../sass/partials/modules/_navigation.scss */
+/* line 23, ../sass/partials/modules/_navigation.scss */
 .nav-item > ul {
   display: none;
 }
 
-/* line 35, ../sass/partials/modules/_navigation.scss */
+/* line 27, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   list-style-type: none;
 }
 
-/* line 39, ../sass/partials/modules/_navigation.scss */
+/* line 31, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
-  border-left: 1px solid #FFF;
-  border-right: 1px solid #CCC;
   display: block;
-  padding: 9px 18px;
-  font-weight: bold;
-  color: #666;
-  text-shadow: 0 1px 0 #FFF;
-  -moz-box-shadow: 0 1px 0 0 white;
-  -webkit-box-shadow: 0 1px 0 0 white;
-  -o-box-shadow: 0 1px 0 0 white;
-  box-shadow: 0 1px 0 0 white;
+  color: #DDD;
+  text-shadow: 0 -1px 0 black;
+  margin: -1px 0;
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
 }
-/* line 48, ../sass/partials/modules/_navigation.scss */
+/* line 39, ../sass/partials/modules/_navigation.scss */
 .nav-item > a:hover {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #eeeeee));
-  background: -webkit-linear-gradient(#ffffff, #eeeeee);
-  background: -moz-linear-gradient(#ffffff, #eeeeee);
-  background: -o-linear-gradient(#ffffff, #eeeeee);
-  background: -ms-linear-gradient(#ffffff, #eeeeee);
-  background: linear-gradient(#ffffff, #eeeeee);
-  background-color: #FFF;
-}
-/* line 52, ../sass/partials/modules/_navigation.scss */
-.nav-item > a:active {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #ffffff));
-  background: -webkit-linear-gradient(#eeeeee, #ffffff);
-  background: -moz-linear-gradient(#eeeeee, #ffffff);
-  background: -o-linear-gradient(#eeeeee, #ffffff);
-  background: -ms-linear-gradient(#eeeeee, #ffffff);
-  background: linear-gradient(#eeeeee, #ffffff);
-}
-
-/* line 57, ../sass/partials/modules/_navigation.scss */
-.nav-admin {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #348fbf), color-stop(100%, #26688b));
-  background: -webkit-linear-gradient(#348fbf, #26688b);
-  background: -moz-linear-gradient(#348fbf, #26688b);
-  background: -o-linear-gradient(#348fbf, #26688b);
-  background: -ms-linear-gradient(#348fbf, #26688b);
-  background: linear-gradient(#348fbf, #26688b);
-}
-/* line 59, ../sass/partials/modules/_navigation.scss */
-.nav-admin > a {
-  border-left: 1px solid rgba(255, 255, 255, 0.75);
+  border-bottom: 1px solid #111;
+  border-top: 1px solid #666;
+  background-color: #444;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #555555), color-stop(100%, #333333));
+  background-image: -webkit-linear-gradient(#555555, #333333);
+  background-image: -moz-linear-gradient(#555555, #333333);
+  background-image: -o-linear-gradient(#555555, #333333);
+  background-image: -ms-linear-gradient(#555555, #333333);
+  background-image: linear-gradient(#555555, #333333);
   color: #FFF;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
-}
-/* line 63, ../sass/partials/modules/_navigation.scss */
-.nav-admin > a:hover {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3ba2d8), color-stop(100%, #2e80aa));
-  background: -webkit-linear-gradient(#3ba2d8, #2e80aa);
-  background: -moz-linear-gradient(#3ba2d8, #2e80aa);
-  background: -o-linear-gradient(#3ba2d8, #2e80aa);
-  background: -ms-linear-gradient(#3ba2d8, #2e80aa);
-  background: linear-gradient(#3ba2d8, #2e80aa);
-}
-/* line 66, ../sass/partials/modules/_navigation.scss */
-.nav-admin > a:active {
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2e80aa), color-stop(100%, #3ba2d8));
-  background: -webkit-linear-gradient(#2e80aa, #3ba2d8);
-  background: -moz-linear-gradient(#2e80aa, #3ba2d8);
-  background: -o-linear-gradient(#2e80aa, #3ba2d8);
-  background: -ms-linear-gradient(#2e80aa, #3ba2d8);
-  background: linear-gradient(#2e80aa, #3ba2d8);
-  -moz-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  -o-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
 /* line 3, ../sass/partials/modules/_pagetabs.scss */
