@@ -573,10 +573,6 @@ input {
 
 /* line 1, ../sass/partials/modules/_pod.scss */
 .pod-header, .page-header {
-  padding-top: 9px;
-  padding-bottom: 9px;
-  padding-left: 10px;
-  padding-right: 10px;
   position: relative;
   background-color: #9e0007;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #9e0007), color-stop(100%, #850006));
@@ -587,26 +583,26 @@ input {
   background-image: linear-gradient(#9e0007, #850006);
   border-bottom: 1px solid #6b0005;
   border-top: 1px solid #d10009;
-  margin-bottom: -2px;
+  padding: 8px 10px;
   color: #FFF;
 }
-/* line 13, ../sass/partials/modules/_pod.scss */
+/* line 9, ../sass/partials/modules/_pod.scss */
 .pod-header a, .page-header a {
   color: #FFF;
 }
-/* line 16, ../sass/partials/modules/_pod.scss */
+/* line 12, ../sass/partials/modules/_pod.scss */
 .pod-header h1 a:hover, .page-header h1 a:hover {
   border-bottom: 0;
 }
 
-/* line 21, ../sass/partials/modules/_pod.scss */
+/* line 17, ../sass/partials/modules/_pod.scss */
 .pod-header > h1, .page-header > h1 {
   display: inline;
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 26, ../sass/partials/modules/_pod.scss */
+/* line 22, ../sass/partials/modules/_pod.scss */
 .pod-actions, .page-actions {
   position: absolute;
   top: 0;
@@ -616,12 +612,12 @@ input {
   padding-left: 10px;
   padding-right: 10px;
 }
-/* line 35, ../sass/partials/modules/_pod.scss */
+/* line 31, ../sass/partials/modules/_pod.scss */
 .pod-actions li, .page-actions li {
   float: left;
   margin-left: 10px;
 }
-/* line 39, ../sass/partials/modules/_pod.scss */
+/* line 35, ../sass/partials/modules/_pod.scss */
 .pod-actions a, .page-actions a {
   display: block;
   background-color: #6b0005;
@@ -634,14 +630,14 @@ input {
   -khtml-border-radius: 12px;
   border-radius: 12px;
 }
-/* line 46, ../sass/partials/modules/_pod.scss */
+/* line 42, ../sass/partials/modules/_pod.scss */
 .pod-actions a:hover, .page-actions a:hover {
   border: 0;
   background-color: #FFF;
   color: #380002;
 }
 
-/* line 53, ../sass/partials/modules/_pod.scss */
+/* line 49, ../sass/partials/modules/_pod.scss */
 .pod-content, .page-content {
   padding-left: 10px;
   padding-right: 10px;
