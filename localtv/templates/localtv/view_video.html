@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -51,6 +51,60 @@ margin: 0 auto;
 {% endblock %}
 
 {% block content %}
+	<div class="row">
+		<div class="col-two-thirds">
+			<section class="pod video-full">
+				<header class="pod-header">
+					<h1 class="pod-title">
+						{% if current_video.name %}
+							{{ current_video.name }}
+						{% else %}
+							{% trans "(no title)" %}
+						{% endif %}
+					</h1>
+				</header>{# /.pod-header #}
+				<div class="pod-content">
+					{% if current_video.embed_code %}
+						{{ current_video.embed_code|wmode_transparent }}
+					{% else %}
+						{% get_thumbnail_url current_video 534 430 as video_thumbnail %}
+						{% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
+						{% if current_video.file_url_mimetype|is_ogg_media %}
+							<p class="help">
+								This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
+							</p>
+						{% endif %}
+					{% endif %}
+				</div>
+			</section>{# /.pod.video #}
+		</div>{# /.col-two-thirds #}
+		<aside class="col-one-third right">
+			<section class="pod video-share">
+				<header class="pod-header">
+					<h1 class="pod-title">{% trans "Share This Video" %}</h1>
+				</header>
+				<div class="pod-content">
+					<ul class="share_links">
+						<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">Post to Facebook</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
+						<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">Email to Friends</a></li>
+						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">Tweet this Video</a></li>
+						{% if current_video.file_url %}
+							<li><a href="{{ current_video.file_url }}" class="download">Download Video File</a></li>
+						{% endif %}
+					</ul>
+				</div>{# /.pod-content #}
+			</section>
+			<section class="pod video-playlists">
+				<header class="pod-header">
+					<h1 class="pod-title">{% trans "Playlists"%}</h1>
+				</header>
+				<div class="pod-content">
+				</div>
+			</section>
+		</aside>{# /.col-one-third.right #}
+	</div>
+
+	<hr />
   {% if edit_video_form %}
     {% include "localtv/admin/edit_video_form.html" %}
   {% endif %}
@@ -62,11 +116,6 @@ margin: 0 auto;
         {% editable_widget current_video "name" %}
         {% else %}
         <h2>
-        {% if current_video.name %}
-        {{ current_video.name }}
-        {% else %}
-        {% trans "(no title)" %}
-        {% endif %}
         </h2>
         {% endif %}
       </div>
