@@ -49,6 +49,7 @@
 	display:block;
 }
 .nav-categories > ul{
+	@extend .unstyled-list;
 	display:none;
 	position:absolute;
 	z-index:1337;

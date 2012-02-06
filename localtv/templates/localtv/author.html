@@ -33,16 +33,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</header>
 
 	<div class="page-content row">
-			<aside class="author-info col-one-third">
-				{% if author.get_profile.logo %}
-					<img src="{{ author.get_profile.logo.url }}">
-				{% endif %}
-				{% if author.get_profile.location %}<div id="location">{{ author.get_profile.location }}</div>{% endif %}
-				{% if author.get_profile.website %}<div id="link">{{ author.get_profile.website|urlize }}</div>{% endif %}
-				<div>{{ author.get_profile.description|sanitize }}</div>
-			</aside>
-			<div class="author-videos col-two-thirds right">
-				{% include "localtv/_video_summary_list.html" %}
-			</div>
+		<aside class="author-info col-one-third">
+			<h1>{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
+			{% if author.get_profile.logo %}
+				<img src="{{ author.get_profile.logo.url }}">
+			{% endif %}
+			<ul class="author-detail-list">
+				{% if author.get_profile.location %}<li class="author-location">{{ author.get_profile.location }}</li>{% endif %}
+				{% if author.get_profile.website %}<li class="author-website"><a href="{{ author.get_profile.website }}">Website</a></li>{% endif %}
+			</ul>
+			<div>{{ author.get_profile.description|sanitize }}</div>
+		</aside>
+		<div class="author-videos col-two-thirds right">
+			{% include "localtv/_video_summary_list.html" %}
+		</div>
 	</div>
 {% endblock %}

@@ -1,9 +1,19 @@
 @import "compass/css3/border-radius";
 
+ul, ol{
+	padding-left: 1.5em;
+}
+ul > li{
+	list-style-type: disc;
+}
+ol > li{
+	list-style-type: decimal;
+}
+
 .unstyled-list{
 	margin:0;
 	padding:0;
-	li{
+	& > li{
 		list-style-type:none;
 	}
 }
