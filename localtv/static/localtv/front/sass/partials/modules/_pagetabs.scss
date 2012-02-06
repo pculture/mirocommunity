@@ -1,23 +1,38 @@
-@import "compass/css3/box-shadow";
+@import "compass/css3/box-shadow",
+		"compass/css3/images",
+		"compass/css3/border-radius";
 
 .pagetabs{
 	@extend .unstyled-list;
 	@include clearfix;
-	@include box-shadow(0 1px 0 0 #FFF);
 	@include margin-trailer;
-	border-bottom:1px solid #CCC;
-	border-top:1px solid #CCC;
-	background:#FFF;
 	a, .ellipse span{
+		border:1px solid #CCC;
+		width:$base-line-height;
+		text-align:center;
 		float:left;
-		border-right:1px solid #CCC;
-		border-bottom:0;
-		padding:#{$base-line-height / 2 - 1px} $base-line-height;
+		padding:$base-line-height / 4 - 1px;
+		margin:#{$base-line-height / 4} #{$base-line-height / 4} #{$base-line-height / 4} 0;
+		@include background-image(linear-gradient(#F5F5F5, #E5E5E5));
+		@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 2px 0 #DDD);
+		@include border-radius(3px);
+		color:#666;
+		text-shadow:0 1px 0 #FFF;
+	}
+	.ellipse span{
+		color:#999;
+		border-color:#DDD;
 	}
 	a:hover{
-		background:#F5F5F5;
+		border:1px solid #{$color1 * .5 + #CCC * .5};
+		color:$color1 * .5 + #666 * .5
 	}
-	.selected a{
-		background:lighten($color1, 60%);
+	.selected > a{
+		color:#FFF;
+		@include background-image(linear-gradient(#999, #777));
+		@include box-shadow(0 1px 0 0 #AAA inset, 0 1px 2px 0 #DDD);
+		text-shadow:0 -1px 0 #666;
+		border:1px solid #666;
+		font-weight:bold;
 	}
 }
