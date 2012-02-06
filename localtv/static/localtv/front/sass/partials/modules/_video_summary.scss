@@ -4,23 +4,31 @@
 $thumb-width: 140px;
 
 .video-summary{
-	@include clearfix;
+	@include pie-clearfix;
 	@include margin-trailer;
 	padding-left:$thumb-width + $gutter-width;
 }
 
 .thumb{
-	width:$thumb-width;
-	margin-left:- $thumb-width - $gutter-width;
+	width:$thumb-width + 2px;
+	margin-left:- $thumb-width - 2px - $gutter-width;
 	float:left;
 	position:relative;
 	& > a{
 		border:0;
 		display:block;
 		position:relative;
+		border:1px solid #000;
+		@include box-shadow(0 2px 4px 0 rgba(0,0,0,.5));
+		@include border-radius(3px);
+		overflow:hidden;
+	}
+	& > a:hover{
+		border-color:$color1;
 	}
 	& > a > img{
 		display:block;
+		@include border-radius(3px);
 	}
 	// This adds gloss
 	& > a::after{
@@ -32,8 +40,8 @@ $thumb-width: 140px;
 		right:0;
 		bottom:0;
 		@include background(linear-gradient(-45deg, rgba(255,255,255,.15) 0, rgba(255,255,255,.15) 50%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%));
-		@include box-shadow(1px 1px 0 rgba(255,255,255,.25) inset);
-		border:1px solid #000;
+		@include box-shadow(0 0 0 1px rgba(255,255,255,.25) inset);
+		@include border-radius(3px);
 	}
 }
 

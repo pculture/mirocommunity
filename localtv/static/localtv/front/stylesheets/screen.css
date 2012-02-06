@@ -344,16 +344,21 @@ ol > li {
 
 /* line 6, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
-  overflow: hidden;
   *zoom: 1;
   margin-bottom: 18px;
   padding-left: 160px;
 }
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+.video-summary:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
 /* line 12, ../sass/partials/modules/_video_summary.scss */
 .thumb {
-  width: 140px;
-  margin-left: -160px;
+  width: 142px;
+  margin-left: -162px;
   float: left;
   position: relative;
 }
@@ -362,12 +367,34 @@ ol > li {
   border: 0;
   display: block;
   position: relative;
-}
-/* line 22, ../sass/partials/modules/_video_summary.scss */
-.thumb > a > img {
-  display: block;
+  border: 1px solid #000;
+  -moz-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  -o-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  overflow: hidden;
 }
 /* line 26, ../sass/partials/modules/_video_summary.scss */
+.thumb > a:hover {
+  border-color: #9e0007;
+}
+/* line 29, ../sass/partials/modules/_video_summary.scss */
+.thumb > a > img {
+  display: block;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+}
+/* line 34, ../sass/partials/modules/_video_summary.scss */
 .thumb > a::after {
   content: " ";
   display: block;
@@ -382,21 +409,26 @@ ol > li {
   background: -o-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
   background: -ms-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
   background: linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
-  -moz-box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25) inset;
-  -webkit-box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25) inset;
-  -o-box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25) inset;
-  box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25) inset;
-  border: 1px solid #000;
+  -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  -o-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
 }
 
-/* line 40, ../sass/partials/modules/_video_summary.scss */
+/* line 48, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 45, ../sass/partials/modules/_video_summary.scss */
+/* line 53, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
