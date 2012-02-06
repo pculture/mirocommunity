@@ -160,12 +160,12 @@ h1, h2, h3, h4, h5, h6 {
 /* line 1, ../sass/partials/_base.scss */
 a {
   text-decoration: none;
-  color: #9e0007;
+  color: #344f6d;
 }
 
 /* line 5, ../sass/partials/_base.scss */
 a:hover {
-  color: #520004;
+  color: #1b2939;
   border-bottom: 1px solid #CCC;
 }
 
@@ -342,7 +342,7 @@ ol > li {
   box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
 }
 
-/* line 6, ../sass/partials/modules/_video_summary.scss */
+/* line 7, ../sass/partials/modules/_video_summary.scss */
 .video-summary {
   *zoom: 1;
   margin-bottom: 18px;
@@ -355,14 +355,14 @@ ol > li {
   clear: both;
 }
 
-/* line 12, ../sass/partials/modules/_video_summary.scss */
+/* line 13, ../sass/partials/modules/_video_summary.scss */
 .thumb {
   width: 142px;
   margin-left: -162px;
   float: left;
   position: relative;
 }
-/* line 17, ../sass/partials/modules/_video_summary.scss */
+/* line 18, ../sass/partials/modules/_video_summary.scss */
 .thumb > a {
   border: 0;
   display: block;
@@ -379,12 +379,20 @@ ol > li {
   -khtml-border-radius: 3px;
   border-radius: 3px;
   overflow: hidden;
+  -moz-transition: all 0.25s linear;
+  -webkit-transition: all 0.25s linear;
+  -o-transition: all 0.25s linear;
+  transition: all 0.25s linear;
 }
-/* line 26, ../sass/partials/modules/_video_summary.scss */
+/* line 28, ../sass/partials/modules/_video_summary.scss */
 .thumb > a:hover {
-  border-color: #9e0007;
+  border-color: #344f6d;
+  -moz-box-shadow: 0 0 8px 0 #344f6d;
+  -webkit-box-shadow: 0 0 8px 0 #344f6d;
+  -o-box-shadow: 0 0 8px 0 #344f6d;
+  box-shadow: 0 0 8px 0 #344f6d;
 }
-/* line 29, ../sass/partials/modules/_video_summary.scss */
+/* line 32, ../sass/partials/modules/_video_summary.scss */
 .thumb > a > img {
   display: block;
   -moz-border-radius: 3px;
@@ -394,7 +402,7 @@ ol > li {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 34, ../sass/partials/modules/_video_summary.scss */
+/* line 37, ../sass/partials/modules/_video_summary.scss */
 .thumb > a::after {
   content: " ";
   display: block;
@@ -421,14 +429,14 @@ ol > li {
   border-radius: 3px;
 }
 
-/* line 48, ../sass/partials/modules/_video_summary.scss */
+/* line 51, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 53, ../sass/partials/modules/_video_summary.scss */
+/* line 56, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
@@ -614,13 +622,13 @@ ol > li {
     width: 100%;
   }
 }
-/* line 5, ../sass/partials/modules/_pagetabs.scss */
+/* line 6, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs {
   overflow: hidden;
   *zoom: 1;
   margin-bottom: 18px;
 }
-/* line 9, ../sass/partials/modules/_pagetabs.scss */
+/* line 10, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs a, .pagetabs .ellipse span {
   border: 1px solid #CCC;
   width: 18px;
@@ -647,17 +655,17 @@ ol > li {
   color: #666;
   text-shadow: 0 1px 0 #FFF;
 }
-/* line 22, ../sass/partials/modules/_pagetabs.scss */
+/* line 23, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs .ellipse span {
   color: #999;
   border-color: #DDD;
 }
-/* line 26, ../sass/partials/modules/_pagetabs.scss */
+/* line 27, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs a:hover {
-  border: 1px solid #b56669;
-  color: #823336;
+  border: 1px solid #808d9c;
+  color: #4d5a69;
 }
-/* line 30, ../sass/partials/modules/_pagetabs.scss */
+/* line 31, ../sass/partials/modules/_pagetabs.scss */
 .pagetabs .selected > a {
   color: #FFF;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #999999), color-stop(100%, #777777));
