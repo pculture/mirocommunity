@@ -46,7 +46,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             </span>
             {% endif %}
             {% if video.publish_date %}
-            <span class="posted_at">Published {{ video.publish_date|simpletimesince }} ago</span>
+            <span class="posted_at">Published {{ video.publish_datetime|simpletimesince }} ago</span>
             {% endif %}
           </span>
           {% if video.tags %}
