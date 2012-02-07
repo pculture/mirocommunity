@@ -128,7 +128,7 @@ class VideoIndex(QueuedSearchIndex):
         return self._prepare_field(video, 'tags')
 
     def prepare_categories(self, video):
-        return self._prepare_field(video, 'categories')
+        return [int(rel.pk) for rel in video.all_categories]
 
     def prepare_authors(self, video):
         return self._prepare_field(video, 'authors')

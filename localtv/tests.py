@@ -935,7 +935,7 @@ class ViewTestCase(BaseTestCase):
         The video_search view should search the category for videos.
         """
         video = Video.objects.get(pk=20)
-        video.categories = [1, 2] # Miro, Linux
+        video.categories = [2] # Linux (child of Miro)
         video.save()
         self._rebuild_index()
 
@@ -1069,6 +1069,9 @@ class ViewTestCase(BaseTestCase):
         The category view should render the 'localtv/category.html'
         template, and include the appropriate category.
         """
+        video = Video.objects.get(pk=20)
+        video.categories = [2] # Linux (child of Miro)
+        video.save()
         category = Category.objects.get(slug='miro')
         c = Client()
         response = c.get(category.get_absolute_url())
@@ -1076,6 +1079,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(response.template[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
+        self.assertEqual(response.context['page_obj'].object_list, [video])
 
     def test_author_index(self):
         """

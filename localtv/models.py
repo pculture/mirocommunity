@@ -1971,6 +1971,21 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
+    @property
+    def all_categories(self):
+        """
+        Returns a set of all the categories to which this video belongs.  We
+        use a depth-first search, ignoring duplicates.
+        """
+        categories = set()
+        for category in self.categories.all():
+            categories.add(category)
+            parent = category.parent
+            while parent:
+                categories.add(parent)
+                parent = parent.parent
+        return categories
+
     def voting_enabled(self):
         if not lsettings.voting_enabled():
             return False
