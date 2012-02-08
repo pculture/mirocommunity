@@ -23,7 +23,7 @@ from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
-from haystack import site
+from haystack import site, load_backend
 from haystack.query import SearchQuerySet
 
 # Some haystack backends raise lock errors if concurrent processes try to update
@@ -207,9 +207,9 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             haystack_filter = {'pk_hack__in': video_pks}
         else:
             haystack_filter = {'django_id__in': video_pks}
-        haystack_count = SearchQuerySet().models(Video).filter(**haystack_filter
-                                                      ).count()
-    
+        haystack_count = SearchQuerySet(
+           query=load_backend().SearchQuery()).models(Video).filter(
+           **haystack_filter).count()
     logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
                    '%i, haystack_count: %i'), import_app_label, import_model,
                    import_pk, using, video_count, haystack_count)
@@ -237,10 +237,9 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         source_import = import_class.objects.using(using).get(
            pk=import_pk,
            status=import_class.STARTED)
-    except import_class.DoesNotExist, e:
+    except import_class.DoesNotExist:
         logging.warn('Retrying %r: expected %s instance (pk=%r) missing.',
                      vidscraper_video.url, import_class.__name__, import_pk)
-        request = video_from_vidscraper_video.request
         video_from_vidscraper_video.retry()
 
     try:
