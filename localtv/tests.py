@@ -1069,17 +1069,22 @@ class ViewTestCase(BaseTestCase):
         The category view should render the 'localtv/category.html'
         template, and include the appropriate category.
         """
-        video = Video.objects.get(pk=20)
-        video.categories = [2] # Linux (child of Miro)
-        video.save()
         category = Category.objects.get(slug='miro')
+        for video in models.Video.objects.filter(status=models.Video.ACTIVE):
+            video.categories = [1] # Linux
+            video.save()
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
-        self.assertEqual(response.context['page_obj'].object_list, [video])
+        videos = list(models.Video.objects.with_best_date().filter(
+                status=models.Video.ACTIVE).order_by('-best_date')[:15])
+        self.assertEqual(videos, sorted(videos, key=lambda v: v.when(),
+                                        reverse=True))
+        self.assertEqual(response.context['page_obj'].object_list,
+                         videos)
 
     def test_author_index(self):
         """
