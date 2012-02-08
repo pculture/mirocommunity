@@ -291,7 +291,7 @@ class CategoryVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Category: %s') % obj['obj'].name
+            _(u'Category: %s') % force_unicode(obj['obj'].name)
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
@@ -311,9 +311,9 @@ class AuthorVideosFeed(BaseVideosFeed):
         if not name_or_username.strip():
             name_or_username = obj['obj'].username
 
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Author: %s') % name_or_username)
+            _(u'Author: %s') % force_unicode(name_or_username))
 
 
 class FeedVideosFeed(BaseVideosFeed):
@@ -338,7 +338,7 @@ class FeedVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
-            obj['obj'].name or '')
+            force_unicode(obj['obj'].name) or '')
 
 
 class TagVideosFeed(BaseVideosFeed):
@@ -373,7 +373,8 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def title(self, obj):
         return u"%s: %s" % (
-            Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
+            Site.objects.get_current().name,
+            _(u'Search: %s') % force_unicode(obj['obj'].query_string))
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
@@ -407,4 +408,4 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Playlist: %s') % obj['obj'].name)
+            _(u'Playlist: %s') % force_unicode(obj['obj'].name))
