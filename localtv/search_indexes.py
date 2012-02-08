@@ -21,7 +21,7 @@ from django.utils.encoding import force_unicode
 from haystack import indexes
 from haystack import site
 from localtv.models import Video, Watch
-from localtv.search.utils import SortFilterMixin
+from localtv.search.utils import FeaturedSort, ApprovedSort
 from localtv.tasks import haystack_update_index
 
 from django.conf import settings
@@ -80,12 +80,15 @@ class VideoIndex(QueuedSearchIndex):
     playlists = indexes.MultiValueField()
 
     # Aggregated/collated data.
-    best_date = indexes.DateTimeField(model_attr='when')
+    #: The best_date field if the publish date is not considered.
+    best_date = indexes.DateTimeField()
+    #: The best_date field if the original date is considered.
+    best_date_with_published = indexes.DateTimeField()
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
-                            default=SortFilterMixin._empty_value['featured'])
+                                          default=FeaturedSort.empty_value)
     when_approved = indexes.DateTimeField(model_attr='when_approved',
-                            default=SortFilterMixin._empty_value['approved'])
+                                          default=ApprovedSort.empty_value)
 
     def _setup_save(self, model):
         super(VideoIndex, self)._setup_save(model)
@@ -143,6 +146,12 @@ class VideoIndex(QueuedSearchIndex):
             return video.watch_count
         except AttributeError:
             return video.watch_set.count()
+
+    def prepare_best_date(self, video):
+        return video.when_approved or video.when_submitted
+
+    def prepare_best_date_with_published(self, video):
+        return video.when_published or self.prepare_best_date(video)
 
     def _enqueue_instance(self, instance, is_removal):
         if (not instance.name and not instance.description

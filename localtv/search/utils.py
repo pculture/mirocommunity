@@ -23,7 +23,7 @@ from django.db.models.fields import FieldDoesNotExist
 from haystack.backends import SQ
 from tagging.models import Tag
 
-from localtv.models import Video, Feed, Category
+from localtv.models import Video, Feed, Category, SiteLocation
 from localtv.playlists.models import Playlist
 from localtv.search.forms import SmartSearchForm, FilterForm
 
@@ -52,6 +52,53 @@ class SearchQuerysetSliceHack(object):
         return iter(self.searchqueryset)
 
 
+class Sort(object):
+    """
+    Class representing a sort which can be performed on a
+    :class:`SearchQuerySet` and the methods which make that sort work.
+
+    """
+    #: The index which will be used in the sort query.
+    sort_index = None
+
+    #: If not ``None``, a value which is used as a filler for being 'empty'.
+    #: This is an unfortunate hack necessitated by lack of ``__isnull``
+    #: searching in :mod:`haystack`.
+    #:
+    #: .. note:: Datetime indexes using this hack should use ``datetime.max``
+    #:           rather than ``datetime.min`` because :mod:`whoosh` doesn't
+    #:           support datetime values before 1900.
+    empty_value = None
+
+    def sort(self, queryset, descending=False):
+        if self.empty_value is not None:
+            queryset = queryset.exclude(**{self.sort_field: self.empty_value})
+        return queryset.order_by(''.join(('-' if descending else '',
+                                          self.sort_field)))
+
+
+class BestDateSort(Sort):
+    @property
+    def sort_field(self):
+        if SiteLocation.objects.get_current().use_original_date:
+            return 'best_date_with_published'
+        return 'best_date'
+
+
+class FeaturedSort(Sort):
+    sort_field = 'last_featured'
+    empty_value = datetime.max
+
+
+class ApprovedSort(Sort):
+    sort_field = 'when_approved'
+    empty_value = datetime.max
+
+class PopularSort(Sort):
+    sort_field = 'watch_count'
+    empty_value = 0
+
+
 class SortFilterMixin(object):
     """
     Generic mixin to provide standardized haystack-based filtering and sorting
@@ -62,22 +109,13 @@ class SortFilterMixin(object):
     #: Defines the available sort options and the indexes that they correspond
     #: to on the :class:`localtv.search_indexes.VideoIndex`.
     sorts = {
-        'date': 'best_date',
-        'featured': 'last_featured',
-        'popular': 'watch_count',
-        'approved': 'when_approved',
+        'date': BestDateSort(),
+        'featured': FeaturedSort(),
+        'popular': PopularSort(),
+        'approved': ApprovedSort(),
 
         # deprecated
-        'latest': 'best_date'
-    }
-
-    #: Defines which items should be excluded when using a given sort. This is a
-    #: hack necessitated by lack of __isnull searching in haystack. Max is used
-    #: because whoosh can't handle datetime values before 1900. Ick ick ick.
-    _empty_value = {
-        'featured': datetime.max,
-        'approved': datetime.max,
-        'popular': 0
+        'latest': BestDateSort()
     }
 
     #: Defines the available filtering options and the indexes that they
@@ -90,16 +128,16 @@ class SortFilterMixin(object):
         'feed': {'model': Feed, 'fields': ['feed']},
     }
 
-    def _process_sort(self, sort):
+    def _process_sort(self, sort_string):
         """
-        Parses the sort string and returns a (sort, descending) tuple.
+        Parses the sort string and returns a (sort_string, descending) tuple.
 
         """
         descending = False
-        if sort is not None and sort[0] == '-':
+        if sort_string is not None and sort_string[0] == '-':
             descending = True
-            sort = sort[1:]
-        return (sort, descending)
+            sort_name = sort_string[1:]
+        return (sort_name, descending)
 
     def _make_search_form(self, query):
         """Creates and returns a search form for the given query."""
@@ -113,19 +151,17 @@ class SortFilterMixin(object):
         form = self._make_search_form(query)
         return form.search()
 
-    def _sort(self, searchqueryset, sort):
+    def _sort(self, searchqueryset, sort_string):
         """
-        Sets up the searchqueryset to use the specified sort and returns it.
+        Sets up the searchqueryset to use the sort corresponding to
+        ``sort_string`` and returns it. If there is no corresponding sort,
+        returns the searchqueryset unmodified.
 
         """
-        sort, desc = self._process_sort(sort)
-        order_by = self.sorts.get(sort, None)
-        if order_by is not None:
-            if sort in self._empty_value:
-                searchqueryset = searchqueryset.exclude(
-                                    **{order_by: self._empty_value[sort]})
-            searchqueryset = searchqueryset.order_by(
-                            ''.join(('-' if desc else '', order_by)))
+        sort_name, desc = self._process_sort(sort_string)
+        sort = self.sorts.get(sort_name, None)
+        if sort is not None:
+            return sort.sort(searchqueryset, descending=desc)
         return searchqueryset
 
     def _get_filter_objects(self, model_class, **kwargs):
