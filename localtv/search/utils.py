@@ -130,13 +130,11 @@ class SortFilterMixin(object):
 
     def _process_sort(self, sort_string):
         """
-        Parses the sort string and returns a (sort_string, descending) tuple.
+        Parses the sort string and returns a (sort_name, descending) tuple.
 
         """
-        descending = False
-        if sort_string is not None and sort_string[0] == '-':
-            descending = True
-            sort_name = sort_string[1:]
+        descending = sort_string is not None and sort_string[0] == '-'
+        sort_name = sort_string if not descending else sort_string[1:]
         return (sort_name, descending)
 
     def _make_search_form(self, query):
