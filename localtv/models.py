@@ -223,9 +223,10 @@ SITE_LOCATION_CACHE = {}
 class SiteLocationManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
+        db = self._db if self._db is not None else 'default'
         try:
             # Dig it out of the cache.
-            current_site_location = SITE_LOCATION_CACHE[(self._db, sid)]
+            current_site_location = SITE_LOCATION_CACHE[(db, sid)]
         except KeyError:
             # Not in the cache? Time to put it in the cache.
             try:
@@ -234,9 +235,9 @@ class SiteLocationManager(models.Manager):
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
                 current_site_location = self.create(
-                    site=Site.objects.db_manager(self._db).get_current())
+                    site=Site.objects.db_manager(db).get_current())
 
-            SITE_LOCATION_CACHE[(self._db, sid)] = current_site_location
+            SITE_LOCATION_CACHE[(db, sid)] = current_site_location
         return current_site_location
 
     def get(self, **kwargs):
@@ -458,7 +459,7 @@ class SiteLocation(Thumbnailable):
         return bool(self.admins.filter(pk=user.pk).count())
 
     def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[self.site_id] = self
+        SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):
