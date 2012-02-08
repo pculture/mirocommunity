@@ -374,7 +374,7 @@ class SearchVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _(u'Search: %s') % force_unicode(obj['obj'].query_string))
+            _(u'Search: %s') % force_unicode(obj['obj']))
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
