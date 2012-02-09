@@ -61,7 +61,9 @@ margin: 0 auto;
 					{% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
 					{% if current_video.file_url_mimetype|is_ogg_media %}
 						<p class="help">
-							This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
+							{% blocktrans %}
+								This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
+							{% endblocktrans %}
 						</p>
 					{% endif %}
 				{% endif %}
@@ -77,8 +79,28 @@ margin: 0 auto;
 					</h1>
 				</header>{# /.video-header #}
 				<div class="video-description">
-					{{ current_video.description|sanitize }}
+					<p>{{ current_video.description|sanitize }}</p>
 				</div>{# /.video-description #}
+				<div class="details-list">
+					<li class="when">
+						{% if user_is_admin %}
+							{% editable_widget current_video "when_published" %}
+						{% else %}
+							{% with current_video as instance %}
+								{% include "localtv/inline_edit/video_when_published.html" %}
+							{% endwith %}
+						{% endif %}
+					</li>
+					<li class="authors">
+						{% if user_is_admin %}
+							{% editable_widget current_video "authors" %}
+						{% else %}
+							{% with current_video as instance %}
+								{% include "localtv/inline_edit/video_authors.html" %}
+							{% endwith %}
+						{% endif %}
+					</li>
+				</div>{# /.details-list #}
 			</section>{# /.video-details #}
 		</div>{# /.container #}
 	</section>{# /.video-stage #}
@@ -87,6 +109,55 @@ margin: 0 auto;
 {% block content %}
 	<div class="row">
 		<div class="col-two-thirds">
+			{% get_comment_list for current_video as comments %}
+			{% if comments %}
+				<div class="comments pod">
+					{% get_comment_count for current_video as comment_count %}
+					<header class="pod-header">
+						{% if comment_count %}<h1 class="pod-title comments-count">{{ comment_count }} Comment{{ comment_count|pluralize }}</h1>{% endif %}
+					</header>
+					<div class="pod-content">
+						<ul class="comments-list">
+							{% for comment in comments %}
+								<li class="comment">
+									<div class="comment-poster">
+										<h4 id="c{{ comment.id }}">{% if comment.user %}<a href="{% url localtv_author comment.user.pk %}">{{ comment.user_name }}</a>{% else %}{{ comment.user_name }}{% endif %}</h4>
+										<span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
+										{% if user_is_admin %}
+											<div class="comment-moderation">
+												<form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
+													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+													<button type="submit">{% trans "delete" %}</button>
+												</form>
+												<form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
+													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+													<button type="submit">{% trans "spam" %}</button>
+												</form>
+											</div>
+										{% endif %}
+									</div>
+									<div class="comment-body">
+										{{ comment.comment|sanitize }}
+									</div>
+								</li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>{# /.comments.pod #}
+			{% endif %}{# endif comments #}
+			{% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+				{% get_comment_form for current_video as comment_form %}
+				<form class="comments-form pod" action="{% comment_form_target %}" method="post">{% csrf_token %}
+					<header class="pod-header">
+						<h1 class="pod-title">{% trans "Post a comment" %}</h1>
+					</header>
+					<div class="pod-content">
+						{% with comment_form as form %}
+							{% include "comments/form_base.html" %}
+						{% endwith %}
+					</div>
+				</form>{# /.comments-form.pod #}
+			{% endif %}
 		</div>{# /.col-two-thirds #}
 		<aside class="col-one-third right">
 			<section class="pod video-share">
@@ -95,15 +166,44 @@ margin: 0 auto;
 				</header>
 				<div class="pod-content">
 					<ul class="share_links">
-						<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">Post to Facebook</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
-						<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">Email to Friends</a></li>
-						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">Tweet this Video</a></li>
+						<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">{% trans "Post to Facebook" %}</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
+						<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
+						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
 						{% if current_video.file_url %}
-							<li><a href="{{ current_video.file_url }}" class="download">Download Video File</a></li>
+							<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
 						{% endif %}
 					</ul>
 				</div>{# /.pod-content #}
-			</section>
+			</section>{# /.pod.video-share #}
+			<section class="pod video-extra-details">
+				<header class="pod-header">
+					<h1 class="pod-title">{% trans "Details" %}</h1>
+				</header>
+				<div class="pod-content">
+					{% if user_is_admin or current_video.categories %}
+						<li class="item">
+							{% if user_is_admin %}
+								{% editable_widget current_video "categories" %}
+							{% else %}
+								{% with current_video as instance %}
+									{% include "localtv/inline_edit/video_categories.html" %}
+								{% endwith %}
+							{% endif %}
+						</li>
+					{% endif %}
+					{% if user_is_admin or current_video.tags %}
+						<li class="item">
+							{% if user_is_admin %}
+								{% editable_widget current_video "tags" %}
+							{% else %}
+								{% with current_video as instance %}
+									{% include "localtv/inline_edit/video_tags.html" %}
+								{% endwith %}
+							{% endif %}
+						</li>
+					{% endif %}
+				</div>
+			</section>{# /.pod.video-extra-details #}
 			<section class="pod video-playlists">
 				<header class="pod-header">
 					<h1 class="pod-title">{% trans "Playlists"%}</h1>
