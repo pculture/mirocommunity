@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -291,7 +291,7 @@ class CategoryVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Category: %s') % obj['obj'].name
+            _(u'Category: %s') % force_unicode(obj['obj'].name)
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
@@ -311,9 +311,9 @@ class AuthorVideosFeed(BaseVideosFeed):
         if not name_or_username.strip():
             name_or_username = obj['obj'].username
 
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Author: %s') % name_or_username)
+            _(u'Author: %s') % force_unicode(name_or_username))
 
 
 class FeedVideosFeed(BaseVideosFeed):
@@ -338,7 +338,7 @@ class FeedVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
-            obj['obj'].name or '')
+            force_unicode(obj['obj'].name) or '')
 
 
 class TagVideosFeed(BaseVideosFeed):
@@ -373,7 +373,8 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def title(self, obj):
         return u"%s: %s" % (
-            Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
+            Site.objects.get_current().name,
+            _(u'Search: %s') % force_unicode(obj['obj']))
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
@@ -407,4 +408,4 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Playlist: %s') % obj['obj'].name)
+            _(u'Playlist: %s') % force_unicode(obj['obj'].name))
