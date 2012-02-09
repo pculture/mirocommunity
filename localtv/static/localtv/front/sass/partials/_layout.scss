@@ -1,4 +1,5 @@
-@import "compass/utilities/general/clearfix";
+@import "compass/utilities/general/clearfix",
+		"compass/css3/box-shadow";
 
 #main{
 	@include clearfix;
@@ -6,8 +7,8 @@
 
 #main > .container{
 	background:#FFF;
-	border:3px solid #E5E5E5;
 	border-width:0 3px;
+	@include box-shadow(0 0 5px 0 rgba(0,0,0,.15));
 }
 
 @media screen and (max-width:950px){
