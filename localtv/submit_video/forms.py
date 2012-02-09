@@ -15,297 +15,165 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-import urllib
-import importlib
+import urlparse
 
 from django import forms
 from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
+from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.conf import settings
-
+from django.db.models import Q
 from tagging.forms import TagField
+import vidscraper
+from vidscraper.errors import CantIdentifyUrl
 
-from localtv import models
-from localtv.utils import (quote_unicode_url, get_profile_model,
-                          get_or_create_tags)
+from localtv.exceptions import CannotOpenImageUrl
+from localtv.models import Video, SiteLocation
 from localtv.templatetags.filters import sanitize
 
-class ImageURLField(forms.URLField):
 
-    def clean(self, value):
-        value = forms.URLField.clean(self, value)
-        if not self.required and value in ['', None]:
-            return value
-        value = quote_unicode_url(value)
-        content_thumb = ContentFile(urllib.urlopen(value).read())
+class SubmitURLForm(forms.Form):
+    """Accepts submission of a URL."""
+    url = forms.URLField(verify_exists=False)
+
+    def _validate_unique(self, url=None, guid=None):
+        identifiers = Q()
+        if url is not None:
+            identifiers |= Q(website_url=url) | Q(file_url=url)
+        if guid is not None:
+            identifiers |= Q(guid=guid)
+        videos = Video.objects.filter(identifiers,
+                                      ~Q(status=Video.REJECTED),
+                                      site=Site.objects.get_current())
+
+        # HACK: We set attributes on the form so that we can provide
+        # backwards-compatible template context. We should remove this when it's
+        # no longer needed.
         try:
-            Image.open(content_thumb)
-        except IOError:
-            raise forms.ValidationError('Not a valid image.')
+            video = videos[0]
+        except IndexError:
+            self.was_duplicate = False
+            self.duplicate_video = None
+            self.duplicate_video_pk = None
         else:
-            content_thumb.seek(0)
-            return content_thumb
+            self.was_duplicate = True
+            self.duplicate_video_pk = video.pk
+            if video.status == Video.ACTIVE:
+                self.duplicate_video = video
+            else:
+                self.duplicate_video = None
+            raise ValidationError("That video has already been submitted!")
 
-def get_extended_init_callable_for_class_name(class_name):
-    # This is a hacky implementation of plugins.
-    #
-    # If the settings.LOCALTV_SUBMISSION_EXTRA_INIT option is defined,
-    # then we look for a key equal to class_name.
-    #
-    # If that exists, we try calling importing that string and treating it as
-    # a Python name to import, probably a callable. We return it!
-    #
-    # This helps us permit sites to have site-specific behavior on top of what
-    # the SubmitVideoForm and friends do, without directly modifying this file.
-    if getattr(settings, 'LOCALTV_SUBMISSION_EXTRA_INIT', None):
-        if class_name in settings.LOCALTV_SUBMISSION_EXTRA_INIT:
-            name_of_thing_to_call = settings.LOCALTV_SUBMISSION_EXTRA_INIT[
-                class_name]
-            module_name, entry = name_of_thing_to_call.rsplit('.', 1)
-            module = importlib.import_module(module_name)
-            return getattr(module, entry)
-
-    # Otherwise, return a silly function that does nothing.
-    silly_function = lambda *args, **kwargs: None
-    return silly_function
-
-class SubmitVideoForm(forms.Form):
-    url = forms.URLField(verify_exists=True)
-
-    def __init__(self, *args, **kwargs):
-        # By convention, when you call this form's constructor, you
-        # pass a keyword argument called construction_hint.
-        #
-        # This form can be constructed without it, so it's optional.
-        #
-        # We pass the construction_hint information through to the
-        # "extra_init" system (which is a hacky form of plugins; see
-        # get_extended_init_callable_for_class_name above) so that the "plugin"
-        # can possibly alter the fields in the SubmitVideoForm.
-        #
-        # This is important so that the the form can be initialized differently
-        # based on subtle differences in the request.GET. It's kind of hackish,
-        # I realize.
-
-        # First, we copy the data out and remove the keyword argument to avoid
-        # scaring the superclass constructor:
-        if 'construction_hint' in kwargs:
-            construction_hint = kwargs['construction_hint']
-            del kwargs['construction_hint']
+    def clean_url(self):
+        url = urlparse.urldefrag(self.cleaned_data['url'])[0]
+        self._validate_unique(url=url)
+        self.video_cache = None
+        try:
+            self.video_cache = vidscraper.auto_scrape(url, api_keys={
+                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
+                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
+                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
+            })
+        except CantIdentifyUrl:
+            pass
         else:
-            construction_hint = None
-
-        super(SubmitVideoForm, self).__init__(*args, **kwargs)
-
-        # Okay, now put the construction_hint back on.
-        kwargs['construction_hint'] = construction_hint
-        kwargs['self'] = self
-        get_extended_init_callable_for_class_name('SubmitVideoForm')(
-            *args,
-             **kwargs)
+            if self.video_cache.link is not None and url != self.video_cache.link:
+                url = self.video_cache.link
+                self._validate_unique(url=url, guid=self.video_cache.guid)
+            elif self.video_cache.guid is not None:
+                self._validate_unique(guid=self.video_cache.guid)
+        return url
 
 
-REQUIRE_EMAIL = getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', None)
-if REQUIRE_EMAIL:
-    contact_label = 'E-mail (required)'
-    contact_required = True
-else:
-    contact_label = 'E-mail (optional)'
-    contact_required = False
-
-class SecondStepSubmitVideoForm(forms.ModelForm):
-    url = forms.URLField(verify_exists=True,
-                         widget=forms.widgets.HiddenInput)
+class SubmitVideoForm(forms.ModelForm):
     tags = TagField(required=False, label="Tags (optional)",
                     help_text=("You can also <span class='url'>optionally add "
                                "tags</span> for the video (below)."))
-    contact = forms.CharField(max_length=250,
-                              label=contact_label,
-                              required=contact_required)
-    notes = forms.CharField(widget=forms.Textarea,
-                           label='Notes (optional)',
-                           required=False)
 
-    class Meta:
-        model = models.Video
-        fields = ['tags', 'contact', 'notes']
+    if getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', False):
+        contact = Video._meta.get_field('contact').formfield(
+                              label='E-mail (required)',
+                              required=True)
 
-    def __init__(self, *args, **kwargs):
-        self.sitelocation = kwargs.pop('sitelocation', None)
-        self.user = kwargs.pop('user', None)
-        if self.user and self.user.is_authenticated():
-            kwargs.setdefault('initial', {})['contact'] = self.user.email
-        forms.ModelForm.__init__(self, *args, **kwargs)
-        if self.sitelocation:
-            self.instance.site = self.sitelocation.site
-        self.instance.status = models.Video.UNAPPROVED
-        kwargs['self'] = self
-        get_extended_init_callable_for_class_name('SecondStepSubmitVideoForm')(*args, **kwargs)
-
-    def save(self, **kwargs):
-        commit = kwargs.get('commit', True)
-        kwargs['commit'] = False
-        video = forms.ModelForm.save(self, **kwargs)
-        if self.user.is_authenticated():
-            video.user = self.user
-        if self.sitelocation.user_is_admin(self.user):
-            if (not self.sitelocation.enforce_tiers() or
-                self.sitelocation.get_tier().remaining_videos() >= 1):
-                video.status = models.Video.ACTIVE
-        old_m2m = self.save_m2m
-        def save_m2m():
-            video = self.instance
-            if video.status == models.Video.ACTIVE:
-                # when_submitted isn't set until after the save
-                video.when_approved = video.when_submitted
-                video.save()
-            if video.thumbnail_url and not video.has_thumbnail:
-                try:
-                    video.save_thumbnail()
-                except models.CannotOpenImageUrl:
-                    pass # we'll get it later
-            if self.cleaned_data.get('tags'):
-                video.tags = self.cleaned_data['tags']
-            old_m2m()
-        if commit:
-            video.save()
-            save_m2m()
-        else:
-            self.save_m2m = save_m2m
-        return video
-
-class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
-    name = forms.CharField(max_length=250,
-                           label="Video Name")
     thumbnail_file = forms.ImageField(required=False,
-                                     label="Thumbnail File (optional)")
-    thumbnail = ImageURLField(required=False,
-                              label="Thumbnail URL (optional)")
-    description = forms.CharField(widget=forms.widgets.Textarea,
-                                  required=False,
-                                  label="Video Description (optional)")
+                                      label="Thumbnail File (optional)")
 
-    class Meta(SecondStepSubmitVideoForm.Meta):
-        fields = SecondStepSubmitVideoForm.Meta.fields + ['name',
-                                                          'description']
+    def __init__(self, request, url, *args, **kwargs):
+        self.request = request
+        super(SubmitVideoForm, self).__init__(*args, **kwargs)
+        if request.user.is_authenticated():
+            self.initial['contact'] = request.user.email
+            self.instance.user = request.user
+        self.instance.site = Site.objects.get_current()
+        self.instance.status = Video.UNAPPROVED
+        if 'website_url' in self.fields:
+            self.instance.file_url = url
+        elif not self.instance.website_url:
+            self.instance.website_url = url
+
+    def _post_clean(self):
+        super(SubmitVideoForm, self)._post_clean()
+        # By this time, cleaned data has been applied to the instance.
+        identifiers = Q()
+        if self.instance.website_url:
+            identifiers |= Q(website_url=self.instance.website_url)
+        if self.instance.file_url:
+            identifiers |= Q(file_url=self.instance.file_url)
+        if self.instance.guid:
+            identifiers |= Q(guid=self.instance.guid)
+
+        videos = Video.objects.filter(identifiers,
+                                      ~Q(status=Video.REJECTED),
+                                      site=Site.objects.get_current())
+        if videos.exists():
+            self._update_errors({NON_FIELD_ERRORS: ["That video has already "
+                                                    "been submitted!"]})
 
     def clean_description(self):
         return sanitize(self.cleaned_data['description'],
                                  extra_filters=['img'])
 
-    def save(self, **kwargs):
-        commit = kwargs.get('commit', True)
-        kwargs['commit'] = False
-        video = SecondStepSubmitVideoForm.save(self, **kwargs)
-        old_m2m = self.save_m2m
-        def save_m2m():
-            if self.cleaned_data['thumbnail_file']:
-                self.instance.thumbnail_url = ''
-                self.instance.save_thumbnail_from_file(
-                    self.cleaned_data['thumbnail_file'])
-            elif self.cleaned_data['thumbnail']:
-                self.instance.thumbnail_url = self.data['thumbnail']
-                self.instance.save_thumbnail_from_file(
-                    self.cleaned_data['thumbnail'])
-            old_m2m()
-        if commit:
-            video.save()
-            save_m2m()
-        else:
-            self.save_m2m = save_m2m
-        return video
+    def save(self, commit=True):
+        instance = super(SubmitVideoForm, self).save(commit=False)
 
-class ScrapedSubmitVideoForm(SecondStepSubmitVideoForm):
-    def __init__(self, *args, **kwargs):
-        self.vidscraper_video = kwargs.pop('vidscraper_video', {})
-        if self.vidscraper_video.tags:
-            kwargs.setdefault('initial', {})['tags'] = \
-                get_or_create_tags(self.vidscraper_video.tags)
-        SecondStepSubmitVideoForm.__init__(self, *args, **kwargs)
+        if self.request.user_is_admin():
+            sitelocation = SiteLocation.objects.get_current()
+            if (not sitelocation.enforce_tiers() or
+                sitelocation.get_tier().remaining_videos() >= 1):
+                instance.status = Video.ACTIVE
 
-    def save(self, **kwargs):
-        vidscraper_video = self.vidscraper_video
-        instance = self.instance
-        if vidscraper_video.file_url_expires:
-            file_url = None
-        else:
-            file_url = vidscraper_video.file_url
-
-        instance.name=vidscraper_video.title or ''
-        instance.site=self.sitelocation.site
-        instance.status=models.Video.UNAPPROVED
-        instance.description=sanitize(vidscraper_video.description or \
-                                               '',
-                                           extra_filters=['img'])
-        instance.file_url=file_url or ''
-        instance.embed_code=vidscraper_video.embed_code or ''
-        instance.flash_enclosure_url=vidscraper_video.flash_enclosure_url or ''
-        instance.website_url=vidscraper_video.link
-        instance.thumbnail_url=vidscraper_video.thumbnail_url or ''
-        instance.when_published=vidscraper_video.publish_datetime
-        instance.video_service_user=vidscraper_video.user or ''
-        instance.video_service_url=vidscraper_video.user_url or ''
-
-        if file_url:
+        if 'website_url' in self.fields:
+            # Then this was a form which required a website_url - i.e. a direct
+            # file submission. TODO: Find a better way to mark this?
             instance.try_to_get_file_url_data()
 
-        # XXX re-implement this
-        #if instance.embed_code and not vidscraper_video.is_embedable:
-        #    instance.embed_code = '<span class="embed-warning">\
-        #Warning: Embedding disabled by request.</span>' + instance.embed_code
-
-        commit = kwargs.get('commit', True)
-        kwargs['commit'] = False
-        video = SecondStepSubmitVideoForm.save(self, **kwargs)
-
         old_m2m = self.save_m2m
         def save_m2m():
-            video = instance
-            if vidscraper_video.user:
-                author, created = User.objects.get_or_create(
-                    username=vidscraper_video.user,
-                    defaults={'first_name': vidscraper_video.user})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    get_profile_model().objects.create(
-                        user=author,
-                        website=vidscraper_video.user_url)
-                video.authors.add(author)
-            old_m2m()
+            if instance.status == Video.ACTIVE:
+                # when_submitted isn't set until after the save
+                instance.when_approved = instance.when_submitted
+                instance.save()
+            if hasattr(instance, 'save_m2m'):
+                # Then it was generated with from_vidscraper_video
+                instance.save_m2m()
+            
+            if self.cleaned_data.get('thumbnail_file', None):
+                instance.thumbnail_url = ''
+                instance.save_thumbnail_from_file(
+                    self.cleaned_data['thumbnail_file'])
 
+            # TODO: Should be delayed as a task
+            if instance.thumbnail_url and not instance.has_thumbnail:
+                try:
+                    instance.save_thumbnail()
+                except CannotOpenImageUrl:
+                    pass # we'll get it later
+            if self.cleaned_data.get('tags'):
+                instance.tags = self.cleaned_data['tags']
+            old_m2m()
         if commit:
-            video.save()
+            instance.save()
             save_m2m()
         else:
             self.save_m2m = save_m2m
-        return video
-
-
-class EmbedSubmitVideoForm(NeedsDataSubmitVideoForm):
-    embed = forms.CharField(widget=forms.Textarea,
-                            label="Video <embed> code")
-
-    class Meta(NeedsDataSubmitVideoForm.Meta):
-        fields = NeedsDataSubmitVideoForm.Meta.fields + ['embed']
-
-    def save(self, **kwargs):
-        self.instance.website_url = self.cleaned_data['url']
-        self.instance.embed_code = self.cleaned_data['embed']
-        return NeedsDataSubmitVideoForm.save(self, **kwargs)
-
-class DirectSubmitVideoForm(NeedsDataSubmitVideoForm):
-    website_url = forms.URLField(required=False,
-                                 label="Original Video Page URL (optional)")
-
-    class Meta(NeedsDataSubmitVideoForm.Meta):
-        fields = NeedsDataSubmitVideoForm.Meta.fields + ['website_url']
-
-    def save(self, **kwargs):
-        self.instance.file_url = self.cleaned_data['url']
-        self.instance.try_to_get_file_url_data()
-        return NeedsDataSubmitVideoForm.save(self, **kwargs)
+        return instance
