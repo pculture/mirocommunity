@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import os
 import logging
 import random
 
@@ -25,7 +24,7 @@ from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
-from haystack import site
+from haystack import site, load_backend
 from haystack.query import SearchQuerySet
 
 # Some haystack backends raise lock errors if concurrent processes try to update
@@ -54,46 +53,7 @@ from localtv.tiers import Tier
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 
-if hasattr(settings.DATABASES, 'module'):
-    def patch_settings(func):
-        def wrapper(*args, **kwargs):
-            using = kwargs.get('using', None)
-            if using in (None, 'default', CELERY_USING):
-                logging.info('running %s(*%s, **%s) on default',
-                             func, args, kwargs)
-                kwargs['using'] = 'default'
-                return func(*args, **kwargs)
-            logging.info('running %s(*%s, **%s) on %s',
-                         func, args, kwargs, using)
-            environ = os.environ.copy()
-            wrapped = settings._wrapped
-            os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings' % using
-            new_settings = settings.DATABASES.module(using)
-            new_settings.DATABASES = settings.DATABASES
-            settings._wrapped = new_settings
-            try:
-                return func(*args, **kwargs)
-            finally:
-                settings._wrapped = wrapped
-                os.environ = environ
-        wrapper.func_name = func.func_name
-        wrapper.func_doc = func.func_doc
-        wrapper.func_defaults = func.func_defaults
-        return wrapper
-else:
-    def patch_settings(func):
-        def wrapper(*args, **kwargs):
-            using = kwargs.get('using', None)
-            if using == CELERY_USING:
-                kwargs['using'] = 'default'
-            return func(*args, **kwargs)
-        wrapper.func_name = func.func_name
-        wrapper.func_doc = func.func_doc
-        wrapper.func_defaults = func.func_defaults
-        return wrapper
-
 @task(ignore_result=True)
-@patch_settings
 def update_sources(using='default'):
     feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE,
                                              auto_update=True)
@@ -104,8 +64,8 @@ def update_sources(using='default'):
     for search_pk in searches.values_list('pk', flat=True):
         search_update.delay(search_pk, using=using)
 
+
 @task(ignore_result=True)
-@patch_settings
 def feed_update(feed_id, using='default'):
     try:
         feed = Feed.objects.using(using).get(pk=feed_id)
@@ -116,8 +76,8 @@ def feed_update(feed_id, using='default'):
 
     feed.update(using=using, clear_rejected=True)
 
+
 @task(ignore_result=True)
-@patch_settings
 def search_update(search_id, using='default'):
     try:
         search = SavedSearch.objects.using(using).get(pk=search_id)
@@ -129,7 +89,6 @@ def search_update(search_id, using='default'):
 
 
 @task(ignore_result=True, max_retries=None, default_retry_delay=30)
-@patch_settings
 def mark_import_pending(import_app_label, import_model, import_pk,
                         using='default'):
     """
@@ -216,7 +175,6 @@ def mark_import_pending(import_app_label, import_model, import_pk,
 
 
 @task(ignore_result=True, max_retries=None, default_retry_delay=30)
-@patch_settings
 def mark_import_complete(import_app_label, import_model, import_pk,
                          using='default'):
     """
@@ -250,9 +208,9 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             haystack_filter = {'pk_hack__in': video_pks}
         else:
             haystack_filter = {'django_id__in': video_pks}
-        haystack_count = SearchQuerySet().models(Video).filter(**haystack_filter
-                                                      ).count()
-    
+        haystack_count = SearchQuerySet(
+           query=load_backend().SearchQuery()).models(Video).filter(
+           **haystack_filter).count()
     logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
                    '%i, haystack_count: %i'), import_app_label, import_model,
                    import_pk, using, video_count, haystack_count)
@@ -270,7 +228,6 @@ def mark_import_complete(import_app_label, import_model, import_pk,
 
 
 @task(ignore_result=True, max_retries=6, default_retry_delay=10)
-@patch_settings
 def video_from_vidscraper_video(vidscraper_video, site_pk,
                                 import_app_label=None, import_model=None,
                                 import_pk=None, status=None, author_pks=None,
@@ -281,10 +238,9 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         source_import = import_class.objects.using(using).get(
            pk=import_pk,
            status=import_class.STARTED)
-    except import_class.DoesNotExist, e:
+    except import_class.DoesNotExist:
         logging.warn('Retrying %r: expected %s instance (pk=%r) missing.',
                      vidscraper_video.url, import_class.__name__, import_pk)
-        request = video_from_vidscraper_video.request
         video_from_vidscraper_video.retry()
 
     try:
@@ -380,7 +336,6 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         raise # so it shows up in the Celery log
 
 @task(ignore_result=True)
-@patch_settings
 def video_save_thumbnail(video_pk, using='default'):
     try:
         v = Video.objects.using(using).get(pk=video_pk)
@@ -402,7 +357,6 @@ def video_save_thumbnail(video_pk, using='default'):
         
 
 @task(ignore_result=True, max_retries=None)
-@patch_settings
 def haystack_update_index(app_label, model_name, pk, is_removal,
                           using='default'):
     """

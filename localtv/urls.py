@@ -36,7 +36,8 @@ urlpatterns = patterns(
 # Listing patterns
 category_videos = CategoryVideoSearchView.as_view(
     template_name='localtv/category.html',
-    default_filter='category'
+    default_filter='category',
+    default_sort='-date'
 )
 urlpatterns += patterns(
     'localtv.listing.views',

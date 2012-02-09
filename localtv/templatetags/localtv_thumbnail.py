@@ -39,7 +39,7 @@ class ThumbnailNode(template.Node):
             return thumbnail_url
 
     def get_thumbnail_url(self, video, context):
-        if video.pk is None:
+        if getattr(video, '_livesearch', False):
             return video.thumbnail_url
 
         thumbnail = None

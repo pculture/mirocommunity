@@ -205,6 +205,17 @@ def scraped_submit_video(request):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
     initial = dict(request.GET.items())
+    # Backwards-compatible context variable
+    data = {
+        'link': vidscraper_video.link,
+        'publish_date': vidscraper_video.publish_datetime,
+        'tags': vidscraper_video.tags,
+        'title': vidscraper_video.title,
+        'description': vidscraper_video.description,
+        'thumbnail_url': vidscraper_video.thumbnail_url,
+        'user': vidscraper_video.user,
+        'user_url': vidscraper_video.user_url,
+    }
     if request.method == "GET":
         scraped_form = forms.ScrapedSubmitVideoForm(
             initial=initial,
@@ -213,7 +224,8 @@ def scraped_submit_video(request):
         return render_to_response(
             'localtv/submit_video/scraped.html',
             {'video': vidscraper_video,
-             'form': scraped_form},
+             'form': scraped_form,
+             'data': data},
             context_instance=RequestContext(request))
 
     scraped_form = forms.ScrapedSubmitVideoForm(
@@ -224,7 +236,8 @@ def scraped_submit_video(request):
     return _submit_finish(scraped_form,
             'localtv/submit_video/scraped.html',
             {'video': vidscraper_video,
-             'form': scraped_form},
+             'form': scraped_form,
+             'data': data},
             context_instance=RequestContext(request))
 
 

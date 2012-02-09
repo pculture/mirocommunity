@@ -935,7 +935,7 @@ class ViewTestCase(BaseTestCase):
         The video_search view should search the category for videos.
         """
         video = Video.objects.get(pk=20)
-        video.categories = [1, 2] # Miro, Linux
+        video.categories = [2] # Linux (child of Miro)
         video.save()
         self._rebuild_index()
 
@@ -1070,12 +1070,21 @@ class ViewTestCase(BaseTestCase):
         template, and include the appropriate category.
         """
         category = Category.objects.get(slug='miro')
+        for video in models.Video.objects.filter(status=models.Video.ACTIVE):
+            video.categories = [1] # Linux
+            video.save()
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
+        videos = list(models.Video.objects.with_best_date().filter(
+                status=models.Video.ACTIVE).order_by('-best_date')[:15])
+        self.assertEqual(videos, sorted(videos, key=lambda v: v.when(),
+                                        reverse=True))
+        self.assertEqual(response.context['page_obj'].object_list,
+                         videos)
 
     def test_author_index(self):
         """
@@ -1578,32 +1587,54 @@ class VideoModelTestCase(BaseTestCase):
         1) when_published
         2) when_approved
         3) when_submitted
+
+        SearchQuerySet().models(Video).order_by('-best_date_with_published')
+        should return the same videos.
+
         """
-        results = list(
-            Video.objects.get_latest_videos(self.site_location)
-        )
-        expected = list(Video.objects.extra(select={'date': """
-COALESCE(localtv_video.when_published,localtv_video.when_approved,
-localtv_video.when_submitted)"""}
-                                    ).filter(status=Video.ACTIVE,
-                                             site=self.site_location.site
-                                    ).order_by('-date'))
-        self.assertEqual(results, expected)
+        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+                                                site=self.site_location.site
+                                       ).values_list('pk', flat=True))
+
+        results = list(Video.objects.get_latest_videos(self.site_location))
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
+
+        sqs = SearchQuerySet().models(Video).order_by(
+                                      '-best_date_with_published')
+        results = list([r.object for r in sqs.load_all()])
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
 
     def test_latest_use_original_date_False(self):
         """
         When SiteLocation.use_original_date is False,
         Video.objects.get_latest_videos() should ignore the when_published date.
+
+        SearchQuerySet().models(Video).order_by('-best_date') should return the
+        same videos.
+
         """
+        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+                                                site=self.site_location.site
+                                       ).values_list('pk', flat=True))
+
         self.site_location.use_original_date = False
         self.site_location.save()
-        self.assertEqual(list(Video.objects.get_latest_videos(
-                    self.site_location)),
-                          list(Video.objects.extra(select={'date': """
-COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
-                                           ).filter(status=Video.ACTIVE,
-                                                    site=self.site_location.site
-                                           ).order_by('-date')))
+
+        results = list(Video.objects.get_latest_videos(self.site_location))
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
+
+        sqs = SearchQuerySet().models(Video).order_by(
+                                      '-best_date')
+        results = list([r.object for r in sqs.load_all()])
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
 
     def test_thumbnail_deleted(self):
         """
