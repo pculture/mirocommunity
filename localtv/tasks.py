@@ -26,22 +26,21 @@ from django.contrib.auth.models import User
 from haystack import site, load_backend
 from haystack.query import SearchQuerySet
 
-# Some haystack backends raise lock errors if concurrent processes try to update
-# the index.
+
+class DummyException(Exception):
+    """
+    Dummy exception; nothing raises me.
+    """
+
 try:
-   from xapian import DatabaseLockError
+   from xapian import DatabaseError
 except ImportError:
-    class DatabaseLockError(Exception):
-        """
-        Dummy exception; nothing raises me.
-        """
+    DatabaseError = DummyException
 try:
     from whoosh.store import LockError
 except ImportError:
-    class LockError(Exception):
-        """
-        Dummy exception; nothing raises me.
-        """
+    LockError = DummyException
+
 
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
@@ -388,8 +387,10 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
                     search_index.update_object(instance)
                 else:
                     search_index.remove_object(instance)
-    except (DatabaseLockError, LockError), e:
-        # maximum wait is ~30s
+    except (DatabaseError, LockError), e:
+        # These errors might be resolved if we just wait a bit. The wait time is
+        # slightly random, with the intention of preventing LockError retries
+        # from reoccurring. Maximum wait is ~30s.
         exp = min(haystack_update_index.request.retries, 4)
         countdown = random.random() * (2 ** exp)
         logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r) '
