@@ -50,33 +50,43 @@ margin: 0 auto;
 }</style>{% endif %}
 {% endblock %}
 
-{% block content %}
-	<div class="row">
-		<div class="col-two-thirds">
-			<section class="pod video-full">
-				<header class="pod-header">
-					<h1 class="pod-title">
+{% block pre_content %}
+	<section class="video-full">
+		<div class="container">
+			<section class="video-player">
+				{% if current_video.embed_code %}
+					{{ current_video.embed_code|wmode_transparent }}
+				{% else %}
+					{% get_thumbnail_url current_video 534 430 as video_thumbnail %}
+					{% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
+					{% if current_video.file_url_mimetype|is_ogg_media %}
+						<p class="help">
+							This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
+						</p>
+					{% endif %}
+				{% endif %}
+			</section>{# /.video-player #}
+			<section class="video-details">
+				<header class="video-header">
+					<h1>
 						{% if current_video.name %}
 							{{ current_video.name }}
 						{% else %}
 							{% trans "(no title)" %}
 						{% endif %}
 					</h1>
-				</header>{# /.pod-header #}
-				<div class="pod-content">
-					{% if current_video.embed_code %}
-						{{ current_video.embed_code|wmode_transparent }}
-					{% else %}
-						{% get_thumbnail_url current_video 534 430 as video_thumbnail %}
-						{% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
-						{% if current_video.file_url_mimetype|is_ogg_media %}
-							<p class="help">
-								This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
-							</p>
-						{% endif %}
-					{% endif %}
-				</div>
-			</section>{# /.pod.video #}
+				</header>{# /.video-header #}
+				<div class="video-description">
+					{{ current_video.description|sanitize }}
+				</div>{# /.video-description #}
+			</section>{# /.video-details #}
+		</div>{# /.container #}
+	</section>{# /.video-stage #}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-two-thirds">
 		</div>{# /.col-two-thirds #}
 		<aside class="col-one-third right">
 			<section class="pod video-share">

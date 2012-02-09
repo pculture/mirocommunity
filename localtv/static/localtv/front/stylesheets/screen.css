@@ -79,7 +79,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 21, ../sass/partials/_grid.scss */
-.col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .nav-category-item, .col-two-thirds {
+.col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .video-details, .nav-category-item, .col-two-thirds, .video-player {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -ms-box-sizing: border-box;
@@ -89,13 +89,13 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 27, ../sass/partials/_grid.scss */
-.right {
+.right, .video-details {
   float: right;
   clear: right;
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .page-content, .pod-footer, .sidebar-about {
+.padded, .button-wide, .video-details, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .page-content, .pod-footer, .sidebar-about {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -126,12 +126,12 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 57, ../sass/partials/_grid.scss */
-.col-one-third, .nav-category-item {
+.col-one-third, .video-details, .nav-category-item {
   width: 33.333%;
 }
 
 /* line 61, ../sass/partials/_grid.scss */
-.col-two-thirds {
+.col-two-thirds, .video-player {
   width: 66.667%;
 }
 
@@ -147,7 +147,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 @media screen and (max-width: 740px) {
   /* line 74, ../sass/partials/_grid.scss */
-  .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .nav-category-item, .col-two-thirds {
+  .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .video-details, .nav-category-item, .col-two-thirds, .video-player {
     width: 100%;
   }
 }
@@ -440,6 +440,39 @@ ol > li {
 .video-summary .details {
   color: #999;
   margin-top: 9px;
+}
+
+/* line 5, ../sass/partials/modules/_video_full.scss */
+.video-full {
+  background-color: #444;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(25%, #444444), color-stop(100%, #222222));
+  background: -webkit-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  background: -moz-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  background: -o-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  background: -ms-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  background: linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  overflow: hidden;
+  *zoom: 1;
+  -moz-box-shadow: 0 1px 0 0 white;
+  -webkit-box-shadow: 0 1px 0 0 white;
+  -o-box-shadow: 0 1px 0 0 white;
+  box-shadow: 0 1px 0 0 white;
+}
+
+/* line 14, ../sass/partials/modules/_video_full.scss */
+.video-player > * {
+  display: block;
+}
+
+/* line 19, ../sass/partials/modules/_video_full.scss */
+.video-details {
+  color: #EEE;
+  text-shadow: 0 -1px 0 black;
+}
+
+/* line 26, ../sass/partials/modules/_video_full.scss */
+.video-details > .video-header {
+  color: #FFF;
 }
 
 /* line 3, ../sass/partials/modules/_site_header.scss */

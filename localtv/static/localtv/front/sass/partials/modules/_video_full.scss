@@ -1,0 +1,28 @@
+@import "compass/css3/images",
+		"compass/css3/box-shadow",
+		"compass/utilities/general/clearfix";
+
+.video-full{
+	background-color:#444;
+	@include background(linear-gradient(#333 0, #444 25%, #222 100%));
+	@include clearfix;
+	@include box-shadow(0 1px 0 0 #FFF);
+}
+
+.video-player{
+	@extend .col-two-thirds;
+	& > *{
+		display:block;
+	}
+}
+
+.video-details{
+	@extend .col-one-third;
+	@extend .right;
+	@extend .padded;
+	color:#EEE;
+	text-shadow:0 -1px 0 #000;
+}
+.video-details > .video-header{
+	color:#FFF;
+}
