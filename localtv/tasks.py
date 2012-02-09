@@ -142,7 +142,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
             if remaining_videos > source_import.videos_imported:
                 active_set = unapproved_set
                 unapproved_set = None
-            else:
+            elif remaining_videos > 0:
                 unapproved_set = unapproved_set.order_by('when_submitted')
                 # only approve `remaining_videos` videos
                 when_submitted = unapproved_set[
