@@ -45,7 +45,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               By <a href="{{ video.user_url }}">{{ video.user }}</a>
             </span>
             {% endif %}
-            {% if video.publish_date %}
+            {% if video.publish_datetime %}
             <span class="posted_at">Published {{ video.publish_datetime|simpletimesince }} ago</span>
             {% endif %}
           </span>
