@@ -181,12 +181,9 @@ class BaseTestCase(TestCase):
         """
         Rebuilds the search index.
         """
-        from haystack import site
-        index = site.get_index(Video)
-        try:
-            index.reindex()
-        except Exception:
-            pass
+        from haystack import connections
+        index = connections['default'].get_unified_index().get_index(Video)
+        index.reindex()
 
 
 # -----------------------------------------------------------------------------
@@ -791,7 +788,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [2]
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url())
@@ -810,7 +806,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [1, 2]
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url(),
@@ -909,7 +904,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -937,7 +931,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [2] # Linux (child of Miro)
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -968,7 +961,6 @@ class ViewTestCase(BaseTestCase):
         video.user.last_name = 'lastname'
         video.user.save()
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -996,7 +988,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -1210,7 +1201,6 @@ class ListingViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_list_tag',
@@ -2268,7 +2258,6 @@ class FeedViewTestCase(BaseTestCase):
             vid.categories.add(linux_category)
             vid.status = Video.ACTIVE
             vid.save()
-        self._rebuild_index()
         self.assertEqual(linux_category.approved_set.count(), 3)
         # Do a GET for the first 2 in the feed
         fake_request = self.factory.get('?count=2')

@@ -23,7 +23,7 @@ from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
-from haystack import site, load_backend
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 
@@ -200,14 +200,13 @@ def mark_import_complete(import_app_label, import_model, import_pk,
         # Don't bother with the haystack query.
         haystack_count = 0
     else:
-        if settings.HAYSTACK_SEARCH_ENGINE == 'xapian':
+        if 'xapian' in connections[using].options['ENGINE']:
             # The pk_hack field shadows the model's pk/django_id because
             # xapian-haystack's django_id filtering is broken.
             haystack_filter = {'pk_hack__in': video_pks}
         else:
             haystack_filter = {'django_id__in': video_pks}
-        haystack_count = SearchQuerySet(
-           query=load_backend().SearchQuery()).models(Video).filter(
+        haystack_count = SearchQuerySet().using(using).models(Video).filter(
            **haystack_filter).count()
     logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
                    '%i, haystack_count: %i'), import_app_label, import_model,
@@ -370,7 +369,7 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
 
     """
     model_class = get_model(app_label, model_name)
-    search_index = site.get_index(model_class)
+    search_index = connections[using].get_unified_index().get_index(model_class)
     try:
         if is_removal:
             instance = model_class(pk=pk)

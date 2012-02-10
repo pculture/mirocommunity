@@ -19,7 +19,6 @@ from django.forms.models import model_to_dict
 from django.utils.encoding import force_unicode
 
 from haystack import indexes
-from haystack import site
 from localtv.models import Video, Watch
 from localtv.search.utils import FeaturedSort, ApprovedSort
 from localtv.tasks import haystack_update_index
@@ -28,17 +27,21 @@ from django.conf import settings
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 class QueuedSearchIndex(indexes.SearchIndex):
-    def _setup_save(self, model):
-        signals.post_save.connect(self._enqueue_update, sender=model)
+    def _setup_save(self):
+        signals.post_save.connect(self._enqueue_update,
+                                    sender=self.get_model())
 
-    def _setup_delete(self, model):
-        signals.post_delete.connect(self._enqueue_removal, sender=model)
+    def _setup_delete(self):
+        signals.post_delete.connect(self._enqueue_removal,
+                                    sender=self.get_model())
 
-    def _teardown_save(self, model):
-        signals.post_save.disconnect(self._enqueue_update, sender=model)
+    def _teardown_save(self):
+        signals.post_save.disconnect(self._enqueue_update,
+                                    sender=self.get_model())
 
-    def _teardown_delete(self, model):
-        signals.post_delete.connect(self._enqueue_removal, sender=model)
+    def _teardown_delete(self):
+        signals.post_delete.connect(self._enqueue_removal,
+                                    sender=self.get_model())
 
     def _enqueue_update(self, instance, **kwargs):
         self._enqueue_instance(instance, False)
@@ -61,7 +64,7 @@ class QueuedSearchIndex(indexes.SearchIndex):
                                     using=using)
 
 
-class VideoIndex(QueuedSearchIndex):
+class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
 
     # HACK because xapian-haystack django_id/pk filtering is broken.
@@ -90,18 +93,21 @@ class VideoIndex(QueuedSearchIndex):
     when_approved = indexes.DateTimeField(model_attr='when_approved',
                                           default=ApprovedSort.empty_value)
 
-    def _setup_save(self, model):
-        super(VideoIndex, self)._setup_save(model)
+    def _setup_save(self):
+        super(VideoIndex, self)._setup_save()
         signals.post_save.connect(self._enqueue_watch_update,
                                   sender=Watch)
 
-    def _teardown_save(self, model):
-        super(VideoIndex, self)._teardown_save(model)
+    def _teardown_save(self):
+        super(VideoIndex, self)._teardown_save()
         signals.post_save.disconnect(self._enqueue_watch_update,
                                      sender=Watch)
 
     def _enqueue_watch_update(self, instance, **kwargs):
         self._enqueue_instance(instance.video, False)
+
+    def get_model(self):
+        return Video
 
     def index_queryset(self):
         """
@@ -109,8 +115,9 @@ class VideoIndex(QueuedSearchIndex):
         with the watch_count.
 
         """
-        return self.model._default_manager.filter(status=self.model.ACTIVE
-                                         ).annotate(watch_count=Count('watch'))
+        model = self.get_model()
+        return model._default_manager.filter(status=model.ACTIVE
+                                  ).annotate(watch_count=Count('watch'))
 
     def read_queryset(self):
         """
@@ -124,20 +131,20 @@ class VideoIndex(QueuedSearchIndex):
     def get_updated_field(self):
         return 'when_modified'
 
-    def _prepare_field(self, video, field):
+    def _prepare_rel_field(self, video, field):
         return [int(rel.pk) for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        return self._prepare_field(video, 'tags')
+        return self._prepare_rel_field(video, 'tags')
 
     def prepare_categories(self, video):
         return [int(rel.pk) for rel in video.all_categories]
 
     def prepare_authors(self, video):
-        return self._prepare_field(video, 'authors')
+        return self._prepare_rel_field(video, 'authors')
 
     def prepare_playlists(self, video):
-        return self._prepare_field(video, 'playlists')
+        return self._prepare_rel_field(video, 'playlists')
 
     def prepare_watch_count(self, video):
         # video.watch_count is set during :meth:`~VideoIndex.index_queryset`.
@@ -159,5 +166,3 @@ class VideoIndex(QueuedSearchIndex):
             # fake instance for testing. TODO: This should probably not be done.
             return
         super(VideoIndex, self)._enqueue_instance(instance, is_removal)
-
-site.register(Video, VideoIndex)
