@@ -472,13 +472,7 @@ ol > li {
 
 /* line 5, ../sass/partials/modules/_video_full.scss */
 .video-full {
-  background-color: #444;
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(25%, #444444), color-stop(100%, #222222));
-  background: -webkit-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
-  background: -moz-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
-  background: -o-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
-  background: -ms-linear-gradient(#333333 0%, #444444 25%, #222222 100%);
-  background: linear-gradient(#333333 0%, #444444 25%, #222222 100%);
+  background-color: #151617;
   overflow: hidden;
   *zoom: 1;
   -moz-box-shadow: 0 1px 0 0 white;
@@ -487,18 +481,18 @@ ol > li {
   box-shadow: 0 1px 0 0 white;
 }
 
-/* line 14, ../sass/partials/modules/_video_full.scss */
+/* line 13, ../sass/partials/modules/_video_full.scss */
 .video-player > * {
   display: block;
 }
 
-/* line 19, ../sass/partials/modules/_video_full.scss */
+/* line 18, ../sass/partials/modules/_video_full.scss */
 .video-details {
   color: #EEE;
   text-shadow: 0 -1px 0 black;
 }
 
-/* line 26, ../sass/partials/modules/_video_full.scss */
+/* line 25, ../sass/partials/modules/_video_full.scss */
 .video-details > .video-header {
   color: #FFF;
 }
