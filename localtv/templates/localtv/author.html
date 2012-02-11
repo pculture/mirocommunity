@@ -32,7 +32,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>
 	</header>
 
-	<div class="page-content row">
+	<div class="page-content row-nested">
 		<aside class="author-info col-one-third">
 			<h1>{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
 			{% if author.get_profile.logo %}

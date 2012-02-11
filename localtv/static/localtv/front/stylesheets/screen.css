@@ -72,7 +72,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 16, ../sass/partials/_grid.scss */
-.row {
+.row, .row-nested, .nav-categories > ul {
   margin-left: 0;
   overflow: hidden;
   *zoom: 1;
@@ -135,29 +135,29 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   width: 640px;
 }
 
-/* line 70, ../sass/partials/_grid.scss */
+/* line 71, ../sass/partials/_grid.scss */
 .row-nested > .col-one-half, .nav-categories > ul > .col-one-half {
   width: 50%;
 }
-/* line 73, ../sass/partials/_grid.scss */
+/* line 74, ../sass/partials/_grid.scss */
 .row-nested > .col-one-quarter, .nav-categories > ul > .col-one-quarter {
   width: 25%;
 }
-/* line 76, ../sass/partials/_grid.scss */
+/* line 77, ../sass/partials/_grid.scss */
 .row-nested > .col-three-quarters, .nav-categories > ul > .col-three-quarters {
   width: 75%;
 }
-/* line 79, ../sass/partials/_grid.scss */
+/* line 80, ../sass/partials/_grid.scss */
 .row-nested > .col-one-third, .nav-categories > ul > .col-one-third, .row-nested > .video-details, .nav-categories > ul > .video-details, .row-nested > .nav-category-item, .nav-categories > ul > .nav-category-item {
   width: 33.33%;
 }
-/* line 82, ../sass/partials/_grid.scss */
+/* line 83, ../sass/partials/_grid.scss */
 .row-nested > .col-two-thirds, .nav-categories > ul > .col-two-thirds, .row-nested > .video-player, .nav-categories > ul > .video-player {
   width: 66.67%;
 }
 
 @media screen and (max-width: 960px) {
-  /* line 90, ../sass/partials/_grid.scss */
+  /* line 91, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
     -moz-box-sizing: border-box;
@@ -166,33 +166,33 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
     box-sizing: border-box;
   }
 
-  /* line 94, ../sass/partials/_grid.scss */
+  /* line 95, ../sass/partials/_grid.scss */
   .col-one-half {
     width: 50%;
   }
 
-  /* line 97, ../sass/partials/_grid.scss */
+  /* line 98, ../sass/partials/_grid.scss */
   .col-one-quarter {
     width: 25%;
   }
 
-  /* line 100, ../sass/partials/_grid.scss */
+  /* line 101, ../sass/partials/_grid.scss */
   .col-three-quarters {
     width: 75%;
   }
 
-  /* line 103, ../sass/partials/_grid.scss */
+  /* line 104, ../sass/partials/_grid.scss */
   .col-one-third, .video-details, .nav-category-item {
     width: 33.33%;
   }
 
-  /* line 106, ../sass/partials/_grid.scss */
+  /* line 107, ../sass/partials/_grid.scss */
   .col-two-thirds, .video-player {
     width: 66.67%;
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 112, ../sass/partials/_grid.scss */
+  /* line 113, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .video-details, .nav-category-item, .col-two-thirds, .video-player {
     width: 100%;
   }
@@ -570,7 +570,7 @@ ol > li {
   border-bottom: 1px solid #000;
   border-top: 1px solid #444;
 }
-/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 #navigation:after {
   content: "";
   display: table;

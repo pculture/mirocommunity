@@ -67,6 +67,7 @@ $single-column-threshold: 740px;
 
 // Nested column widths
 .row-nested{
+	@extend .row;
 	& > .col-one-half{
 		width:50%;
 	}
