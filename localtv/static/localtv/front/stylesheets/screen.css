@@ -281,19 +281,12 @@ h6 {
 /* line 8, ../sass/partials/_layout.scss */
 #main > .container {
   background: #FFF;
-  border-width: 0 3px;
   -moz-box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
   -webkit-box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
   -o-box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
 }
 
-@media screen and (max-width:950px) {
-  /* line 15, ../sass/partials/_layout.scss */
-  #main > .container {
-    border-width: 0;
-  }
-}
 /* line 6, ../sass/partials/modules/_forms.scss */
 input {
   outline: none;
