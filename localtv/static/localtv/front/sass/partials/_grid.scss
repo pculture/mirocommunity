@@ -42,6 +42,8 @@ $single-column-threshold: 740px;
 	margin-right:-$gutter-width/2;
 }
 
+// Basic column widths
+
 .col-one-half{
 	@extend .col;
 	width:$max-width-threshold/2;
@@ -63,6 +65,27 @@ $single-column-threshold: 740px;
 	width:$max-width-threshold*2/3;
 }
 
+// Nested column widths
+.row-nested{
+	& > .col-one-half{
+		width:50%;
+	}
+	& > .col-one-quarter{
+		width:25%;
+	}
+	& > .col-three-quarters{
+		width:75%;
+	}
+	& > .col-one-third{
+		width:33.33%;
+	}
+	& > .col-two-thirds{
+		width:66.67%;
+	}
+}
+
+
+// Flexible column widths for when viewport is smaller than 960
 @media screen and (max-width: 960px){
 	.container{
 		width:100%;

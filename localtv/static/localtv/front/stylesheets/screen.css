@@ -110,33 +110,54 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   margin-right: -10px;
 }
 
-/* line 45, ../sass/partials/_grid.scss */
+/* line 47, ../sass/partials/_grid.scss */
 .col-one-half {
   width: 480px;
 }
 
-/* line 49, ../sass/partials/_grid.scss */
+/* line 51, ../sass/partials/_grid.scss */
 .col-one-quarter {
   width: 240px;
 }
 
-/* line 53, ../sass/partials/_grid.scss */
+/* line 55, ../sass/partials/_grid.scss */
 .col-three-quarters {
   width: 720px;
 }
 
-/* line 57, ../sass/partials/_grid.scss */
+/* line 59, ../sass/partials/_grid.scss */
 .col-one-third, .video-details, .nav-category-item {
   width: 320px;
 }
 
-/* line 61, ../sass/partials/_grid.scss */
+/* line 63, ../sass/partials/_grid.scss */
 .col-two-thirds, .video-player {
   width: 640px;
 }
 
+/* line 70, ../sass/partials/_grid.scss */
+.row-nested > .col-one-half, .nav-categories > ul > .col-one-half {
+  width: 50%;
+}
+/* line 73, ../sass/partials/_grid.scss */
+.row-nested > .col-one-quarter, .nav-categories > ul > .col-one-quarter {
+  width: 25%;
+}
+/* line 76, ../sass/partials/_grid.scss */
+.row-nested > .col-three-quarters, .nav-categories > ul > .col-three-quarters {
+  width: 75%;
+}
+/* line 79, ../sass/partials/_grid.scss */
+.row-nested > .col-one-third, .nav-categories > ul > .col-one-third, .row-nested > .video-details, .nav-categories > ul > .video-details, .row-nested > .nav-category-item, .nav-categories > ul > .nav-category-item {
+  width: 33.33%;
+}
+/* line 82, ../sass/partials/_grid.scss */
+.row-nested > .col-two-thirds, .nav-categories > ul > .col-two-thirds, .row-nested > .video-player, .nav-categories > ul > .video-player {
+  width: 66.67%;
+}
+
 @media screen and (max-width: 960px) {
-  /* line 67, ../sass/partials/_grid.scss */
+  /* line 90, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
     -moz-box-sizing: border-box;
@@ -145,33 +166,33 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
     box-sizing: border-box;
   }
 
-  /* line 71, ../sass/partials/_grid.scss */
+  /* line 94, ../sass/partials/_grid.scss */
   .col-one-half {
     width: 50%;
   }
 
-  /* line 74, ../sass/partials/_grid.scss */
+  /* line 97, ../sass/partials/_grid.scss */
   .col-one-quarter {
     width: 25%;
   }
 
-  /* line 77, ../sass/partials/_grid.scss */
+  /* line 100, ../sass/partials/_grid.scss */
   .col-three-quarters {
     width: 75%;
   }
 
-  /* line 80, ../sass/partials/_grid.scss */
+  /* line 103, ../sass/partials/_grid.scss */
   .col-one-third, .video-details, .nav-category-item {
     width: 33.33%;
   }
 
-  /* line 83, ../sass/partials/_grid.scss */
+  /* line 106, ../sass/partials/_grid.scss */
   .col-two-thirds, .video-player {
     width: 66.67%;
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 89, ../sass/partials/_grid.scss */
+  /* line 112, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .video-details, .nav-category-item, .col-two-thirds, .video-player {
     width: 100%;
   }
@@ -549,7 +570,7 @@ ol > li {
   border-bottom: 1px solid #000;
   border-top: 1px solid #444;
 }
-/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 #navigation:after {
   content: "";
   display: table;
@@ -616,12 +637,12 @@ ol > li {
   width: 450px;
 }
 
-/* line 61, ../sass/partials/modules/_navigation.scss */
+/* line 62, ../sass/partials/modules/_navigation.scss */
 .nav-category-item {
   padding: 3px;
 }
 
-/* line 65, ../sass/partials/modules/_navigation.scss */
+/* line 66, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a {
   display: block;
   border: 1px solid #111;
@@ -647,11 +668,11 @@ ol > li {
   color: #CCC;
   text-shadow: 0 -1px 0 black;
 }
-/* line 76, ../sass/partials/modules/_navigation.scss */
+/* line 77, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a:hover {
   color: #FFF;
 }
-/* line 79, ../sass/partials/modules/_navigation.scss */
+/* line 80, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a:active {
   background-color: #222;
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
@@ -667,12 +688,12 @@ ol > li {
 }
 
 @media screen and (max-width: 740px) {
-  /* line 90, ../sass/partials/modules/_navigation.scss */
+  /* line 91, ../sass/partials/modules/_navigation.scss */
   .nav-item, .navigation-list-secondary {
     float: none;
   }
 
-  /* line 93, ../sass/partials/modules/_navigation.scss */
+  /* line 94, ../sass/partials/modules/_navigation.scss */
   .nav-categories > ul {
     width: 100%;
   }

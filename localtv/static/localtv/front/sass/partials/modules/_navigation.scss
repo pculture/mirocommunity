@@ -50,6 +50,7 @@
 }
 .nav-categories > ul{
 	@extend .unstyled-list;
+	@extend .row-nested;
 	display:none;
 	position:absolute;
 	z-index:1337;
