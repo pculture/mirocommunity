@@ -37,7 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	
 	{% if sitelocation.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url sitelocation 130 110 %}" />{% endif %}
 	
-	<title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
+	<title>{% block title %}{{ sitelocation.site.name }}{% endblock title %}</title>
 	
 	{% block scripts %}
 		<script src="{% get_static_url 'localtv/front/js/modernizr-2.0.6.js' bundled %}"></script>

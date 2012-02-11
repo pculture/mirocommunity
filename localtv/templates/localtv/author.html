@@ -20,6 +20,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load filters %}
 
+{% block title %}{{ block.super }} - {% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}
+
 {% block body_classes %}{{ block.super }} author-page{% endblock %}
 
 {% block content %}

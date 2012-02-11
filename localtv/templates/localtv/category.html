@@ -20,6 +20,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
+{% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
+
+{% block body_classes %}{{ block.super }} category-detail-page{% endblock %}
+
 {% block content %}
 	<header class="page-header">
 		<h1 class="page-title">{{ category.name }}</h1>
