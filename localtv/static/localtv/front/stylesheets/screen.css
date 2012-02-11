@@ -112,30 +112,30 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 /* line 45, ../sass/partials/_grid.scss */
 .col-one-half {
-  width: 50%;
+  width: 480px;
 }
 
 /* line 49, ../sass/partials/_grid.scss */
 .col-one-quarter {
-  width: 25%;
+  width: 240px;
 }
 
 /* line 53, ../sass/partials/_grid.scss */
 .col-three-quarters {
-  width: 75%;
+  width: 720px;
 }
 
 /* line 57, ../sass/partials/_grid.scss */
 .col-one-third, .video-details, .nav-category-item {
-  width: 33.333%;
+  width: 320px;
 }
 
 /* line 61, ../sass/partials/_grid.scss */
 .col-two-thirds, .video-player {
-  width: 66.667%;
+  width: 640px;
 }
 
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 960px) {
   /* line 67, ../sass/partials/_grid.scss */
   .container {
     width: 100%;
@@ -144,9 +144,34 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
     -ms-box-sizing: border-box;
     box-sizing: border-box;
   }
+
+  /* line 71, ../sass/partials/_grid.scss */
+  .col-one-half {
+    width: 50%;
+  }
+
+  /* line 74, ../sass/partials/_grid.scss */
+  .col-one-quarter {
+    width: 25%;
+  }
+
+  /* line 77, ../sass/partials/_grid.scss */
+  .col-three-quarters {
+    width: 75%;
+  }
+
+  /* line 80, ../sass/partials/_grid.scss */
+  .col-one-third, .video-details, .nav-category-item {
+    width: 33.33%;
+  }
+
+  /* line 83, ../sass/partials/_grid.scss */
+  .col-two-thirds, .video-player {
+    width: 66.67%;
+  }
 }
 @media screen and (max-width: 740px) {
-  /* line 74, ../sass/partials/_grid.scss */
+  /* line 89, ../sass/partials/_grid.scss */
   .col, .col-one-half, .col-one-quarter, .col-three-quarters, .col-one-third, .video-details, .nav-category-item, .col-two-thirds, .video-player {
     width: 100%;
   }

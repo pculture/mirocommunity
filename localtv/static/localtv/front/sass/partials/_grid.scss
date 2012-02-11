@@ -44,29 +44,44 @@ $single-column-threshold: 740px;
 
 .col-one-half{
 	@extend .col;
-	width:50%;
+	width:$max-width-threshold/2;
 }
 .col-one-quarter{
 	@extend .col;
-	width:25%;
+	width:$max-width-threshold/4;
 }
 .col-three-quarters{
 	@extend .col;
-	width:75%;
+	width:$max-width-threshold*3/4;
 }
 .col-one-third{
 	@extend .col;
-	width:33.333%;
+	width:$max-width-threshold/3;
 }
 .col-two-thirds{
 	@extend .col;
-	width:66.667%;
+	width:$max-width-threshold*2/3;
 }
 
-@media screen and (max-width: 950px){
+@media screen and (max-width: 960px){
 	.container{
 		width:100%;
 		@include box-sizing(border-box);
+	}
+	.col-one-half{
+		width:50%;
+	}
+	.col-one-quarter{
+		width:25%;
+	}
+	.col-three-quarters{
+		width:75%;
+	}
+	.col-one-third{
+		width:33.33%;
+	}
+	.col-two-thirds{
+		width:66.67%;
 	}
 }
 
