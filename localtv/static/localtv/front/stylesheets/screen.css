@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, .video-details, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .page-content, .pod-footer, .sidebar-about {
+.padded, .button-wide, .video-details, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .pod-footer, .sidebar-about, .content-box {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -759,6 +759,11 @@ ol > li {
   font-weight: bold;
 }
 
+/*
+.page-content{
+	@extend .pod-content;
+}
+*/
 /* line 1, ../sass/partials/modules/_pod.scss */
 .pod-header, .page-header {
   position: relative;
