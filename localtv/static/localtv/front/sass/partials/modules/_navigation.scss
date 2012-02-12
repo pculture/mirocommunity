@@ -54,10 +54,11 @@
 	display:none;
 	position:absolute;
 	z-index:1337;
-	top:$base-line-height*2;
+	top:$base-line-height*2+1px;
 	left:0;
 	background:#333;
 	width:450px;
+	@include border-radius(0 0 5px 5px);
 }
 .nav-category-item{
 	@extend .col-one-third;

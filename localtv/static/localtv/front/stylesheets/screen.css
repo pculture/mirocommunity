@@ -624,18 +624,24 @@ ol > li {
   display: none;
   position: absolute;
   z-index: 1337;
-  top: 36px;
+  top: 37px;
   left: 0;
   background: #333;
   width: 450px;
+  -moz-border-radius: 0 0 5px 5px;
+  -webkit-border-radius: 0 0 5px 5px;
+  -o-border-radius: 0 0 5px 5px;
+  -ms-border-radius: 0 0 5px 5px;
+  -khtml-border-radius: 0 0 5px 5px;
+  border-radius: 0 0 5px 5px;
 }
 
-/* line 62, ../sass/partials/modules/_navigation.scss */
+/* line 63, ../sass/partials/modules/_navigation.scss */
 .nav-category-item {
   padding: 3px;
 }
 
-/* line 66, ../sass/partials/modules/_navigation.scss */
+/* line 67, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a {
   display: block;
   border: 1px solid #111;
@@ -661,11 +667,11 @@ ol > li {
   color: #CCC;
   text-shadow: 0 -1px 0 black;
 }
-/* line 77, ../sass/partials/modules/_navigation.scss */
+/* line 78, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a:hover {
   color: #FFF;
 }
-/* line 80, ../sass/partials/modules/_navigation.scss */
+/* line 81, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a:active {
   background-color: #222;
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
@@ -681,12 +687,12 @@ ol > li {
 }
 
 @media screen and (max-width: 740px) {
-  /* line 91, ../sass/partials/modules/_navigation.scss */
+  /* line 92, ../sass/partials/modules/_navigation.scss */
   .nav-item, .navigation-list-secondary {
     float: none;
   }
 
-  /* line 94, ../sass/partials/modules/_navigation.scss */
+  /* line 95, ../sass/partials/modules/_navigation.scss */
   .nav-categories > ul {
     width: 100%;
   }
