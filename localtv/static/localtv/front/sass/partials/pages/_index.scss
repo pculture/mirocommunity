@@ -1,3 +1,5 @@
+@import "compass/css3/images";
+
 .home-page .popular{
 	@include small;
 	.video-title{
@@ -10,4 +12,11 @@
 .home-page .popular .description{
 	max-height: $base-line-height * 2;
 	overflow: hidden;
+}
+
+.home-page .popular > .pod-content,
+.home-page .popular > .pod-footer,
+.home-page .new > .pod-content,
+.home-page .new > .pod-footer{
+	@extend .right-sidebar;
 }

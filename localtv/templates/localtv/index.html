@@ -69,7 +69,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</header>{# /.pod-header #}
 			{% cache 3600 index_list_popular sitelocation cache_invalidator %}{# one hour #}
 				<div class="pod-content">
-					{% with popular_videos|slice:"10" as video_list %}
+					{% with popular_videos|slice:"4" as video_list %}
 						{% include "localtv/_video_summary_list.html" %}
 					{% endwith %}
 				</div>{# /.pod-content #}
@@ -82,8 +82,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>{# /.pod #}
 	</div>{# /.col-one-third #}
 	
-	<div class="col-one-third">
-		<div class="pod">
+	<div class="col-one-third right">
+		<div class="pod new">
 	        {% url localtv_feeds_new as new_rss%}
 			<header class="pod-header">
 				<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
@@ -93,7 +93,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</ul>
 			</header>{# /.pod-header #}
 			<div class="pod-content">
-				{% with new_videos|slice:"10" as video_list %}
+				{% with new_videos|slice:"4" as video_list %}
 					{% include "localtv/_video_summary_list.html" %}
 				{% endwith %}
 			</div>{# /.pod-content #}
