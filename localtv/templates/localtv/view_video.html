@@ -21,8 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags %}
 
-{% block body_id %}view_video{% endblock %}
-
+{% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
@@ -118,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<div class="comments pod">
 					{% get_comment_count for current_video as comment_count %}
 					<header class="pod-header">
-						{% if comment_count %}<h1 class="pod-title comments-count">{{ comment_count }} Comment{{ comment_count|pluralize }}</h1>{% endif %}
+						{% if comment_count %}<h1 class="pod-title comments-count">{{ comment_count }} {% blocktrans %}Comment{{ comment_count|pluralize }}{% endblocktrans %}</h1>{% endif %}
 					</header>
 					<div class="pod-content">
 						<ul class="comments-list">
@@ -208,11 +207,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 					{% if user_is_admin %}
 						<li class="item">{% editable_widget current_video "website_url" %}</li>
-						{% if current_video.submitter %}<li class="item"><h4>Submitted by</h4><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
-						{% if current_video.search %}<li class="item"><h4>From search</h4><ul><li> {{ current_video.search }}</li></ul></li>{% endif %}
-						{% if current_video.feed %}<li class="item"><h4>From feed</h4><ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
-						{% if current_video.contact %}<li class="item"><h4>Contact</h4><ul><li> {{ current_video.contact }}</li></ul></li>{% endif %}
-						{% if current_video.notes %}<li class="item"><h4>Notes</h4><ul><li> {{ current_video.notes }}</li></ul></li>{% endif %}
+						{% if current_video.submitter %}<li class="item"><h4>{% trans "Submitted by" %}</h4><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
+						{% if current_video.search %}<li class="item"><h4>{% trans "From search" %}</h4><ul><li> {{ current_video.search }}</li></ul></li>{% endif %}
+						{% if current_video.feed %}<li class="item"><h4>{% trans "From feed" %}</h4><ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
+						{% if current_video.contact %}<li class="item"><h4>{% trans "Contact" %}</h4><ul><li> {{ current_video.contact }}</li></ul></li>{% endif %}
+						{% if current_video.notes %}<li class="item"><h4>{% trans "Notes" %}</h4><ul><li> {{ current_video.notes }}</li></ul></li>{% endif %}
 					{% endif %}
 				</div>
 			</section>{# /.pod.video-extra-details #}
@@ -225,9 +224,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% if sitelocation.playlists_enabled %}
 						{% if playlistitem %}
 							<div class="sidebar_header">
-								<h2>This video is number {{ playlistitem.index }} (of {{ playlistitem.playlist.items.count }}) in the playlist</h2>
+								<h2>{% blocktrans with num=playlistitem.index count=playlistitem.playlist.items.count %}This video is number {{ num }} (of {{ count }}) in the playlist{% endblocktrans %}</h2>
 							</div>
-							<h3 class="playlist_title"><a href="{{ playlistitem.playlist.get_absolute_url }}">{{ playlistitem.playlist.name }}</a>{% if playlistitem.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}</h3>
+							<h3 class="playlist_title"><a href="{{ playlistitem.playlist.get_absolute_url }}">{{ playlistitem.playlist.name }}</a>{% if playlistitem.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans "private" %}</a>)</span>{% endif %}</h3>
 							<div class="playlist_thumbs">
 								{% for sibling in playlistitem.get_two_from_order %}
 									<a href="{{ sibling.video.get_absolute_url }}?playlist={{ playlistitem.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right{% endif %};">
@@ -243,7 +242,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 							{% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
 								{% if not playlistitem or playlistitem_set|length > 1 %}
 									<div class="sidebar_header">
-										<h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
+										<h2>{% if playlistitem %}{% trans "Other playlists that include this video" %}{% else %}{% trans "Playlists" %}{% endif %}</h2>
 									</div>
 								{% endif %}
 								<div id="playlists">
@@ -253,8 +252,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 												{% if item != playlistitem %}
 													<li>
 														<div class="playlist_title">
-															<a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>{% if item.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">private</a>)</span>{% endif %}
-															{% with item.playlist.video_set.count as count %}<span class="playlist_count"><a href="{{ item.playlist.get_absolute_url }}">({{ count }} video{{ count|pluralize }})</a></span>{% endwith %}
+															<a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>{% if item.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans "private" %}</a>)</span>{% endif %}
+															{% with item.playlist.video_set.count as count %}<span class="playlist_count"><a href="{{ item.playlist.get_absolute_url }}">({{ count }} {% blocktrans %}video{{ count|pluralize }}{% endblocktrans %})</a></span>{% endwith %}
 														</div>
 														<div class="playlist_thumbs">
 															{% for sibling in item.get_two_from_order %}
@@ -275,7 +274,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 							{% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}
 								<form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
 									<select name="playlist" id="id_playlist">
-										<option value="">Add video to your playlist</option>
+										<option value="">{% trans "Add video to your playlist" %}</option>
 										{% for playlist in playlists %}
 											{% if playlist not in current_video.playlists.all %}<option value="{{ playlist.pk }}">{{ playlist.name }}</option>{% endif %}
 										{% endfor %}
