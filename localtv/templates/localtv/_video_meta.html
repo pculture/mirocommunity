@@ -1,5 +1,5 @@
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -17,11 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load localtv_thumbnail %}
+
 <meta name="title" content="{{ current_video.name }}" />
 <meta name="description" content="{{ current_video.description|striptags }}" />
 <link rel="image_src" href="{% get_thumbnail_url current_video 140 110 %}" />
 <meta name="medium" content="video" />
-{% ifequal current_video.file_url_mimetype "application/x-shockwave-flash" %}
-<link rel="video_src" href="{{ current_video.file_url }}"/>
-<meta name="video_type" content="application/x-shockwave-flash" />
-{% endifequal %}
+
+{% if current_video.file_url_mimetype == "application/x-shockwave-flash" %}
+	<link rel="video_src" href="{{ current_video.file_url }}"/>
+	<meta name="video_type" content="application/x-shockwave-flash" />
+{% endif %}
