@@ -835,33 +835,34 @@ ol > li {
   color: #FFF;
 }
 
-/* line 1, ../sass/partials/modules/_sidebar.scss */
-.right-sidebar, .home-page .popular > .pod-content,
-.home-page .popular > .pod-footer,
-.home-page .new > .pod-content,
-.home-page .new > .pod-footer {
-  border-left: 1px solid #BBB;
-  background-color: #EEE;
-  background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
-  background: -webkit-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -moz-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -o-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -ms-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-}
+@media screen and (min-width: 740px) {
+  /* line 2, ../sass/partials/modules/_sidebar.scss */
+  .right-sidebar, .home-page .popular > .pod-content,
+  .home-page .popular > .pod-footer,
+  .home-page .new > .pod-content,
+  .home-page .new > .pod-footer {
+    border-left: 1px solid #BBB;
+    background-color: #EEE;
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
+    background: -webkit-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -moz-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -o-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -ms-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+  }
 
-/* line 7, ../sass/partials/modules/_sidebar.scss */
-.left-sidebar {
-  border-right: 1px solid #BBB;
-  background-color: #EEE;
-  background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
-  background: -webkit-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -moz-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -o-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: -ms-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  background: linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+  /* line 8, ../sass/partials/modules/_sidebar.scss */
+  .left-sidebar {
+    border-right: 1px solid #BBB;
+    background-color: #EEE;
+    background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
+    background: -webkit-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -moz-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -o-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: -ms-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+    background: linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
+  }
 }
-
 /* line 3, ../sass/partials/pages/_index.scss */
 .home-page .popular {
   font-size: 11px;
