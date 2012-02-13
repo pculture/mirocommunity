@@ -1787,6 +1787,26 @@ class WatchModelTestCase(BaseTestCase):
         self.assertEqual(w.video, video)
         self.assertEqual(w.ip_address, '0.0.0.0')
 
+    def test_add_robot(self):
+        """
+        Requests from Robots (Googlebot, Baiduspider, &c) shouldn't count as
+        watches.
+        """
+        request = HttpRequest()
+        request.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 Googlebot'
+
+        video = Video.objects.get(pk=1)
+
+        Watch.add(request, video)
+
+        request = HttpRequest()
+        request.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 BaiduSpider'
+
+        Watch.add(request, video)
+
+        self.assertEqual(Watch.objects.count(), 0)
+
+
 
 # -----------------------------------------------------------------------------
 # SavedSearch model tests

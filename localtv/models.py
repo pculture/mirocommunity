@@ -2052,6 +2052,14 @@ class Watch(models.Model):
         from localhost, check to see if it was forwarded to (hopefully) get the
         right IP address.
         """
+        ignored_bots = getattr(settings, 'LOCALTV_WATCH_IGNORED_USER_AGENTS',
+                               ('bot', 'spider', 'crawler'))
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        if user_agent and ignored_bots:
+            for bot in ignored_bots:
+                if bot in user_agent:
+                    return
+
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
         if not ipv4_re.match(ip):
             ip = '0.0.0.0'
