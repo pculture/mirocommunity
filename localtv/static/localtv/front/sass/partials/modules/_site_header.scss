@@ -3,6 +3,8 @@ $logo-width: 130px;
 #header{
 	@include clearfix;
 	background:#FFF;
+	@include padding-trailer(.5);
+	@include padding-leader(.5);
 }
 
 #header > .container{
@@ -18,8 +20,17 @@ $logo-width: 130px;
 	}
 }
 
+#SiteTitle{
+	@include x-large;
+}
+#SiteTagline{
+	@include large;
+}
+
 #SiteTitle, #SiteTagline{
+	@include margin-trailer(.5);
 	padding-left:$logo-width+$gutter-width;
+	font-weight:400;
 }
 
 #search{
@@ -27,4 +38,8 @@ $logo-width: 130px;
 	position:absolute;
 	top:0;
 	right:0;
+}
+
+.logo-link:hover{
+	border:0;
 }
