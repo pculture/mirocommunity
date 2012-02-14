@@ -6,7 +6,9 @@
 Welcome to Miro Community's documentation!
 ==========================================
 
-Miro Community is a Django_ app for creating a video website which aggregates from various sources – blip, Vimeo, youtube, etc. – rather than hosting video files.
+Miro Community is a Django_ app for creating a video website which
+aggregates from various sources – blip, Vimeo, youtube, etc. – rather
+than hosting video files.
 
 .. _Django: http://djangoproject.com/
 

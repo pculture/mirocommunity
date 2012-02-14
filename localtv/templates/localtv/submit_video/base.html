@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block next_link %}{% endblock %}
 {% block content %}
 <div class="content">
-<form action="{% block form_action %}{% endblock %}{% if request.GET.bookmarklet %}?from_ajax&bookmarklet=1{% endif %}" method="post" id="submit_video">{% csrf_token %}
+<form action="{% block form_action %}{% endblock %}{% if request.GET.bookmarklet %}?from_ajax&bookmarklet=1{% endif %}" method="{% block form_method %}post{% endblock %}" id="submit_video">{% csrf_token %}
   {% block pre-table %}{% endblock %}
   <table>
     {% block table %}{% endblock %}

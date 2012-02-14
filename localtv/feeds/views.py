@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -19,7 +19,7 @@ import urllib
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.contrib.syndication.views import Feed, add_domain
+from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
@@ -30,7 +30,7 @@ from django.utils.tzinfo import FixedOffset
 from tagging.models import Tag
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
-from localtv.models import Video, Category
+from localtv.models import Video, Category, Feed
 from localtv.playlists.models import Playlist
 from localtv.search.utils import SortFilterViewMixin
 from localtv.templatetags.filters import simpletimesince
@@ -40,7 +40,7 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-class BaseVideosFeed(Feed, SortFilterViewMixin):
+class BaseVideosFeed(FeedView, SortFilterViewMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
@@ -291,7 +291,7 @@ class CategoryVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Category: %s') % obj['obj'].name
+            _(u'Category: %s') % force_unicode(obj['obj'].name)
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
@@ -311,9 +311,9 @@ class AuthorVideosFeed(BaseVideosFeed):
         if not name_or_username.strip():
             name_or_username = obj['obj'].username
 
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Author: %s') % name_or_username)
+            _(u'Author: %s') % force_unicode(name_or_username))
 
 
 class FeedVideosFeed(BaseVideosFeed):
@@ -338,7 +338,7 @@ class FeedVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
-            obj['obj'].name or '')
+            force_unicode(obj['obj'].name) or '')
 
 
 class TagVideosFeed(BaseVideosFeed):
@@ -373,7 +373,8 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def title(self, obj):
         return u"%s: %s" % (
-            Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
+            Site.objects.get_current().name,
+            _(u'Search: %s') % force_unicode(obj['obj']))
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
@@ -407,4 +408,4 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Playlist: %s') % obj['obj'].name)
+            _(u'Playlist: %s') % force_unicode(obj['obj'].name))

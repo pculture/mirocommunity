@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -47,7 +47,6 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
-import django.dispatch
 from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
@@ -225,9 +224,10 @@ SITE_LOCATION_CACHE = {}
 class SiteLocationManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
+        db = self._db if self._db is not None else 'default'
         try:
             # Dig it out of the cache.
-            current_site_location = SITE_LOCATION_CACHE[sid]
+            current_site_location = SITE_LOCATION_CACHE[(db, sid)]
         except KeyError:
             # Not in the cache? Time to put it in the cache.
             try:
@@ -235,10 +235,10 @@ class SiteLocationManager(models.Manager):
                 current_site_location = self.select_related().get(site__pk=sid)
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
-                current_site_location = localtv.models.SiteLocation.objects.create(
-                    site=Site.objects.get_current())
+                current_site_location = self.create(
+                    site=Site.objects.db_manager(db).get_current())
 
-            SITE_LOCATION_CACHE[sid] = current_site_location
+            SITE_LOCATION_CACHE[(db, sid)] = current_site_location
         return current_site_location
 
     def get(self, **kwargs):
@@ -248,11 +248,11 @@ class SiteLocationManager(models.Manager):
                 site = site.id
             site = int(site)
             try:
-                return SITE_LOCATION_CACHE[site]
+                return SITE_LOCATION_CACHE[(self._db, site)]
             except KeyError:
                 pass
         site_location = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[site_location.site_id] = site_location
+        SITE_LOCATION_CACHE[(self._db, site_location.site_id)] = site_location
         return site_location
 
     def clear_cache(self):
@@ -497,7 +497,7 @@ class SiteLocation(Thumbnailable):
         return bool(self.admins.filter(pk=user.pk).count())
 
     def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[self.site_id] = self
+        SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):
@@ -1352,10 +1352,12 @@ class VideoBase(models.Model):
     duplicate these fields, but this way it's easier to add more points of
     duplication in the future.
     """
-    name = models.CharField(max_length=250)
-    description = models.TextField(blank=True)
-    thumbnail_url = models.URLField(
-        verify_exists=False, blank=True, max_length=400)
+    name = models.CharField(verbose_name="Video Name", max_length=250)
+    description = models.TextField(verbose_name="Video Description (optional)",
+                                   blank=True)
+    thumbnail_url = models.URLField(verbose_name="Thumbnail URL (optional)",
+                                    verify_exists=False, blank=True,
+                                    max_length=400)
 
     class Meta:
         abstract = True
@@ -1822,22 +1824,20 @@ class Video(Thumbnailable, VideoBase):
     last_featured = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = BitLyWrappingURLField(verbose_name='Website URL',
+    website_url = BitLyWrappingURLField(verbose_name='Original Video Page URL (optional)',
                                         verify_exists=False,
                                         blank=True)
-    embed_code = models.TextField(blank=True)
+    embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)
     flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
                                                 blank=True)
     guid = models.CharField(max_length=250, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
-    video_service_user = models.CharField(max_length=250, blank=True,
-                                          default='')
-    video_service_url = models.URLField(verify_exists=False, blank=True,
-                                        default='')
-    contact = models.CharField(max_length=250, blank=True,
-                               default='')
-    notes = models.TextField(blank=True)
+    video_service_user = models.CharField(max_length=250, blank=True)
+    video_service_url = models.URLField(verify_exists=False, blank=True)
+    contact = models.CharField(verbose_name='E-mail (optional)', max_length=250,
+                               blank=True)
+    notes = models.TextField(verbose_name='Notes (optional)', blank=True)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     objects = VideoManager()
@@ -2034,7 +2034,7 @@ class Video(Thumbnailable, VideoBase):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteLocation.objects.using(self._state.db).get(
+        if SiteLocation.objects.db_manager(self._state.db).get(
             site=self.site_id).use_original_date and \
             self.when_published:
             return self.when_published
@@ -2057,6 +2057,21 @@ class Video(Thumbnailable, VideoBase):
             return 'published'
         else:
             return 'posted'
+
+    @property
+    def all_categories(self):
+        """
+        Returns a set of all the categories to which this video belongs.  We
+        use a depth-first search, ignoring duplicates.
+        """
+        categories = set()
+        for category in self.categories.all():
+            categories.add(category)
+            parent = category.parent
+            while parent:
+                categories.add(parent)
+                parent = parent.parent
+        return categories
 
     def voting_enabled(self):
         if not lsettings.voting_enabled():
@@ -2123,6 +2138,14 @@ class Watch(models.Model):
         from localhost, check to see if it was forwarded to (hopefully) get the
         right IP address.
         """
+        ignored_bots = getattr(settings, 'LOCALTV_WATCH_IGNORED_USER_AGENTS',
+                               ('bot', 'spider', 'crawler'))
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        if user_agent and ignored_bots:
+            for bot in ignored_bots:
+                if bot in user_agent:
+                    return
+
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
         if not ipv4_re.match(ip):
             ip = '0.0.0.0'
@@ -2229,6 +2252,7 @@ def tag_unicode(self):
     return self.name
 
 tagging.models.Tag.__unicode__ = tag_unicode
+
 
 def send_new_video_email(sender, **kwargs):
     sitelocation = SiteLocation.objects.get(site=sender.site)

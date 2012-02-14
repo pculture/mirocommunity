@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -98,14 +99,6 @@ class AutoQueryTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['categories', 'feeds', 'savedsearches',
                                         'videos']
 
-    def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import site
-        index = site.get_index(Video)
-        index.reindex()
-
     def search(self, query):
         return [result.object for result in search.auto_query(query)]
 
@@ -113,7 +106,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         The basic query should return videos which contain the search term.
         """
-        self._rebuild_index()
         results = search.auto_query('blender')
         self.assertTrue(results)
         for result in results:
@@ -124,7 +116,6 @@ class AutoQueryTestCase(BaseTestCase):
         If the description contains HTML, searching should still find words
         next to HTML tags.
         """
-        self._rebuild_index()
         results = search.auto_query('blahblah')
         self.assertTrue(results)
 
@@ -132,7 +123,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Phrases in quotes should be searched for as a phrase.
         """
-        self._rebuild_index()
         results = search.auto_query('"empty mapping"')
         self.assertTrue(results)
         for result in results:
@@ -145,8 +135,6 @@ class AutoQueryTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
-
-        self._rebuild_index()
 
         self.assertEqual(self.search('tag1'), [video])
         self.assertEqual(self.search('tag2'), [video])
@@ -163,8 +151,6 @@ class AutoQueryTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [1, 2] # Miro, Linux
         video.save()
-
-        self._rebuild_index()
 
         self.assertEqual(self.search('Miro'), [video])
         self.assertEqual(self.search('Linux'), [video])
@@ -189,8 +175,6 @@ class AutoQueryTestCase(BaseTestCase):
         video2 = Video.objects.get(pk=47)
         video2.authors = [video.user]
         video2.save()
-
-        self._rebuild_index()
 
         self.assertEqual(self.search('superuser'), [video2, video])
         self.assertEqual(self.search('firstname'), [video2, video])
@@ -220,8 +204,6 @@ class AutoQueryTestCase(BaseTestCase):
         video2.authors = [video.user]
         video2.save()
 
-        self._rebuild_index()
-
         excluded = self.search('-user:superuser')
         for e in excluded:
             # should not include the superuser videos
@@ -236,7 +218,6 @@ class AutoQueryTestCase(BaseTestCase):
         video.video_service_user = 'Video_service_user'
         video.save()
 
-        self._rebuild_index()
         self.assertEqual(self.search('video_service_user'), [video])
 
     def test_search_includes_feed_name(self):
@@ -244,8 +225,6 @@ class AutoQueryTestCase(BaseTestCase):
         Search should search the feed name for videos.
         """
         feed = Feed.objects.get(name='miropcf')
-
-        self._rebuild_index()
 
         videos = self.search('miropcf')
         for video in videos:
@@ -263,7 +242,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should exclude terms that start with - (hyphen).
         """
-        self._rebuild_index()
         results = search.auto_query('-blender')
         self.assertTrue(results)
         for result in results:
@@ -273,7 +251,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should handle Unicode strings.
         """
-        self._rebuild_index()
         self.assertEqual(self.search(u'espa\xf1a'), [])
 
     def test_search_includes_playlist(self):
@@ -289,8 +266,6 @@ class AutoQueryTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         playlist.add_video(video)
 
-        self._rebuild_index()
-
         self.assertEqual(self.search('playlist:%i' % playlist.pk), [video])
         self.assertEqual(self.search('playlist:user/test-list'), [video])
 
@@ -303,8 +278,6 @@ class AutoQueryTestCase(BaseTestCase):
         video.search = search
         video.save()
 
-        self._rebuild_index()
-
         self.assertEqual(self.search('search:%i' % search.pk), [video])
         self.assertEqual(self.search('search:"Participatory Culture"'),
                           [video])
@@ -313,7 +286,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Terms bracketed in {}s should be ORed together.
         """
-        self._rebuild_index()
         results = search.auto_query('{elephant render}')
         self.assertTrue(results)
         for result in results:
@@ -324,7 +296,6 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Mixing OR and AND should work as expected.
         """
-        self._rebuild_index()
         results = search.auto_query('{import repair} -and')
         self.assertTrue(results)
         for result in results:

@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -245,10 +246,14 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
 
+import os
 # haystack search
-HAYSTACK_SITECONF = 'example_mc_project.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-HAYSTACK_WHOOSH_PATH = 'whoosh_index'
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+    }
+}
 
 # Facebook options
 FACEBOOK_APP_ID = None

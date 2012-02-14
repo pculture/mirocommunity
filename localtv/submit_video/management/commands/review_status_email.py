@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by

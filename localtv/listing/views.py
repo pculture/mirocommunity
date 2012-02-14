@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -128,8 +128,13 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         context['filters'] = self._filter_dict
         context['filter_form'] = self.filter_form
         if self.default_filter in self._filter_dict:
-            context[self.default_filter] = (
-                self._filter_dict[self.default_filter][0])
+            try:
+                context[self.default_filter] = (
+                    self._filter_dict[self.default_filter][0])
+            except IndexError:
+                # Then there are no items matching the default_filter - so we're
+                # on a page that shouldn't exist.
+                raise Http404
 
         return context
 
@@ -160,7 +165,7 @@ class CategoryVideoSearchView(VideoSearchView):
                     self.request.user.is_authenticated()):
             # TODO: Benchmark this against a version where the pk queryset is
             # evaluated here instead of becoming a subquery.
-            pks = category.approved_set().filter(
+            pks = category.approved_set.filter(
                 site=Site.objects.get_current()).values_list('id', flat=True)
             user_can_vote = True
             votes = Vote.objects.filter(

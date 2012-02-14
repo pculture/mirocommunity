@@ -1,44 +1,42 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
 #
-# This file is part of Miro Community.
-#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+# 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-#
+# 
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-#
+# 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-import time
-import urllib
-import urlparse
-
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
-from django.core import cache
 from django.db.models import Q
-from django.core.validators import URLValidator
+from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
+from django.views.generic import FormView, CreateView
+from django.utils.decorators import method_decorator
+from tagging.utils import parse_tag_input
+import vidscraper
 
-from localtv import utils
-from localtv.decorators import request_passes_test
 from localtv.models import SiteLocation, Video
 from localtv.signals import submit_finished
-from localtv.submit_video import forms
+from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
 from localtv.submit_video.utils import is_video_url
+from localtv.utils import get_or_create_tags
 
-url_re = URLValidator.regex
 
-def _check_submit_permissions(request):
+def _has_submit_permissions(request):
     sitelocation = SiteLocation.objects.get_current()
     if not sitelocation.submission_requires_login:
         return True
@@ -49,261 +47,167 @@ def _check_submit_permissions(request):
             return request.user_is_admin()
 
 
-def submit_lock(func):
-    def wrapper(request, *args, **kwargs):
-        if request.method != 'POST':
-            return func(request, *args, **kwargs)
-        cache_key = 'submit_lock.%s.%s.%s' % (
-            SiteLocation.objects.get_current().site.domain,
-            request.path,
-            request.POST['url'])
-        while True:
-            stored = cache.cache.add(cache_key, 'locked', 20)
-            if stored:
-                # got the lock
-                break
-            time.sleep(0.25)
-        response = func(request, *args, **kwargs)
-        # release the lock
-        cache.cache.delete(cache_key)
-        return response
-    return wrapper
+class SubmitURLView(FormView):
+    form_class = SubmitURLForm
+    session_key = "localtv_submit_video_info"
+    template_name = "localtv/submit_video/submit.html"
 
+    def get(self, request, *args, **kwargs):
+        return FormView.post(self, request, *args, **kwargs)
 
-@request_passes_test(_check_submit_permissions)
-@csrf_protect
-def submit_video(request):
-    sitelocation = SiteLocation.objects.get_current()
-    if not (request.user_is_admin() or sitelocation.display_submit_button):
-        raise Http404
+    @method_decorator(csrf_protect)
+    def post(self, request, *args, **kwargs):
+        # This method should be disallowed. Some forms may still use it in old
+        # templates, so we handle it for backwards-compatibility.
+        return self.get(request, *args, **kwargs)
 
-    # Extract construction hint, if it exists.
-    # This is a hint that plugins can use to slightly change the behavior
-    # of the video submission forms.
-    construction_hint = (request.POST.get('construction_hint', None) or
-                         request.GET.get('construction_hint', None))
+    def get_session_key(self):
+        return self.session_key
 
-    url = request.POST.get('url') or request.GET.get('url', '')
+    def get_form(self, form_class):
+        kwargs = self.get_form_kwargs()
+        # If it looks like the form has been submitted via GET, set the data
+        # kwarg to the GET data.
+        if set(self.request.GET) & set(form_class.base_fields):
+            kwargs['data'] = self.request.GET
+        return form_class(**kwargs)
 
-    if request.method == "GET" and not url:
-        submit_form = forms.SubmitVideoForm(
-            construction_hint=construction_hint)
-        return render_to_response(
-            'localtv/submit_video/submit.html',
-            {'form': submit_form},
-            context_instance=RequestContext(request))
-    else:
-        url = urlparse.urldefrag(url)[0]
-        submit_form = forms.SubmitVideoForm({'url': url or ''})
-        if submit_form.is_valid():
-            existing = Video.objects.filter(
-                Q(website_url=submit_form.cleaned_data['url']) |
-                Q(file_url=submit_form.cleaned_data['url']),
-                site=sitelocation.site)
-            existing.filter(status=Video.REJECTED).delete()
-            if existing.count():
-                if request.user_is_admin():
-                    # even if the video was rejected, an admin submitting it
-                    # should make it approved
-                    # FIXME: This initiates a new query against the database -
-                    # so the rejected videos which were deleted will not be
-                    # marked approved.
-                    for v in existing.exclude(
-                        status=Video.ACTIVE):
-                        v.user = request.user
-                        v.status = Video.ACTIVE
-                        v.when_approved = datetime.datetime.now()
-                        v.save()
-                    return HttpResponseRedirect(
-                        reverse('localtv_submit_thanks',
-                                args=[existing[0].pk]))
-                else:
-                    # pick the first approved video to point the user at
-                    videos = existing.filter(status=Video.ACTIVE)
-                    if videos.count():
-                        video = videos[0]
-                    else:
-                        video = None
-                    return render_to_response(
-                        'localtv/submit_video/submit.html',
-                        {'form': forms.SubmitVideoForm(
-                                construction_hint=construction_hint),
-                         'was_duplicate': True,
-                         'video': video},
-                        context_instance=RequestContext(request))
+    def form_valid(self, form):
+        video = form.video_cache
+        url = form.cleaned_data['url']
+        # This bit essentially just preserves the old behavior; really, the
+        # views that are redirected to are all instances of SubmitVideoView.
 
-            vidscraper_video = utils.get_vidscraper_video(
-                submit_form.cleaned_data['url'])
-
-            get_dict = {'url': submit_form.cleaned_data['url']}
-            if 'construction_hint' in request.GET:
-                get_dict['construction_hint'] = construction_hint
-            if 'bookmarklet' in request.GET:
-                get_dict['bookmarklet'] = '1'
-            get_params = urllib.urlencode(get_dict)
-            if vidscraper_video:
-                if (vidscraper_video.link and
-                    vidscraper_video.link != get_dict['url']):
-                    request.POST = {
-                        'url': vidscraper_video.link.encode('utf8')}
-                    # rerun the view, but with the canonical URL
-                    return submit_video(request)
-
-                if (vidscraper_video.embed_code
-                    or (vidscraper_video.file_url
-                        and not vidscraper_video.file_url_expires)):
-                    return HttpResponseRedirect(
-                        reverse('localtv_submit_scraped_video') + '?' +
-                        get_params)
-
-            # otherwise if it looks like a video file
-            if is_video_url(submit_form.cleaned_data['url']):
-                return HttpResponseRedirect(
-                    reverse('localtv_submit_directlink_video')
-                    + '?' + get_params)
-            else:
-                return HttpResponseRedirect(
-                    reverse('localtv_submit_embedrequest_video')
-                    + '?' + get_params)
-
+        if video is not None and (video.embed_code or
+                (video.file_url and not video.file_url_expires)):
+            success_url = reverse('localtv_submit_scraped_video')
+        elif is_video_url(url):
+            success_url = reverse('localtv_submit_directlink_video')
         else:
-            return render_to_response(
-                'localtv/submit_video/submit.html',
-                {'form': submit_form},
-                context_instance=RequestContext(request))
+            success_url = reverse('localtv_submit_embedrequest_video')
 
+        self.success_url = "%s?%s" % (success_url, self.request.GET.urlencode())
 
-def _submit_finish(form, *args, **kwargs):
-    if form.is_valid():
-        video = form.save()
-        submit_finished.send(sender=video)
-
-        #redirect to a thank you page
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                            args=[video.pk]))
-
-    else:
-        return render_to_response(*args, **kwargs)
-
-
-@request_passes_test(_check_submit_permissions)
-@submit_lock
-@csrf_protect
-def scraped_submit_video(request):
-    if not (request.REQUEST.get('url') and \
-                url_re.match(request.REQUEST['url'])):
-        return HttpResponseRedirect(reverse('localtv_submit_video'))
-
-    vidscraper_video = utils.get_vidscraper_video(request.REQUEST['url'])
-
-    url = vidscraper_video.link or request.REQUEST['url']
-    sitelocation = SiteLocation.objects.get_current()
-    existing =  Video.objects.filter(site=sitelocation.site,
-                                     website_url=url)
-    existing.filter(status=Video.REJECTED).delete()
-    if existing.count():
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                                args=[existing[0].id]))
-    initial = dict(request.GET.items())
-    if request.method == "GET":
-        scraped_form = forms.ScrapedSubmitVideoForm(
-            initial=initial,
-            vidscraper_video=vidscraper_video)
-
-        return render_to_response(
-            'localtv/submit_video/scraped.html',
-            {'video': vidscraper_video,
-             'form': scraped_form},
-            context_instance=RequestContext(request))
-
-    scraped_form = forms.ScrapedSubmitVideoForm(
-        request.POST,
-        sitelocation=sitelocation,
-        user=request.user,
-        vidscraper_video=vidscraper_video)
-    return _submit_finish(scraped_form,
-            'localtv/submit_video/scraped.html',
-            {'video': vidscraper_video,
-             'form': scraped_form},
-            context_instance=RequestContext(request))
-
-
-@request_passes_test(_check_submit_permissions)
-@submit_lock
-@csrf_protect
-def embedrequest_submit_video(request):
-    if not (request.REQUEST.get('url') and \
-                url_re.match(request.REQUEST['url'])):
-        return HttpResponseRedirect(reverse('localtv_submit_video'))
-
-    url = request.REQUEST['url']
-    sitelocation = SiteLocation.objects.get_current()
-    existing =  Video.objects.filter(site=sitelocation.site,
-                                            website_url=url)
-    existing.filter(status=Video.REJECTED).delete()
-    if existing.count():
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                                args=[existing[0].id]))
-
-    vidscraper_video = utils.get_vidscraper_video(request.REQUEST['url']) or {}
-    initial = {
-        'url': url,
-        'name': vidscraper_video.title or '',
-        'description': vidscraper_video.description or '',
-        'thumbnail': vidscraper_video.thumbnail_url or '',
+        key = self.get_session_key()
+        self.request.session[key] = {
+            'video': video,
+            'url': url
         }
-    if request.method == "GET":
-        embed_form = forms.EmbedSubmitVideoForm(initial=initial)
+        return super(SubmitURLView, self).form_valid(form)
 
-        return render_to_response(
-            'localtv/submit_video/embed.html',
-            {'form': embed_form},
-            context_instance=RequestContext(request))
+    def get_context_data(self, **kwargs):
+        context = super(SubmitURLView, self).get_context_data(**kwargs)
+        # HACK to provide backwards-compatible context.
+        form = context['form']
+        context['was_duplicate'] = getattr(form, 'was_duplicate', False)
+        context['video'] = getattr(form, 'duplicate_video', None)
 
-    embed_form = forms.EmbedSubmitVideoForm(request.POST, request.FILES,
-                                            sitelocation=sitelocation,
-                                            user=request.user)
-
-    return _submit_finish(embed_form,
-                          'localtv/submit_video/embed.html',
-                          {'form': embed_form},
-                          context_instance=RequestContext(request))
+        # Provide the video pk explicitly since the backwards-compatible context
+        # doesn't allow access to the video's pk if the video's status is not
+        # ACTIVE.
+        context['video_pk'] = getattr(form, 'duplicate_video_pk', None)
+        return context
 
 
-@request_passes_test(_check_submit_permissions)
-@submit_lock
-@csrf_protect
-def directlink_submit_video(request):
-    if not (request.REQUEST.get('url') and \
-                url_re.match(request.REQUEST['url'])):
-        return HttpResponseRedirect(reverse('localtv_submit_video'))
+class SubmitVideoView(CreateView):
+    form_class = SubmitVideoForm
+    session_key = "localtv_submit_video_info"
 
-    url = request.REQUEST['url']
-    sitelocation = SiteLocation.objects.get_current()
-    existing =  Video.objects.filter(Q(website_url=url)|Q(file_url=url),
-                                            site=sitelocation.site)
-    existing.filter(status=Video.REJECTED).delete()
-    if existing.count():
-        return HttpResponseRedirect(reverse('localtv_submit_thanks',
-                                                args=[existing[0].id]))
-    initial = dict(request.GET.items())
-    if request.method == "GET":
-        direct_form = forms.DirectSubmitVideoForm(initial=initial)
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        session_key = self.get_session_key()
+        if (session_key not in request.session or
+            not request.session[session_key].get('url', None)):
+            return HttpResponseRedirect(reverse('localtv_submit_video'))
+        return super(SubmitVideoView, self).dispatch(request, *args, **kwargs)
 
-        return render_to_response(
-            'localtv/submit_video/direct.html',
-            {'form': direct_form},
-            context_instance=RequestContext(request))
+    def get_session_key(self):
+        return self.session_key
 
-    direct_form = forms.DirectSubmitVideoForm(
-        request.POST, request.FILES,
-        sitelocation=sitelocation,
-        user=request.user)
+    def get_success_url(self):
+        return reverse('localtv_submit_thanks', args=[self.object.pk])
 
-    return _submit_finish(direct_form,
-                          'localtv/submit_video/direct.html',
-                          {'form': direct_form},
-                          context_instance=RequestContext(request))
+    def get_form_class(self):
+        fields = ['tags', 'contact', 'notes']
+        session_key = self.get_session_key()
+        try:
+            session_dict = self.request.session[session_key]
+            self.video = session_dict['video']
+            self.url = session_dict['url']
+        except KeyError:
+            raise Http404
+
+        if self.video is not None and (self.video.embed_code or
+                (self.video.file_url and not self.video.file_url_expires)):
+            pass
+        elif is_video_url(self.url):
+            fields += ['name', 'description', 'website_url']
+        else:
+            fields += ['name', 'description', 'embed_code']
+
+        if self.video is not None:
+            self.object = Video.from_vidscraper_video(self.video, commit=False)
+        else:
+            self.object = Video()
+
+        return modelform_factory(Video, form=self.form_class, fields=fields)
+
+    def get_initial(self):
+        initial = super(SubmitVideoView, self).get_initial()
+        if getattr(self.video, 'tags', None):
+            initial.update({
+                'tags': get_or_create_tags(self.video.tags),
+            })
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super(SubmitVideoView, self).get_form_kwargs()
+        kwargs.update({
+            'request': self.request,
+            'url': self.url
+        })
+        return kwargs
+
+    def get_template_names(self):
+        if self.video is not None and (self.video.embed_code or
+                (self.video.file_url and not self.video.file_url_expires)):
+            template_names = ['localtv/submit_video/scraped.html']
+        elif is_video_url(self.url):
+            template_names = ['localtv/submit_video/direct.html']
+        else:
+            template_names = ['localtv/submit_video/embed.html']
+
+        return template_names
+
+    def form_valid(self, form):
+        response = super(SubmitVideoView, self).form_valid(form)
+        identifiers = Q()
+        if self.object.website_url:
+            identifiers |= Q(website_url=self.object.website_url)
+        if self.object.file_url:
+            identifiers |= Q(file_url=self.object.file_url)
+        if self.object.guid:
+            identifiers |= Q(guid=self.object.guid)
+        Video.objects.filter(identifiers, site=Site.objects.get_current(),
+                             status=Video.REJECTED).delete()
+        del self.request.session[self.get_session_key()]
+        submit_finished.send(sender=self.object)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(SubmitVideoView, self).get_context_data(**kwargs)
+        # Provided for backwards-compatibility.
+        context['data'] = {
+            'link': self.object.website_url,
+            'publish_date': self.object.when_published,
+            'tags': parse_tag_input(context['form'].initial.get('tags', '')),
+            'title': self.object.name,
+            'description': self.object.description,
+            'thumbnail_url': self.object.thumbnail_url,
+            'user': self.object.video_service_user,
+            'user_url': self.object.video_service_url,
+        }
+        return context
 
 
 def submit_thanks(request, video_id=None):
