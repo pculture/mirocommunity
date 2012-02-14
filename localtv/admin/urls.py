@@ -43,6 +43,9 @@ urlpatterns = patterns('',
     url(r'^playlists/$',
         ViewNameRedirectView.as_view(url_name='localtv_admin_playlist_list'),
         name='localtv_playlist_index'),
+    url(r'^moderation/videos/',
+        ViewNameRedirectView.as_view(url_name='localtv_admin_video_queue'),
+        name='localtv_admin_approve_reject'),
 
     # Redirect some old view names to the admin base.
     url(r'^$', ViewNameRedirectView.as_view(url_name=ADMIN_ROOT_VIEW),
