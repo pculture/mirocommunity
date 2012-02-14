@@ -40,13 +40,13 @@ class PlaylistCreateView(MiroCommunityAdminCreateView):
         return kwargs
 
 
-class UserListView(UserMixin, MiroCommunityAdminListView):
+class PlaylistListView(UserMixin, MiroCommunityAdminListView):
     pass
 
 
-class UserUpdateView(UserMixin, MiroCommunityAdminUpdateView):
+class PlaylistUpdateView(UserMixin, MiroCommunityAdminUpdateView):
     pass
 
 
-class UserDeleteView(UserMixin, MiroCommunityAdminDeleteView):
+class PlaylistDeleteView(UserMixin, MiroCommunityAdminDeleteView):
     pass

@@ -18,4 +18,4 @@
 from localtv.admin.base import (registry, user_registry,
                                 MiroCommunityAdminSection)
 from localtv.admin import (dashboard, moderation, sources, videos, users,
-                           settings, pages)
+                           settings, pages, playlists)

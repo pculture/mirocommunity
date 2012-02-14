@@ -21,7 +21,6 @@ from django.core.exceptions import ValidationError
 from tagging.forms import TagField
 
 from localtv.models import Video, Category
-from localtv.playlists.models import Playlist
 
 
 class VideoForm(forms.ModelForm):
@@ -82,27 +81,3 @@ class CategoryForm(forms.ModelForm):
             self.instance.validate_unique()
         except ValidationError, e:
             self._update_errors(e.message_dict)
-
-
-class PlaylistForm(forms.ModelForm):
-    class Meta:
-        model = Playlist
-        fields = ['name', 'slug', 'description']
-
-    def _post_clean(self):
-        self._validate_unique = False
-        super(PlaylistForm, self)._post_clean()
-        try:
-            self.instance.validate_unique()
-        except ValidationError, e:
-            self._update_errors(e.message_dict)
-
-
-class PlaylistCreateForm(PlaylistForm):
-    def __init__(self, user, *args, **kwargs):
-        self.user = user
-        super(PlaylistCreateForm, self).__init__(*args, **kwargs)
-
-    def _post_clean(self):
-        self.instance.user = self.user
-        super(PlaylistCreateForm, self)._post_clean()
