@@ -72,7 +72,8 @@ class Sort(object):
 
     def sort(self, queryset, descending=False):
         if self.empty_value is not None:
-            queryset = queryset.exclude(**{self.sort_field: self.empty_value})
+            queryset = queryset.exclude(**{
+                        '%s__exact' % self.sort_field: self.empty_value})
         return queryset.order_by(''.join(('-' if descending else '',
                                           self.sort_field)))
 
