@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -33,6 +33,7 @@ from django.contrib.comments import get_model, get_form, get_form_target
 Comment = get_model()
 CommentForm = get_form()
 
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.files import storage
@@ -72,6 +73,7 @@ class FakeRequestFactory(RequestFactory):
         request = super(FakeRequestFactory, self).request(**request)
         request.user = AnonymousUser()
         UserIsAdminMiddleware().process_request(request)
+        SessionMiddleware().process_request(request)
         return request
 
 
@@ -224,7 +226,7 @@ class FeedImportTestCase(BaseTestCase):
 
     def test_update_approved_feed(self):
         feed = Feed.objects.get(pk=1)
-        feed.status = Feed.UNAPPROVED
+        feed.status = Feed.INACTIVE
         feed.save()
         self._update_with_video_iter(self._parsed_feed, feed)
         feed = Feed.objects.get(pk=1)
@@ -735,10 +737,10 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
-                          'localtv/view_video.html')
-        self.assertEqual(response.context[0]['current_video'], video)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertTrue('localtv/view_video.html' in [
+                template.name for template in response.templates])
+        self.assertEqual(response.context['current_video'], video)
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location)))
 
@@ -797,7 +799,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 2)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=2)))
 
@@ -821,7 +823,7 @@ class ViewTestCase(BaseTestCase):
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 1)
-        self.assertEqual(list(response.context[0]['popular_videos']),
+        self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
                     self.site_location).filter(categories__pk=1)))
 
@@ -835,7 +837,7 @@ class ViewTestCase(BaseTestCase):
                                 r.object.status == Video.ACTIVE]
         start = (page_num - 1) * per_page
         end = page_num * per_page
-        
+
         self.assertEqual(page_num, expected_page_num)
         self.assertEqual(len(paginator.object_list),
                           expected_object_count)
@@ -935,7 +937,7 @@ class ViewTestCase(BaseTestCase):
         The video_search view should search the category for videos.
         """
         video = Video.objects.get(pk=20)
-        video.categories = [1, 2] # Miro, Linux
+        video.categories = [2] # Linux (child of Miro)
         video.save()
         self._rebuild_index()
 
@@ -1070,12 +1072,21 @@ class ViewTestCase(BaseTestCase):
         template, and include the appropriate category.
         """
         category = Category.objects.get(slug='miro')
+        for video in models.Video.objects.filter(status=models.Video.ACTIVE):
+            video.categories = [1] # Linux
+            video.save()
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
+        videos = list(models.Video.objects.with_best_date().filter(
+                status=models.Video.ACTIVE).order_by('-best_date')[:15])
+        self.assertEqual(videos, sorted(videos, key=lambda v: v.when(),
+                                        reverse=True))
+        self.assertEqual(response.context['page_obj'].object_list,
+                         videos)
 
     def test_author_index(self):
         """
@@ -1189,7 +1200,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.active().filter(
+                          list(Video.objects.filter(status=Video.ACTIVE,
                                last_featured__isnull=False)))
 
     def test_tag_videos(self):
@@ -1245,6 +1256,8 @@ class CommentModerationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
+        self.old_COMMENTS_APP = getattr(settings, 'COMMENTS_APP', None)
+        settings.COMMENTS_APP = 'localtv.comments'
         self.video = Video.objects.get(pk=20)
         self.url = get_form_target()
         if 'captcha' in CommentForm.base_fields:
@@ -1256,6 +1269,9 @@ class CommentModerationTestCase(BaseTestCase):
                 'url': 'http://posturl.com/'})
         self.POST_data = self.form.initial
         self.POST_data['comment'] = 'comment string'
+
+    def tearDown(self):
+        settings.COMMENTS_APP = self.old_COMMENTS_APP
 
     def test_deleting_video_deletes_comments(self):
         """
@@ -1573,29 +1589,54 @@ class VideoModelTestCase(BaseTestCase):
         1) when_published
         2) when_approved
         3) when_submitted
+
+        SearchQuerySet().models(Video).order_by('-best_date_with_published')
+        should return the same videos.
+
         """
-        results = list(
-            Video.objects.get_latest_videos(self.site_location)
-        )
-        expected = list(Video.objects.active().extra(
-            select={'date': """
-COALESCE(localtv_video.when_published,localtv_video.when_approved,
-localtv_video.when_submitted)"""}
-        ).filter(site=self.site_location.site).order_by('-date'))
-        self.assertEqual(results, expected)
+        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+                                                site=self.site_location.site
+                                       ).values_list('pk', flat=True))
+
+        results = list(Video.objects.get_latest_videos(self.site_location))
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
+
+        sqs = SearchQuerySet().models(Video).order_by(
+                                      '-best_date_with_published')
+        results = list([r.object for r in sqs.load_all()])
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
 
     def test_latest_use_original_date_False(self):
         """
         When SiteLocation.use_original_date is False,
         Video.objects.get_latest_videos() should ignore the when_published date.
+
+        SearchQuerySet().models(Video).order_by('-best_date') should return the
+        same videos.
+
         """
+        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+                                                site=self.site_location.site
+                                       ).values_list('pk', flat=True))
+
         self.site_location.use_original_date = False
         self.site_location.save()
-        self.assertEqual(list(Video.objects.get_latest_videos(
-                    self.site_location)),
-                          list(Video.objects.active().extra(select={'date': """
-COALESCE(localtv_video.when_approved,localtv_video.when_submitted)"""}
-                      ).filter(site=self.site_location.site).order_by('-date')))
+
+        results = list(Video.objects.get_latest_videos(self.site_location))
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
+
+        sqs = SearchQuerySet().models(Video).order_by(
+                                      '-best_date')
+        results = list([r.object for r in sqs.load_all()])
+        self.assertEqual(set(r.pk for r in results), expected_pks)
+        for i in xrange(len(results) - 1):
+            self.assertTrue(results[i].when() >= results[i+1].when())
 
     def test_thumbnail_deleted(self):
         """
@@ -1824,7 +1865,7 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2011, 12, 06, 19, 18, 23),
+        'thumbnail_updated': datetime.datetime(2012, 1, 4, 6, 56, 41),
         }
 
 

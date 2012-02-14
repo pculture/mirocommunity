@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -13,7 +14,6 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-
 
 from south.db import db
 from django.db import models

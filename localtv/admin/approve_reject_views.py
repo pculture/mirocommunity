@@ -1,23 +1,24 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
@@ -38,9 +39,9 @@ from notification import models as notification
 ## --------------------
 
 def get_video_paginator(sitelocation):
-    videos = Video.objects.unapproved().filter(
-        site=sitelocation.site).order_by(
-        'when_submitted', 'when_published')
+    videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                  site=sitelocation.site
+                         ).order_by('when_submitted', 'when_published')
 
     return Paginator(videos, 10)
 
@@ -74,7 +75,7 @@ def preview_video(request):
         Video,
         id=request.GET['video_id'],
         status=Video.UNAPPROVED,
-        site=SiteLocation.objects.get_current().site)
+        site=Site.objects.get_current())
     return render_to_response(
         'localtv/admin/video_preview.html',
         {'current_video': current_video},
@@ -127,7 +128,7 @@ def reject_video(request):
     current_video = get_object_or_404(
         Video,
         id=request.GET['video_id'],
-        site=SiteLocation.objects.get_current().site)
+        site=Site.objects.get_current())
     current_video.status = Video.REJECTED
     current_video.save()
     return HttpResponse('SUCCESS')
@@ -140,7 +141,7 @@ def feature_video(request):
     sitelocation = SiteLocation.objects.get_current()
     current_video = get_object_or_404(
         Video, pk=video_id, site=sitelocation.site)
-    if not current_video.is_active():
+    if not current_video.status == Video.ACTIVE:
         if (SiteLocation.enforce_tiers() and
             sitelocation.get_tier().remaining_videos() < 1):
             return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
@@ -157,7 +158,7 @@ def feature_video(request):
 def unfeature_video(request):
     video_id = request.GET.get('video_id')
     current_video = get_object_or_404(
-        Video, pk=video_id, site=SiteLocation.objects.get_current().site)
+        Video, pk=video_id, site=Site.objects.get_current())
     current_video.last_featured = None
     current_video.save()
 
@@ -217,8 +218,8 @@ def approve_all(request):
 @require_site_admin
 @csrf_protect
 def clear_all(request):
-    videos = Video.objects.unapproved().filter(
-        site=SiteLocation.objects.get_current().site)
+    videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                  site=Site.objects.get_current())
     if request.POST.get('confirm') == 'yes':
         for video in videos:
             video.status = Video.REJECTED

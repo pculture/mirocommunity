@@ -41,7 +41,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <h4>Log in</h4>
         <form action="{{ settings.LOGIN_URL }}" method="POST">{% csrf_token %}
           {% if form.non_field_errors %}
-          {{ form.non_field_errors }}
+          <div style="color: red; padding-bottom: 10px;">
+            Username or password incorrect. Did you <a href="{% url auth_password_reset %}">forget your password?</a>
+          </div>
           {% endif %}
           <p>
             {{ form.username.errors }}
@@ -52,6 +54,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <label><input type="password" placeholder="Password" value="{{ form.data.password }}" name="password" id="id_password" /></label>
           </p>
           <input type="hidden" name="next" value="{{ next }}" />
+          {% if form.non_field_errors %}
+          <p>
+            {{ form.non_field_errors }}
+          </p>
+          {% endif %}
           <p>
             <a href="{% url auth_password_reset %}" class="forgot">Forgot?</a>
             <input type="submit" value="Log In" class="button" />

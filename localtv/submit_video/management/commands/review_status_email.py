@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,7 @@ import datetime
 from django.core.management.base import NoArgsCommand
 from django.template import Context, loader
 
-from localtv import models
+from localtv.models import Video, SiteLocation
 from localtv import utils
 
 class Command(NoArgsCommand):
@@ -36,11 +36,12 @@ class Command(NoArgsCommand):
                 'admin_queue_weekly')
 
     def send_email(self, delta, time_period, notice_type):
-        sitelocation = models.SiteLocation.objects.get_current()
+        sitelocation = SiteLocation.objects.get_current()
 
         previous = datetime.datetime.now() - delta
 
-        queue_videos = models.Video.objects.unapproved().filter(
+        queue_videos = Video.objects.filter(
+            status=Video.UNAPPROVED,
             site=sitelocation.site,
         )
         new_videos = queue_videos.filter(when_submitted__gte=previous)

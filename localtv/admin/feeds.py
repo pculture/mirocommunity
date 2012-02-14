@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,7 +24,7 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 
 from localtv.feeds.views import BaseVideosFeed, LOCALTV_FEED_LENGTH
-from localtv import models
+from localtv.models import Video
 
 def generate_secret():
     sha = hashlib.sha1(settings.DATABASE_NAME)
@@ -49,7 +49,8 @@ class UnapprovedVideosFeed(BaseVideosFeed):
             self.sitelocation.site.name, _('Videos Awaiting Moderation'))
 
     def _actual_items(self):
-        return models.Video.objects.unapproved().filter(
+        return Video.objects.filter(
+            status=Video.UNAPPROVED,
             site=Site.objects.get_current()
         ).order_by(
             'when_submitted', 'when_published'
@@ -62,7 +63,8 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
             Site.objects.get_current().name, _('Unapproved User Submissions'))
 
     def items(self):
-        return models.Video.objects.unapproved().filter(
+        return Video.objects.filter(
+            status=Video.UNAPPROVED,
             site=Site.objects.get_current(),
             feed=None,
             search=None

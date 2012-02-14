@@ -1,19 +1,19 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-
 
 from datetime import datetime, timedelta
 
@@ -51,6 +51,9 @@ class LiveSearchSessionMixin(object):
             # For now, we need to fake an id on each video.
             for i, video in enumerate(results, start=1):
                 video.id = i
+                # For this version of mc, mark this video as coming from
+                # livesearch so that the get_thumbnail_url can tell later.
+                video._livesearch = True
             exclusions = self.get_exclusions(results)
             results = filter(lambda v: (
                     v.file_url not in exclusions['file_urls'] and

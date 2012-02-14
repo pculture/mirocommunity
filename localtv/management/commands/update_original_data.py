@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010, 2011 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -18,7 +19,7 @@ import traceback
 
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
-from localtv import models
+from localtv.models import Video, OriginalVideo
 import vidscraper.errors
 
 class Command(NoArgsCommand):
@@ -28,8 +29,8 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if site_too_old():
             return
-        for original in models.OriginalVideo.objects.exclude(
-            video__status=models.Feed.REJECTED):
+        for original in OriginalVideo.objects.exclude(
+            video__status=Video.REJECTED):
             try:
                 original.update()
             except vidscraper.errors.CantIdentifyUrl, e:

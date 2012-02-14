@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -57,21 +57,21 @@ def bulk_edit(request):
                                   context_instance=RequestContext(request))
 
     sitelocation = SiteLocation.objects.get_current()
-    videos = Video.objects.active().filter(
-        site=sitelocation.site)
+    videos = Video.objects.filter(status=Video.ACTIVE,
+                                  site=sitelocation.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = Video.objects.rejected()
+            videos = Video.objects.filter(status=Video.REJECTED)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = Video.objects.unapproved()
+            videos = Video.objects.filter(status=Video.UNAPPROVED)
 
     videos = videos.select_related('feed', 'search', 'site')
 
@@ -171,13 +171,13 @@ def bulk_edit(request):
                             elif value == 'unapprove':
                                 form.instance.status = Video.UNAPPROVED
                             elif value == 'feature':
-                                if not form.instance.is_active():
+                                if not form.instance.status == Video.ACTIVE:
                                     if (sitelocation.enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
                                         form.instance.status = Video.ACTIVE
-                                if form.instance.is_active():
+                                if form.instance.status == Video.ACTIVE:
                                     form.instance.last_featured = datetime.now()
                             elif value == 'unfeature':
                                 form.instance.last_featured = None

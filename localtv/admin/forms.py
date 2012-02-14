@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -39,7 +39,6 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from tagging.forms import TagField
-from tagging.utils import edit_string_for_tags
 
 import localtv.settings
 from localtv import models
@@ -419,7 +418,7 @@ class BulkEditVideoForm(EditVideoForm):
         # We have to initialize tags manually because the model form
         # (django.forms.models.model_to_dict) only collects fields and
         # relations, and not descriptors like Video.tags
-        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+        self.initial['tags'] = utils.edit_string_for_tags(self.instance.tags)
 
         # cache the querysets so that we don't hit the DB for each form
         cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)

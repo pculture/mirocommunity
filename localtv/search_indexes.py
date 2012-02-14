@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -21,7 +22,7 @@ from django.utils.encoding import force_unicode
 from haystack import indexes
 from haystack import site
 from localtv.models import Video, Watch
-from localtv.search.utils import SortFilterMixin
+from localtv.search.utils import FeaturedSort, ApprovedSort
 from localtv.tasks import haystack_update_index
 
 from django.conf import settings
@@ -64,6 +65,9 @@ class QueuedSearchIndex(indexes.SearchIndex):
 class VideoIndex(QueuedSearchIndex):
     text = indexes.CharField(document=True, use_template=True)
 
+    # HACK because xapian-haystack django_id/pk filtering is broken.
+    pk_hack = indexes.IntegerField(model_attr='pk')
+
     # ForeignKey relationships
     feed = indexes.IntegerField(model_attr='feed_id', null=True)
     search = indexes.IntegerField(model_attr='search_id', null=True)
@@ -77,12 +81,15 @@ class VideoIndex(QueuedSearchIndex):
     playlists = indexes.MultiValueField()
 
     # Aggregated/collated data.
-    best_date = indexes.DateTimeField(model_attr='when')
+    #: The best_date field if the publish date is not considered.
+    best_date = indexes.DateTimeField()
+    #: The best_date field if the original date is considered.
+    best_date_with_published = indexes.DateTimeField()
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
-                            default=SortFilterMixin._empty_value['featured'])
+                                          default=FeaturedSort.empty_value)
     when_approved = indexes.DateTimeField(model_attr='when_approved',
-                            default=SortFilterMixin._empty_value['approved'])
+                                          default=ApprovedSort.empty_value)
 
     def _setup_save(self, model):
         super(VideoIndex, self)._setup_save(model)
@@ -103,8 +110,8 @@ class VideoIndex(QueuedSearchIndex):
         with the watch_count.
 
         """
-        return self.model._default_manager.active().annotate(
-                                                    watch_count=Count('watch'))
+        return self.model._default_manager.filter(status=self.model.ACTIVE
+                                         ).annotate(watch_count=Count('watch'))
 
     def read_queryset(self):
         """
@@ -125,7 +132,7 @@ class VideoIndex(QueuedSearchIndex):
         return self._prepare_field(video, 'tags')
 
     def prepare_categories(self, video):
-        return self._prepare_field(video, 'categories')
+        return [int(rel.pk) for rel in video.all_categories]
 
     def prepare_authors(self, video):
         return self._prepare_field(video, 'authors')
@@ -141,12 +148,17 @@ class VideoIndex(QueuedSearchIndex):
         except AttributeError:
             return video.watch_set.count()
 
+    def prepare_best_date(self, video):
+        return video.when_approved or video.when_submitted
+
+    def prepare_best_date_with_published(self, video):
+        return video.when_published or self.prepare_best_date(video)
+
     def _enqueue_instance(self, instance, is_removal):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
-            # fake instance for testing
+            # fake instance for testing. TODO: This should probably not be done.
             return
-        else:
-            super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
 
 site.register(Video, VideoIndex)

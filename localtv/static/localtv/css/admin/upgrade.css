@@ -1,6 +1,6 @@
 body#tier #upgrade_title {
   margin: 0 0 30px 0;
-  background: transparent url(/images/admin/icon_upgrade_shield.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_upgrade_shield.png) 0 0 no-repeat;
   padding: 5px 0 30px 55px;
   border-bottom: 1px #DDD solid;
 }
@@ -29,7 +29,7 @@ Basic Plan
 body#tier #basic_plan {
   width: 941px;
   height: 49px;
-  background: transparent url(/images/admin/upgrade_basic_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/upgrade_basic_bg.png) 0 0 no-repeat;
   display: block;
   margin: 0 0 0 0;
 }
@@ -64,7 +64,7 @@ Switch to basic
 body#tier #switchbasic {
   width: 941px;
   height: 49px;
-  background: transparent url(/images/admin/switch_basic_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/switch_basic_bg.png) 0 0 no-repeat;
   display: block;
   margin: 0 0 0 0;
 }
@@ -97,7 +97,7 @@ body#tier #switchbasic .buttons_like_links button {
   display: block;
   width: 164px;
   height: 35px;
-  background: transparent url(/images/admin/btn_switch_basic.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/btn_switch_basic.png) 0 0 no-repeat;
   text-indent: -9999px;
   margin: 8px 8px 0 0;
 }
@@ -133,7 +133,7 @@ body#tier span.downgrade a:hover {
 }
 
 body#tier .selected .hdr {
-  background: transparent url(/images/admin/current_hdr_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/current_hdr_bg.png) 0 0 no-repeat;
 }
 
 body#tier .selected .hdr h1 {
@@ -159,7 +159,7 @@ body#tier .selected .hdr h2 {
 }
 
 body#tier .selected .ft {
-  background: transparent url(/images/admin/current_ft_bg.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/current_ft_bg.png) 0 0 no-repeat;
 }
 
 body#tier .selected .ft a {
@@ -244,7 +244,7 @@ body#tier fieldset#billing_info_set h1 {
 }
 
 body#tier h1#billing span#we_accept {
-  background: transparent url(/images/admin/icon_we_accept.png) 0 0 no-repeat;
+  background: transparent url(../../images/admin/icon_we_accept.png) 0 0 no-repeat;
   text-indent: -99999px;
   display: inline-block;
   width: 214px;
