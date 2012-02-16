@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded, .button-wide, .video-details, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .pod-footer, .sidebar-about, .content-box, .card, .card-link, .grid-item {
+.padded, .video-details, #header > .container, #search, #footer > .container, .nav-item > a, .pod-content, .pod-footer, .sidebar-about, .content-box, .card, .card-link, .grid-item {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -287,9 +287,50 @@ h6 {
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
 }
 
-/* line 6, ../sass/partials/modules/_forms.scss */
-input {
+/* line 7, ../sass/partials/modules/_forms.scss */
+input, textarea {
   outline: none;
+  border: 1px solid #CCC;
+  background: #FFF;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  -moz-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -webkit-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -o-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  padding: 0;
+  margin: 0;
+  -moz-transition: all 0.15s linear;
+  -webkit-transition: all 0.15s linear;
+  -o-transition: all 0.15s linear;
+  transition: all 0.15s linear;
+}
+/* line 16, ../sass/partials/modules/_forms.scss */
+input:focus, textarea:focus {
+  border: 1px solid #344f6d;
+  -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -webkit-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -o-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+}
+
+/* line 22, ../sass/partials/modules/_forms.scss */
+input {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  line-height: 18px;
+  padding: 4.5px;
+}
+
+/* line 28, ../sass/partials/modules/_forms.scss */
+label {
+  line-height: 27px;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
@@ -330,15 +371,8 @@ ol > li {
   background: #CCC;
 }
 
-/* line 1, ../sass/partials/modules/_buttons.scss */
-.button-wide {
-  display: block;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -o-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -khtml-border-radius: 5px;
-  border-radius: 5px;
+/* line 5, ../sass/partials/modules/_buttons.scss */
+.button, button, .button-wide {
   border: 1px solid #CCC;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #e5e5e5));
   background: -webkit-linear-gradient(#f5f5f5, #e5e5e5);
@@ -353,10 +387,22 @@ ol > li {
   color: #666;
   text-align: center;
   text-shadow: 0 1px 0 #FFF;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  line-height: 18px;
+  padding: 4.5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -o-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  margin: 0;
 }
-
-/* line 12, ../sass/partials/modules/_buttons.scss */
-.button-wide:hover {
+/* line 17, ../sass/partials/modules/_buttons.scss */
+.button:hover, button:hover, .button-wide:hover {
   color: #444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #dddddd));
   background: -webkit-linear-gradient(#eeeeee, #dddddd);
@@ -369,9 +415,8 @@ ol > li {
   -o-box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
   box-shadow: 0 1px 0 0 white inset, 0 1px 0 0 white;
 }
-
-/* line 17, ../sass/partials/modules/_buttons.scss */
-.button-wide:active {
+/* line 22, ../sass/partials/modules/_buttons.scss */
+.button:active, button:active, .button-wide:active {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cccccc), color-stop(100%, #dddddd));
   background: -webkit-linear-gradient(#cccccc, #dddddd);
   background: -moz-linear-gradient(#cccccc, #dddddd);
@@ -382,6 +427,12 @@ ol > li {
   -webkit-box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
   -o-box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
   box-shadow: 0 1px 3px 0 #bbbbbb inset, 0 1px 0 0 white;
+}
+
+/* line 28, ../sass/partials/modules/_buttons.scss */
+.button-wide {
+  display: block;
+  line-height: 36px;
 }
 
 /* line 7, ../sass/partials/modules/_video_summary.scss */
