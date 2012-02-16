@@ -27,7 +27,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
      {% endifnotequal %}>
   <span class="video_id">{{ video.id }}</span>
   <span class="video_preview">
-    {# http://{{ sitelocation.site.domain #}
+    {# http://{{ site_settings.site.domain #}
      {% if video.metasearch_vid %}
        {% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}
      {% else %}

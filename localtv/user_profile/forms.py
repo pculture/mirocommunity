@@ -129,8 +129,8 @@ class NotificationsForm(forms.Form):
         forms.Form.__init__(self, *args, **kwargs)
         if self.instance:
             field = self.fields['notifications']
-            sitelocation = models.SiteLocation.objects.get_current()
-            if sitelocation.user_is_admin(self.instance):
+            site_settings = models.SiteSettings.objects.get_current()
+            if site_settings.user_is_admin(self.instance):
                 field.choices = self.CHOICES + self.ADMIN_CHOICES
 
             initial = []

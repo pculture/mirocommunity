@@ -45,7 +45,7 @@ except ImportError:
 
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
-from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
+from localtv.models import Video, Feed, SiteSettings, SavedSearch, Category
 from localtv.tiers import Tier
 
 
@@ -132,7 +132,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     unapproved_set = source_import.get_videos(using).filter(
         status=Video.PENDING)
     if source_import.auto_approve:
-        if not SiteLocation.enforce_tiers(using=using):
+        if not SiteSettings.enforce_tiers(using=using):
             active_set = unapproved_set
             unapproved_set = None
         else:

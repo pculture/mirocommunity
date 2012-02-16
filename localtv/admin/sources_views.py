@@ -27,7 +27,7 @@ from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
+from localtv.models import SiteSettings, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
 from localtv.utils import SortHeaders, MockQueryset
 from localtv.admin import forms
 
@@ -60,12 +60,12 @@ def manage_sources(request):
             orm_sort = 'name__lower'
     else:
         orm_sort = sort
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     feeds = Feed.objects.filter(
-        site=sitelocation.site).extra(select={
+        site=site_settings.site).extra(select={
             'name__lower': 'LOWER(name)'}).order_by(orm_sort)
     searches = SavedSearch.objects.filter(
-        site=sitelocation.site).extra(select={
+        site=site_settings.site).extra(select={
             'name__lower': 'LOWER(query_string)'}).order_by(
             orm_sort)
 
@@ -160,7 +160,7 @@ def manage_sources(request):
             'search_string': search_string,
             'source_filter': source_filter,
             'categories': Category.objects.filter(
-                site=SiteLocation.objects.get_current().site),
+                site=SiteSettings.objects.get_current().site),
             'users': User.objects.order_by('username'),
             'successful': 'successful' in request.GET,
             'formset': formset},

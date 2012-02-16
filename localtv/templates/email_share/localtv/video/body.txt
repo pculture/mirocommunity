@@ -11,5 +11,5 @@
 {% endif %}{% if content_object.description %}*{% trans "Description" %}*
 {{ content_object.description|striptags }}
 
-{% endif %}{% trans "This video was shared via" %} {{ sitelocation.name }}: http://{{ site.domain }}/
+{% endif %}{% trans "This video was shared via" %} {{ site_settings.name }}: http://{{ site.domain }}/
 {% endautoescape %}

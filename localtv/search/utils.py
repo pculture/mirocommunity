@@ -23,7 +23,7 @@ from django.db.models.fields import FieldDoesNotExist
 from haystack.backends import SQ
 from tagging.models import Tag
 
-from localtv.models import Video, Feed, Category, SiteLocation
+from localtv.models import Video, Feed, Category, SiteSettings
 from localtv.playlists.models import Playlist
 from localtv.search.forms import SmartSearchForm, FilterForm
 
@@ -81,7 +81,7 @@ class Sort(object):
 class BestDateSort(Sort):
     @property
     def sort_field(self):
-        if SiteLocation.objects.get_current().use_original_date:
+        if SiteSettings.objects.get_current().use_original_date:
             return 'best_date_with_published'
         return 'best_date'
 

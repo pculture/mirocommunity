@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </script>{% endif %}
   <script type="text/javascript" src="{% get_static_url 'localtv/js/extern/jquery.form.js' bundled %}?version={{ mc_version }}"></script>
   <script type="text/javascript" src="{% get_static_url 'localtv/js/comment.js' bundled %}?version={{ mc_version }}"></script>
-  {% if playlistitem_set or playlists or user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' bundled %}?version={{ mc_version }}"></script>{% endif %}
+  {% if playlistitem_set or playlists or user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' bundled %}?version={{ mc_version }}"></script>{% endif %}
   {% include "localtv/view_video_meta.html" %}
   {% if current_video.video_service %}<style>
   .video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
@@ -199,7 +199,7 @@ margin: 0 auto;
       {% endfor %}
     </ul>
     {% endif %}
-    {% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+    {% if not site_settings.comments_required_login or request.user.is_authenticated %}
     <h2 class="clear post-comment-title">Post a comment</h2>
     {% get_comment_form for current_video as comment_form %}
     <form action="{% comment_form_target %}" method="post" id="comment_form">{% csrf_token %}
@@ -211,10 +211,10 @@ margin: 0 auto;
   </div>
 
   <div id="sidebar">
-    {% if sitelocation.sidebar_html %}
+    {% if site_settings.sidebar_html %}
     <div id="about" class="rounded">
       {% autoescape off %}
-        {{ sitelocation.sidebar_html }}
+        {{ site_settings.sidebar_html }}
       {% endautoescape %}
     </div>
     {% endif %}
@@ -224,10 +224,10 @@ margin: 0 auto;
     <div id="share_links">
       <a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">Post to Facebook</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script>
       <a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">Email to Friends</a>
-      <a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">Tweet this Video</a>
+      <a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ site_settings.site.name }}: http://{{site_settings.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">Tweet this Video</a>
       {% if current_video.file_url %}<a href="{{ current_video.file_url }}" class="download">Download Video File</a>{% endif %}
     </div>
-    {% if sitelocation.playlists_enabled %}
+    {% if site_settings.playlists_enabled %}
     {% if playlistitem %}
     <div class="sidebar_header">
       <h2>This video is number {{ playlistitem.index }} (of {{ playlistitem.playlist.items.count }}) in the playlist</h2>
@@ -244,8 +244,8 @@ margin: 0 auto;
     </div>
     {% endif %}
     {# The logic I want is 'if can make playlists or (items and (not playlist or more than 1 item))' #}
-    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set %}
-    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
+    {% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set %}
+    {% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
     {% if not playlistitem or playlistitem_set|length > 1 %}
     <div class="sidebar_header">
       <h2>{% if playlistitem %}Other playlists that include this video{% else %}Playlists{% endif %}</h2>
@@ -277,7 +277,7 @@ margin: 0 auto;
       </div>
     </div>
     {% endif %}
-    {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}
+    {% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}
     <form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
       <select name="playlist" id="id_playlist">
         <option value="">Add video to your playlist</option>
@@ -297,14 +297,14 @@ margin: 0 auto;
     {% endif %}
     {% endif %}
     {% if category %}
-    {% cache 3600 view_video_category_new sitelocation category cache_invalidator %}
+    {% cache 3600 view_video_category_new site_settings category cache_invalidator %}
     <div class="sidebar_header">
       <h2>{{ category.name }}</h2>
 
       <div class="floatright">
         {% url localtv_feeds_category category.slug as category_rss %}
         <a href="{{ category_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ category_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
+        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ category_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
     {% get_video_list_for_category category as new_videos %}
@@ -313,14 +313,14 @@ margin: 0 auto;
     {% endfor %}
     {% endcache %}
     {% else %}
-    {% cache 3600 view_video_new sitelocation cache_invalidator %}
+    {% cache 3600 view_video_new site_settings cache_invalidator %}
     <div class="sidebar_header">
       <h2>New Videos</h2>
 
       <div class="floatright">
         {% url localtv_feeds_new as new_rss %}
         <a href="{{ new_rss }}" class="rss">RSS</a> |
-        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
+        <a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">Subscribe</a>
       </div>
     </div>
     {% get_video_list_new as new_videos %}

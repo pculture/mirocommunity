@@ -29,7 +29,7 @@ from django.utils.decorators import method_decorator
 from tagging.utils import parse_tag_input
 import vidscraper
 
-from localtv.models import SiteLocation, Video
+from localtv.models import SiteSettings, Video
 from localtv.signals import submit_finished
 from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
 from localtv.submit_video.utils import is_video_url
@@ -37,11 +37,11 @@ from localtv.utils import get_or_create_tags
 
 
 def _has_submit_permissions(request):
-    sitelocation = SiteLocation.objects.get_current()
-    if not sitelocation.submission_requires_login:
+    site_settings = SiteSettings.objects.get_current()
+    if not site_settings.submission_requires_login:
         return True
     else:
-        if sitelocation.display_submit_button:
+        if site_settings.display_submit_button:
             return request.user.is_authenticated() and request.user.is_active
         else:
             return request.user_is_admin()

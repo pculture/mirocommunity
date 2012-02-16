@@ -31,14 +31,14 @@ def nightly_warnings():
     import localtv.models
     '''This returns a dictionary, mapping English-language reasons to
     localtv.admin.tiers functions to call.'''
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
-    current_tier = sitelocation.get_tier()
+    site_settings = localtv.models.SiteSettings.objects.get_current()
+    current_tier = site_settings.get_tier()
     ret = set()
     if should_send_video_allotment_warning(current_tier):
         ret.add('video_allotment_warning_sent')
     if should_send_five_day_free_trial_warning():
         ret.add('free_trial_warning_sent')
-    #if should_send_inactive_site_warning(sitelocation, current_tier):
+    #if should_send_inactive_site_warning(site_settings, current_tier):
     #    ret.add('inactive_site_warning_sent')
     # NOTE: Commented out the inactive site warning because the
     # text is not fully-baked.
@@ -98,8 +98,8 @@ def user_warnings_for_downgrade(new_tier_name):
     import localtv.models
     warnings = set()
 
-    sitelocation = localtv.models.SiteLocation.objects.get_current()
-    current_tier = sitelocation.get_tier()
+    site_settings = localtv.models.SiteSettings.objects.get_current()
+    current_tier = site_settings.get_tier()
     future_tier = Tier(new_tier_name)
 
     # How many admins do we have right now?
@@ -128,14 +128,14 @@ def user_warnings_for_downgrade(new_tier_name):
     # and the site has custom CSS in use, then warn the user.
     if (current_tier.permit_custom_css() and
         not future_tier.permit_custom_css() and
-        sitelocation.css.strip()):
+        site_settings.css.strip()):
             warnings.add('css')
 
     # If the site has a custom domain, and the future tier doesn't permit it, then
     # we should warn the user.
-    if (sitelocation.enforce_tiers()
-        and sitelocation.site.domain
-        and not sitelocation.site.domain.endswith('mirocommunity.org')
+    if (site_settings.enforce_tiers()
+        and site_settings.site.domain
+        and not site_settings.site.domain.endswith('mirocommunity.org')
         and not future_tier.permits_custom_domain()):
         warnings.add('customdomain')
 
@@ -202,11 +202,11 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
     # Therefore, any limit has to be greater than or equal to one.
     assert new_limit >= 1
 
-    # grab hold of the current SiteLocation
+    # grab hold of the current SiteSettings
     try:
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
-    except localtv.models.SiteLocation.DoesNotExist:
-        return # well okay, there is no current SiteLocation.
+        site_settings = localtv.models.SiteSettings.objects.get_current()
+    except localtv.models.SiteSettings.DoesNotExist:
+        return # well okay, there is no current SiteSettings.
 
     # We have this many right now
     initial_admins_count = number_of_admins_including_superuser()
@@ -218,21 +218,21 @@ def push_number_of_admins_down(new_limit, actually_demote_people=False):
 
     # Okay, we have to actually demote some users from admin.
     # Well, uh, sort them by user ID.
-    demotees = sitelocation.admins.order_by('-pk')[:demote_this_many]
+    demotees = site_settings.admins.order_by('-pk')[:demote_this_many]
     demotee_usernames = set([x.username for x in demotees])
     if actually_demote_people:
         for demotee in demotees:
-            sitelocation.admins.remove(demotee)
+            site_settings.admins.remove(demotee)
     return demotee_usernames
 
 
 def number_of_admins_including_superuser():
     import localtv.models
-    if not localtv.models.SiteLocation.objects.all():
+    if not localtv.models.SiteSettings.objects.all():
         return 0
 
     normal_admin_ids = set([k.id for k in
-                            localtv.models.SiteLocation.objects.get_current().admins.filter(is_active=True)])
+                            localtv.models.SiteSettings.objects.get_current().admins.filter(is_active=True)])
     super_user_ids = set(
         [k.id for k in
          django.contrib.auth.models.User.objects.filter(
@@ -241,7 +241,7 @@ def number_of_admins_including_superuser():
     num_admins = len(normal_admin_ids)
     return num_admins
 
-## These "CHOICES" are used in the SiteLocation model.
+## These "CHOICES" are used in the SiteSettings model.
 ## They describe the different account types.
 CHOICES = [
     ('basic', 'Free account'),
@@ -282,9 +282,9 @@ class Tier(object):
 
         return prices
 
-    def __init__(self, tier_name, sitelocation=None):
+    def __init__(self, tier_name, site_settings=None):
         self.tier_name = tier_name
-        self.sitelocation = sitelocation
+        self.site_settings = site_settings
 
     @staticmethod
     def get(log_warnings=False):
@@ -297,12 +297,12 @@ class Tier(object):
         if site_id is None and log_warnings:
             logging.warn("Eek, SITE_ID is None.")
             return DEFAULT
-        # We have a SiteLocation, right?
+        # We have a SiteSettings, right?
         try:
-            sl = localtv.models.SiteLocation.objects.get(site=site_id)
-        except localtv.models.SiteLocation.DoesNotExist:
+            sl = localtv.models.SiteSettings.objects.get(site=site_id)
+        except localtv.models.SiteSettings.DoesNotExist:
             if log_warnings:
-                logging.warn("Eek, SiteLocation does not exist.")
+                logging.warn("Eek, SiteSettings does not exist.")
             return DEFAULT
 
         # We have a tier set, right?
@@ -344,10 +344,10 @@ class Tier(object):
         the tier limits us to.
 
         Returns False if it is *not* okay to add more videos to the site.'''
-        if self.sitelocation:
-            enforce = self.sitelocation.enforce_tiers(using=self.sitelocation._state.db)
+        if self.site_settings:
+            enforce = self.site_settings.enforce_tiers(using=self.site_settings._state.db)
         else:
-            enforce = localtv.models.SiteLocation.enforce_tiers()
+            enforce = localtv.models.SiteSettings.enforce_tiers()
         if not enforce:
             return True
 
@@ -377,11 +377,11 @@ class Tier(object):
         return special_cases.get(self.tier_name, default)
 
     def enforce_permit_custom_template(self):
-        if self.sitelocation:
-            sl = self.sitelocation
+        if self.site_settings:
+            sl = self.site_settings
         else:
             import localtv.models
-            sl = localtv.models.SiteLocation.objects.get_current()
+            sl = localtv.models.SiteSettings.objects.get_current()
         if not sl.enforce_tiers():
             return True
         return self.permit_custom_template()
@@ -407,11 +407,11 @@ class WrongAmount(PaymentException):
 class WrongStartDate(PaymentException):
     pass
 
-### Here, we listen for changes in the SiteLocation
+### Here, we listen for changes in the SiteSettings
 def pre_save_set_payment_due_date(instance, signal, **kwargs):
     import localtv.models
-    # Right here, we do a direct filter() call to evade the SiteLocation cache.
-    current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
+    # Right here, we do a direct filter() call to evade the SiteSettings cache.
+    current_sitelocs = localtv.models.SiteSettings.objects.filter(site__pk=settings.SITE_ID)
     if not current_sitelocs:
         return
 
@@ -460,13 +460,13 @@ def pre_save_set_payment_due_date(instance, signal, **kwargs):
         # but leave it queued up in the instance. We will send it post-save.
         # This eliminates a large source of possible latency.
         #
-        # In theory, we should hold a lock on the SiteLocation object.
+        # In theory, we should hold a lock on the SiteSettings object.
         template_name = 'localtv/admin/tiers_emails/welcome_to_tier.txt'
         subject = '%s has been upgraded!' % (current_siteloc.site.name or current_siteloc.site.domain)
 
-        # Pass in the new, modified sitelocation instance. That way, it has the new tier.
+        # Pass in the new, modified site_settings instance. That way, it has the new tier.
         instance.add_queued_mail(
-            ((subject, template_name), {'sitelocation': instance}))
+            ((subject, template_name), {'site_settings': instance}))
 
 def post_save_send_queued_mail(sender, instance, **kwargs):
     for (args, kwargs) in instance.get_queued_mail_destructively():
@@ -483,14 +483,14 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
         return
 
     import localtv.models
-    # Check if there is an existing SiteLocation. If not, we should bail
+    # Check if there is an existing SiteSettings. If not, we should bail
     # out now.
-    current_sitelocs = localtv.models.SiteLocation.objects.filter(site__pk=settings.SITE_ID)
+    current_sitelocs = localtv.models.SiteSettings.objects.filter(site__pk=settings.SITE_ID)
     if not current_sitelocs:
         return
 
     ### Check if tiers enforcement is disabled. If so, bail out now.
-    if not localtv.models.SiteLocation.enforce_tiers():
+    if not localtv.models.SiteSettings.enforce_tiers():
         return
 
     # When transitioning between any two site tiers, make sure that
@@ -507,7 +507,7 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
         message = send_tiers_related_email(
             subject="Remove custom domain for %s" % instance.site.domain,
             template_name="localtv/admin/tiers_emails/disable_my_custom_domain.txt",
-            sitelocation=instance,
+            site_settings=instance,
             override_to=['mirocommunity@pculture.org'],
             just_rendered_body=True)
 
@@ -529,7 +529,7 @@ def pre_save_adjust_resource_usage(instance, signal, raw, **kwargs):
     # Also change the theme, if necessary.
     switch_to_a_bundled_theme_if_necessary(new_tier_obj, actually_do_it=True)
 
-def send_tiers_related_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False):
+def send_tiers_related_email(subject, template_name, site_settings, override_to=None, extra_context=None, just_rendered_body=False):
     import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
 
@@ -550,11 +550,11 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
 
     # Generate the email
     t = loader.get_template(template_name)
-    data = {'site': sitelocation.site,
+    data = {'site': site_settings.site,
             'in_free_trial': tier_info.in_free_trial,
-            'tier_obj': sitelocation.get_tier(),
-            'tier_name_capitalized': sitelocation.tier_name.title(),
-            'site_name': sitelocation.site.name or sitelocation.site.domain,
+            'tier_obj': site_settings.get_tier(),
+            'tier_name_capitalized': site_settings.tier_name.title(),
+            'site_name': site_settings.site.name or site_settings.site.domain,
             'video_count': current_videos_that_count_toward_limit().count(),
             'short_name': first_one.first_name or first_one.username,
             'next_payment_due_date': next_payment_due_date,
@@ -577,7 +577,7 @@ def send_tiers_related_email(subject, template_name, sitelocation, override_to=N
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  recipient_list).send(fail_silently=False)
 
-def send_tiers_related_multipart_email(subject, template_name, sitelocation, override_to=None, extra_context=None, just_rendered_body=False,
+def send_tiers_related_multipart_email(subject, template_name, site_settings, override_to=None, extra_context=None, just_rendered_body=False,
                                        override_text_template=None, override_html_template=None):
     import localtv.models
     tier_info = localtv.models.TierInfo.objects.get_current()
@@ -603,11 +603,11 @@ def send_tiers_related_multipart_email(subject, template_name, sitelocation, ove
     else:
         t = loader.get_template(template_name)
 
-    data = {'site': sitelocation.site,
+    data = {'site': site_settings.site,
             'in_free_trial': tier_info.in_free_trial,
-            'tier_obj': sitelocation.get_tier(),
-            'tier_name_capitalized': sitelocation.tier_name.title(),
-            'site_name': sitelocation.site.name or sitelocation.site.domain,
+            'tier_obj': site_settings.get_tier(),
+            'tier_name_capitalized': site_settings.tier_name.title(),
+            'site_name': site_settings.site.name or site_settings.site.domain,
             'video_count': current_videos_that_count_toward_limit().count(),
             'short_name': first_one.first_name or first_one.username,
             'next_payment_due_date': next_payment_due_date,
