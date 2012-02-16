@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from hashlib import sha1
 import urllib
 
 from django.contrib.auth.models import User
@@ -55,7 +56,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
             'domain': Site.objects.get_current().domain,
             'class': self.__class__.__name__,
-            'vary': force_unicode(vary).replace(' ', '')
+            'vary': sha1(force_unicode(vary).replace(' ', '')).hexdigest(),
         }
 
     def __call__(self, request, *args, **kwargs):
@@ -71,7 +72,9 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             # :meth:`_get_opensearch_data` uses it as an alternate source for
             # startIndex.
             request.GET.get('start-index'),
-            request.GET.get('startPage')
+            request.GET.get('startPage'),
+            repr(args),
+            repr(kwargs),
         )
         cache_key = self._get_cache_key(vary)
 
