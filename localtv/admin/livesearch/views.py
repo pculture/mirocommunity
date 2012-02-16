@@ -51,6 +51,9 @@ class LiveSearchSessionMixin(object):
             # For now, we need to fake an id on each video.
             for i, video in enumerate(results, start=1):
                 video.id = i
+                # For this version of mc, mark this video as coming from
+                # livesearch so that the get_thumbnail_url can tell later.
+                video._livesearch = True
             exclusions = self.get_exclusions(results)
             results = filter(lambda v: (
                     v.file_url not in exclusions['file_urls'] and

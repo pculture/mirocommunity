@@ -2,7 +2,7 @@
 {{ object.description|striptags }}
 {% for tag in object.tags %}{{ tag }}
 {% endfor %}
-{% for cat in object.categories.all %}{{ cat.name }}
+{% for cat in object.all_categories %}{{ cat.name }}
 {% endfor %}
 {% for author in object.authors.all %}{{ author.get_full_name }} {{ author.username }}
 {% endfor %}

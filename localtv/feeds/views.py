@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from hashlib import sha1
 import urllib
 
 from django.contrib.auth.models import User
@@ -55,7 +56,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
             'domain': Site.objects.get_current().domain,
             'class': self.__class__.__name__,
-            'vary': force_unicode(vary).replace(' ', '')
+            'vary': sha1(force_unicode(vary).replace(' ', '')).hexdigest(),
         }
 
     def __call__(self, request, *args, **kwargs):
@@ -71,7 +72,9 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             # :meth:`_get_opensearch_data` uses it as an alternate source for
             # startIndex.
             request.GET.get('start-index'),
-            request.GET.get('startPage')
+            request.GET.get('startPage'),
+            repr(args),
+            repr(kwargs),
         )
         cache_key = self._get_cache_key(vary)
 
@@ -291,7 +294,7 @@ class CategoryVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Category: %s') % obj['obj'].name
+            _(u'Category: %s') % force_unicode(obj['obj'].name)
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
@@ -311,9 +314,9 @@ class AuthorVideosFeed(BaseVideosFeed):
         if not name_or_username.strip():
             name_or_username = obj['obj'].username
 
-        return "%s: %s" % (
+        return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Author: %s') % name_or_username)
+            _(u'Author: %s') % force_unicode(name_or_username))
 
 
 class FeedVideosFeed(BaseVideosFeed):
@@ -338,7 +341,7 @@ class FeedVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
             Site.objects.get_current().name,
-            obj['obj'].name or '')
+            force_unicode(obj['obj'].name) or '')
 
 
 class TagVideosFeed(BaseVideosFeed):
@@ -373,7 +376,8 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def title(self, obj):
         return u"%s: %s" % (
-            Site.objects.get_current().name, _(u'Search: %s') % obj['obj'])
+            Site.objects.get_current().name,
+            _(u'Search: %s') % force_unicode(obj['obj']))
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
@@ -407,4 +411,4 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def title(self, obj):
         return u"%s: %s" % (
             Site.objects.get_current().name,
-            _('Playlist: %s') % obj['obj'].name)
+            _(u'Playlist: %s') % force_unicode(obj['obj'].name))

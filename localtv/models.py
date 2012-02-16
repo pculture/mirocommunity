@@ -223,9 +223,10 @@ SITE_LOCATION_CACHE = {}
 class SiteLocationManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
+        db = self._db if self._db is not None else 'default'
         try:
             # Dig it out of the cache.
-            current_site_location = SITE_LOCATION_CACHE[(self._db, sid)]
+            current_site_location = SITE_LOCATION_CACHE[(db, sid)]
         except KeyError:
             # Not in the cache? Time to put it in the cache.
             try:
@@ -234,9 +235,9 @@ class SiteLocationManager(models.Manager):
             except SiteLocation.DoesNotExist:
                 # Otherwise, create it.
                 current_site_location = self.create(
-                    site=Site.objects.db_manager(self._db).get_current())
+                    site=Site.objects.db_manager(db).get_current())
 
-            SITE_LOCATION_CACHE[(self._db, sid)] = current_site_location
+            SITE_LOCATION_CACHE[(db, sid)] = current_site_location
         return current_site_location
 
     def get(self, **kwargs):
@@ -458,7 +459,7 @@ class SiteLocation(Thumbnailable):
         return bool(self.admins.filter(pk=user.pk).count())
 
     def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[self.site_id] = self
+        SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
         return models.Model.save(self, *args, **kwargs)
 
     def get_tier(self):
@@ -1971,6 +1972,21 @@ class Video(Thumbnailable, VideoBase):
         else:
             return 'posted'
 
+    @property
+    def all_categories(self):
+        """
+        Returns a set of all the categories to which this video belongs.  We
+        use a depth-first search, ignoring duplicates.
+        """
+        categories = set()
+        for category in self.categories.all():
+            categories.add(category)
+            parent = category.parent
+            while parent:
+                categories.add(parent)
+                parent = parent.parent
+        return categories
+
     def voting_enabled(self):
         if not lsettings.voting_enabled():
             return False
@@ -2036,6 +2052,14 @@ class Watch(models.Model):
         from localhost, check to see if it was forwarded to (hopefully) get the
         right IP address.
         """
+        ignored_bots = getattr(settings, 'LOCALTV_WATCH_IGNORED_USER_AGENTS',
+                               ('bot', 'spider', 'crawler'))
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        if user_agent and ignored_bots:
+            for bot in ignored_bots:
+                if bot in user_agent:
+                    return
+
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
         if not ipv4_re.match(ip):
             ip = '0.0.0.0'

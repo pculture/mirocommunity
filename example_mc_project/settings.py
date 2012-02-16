@@ -245,10 +245,14 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
 
+import os
 # haystack search
-HAYSTACK_SITECONF = 'example_mc_project.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-HAYSTACK_WHOOSH_PATH = 'whoosh_index'
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+    }
+}
 
 # Facebook options
 FACEBOOK_APP_ID = None

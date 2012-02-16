@@ -165,7 +165,7 @@ class CategoryVideoSearchView(VideoSearchView):
                     self.request.user.is_authenticated()):
             # TODO: Benchmark this against a version where the pk queryset is
             # evaluated here instead of becoming a subquery.
-            pks = category.approved_set().filter(
+            pks = category.approved_set.filter(
                 site=Site.objects.get_current()).values_list('id', flat=True)
             user_can_vote = True
             votes = Vote.objects.filter(
