@@ -29,7 +29,7 @@ from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
 
 import localtv.settings
-from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
+from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -43,11 +43,11 @@ def index(request):
     new_videos = Video.objects.get_latest_videos().exclude(
                                             feed__avoid_frontpage=True)
 
-    sitelocation_videos = Video.objects.get_sitelocation_videos()
+    site_settings_videos = Video.objects.get_site_settings_videos()
     recent_comments = comments.get_model().objects.filter(
         site=Site.objects.get_current(),
         content_type=ContentType.objects.get_for_model(Video),
-        object_pk__in=sitelocation_videos.values_list('pk', flat=True),
+        object_pk__in=site_settings_videos.values_list('pk', flat=True),
         is_removed=False,
         is_public=True).order_by('-submit_date')
 
@@ -83,7 +83,7 @@ def view_video(request, video_id, slug=None):
                # backwards-compatibility
                'edit_video_form': request.user_is_admin()}
 
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     popular_videos = Video.objects.get_popular_videos()
 
     if video.categories.count():
@@ -106,7 +106,7 @@ def view_video(request, video_id, slug=None):
                         try:
                             category_obj = Category.objects.get(
                                 slug=kwargs['slug'],
-                                site=sitelocation.site)
+                                site=site_settings.site)
                         except Category.DoesNotExist:
                             pass
                         else:
@@ -141,11 +141,11 @@ def view_video(request, video_id, slug=None):
                 context['contest_category'] = video.categories.filter(
                     contest_mode__isnull=False)[0]
 
-    if sitelocation.playlists_enabled:
+    if site_settings.playlists_enabled:
         # showing playlists
         if request.user.is_authenticated():
             if request.user_is_admin() or \
-                    sitelocation.playlists_enabled == 1:
+                    site_settings.playlists_enabled == 1:
                 # user can add videos to playlists
                 context['playlists'] = Playlist.objects.filter(
                     user=request.user)
@@ -189,10 +189,10 @@ def view_video(request, video_id, slug=None):
 
 def share_email(request, content_type_pk, object_id):
     from email_share import views, forms
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     return views.share_email(request, content_type_pk, object_id,
-                             {'site': sitelocation.site,
-                              'sitelocation': sitelocation},
+                             {'site': site_settings.site,
+                              'site_settings': site_settings},
                              form_class = forms.ShareMultipleEmailForm
                              )
 
@@ -220,7 +220,7 @@ def newsletter(request):
     newsletter = NewsletterSettings.objects.get_current()
     if newsletter.status == NewsletterSettings.DISABLED:
         raise Http404
-    elif not newsletter.sitelocation.get_tier().permit_newsletter():
+    elif not newsletter.site_settings.get_tier().permit_newsletter():
         raise Http404
 
     return HttpResponse(newsletter.as_html(

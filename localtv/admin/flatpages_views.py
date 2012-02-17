@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 
 @require_site_admin
@@ -32,8 +32,8 @@ def index(request):
     headers = [
         {'label': 'Page Name'},
         {'label': 'URL'}]
-    sitelocation = SiteLocation.objects.get_current()
-    flatpages = FlatPage.objects.filter(sites=sitelocation.site)
+    site_settings = SiteSettings.objects.get_current()
+    flatpages = FlatPage.objects.filter(sites=site_settings.site)
     formset = forms.FlatPageFormSet(queryset=flatpages)
 
     form = forms.FlatPageForm()
@@ -49,7 +49,7 @@ def index(request):
 
             if form.is_valid():
                 flatpage = form.save()
-                flatpage.sites.add(sitelocation.site)
+                flatpage.sites.add(site_settings.site)
                 return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/admin/flatpages.html',

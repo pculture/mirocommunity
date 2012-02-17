@@ -23,23 +23,23 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation, WidgetSettings, NewsletterSettings
+from localtv.models import SiteSettings, WidgetSettings, NewsletterSettings
 
 
 @require_site_admin
 @csrf_protect
 def edit_settings(request):
-    sitelocation = SiteLocation.objects.get_current()
-    form = forms.EditSettingsForm(instance=sitelocation)
+    site_settings = SiteSettings.objects.get_current()
+    form = forms.EditSettingsForm(instance=site_settings)
 
     if request.method == 'POST':
         form = forms.EditSettingsForm(request.POST, request.FILES,
-                                      instance=sitelocation)
+                                      instance=site_settings)
         if form.is_valid():
-            sitelocation = form.save()
+            site_settings = form.save()
             if request.POST.get('delete_background'):
-                if sitelocation.background:
-                    sitelocation.background.delete()
+                if site_settings.background:
+                    site_settings.background.delete()
             return HttpResponseRedirect(
                 reverse('localtv_admin_settings'))
 
@@ -52,9 +52,9 @@ def edit_settings(request):
 @require_site_admin
 @csrf_protect
 def widget_settings(request):
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     form = forms.WidgetSettingsForm(
-        instance=sitelocation.site.widgetsettings,
+        instance=site_settings.site.widgetsettings,
         initial={'title': 
                  WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
@@ -62,7 +62,7 @@ def widget_settings(request):
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=sitelocation.site.widgetsettings)
+            instance=site_settings.site.widgetsettings)
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):
@@ -84,7 +84,7 @@ def widget_settings(request):
 @csrf_protect
 def newsletter_settings(request):
     newsletter = NewsletterSettings.objects.get_current()
-    if not newsletter.sitelocation.get_tier().permit_newsletter():
+    if not newsletter.site_settings.get_tier().permit_newsletter():
         raise Http404
 
     form = forms.NewsletterSettingsForm(instance=newsletter)

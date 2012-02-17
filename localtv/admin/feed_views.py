@@ -39,7 +39,7 @@ import vidscraper
 
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv import tasks, utils
-from localtv.models import Feed, SiteLocation
+from localtv.models import Feed, SiteSettings
 from localtv.admin import forms
 
 Profile = utils.get_profile_model()
@@ -103,7 +103,7 @@ def add_feed(request):
         if form.is_valid():
             feed, created = Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=SiteLocation.objects.get_current().site,
+                site=SiteSettings.objects.get_current().site,
                 defaults=defaults)
 
             if not created:
@@ -156,7 +156,7 @@ def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
         Feed,
         id=feed_id,
-        site=SiteLocation.objects.get_current().site)
+        site=SiteSettings.objects.get_current().site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

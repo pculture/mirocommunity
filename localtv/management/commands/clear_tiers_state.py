@@ -33,11 +33,11 @@ class Command(NoArgsCommand):
         # - all TierData is blank
         ### If you want a proper simulation of deployed sites, you should
         ### make sure to set settings.LOCALTV_DISABLE_TIERS_ENFORCEMENT to True
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
         tier_info = localtv.models.TierInfo.objects.get_current()
 
-        sitelocation.tier_name = 'basic'
-        sitelocation.save()
+        site_settings.tier_name = 'basic'
+        site_settings.save()
 
         tier_info.payment_due_date = None
         tier_info.free_trial_available = True

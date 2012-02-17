@@ -30,8 +30,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Is the site in a paid tier?
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
-        if sitelocation.tierinfo.should_send_welcome_email_on_paypal_event:
+        site_settings = localtv.models.SiteSettings.objects.get_current()
+        if site_settings.tierinfo.should_send_welcome_email_on_paypal_event:
             self.stop_waiting_if_we_have_to()
 
     def stop_waiting_if_we_have_to(self, now=None):
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         ti = localtv.models.TierInfo.objects.get()
         if now > ti.waiting_on_payment_until:
             logging.warning("I'm done waiting on " +
-                            localtv.models.SiteLocation.objects.get_current(
+                            localtv.models.SiteSettings.objects.get_current(
                     ).site.domain)
             self.actually_stop_waiting()
 

@@ -54,7 +54,7 @@ class Command(BaseCommand):
 
         html_template_name = args[0]
         subject = django.template.Template(args[1]).render(
-                         django.template.Context({'site': localtv.models.SiteLocation.objects.get_current().site}))
+                         django.template.Context({'site': localtv.models.SiteSettings.objects.get_current().site}))
 
         if not html_template_name.endswith('.html'):
             print >> sys.stderr, "Eek, it has to end with .html."
@@ -65,14 +65,14 @@ class Command(BaseCommand):
             print >> sys.stderr, "Seems we have already sent this. Skipping."
             sys.exit(1)
 
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
 
-        if sitelocation.tierinfo.site_is_subsidized():
+        if site_settings.tierinfo.site_is_subsidized():
             print >> sys.stderr, "Seems the site is subsidized. Skipping."
             self.mark_as_sent(html_template_name)
             return
 
-        warnings = localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name)
+        warnings = localtv.tiers.user_warnings_for_downgrade(site_settings.tier_name)
         ### Hack
         ### Override the customtheme warning for this email with custom code
         if 'customtheme' in warnings:
@@ -83,14 +83,14 @@ class Command(BaseCommand):
 
         ### Hack
         ### override the customdomain warning, too
-        if (sitelocation.site.domain
-            and not sitelocation.site.domain.endswith('mirocommunity.org')
-            and not sitelocation.get_tier().permits_custom_domain()):
+        if (site_settings.site.domain
+            and not site_settings.site.domain.endswith('mirocommunity.org')
+            and not site_settings.get_tier().permits_custom_domain()):
             warnings.add('customdomain')
 
         data = {'warnings': warnings}
-        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(sitelocation.get_tier().admins_limit())
-        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
+        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(site_settings.get_tier().admins_limit())
+        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(site_settings.get_tier())
         data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
 
         # Okay! We need to create the text template object, and the html template object,
@@ -102,7 +102,7 @@ class Command(BaseCommand):
 
         if warnings:
             localtv.tiers.send_tiers_related_multipart_email(subject, template_name=None,
-                                                         sitelocation=localtv.models.SiteLocation.objects.get_current(),
+                                                         site_settings=localtv.models.SiteSettings.objects.get_current(),
                                                          override_text_template=text_template_obj,
                                                          override_html_template=html_template_obj,
                                                          extra_context=data)

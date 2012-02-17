@@ -24,7 +24,7 @@ from django.views.generic import ListView, DetailView, View
 
 from localtv.admin.livesearch.forms import LiveSearchForm
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv.models import SavedSearch, SiteLocation, Video
+from localtv.models import SavedSearch, SiteSettings, Video
 from localtv import utils
 
 class LiveSearchSessionMixin(object):
@@ -189,8 +189,8 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
             return HttpResponseBadRequest("No video found for that video_id.")
 
         if not request.GET.get('queue'):
-            sitelocation = SiteLocation.objects.get_current()
-            if not sitelocation.get_tier().can_add_more_videos():
+            site_settings = SiteSettings.objects.get_current()
+            if not site_settings.get_tier().can_add_more_videos():
                 return HttpResponse(
                     content="You are over the video limit. You "
                     "will need to upgrade to approve "

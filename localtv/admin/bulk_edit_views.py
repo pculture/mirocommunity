@@ -27,7 +27,7 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import Video, Category, SiteLocation
+from localtv.models import Video, Category, SiteSettings
 from localtv.admin import forms
 from localtv.utils import SortHeaders
 
@@ -56,9 +56,9 @@ def bulk_edit(request):
                                   template_data,
                                   context_instance=RequestContext(request))
 
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     videos = Video.objects.filter(status=Video.ACTIVE,
-                                  site=sitelocation.site)
+                                  site=site_settings.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
@@ -138,7 +138,7 @@ def bulk_edit(request):
                                      queryset=page.object_list)
         if formset.is_valid():
             tier_prevented_some_action = False
-            tier = sitelocation.get_tier()
+            tier = site_settings.get_tier()
             videos_approved_so_far = 0
 
             for form in list(formset.deleted_forms):
@@ -162,7 +162,7 @@ def bulk_edit(request):
                             if value == 'delete':
                                 form.instance.status = Video.REJECTED
                             elif value == 'approve':
-                                if (sitelocation.enforce_tiers() and
+                                if (site_settings.enforce_tiers() and
                                     tier.remaining_videos() <= videos_approved_so_far):
                                     tier_prevented_some_action = True
                                 else:
@@ -172,7 +172,7 @@ def bulk_edit(request):
                                 form.instance.status = Video.UNAPPROVED
                             elif value == 'feature':
                                 if not form.instance.status == Video.ACTIVE:
-                                    if (sitelocation.enforce_tiers() and
+                                    if (site_settings.enforce_tiers() and
                                         tier.remaining_videos() <= videos_approved_so_far):
                                         tier_prevented_some_action = True
                                     else:
@@ -221,6 +221,6 @@ def bulk_edit(request):
                                'search_string': search_string,
                                'page': page,
                                'categories': Category.objects.filter(
-                site=sitelocation.site),
+                site=site_settings.site),
                                'users': User.objects.order_by('username')},
                               context_instance=RequestContext(request))

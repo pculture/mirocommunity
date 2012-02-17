@@ -505,7 +505,7 @@ class EditSettingsForm(forms.ModelForm):
             (2, 'Admins Only')))
 
     class Meta:
-        model = models.SiteLocation
+        model = models.SiteSettings
         exclude = ['site', 'status', 'admins', 'tier_name', 'hide_get_started']
 
 
@@ -513,7 +513,7 @@ class EditSettingsForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if (not models.SiteLocation.enforce_tiers()
+        if (not models.SiteSettings.enforce_tiers()
             or localtv.tiers.Tier.get().permit_custom_css()):
             pass # Sweet, CSS is permitted.
         else:
@@ -535,9 +535,9 @@ class EditSettingsForm(forms.ModelForm):
 
     def clean_css(self):
         css = self.cleaned_data.get('css')
-        # Does thes SiteLocation permit CSS modifications? If so,
+        # Does thes SiteSettings permit CSS modifications? If so,
         # return the data the user inputted.
-        if (not models.SiteLocation.enforce_tiers() or
+        if (not models.SiteSettings.enforce_tiers() or
             localtv.tiers.Tier.get().permit_custom_css()):
             return css # no questions asked
 
@@ -584,7 +584,7 @@ class EditSettingsForm(forms.ModelForm):
             sl.save_thumbnail_from_file(cf)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
-        models.SiteLocation.objects.clear_cache()
+        models.SiteSettings.objects.clear_cache()
         return sl
 
 class WidgetSettingsForm(forms.ModelForm):
@@ -720,7 +720,7 @@ class NewsletterSettingsForm(forms.ModelForm):
     
     class Meta:
         model = models.NewsletterSettings
-        exclude = ['sitelocation']
+        exclude = ['site_settings']
 
     def clean(self):
         if self.cleaned_data['repeat']:
@@ -918,9 +918,9 @@ class AuthorForm(user_profile_forms.ProfileForm):
 
     def __init__(self, *args, **kwargs):
         user_profile_forms.ProfileForm.__init__(self, *args, **kwargs)
-        self.sitelocation = models.SiteLocation.objects.get_current()
+        self.site_settings = models.SiteSettings.objects.get_current()
         if self.instance.pk:
-            if self.sitelocation.user_is_admin(self.instance):
+            if self.site_settings.user_is_admin(self.instance):
                 self.fields['role'].initial = 'admin'
             else:
                 self.fields['role'].initial = 'user'
@@ -933,13 +933,13 @@ class AuthorForm(user_profile_forms.ProfileForm):
         tier = localtv.tiers.Tier.get()
         if tier.admins_limit() is not None:
             message = 'With a %s, you may have %d administrator%s.' % (
-                models.SiteLocation.objects.get_current().get_tier_name_display(),
+                models.SiteSettings.objects.get_current().get_tier_name_display(),
                 tier.admins_limit(),
                 django.template.defaultfilters.pluralize(tier.admins_limit()))
             self.fields['role'].help_text = message
 
     def clean_role(self):
-        if models.SiteLocation.enforce_tiers():
+        if models.SiteSettings.enforce_tiers():
             future_role = self.cleaned_data['role']
 
             looks_good = self._validate_role_with_tiers_enforcement(
@@ -965,7 +965,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
         if future_role !='admin':
             return True
 
-        if self.instance and self.sitelocation.user_is_admin(
+        if self.instance and self.site_settings.user_is_admin(
             self.instance):
             return True # all role values permitted if you're already an admin
 
@@ -1010,10 +1010,10 @@ class AuthorForm(user_profile_forms.ProfileForm):
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':
                 if not author.is_superuser:
-                    self.sitelocation.admins.add(author)
+                    self.site_settings.admins.add(author)
             else:
-                self.sitelocation.admins.remove(author)
-            self.sitelocation.save()
+                self.site_settings.admins.remove(author)
+            self.site_settings.save()
         return author
 
 AuthorFormSet = modelformset_factory(User,

@@ -28,7 +28,7 @@ import vidscraper
 from vidscraper.errors import CantIdentifyUrl
 
 from localtv.exceptions import CannotOpenImageUrl
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.templatetags.filters import sanitize
 
 
@@ -137,9 +137,9 @@ class SubmitVideoForm(forms.ModelForm):
         instance = super(SubmitVideoForm, self).save(commit=False)
 
         if self.request.user_is_admin():
-            sitelocation = SiteLocation.objects.get_current()
-            if (not sitelocation.enforce_tiers() or
-                sitelocation.get_tier().remaining_videos() >= 1):
+            site_settings = SiteSettings.objects.get_current()
+            if (not site_settings.enforce_tiers() or
+                site_settings.get_tier().remaining_videos() >= 1):
                 instance.status = Video.ACTIVE
 
         if 'website_url' in self.fields:

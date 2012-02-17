@@ -28,12 +28,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
   <div id="main">
   
-  <img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
+  <img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
 
   
-    <h2 class="page_title">About {{ sitelocation.site.name }}</h2>
+    <h2 class="page_title">About {{ site_settings.site.name }}</h2>
     {% autoescape off %}
-      {{ sitelocation.about_html }}
+      {{ site_settings.about_html }}
     {% endautoescape %}
     <br style="clear: both;" />
   <img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>

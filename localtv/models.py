@@ -219,25 +219,25 @@ class Thumbnailable(models.Model):
 SITE_LOCATION_CACHE = {}
 
 
-class SiteLocationManager(models.Manager):
+class SiteSettingsManager(models.Manager):
     def get_current(self):
         sid = settings.SITE_ID
         db = self._db if self._db is not None else 'default'
         try:
             # Dig it out of the cache.
-            current_site_location = SITE_LOCATION_CACHE[(db, sid)]
+            current_site_settings = SITE_LOCATION_CACHE[(db, sid)]
         except KeyError:
             # Not in the cache? Time to put it in the cache.
             try:
                 # If it is in the DB, get it.
-                current_site_location = self.select_related().get(site__pk=sid)
-            except SiteLocation.DoesNotExist:
+                current_site_settings = self.select_related().get(site__pk=sid)
+            except SiteSettings.DoesNotExist:
                 # Otherwise, create it.
-                current_site_location = self.create(
+                current_site_settings = self.create(
                     site=Site.objects.db_manager(db).get_current())
 
-            SITE_LOCATION_CACHE[(db, sid)] = current_site_location
-        return current_site_location
+            SITE_LOCATION_CACHE[(db, sid)] = current_site_settings
+        return current_site_settings
 
     def get(self, **kwargs):
         if 'site' in kwargs:
@@ -249,9 +249,9 @@ class SiteLocationManager(models.Manager):
                 return SITE_LOCATION_CACHE[(self._db, site)]
             except KeyError:
                 pass
-        site_location = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[(self._db, site_location.site_id)] = site_location
-        return site_location
+        site_settings = models.Manager.get(self, **kwargs)
+        SITE_LOCATION_CACHE[(self._db, site_settings.site_id)] = site_settings
+        return site_settings
 
     def clear_cache(self):
         global SITE_LOCATION_CACHE
@@ -260,10 +260,10 @@ class SiteLocationManager(models.Manager):
 
 class SingletonManager(models.Manager):
     def get_current(self):
-        current_site_location = SiteLocation._default_manager.db_manager(
+        current_site_settings = SiteSettings._default_manager.db_manager(
             self.db).get_current()
         singleton, created = self.get_or_create(
-            sitelocation = current_site_location)
+            site_settings = current_site_settings)
         if created:
             logging.debug("Created %s." % self.model)
         return singleton
@@ -285,7 +285,7 @@ class TierInfo(models.Model):
     fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
     should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
     waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
-    sitelocation = models.OneToOneField('SiteLocation')
+    site_settings = models.OneToOneField('SiteSettings')
     objects = SingletonManager()
 
     def get_payment_secret(self):
@@ -330,7 +330,7 @@ class TierInfo(models.Model):
         return lsettings.USE_ZENDESK
 
 
-class SiteLocation(Thumbnailable):
+class SiteSettings(Thumbnailable):
     """
     An extension to the django.contrib.sites site model, providing
     localtv-specific data.
@@ -340,8 +340,8 @@ class SiteLocation(Thumbnailable):
      - logo: custom logo image for this site
      - background: custom background image for this site (unused?)
      - admins: a collection of Users who have access to administrate this
-       sitelocation
-     - status: one of SiteLocation.STATUS_CHOICES
+       site_settings
+     - status: one of SiteSettings.STATUS_CHOICES
      - sidebar_html: custom html to appear on the right sidebar of many
        user-facing pages.  Can be whatever's most appropriate for the owners of
        said site.
@@ -402,7 +402,7 @@ class SiteLocation(Thumbnailable):
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
 
-    objects = SiteLocationManager()
+    objects = SiteSettingsManager()
 
     THUMB_SIZES = [
         (88, 68, False),
@@ -447,7 +447,7 @@ class SiteLocation(Thumbnailable):
 
     def user_is_admin(self, user):
         """
-        Return True if the given User is an admin for this SiteLocation.
+        Return True if the given User is an admin for this SiteSettings.
         """
         if not user.is_authenticated() or not user.is_active:
             return False
@@ -524,7 +524,7 @@ class NewsletterSettings(models.Model):
         (LATEST, _("5 latest videos")),
         (CUSTOM, _("Custom selection")),
     )
-    sitelocation = models.OneToOneField(SiteLocation)
+    site_settings = models.OneToOneField(SiteSettings)
     status = models.IntegerField(
         choices=STATUS_CHOICES, default=DISABLED,
         help_text='What videos should get sent out in the newsletter?')
@@ -567,12 +567,12 @@ class NewsletterSettings(models.Model):
         if self.status == NewsletterSettings.DISABLED:
             raise ValueError('no videos for disabled newsletter')
         elif self.status == NewsletterSettings.FEATURED:
-            videos = Video.objects.get_featured_videos(self.sitelocation)
+            videos = Video.objects.get_featured_videos(self.site_settings)
         elif self.status == NewsletterSettings.POPULAR:
             # popular over the last week
-            videos = Video.objects.get_popular_videos(self.sitelocation)
+            videos = Video.objects.get_popular_videos(self.site_settings)
         elif self.status == NewsletterSettings.LATEST:
-            videos = Video.objects.get_latest_videos(self.sitelocation)
+            videos = Video.objects.get_latest_videos(self.site_settings)
         elif self.status == NewsletterSettings.CUSTOM:
             videos = [video for video in (
                     self.video1,
@@ -594,7 +594,7 @@ class NewsletterSettings(models.Model):
     def send(self):
         from localtv.admin.user_views import _filter_just_humans
         body = self.as_html()
-        subject = '[%s] Newsletter for %s' % (self.sitelocation.site.name,
+        subject = '[%s] Newsletter for %s' % (self.site_settings.site.name,
                                               datetime.datetime.now().strftime('%m/%d/%y'))
         notice_type = notification.NoticeType.objects.get(label='newsletter')
         for u in User.objects.exclude(email=None).exclude(email='').filter(
@@ -608,8 +608,8 @@ class NewsletterSettings(models.Model):
 
     def as_html(self, extra_context=None):
         context = {'newsletter': self,
-                   'sitelocation': self.sitelocation,
-                   'site': self.sitelocation.site}
+                   'site_settings': self.site_settings,
+                   'site': self.site_settings.site}
         if extra_context:
             context.update(extra_context)
         return render_to_string('localtv/admin/newsletter.html',
@@ -984,7 +984,7 @@ class Category(models.Model):
         return ('localtv_category', [self.slug])
 
     @classmethod
-    def in_order(klass, sitelocation, initial=None):
+    def in_order(klass, site_settings, initial=None):
         objects = []
         def accumulate(categories):
             for category in categories:
@@ -992,7 +992,7 @@ class Category(models.Model):
                 if category.child_set.count():
                     accumulate(category.child_set.all())
         if initial is None:
-            initial = klass.objects.filter(site=sitelocation, parent=None)
+            initial = klass.objects.filter(site=site_settings, parent=None)
         accumulate(initial)
         return objects
 
@@ -1434,7 +1434,7 @@ class OriginalVideo(VideoBase):
                 self.video.site.name, self.video.name)
             message = t.render(c)
             send_notice('admin_video_updated', subject, message,
-                        sitelocation=SiteLocation.objects.get(
+                        site_settings=SiteSettings.objects.get(
                     site=self.video.site))
             # Update the OriginalVideo to show that we sent this notification
             # out.
@@ -1511,7 +1511,7 @@ class OriginalVideo(VideoBase):
             self.video.site.name, self.video.name)
         message = t.render(c)
         send_notice('admin_video_updated', subject, message,
-                    sitelocation=SiteLocation.objects.get(
+                    site_settings=SiteSettings.objects.get(
                 site=self.video.site))
 
         # And update the self instance to reflect the changes.
@@ -1561,23 +1561,23 @@ class VideoManager(models.Manager):
     def popular_since(self, *args, **kwargs):
         return self.get_query_set().popular_since(*args, **kwargs)
 
-    def get_sitelocation_videos(self, sitelocation=None):
+    def get_site_settings_videos(self, site_settings=None):
         """
         Returns a QuerySet of videos which are active and tied to the
-        sitelocation. This QuerySet is cached on the request.
+        site_settings. This QuerySet is cached on the request.
         
         """
-        if sitelocation is None:
-            sitelocation = SiteLocation.objects.get_current()
-        return self.filter(status=Video.ACTIVE, site=sitelocation.site)
+        if site_settings is None:
+            site_settings = SiteSettings.objects.get_current()
+        return self.filter(status=Video.ACTIVE, site=site_settings.site)
 
-    def get_featured_videos(self, sitelocation=None):
+    def get_featured_videos(self, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos which are considered "featured"
-        for the sitelocation.
+        for the site_settings.
 
         """
-        return self.get_sitelocation_videos(sitelocation).filter(
+        return self.get_site_settings_videos(site_settings).filter(
             last_featured__isnull=False
         ).order_by(
             '-last_featured',
@@ -1586,77 +1586,77 @@ class VideoManager(models.Manager):
             '-when_submitted'
         )
 
-    def get_latest_videos(self, sitelocation=None):
+    def get_latest_videos(self, site_settings=None):
         """
-        Returns a ``QuerySet`` of active videos for the sitelocation, ordered by
+        Returns a ``QuerySet`` of active videos for the site_settings, ordered by
         decreasing ``best_date``.
         
         """
-        if sitelocation is None:
-            sitelocation = SiteLocation.objects.get_current()
-        return self.get_sitelocation_videos(sitelocation).with_best_date(
-            sitelocation.use_original_date
+        if site_settings is None:
+            site_settings = SiteSettings.objects.get_current()
+        return self.get_site_settings_videos(site_settings).with_best_date(
+            site_settings.use_original_date
         ).order_by('-best_date')
 
-    def get_popular_videos(self, sitelocation=None):
+    def get_popular_videos(self, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos considered "popular" for the
-        current sitelocation.
+        current site_settings.
 
         """
-        return self.get_latest_videos(sitelocation).with_watch_count().order_by(
+        return self.get_latest_videos(site_settings).with_watch_count().order_by(
             '-watch_count',
             '-best_date'
         )
 
-    def get_category_videos(self, category, sitelocation=None):
+    def get_category_videos(self, category, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos considered part of the selected
-        category or its descendants for the sitelocation.
+        category or its descendants for the site_settings.
 
         """
-        if sitelocation is None:
-            sitelocation = SiteLocation.objects.get_current()
+        if site_settings is None:
+            site_settings = SiteSettings.objects.get_current()
         # category.approved_set already checks active().
         return category.approved_set.filter(
-            site=sitelocation.site
+            site=site_settings.site
         ).with_best_date(
-            sitelocation.use_original_date
+            site_settings.use_original_date
         ).order_by('-best_date')
 
-    def get_tag_videos(self, tag, sitelocation=None):
+    def get_tag_videos(self, tag, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos with the given tag for the
-        sitelocation.
+        site_settings.
 
         """
-        if sitelocation is None:
-            sitelocation = SiteLocation.objects.get_current()
+        if site_settings is None:
+            site_settings = SiteSettings.objects.get_current()
         return Video.tagged.with_all(tag).filter(status=Video.ACTIVE,
-                                                 site=sitelocation.site
+                                                 site=site_settings.site
                                         ).order_by('-when_approved',
                                                    '-when_published',
                                                    '-when_submitted')
 
-    def get_author_videos(self, author, sitelocation=None):
+    def get_author_videos(self, author, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos published or produced by
-        ``author`` related to the sitelocation.
+        ``author`` related to the site_settings.
 
         """
-        return self.get_latest_videos(sitelocation).filter(
+        return self.get_latest_videos(site_settings).filter(
             models.Q(authors=author) | models.Q(user=author)
         ).distinct().order_by('-best_date')
 
-    def in_feed_order(self, feed=None, sitelocation=None):
+    def in_feed_order(self, feed=None, site_settings=None):
         """
         Returns a ``QuerySet`` of active videos ordered by the order they were
         in when originally imported.
         """
-        if sitelocation is None and feed:
-            sitelocation = SiteLocation.objects.get(site=feed.site)
-        if sitelocation:
-            qs = self.get_latest_videos(sitelocation)
+        if site_settings is None and feed:
+            site_settings = SiteSettings.objects.get(site=feed.site)
+        if site_settings:
+            qs = self.get_latest_videos(site_settings)
         else:
             qs = self.all()
         if feed:
@@ -1947,7 +1947,7 @@ class Video(Thumbnailable, VideoBase):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteLocation.objects.db_manager(self._state.db).get(
+        if SiteSettings.objects.db_manager(self._state.db).get(
             site=self.site_id).use_original_date and \
             self.when_published:
             return self.when_published
@@ -1966,7 +1966,7 @@ class Video(Thumbnailable, VideoBase):
         """
 
         if self.when_published and \
-                SiteLocation.objects.get(site=self.site_id).use_original_date:
+                SiteSettings.objects.get(site=self.site_id).use_original_date:
             return 'published'
         else:
             return 'posted'
@@ -2077,8 +2077,8 @@ class Watch(models.Model):
 class VideoModerator(CommentModerator):
 
     def allow(self, comment, video, request):
-        sitelocation = SiteLocation.objects.get(site=video.site)
-        if sitelocation.comments_required_login:
+        site_settings = SiteSettings.objects.get(site=video.site)
+        if site_settings.comments_required_login:
             return request.user and request.user.is_authenticated()
         else:
             return True
@@ -2088,7 +2088,7 @@ class VideoModerator(CommentModerator):
         # dependency
         from localtv.utils import send_notice
 
-        sitelocation = SiteLocation.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get(site=video.site)
         t = loader.get_template('comments/comment_notification_email.txt')
         c = Context({ 'comment': comment,
                       'content_object': video,
@@ -2097,7 +2097,7 @@ class VideoModerator(CommentModerator):
                                                        video)
         message = t.render(c)
         send_notice('admin_new_comment', subject, message,
-                    sitelocation=sitelocation)
+                    site_settings=site_settings)
 
         admin_new_comment = notification.NoticeType.objects.get(
             label="admin_new_comment")
@@ -2140,12 +2140,12 @@ class VideoModerator(CommentModerator):
                              [previous_comment.user.email]).send(fail_silently=True)
 
     def moderate(self, comment, video, request):
-        sitelocation = SiteLocation.objects.get(site=video.site)
-        if sitelocation.screen_all_comments:
+        site_settings = SiteSettings.objects.get(site=video.site)
+        if site_settings.screen_all_comments:
             if not getattr(request, 'user'):
                 return True
             else:
-                return not sitelocation.user_is_admin(request.user)
+                return not site_settings.user_is_admin(request.user)
         else:
             return False
 
@@ -2155,7 +2155,7 @@ tagging.register(Video)
 tagging.register(OriginalVideo)
 
 def finished(sender, **kwargs):
-    SiteLocation.objects.clear_cache()
+    SiteSettings.objects.clear_cache()
 request_finished.connect(finished)
 
 def tag_unicode(self):
@@ -2168,7 +2168,7 @@ tagging.models.Tag.__unicode__ = tag_unicode
 
 
 def send_new_video_email(sender, **kwargs):
-    sitelocation = SiteLocation.objects.get(site=sender.site)
+    site_settings = SiteSettings.objects.get(site=sender.site)
     if sender.status == Video.ACTIVE:
         # don't send the e-mail for videos that are already active
         return
@@ -2179,7 +2179,7 @@ def send_new_video_email(sender, **kwargs):
                                                           sender)
     utils.send_notice('admin_new_submission',
                      subject, message,
-                     sitelocation=sitelocation)
+                     site_settings=site_settings)
 
 submit_finished.connect(send_new_video_email, weak=False)
 
@@ -2249,11 +2249,11 @@ models.signals.pre_delete.connect(delete_comments,
 
 ### register pre-save handler for Tiers and payment due dates
 models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
-                                sender=SiteLocation)
+                                sender=SiteSettings)
 models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
-                                sender=SiteLocation)
+                                sender=SiteSettings)
 models.signals.post_save.connect(localtv.tiers.post_save_send_queued_mail,
-                                 sender=SiteLocation)
+                                 sender=SiteSettings)
 
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:

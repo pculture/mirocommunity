@@ -32,13 +32,13 @@ class Command(NoArgsCommand):
         newsletter = models.NewsletterSettings.objects.get_current()
         if not newsletter.repeat:
             return
-        if not newsletter.sitelocation.get_tier().permit_newsletter():
+        if not newsletter.site_settings.get_tier().permit_newsletter():
             return
 
         now = datetime.datetime.now()
         if now > newsletter.next_send_time():
             logging.warning('Sending newsletter for %s',
-                            newsletter.sitelocation.site.domain)
+                            newsletter.site_settings.site.domain)
             newsletter.send()
             # we increment by the repeat so that last_sent maintains the
             # weekday and hour that the user has assigned

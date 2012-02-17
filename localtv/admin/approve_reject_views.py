@@ -29,7 +29,7 @@ from django.template import RequestContext, Context, loader
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.admin import feeds
 
 from notification import models as notification
@@ -38,9 +38,9 @@ from notification import models as notification
 ## Video approve/reject
 ## --------------------
 
-def get_video_paginator(sitelocation):
+def get_video_paginator(site_settings):
     videos = Video.objects.filter(status=Video.UNAPPROVED,
-                                  site=sitelocation.site
+                                  site=site_settings.site
                          ).order_by('when_submitted', 'when_published')
 
     return Paginator(videos, 10)
@@ -48,7 +48,7 @@ def get_video_paginator(sitelocation):
 @require_site_admin
 @csrf_protect
 def approve_reject(request):
-    video_paginator = get_video_paginator(SiteLocation.objects.get_current())
+    video_paginator = get_video_paginator(SiteSettings.objects.get_current())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -85,16 +85,16 @@ def preview_video(request):
 @referrer_redirect
 @require_site_admin
 def approve_video(request):
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     current_video = get_object_or_404(
         Video,
         id=request.GET['video_id'],
-        site=sitelocation.site)
+        site=site_settings.site)
 
     # If the site would exceed its video allotment, then fail
     # with a HTTP 402 and a clear message about why.
-    if (SiteLocation.enforce_tiers() and
-        sitelocation.get_tier().remaining_videos() < 1):
+    if (SiteSettings.enforce_tiers() and
+        site_settings.get_tier().remaining_videos() < 1):
         return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
 
     current_video.status = Video.ACTIVE
@@ -138,12 +138,12 @@ def reject_video(request):
 @require_site_admin
 def feature_video(request):
     video_id = request.GET.get('video_id')
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     current_video = get_object_or_404(
-        Video, pk=video_id, site=sitelocation.site)
+        Video, pk=video_id, site=site_settings.site)
     if not current_video.status == Video.ACTIVE:
-        if (SiteLocation.enforce_tiers() and
-            sitelocation.get_tier().remaining_videos() < 1):
+        if (SiteSettings.enforce_tiers() and
+            site_settings.get_tier().remaining_videos() < 1):
             return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
         current_video.status = Video.ACTIVE
         current_video.when_approved = datetime.datetime.now()
@@ -169,7 +169,7 @@ def unfeature_video(request):
 @require_site_admin
 @csrf_protect
 def reject_all(request):
-    video_paginator = get_video_paginator(SiteLocation.objects.get_current())
+    video_paginator = get_video_paginator(SiteSettings.objects.get_current())
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -188,8 +188,8 @@ def reject_all(request):
 @require_site_admin
 @csrf_protect
 def approve_all(request):
-    sitelocation = SiteLocation.objects.get_current()
-    video_paginator = get_video_paginator(sitelocation)
+    site_settings = SiteSettings.objects.get_current()
+    video_paginator = get_video_paginator(site_settings)
     try:
         page = video_paginator.page(int(request.GET.get('page', 1)))
     except ValueError:
@@ -198,8 +198,8 @@ def approve_all(request):
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
 
-    if SiteLocation.enforce_tiers():
-        tier_remaining_videos = sitelocation.get_tier().remaining_videos()
+    if SiteSettings.enforce_tiers():
+        tier_remaining_videos = site_settings.get_tier().remaining_videos()
         if len(page.object_list) > tier_remaining_videos:
             remaining = str(tier_remaining_videos)
             need = str(len(page.object_list))
