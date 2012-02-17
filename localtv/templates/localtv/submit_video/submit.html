@@ -37,11 +37,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 
 	{{ form.construction_hint}}
-	<div class="control-group">
+	<div class="control-group{% if form.url.errors %} error{% endif %} x-large">
 		<label for="id_url">Enter the URL of your video</label>
 		<div class="controls">
 			{{ form.url }}
-			<div class="control-group-errors">
+			<div class="control-group-errors help-text">
 				{% if not was_duplicate %}{{ form.url.errors }}{% endif %}
 			</div>
 		</div>

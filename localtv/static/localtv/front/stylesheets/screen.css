@@ -287,7 +287,8 @@ h6 {
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15);
 }
 
-/* line 7, ../sass/partials/modules/_forms.scss */
+/* base form styles */
+/* line 9, ../sass/partials/modules/_forms.scss */
 input, textarea {
   outline: none;
   border: 1px solid #CCC;
@@ -309,7 +310,7 @@ input, textarea {
   -o-transition: all 0.15s linear;
   transition: all 0.15s linear;
 }
-/* line 16, ../sass/partials/modules/_forms.scss */
+/* line 18, ../sass/partials/modules/_forms.scss */
 input:focus, textarea:focus {
   border: 1px solid #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -318,7 +319,7 @@ input:focus, textarea:focus {
   box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 22, ../sass/partials/modules/_forms.scss */
+/* line 24, ../sass/partials/modules/_forms.scss */
 input {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -328,9 +329,82 @@ input {
   padding: 4.5px;
 }
 
-/* line 28, ../sass/partials/modules/_forms.scss */
+/* line 30, ../sass/partials/modules/_forms.scss */
 label {
   line-height: 27px;
+}
+
+/* line 39, ../sass/partials/modules/_forms.scss */
+form {
+  margin-bottom: 18px;
+}
+
+/* modular form styles */
+/* line 46, ../sass/partials/modules/_forms.scss */
+.control-group {
+  overflow: hidden;
+  *zoom: 1;
+}
+
+/* line 49, ../sass/partials/modules/_forms.scss */
+.form-horizontal label, form label {
+  width: 200px;
+  float: left;
+  text-align: right;
+}
+
+/* line 54, ../sass/partials/modules/_forms.scss */
+.form-horizontal .controls, form .controls {
+  margin-left: 220px;
+}
+
+/* line 57, ../sass/partials/modules/_forms.scss */
+.form-horizontal > .form-actions, form > .form-actions {
+  padding-left: 220px;
+}
+
+/* line 60, ../sass/partials/modules/_forms.scss */
+.help-text {
+  color: #888;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+/* line 65, ../sass/partials/modules/_forms.scss */
+.error .controls input {
+  border-color: #800;
+}
+/* line 67, ../sass/partials/modules/_forms.scss */
+.error .controls input:focus {
+  -moz-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -webkit-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -o-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+}
+
+/* line 71, ../sass/partials/modules/_forms.scss */
+.errorlist {
+  color: #800;
+}
+
+/* line 77, ../sass/partials/modules/_forms.scss */
+.large > label {
+  line-height: 36px;
+}
+/* line 80, ../sass/partials/modules/_forms.scss */
+.large > .controls > input {
+  font-size: 16px;
+  line-height: 18px;
+}
+
+/* line 85, ../sass/partials/modules/_forms.scss */
+.x-large > label {
+  line-height: 54px;
+}
+/* line 88, ../sass/partials/modules/_forms.scss */
+.x-large > .controls > input {
+  font-size: 24px;
+  line-height: 36px;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
@@ -349,12 +423,12 @@ ol > li {
 }
 
 /* line 13, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .action-list, .details-list, .navigation-list, .nav-categories > ul, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions, .tile-box, .grid-list {
+.unstyled-list, .errorlist, .action-list, .details-list, .navigation-list, .nav-categories > ul, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions, .tile-box, .grid-list {
   margin: 0;
   padding: 0;
 }
 /* line 16, ../sass/partials/modules/_lists.scss */
-.unstyled-list > li, .action-list > li, .details-list > li, .navigation-list > li, .nav-categories > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .pod-footer-actions > li, .tile-box > li, .grid-list > li {
+.unstyled-list > li, .errorlist > li, .action-list > li, .details-list > li, .navigation-list > li, .nav-categories > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .pod-footer-actions > li, .tile-box > li, .grid-list > li {
   list-style-type: none;
 }
 
@@ -392,7 +466,7 @@ ol > li {
   -ms-box-sizing: border-box;
   box-sizing: border-box;
   line-height: 18px;
-  padding: 4.5px;
+  padding: 4.5px 9px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   -o-border-radius: 5px;

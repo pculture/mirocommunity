@@ -4,6 +4,8 @@
 		"compass/css3/transition",
 		"compass/css3/images";
 
+/* base form styles */
+
 input, textarea{
 	outline:none;
 	border:1px solid #CCC;
@@ -31,4 +33,59 @@ label{
 
 button{
 	@extend .button;
+}
+
+
+form{
+	@extend .form-horizontal;
+	@include margin-trailer;
+}
+
+/* modular form styles */
+
+.control-group{
+	@include clearfix;
+}
+.form-horizontal label{
+	width:200px;
+	float:left;
+	text-align:right;
+}
+.form-horizontal .controls{
+	margin-left:200px + $gutter-width;
+}
+.form-horizontal > .form-actions{
+	padding-left:200px + $gutter-width;
+}
+.help-text{
+	color:#888;
+	@include padding-leader(.5);
+	@include padding-trailer(.5);
+}
+.error .controls input{
+	border-color:#800;
+	&:focus{
+		@include box-shadow(0 0 6px 0 transparentize(#800, .65), 1px 1px 3px 0 rgba(0,0,0,.15) inset);
+	}
+}
+.errorlist{
+	color:#800;
+	@extend .unstyled-list;
+}
+
+.large{
+	& > label {
+		line-height: 2 * $base-line-height;
+	}
+	& > .controls > input{
+		@include large;
+	}
+}
+.x-large{
+	& > label {
+		line-height: 3 * $base-line-height;
+	}
+	& > .controls > input{
+		@include x-large;
+	}
 }
