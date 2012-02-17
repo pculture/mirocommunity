@@ -192,7 +192,12 @@ margin: 0 auto;
           </div>
           {% endif %}
         </div>
+
+        {% if comment.user == current_video.user %}
+        <div class="comment-body-highlight">
+        {% else %}
         <div class="comment-body">
+        {% endif %}
           {{ comment.comment|sanitize }}
         </div>
       </li>
