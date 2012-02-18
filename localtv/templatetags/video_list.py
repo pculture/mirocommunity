@@ -18,7 +18,7 @@ from django import template
 from django.utils.functional import curry
 
 from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterMixin, SearchQuerysetSliceHack
+from localtv.search.utils import SortFilterMixin, NormalizedVideoList
 
 
 register = template.Library()
@@ -72,22 +72,24 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         return ''
 
     def get_video_list(self, context):
-        sqs = self._query("")
-        sqs = self._sort(sqs, self.sort)
-        if self.search_filter is not None:
-            filter_dict = self.filters.get(self.search_filter, None)
-            if filter_dict is not None:
-                item = self.item.resolve(context)
-                val = None
-                if isinstance(item, filter_dict['model']):
-                    val = [item]
-                elif isinstance(item, basestring):
-                    val = {self.field_name: item}
-                if val is not None:
-                    sqs, xxx = self._filter(sqs, **{self.search_filter:
-                                                           val})
-        sqs = sqs.load_all()
-        return SearchQuerysetSliceHack(sqs)
+        qs = self._search("")
+        qs = self._sort(qs, self.sort)
+        if self.search_filter in self.filters:
+            f = self.filters[self.search_filter]
+            values = [self.item.resolve(context)]
+            if values[0] is not None:
+                cleaned_filters = self._clean_filter_values({
+                    self.search_filter: values
+                })
+                try:
+                    cleaned_filters[self.search_filter][0]
+                except IndexError:
+                    # Then this isn't a valid filter - slug for a missing
+                    # category, say. Return an empty qs.
+                    qs = qs.none()
+                else:
+                    qs = self._filter(qs, cleaned_filters)
+        return NormalizedVideoList(qs)
 
 
 class NewVideoListNode(BaseVideoListNode):

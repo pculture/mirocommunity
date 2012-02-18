@@ -89,9 +89,9 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     best_date_with_published = indexes.DateTimeField()
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
-                                          default=FeaturedSort.empty_value)
+                                          default=FeaturedSort().empty_value)
     when_approved = indexes.DateTimeField(model_attr='when_approved',
-                                          default=ApprovedSort.empty_value)
+                                          default=ApprovedSort().empty_value)
 
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
