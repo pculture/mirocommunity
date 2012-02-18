@@ -305,10 +305,10 @@ input, textarea {
   box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
   padding: 0;
   margin: 0;
-  -moz-transition: all 0.15s linear;
-  -webkit-transition: all 0.15s linear;
-  -o-transition: all 0.15s linear;
-  transition: all 0.15s linear;
+  -moz-transition: box-shadow 0.15s linear;
+  -webkit-transition: box-shadow 0.15s linear;
+  -o-transition: box-shadow 0.15s linear;
+  transition: box-shadow 0.15s linear;
 }
 /* line 18, ../sass/partials/modules/_forms.scss */
 input:focus, textarea:focus {
@@ -405,6 +405,7 @@ form {
 .x-large > .controls > input {
   font-size: 24px;
   line-height: 36px;
+  width: 60%;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */

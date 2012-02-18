@@ -14,7 +14,7 @@ input, textarea{
 	@include box-shadow(1px 1px 3px 0 rgba(0,0,0,.15) inset);
 	padding:0;
 	margin:0;
-	@include transition(all .15s linear);
+	@include transition(box-shadow .15s linear);
 	&:focus{
 		border:1px solid $color2;
 		@include box-shadow(0 0 6px 0 transparentize($color2, .65), 1px 1px 3px 0 rgba(0,0,0,.15) inset);
@@ -87,5 +87,6 @@ form{
 	}
 	& > .controls > input{
 		@include x-large;
+		width:60%;
 	}
 }
