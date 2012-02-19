@@ -150,16 +150,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			{% endif %}{# endif comments #}
 			{% if not sitelocation.comments_required_login or request.user.is_authenticated %}
 				{% get_comment_form for current_video as comment_form %}
-				<form class="comments-form pod" action="{% comment_form_target %}" method="post">{% csrf_token %}
+				<div class="pod">
 					<header class="pod-header">
 						<h1 class="pod-title">{% trans "Post a comment" %}</h1>
 					</header>
 					<div class="pod-content">
+						<form class="comments-form" action="{% comment_form_target %}" method="post">{% csrf_token %}
 						{% with comment_form as form %}
-							{% include "comments/form_base.html" %}
+								{% include "localtv/_form_inner.html" %}
+								<footer class="form-actions">
+									<button>Submit</button>
+								</footer>
 						{% endwith %}
+						</form>{# /.comments-form #}
 					</div>
-				</form>{# /.comments-form.pod #}
+				</div>{# /.pod #}
 			{% endif %}
 		</div>{# /.col-two-thirds #}
 		<aside class="col-one-third right">

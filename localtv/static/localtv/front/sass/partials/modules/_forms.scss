@@ -15,6 +15,9 @@ input, textarea{
 	padding:0;
 	margin:0;
 	@include transition(box-shadow .15s linear);
+	width:80%;
+	@include box-sizing(border-box);
+	padding: $base-line-height*.25;
 	&:focus{
 		border:1px solid $color2;
 		@include box-shadow(0 0 6px 0 transparentize($color2, .65), 1px 1px 3px 0 rgba(0,0,0,.15) inset);
@@ -22,9 +25,7 @@ input, textarea{
 }
 
 input{
-	@include box-sizing(border-box);
 	line-height: $base-line-height;
-	padding: $base-line-height*.25;
 }
 
 label{
@@ -45,6 +46,7 @@ form{
 
 .control-group{
 	@include clearfix;
+	@include margin-trailer(.5);
 }
 .form-horizontal label{
 	width:200px;
@@ -87,6 +89,12 @@ form{
 	}
 	& > .controls > input{
 		@include x-large;
-		width:60%;
 	}
+}
+
+/* specific fields */
+
+.control-group-honeypot{
+	height:0;
+	overflow:hidden;
 }

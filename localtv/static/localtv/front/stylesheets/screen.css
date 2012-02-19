@@ -309,8 +309,14 @@ input, textarea {
   -webkit-transition: box-shadow 0.15s linear;
   -o-transition: box-shadow 0.15s linear;
   transition: box-shadow 0.15s linear;
+  width: 80%;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 4.5px;
 }
-/* line 18, ../sass/partials/modules/_forms.scss */
+/* line 21, ../sass/partials/modules/_forms.scss */
 input:focus, textarea:focus {
   border: 1px solid #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -319,62 +325,58 @@ input:focus, textarea:focus {
   box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 24, ../sass/partials/modules/_forms.scss */
+/* line 27, ../sass/partials/modules/_forms.scss */
 input {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -ms-box-sizing: border-box;
-  box-sizing: border-box;
   line-height: 18px;
-  padding: 4.5px;
 }
 
-/* line 30, ../sass/partials/modules/_forms.scss */
+/* line 31, ../sass/partials/modules/_forms.scss */
 label {
   line-height: 27px;
 }
 
-/* line 39, ../sass/partials/modules/_forms.scss */
+/* line 40, ../sass/partials/modules/_forms.scss */
 form {
   margin-bottom: 18px;
 }
 
 /* modular form styles */
-/* line 46, ../sass/partials/modules/_forms.scss */
+/* line 47, ../sass/partials/modules/_forms.scss */
 .control-group {
   overflow: hidden;
   *zoom: 1;
+  margin-bottom: 9px;
 }
 
-/* line 49, ../sass/partials/modules/_forms.scss */
+/* line 51, ../sass/partials/modules/_forms.scss */
 .form-horizontal label, form label {
   width: 200px;
   float: left;
   text-align: right;
 }
 
-/* line 54, ../sass/partials/modules/_forms.scss */
+/* line 56, ../sass/partials/modules/_forms.scss */
 .form-horizontal .controls, form .controls {
   margin-left: 220px;
 }
 
-/* line 57, ../sass/partials/modules/_forms.scss */
+/* line 59, ../sass/partials/modules/_forms.scss */
 .form-horizontal > .form-actions, form > .form-actions {
   padding-left: 220px;
 }
 
-/* line 60, ../sass/partials/modules/_forms.scss */
+/* line 62, ../sass/partials/modules/_forms.scss */
 .help-text {
   color: #888;
   padding-top: 9px;
   padding-bottom: 9px;
 }
 
-/* line 65, ../sass/partials/modules/_forms.scss */
+/* line 67, ../sass/partials/modules/_forms.scss */
 .error .controls input {
   border-color: #800;
 }
-/* line 67, ../sass/partials/modules/_forms.scss */
+/* line 69, ../sass/partials/modules/_forms.scss */
 .error .controls input:focus {
   -moz-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
   -webkit-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -382,30 +384,36 @@ form {
   box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 71, ../sass/partials/modules/_forms.scss */
+/* line 73, ../sass/partials/modules/_forms.scss */
 .errorlist {
   color: #800;
 }
 
-/* line 77, ../sass/partials/modules/_forms.scss */
+/* line 79, ../sass/partials/modules/_forms.scss */
 .large > label {
   line-height: 36px;
 }
-/* line 80, ../sass/partials/modules/_forms.scss */
+/* line 82, ../sass/partials/modules/_forms.scss */
 .large > .controls > input {
   font-size: 16px;
   line-height: 18px;
 }
 
-/* line 85, ../sass/partials/modules/_forms.scss */
+/* line 87, ../sass/partials/modules/_forms.scss */
 .x-large > label {
   line-height: 54px;
 }
-/* line 88, ../sass/partials/modules/_forms.scss */
+/* line 90, ../sass/partials/modules/_forms.scss */
 .x-large > .controls > input {
   font-size: 24px;
   line-height: 36px;
-  width: 60%;
+}
+
+/* specific fields */
+/* line 97, ../sass/partials/modules/_forms.scss */
+.control-group-honeypot {
+  height: 0;
+  overflow: hidden;
 }
 
 /* line 3, ../sass/partials/modules/_lists.scss */
