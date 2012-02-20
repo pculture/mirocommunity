@@ -15,10 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime, timedelta
+
 from django.test import TestCase
 from haystack import connections
 
-from localtv.models import Video
+from localtv.models import Video, Watch
 
 
 class BaseTestCase(TestCase):
@@ -39,7 +41,25 @@ class BaseTestCase(TestCase):
         self._update_index()
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
-                     **kwargs):
-        """Factory function for creating videos."""
-        return Video.objects.create(name=name, status=status, site_id=site_id,
-                                    **kwargs)
+                     watches=0, **kwargs):
+        """
+        Factory function for creating videos. Supplies the following defaults:
+
+        * name: 'Test'
+        * status: :attr:`Video.ACTIVE`
+        * site_id: 1
+
+        In addition to kwargs for the video's fields, which are passed directly
+        to :meth:`Video.objects.create`, takes a ``watches`` kwarg (defaults to
+        0). If ``watches`` is greater than 0, that many :class:`.Watch`
+        instances will be created, each successively one day further in the
+        past.
+
+        """
+        video = Video.objects.create(name=name, status=status, site_id=site_id,
+                                     **kwargs)
+        for i in xrange(watches):
+            Watch.objects.create(video=video, ip_address='0.0.0.0',
+                                 timestamp=datetime.now() - timedelta(i))
+
+        return video

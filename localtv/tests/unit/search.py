@@ -82,33 +82,12 @@ class BestDateSortUnitTestCase(BaseTestCase):
                                                           date2.strftime(f)),
                                         when_approved=date2,
                                         when_published=date2)
-        self.video2 = self.create_video(name="%s - %s" % (date3.strftime(f),
+        self.video3 = self.create_video(name="%s - %s" % (date3.strftime(f),
                                                           date3.strftime(f)),
                                         when_approved=date3,
                                         when_published=date3)
         self.sort = utils.BestDateSort()
         self.site_location = SiteLocation.objects.get_current()
-
-    def test_get_field(self):
-        """
-        The database version coalesces an extra best_date field for sorting; the
-        haystack version has an additional index field for when
-        ``use_original_date`` is ``True``.
-
-        """
-        self.site_location.use_original_date = True
-        self.site_location.save()
-        self.assertEqual(self.sort.get_field(SearchQuerySet()),
-                         'best_date_with_published')
-        self.assertEqual(self.sort.get_field(Video.objects.all()),
-                         'best_date')
-
-        self.site_location.use_original_date = False
-        self.site_location.save()
-        self.assertEqual(self.sort.get_field(SearchQuerySet()),
-                         'best_date')
-        self.assertEqual(self.sort.get_field(Video.objects.all()),
-                         'best_date')
 
     def test_sort(self):
         """
@@ -116,11 +95,9 @@ class BestDateSortUnitTestCase(BaseTestCase):
 
         """
         def key_with_original(v):
-            v = getattr(v, 'object', v)
             return v.when_published or v.when_approved or v.when_submitted
 
         def key_without_original(v):
-            v = getattr(v, 'object', v)
             return v.when_approved or v.when_submitted
 
         self.site_location.use_original_date = True
@@ -146,6 +123,119 @@ class BestDateSortUnitTestCase(BaseTestCase):
                               key=key_without_original)
         expected_desc = sorted(list(Video.objects.all()),
                                key=key_without_original,
+                               reverse=True)
+
+        results = list(self.sort.sort(Video.objects.all()))
+        self.assertEqual(results, expected_asc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet())]
+        self.assertEqual(results, expected_asc)
+
+        results = list(self.sort.sort(Video.objects.all(), descending=True))
+        self.assertEqual(results, expected_desc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet(),
+                                                    descending=True)]
+        self.assertEqual(results, expected_desc)
+
+
+class FeaturedSortUnitTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._clear_index()
+        date1 = datetime.now() - timedelta(7)
+        date2 = datetime.now()
+        date3 = datetime.now() - timedelta(3)
+        f = "%Y/%m/%d"
+        self.video1 = self.create_video(name=date1.strftime(f),
+                                        last_featured=date1)
+        self.video2 = self.create_video(name=date2.strftime(f),
+                                        last_featured=date2)
+        self.video3 = self.create_video(name=date3.strftime(f),
+                                        last_featured=date3)
+        self.video4 = self.create_video(name='None', last_featured=None)
+        self.sort = utils.FeaturedSort()
+
+    def test_sort(self):
+        """
+        Checks that the sorted queryset is actually correctly sorted, and that
+        videos without a last_featured date are excluded.
+
+        """
+        all_videos = [self.video1, self.video2, self.video3]
+        expected_asc = sorted(all_videos, key=lambda v: v.last_featured)
+        expected_desc = sorted(all_videos, key=lambda v: v.last_featured,
+                               reverse=True)
+
+        results = list(self.sort.sort(Video.objects.all()))
+        self.assertEqual(results, expected_asc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet())]
+        self.assertEqual(results, expected_asc)
+
+        results = list(self.sort.sort(Video.objects.all(), descending=True))
+        self.assertEqual(results, expected_desc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet(),
+                                                    descending=True)]
+        self.assertEqual(results, expected_desc)
+
+
+class ApprovedSortUnitTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._clear_index()
+        date1 = datetime.now() - timedelta(7)
+        date2 = datetime.now()
+        date3 = datetime.now() - timedelta(3)
+        f = "%Y/%m/%d"
+        self.video1 = self.create_video(name=date1.strftime(f),
+                                        when_approved=date1)
+        self.video2 = self.create_video(name=date2.strftime(f),
+                                        when_approved=date2)
+        self.video3 = self.create_video(name=date3.strftime(f),
+                                        when_approved=date3)
+        self.video4 = self.create_video(name='None', when_approved=None)
+        self.sort = utils.ApprovedSort()
+
+    def test_sort(self):
+        """
+        Checks that the sorted queryset is actually correctly sorted, and that
+        videos without a when_approved date are excluded.
+
+        """
+        all_videos = [self.video1, self.video2, self.video3]
+        expected_asc = sorted(all_videos, key=lambda v: v.when_approved)
+        expected_desc = sorted(all_videos, key=lambda v: v.when_approved,
+                               reverse=True)
+
+        results = list(self.sort.sort(Video.objects.all()))
+        self.assertEqual(results, expected_asc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet())]
+        self.assertEqual(results, expected_asc)
+
+        results = list(self.sort.sort(Video.objects.all(), descending=True))
+        self.assertEqual(results, expected_desc)
+        results = [r.object for r in self.sort.sort(SearchQuerySet(),
+                                                    descending=True)]
+        self.assertEqual(results, expected_desc)
+
+
+class PopularSortUnitTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._clear_index()
+        self.video0 = self.create_video(name="0 watches", watches=0)
+        self.video2 = self.create_video(name="2 watches", watches=2)
+        self.video1 = self.create_video(name="1 watch", watches=1)
+        self.video3 = self.create_video(name="3 watches", watches=3)
+        self.sort = utils.PopularSort()
+
+    def test_sort(self):
+        """
+        Checks that the sorted queryset is actually sorted by watch count, and
+        that videos with no watches are excluded.
+
+        """
+        all_videos = [self.video1, self.video2, self.video3]
+        expected_asc = sorted(all_videos, key=lambda v: v.watch_set.count())
+        expected_desc = sorted(all_videos, key=lambda v: v.watch_set.count(),
                                reverse=True)
 
         results = list(self.sort.sort(Video.objects.all()))

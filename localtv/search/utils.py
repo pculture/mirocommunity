@@ -147,6 +147,7 @@ class FeaturedSort(NullableDateSort):
 class ApprovedSort(NullableDateSort):
     field = 'when_approved'
 
+
 class PopularSort(Sort):
     field = 'watch_count'
     empty_value = 0
