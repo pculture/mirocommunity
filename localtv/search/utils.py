@@ -30,6 +30,7 @@ from tagging.utils import get_tag_list
 from localtv.models import Video, Feed, Category, SiteLocation
 from localtv.playlists.models import Playlist
 from localtv.search.forms import SmartSearchForm, FilterForm
+from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
 
@@ -55,7 +56,9 @@ class NormalizedVideoList(object):
             if isinstance(results, list):
                 return [result.object for result in results
                         if result is not None]
-            return result.object
+            if results is not None:
+                return results.object
+            raise IndexError
         else:
             return self.queryset[k]
 
@@ -86,39 +89,54 @@ class Sort(object):
     #:           not be correctly handled by :mod:`haystack`.
     empty_value = EMPTY
 
+    def get_field(self, queryset):
+        """
+        Returns the field which will be sorted on. By default, returns the value
+        of :attr:`field`.
+
+        """
+        return self.field
+
+    def get_empty_value(self, queryset):
+        """
+        Returns the value for which the queryset's sort field will be considered
+        "empty" and excluded from the sorted field. By default, returns
+        :attr:`empty_value`.
+
+        """
+        return self.empty_value
+
     def sort(self, queryset, descending=False):
-        if self.empty_value is not EMPTY:
-            if self.empty_value is None:
-                kwargs = {'%s__isnull' % self.field: True}
+        field = self.get_field(queryset)
+        empty_value = self.get_empty_value(queryset)
+        if empty_value is not EMPTY:
+            if empty_value is None:
+                kwargs = {'%s__isnull' % field: True}
             else:
-                kwargs = {'%s__exact' % self.field: self.empty_value}
+                kwargs = {'%s__exact' % field: empty_value}
 
             queryset = queryset.exclude(**kwargs)
-        return queryset.order_by(''.join(('-' if descending else '',
-                                          self.field)))
+        return queryset.order_by(''.join(('-' if descending else '', field)))
 
 
 class BestDateSort(Sort):
-    @property
-    def field(self):
-        if USE_HAYSTACK and SiteLocation.objects.get_current().use_original_date:
+    def get_field(self, queryset):
+        if (isinstance(queryset, SearchQuerySet) and
+            SiteLocation.objects.get_current().use_original_date):
             return 'best_date_with_published'
         return 'best_date'
 
     def sort(self, queryset, descending=False):
-        if not USE_HAYSTACK:
+        if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_best_date(
                            SiteLocation.objects.get_current().use_original_date)
         return super(BestDateSort, self).sort(queryset, descending)
 
 
 class NullableDateSort(Sort):
-    @property
-    def empty_value(self):
-        if USE_HAYSTACK:
-            # We use ``datetime.max`` rather than ``datetime.min`` because
-            # whoosh doesn't support datetime values before 1900.
-            return datetime.max
+    def get_empty_value(self, queryset):
+        if isinstance(queryset, SearchQuerySet):
+            return DATETIME_NULL_PLACEHOLDER
         return None
 
 
@@ -134,7 +152,7 @@ class PopularSort(Sort):
     empty_value = 0
 
     def sort(self, queryset, descending=False):
-        if not USE_HAYSTACK:
+        if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_watch_count()
         return super(PopularSort, self).sort(queryset, descending)
 
@@ -161,7 +179,7 @@ class Filter(object):
         :attr:`field`.
 
         """
-        q_class = SQ if USE_HAYSTACK else Q
+        q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
         q = None
         for lookup in self.field_lookups:
             if len(values) == 1:
@@ -243,7 +261,7 @@ class ModelFilter(Filter):
 
 class TagFilter(Filter):
     def filter(self, queryset, values):
-        if not USE_HAYSTACK:
+        if not isinstance(queryset, SearchQuerySet):
             return TaggedItem.objects.with_any(values)
         pks = [instance.pk for instance in values]
         return super(TagFilter, self).filter(queryset, pks)

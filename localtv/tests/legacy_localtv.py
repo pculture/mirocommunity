@@ -43,6 +43,7 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 import localtv.settings
@@ -176,14 +177,21 @@ class BaseTestCase(TestCase):
                           ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
+    def _clear_index(self):
+        """Clears the search index."""
+        backend = connections['default'].get_backend()
+        backend.clear()
 
-    def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import connections
+    def _update_index(self):
+        """Updates the search index."""
+        backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
-        index.reindex()
+        backend.update(index, index.index_queryset())
+        
+    def _rebuild_index(self):
+        """Clears and then updates the search index."""
+        self._clear_index()
+        self._update_index()
 
 
 # -----------------------------------------------------------------------------

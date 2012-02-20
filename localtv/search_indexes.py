@@ -14,17 +14,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
+
 from django.db.models import Count, signals
 from django.forms.models import model_to_dict
 from django.utils.encoding import force_unicode
 
 from haystack import indexes
 from localtv.models import Video, Watch
-from localtv.search.utils import FeaturedSort, ApprovedSort
 from localtv.tasks import haystack_update_index
 
 from django.conf import settings
+
+
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
+
+#: We use a placeholder value because support for filtering on null values is
+#: lacking. We use ``datetime.max`` rather than ``datetime.min`` because whoosh
+#: doesn't support datetime values before 1900.
+DATETIME_NULL_PLACEHOLDER = datetime.max
+
 
 class QueuedSearchIndex(indexes.SearchIndex):
     def _setup_save(self):
@@ -89,9 +98,9 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     best_date_with_published = indexes.DateTimeField()
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
-                                          default=FeaturedSort().empty_value)
+                                          default=DATETIME_NULL_PLACEHOLDER)
     when_approved = indexes.DateTimeField(model_attr='when_approved',
-                                          default=ApprovedSort().empty_value)
+                                          default=DATETIME_NULL_PLACEHOLDER)
 
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
