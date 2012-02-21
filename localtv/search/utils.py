@@ -352,7 +352,25 @@ class SortFilterMixin(object):
 
         """
         form = self._make_search_form(query)
-        return form.search()
+        sqs = form.search()
+        if USE_HAYSTACK:
+            # Work directly with the SearchQuerySet.
+            return sqs
+        else:
+            qs = Video.objects.filter(status=Video.ACTIVE,
+                                      site=Site.objects.get_current())
+            # If there was a query, limit the queryset to the pks from the
+            # SearchQuerySet and order by those pks to preserve the "relevance"
+            # sort. If there are no pks, return the full queryset.
+            if query:
+                pks = [int(r.pk) for r in sqs]
+                if pks:
+                    # We add ordering by pk to preserve the "relevance" sort of
+                    # the search. If any other sort is applied, it will override
+                    # this.
+                    order = ['-localtv_video.id = %i' % pk for pk in pks]
+                    qs = qs.filter(pk__in=pks).extra(order_by=order)
+            return qs
 
     def _sort(self, queryset, sort_string):
         """
