@@ -1,13 +1,13 @@
 {{ playlist.user.username|safe }} has asked for their playlist to become public.
 
 Name: {{ playlist.name|safe }}
-URL: http://{{ sitelocation.site.domain }}{{ playlist.get_absolute_url }}
+URL: http://{{ site_settings.site.domain }}{{ playlist.get_absolute_url }}
 Videos:
 {% for video in playlist.video_set %}#{{ forloop.counter }}: {{ video.name|safe }}
 {% endfor %}
 
 You can moderate this playlist here:
-http://{{ sitelocation.site.domain }}{% url localtv_playlist_index %}?show=waiting
+http://{{ site_settings.site.domain }}{% url localtv_playlist_index %}?show=waiting
 
-Make it public: http://{{ sitelocation.site.domain }}{% url localtv_playlist_public playlist.pk %}
-Make it private: http://{{ sitelocation.site.domain }}{% url localtv_playlist_private playlist.pk %}
+Make it public: http://{{ site_settings.site.domain }}{% url localtv_playlist_public playlist.pk %}
+Make it private: http://{{ site_settings.site.domain }}{% url localtv_playlist_private playlist.pk %}

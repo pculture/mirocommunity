@@ -30,7 +30,7 @@
   </div>
   <ol>
     <li>Enable the "bookmarks" toolbar in your browser.</li>
-    <li>Drag this link: <a href="javascript:(function(){u='http://{{ sitelocation.site.domain }}/submit_video?from_ajax&bookmarklet&url='+encodeURIComponent(location.href);w=window.open(u,'_blank', 'width=630,height=300,resizable=yes');setTimeout(function(){w.focus();}, 250);})();">Add to {{ sitelocation.site.name }}</a> into the bookmarks toolbar. It will now become a button you can see
+    <li>Drag this link: <a href="javascript:(function(){u='http://{{ site_settings.site.domain }}/submit_video?from_ajax&bookmarklet&url='+encodeURIComponent(location.href);w=window.open(u,'_blank', 'width=630,height=300,resizable=yes');setTimeout(function(){w.focus();}, 250);})();">Add to {{ site_settings.site.name }}</a> into the bookmarks toolbar. It will now become a button you can see
 while on any website.</li>
  <li>When visiting a webpage with a video you would like to add to your Miro
 Community site, simply click on the button now embedded in your bookmarks

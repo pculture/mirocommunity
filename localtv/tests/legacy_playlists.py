@@ -20,7 +20,7 @@ from django.core.urlresolvers import reverse
 from django.core import mail
 from django.test.client import Client
 
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 from localtv.models import Video
 
 from localtv.playlists.models import Playlist, PlaylistItem
@@ -40,7 +40,7 @@ class PlaylistBaseTestCase(BaseTestCase):
             description="This is a list for testing")
 
         self.video_set = [Video.objects.create(
-                site=self.site_location.site,
+                site=self.site_settings.site,
                 name='Test Video %i' % i) for i in range(5)]
 
         for index, video in enumerate(self.video_set[::-1]): # reverse order
@@ -76,7 +76,7 @@ class PlaylistModelTestCase(PlaylistBaseTestCase):
         Playlist.add_video() should add a video to the end of the playlist.
         """
         v = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             name='Added video')
         self.list.add_video(v)
         self.assertEqual(list(self.list.video_set.all())[-1],
@@ -150,7 +150,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
 
         playlist = Playlist.objects.order_by('-pk')[0]
         self.assertEqual(playlist.name, data['name'])
@@ -175,7 +175,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
 
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 video.get_absolute_url(), playlist.pk))
 
         self.assertEqual(playlist.name, data['name'])
@@ -256,7 +256,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'form-0-DELETE': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
         self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
                           pk=self.list.pk)
@@ -278,7 +278,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'bulk_action': 'delete'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
         self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
                           pk=self.list.pk)
@@ -308,7 +308,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'bulk_action': 'public'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(playlist.status, Playlist.WAITING_FOR_MODERATION)
@@ -339,7 +339,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'bulk_action': 'public'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(playlist.status, Playlist.PUBLIC)
@@ -365,7 +365,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'bulk_action': 'private'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(playlist.status, Playlist.PRIVATE)
@@ -386,7 +386,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                           HTTP_REFERER=video.get_absolute_url())
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
@@ -407,7 +407,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                           video.get_absolute_url())
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
@@ -424,7 +424,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {'playlist': self.list.pk})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
@@ -459,7 +459,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             response = c.get(url)
             self.assertStatusCodeEquals(response, 301) # permanent redirect
             self.assertEqual(response['Location'], 'http://%s%s' % (
-                    self.site_location.site.domain,
+                    self.site_settings.site.domain,
                     self.list.get_absolute_url()))
 
     def test_view_404(self):
@@ -511,7 +511,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           self.video_set)
@@ -541,7 +541,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           video_set)
@@ -571,7 +571,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           video_set)
@@ -597,7 +597,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           self.video_set[:2:-1] + self.video_set[1::-1])
@@ -624,7 +624,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain, url))
+                self.site_settings.site.domain, url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           self.video_set[:2:-1] + self.video_set[1::-1])
@@ -649,7 +649,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
@@ -677,7 +677,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?show=all' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
@@ -698,7 +698,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
@@ -708,8 +708,8 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         """
         If playlists are disabled, every playlist view should return a 404.
         """
-        self.site_location.playlists_enabled = False
-        self.site_location.save()
+        self.site_settings.playlists_enabled = False
+        self.site_settings.save()
 
         c = Client()
         for view, args in (('localtv_playlist_index', ()),

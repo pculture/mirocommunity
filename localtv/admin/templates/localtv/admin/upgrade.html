@@ -43,10 +43,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% endif %}
   </div><!-- // upgrade_title -->
   
-{% ifequal site_location.tier_name 'basic' %}
+{% ifequal site_settings.tier_name 'basic' %}
 <div id="basic_plan" class="clear">
     <h1>Your current plan: <strong>basic</strong></h1>
-    <p>{% ifequal site_location.tier_name 'basic' %}
+    <p>{% ifequal site_settings.tier_name 'basic' %}
       {% if offer_free_trial %}
         Easily upgrade to receive a free 30 day trial.
       {% else %}
@@ -63,7 +63,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <div id="switchbasic" class="clear">
   <h1>Basic <strong>Free</strong></h1>
-    <p>{% ifequal site_location.tier_name 'basic' %}
+    <p>{% ifequal site_settings.tier_name 'basic' %}
       {% if offer_free_trial %}
         Easily upgrade to receive a free 30 day trial.
       {% else %}
@@ -73,7 +73,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         500 videos, your own logo and background.
       {% endifequal %}
     </p>
-    {% ifnotequal site_location.tier_name 'basic' %}{# Note: all changes to "basic" are downgrades #}
+    {% ifnotequal site_settings.tier_name 'basic' %}{# Note: all changes to "basic" are downgrades #}
     {% with "Switch to basic" as message %}{% with "basic" as target_tier_name %}{% with "basic" as tier_name %}{% with would_lose_for_tier.basic as go_to_warnings %}
     {% include 'localtv/admin/downgrade_snippet.html' %}
     {% endwith %}{% endwith %}{% endwith %}{% endwith %}
@@ -81,7 +81,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 </div><!-- // basic_plan -->
 {% endifequal %}
 
-<div id="starter_pack" class="{% ifequal site_location.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
+<div id="starter_pack" class="{% ifequal site_settings.tier_name 'plus' %}selected {% endifequal %}{% if plus_would_be_downgrade %}switch_to {% endif %} plan">
   <div class="hdr">
     <h1>Plus</h1>
     <h2>${{ tier_to_price.plus }}/month</h2>
@@ -95,7 +95,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </ul>
   <div class="ft">
     <p>Plus</p>
-    {% ifnotequal site_location.tier_name 'plus' %}{% with tier_to_price.plus as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}{% with can_modify_mapping.plus as can_modify %}{% with upgrade_extra_payments.plus as specific_payment_override %}
+    {% ifnotequal site_settings.tier_name 'plus' %}{% with tier_to_price.plus as amount %}{% with "plus" as target_tier_name %}{% with switch_messages.plus as message %}{% with would_lose_for_tier.plus as go_to_warnings %}{% with can_modify_mapping.plus as can_modify %}{% with upgrade_extra_payments.plus as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
     {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
       </p>
@@ -103,7 +103,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </div><!-- // ft -->
 </div><!-- // starter_pack -->
 
-<div id="value_added" class="{% ifequal site_location.tier_name 'premium'%}selected {% endifequal %}plan">
+<div id="value_added" class="{% ifequal site_settings.tier_name 'premium'%}selected {% endifequal %}plan">
   <div class="hdr">
     <h1>Premium</h1>
     <h2>${{ tier_to_price.premium}}/month</h2>
@@ -117,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>You can run advertising</li>
   </ul>
   <div class="ft">
-{% ifnotequal "premium" site_location.tier_name %}{% with tier_to_price.premium as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.premium as specific_payment_override %}
+{% ifnotequal "premium" site_settings.tier_name %}{% with tier_to_price.premium as amount %}{% with "premium" as target_tier_name %}{% with switch_messages.premium as message %}{% with would_lose_for_tier.premium as go_to_warnings %}{% with can_modify_mapping.premium as can_modify %}{% with upgrade_extra_payments.premium as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
       {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
 
@@ -125,7 +125,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   </div><!-- // ft -->
 </div><!-- // value_added -->
 
-<div id="delicious_plan" class="{% ifequal site_location.tier_name 'max' %}selected {% endifequal %}last plan">
+<div id="delicious_plan" class="{% ifequal site_settings.tier_name 'max' %}selected {% endifequal %}last plan">
   <div class="hdr">
     <h1>Max</h1>
     <h2>${{ tier_to_price.max }}/month</h2>
@@ -140,7 +140,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <li>Fully Custom Templating</li>
   </ul>
   <div class="ft">
-{% ifnotequal sitelocation.tier_name "max" %}{% with tier_to_price.max as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}{% with can_modify_mapping.max as can_modify %}{% with upgrade_extra_payments.max as specific_payment_override %}
+{% ifnotequal site_settings.tier_name "max" %}{% with tier_to_price.max as amount %}{% with "max" as target_tier_name %}{% with "Upgrade Your Account" as message %}{% with would_lose_for_tier.max as go_to_warnings %}{% with can_modify_mapping.max as can_modify %}{% with upgrade_extra_payments.max as specific_payment_override %}
       {% include 'localtv/admin/paypal_form_snippet.html' %}
       {% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endwith %}{% endifnotequal %}
     <p>Max</p>

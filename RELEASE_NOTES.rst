@@ -1,4 +1,13 @@
-================================
+Miro Community 1.8.1 Release Notes
+==================================
+
+* Various bugfixes for issues raised in the 1.8 release, such as:
+   * Listing sorting
+   * Feed caching
+   * Video submission templates and template context
+   * Feed unicode errors
+* Removed patch_settings hack from :mod:`localtv.tasks`
+
 Miro Community 1.8 Release Notes
 ================================
 

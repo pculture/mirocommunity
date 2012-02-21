@@ -55,8 +55,8 @@ class SubmitPermissionsTestCase(BaseTestCase):
         check.
 
         """
-        self.site_location.submission_requires_login = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = False
+        self.site_settings.save()
         self.assertTrue(_has_submit_permissions(self.anonymous_request))
         self.assertTrue(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))
@@ -67,9 +67,9 @@ class SubmitPermissionsTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = True
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = True
+        self.site_settings.save()
         self.assertFalse(_has_submit_permissions(self.anonymous_request))
         self.assertTrue(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))
@@ -80,9 +80,9 @@ class SubmitPermissionsTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = False
+        self.site_settings.save()
         self.assertFalse(_has_submit_permissions(self.anonymous_request))
         self.assertFalse(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from hashlib import sha1
 import urllib
 
 from django.contrib.auth.models import User
@@ -32,7 +33,7 @@ from tagging.models import Tag
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video, Category, Feed
 from localtv.playlists.models import Playlist
-from localtv.search.utils import SortFilterViewMixin
+from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
 from localtv.templatetags.filters import simpletimesince
 
 
@@ -44,8 +45,6 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
-    default_sort = None
-    default_filter = None
 
     def __init__(self, json=False):
         if json:
@@ -55,7 +54,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
             'domain': Site.objects.get_current().domain,
             'class': self.__class__.__name__,
-            'vary': force_unicode(vary).replace(' ', '')
+            'vary': sha1(force_unicode(vary).replace(' ', '')).hexdigest(),
         }
 
     def __call__(self, request, *args, **kwargs):
@@ -71,7 +70,9 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             # :meth:`_get_opensearch_data` uses it as an alternate source for
             # startIndex.
             request.GET.get('start-index'),
-            request.GET.get('startPage')
+            request.GET.get('startPage'),
+            repr(args),
+            repr(kwargs),
         )
         cache_key = self._get_cache_key(vary)
 
@@ -92,7 +93,18 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         and are thus unsuitable for storage.
 
         """
-        return {'request': request}
+        obj = {'request': request}
+        filter_form = self._get_filter_form(request)
+        filters = self._get_filters(filter_form, **kwargs)
+        obj['cleaned_filters'] = self._clean_filter_values(filters)
+        if self.url_filter in self.filters:
+            try:
+                obj['obj'] = obj['cleaned_filters'][self.url_filter][0]
+            except IndexError:
+                # Then this is a URL for a page that shouldn't exist.
+                raise Http404
+
+        return obj
 
     def _actual_items(self, obj):
         raise NotImplementedError
@@ -119,17 +131,16 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        sqs = self._query(self._get_query(obj['request']))
-        sqs = self._sort(sqs, self._get_sort(obj['request']))
-        filter_dict, xxx = self._get_filter_info(obj['request'], [obj.get('obj')])
-        sqs, xxx = self._filter(sqs, **filter_dict)
+        qs = self._search(self._get_query(obj['request']))
+        qs = self._sort(qs, self._get_sort(obj['request']))
+        qs = self._filter(qs, obj['cleaned_filters'])
+        videos = NormalizedVideoList(qs)
 
         opensearch = self._get_opensearch_data(obj)
         start = opensearch['startindex']
         end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(sqs)
-        sqs = sqs.load_all()[start:end]
-        return [result.object for result in sqs if result is not None]
+        opensearch['totalresults'] = len(videos)
+        return videos[start:end]
 
     def _get_opensearch_data(self, obj):
         """
@@ -276,14 +287,9 @@ class PopularVideosFeed(BaseVideosFeed):
 
 
 class CategoryVideosFeed(BaseVideosFeed):
-    default_filter = 'category'
+    url_filter = 'category'
+    url_filter_kwarg = 'slug'
     default_sort = '-date'
-
-    def get_object(self, request, slug):
-        obj = BaseVideosFeed.get_object(self, request, slug)
-        obj['obj'] = Category.objects.get(
-                        site=Site.objects.get_current(), slug=slug)
-        return obj
 
     def link(self, obj):
         return obj['obj'].get_absolute_url()
@@ -295,13 +301,8 @@ class CategoryVideosFeed(BaseVideosFeed):
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
-    default_filter = 'author'
+    url_filter = 'author'
     default_sort = '-date'
-
-    def get_object(self, request, pk):
-        obj = BaseVideosFeed.get_object(self, request, pk)
-        obj['obj'] = User.objects.get(pk=pk)
-        return obj
 
     def link(self, obj):
         return reverse('localtv_author', args=[obj['obj'].pk])
@@ -324,13 +325,8 @@ class FeedVideosFeed(BaseVideosFeed):
     #
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
-    default_filter = 'feed'
+    url_filter = 'feed'
     default_sort = '-date'
-
-    def get_object(self, request, pk):
-        obj = BaseVideosFeed.get_object(self, request, pk)
-        obj['obj'] = Feed.objects.get(pk=pk)
-        return obj
 
     def link(self, obj):
         return reverse('localtv_list_feed', args=[obj['obj'].pk])
@@ -342,13 +338,9 @@ class FeedVideosFeed(BaseVideosFeed):
 
 
 class TagVideosFeed(BaseVideosFeed):
-    default_filter = 'tag'
+    url_filter = 'tag'
+    url_filter_kwarg = 'name'
     default_sort = '-date'
-
-    def get_object(self, request, name):
-        obj = BaseVideosFeed.get_object(self, request, name)
-        obj['obj'] = Tag.objects.get(name=name)
-        return obj
 
     def link(self, obj):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
@@ -378,10 +370,7 @@ class SearchVideosFeed(BaseVideosFeed):
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
-    def get_object(self, request, pk):
-        obj = BaseVideosFeed.get_object(self, request, pk)
-        obj['obj'] = Playlist.objects.get(pk=pk)
-        return obj
+    url_filter = 'playlist'
 
     def link(self, obj):
         return obj['obj'].get_absolute_url()

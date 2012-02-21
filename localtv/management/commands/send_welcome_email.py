@@ -25,7 +25,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # We send this email to the person who owns the site. So we use
         # the tiers system's ability to send email.
-        site_location = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
         tier_info = localtv.models.TierInfo.objects.get_current()
         if tier_info.already_sent_welcome_email:
             return
@@ -34,19 +34,19 @@ class Command(BaseCommand):
                              'in_free_trial': True}
         else:
             extra_context = {}
-        self.actually_send(site_location, tier_info, extra_context)
+        self.actually_send(site_settings, tier_info, extra_context)
 
-    def actually_send(self, site_location, tier_info, extra_context):
+    def actually_send(self, site_settings, tier_info, extra_context):
 
         # If we haven't sent it, prepare the email
 
         # Now send the sucker
-        subject = "%s: Welcome to Miro Community" % site_location.site.name
-        if site_location.tier_name == 'basic':
+        subject = "%s: Welcome to Miro Community" % site_settings.site.name
+        if site_settings.tier_name == 'basic':
             template = 'localtv/admin/tiers_emails/welcome_to_your_site_basic.txt'
         else:
             template = 'localtv/admin/tiers_emails/welcome_to_your_site.txt'
-        localtv.tiers.send_tiers_related_multipart_email(subject, template, site_location, extra_context=extra_context)
+        localtv.tiers.send_tiers_related_multipart_email(subject, template, site_settings, extra_context=extra_context)
 
         # Finally, save a note saying we sent it.
         tier_info.already_sent_welcome_email = True

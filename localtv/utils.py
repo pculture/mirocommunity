@@ -129,13 +129,13 @@ def normalize_newlines(s):
 
 
 def send_notice(notice_label, subject, message, fail_silently=True,
-                sitelocation=None, content_subtype=None):
+                site_settings=None, content_subtype=None):
     notice_type = notification.NoticeType.objects.get(label=notice_label)
     recipient_list = notification.NoticeSetting.objects.filter(
         notice_type=notice_type,
         medium="1",
         send=True).exclude(user__email='').filter(
-        Q(user__in=sitelocation.admins.all()) |
+        Q(user__in=site_settings.admins.all()) |
         Q(user__is_superuser=True)).values_list('user__email', flat=True)
     message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                            bcc=recipient_list)

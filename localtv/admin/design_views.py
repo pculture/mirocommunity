@@ -23,15 +23,15 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation, WidgetSettings, NewsletterSettings
+from localtv.models import SiteSettings, WidgetSettings, NewsletterSettings
 
 
 @require_site_admin
 @csrf_protect
 def widget_settings(request):
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     form = forms.WidgetSettingsForm(
-        instance=sitelocation.site.widgetsettings,
+        instance=site_settings.site.widgetsettings,
         initial={'title': 
                  WidgetSettings.objects.get().get_title_or_reasonable_default()})
 
@@ -39,7 +39,7 @@ def widget_settings(request):
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=sitelocation.site.widgetsettings)
+            instance=site_settings.site.widgetsettings)
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):
