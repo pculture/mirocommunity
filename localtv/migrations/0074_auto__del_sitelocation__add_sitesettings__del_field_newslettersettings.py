@@ -8,30 +8,12 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Change model 'SiteLocation' to 'SiteSettings'
-        db.rename_table('localtv_sitelocation', 'localtv_sitesettings')
-
-        # Change M2M table for field admins on 'SiteLocation'
-        db.rename_table('localtv_sitelocation_admins', 'localtv_sitesettings_admins')
-
-        # Rename field 'NewsletterSettings.sitelocation' to 'NewsletterSettings.site_settings'
-        db.rename_column('localtv_newslettersettings', 'sitelocation_id', 'site_settings_id')
-
-        # Rename field 'TierInfo.sitelocation' to 'TierInfo.site_settings'
-        db.rename_column('localtv_tierinfo', 'sitelocation_id', 'site_settings_id')
+        # Adding model 'SiteSettings'
+        db.send_create_signal('localtv', ['SiteSettings'])
 
     def backwards(self, orm):
-        # Change model 'SiteSettings' to 'SiteLocation'
-        db.rename_table('localtv_sitesettings', 'localtv_sitelocation')
-
-        # Change M2M table for field admins on 'SiteLocation'
-        db.rename_table('localtv_sitesettings_admins', 'localtv_sitelocation_admins')
-
-        # Rename field 'NewsletterSettings.site_settings' to 'NewsletterSettings.sitelocation'
-        db.rename_column('localtv_newslettersettings', 'site_settings_id', 'sitelocation_id')
-
-        # Rename field 'TierInfo.site_settings' to 'TierInfo.sitelocation'
-        db.rename_column('localtv_tierinfo', 'site_settings_id', 'sitelocation_id')
+        # Adding model 'SiteLocation'
+        db.send_create_signal('localtv', ['SiteLocation'])
 
     models = {
         'auth.group': {
@@ -139,7 +121,7 @@ class Migration(SchemaMigration):
             'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
+            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True', 'db_column': "'sitelocation_id'"}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
@@ -203,7 +185,7 @@ class Migration(SchemaMigration):
             'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
         },
         'localtv.sitesettings': {
-            'Meta': {'object_name': 'SiteSettings'},
+            'Meta': {'object_name': 'SiteSettings', 'db_table': "'localtv_sitelocation'"},
             'about_html': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'admin_for'", 'blank': 'True', 'to': "orm['auth.User']"}),
             'background': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -241,7 +223,7 @@ class Migration(SchemaMigration):
             'payment_due_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'payment_secret': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'should_send_welcome_email_on_paypal_event': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
+            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True', 'db_column': "'sitelocation_id'"}),
             'user_has_successfully_performed_a_paypal_transaction': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'video_allotment_warning_sent': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'waiting_on_payment_until': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'})
