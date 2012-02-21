@@ -17,10 +17,14 @@
 
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 from django.test import TestCase
 from haystack import connections
 
-from localtv.models import Video, Watch
+from localtv.models import Video, Watch, Category
+from localtv.tasks import haystack_update_index
+
 
 
 class BaseTestCase(TestCase):
@@ -41,7 +45,7 @@ class BaseTestCase(TestCase):
         self._update_index()
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
-                     watches=0, **kwargs):
+                     watches=0, categories=None, authors=None, **kwargs):
         """
         Factory function for creating videos. Supplies the following defaults:
 
@@ -55,6 +59,9 @@ class BaseTestCase(TestCase):
         instances will be created, each successively one day further in the
         past.
 
+        List of category and author instances may also be passed in as
+        ``categories`` and ``authors``, respectively.
+
         """
         video = Video.objects.create(name=name, status=status, site_id=site_id,
                                      **kwargs)
@@ -62,4 +69,38 @@ class BaseTestCase(TestCase):
             Watch.objects.create(video=video, ip_address='0.0.0.0',
                                  timestamp=datetime.now() - timedelta(i))
 
+        if categories is not None:
+            video.categories.add(*categories)
+
+        if authors is not None:
+            video.authors.add(*authors)
+
+        # Update the index here to be sure that the categories and authors get
+        # indexed correctly.
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._enqueue_update(video)
         return video
+
+    def create_category(self, site_id=1, **kwargs):
+        """
+        Factory function for creating categories. Supplies the following
+        default:
+
+        * site_id: 1
+
+        Additionally, ``slug`` will be auto-generated from ``name`` if not
+        provided. All arguments given are passed directly to
+        :meth:`Category.objects.create`.
+
+        """
+        if 'slug' not in kwargs:
+            kwargs['slug'] = slugify(kwargs.get('name', ''))
+        return Category.objects.create(site_id=site_id, **kwargs)
+
+    def create_user(self, **kwargs):
+        """
+        Factory function for creating users. All arguments are passed directly
+        to :meth:`User.objects.create`.
+
+        """
+        return User.objects.create(**kwargs)

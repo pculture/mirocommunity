@@ -22,6 +22,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.query import Q, QuerySet
+from django.template.defaultfilters import capfirst
 from haystack.backends import SQ
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
@@ -234,10 +235,16 @@ class ModelFilter(Filter):
         return super(ModelFilter, self).filter(queryset, pks)
 
     def clean_filter_values(self, values):
+        """
+        Given a queryset of :attr:`model`, a list or tuple of instances of
+        :attr:`model`, or a list of values corresponding to :attr:`field`,
+        returns a list, tuple, or queryset of instances of :attr:`model`
+
+        """
         if isinstance(values, QuerySet) and values.model == self.model:
             return values._clone()
         elif (isinstance(values, (list, tuple))
-              and not any((not isinstance(v, self.model) for v in values))):
+              and all((isinstance(v, self.model) for v in values))):
             return values
         return self.get_query_set().filter(**{'%s__in' % self.field: values})
 

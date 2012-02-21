@@ -17,9 +17,11 @@
 
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from haystack.query import SearchQuerySet
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteLocation, Category
 from localtv.search import utils
 from localtv.tests.base import BaseTestCase
 
@@ -248,3 +250,129 @@ class PopularSortUnitTestCase(BaseTestCase):
         results = [r.object for r in self.sort.sort(SearchQuerySet(),
                                                     descending=True)]
         self.assertEqual(results, expected_desc)
+
+
+class ModelFilterUnitTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._clear_index()
+        Site.objects.create(name='example.com', domain='example.com')
+        self.user_filter = utils.ModelFilter(('authors', 'user'), User)
+        self.category_filter = utils.ModelFilter(('categories',), Category,
+                                                 field='slug')
+        self.user1 = self.create_user(username='user1')
+        self.user2 = self.create_user(username='user2')
+        self.category1 = self.create_category(name='category1')
+        self.category2 = self.create_category(name='category2')
+        self.category3 = self.create_category(name='category3', site_id=2)
+        self.video1 = self.create_video(name='user1,category1', user=self.user1,
+                                        categories=[self.category1])
+        self.video2 = self.create_video(name='user1,category2',
+                                        authors=[self.user1],
+                                        categories=[self.category2])
+        self.video3 = self.create_video(name='user2,category1',
+                                        authors=[self.user2],
+                                        categories=[self.category1])
+        self.video4 = self.create_video(name='user2,category2', user=self.user2,
+                                        categories=[self.category2])
+        self.video5 = self.create_video(name='user1-2,category1-2',
+                                        authors=[self.user1, self.user2],
+                                        categories=[self.category1,
+                                                    self.category2])
+        self.video6 = self.create_video(name='category3',
+                                        categories=[self.category3])
+
+    def test_clean_filter_values(self):
+        """
+        Cleaned filter values should always be a list, tuple, or queryset of
+        model instances of the correct type.
+
+        """
+        # clean users (pk-based clean)
+        expected = [self.user1]
+
+        results = self.user_filter.clean_filter_values([self.user1])
+        self.assertEqual(list(results), expected)
+
+        results = self.user_filter.clean_filter_values(
+                            User.objects.filter(pk__in=[self.user1.pk]))
+        self.assertEqual(list(results), expected)
+
+        results = self.user_filter.clean_filter_values([self.user1.pk])
+        self.assertEqual(list(results), expected)
+
+        # clean categories (slug-based clean)
+        expected = [self.category1]
+
+        results = self.category_filter.clean_filter_values([self.category1])
+        self.assertEqual(list(results), expected)
+
+        results = list(self.category_filter.clean_filter_values(
+                            Category.objects.filter(pk__in=[self.category1.pk])))
+        self.assertEqual(list(results), expected)
+
+        results = self.category_filter.clean_filter_values(
+                            [self.category1.slug])
+        self.assertEqual(list(results), expected)
+
+        # clean categories (exclude categories for other sites)
+        results = self.category_filter.clean_filter_values(
+                            [self.category1.slug, self.category3.slug])
+
+    def test_filter(self):
+        """
+        Given a queryset and an iterable of model instances, returns a queryset
+        of videos which have any of those model instances attached to them.
+
+        """
+        # filtered on multiple...
+        expected = set((self.video1, self.video2, self.video3, self.video4,
+                       self.video5))
+
+        # filtered on multiple users
+        users = [self.user1, self.user2]
+        filtered = self.user_filter.filter(Video.objects.all(), users)
+        self.assertEqual(set(filtered), expected)
+
+        filtered = self.user_filter.filter(SearchQuerySet(), users)
+        self.assertEqual(set(r.object for r in filtered), expected)
+
+        # filtered on multiple categories
+        categories = [self.category1, self.category2]
+        filtered = self.category_filter.filter(Video.objects.all(), categories)
+        self.assertEqual(set(filtered), expected)
+
+        filtered = self.category_filter.filter(SearchQuerySet(), categories)
+        self.assertEqual(set(r.object for r in filtered), expected)
+
+        # filtered on one user
+        users = [self.user1]
+        expected = set((self.video1, self.video2, self.video5))
+        filtered = self.user_filter.filter(Video.objects.all(), [self.user1])
+        self.assertEqual(set(filtered), expected)
+
+        filtered = self.user_filter.filter(SearchQuerySet(), users)
+        self.assertEqual(set(r.object for r in filtered), expected)
+
+        # filtered on multiple categories
+        categories = [self.category1]
+        expected = set((self.video1, self.video3, self.video5))
+        filtered = self.category_filter.filter(Video.objects.all(), categories)
+        self.assertEqual(set(filtered), expected)
+
+        filtered = self.category_filter.filter(SearchQuerySet(), categories)
+        self.assertEqual(set(r.object for r in filtered), expected)
+
+    def test_formfield(self):
+        """
+        The formfield for a model filter is a queryset of all instances, or all
+        instances associated with the current site, if relevant.
+
+        """
+        expected = set((self.user1, self.user2))
+        formfield = self.user_filter.formfield()
+        self.assertEqual(set(formfield.queryset), expected)
+
+        expected = set((self.category1, self.category2))
+        formfield = self.category_filter.formfield()
+        self.assertEqual(set(formfield.queryset), expected)
