@@ -41,7 +41,7 @@ import vidscraper
 from localtv import utils
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings, TierInfo
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 import localtv.tiers
 
 Profile = utils.get_profile_model()

@@ -20,7 +20,7 @@ from django.core.urlresolvers import reverse
 from django.core import mail
 from django.test.client import Client
 
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 from localtv.models import Video
 
 from localtv.playlists.models import Playlist, PlaylistItem

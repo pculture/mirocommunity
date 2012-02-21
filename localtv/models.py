@@ -1542,12 +1542,8 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.extra(
-            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
-WHERE localtv_video.id = localtv_watch.video_id AND
-localtv_watch.timestamp > %s"""},
-            select_params = (since,)
-        )
+        return self.filter(watch__timestamp__gt=since).annotate(
+                           watch_count=models.Count('watch'))
 
 
 class VideoManager(models.Manager):

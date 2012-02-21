@@ -198,7 +198,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                 # or block
                 clone = sqs._clone()
                 for or_token in token:
-                    sqs = sqs | _tokens_to_sqs([or_token], clone)
+                    sqs = sqs | clone._tokens_to_sqs([or_token], clone)
 
         return sqs
 

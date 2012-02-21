@@ -44,6 +44,7 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 import localtv.settings
@@ -178,14 +179,21 @@ class BaseTestCase(TestCase):
                           ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
+    def _clear_index(self):
+        """Clears the search index."""
+        backend = connections['default'].get_backend()
+        backend.clear()
 
-    def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import connections
+    def _update_index(self):
+        """Updates the search index."""
+        backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
-        index.reindex()
+        backend.update(index, index.index_queryset())
+        
+    def _rebuild_index(self):
+        """Clears and then updates the search index."""
+        self._clear_index()
+        self._update_index()
 
 
 # -----------------------------------------------------------------------------
@@ -2267,7 +2275,7 @@ class FeedViewTestCase(BaseTestCase):
     def test_category_feed_renders_at_all(self):
         fake_request = self.factory.get('?count=10')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
 
     def test_feed_views_respect_count_when_set_integration(self):
@@ -2284,7 +2292,7 @@ class FeedViewTestCase(BaseTestCase):
         # Do a GET for the first 2 in the feed
         fake_request = self.factory.get('?count=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_first_GET = parsed['items']
@@ -2293,7 +2301,7 @@ class FeedViewTestCase(BaseTestCase):
         # Do a GET for the next "2" (just 1 left)
         fake_request = self.factory.get('?count=2&start-index=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']

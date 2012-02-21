@@ -32,6 +32,7 @@ DISABLE_TIERS_ENFORCEMENT = getattr(settings,
 SHOW_ADMIN_DASHBOARD = getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 SHOW_ADMIN_ACCOUNT_LEVEL = getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL',
                                    True)
+USE_HAYSTACK = getattr(settings, 'LOCALTV_USE_HAYSTACK', True)
 
 
 def voting_enabled():
