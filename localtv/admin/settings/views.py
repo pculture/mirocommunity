@@ -19,7 +19,7 @@ from django.core.urlresolvers import reverse
 from django.views.generic import UpdateView
 
 from localtv.admin.settings.forms import SettingsForm
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 
 class SettingsUpdateView(UpdateView):
@@ -27,7 +27,7 @@ class SettingsUpdateView(UpdateView):
 	form_class = SettingsForm
 
 	def get_object(self):
-		return SiteLocation.objects.get_current()
+		return SiteSettings.objects.get_current()
 
 	def get_success_url(self):
 		return self.success_url or reverse('localtv_admin_settings')

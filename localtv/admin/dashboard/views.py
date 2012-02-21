@@ -22,7 +22,7 @@ from django.contrib import comments
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.tiers import current_videos_that_count_toward_limit
 
 
@@ -30,10 +30,10 @@ class DashboardView(TemplateView):
     template_name = 'localtv/admin/dashboard.html'
 
     def get_context_data(self):
-        sitelocation = SiteLocation.objects.get_current()
+        site_settings = SiteSettings.objects.get_current()
         total_count = current_videos_that_count_toward_limit().count()
         percent_videos_used = math.floor((100.0 * total_count) /
-                                        sitelocation.get_tier().videos_limit())
+                                        site_settings.get_tier().videos_limit())
         videos_this_week_count = Video.objects.filter(
                                     status=Video.ACTIVE,
                                     when_approved__gt=(
@@ -45,7 +45,7 @@ class DashboardView(TemplateView):
             'percent_videos_used': percent_videos_used,
             'unreviewed_count': Video.objects.filter(
                                     status=Video.UNAPPROVED,
-                                    site=sitelocation.site
+                                    site=site_settings.site
                                 ).count(),
             'videos_this_week_count': videos_this_week_count,
             'comment_count': comments.get_model().objects.filter(

@@ -32,7 +32,7 @@
 
 {% block content %}
   <figure>
-    <figcaption>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</figcaption>
+    <figcaption>You've used <strong>{{ total_count }}</strong> of your <strong>{{ site_settings.get_tier.videos_limit }}</strong> video limit.</figcaption>
     <div class="progress_bar">
       <div class="progress_bar-progress">
         <a href="{# {% url localtv_admin_tier %} #}">Upgrade</a>

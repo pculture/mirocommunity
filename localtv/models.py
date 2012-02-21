@@ -435,7 +435,7 @@ class SiteSettings(Thumbnailable):
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
     
-    # These fields track various aspects of the SiteLocation state, and are
+    # These fields track various aspects of the SiteSettings state, and are
     # generally managed automatically by the app.
     status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     tier_name = models.CharField(max_length=255, default='basic', blank=False, choices=localtv.tiers.CHOICES)

@@ -17,14 +17,14 @@
 
 from django import forms
 
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 
 class SettingsForm(forms.ModelForm):
     title = forms.CharField(label="Site Title", max_length=50)
 
     class Meta:
-        model = SiteLocation
+        model = SiteSettings
         exclude = ['site', 'status', 'admins', 'tier_name', 'hide_get_started']
 
 
@@ -32,7 +32,7 @@ class SettingsForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if (not SiteLocation.enforce_tiers()
+        if (not SiteSettings.enforce_tiers()
             or localtv.tiers.Tier.get().permit_custom_css()):
             pass # Sweet, CSS is permitted.
         else:
@@ -54,9 +54,9 @@ class SettingsForm(forms.ModelForm):
 
     def clean_css(self):
         css = self.cleaned_data.get('css')
-        # Does thes SiteLocation permit CSS modifications? If so,
+        # Does thes SiteSettings permit CSS modifications? If so,
         # return the data the user inputted.
-        if (not SiteLocation.enforce_tiers() or
+        if (not SiteSettings.enforce_tiers() or
             localtv.tiers.Tier.get().permit_custom_css()):
             return css # no questions asked
 
@@ -69,12 +69,12 @@ class SettingsForm(forms.ModelForm):
         raise ValidationError("To edit CSS for your site, you have to upgrade.")
 
     def save(self):
-        sitelocation = forms.ModelForm.save(self)
-        if sitelocation.logo:
-            sitelocation.logo.open()
-            cf = ContentFile(sitelocation.logo.read())
-            sitelocation.save_thumbnail_from_file(cf)
-        sitelocation.site.name = self.cleaned_data['title']
-        sitelocation.site.save()
-        SiteLocation.objects.clear_cache()
-        return sitelocation
+        site_settings = forms.ModelForm.save(self)
+        if site_settings.logo:
+            site_settings.logo.open()
+            cf = ContentFile(site_settings.logo.read())
+            site_settings.save_thumbnail_from_file(cf)
+        site_settings.site.name = self.cleaned_data['title']
+        site_settings.site.save()
+        SiteSettings.objects.clear_cache()
+        return site_settings

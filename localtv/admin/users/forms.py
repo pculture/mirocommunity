@@ -23,7 +23,7 @@ from django.utils.translation import ugettext_lazy as _
 from notification.models import (NoticeType, NoticeSetting, should_send,
                                  get_notification_setting)
 
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 from localtv.tiers import Tier, number_of_admins_including_superuser
 from localtv.utils import get_profile_model
 
@@ -135,8 +135,8 @@ class ProfileForm(BaseUserForm):
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 
-        sitelocation = SiteLocation.objects.get_current()
-        user_is_admin = sitelocation.user_is_admin(self.instance)
+        site_settings = SiteSettings.objects.get_current()
+        user_is_admin = site_settings.user_is_admin(self.instance)
 
         notification_field = self.fields['notifications']
         notice_types = NoticeType.objects.all()
@@ -197,12 +197,12 @@ class AdminUserForm(BaseUserForm):
 
     def __init__(self, *args, **kwargs):
         super(AdminUserForm, self).__init__(*args, **kwargs)
-        self.sitelocation = SiteLocation.objects.get_current()
+        self.site_settings = SiteSettings.objects.get_current()
         self.fields.keyOrder = ['first_name', 'last_name', 'username', 'email',
                                 'password1', 'password2', 'logo', 'description',
                                 'location', 'website', 'role']
         if self.profile.user_id:
-            if self.sitelocation.user_is_admin(self.profile.user):
+            if self.site_settings.user_is_admin(self.profile.user):
                 self.fields['role'].initial = 'admin'
         else:
             for field in ('first_name', 'last_name', 'logo', 'location',
@@ -216,14 +216,14 @@ class AdminUserForm(BaseUserForm):
         tier = Tier.get()
         if tier.admins_limit() is not None:
             message = 'With a %s, you may have %d administrator%s.' % (
-                self.sitelocation.get_tier_name_display(),
+                self.site_settings.get_tier_name_display(),
                 tier.admins_limit(),
                 pluralize(tier.admins_limit()))
             self.fields['role'].help_text = message
 
     def clean_role(self):
         role = self.cleaned_data['role']
-        if SiteLocation.enforce_tiers():
+        if SiteSettings.enforce_tiers():
             if not self._validate_role_with_tiers_enforcement(role):
                 permitted_admins = Tier.get().admins_limit()
                 raise ValidationError("You already have %d admin%s in your "
@@ -248,7 +248,7 @@ class AdminUserForm(BaseUserForm):
             return True
 
         # All role values are permitted if the user is already an admin
-        if self.instance and self.sitelocation.user_is_admin(self.instance):
+        if self.instance and self.site_settings.user_is_admin(self.instance):
             return True
 
         # Okay, so now we know we are trying to make someone an admin in a
@@ -275,9 +275,9 @@ class AdminUserForm(BaseUserForm):
 
             if self.cleaned_data['role'] == 'admin':
                 if not instance.is_superuser:
-                    self.sitelocation.admins.add(instance)
+                    self.site_settings.admins.add(instance)
             else:
-                self.sitelocation.admins.remove(instance)
+                self.site_settings.admins.remove(instance)
 
         if commit:
             instance.save()

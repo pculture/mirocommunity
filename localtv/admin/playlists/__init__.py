@@ -21,7 +21,7 @@ from localtv.admin.playlists.views import (PlaylistCreateView,
                                            PlaylistUpdateView,
                                            PlaylistDeleteView,
                                            PlaylistListView)
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 from localtv.playlists.models import Playlist
 
 
@@ -37,12 +37,12 @@ class PlaylistCRUDSection(CRUDSection):
     model = Playlist
 
     def is_available(self, request):
-        sitelocation = SiteLocation.objects.get_current()
+        site_settings = SiteSettings.objects.get_current()
 
-        if sitelocation.playlists_enabled == SiteLocation.PLAYLISTS_DISABLED:
+        if site_settings.playlists_enabled == SiteSettings.PLAYLISTS_DISABLED:
             return False
 
-        if (sitelocation.playlists_enabled == SiteLocation.PLAYLISTS_ADMIN_ONLY
+        if (site_settings.playlists_enabled == SiteSettings.PLAYLISTS_ADMIN_ONLY
             and not request.user_is_admin):
             return False
 

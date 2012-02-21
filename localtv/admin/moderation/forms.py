@@ -23,7 +23,7 @@ from django.contrib.comments.models import CommentFlag, Comment
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 
 
 class ModerationForm(forms.ModelForm):
@@ -148,11 +148,11 @@ class VideoLimitFormSet(ModerationFormSet):
     """
     def clean(self):
         super(VideoLimitFormSet, self).clean()
-        sitelocation = SiteLocation.objects.get_current()
-        remaining_videos = sitelocation.get_tier().remaining_videos()
+        site_settings = SiteSettings.objects.get_current()
+        remaining_videos = site_settings.get_tier().remaining_videos()
         approved_count = (self._action_counts[self.form.APPROVE] +
                           self._action_counts[self.form.FEATURE])
-        if (SiteLocation.enforce_tiers() and remaining_videos < approved_count):
+        if (SiteSettings.enforce_tiers() and remaining_videos < approved_count):
             raise ValidationError(_("You have selected %d videos, but may only "
                                     "approve %d more in your current tier. "
                                     "Please upgrade your account to increase "
