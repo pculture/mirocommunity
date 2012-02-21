@@ -29,7 +29,8 @@ from voting.models import Vote
 import localtv.settings
 from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterViewMixin, SearchQuerysetSliceHack
+from localtv.search.utils import (SortFilterViewMixin, NormalizedVideoList,
+                                  ApprovedSort)
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
@@ -44,12 +45,6 @@ class VideoSearchView(ListView, SortFilterViewMixin):
     paginate_by = VIDEOS_PER_PAGE
     form_class = VideoSearchForm
     context_object_name = 'video_list'
-
-    #: Default sort method to use. Should be one of the keys from ``sorts``.
-    default_sort = None
-
-    #: Default filter to use. Should be one of the keys from ``filters``.
-    default_filter = None
 
     #: Period of time within which the video was approved.
     approved_since = None
@@ -76,21 +71,26 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         Returns a list based on the results of a haystack search.
 
         """
-        sqs = self._query(self._get_query(self.request))
-        sqs = self._sort(sqs, self._get_sort(self.request))
-        filter_dict, self.filter_form = self._get_filter_info(self.request,
-                                                              self.kwargs)
-        sqs, self._filter_dict = self._filter(sqs, **filter_dict)
+        qs = self._search(self._get_query(self.request))
+        qs = self._sort(qs, self._get_sort(self.request))
+
+        self.filter_form = self._get_filter_form(self.request)
+        filters = self._get_filters(self.filter_form, **self.kwargs)
+        self._cleaned_filters = self._clean_filter_values(filters)
+        qs = self._filter(qs, self._cleaned_filters)
+
         if self.approved_since is not None:
-            sqs = sqs.exclude(
-                when_approved=self._empty_value['approved']
-            ).filter(when_approved__gt=(
-                            datetime.datetime.now() - self.approved_since))
+            if localtv.settings.USE_HAYSTACK:
+                qs = qs.exclude(when_approved=ApprovedSort().empty_value)
+            else:
+                qs = qs.exclude(when_approved__isnull=True)
+            qs = qs.filter(when_approved__gt=(
+                                datetime.datetime.now() - self.approved_since))
 
         # :meth:`SearchQuerySet.load_all` sets the queryset up to load all, but
         # doesn't actually perform any loading; this will only happen when the
         # cache is filled.
-        return SearchQuerysetSliceHack(sqs.load_all())
+        return NormalizedVideoList(qs)
 
     def get_context_data(self, **kwargs):
         """
@@ -125,14 +125,14 @@ class VideoSearchView(ListView, SortFilterViewMixin):
             sort_links[s] = ''.join(('?', querydict.urlencode()))
         context['sort_links'] = sort_links
 
-        context['filters'] = self._filter_dict
+        context['filters'] = self._cleaned_filters
         context['filter_form'] = self.filter_form
-        if self.default_filter in self._filter_dict:
+        if self.url_filter in self._cleaned_filters:
             try:
-                context[self.default_filter] = (
-                    self._filter_dict[self.default_filter][0])
+                context[self.url_filter] = (
+                    self._cleaned_filters[self.url_filter][0])
             except IndexError:
-                # Then there are no items matching the default_filter - so we're
+                # Then there are no items matching the url_filter - so we're
                 # on a page that shouldn't exist.
                 raise Http404
 

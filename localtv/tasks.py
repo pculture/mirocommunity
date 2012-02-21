@@ -45,6 +45,7 @@ except ImportError:
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
+from localtv.settings import USE_HAYSTACK
 from localtv.tiers import Tier
 
 
@@ -193,24 +194,32 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             raise MaxRetriesExceededError
         mark_import_complete.retry()
 
-    video_pks = list(source_import.get_videos(using).filter(
-                            status=Video.ACTIVE).values_list('pk', flat=True))
-    video_count = len(video_pks)
-    if not video_pks:
-        # Don't bother with the haystack query.
-        haystack_count = 0
+    if not USE_HAYSTACK:
+        # No need to do any comparisons - just mark it complete.
+        video_count = haystack_count = 0
+        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). Skipping '
+                       'check because haystack is disabled.'), import_app_label,
+                       import_model, import_pk, using)
     else:
-        if 'xapian' in connections[using].options['ENGINE']:
-            # The pk_hack field shadows the model's pk/django_id because
-            # xapian-haystack's django_id filtering is broken.
-            haystack_filter = {'pk_hack__in': video_pks}
+        video_pks = list(source_import.get_videos(using).filter(
+                                status=Video.ACTIVE).values_list('pk', flat=True))
+        video_count = len(video_pks)
+        if not video_pks:
+            # Don't bother with the haystack query.
+            haystack_count = 0
         else:
-            haystack_filter = {'django_id__in': video_pks}
-        haystack_count = SearchQuerySet().using(using).models(Video).filter(
-           **haystack_filter).count()
-    logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
-                   '%i, haystack_count: %i'), import_app_label, import_model,
-                   import_pk, using, video_count, haystack_count)
+            if 'xapian' in connections[using].options['ENGINE']:
+                # The pk_hack field shadows the model's pk/django_id because
+                # xapian-haystack's django_id filtering is broken.
+                haystack_filter = {'pk_hack__in': video_pks}
+            else:
+                haystack_filter = {'django_id__in': video_pks}
+            haystack_count = SearchQuerySet().using(using).models(Video).filter(
+               **haystack_filter).count()
+        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
+                       '%i, haystack_count: %i'), import_app_label, import_model,
+                       import_pk, using, video_count, haystack_count)
+
     if haystack_count >= video_count:
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
