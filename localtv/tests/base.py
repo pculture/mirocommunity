@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 from django.test import TestCase
 from haystack import connections
+from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category
 from localtv.tasks import haystack_update_index
@@ -45,7 +46,8 @@ class BaseTestCase(TestCase):
         self._update_index()
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
-                     watches=0, categories=None, authors=None, **kwargs):
+                     watches=0, categories=None, authors=None, tags=None,
+                     **kwargs):
         """
         Factory function for creating videos. Supplies the following defaults:
 
@@ -75,10 +77,14 @@ class BaseTestCase(TestCase):
         if authors is not None:
             video.authors.add(*authors)
 
+        if tags is not None:
+            video.tags = tags
+
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        index = connections['default'].get_unified_index().get_index(Video)
-        index._enqueue_update(video)
+        if status == Video.ACTIVE and site_id == 1:
+            index = connections['default'].get_unified_index().get_index(Video)
+            index._enqueue_update(video)
         return video
 
     def create_category(self, site_id=1, **kwargs):
@@ -104,3 +110,11 @@ class BaseTestCase(TestCase):
 
         """
         return User.objects.create(**kwargs)
+
+    def create_tag(self, **kwargs):
+        """
+        Factory function for creating tags. All arguments are passed directly
+        to :meth:`Tag.objects.create`.
+
+        """
+        return Tag.objects.create(**kwargs)

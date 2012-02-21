@@ -354,7 +354,7 @@ class ModelFilterUnitTestCase(BaseTestCase):
         filtered = self.user_filter.filter(SearchQuerySet(), users)
         self.assertEqual(set(r.object for r in filtered), expected)
 
-        # filtered on multiple categories
+        # filtered on one category
         categories = [self.category1]
         expected = set((self.video1, self.video3, self.video5))
         filtered = self.category_filter.filter(Video.objects.all(), categories)
@@ -375,4 +375,86 @@ class ModelFilterUnitTestCase(BaseTestCase):
 
         expected = set((self.category1, self.category2))
         formfield = self.category_filter.formfield()
+        self.assertEqual(set(formfield.queryset), expected)
+
+
+class TagFilterUnitTestCase(BaseTestCase):
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self._clear_index()
+        self.filter = utils.TagFilter(('tags',))
+        self.site2 = Site.objects.create(name='example.com', domain='example.com')
+        self.tag1 = self.create_tag(name='tag1')
+        self.tag2 = self.create_tag(name='tag2')
+        self.tag3 = self.create_tag(name='tag3')
+        self.tag4 = self.create_tag(name='tag4')
+        self.tag5 = self.create_tag(name='tag5')
+        self.video1 = self.create_video(name='tags1-2', tags='tag1 tag2')
+        self.video2 = self.create_video(name='tags1-3', tags='tag1 tag3')
+        self.video3 = self.create_video(name='tags1-2-3', tags='tag1 tag2 tag3')
+        self.video4 = self.create_video(name='tag3', tags='tag3')
+        self.video5 = self.create_video(name='tag4', tags='tag4',
+                                        status=Video.UNAPPROVED)
+        self.video6 = self.create_video(name='tag4_2', tags='tag4', site_id=2)
+
+    def test_clean_filter_values(self):
+        """
+        Cleaned values should be a list, queryset, or tuple of Tag instances.
+        Valid inputs are:
+
+        * single Tag instance.
+        * list or tuple of tag instances.
+        * list or tuple of tag names.
+        * list or tuple of tag primary keys.
+        * string representing tags.
+
+        This is because we are using django-tagging's get_tag_list utility to
+        do the cleaning.
+
+        """
+        expected = set((self.tag1, self.tag2))
+        results = set(self.filter.clean_filter_values('tag1 tag2'))
+        self.assertEqual(results, expected)
+
+        results = set(self.filter.clean_filter_values([self.tag1, self.tag2]))
+        self.assertEqual(results, expected)
+
+        results = set(self.filter.clean_filter_values([self.tag1.name,
+                                                       self.tag2.name]))
+        self.assertEqual(results, expected)
+
+        results = set(self.filter.clean_filter_values([self.tag1.pk,
+                                                       self.tag2.pk]))
+        self.assertEqual(results, expected)
+
+        expected = set((self.tag3,))
+        results = set(self.filter.clean_filter_values('tag3'))
+        self.assertEqual(results, expected)
+
+        results = set(self.filter.clean_filter_values(self.tag3))
+        self.assertEqual(results, expected)
+
+    def test_filter(self):
+        """
+        Given a queryset and an iterable of Tag instances, returns a queryset
+        of videos which have any of those tags.
+
+        """
+        expected = set((self.video1, self.video2, self.video3))
+
+        tags = [self.tag1, self.tag2]
+        results = self.filter.filter(Video.objects.all(), tags)
+        self.assertEqual(set(results), expected)
+
+        results = self.filter.filter(SearchQuerySet(), tags)
+        self.assertEqual(set(r.object for r in results), expected)
+
+    def test_formfield(self):
+        """
+        The formfield for a TagFilter should hold a queryset of all tags which
+        are used on active videos for the current site.
+
+        """
+        expected = set((self.tag1, self.tag2, self.tag3))
+        formfield = self.filter.formfield()
         self.assertEqual(set(formfield.queryset), expected)

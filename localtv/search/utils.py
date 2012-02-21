@@ -270,7 +270,7 @@ class ModelFilter(Filter):
 class TagFilter(Filter):
     def filter(self, queryset, values):
         if not isinstance(queryset, SearchQuerySet):
-            return TaggedItem.objects.with_any(values)
+            return TaggedItem.objects.get_union_by_model(queryset, values)
         pks = [instance.pk for instance in values]
         return super(TagFilter, self).filter(queryset, pks)
 
