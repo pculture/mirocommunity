@@ -285,7 +285,7 @@ class TierInfo(models.Model):
     fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
     should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
     waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
-    site_settings = models.OneToOneField('SiteSettings')
+    site_settings = models.OneToOneField('SiteSettings', db_column='sitelocation_id')
     objects = SingletonManager()
 
     def get_payment_secret(self):
