@@ -34,6 +34,7 @@ class PlaylistBaseTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self.user = User.objects.get(username='user')
         self.list = Playlist.objects.create(
+            site=self.site_settings.site,
             user=self.user,
             name='Test List',
             slug='test-list',
