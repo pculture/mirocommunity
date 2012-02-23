@@ -27,6 +27,7 @@ class Playlist(models.Model):
     WAITING_FOR_MODERATION = 1
     PUBLIC = 2
     status = models.IntegerField(default=PRIVATE)
+    site = models.ForeignKey('sites.Site')
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
