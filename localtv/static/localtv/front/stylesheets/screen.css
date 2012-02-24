@@ -556,7 +556,7 @@ ol > li {
 
 /* line 13, ../sass/partials/modules/_video_summary.scss */
 .thumb {
-  width: 142px;
+  width: 140px;
   margin-left: -162px;
   float: left;
   position: relative;
@@ -566,11 +566,10 @@ ol > li {
   border: 0;
   display: block;
   position: relative;
-  border: 1px solid #000;
-  -moz-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  -webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  -o-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  -webkit-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  -o-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
   -o-border-radius: 3px;
@@ -583,7 +582,7 @@ ol > li {
   -o-transition: all 0.25s linear;
   transition: all 0.25s linear;
 }
-/* line 28, ../sass/partials/modules/_video_summary.scss */
+/* line 27, ../sass/partials/modules/_video_summary.scss */
 .thumb > a:hover {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 8px 0 #344f6d;
@@ -591,7 +590,7 @@ ol > li {
   -o-box-shadow: 0 0 8px 0 #344f6d;
   box-shadow: 0 0 8px 0 #344f6d;
 }
-/* line 32, ../sass/partials/modules/_video_summary.scss */
+/* line 31, ../sass/partials/modules/_video_summary.scss */
 .thumb > a > img {
   display: block;
   -moz-border-radius: 3px;
@@ -601,7 +600,7 @@ ol > li {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 37, ../sass/partials/modules/_video_summary.scss */
+/* line 36, ../sass/partials/modules/_video_summary.scss */
 .thumb > a::after {
   content: " ";
   display: block;
@@ -610,32 +609,33 @@ ol > li {
   left: 0;
   right: 0;
   bottom: 0;
-  background: -webkit-gradient(linear, -45deg, -45deg, color-stop(0%, rgba(255, 255, 255, 0.15)), color-stop(50%, rgba(255, 255, 255, 0.15)), color-stop(50%, rgba(255, 255, 255, 0)), color-stop(100%, rgba(255, 255, 255, 0)));
-  background: -webkit-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
-  background: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
-  background: -o-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
-  background: -ms-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
-  background: linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
+  background: -webkit-gradient(linear, 0% 0%, 100% 100%, color-stop(0%, rgba(255, 255, 255, 0.35)), color-stop(100%, rgba(255, 255, 255, 0)));
+  background: -webkit-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  background: -moz-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  background: -o-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  background: -ms-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  background: linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
   -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
   -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
   -o-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -o-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+  border: 1px solid #000;
 }
 
-/* line 51, ../sass/partials/modules/_video_summary.scss */
+/* line 52, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 56, ../sass/partials/modules/_video_summary.scss */
+/* line 57, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
