@@ -33,6 +33,7 @@ class Playlist(models.Model):
         (PUBLIC, "Public")
     )
     status = models.IntegerField(choices=STATUS_CHOICES, default=PRIVATE)
+    site = models.ForeignKey('sites.Site')
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(

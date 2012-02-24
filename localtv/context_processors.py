@@ -53,6 +53,8 @@ def localtv(request):
     return  {
         'mc_version': '1.2',
         'site_settings': site_settings,
+        # Backwards-compatible for custom themes.
+        'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
         'categories':  Category.objects.filter(site=site_settings.site,
                                                       parent=None),

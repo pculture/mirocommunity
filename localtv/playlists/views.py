@@ -131,6 +131,7 @@ def index(request):
                 request.POST = POST
             form = forms.PlaylistForm(request.POST,
                                       instance=Playlist(
+                    site=SiteSettings.objects.get_current().site,
                     user=request.user))
             if form.is_valid():
                 playlist = form.save()
