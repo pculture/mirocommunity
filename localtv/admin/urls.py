@@ -53,7 +53,9 @@ urlpatterns = patterns('',
         name='localtv_admin_unfeature_video'),
     url(r'^$', ViewNameRedirectView.as_view(url_name=ADMIN_ROOT_VIEW),
         name='localtv_admin_feature_video'),
+    url(r'^(.+)$', ViewNameRedirectView.as_view(url_name=ADMIN_ROOT_VIEW),
+        name='localtv_playlist_add_video'),
     url(r'^playlists/$',
         ViewNameRedirectView.as_view(url_name='localtv_admin_playlist_list'),
-        name='localtv_playlist_add_video'),
+        name='localtv_playlist_index')
 )
