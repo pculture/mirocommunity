@@ -92,6 +92,16 @@ form{
 	}
 }
 
+.btn-right-controls > input, .btn-left{
+	@include border-radius(3px 0 0 3px);
+	border-right:0;
+	float:left;
+}
+.btn-right, .btn-left-controls > input{
+	@include border-radius(0 3px 3px 0);
+	float:left;
+}
+
 /* specific fields */
 
 .control-group-honeypot{

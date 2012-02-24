@@ -409,8 +409,31 @@ form {
   line-height: 36px;
 }
 
+/* line 95, ../sass/partials/modules/_forms.scss */
+.btn-right-controls > input, .btn-left {
+  -moz-border-radius: 3px 0 0 3px;
+  -webkit-border-radius: 3px 0 0 3px;
+  -o-border-radius: 3px 0 0 3px;
+  -ms-border-radius: 3px 0 0 3px;
+  -khtml-border-radius: 3px 0 0 3px;
+  border-radius: 3px 0 0 3px;
+  border-right: 0;
+  float: left;
+}
+
+/* line 100, ../sass/partials/modules/_forms.scss */
+.btn-right, .btn-left-controls > input {
+  -moz-border-radius: 0 3px 3px 0;
+  -webkit-border-radius: 0 3px 3px 0;
+  -o-border-radius: 0 3px 3px 0;
+  -ms-border-radius: 0 3px 3px 0;
+  -khtml-border-radius: 0 3px 3px 0;
+  border-radius: 0 3px 3px 0;
+  float: left;
+}
+
 /* specific fields */
-/* line 97, ../sass/partials/modules/_forms.scss */
+/* line 107, ../sass/partials/modules/_forms.scss */
 .control-group-honeypot {
   height: 0;
   overflow: hidden;
@@ -918,6 +941,11 @@ ol > li {
 	@extend .pod-content;
 }
 */
+/* line 15, ../sass/partials/modules/_page_header.scss */
+#search {
+  width: 300px;
+}
+
 /* line 1, ../sass/partials/modules/_pod.scss */
 .pod-header, .page-header {
   position: relative;

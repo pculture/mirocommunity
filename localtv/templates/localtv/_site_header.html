@@ -14,6 +14,8 @@
 </h2>
 
 <form id="search" action="{% url 'localtv_search' %}" method="get">
-	<input name="q" type="text" id="search_field" value="{{ query }}"/>
-	<button>{% trans 'Search' %}</button>
+	<div class="btn-right-controls">
+		<input name="q" type="text" id="search_field" value="{{ query }}"/>
+		<button class="btn-right">{% trans 'Search' %}</button>
+	</div>
 </form>
