@@ -18,7 +18,6 @@
 import urllib
 import logging
 
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
@@ -26,8 +25,8 @@ from django.db import models
 from django.db.models import signals
 from django.template import Context, loader
 from django.utils.safestring import mark_safe
-
 from socialauth.models import TwitterUserProfile, FacebookUserProfile
+
 
 class Profile(models.Model):
     """
@@ -47,8 +46,6 @@ class Profile(models.Model):
     def __unicode__(self):
         return unicode(self.user)
 
-
-admin.site.register(Profile)
 
 def twitteruserprofile_created(sender, instance=None, raw=None, created=False,
                                **kwargs):
@@ -81,10 +78,12 @@ def facebookuserprofile_created(sender, instance=None, raw=None, created=False,
         description=instance.about_me or '',
         website=instance.url or '')
 
+
 signals.post_save.connect(twitteruserprofile_created,
                           sender=TwitterUserProfile)
 signals.post_save.connect(facebookuserprofile_created,
                           sender=FacebookUserProfile)
+
 
 ### On creating a new user, if the user has an email address
 ### XXX If you make changes to the way users are auto-created on video import,
@@ -121,6 +120,7 @@ def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=
     from django.conf import settings
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  [instance.email]).send(fail_silently=True)
+
 
 signals.post_save.connect(on_user_create_send_welcomed_email,
                           sender=User)
