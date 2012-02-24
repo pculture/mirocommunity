@@ -27,8 +27,10 @@ from django.template import Context, loader
 from django.utils.safestring import mark_safe
 from socialauth.models import TwitterUserProfile, FacebookUserProfile
 
+from localtv.utils import get_profile_model
 
-class Profile(models.Model):
+
+class BaseProfile(models.Model):
     """
     Some extra data that we store about users.  Gets linked to a User object
     through the Django authentication system.
@@ -41,18 +43,23 @@ class Profile(models.Model):
     website = models.URLField(blank=True, default='')
 
     class Meta:
-        db_table = 'localtv_profile'
+        abstract = True
 
     def __unicode__(self):
-        return unicode(self.user)
+        return u"%s for %s" % (self.__class__.__name__, unicode(self.user))
+
+
+class Profile(BaseProfile):
+    class Meta:
+        db_table = 'localtv_profile'
 
 
 def twitteruserprofile_created(sender, instance=None, raw=None, created=False,
                                **kwargs):
     if not created:
         return # we don't care about updates
-    profile = Profile.objects.create(
-        user=instance.user,
+    profile = get_profile_model().objects.create(
+        user_id=instance.user_id,
         location=instance.location or '',
         description=instance.description or '',
         website=instance.url or '')
@@ -72,8 +79,8 @@ def facebookuserprofile_created(sender, instance=None, raw=None, created=False,
                                 **kwargs):
     if not created:
         return # we don't care about updates
-    Profile.objects.create(
-        user=instance.user,
+    get_profile_model().objects.create(
+        user_id=instance.user_id,
         location=instance.location or '',
         description=instance.about_me or '',
         website=instance.url or '')
