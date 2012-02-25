@@ -11,7 +11,7 @@ input, textarea{
 	border:1px solid #CCC;
 	background:#FFF;
 	@include border-radius(3px);
-	@include box-shadow(1px 1px 3px 0 rgba(0,0,0,.15) inset);
+	@include box-shadow(1px 1px 3px 0 rgba(0,0,0,.15) inset, 0 1px 0 0 #FFF);
 	padding:0;
 	margin:0;
 	@include transition(box-shadow .15s linear);
@@ -94,12 +94,18 @@ form{
 
 .btn-right-controls > input, .btn-left{
 	@include border-radius(3px 0 0 3px);
-	border-right:0;
 	float:left;
 }
 .btn-right, .btn-left-controls > input{
 	@include border-radius(0 3px 3px 0);
 	float:left;
+}
+
+.btn-right{
+	border-left:0;
+}
+.btn-left{
+	border-right:0;
 }
 
 /* specific fields */

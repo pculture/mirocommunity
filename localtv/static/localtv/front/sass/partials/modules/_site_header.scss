@@ -38,8 +38,26 @@ $logo-width: 130px;
 	position:absolute;
 	top:0;
 	right:0;
+	width:300px;
 }
 
 .logo-link:hover{
 	border:0;
+}
+
+@media screen and (max-width: 740px){
+	#header > .container{
+		position:static;
+	}
+	#search{
+		top:0;
+		right:0;
+		left:0;
+		background:#EEE;
+		width:auto;
+		border-bottom:1px solid #CCC;
+	}
+	#SiteTitle, #SiteLogo{
+		margin-top:2*$base-line-height;
+	}
 }

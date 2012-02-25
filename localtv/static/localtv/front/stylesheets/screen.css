@@ -299,10 +299,10 @@ input, textarea {
   -ms-border-radius: 3px;
   -khtml-border-radius: 3px;
   border-radius: 3px;
-  -moz-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
-  -webkit-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
-  -o-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
-  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
+  -moz-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 white;
+  -webkit-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 white;
+  -o-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 white;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 white;
   padding: 0;
   margin: 0;
   -moz-transition: box-shadow 0.15s linear;
@@ -417,11 +417,10 @@ form {
   -ms-border-radius: 3px 0 0 3px;
   -khtml-border-radius: 3px 0 0 3px;
   border-radius: 3px 0 0 3px;
-  border-right: 0;
   float: left;
 }
 
-/* line 100, ../sass/partials/modules/_forms.scss */
+/* line 99, ../sass/partials/modules/_forms.scss */
 .btn-right, .btn-left-controls > input {
   -moz-border-radius: 0 3px 3px 0;
   -webkit-border-radius: 0 3px 3px 0;
@@ -432,8 +431,18 @@ form {
   float: left;
 }
 
-/* specific fields */
+/* line 104, ../sass/partials/modules/_forms.scss */
+.btn-right {
+  border-left: 0;
+}
+
 /* line 107, ../sass/partials/modules/_forms.scss */
+.btn-left {
+  border-right: 0;
+}
+
+/* specific fields */
+/* line 113, ../sass/partials/modules/_forms.scss */
 .control-group-honeypot {
   height: 0;
   overflow: hidden;
@@ -716,13 +725,35 @@ ol > li {
   position: absolute;
   top: 0;
   right: 0;
+  width: 300px;
 }
 
-/* line 43, ../sass/partials/modules/_site_header.scss */
+/* line 44, ../sass/partials/modules/_site_header.scss */
 .logo-link:hover {
   border: 0;
 }
 
+@media screen and (max-width: 740px) {
+  /* line 49, ../sass/partials/modules/_site_header.scss */
+  #header > .container {
+    position: static;
+  }
+
+  /* line 52, ../sass/partials/modules/_site_header.scss */
+  #search {
+    top: 0;
+    right: 0;
+    left: 0;
+    background: #EEE;
+    width: auto;
+    border-bottom: 1px solid #CCC;
+  }
+
+  /* line 60, ../sass/partials/modules/_site_header.scss */
+  #SiteTitle, #SiteLogo {
+    margin-top: 36px;
+  }
+}
 /* line 1, ../sass/partials/modules/_site_footer.scss */
 #footer {
   background: #222;
@@ -941,11 +972,6 @@ ol > li {
 	@extend .pod-content;
 }
 */
-/* line 15, ../sass/partials/modules/_page_header.scss */
-#search {
-  width: 300px;
-}
-
 /* line 1, ../sass/partials/modules/_pod.scss */
 .pod-header, .page-header {
   position: relative;
