@@ -19,6 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load i18n %}
+{% load url from future %}
 
 {% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
 
@@ -29,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<h1 class="page-title">{{ category.name }}</h1>
 		<div class="page-actions">
 			<ul class="action-list">
-				<li><a class="rss" href="{% url localtv_feeds_category category.slug %}">RSS</a></li>
+				<li><a class="rss" href="{% url 'localtv_feeds_category' category.slug %}">RSS</a></li>
 			</ul>
 		</div>
 	</header>

@@ -18,6 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load cache i18n %}
+{% load url from future %}
 
 {% block title %}{{ block.super }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock %}
 
@@ -38,8 +39,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	
 	<div class="pod col-two-thirds featured">
 		<header class="pod-header">
-			{% url localtv_feeds_featured as featured_rss %}
-			<h1><a href="{% url localtv_list_featured %}">{% trans "Featured" %}</a></h1>
+			{% url 'localtv_feeds_featured' as featured_rss %}
+			<h1><a href="{% url 'localtv_list_featured' %}">{% trans "Featured" %}</a></h1>
 			<ul class="pod-actions">
 				<li><a href="{{ featured_rss }}" class="rss">{% trans "RSS" %}</a></li>
 				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
@@ -52,16 +53,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>{# /.pod-content #}
 		<div class="pod-footer">
 			<ul class="pod-footer-actions">
-				<li><a class="button-wide continue" href="{% url localtv_list_featured %}">{% trans "All Featured Videos" %}</a></li>
+				<li><a class="button-wide continue" href="{% url 'localtv_list_featured' %}">{% trans "All Featured Videos" %}</a></li>
 			</ul>
 		</div>
 	</div>{# /.pod #}
 	
 	<div class="col-one-third right">
 		<div class="pod popular">
-			{% url localtv_feeds_popular as popular_rss %}
+			{% url 'localtv_feeds_popular' as popular_rss %}
 			<header class="pod-header">
-				<h1><a href="{% url localtv_list_popular %}">{% trans "Popular" %}</a></h1>
+				<h1><a href="{% url 'localtv_list_popular' %}">{% trans "Popular" %}</a></h1>
 				<ul class="pod-actions">
 					<li><a href="{{ popular_rss }}" class="rss">{% trans "RSS" %}</a></li>
 					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
@@ -76,7 +77,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			{% endcache %}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
-					<li><a class="button-wide continue" href="{% url localtv_list_popular %}">{% trans "All Popular Videos" %}</a></li>
+					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
 				</ul>
 			</div>
 		</div>{# /.pod #}
@@ -84,11 +85,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	
 	<div class="col-one-third right">
 		<div class="pod new">
-	        {% url localtv_feeds_new as new_rss%}
+	        {% url 'localtv_feeds_new' as new_rss%}
 			<header class="pod-header">
 				<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
 				<ul class="pod-actions">
-					<li><a href="{% url localtv_feeds_popular %}" class="rss">{% trans "RSS" %}</a></li>
+					<li><a href="{% url 'localtv_feeds_popular' %}" class="rss">{% trans "RSS" %}</a></li>
 					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ sitelocation.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
 				</ul>
 			</header>{# /.pod-header #}
@@ -99,7 +100,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
-					<li><a class="button-wide continue" href="{% url localtv_list_popular %}">{% trans "All New Videos" %}</a></li>
+					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All New Videos" %}</a></li>
 				</ul>
 			</div>
 		</div>{# /.pod #}
