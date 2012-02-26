@@ -32,11 +32,15 @@ class VideoForm(forms.ModelForm):
     authors = Video._meta.get_field('authors').formfield(help_text=None,
                                             widget=forms.CheckboxSelectMultiple)
     video_url = forms.URLField(verify_exists=False)
+    status = Video._meta.get_field('status').formfield(
+                        choices=Video.STATUS_CHOICES[:3],
+                        widget=forms.RadioSelect)
 
     class Meta:
         model = Video
         fields = ('name', 'description', 'thumbnail_url', 'categories',
-                  'authors', 'when_published', 'file_url', 'embed_code',)
+                  'authors', 'when_published', 'file_url', 'embed_code',
+                  'status',)
 
     def save(self, *args, **kwargs):
         thumbnail = self.cleaned_data.pop('thumbnail', None)
