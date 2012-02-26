@@ -21,6 +21,7 @@ from django.core.exceptions import ValidationError
 from tagging.forms import TagField
 
 from localtv.models import Video, Category
+from localtv.submit_video.forms import SubmitURLForm
 
 
 class VideoForm(forms.ModelForm):
@@ -52,6 +53,16 @@ class VideoForm(forms.ModelForm):
             except models.CannotOpenImageUrl:
                 pass # we'll get it in a later update
         return forms.ModelForm.save(self, *args, **kwargs)
+
+
+class CreateVideoForm(SubmitURLForm):
+    status = forms.ChoiceField(choices=Video.STATUS_CHOICES[:2],
+                               initial=Video.UNAPPROVED,
+                               widget=forms.RadioSelect)
+
+    def save(self):
+        return Video.from_vidscraper_video(self.video_cache,
+                                           status=self.cleaned_data['status'])
 
 
 class CategoryForm(forms.ModelForm):

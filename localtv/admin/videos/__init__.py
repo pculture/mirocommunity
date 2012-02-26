@@ -19,12 +19,16 @@ from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
 from localtv.admin.base import MiroCommunityAdminSection, CRUDSection, registry
-from localtv.admin.videos.forms import VideoForm, CategoryForm
+from localtv.admin.videos.forms import (VideoForm, CreateVideoForm,
+                                        CategoryForm)
+from localtv.admin.videos.views import VideoCreateView
 from localtv.models import Video, Category
 
 
 class VideoCRUDSection(CRUDSection):
+    create_form_class = CreateVideoForm
     update_form_class = VideoForm
+    create_view_class = VideoCreateView
     site_admin_required = False
 
     def get_queryset(self):
