@@ -68,7 +68,9 @@ def update_sources(using='default'):
 @task(ignore_result=True)
 def feed_update(feed_id, using='default'):
     try:
-        feed = Feed.objects.using(using).get(pk=feed_id)
+        feed = Feed.objects.using(using).filter(status=Feed.ACTIVE,
+                                                auto_update=True
+                                       ).get(pk=feed_id)
     except Feed.DoesNotExist:
         logging.warn('feed_update(%s, using=%r) could not find feed',
                      feed_id, using)
@@ -80,7 +82,8 @@ def feed_update(feed_id, using='default'):
 @task(ignore_result=True)
 def search_update(search_id, using='default'):
     try:
-        search = SavedSearch.objects.using(using).get(pk=search_id)
+        search = SavedSearch.objects.using(using).filter(auto_update=True
+                                                   ).get(pk=search_id)
     except SavedSearch.DoesNotExist:
         logging.warn('search_update(%s, using=%r) could not find search',
                      search_id, using)
