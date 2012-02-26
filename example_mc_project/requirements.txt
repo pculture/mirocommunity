@@ -9,6 +9,7 @@ git+git://github.com/paulswartz/Django-Socialauth.git@06d15f990f1663bf7bf509ff89
 git+git://github.com/facebook/python-sdk.git@cb8dbd3fca034aceaea35983037b4a166360c460#egg=facebook_python_sdk
 git+git://github.com/dcramer/django-paypal.git@626254f81034bee8d21319667854cf0c12b55aaf#egg=django-paypal
 git+git://github.com/toastdriven/django-haystack.git@4fb267623b58c5581be96a9a9504ca10a72eb0d8#egg=django-haystack
+git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 hg+http://bitbucket.org/ubernostrum/django-registration/@fad7080fe769#egg=django-registration
 BeautifulSoup==3.2.0
 Django==1.3.1

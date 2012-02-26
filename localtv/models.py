@@ -184,6 +184,11 @@ class Thumbnailable(models.Model):
                 self.get_resized_thumb_storage_path(width, height),
                 cf_image)
 
+    @property
+    def thumbnail(self):
+        filepath = os.path.join(settings.MEDIA_ROOT, self.get_original_thumb_storage_path())
+        return file(filepath)
+
     def get_original_thumb_storage_path(self):
         """
         Return the path for the original thumbnail, relative to the default

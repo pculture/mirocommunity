@@ -166,7 +166,8 @@ INSTALLED_APPS = (
     'socialauth',
     'openid_consumer',
     'paypal.standard.ipn',
-    'voting'
+    'voting',
+    'daguerre'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
