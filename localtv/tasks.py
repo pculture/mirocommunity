@@ -22,6 +22,7 @@ import random
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from haystack import connections
@@ -264,80 +265,39 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                 with_exception=True)
             return
 
-        if not vidscraper_video.title:
-            source_import.handle_error(
-                ('Skipped %r: Failed to scrape basic data.'
-                 % vidscraper_video.url),
-                is_skip=True, using=using)
-            return
-
-        if ((vidscraper_video.file_url_expires or
-             not vidscraper_video.file_url)
-            and not vidscraper_video.embed_code):
-            source_import.handle_error(('Skipping %r: no file or embed code.'
-                                        % vidscraper_video.url),
-                                       is_skip=True, using=using)
-            return
-
-        site_videos = Video.objects.using(using).filter(site=site_pk)
-
-        if vidscraper_video.guid:
-            guid_videos = site_videos.filter(guid=vidscraper_video.guid)
-            if clear_rejected:
-                guid_videos.filter(status=Video.REJECTED).delete()
-            if guid_videos.exists():
-                source_import.handle_error(('Skipping %r: duplicate guid.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
-        if vidscraper_video.link:
-            videos_with_link = site_videos.filter(
-                website_url=vidscraper_video.link)
-            if clear_rejected:
-                videos_with_link.filter(status=Video.REJECTED).delete()
-            if videos_with_link.exists():
-                source_import.handle_error(('Skipping %r: duplicate link.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
-        categories = Category.objects.using(using).filter(pk__in=category_pks)
+        if category_pks:
+            categories = Category.objects.using(using).filter(pk__in=category_pks)
+        else:
+            categories = None
 
         if author_pks:
             authors = User.objects.using(using).filter(pk__in=author_pks)
         else:
-            if vidscraper_video.user:
-                name = vidscraper_video.user
-                if ' ' in name:
-                    first, last = name.split(' ', 1)
-                else:
-                    first, last = name, ''
-                author, created = User.objects.db_manager(using).get_or_create(
-                    username=name[:30],
-                    defaults={'first_name': first[:30],
-                              'last_name': last[:30]})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    utils.get_profile_model().objects.db_manager(using).create(
-                       user=author,
-                       website=vidscraper_video.user_url or '')
-                authors = [author]
-            else:
-                authors = []
+            authors = None
 
-        # Since we check above whether the vidscraper_video is valid, we don't
-        # catch InvalidVideo here, since it would be unexpected.
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                             using=using,
                                             source_import=source_import,
                                             authors=authors,
                                             categories=categories,
-                                            site_pk=site_pk)
-        logging.debug('Made video %i: %r', video.pk, video.name)
-        if video.thumbnail_url:
-            video_save_thumbnail.delay(video.pk, using=using)
+                                            site_pk=site_pk,
+                                            commit=False)
+        try:
+            video.full_clean()
+        except ValidationError, e:
+            source_import.handle_error(("Skipping %r: %r" % (
+                                        vidscraper_video.url, e.message_dict)),
+                                        is_skip=True, using=using)
+            return
+        else:
+            video.save()
+            video.save_m2m()
+            if clear_rejected:
+                video.clear_rejected_duplicates()
+
+            logging.debug('Made video %i: %r', video.pk, video.name)
+            if video.thumbnail_url:
+                video_save_thumbnail.delay(video.pk, using=using)
     except Exception:
         source_import.handle_error(('Unknown error during import of %r'
                                     % vidscraper_video.url),

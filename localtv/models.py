@@ -43,6 +43,7 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
@@ -61,7 +62,7 @@ import vidscraper
 from notification import models as notification
 import tagging
 
-from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
+from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
@@ -1767,6 +1768,49 @@ class Video(Thumbnailable, VideoBase):
     def __unicode__(self):
         return self.name
 
+    def clean(self):
+        if not self.embed_code and not self.file_url:
+            raise ValidationError("Video has no embed code or file url.")
+
+        qs = Video.objects.using(self._state.db).filter(site=self.site_id
+                                              ).exclude(status=Video.REJECTED)
+
+        if self.pk is not None:
+            qs = qs.exclude(pk=self.pk)
+
+        if self.guid and qs.filter(guid=self.guid).exists():
+            raise ValidationError("Another video with the same guid "
+                                  "already exists.")
+
+        if (self.website_url and
+            qs.filter(website_url=self.website_url).exists()):
+            raise ValidationError("Another video with the same website url "
+                                  "already exists.")
+
+        if self.file_url and qs.filter(file_url=self.file_url).exists():
+            raise ValidationError("Another video with the same file url "
+                                  "already exists.")
+
+    def clear_rejected_duplicates(self):
+        """
+        Deletes rejected copies of this video based on the file_url,
+        website_url, and guid fields.
+
+        """
+        if not any((self.website_url, self.file_url, self.guid)):
+            return
+
+        q_filter = models.Q()
+        if self.website_url:
+            q_filter |= models.Q(website_url=self.website_url)
+        if self.file_url:
+            q_filter |= models.Q(file_url=self.file_url)
+        if self.guid:
+            q_filter |= models.Q(guid=self.guid)
+        qs = Video.objects.using(self._state.db).filter(site_id=self.site_id
+                       ).exclude(status=Video.REJECTED).filter(q_filter)
+        qs.delete()
+
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
@@ -1782,10 +1826,6 @@ class Video(Thumbnailable, VideoBase):
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
         the :class:`Video` will not be saved, and the created instance will have
         a `save_m2m()` method that must be called after you call `save()`.
-
-        :raises: :class:`localtv.exceptions.InvalidVideo` if `commit` is
-                 ``True`` and the created :class:`Video` does not have a valid
-                 ``file_url`` or ``embed_code``.
 
         """
         if video.file_url_expires is None:
@@ -1837,6 +1877,22 @@ class Video(Thumbnailable, VideoBase):
         def save_m2m():
             if authors:
                 instance.authors = authors
+            elif video.user:
+                name = video.user
+                if ' ' in name:
+                    first, last = name.split(' ', 1)
+                else:
+                    first, last = name, ''
+                author, created = User.objects.db_manager(using).get_or_create(
+                    username=name[:30],
+                    defaults={'first_name': first[:30],
+                              'last_name': last[:30]})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    utils.get_profile_model()._default_manager.db_manager(using
+                        ).create(user=author, website=video.user_url or '')
+                instance.authors = [author]
             if categories:
                 instance.categories = categories
             if video.tags:
@@ -1858,11 +1914,6 @@ class Video(Thumbnailable, VideoBase):
                                             vidscraper_video=video, using=using)
 
         if commit:
-            # Only run this check if they want to immediately commit the
-            # instance; otherwise, the calling code is responsible for ensuring
-            # that the instance makes sense before being saved.
-            if not (instance.embed_code or instance.file_url):
-                raise InvalidVideo
             instance.save(using=using)
             save_m2m()
         else:
