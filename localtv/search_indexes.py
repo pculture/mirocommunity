@@ -131,12 +131,12 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
     def read_queryset(self):
         """
-        Adds a select_related call to the normal :meth:`.index_queryset`; the
-        related items only need to be in the index by id, but on read we will
-        probably need more.
+        Returns active videos and selects related feeds, users, and searches.
 
         """
-        return self.index_queryset().select_related('feed', 'user', 'search')
+        model = self.get_model()
+        return model._default_manager.filter(status=model.ACTIVE
+                                    ).select_related('feed', 'user', 'search')
 
     def get_updated_field(self):
         return 'when_modified'
