@@ -348,28 +348,37 @@ class SortFilterMixin(object):
     def _search(self, query):
         """
         Performs a search for the query and returns an initial :class:`QuerySet`
-        (or :class:`SearchQuerySet`.
+        (or :class:`SearchQuerySet`).
 
         """
-        form = self._make_search_form(query)
-        sqs = form.search()
         if USE_HAYSTACK:
-            # Work directly with the SearchQuerySet.
-            return sqs
+            # Work directly with the SearchQuerySet returned by the form.
+            form = self._make_search_form(query)
+            return form.search()
         else:
             qs = Video.objects.filter(status=Video.ACTIVE,
                                       site=Site.objects.get_current())
-            # If there was a query, limit the queryset to the pks from the
-            # SearchQuerySet and order by those pks to preserve the "relevance"
-            # sort. If there are no pks, return the full queryset.
+            # We can't actually fake a search with the database, so even if
+            # USE_HAYSTACK is false, if a search was executed, we try to
+            # run a haystack search, then query the database using the pks
+            # from the search results. If the database search errors out or
+            # returns no results, then an empty queryset will be returned.
             if query:
-                pks = [int(r.pk) for r in sqs]
-                if pks:
+                form = self._make_search_form(query)
+                try:
+                    results = list(form.search())
+                except:
+                    results = []
+
+                if results:
                     # We add ordering by pk to preserve the "relevance" sort of
                     # the search. If any other sort is applied, it will override
                     # this.
+                    pks = [int(r.pk) for r in results]
                     order = ['-localtv_video.id = %i' % pk for pk in pks]
                     qs = qs.filter(pk__in=pks).extra(order_by=order)
+                else:
+                    qs = Video.objects.none()
             return qs
 
     def _sort(self, queryset, sort_string):
