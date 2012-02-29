@@ -713,7 +713,7 @@ class Source(Thumbnailable):
         abstract = True
 
     def update(self, video_iter, source_import, using='default',
-               clear_rejected=True):
+               clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
         returns :class:`vidscraper.suites.base.Video` objects.  We use

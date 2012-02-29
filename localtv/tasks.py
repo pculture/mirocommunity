@@ -67,7 +67,7 @@ def update_sources(using='default'):
 
 
 @task(ignore_result=True)
-def feed_update(feed_id, using='default'):
+def feed_update(feed_id, using='default', clear_rejected=False):
     try:
         feed = Feed.objects.using(using).filter(status=Feed.ACTIVE,
                                                 auto_update=True
@@ -77,7 +77,7 @@ def feed_update(feed_id, using='default'):
                      feed_id, using)
         return
 
-    feed.update(using=using, clear_rejected=True)
+    feed.update(using=using, clear_rejected=clear_rejected)
 
 
 @task(ignore_result=True)
