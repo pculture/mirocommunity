@@ -139,8 +139,9 @@ def add_feed(request):
 
             tasks.feed_update.delay(
                 feed.pk,
-                using=tasks.CELERY_USING)
-            
+                using=tasks.CELERY_USING,
+                clear_rejected=True)
+
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
     else:
