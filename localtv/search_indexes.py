@@ -59,6 +59,10 @@ class QueuedSearchIndex(indexes.SearchIndex):
         self._enqueue_instance(instance, True)
 
     def _enqueue_instance(self, instance, is_removal):
+        # This attribute can be set by passing ``update_index`` as a kwarg to
+        # :meth:`Video.save`. It defaults to ``True``.
+        if not getattr(instance, '_update_index', True):
+            return
         using = instance._state.db
         if using == 'default':
             # This gets called from both Celery and from the MC application.

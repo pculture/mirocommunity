@@ -323,13 +323,17 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                 authors = []
 
         # Since we check above whether the vidscraper_video is valid, we don't
-        # catch InvalidVideo here, since it would be unexpected.
+        # catch InvalidVideo here, since it would be unexpected. We don't
+        # update the index because this is expected to be run as part of the
+        # import process; the video will be indexed in bulk after the feed
+        # import is complete.
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                             using=using,
                                             source_import=source_import,
                                             authors=authors,
                                             categories=categories,
-                                            site_pk=site_pk)
+                                            site_pk=site_pk,
+                                            update_index=False)
         logging.debug('Made video %i: %r', video.pk, video.name)
         if video.thumbnail_url:
             video_save_thumbnail.delay(video.pk, using=using)
