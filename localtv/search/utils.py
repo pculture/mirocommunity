@@ -16,6 +16,8 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
+import logging
+import sys
 
 from django import forms
 from django.contrib.auth.models import User
@@ -367,7 +369,10 @@ class SortFilterMixin(object):
                 form = self._make_search_form(query)
                 try:
                     results = list(form.search())
-                except:
+                except Exception, e:
+                    logging.error('Haystack search failed with %s',
+                                  e.__class__.__name__,
+                                  exc_info=sys.exc_info())
                     results = []
 
                 if results:
