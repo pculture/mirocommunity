@@ -68,7 +68,7 @@ class QueuedSearchIndex(indexes.SearchIndex):
             using = CELERY_USING
         haystack_update_index.delay(instance._meta.app_label,
                                     instance._meta.module_name,
-                                    instance.pk,
+                                    [instance.pk],
                                     is_removal,
                                     using=using)
 

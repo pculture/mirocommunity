@@ -164,10 +164,9 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                          status=Video.ACTIVE).values_list('pk', flat=True)
     if active_pks:
         opts = Video._meta
-        for pk in active_pks:
-            haystack_update_index.delay(opts.app_label, opts.module_name,
-                                        pk, is_removal=False,
-                                        using=using)
+        haystack_update_index.delay(opts.app_label, opts.module_name,
+                                    list(active_pks), is_removal=False,
+                                    using=using)
 
     mark_import_complete.delay(import_app_label, import_model, import_pk,
                                using=using)
@@ -363,7 +362,7 @@ def video_save_thumbnail(video_pk, using='default'):
         
 
 @task(ignore_result=True, max_retries=None)
-def haystack_update_index(app_label, model_name, pk, is_removal,
+def haystack_update_index(app_label, model_name, pks, is_removal,
                           using='default'):
     """
     Updates a haystack index for the given model (specified by ``app_label``
@@ -378,23 +377,27 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
 
     """
     model_class = get_model(app_label, model_name)
-    search_index = connections[using].get_unified_index().get_index(model_class)
+    backend = connections[using].get_backend()
+    index = connections[using].get_unified_index().get_index(model_class)
     try:
         if is_removal:
-            instance = model_class(pk=pk)
-            search_index.remove_object(instance)
+            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
+                         for pk in pks]
+            to_update = []
         else:
-            try:
-                instance = Video.objects.using(using).get(pk=pk)
-            except model_class.DoesNotExist:
-                logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r)'
-                               ' could not find video with pk %i'), app_label,
-                               model_name, pk, is_removal, using, pk)
-            else:
-                if instance.status == Video.ACTIVE:
-                    search_index.update_object(instance)
-                else:
-                    search_index.remove_object(instance)
+            base_qs = Video.objects.using(using).filter(pk__in=pks)
+            to_remove_pks = base_qs.exclude(status=Video.ACTIVE
+                                  ).values_list('pk', flat=True)
+            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
+                         for pk in to_remove_pks]
+
+            to_update = base_qs.filter(status=Video.ACTIVE)
+
+        if to_remove:
+            for identifier in to_remove:
+                backend.remove(identifier)
+        if to_update:
+            backend.update(index, to_update)
     except (DatabaseError, LockError), e:
         # These errors might be resolved if we just wait a bit. The wait time is
         # slightly random, with the intention of preventing LockError retries
