@@ -20,7 +20,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
-from daguerre.templatetags.images import ImageResizeNode, ImageProxy
+from daguerre.templatetags.daguerre import ImageResizeNode, ImageProxy
 
 register = template.Library()
 
