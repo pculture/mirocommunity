@@ -3,11 +3,13 @@ git+http://git.participatoryculture.org/djvideo@528425bb940bad7804de7d8521a03d7d
 git+http://git.participatoryculture.org/django-email-share/@fb1ac165c2c658281b9e5542704e787229987392#egg=django_email_share
 git+http://git.participatoryculture.org/django-uploadtemplate@1bc2b23b0092b4b8cabacf31ff8a5a698cec4dc9#egg=django_uploadtemplate
 git+http://git.participatoryculture.org/python-bitly@b698442b5f4b5d686460072e9b0ac28776275092#egg=python_bitly
-git+git://github.com/pculture/mirocommunity.git@1.8#egg=mirocommunity
+git+git://github.com/pculture/mirocommunity.git@1.8.1#egg=mirocommunity
 git+git://github.com/pculture/vidscraper.git@545350402a7f4c80ec818bf069fda41f99bb08a9#egg=vidscraper
 git+git://github.com/paulswartz/Django-Socialauth.git@06d15f990f1663bf7bf509ff899588d8be3774ea#egg=Django-Socialauth
 git+git://github.com/facebook/python-sdk.git@cb8dbd3fca034aceaea35983037b4a166360c460#egg=facebook_python_sdk
 git+git://github.com/dcramer/django-paypal.git@626254f81034bee8d21319667854cf0c12b55aaf#egg=django-paypal
+git+git://github.com/toastdriven/django-haystack.git@4fb267623b58c5581be96a9a9504ca10a72eb0d8#egg=django-haystack
+git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 hg+http://bitbucket.org/ubernostrum/django-registration/@fad7080fe769#egg=django-registration
 BeautifulSoup==3.2.0
 Django==1.3.1
@@ -16,7 +18,6 @@ lxml==2.3.3
 feedparser==5.0.1
 python-openid==2.2.4
 django-tagging==0.3
-django-haystack==1.2.4
 django-celery==2.3.3
 celery==2.4.6
 kombu==2.0.0

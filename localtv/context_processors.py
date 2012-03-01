@@ -19,17 +19,17 @@ import os
 
 from django.conf import settings
 
-from localtv.models import SiteLocation, Video, Category
+from localtv.models import SiteSettings, Video, Category
 from localtv.settings import ENABLE_CHANGE_STAMPS
 
 
 def localtv(request):
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
 
-    display_submit_button = sitelocation.display_submit_button
+    display_submit_button = site_settings.display_submit_button
     if display_submit_button:
         if request.user.is_anonymous() and \
-                sitelocation.submission_requires_login:
+                site_settings.submission_requires_login:
             display_submit_button = False
     else:
         if request.user_is_admin():
@@ -52,9 +52,11 @@ def localtv(request):
 
     return  {
         'mc_version': '1.2',
-        'sitelocation': sitelocation,
+        'site_settings': site_settings,
+        # Backwards-compatible for custom themes.
+        'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
-        'categories':  Category.objects.filter(site=sitelocation.site,
+        'categories':  Category.objects.filter(site=site_settings.site,
                                                       parent=None),
         'cache_invalidator': cache_invalidator,
 

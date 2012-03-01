@@ -18,7 +18,6 @@
 import urllib
 import logging
 
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
@@ -26,10 +25,12 @@ from django.db import models
 from django.db.models import signals
 from django.template import Context, loader
 from django.utils.safestring import mark_safe
-
 from socialauth.models import TwitterUserProfile, FacebookUserProfile
 
-class Profile(models.Model):
+from localtv.utils import get_profile_model
+
+
+class BaseProfile(models.Model):
     """
     Some extra data that we store about users.  Gets linked to a User object
     through the Django authentication system.
@@ -42,20 +43,23 @@ class Profile(models.Model):
     website = models.URLField(blank=True, default='')
 
     class Meta:
-        db_table = 'localtv_profile'
+        abstract = True
 
     def __unicode__(self):
-        return unicode(self.user)
+        return u"%s for %s" % (self.__class__.__name__, unicode(self.user))
 
 
-admin.site.register(Profile)
+class Profile(BaseProfile):
+    class Meta:
+        db_table = 'localtv_profile'
+
 
 def twitteruserprofile_created(sender, instance=None, raw=None, created=False,
                                **kwargs):
     if not created:
         return # we don't care about updates
-    profile = Profile.objects.create(
-        user=instance.user,
+    profile = get_profile_model().objects.create(
+        user_id=instance.user_id,
         location=instance.location or '',
         description=instance.description or '',
         website=instance.url or '')
@@ -75,16 +79,18 @@ def facebookuserprofile_created(sender, instance=None, raw=None, created=False,
                                 **kwargs):
     if not created:
         return # we don't care about updates
-    Profile.objects.create(
-        user=instance.user,
+    get_profile_model().objects.create(
+        user_id=instance.user_id,
         location=instance.location or '',
         description=instance.about_me or '',
         website=instance.url or '')
+
 
 signals.post_save.connect(twitteruserprofile_created,
                           sender=TwitterUserProfile)
 signals.post_save.connect(facebookuserprofile_created,
                           sender=FacebookUserProfile)
+
 
 ### On creating a new user, if the user has an email address
 ### XXX If you make changes to the way users are auto-created on video import,
@@ -110,7 +116,7 @@ def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=
     ### Well, in that case, let's send the user a welcome email.
     import localtv.models
 
-    site = localtv.models.SiteLocation.objects.get_current().site
+    site = localtv.models.SiteSettings.objects.get_current().site
 
     t = loader.get_template('localtv/user_profile/welcome_message.txt')
     c = Context({'site': site,
@@ -121,6 +127,7 @@ def on_user_create_send_welcomed_email(sender, instance=None, raw=None, created=
     from django.conf import settings
     EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                  [instance.email]).send(fail_silently=True)
+
 
 signals.post_save.connect(on_user_create_send_welcomed_email,
                           sender=User)

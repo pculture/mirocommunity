@@ -30,11 +30,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <!--[if lt IE 8]>
    <link rel="StyleSheet" type="text/css" href="{% get_static_url 'localtv/css/msie7.css' bundled %}" />
 <![endif]-->
-    {% if sitelocation.css or sitelocation.background %}
+    {% if site_settings.css or site_settings.background %}
     <style type="text/css">
-    {{ sitelocation.get_css_for_display_if_permitted|safe }}
-    {% if sitelocation.background %}body {
-       background: url("{{ sitelocation.background.url }}") !important;
+    {{ site_settings.get_css_for_display_if_permitted|safe }}
+    {% if site_settings.background %}body {
+       background: url("{{ site_settings.background.url }}") !important;
     }{% endif %}
     </style>
     {% endif %}
@@ -45,10 +45,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <script src="{% get_static_url 'localtv/js/miro_community.js' bundled %}?version={{ mc_version }}"
             type="text/javascript">
     </script>
-    <title>{% block title %}{{ sitelocation.site.name }}{% if sitelocation.tagline %} - {{ sitelocation.tagline }}{% endif %}{% endblock title %}</title>
+    <title>{% block title %}{{ site_settings.site.name }}{% if site_settings.tagline %} - {{ site_settings.tagline }}{% endif %}{% endblock title %}</title>
     {% block head %}
-    <meta name="description" content="{% if sitelocation.about_html|striptags %}{{ sitelocation.about_html|striptags }}{% else %}A Video Community for {{ sitelocation.site.name }}{% endif %}">
-    {% if sitelocation.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url sitelocation 130 110 %}" />{% endif %}
+    <meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
+    {% if site_settings.has_thumbnail %}<link rel="image_src" href="{% get_thumbnail_url site_settings 130 110 %}" />{% endif %}
     {% endblock head %}
   </head>
   {% endif %}
@@ -61,13 +61,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         <div id="logo">
           {% url localtv_index as localtv_index %}
           <a href="{{ localtv_index }}">
-            <img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
+            <img alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
           </a>
           <h1 style="text-decoration: none;">
             <a href="{{ localtv_index }}">
-              <span class="name">{{ sitelocation.site.name }}</span>
+              <span class="name">{{ site_settings.site.name }}</span>
             </a>
-            <span class="tagline">{{ sitelocation.tagline|safe }}</span>
+            <span class="tagline">{{ site_settings.tagline|safe }}</span>
           </h1>
         </div>
         {% if user_is_admin %}
@@ -128,7 +128,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
               <span>Popular</span>
             </a>
           </li>
-          {% if sitelocation.display_submit_button %}
+          {% if site_settings.display_submit_button %}
           <li class="submit">
             <a rel="#overlay" href="{% url localtv_submit_video %}">
               <span>Submit A Video</span>
@@ -160,12 +160,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     </div>
       {% block footer_wrapper %}
         <div id="footer">
-          {% if sitelocation.footer_html %}
+          {% if site_settings.footer_html %}
           <div class="local_footer">
           {% block footer %}
             
             {% autoescape off %}
-            {{ sitelocation.footer_html }}
+            {{ site_settings.footer_html }}
             {% endautoescape %}
             
             
@@ -175,7 +175,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           <div>
             
             <div class="powered">
-              <span>{{ sitelocation.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
+              <span>{{ site_settings.site.name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a></span>
               <ul id="footer_links">
                 <li><a href="{% url localtv_index %}">Home</a></li>
                 {% if request.user.is_authenticated %}<li><a href="{% url localtv_user_profile %}">Your Profile</a><li>{% endif %}

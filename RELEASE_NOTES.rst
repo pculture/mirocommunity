@@ -1,9 +1,27 @@
+Miro Community 2.0 Release Notes
 ================================
+
+* Renamed :class:`~localtv.SiteLocation` to :class:`~localtv.SiteSettings`.
+* Video submission extra_init hack removed and replaced with class-based views.
+  Though these are not strictly backwards-compatible from the backend, the
+  user experience and template contexts should be the same.
+
+
+Miro Community 1.8.1 Release Notes
+==================================
+
+* Various bugfixes for issues raised in the 1.8 release, such as:
+   * Listing sorting
+   * Feed caching
+   * Video submission templates and template context
+   * Feed unicode errors
+* Removed patch_settings hack from :mod:`localtv.tasks`
+
 Miro Community 1.8 Release Notes
 ================================
 
 New Features
-============
+++++++++++++
 
 * :class:`Feed imports <localtv.FeedImport>` and :class:`Search
   imports <localtv.SearchImport>` are now tracked in the database.
@@ -17,7 +35,7 @@ New Features
 
 
 Backwards-incompatible changes
-==============================
+++++++++++++++++++++++++++++++
 
 * ``localtv.context_processor`` is now located at
   ``localtv.context_processors.localtv`` and no longer adds
@@ -35,7 +53,7 @@ Backwards-incompatible changes
 
 
 Other changes
-=============
++++++++++++++
 
 * Most code related to scraping videos was pushed back upstream to
   :mod:`vidscraper`.

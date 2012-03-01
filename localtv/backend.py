@@ -16,7 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.backends import ModelBackend
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 class SiteAdminBackend(ModelBackend):
 
@@ -36,7 +36,7 @@ class SiteAdminBackend(ModelBackend):
 
         from django.contrib.sites.models import Site
         site = Site.objects.get_current()
-        sitelocation = SiteLocation.objects.get(site=site)
-        return sitelocation.user_is_admin(user_obj)
+        site_settings = SiteSettings.objects.get(site=site)
+        return site_settings.user_is_admin(user_obj)
 
     has_module_perms = has_perm

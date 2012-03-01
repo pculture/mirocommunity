@@ -16,7 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Creates the default SiteLocation object.
+Creates the default SiteSettings object.
 """
 import datetime
 

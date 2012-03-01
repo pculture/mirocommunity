@@ -26,9 +26,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.handle_check_for_invalid_ipn_state()
-        self.handle_sitelocation_emails()
+        self.handle_site_settings_emails()
 
-    def handle_sitelocation_emails(self):
+    def handle_site_settings_emails(self):
         column2template = {
             'video_allotment_warning_sent': (
                 'localtv/admin/tiers_emails/video_allotment.txt', 'Upgrade your Miro Community site to store more video'),
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             'inactive_site_warning_sent': (
                 'localtv/admin/tiers_emails/inactive_site_warning_sent.txt', 'Your Miro Community site has been inactive, come back!')
             }
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
 
         for tier_info_column in localtv.tiers.nightly_warnings():
             # Save a note saying we sent the notice
@@ -46,37 +46,37 @@ class Command(BaseCommand):
             tier_info.save()
 
             template_name, subject = column2template[tier_info_column] 
-            localtv.tiers.send_tiers_related_email(subject, template_name, sitelocation)
+            localtv.tiers.send_tiers_related_email(subject, template_name, site_settings)
 
     def handle_check_for_invalid_ipn_state(self):
         # Is the site in a paid tier?
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
 
         # First of all: If the site is 'subsidized', then we skip the
         # rest of these checks.
-        if sitelocation.tierinfo.current_paypal_profile_id == 'subsidized':
+        if site_settings.tierinfo.current_paypal_profile_id == 'subsidized':
             return
 
         # Okay. Well, the point of this isto check if the site is in a
         # paid tier but should not be.
-        in_paid_tier = (sitelocation.tier_name and
-                        sitelocation.tier_name != 'basic')
+        in_paid_tier = (site_settings.tier_name and
+                        site_settings.tier_name != 'basic')
 
         # Is the free trial used up?
         # Note that premium sites have *not* used up their free trial.
         if (in_paid_tier and
-            sitelocation.tierinfo.free_trial_available and
-            sitelocation.tier_name == 'max'):
+            site_settings.tierinfo.free_trial_available and
+            site_settings.tier_name == 'max'):
 
             print ("UM YIKES, I THOUGHT THE SITE SHOULD BE SUBSIDIZED",
-                   sitelocation.site.domain)
+                   site_settings.site.domain)
             return
 
         # Is there something stored in the
         # tier_info.current_paypal_profile_id? If so, great.
         if (in_paid_tier and
-            not sitelocation.tierinfo.current_paypal_profile_id and
-            not sitelocation.tierinfo.free_trial_available):
+            not site_settings.tierinfo.current_paypal_profile_id and
+            not site_settings.tierinfo.free_trial_available):
             # So, one reason this could happen is that PayPal is being really
             # slow to send us data over PDT.
             #
@@ -85,6 +85,6 @@ class Command(BaseCommand):
 
             # Then re-do the check. If it still looks bad, then print a warning.
             if (in_paid_tier and
-                not sitelocation.tierinfo.current_paypal_profile_id and
-                not sitelocation.tierinfo.free_trial_available):
-                print 'This site looks delinquent: ', sitelocation.site.domain
+                not site_settings.tierinfo.current_paypal_profile_id and
+                not site_settings.tierinfo.free_trial_available):
+                print 'This site looks delinquent: ', site_settings.site.domain

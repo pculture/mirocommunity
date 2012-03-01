@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2009, 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -126,8 +127,8 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         check.
 
         """
-        self.site_location.submission_requires_login = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = False
+        self.site_settings.save()
 
         self.assertNoLoginRedirect(self.url)
         self.assertNoLoginRedirect(self.url, username='user',
@@ -140,9 +141,9 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = True
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = True
+        self.site_settings.save()
 
         self.assertLoginRedirect(self.url)
         self.assertNoLoginRedirect(self.url, username='user',
@@ -155,9 +156,9 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = False
+        self.site_settings.save()
 
         self.assertLoginRedirect(self.url)
         self.assertLoginRedirect(self.url, username='user', password='password')
@@ -262,7 +263,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
         """
         video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             status=Video.REJECTED,
             name='test video',
             website_url = 'http://www.pculture.org/')
@@ -287,7 +288,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         """
         expected_error = "That video has already been submitted!"
         video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             name='Participatory Culture',
             status=Video.UNAPPROVED,
             website_url='http://www.pculture.org/')
@@ -312,7 +313,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         """
         url = 'http://www.pculture.org/'
         video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             name='Participatory Culture',
             status=Video.ACTIVE,
             file_url=url
@@ -411,7 +412,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         c = Context({'queue_videos': queue_videos,
                      'new_videos': queue_videos.filter(pk=new_video.pk),
                      'time_period': 'today',
-                     'site': self.site_location.site})
+                     'site': self.site_settings.site})
         self.assertEqual(message.body, t.render(c))
 
     def test_no_email_without_setting(self):
@@ -577,7 +578,7 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         message = mail.outbox[0]
         for recipient in message.to:
             u = User.objects.get(email=recipient)
-            self.assertTrue(self.site_location.user_is_admin(u))
+            self.assertTrue(self.site_settings.user_is_admin(u))
 
         self.assertEqual(message.subject,
                          '[%s] New Video in Review Queue: %s' % (
@@ -611,7 +612,7 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         # We set file_url and website_url so that the session_url will catch
         # no matter which kind of view it is.
         rejected_video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             status=Video.REJECTED,
             name='test video',
             file_url=self.session_url,
@@ -645,7 +646,7 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         # We set file_url and website_url so that the session_url will catch
         # no matter which kind of view it is.
         unrejected_video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             status=Video.ACTIVE,
             name='test video',
             file_url=self.session_url,

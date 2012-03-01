@@ -44,13 +44,14 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
-from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
+from localtv.models import (Watch, Category, SiteSettings, Video, TierInfo,
                             Feed, OriginalVideo, SavedSearch, FeedImport,
                             Source)
 from localtv import utils
@@ -95,8 +96,8 @@ class BaseTestCase(TestCase):
         settings.SITE_ID = 1
         self.old_DISABLE = localtv.settings.DISABLE_TIERS_ENFORCEMENT
         localtv.settings.DISABLE_TIERS_ENFORCEMENT = False
-        SiteLocation.objects.clear_cache()
-        self.site_location = SiteLocation.objects.get_current()
+        SiteSettings.objects.clear_cache()
+        self.site_settings = SiteSettings.objects.get_current()
         self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
@@ -117,9 +118,9 @@ class BaseTestCase(TestCase):
 
     def _switch_into_tier(self):
         # By default, tests run on an 'max' account.
-        if self.site_location.tier_name != self.target_tier_name:
-            self.site_location.tier_name = self.target_tier_name
-            self.site_location.save()
+        if self.site_settings.tier_name != self.target_tier_name:
+            self.site_settings.tier_name = self.target_tier_name
+            self.site_settings.save()
 
     def tearDown(self):
         TestCase.tearDown(self)
@@ -178,17 +179,21 @@ class BaseTestCase(TestCase):
                           ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
+    def _clear_index(self):
+        """Clears the search index."""
+        backend = connections['default'].get_backend()
+        backend.clear()
 
+    def _update_index(self):
+        """Updates the search index."""
+        backend = connections['default'].get_backend()
+        index = connections['default'].get_unified_index().get_index(Video)
+        backend.update(index, index.index_queryset())
+        
     def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import site
-        index = site.get_index(Video)
-        try:
-            index.reindex()
-        except Exception:
-            pass
+        """Clears and then updates the search index."""
+        self._clear_index()
+        self._update_index()
 
 
 # -----------------------------------------------------------------------------
@@ -654,13 +659,13 @@ class ViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.template[0].name,
                           'localtv/index.html')
-        featured = list(Video.objects.get_featured_videos(self.site_location))
+        featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
                           featured)
         self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(self.site_location)))
+                          list(Video.objects.get_popular_videos(self.site_settings)))
         self.assertEqual(list(response.context['new_videos']),
-                          list(Video.objects.get_latest_videos(self.site_location)))
+                          list(Video.objects.get_latest_videos(self.site_settings)))
         self.assertEqual(list(response.context['comments']), [])
 
     def test_index_feeds_avoid_frontpage(self):
@@ -692,7 +697,7 @@ class ViewTestCase(BaseTestCase):
             status=Video.REJECTED)[0]
         for video in unapproved, approved, rejected:
             Comment.objects.create(
-                site=self.site_location.site,
+                site=self.site_settings.site,
                 content_object=video,
                 comment='Test Comment')
 
@@ -742,7 +747,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(response.context['current_video'], video)
         self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
-                    self.site_location)))
+                    self.site_settings)))
 
     def test_view_video_admins_see_rejected(self):
         """
@@ -793,7 +798,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [2]
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url())
@@ -801,7 +805,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(response.context['category'].pk, 2)
         self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
-                    self.site_location).filter(categories__pk=2)))
+                    self.site_settings).filter(categories__pk=2)))
 
     def test_view_video_category_referer(self):
         """
@@ -812,7 +816,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [1, 2]
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(video.get_absolute_url(),
@@ -825,7 +828,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(response.context['category'].pk, 1)
         self.assertEqual(list(response.context['popular_videos']),
                           list(Video.objects.get_popular_videos(
-                    self.site_location).filter(categories__pk=1)))
+                    self.site_settings).filter(categories__pk=1)))
 
     def assertSearchResults(self, response, expected_sqs,
                             expected_object_count, expected_page_num):
@@ -911,7 +914,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1 tag2'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -939,7 +941,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.categories = [2] # Linux (child of Miro)
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -970,7 +971,6 @@ class ViewTestCase(BaseTestCase):
         video.user.last_name = 'lastname'
         video.user.save()
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -998,7 +998,6 @@ class ViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.video_service_user = 'Video_service_user'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_search'),
@@ -1112,9 +1111,9 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_author',
                                  args=[author.pk]))
         videos = list(response.context['video_list'])
-        sitelocation = SiteLocation.objects.get_current()
+        site_settings = SiteSettings.objects.get_current()
         expected = list(
-            Video.objects.get_latest_videos(sitelocation).filter(
+            Video.objects.get_latest_videos(site_settings).filter(
                 Q(user=author) | Q(authors=author)
             ).distinct().order_by('-best_date')
         )
@@ -1161,7 +1160,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(len(response.context['page_obj'].object_list), 15)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_latest_videos(
-                              self.site_location)[:15]))
+                              self.site_settings)[:15]))
 
     def test_popular_videos(self):
         """
@@ -1182,7 +1181,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.get_popular_videos(
-                                 self.site_location).filter(
+                                 self.site_settings).filter(
                                      watch__timestamp__gte=datetime.datetime.min
                                  ).distinct()))
 
@@ -1212,7 +1211,6 @@ class ListingViewTestCase(BaseTestCase):
         video = Video.objects.get(pk=20)
         video.tags = 'tag1'
         video.save()
-        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_list_tag',
@@ -1302,11 +1300,11 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_screen_all_comments_False(self):
         """
-        If SiteLocation.screen_all_comments is False, the comment should be
+        If SiteSettings.screen_all_comments is False, the comment should be
         saved and marked as public.
         """
-        self.site_location.screen_all_comments = False
-        self.site_location.save()
+        self.site_settings.screen_all_comments = False
+        self.site_settings.save()
 
         c = Client()
         c.post(self.url, self.POST_data)
@@ -1320,7 +1318,7 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_screen_all_comments_True(self):
         """
-        If SiteLocation.screen_all_comments is True, the comment should be
+        If SiteSettings.screen_all_comments is True, the comment should be
         moderated (not public).
         """
         notice_type = notification.NoticeType.objects.get(
@@ -1348,7 +1346,7 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_screen_all_comments_True_admin(self):
         """
-        Even if SiteLocation,screen_all_comments is True, comments from logged
+        Even if SiteSettings,screen_all_comments is True, comments from logged
         in admins should not be screened.
         """
         c = Client()
@@ -1401,7 +1399,7 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_comments_required_login_False(self):
         """
-        If SiteLocation.comments_required_login is False, comments should be
+        If SiteSettings.comments_required_login is False, comments should be
         allowed by any user.  This is the same test code as
         test_screen_all_comments_False().
         """
@@ -1417,11 +1415,11 @@ class CommentModerationTestCase(BaseTestCase):
 
     def test_comments_required_login_True(self):
         """
-        If SiteLocation.comments_required_login, making a comment should
+        If SiteSettings.comments_required_login, making a comment should
         require a logged-in user.
         """
-        self.site_location.comments_required_login = True
-        self.site_location.save()
+        self.site_settings.comments_required_login = True
+        self.site_settings.save()
 
         c = Client()
         response = c.post(self.url, self.POST_data)
@@ -1454,8 +1452,8 @@ class CommentModerationTestCase(BaseTestCase):
 
         # the default is to receive comment e-mails
 
-        self.site_location.screen_all_comments = False
-        self.site_location.save()
+        self.site_settings.screen_all_comments = False
+        self.site_settings.save()
 
         c = Client()
         response = c.post(self.url, POST_data)
@@ -1485,8 +1483,8 @@ class CommentModerationTestCase(BaseTestCase):
 
         # the default is to receive comment e-mails
 
-        self.site_location.screen_all_comments = False
-        self.site_location.save()
+        self.site_settings.screen_all_comments = False
+        self.site_settings.save()
 
         c = Client()
         c.post(self.url, self.POST_data)
@@ -1506,8 +1504,8 @@ class CommentModerationTestCase(BaseTestCase):
         self.video.user = None
         self.video.save()
 
-        self.site_location.screen_all_comments = False
-        self.site_location.save()
+        self.site_settings.screen_all_comments = False
+        self.site_settings.save()
 
         c = Client()
         c.login(username='user', password='password')
@@ -1552,11 +1550,11 @@ class VideoModelTestCase(BaseTestCase):
 
     def test_when_use_original_date_False(self):
         """
-        When SiteLocation.use_original_date is False, Video.when() ignores the
+        When SiteSettings.use_original_date is False, Video.when() ignores the
         when_published date.
         """
-        self.site_location.use_original_date = False
-        self.site_location.save()
+        self.site_settings.use_original_date = False
+        self.site_settings.save()
         v = Video.objects.get(pk=11)
         self.assertEqual(v.when(), v.when_approved)
 
@@ -1573,11 +1571,11 @@ class VideoModelTestCase(BaseTestCase):
 
     def test_when_prefix_use_original_date_False(self):
         """
-        When SiteLocation.use_original_date is False, Video.when_prefix()
+        When SiteSettings.use_original_date is False, Video.when_prefix()
         returns 'posted'.
         """
-        self.site_location.use_original_date = False
-        self.site_location.save()
+        self.site_settings.use_original_date = False
+        self.site_settings.save()
         v = Video.objects.get(pk=11)
         self.assertEqual(v.when_prefix(), 'posted')
 
@@ -1595,10 +1593,10 @@ class VideoModelTestCase(BaseTestCase):
 
         """
         expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
-                                                site=self.site_location.site
+                                                site=self.site_settings.site
                                        ).values_list('pk', flat=True))
 
-        results = list(Video.objects.get_latest_videos(self.site_location))
+        results = list(Video.objects.get_latest_videos(self.site_settings))
         self.assertEqual(set(r.pk for r in results), expected_pks)
         for i in xrange(len(results) - 1):
             self.assertTrue(results[i].when() >= results[i+1].when())
@@ -1612,7 +1610,7 @@ class VideoModelTestCase(BaseTestCase):
 
     def test_latest_use_original_date_False(self):
         """
-        When SiteLocation.use_original_date is False,
+        When SiteSettings.use_original_date is False,
         Video.objects.get_latest_videos() should ignore the when_published date.
 
         SearchQuerySet().models(Video).order_by('-best_date') should return the
@@ -1620,13 +1618,13 @@ class VideoModelTestCase(BaseTestCase):
 
         """
         expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
-                                                site=self.site_location.site
+                                                site=self.site_settings.site
                                        ).values_list('pk', flat=True))
 
-        self.site_location.use_original_date = False
-        self.site_location.save()
+        self.site_settings.use_original_date = False
+        self.site_settings.save()
 
-        results = list(Video.objects.get_latest_videos(self.site_location))
+        results = list(Video.objects.get_latest_videos(self.site_settings))
         self.assertEqual(set(r.pk for r in results), expected_pks)
         for i in xrange(len(results) - 1):
             self.assertTrue(results[i].when() >= results[i+1].when())
@@ -1661,7 +1659,7 @@ class VideoModelTestCase(BaseTestCase):
         be created with the data from that video.
         """
         v = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             name='Test Name',
             description='Test Description',
             website_url='http://www.youtube.com/'
@@ -1682,7 +1680,7 @@ class VideoModelTestCase(BaseTestCase):
         creating an OriginalVideo object.
         """
         v = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             name='Test Name',
             description='Test Description',
             )
@@ -1694,10 +1692,10 @@ class VideoModelTestCase(BaseTestCase):
 # -----------------------------------------------------------------------------
 class SiteTierTests(BaseTestCase):
     def test_basic_account(self):
-        # Create a SiteLocation whose site_tier is set to 'basic'
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
-        tier = self.site_location.get_tier()
+        # Create a SiteSettings whose site_tier is set to 'basic'
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
+        tier = self.site_settings.get_tier()
         self.assertEqual(0, tier.dollar_cost())
         self.assertEqual(500, tier.videos_limit())
         self.assertEqual(1, tier.admins_limit())
@@ -1705,10 +1703,10 @@ class SiteTierTests(BaseTestCase):
         self.assertFalse(tier.permit_custom_template())
 
     def test_plus_account(self):
-        # Create a SiteLocation whose site_tier is set to 'plus'
-        self.site_location.tier_name = 'plus'
-        self.site_location.save()
-        tier = self.site_location.get_tier()
+        # Create a SiteSettings whose site_tier is set to 'plus'
+        self.site_settings.tier_name = 'plus'
+        self.site_settings.save()
+        tier = self.site_settings.get_tier()
         self.assertEqual(PLUS_COST, tier.dollar_cost())
         self.assertEqual(1000, tier.videos_limit())
         self.assertEqual(5, tier.admins_limit())
@@ -1716,10 +1714,10 @@ class SiteTierTests(BaseTestCase):
         self.assertFalse(tier.permit_custom_template())
 
     def test_premium_account(self):
-        # Create a SiteLocation whose site_tier is set to 'premium'
-        self.site_location.tier_name = 'premium'
-        self.site_location.save()
-        tier = self.site_location.get_tier()
+        # Create a SiteSettings whose site_tier is set to 'premium'
+        self.site_settings.tier_name = 'premium'
+        self.site_settings.save()
+        tier = self.site_settings.get_tier()
         self.assertEqual(PREMIUM_COST, tier.dollar_cost())
         self.assertEqual(5000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
@@ -1727,9 +1725,9 @@ class SiteTierTests(BaseTestCase):
         self.assertFalse(tier.permit_custom_template())
 
     def test_max_account(self):
-        self.site_location.tier_name = 'max'
-        self.site_location.save()
-        tier = self.site_location.get_tier()
+        self.site_settings.tier_name = 'max'
+        self.site_settings.save()
+        tier = self.site_settings.get_tier()
         self.assertEqual(MAX_COST, tier.dollar_cost())
         self.assertEqual(25000, tier.videos_limit())
         self.assertEqual(None, tier.admins_limit())
@@ -1798,6 +1796,26 @@ class WatchModelTestCase(BaseTestCase):
         w = Watch.objects.get()
         self.assertEqual(w.video, video)
         self.assertEqual(w.ip_address, '0.0.0.0')
+
+    def test_add_robot(self):
+        """
+        Requests from Robots (Googlebot, Baiduspider, &c) shouldn't count as
+        watches.
+        """
+        request = HttpRequest()
+        request.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 Googlebot'
+
+        video = Video.objects.get(pk=1)
+
+        Watch.add(request, video)
+
+        request = HttpRequest()
+        request.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 BaiduSpider'
+
+        Watch.add(request, video)
+
+        self.assertEqual(Watch.objects.count(), 0)
+
 
 
 # -----------------------------------------------------------------------------
@@ -1873,7 +1891,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.maxDiff = None
         BaseTestCase.setUp(self)
         self.video = Video.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             website_url=self.BASE_URL,
             name=self.BASE_DATA['name'],
             description=self.BASE_DATA['description'],
@@ -2179,29 +2197,29 @@ class TestWmodeFilter(BaseTestCase):
         self.assertEqual(output,
                          localtv.templatetags.filters.wmode_transparent(input))
                 
-class SiteLocationEnablesRestrictionsAfterPayment(BaseTestCase):
+class SiteSettingsEnablesRestrictionsAfterPayment(BaseTestCase):
     def test_unit(self):
-        self.assertFalse(SiteLocation.enforce_tiers(override_setting=True))
+        self.assertFalse(SiteSettings.enforce_tiers(override_setting=True))
         tier_info = TierInfo.objects.get_current()
         tier_info.user_has_successfully_performed_a_paypal_transaction = True
         tier_info.save()
-        self.assertTrue(SiteLocation.enforce_tiers(override_setting=True))
+        self.assertTrue(SiteSettings.enforce_tiers(override_setting=True))
 
 class TierMethodsTests(BaseTestCase):
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=False))
     @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
     def test_can_add_more_videos(self):
         # This is true because enforcement is off.
         self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
     @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
     def test_can_add_more_videos_returns_false(self):
         # This is False because the number of videos remaining is zero.
         self.assertFalse(localtv.tiers.Tier.get().can_add_more_videos())
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=True))
+    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
     @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=1))
     def test_can_add_video_lets_you_add_final_video(self):
         # This is False because the number of videos remaining is zero.
@@ -2257,25 +2275,24 @@ class FeedViewTestCase(BaseTestCase):
     def test_category_feed_renders_at_all(self):
         fake_request = self.factory.get('?count=10')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
 
     def test_feed_views_respect_count_when_set_integration(self):
         # Put 3 videos into the Linux category
         linux_category = Category.objects.get(slug='linux')
         three_vids = Video.objects.get_latest_videos(
-            self.site_location)[:3]
+            self.site_settings)[:3]
         self.assertEqual(len(three_vids), 3)
         for vid in three_vids:
             vid.categories.add(linux_category)
             vid.status = Video.ACTIVE
             vid.save()
-        self._rebuild_index()
         self.assertEqual(linux_category.approved_set.count(), 3)
         # Do a GET for the first 2 in the feed
         fake_request = self.factory.get('?count=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_first_GET = parsed['items']
@@ -2284,7 +2301,7 @@ class FeedViewTestCase(BaseTestCase):
         # Do a GET for the next "2" (just 1 left)
         fake_request = self.factory.get('?count=2&start-index=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']

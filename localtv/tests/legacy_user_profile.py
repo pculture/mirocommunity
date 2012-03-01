@@ -29,7 +29,7 @@ from django.core.urlresolvers import reverse
 
 from notification import models as notification
 
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 from localtv.user_profile import forms
 from localtv import utils
 
@@ -157,7 +157,7 @@ class ProfileViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 self.url))
 
         user = User.objects.get(pk=self.user.pk)
@@ -194,7 +194,7 @@ class ProfileViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 self.url))
 
         user = User.objects.get(pk=self.user.pk)

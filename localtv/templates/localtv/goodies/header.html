@@ -21,7 +21,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
  <ul>
    <li><a class="widget" href="{% url localtv_goodies_widget %}"><span>Widget</span></a></li>
    <li><a class="bookmarklet" href="{% url localtv_goodies_bookmarklet %}"><span>Bookmarklet</span></a></li>
-   {% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}<li><a class="playlists" href="{% url localtv_playlist_index %}"><span>Playlists</span></a></li>{% endif %}
+   {% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}<li><a class="playlists" href="{% url localtv_playlist_index %}"><span>Playlists</span></a></li>{% endif %}
  </ul>
 </div>
 <br class="clear" />

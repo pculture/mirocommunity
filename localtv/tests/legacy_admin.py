@@ -40,8 +40,8 @@ import vidscraper
 
 from localtv import utils
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
-from localtv.models import Feed, Video, SavedSearch, Category, SiteLocation, TierInfo
-from localtv.tests import BaseTestCase
+from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings, TierInfo
+from localtv.tests.legacy_localtv import BaseTestCase
 import localtv.tiers
 
 Profile = utils.get_profile_model()
@@ -1105,7 +1105,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         exists.
         """
         Feed.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             last_updated=datetime.datetime.now(),
             status=Feed.INACTIVE,
             feed_url=self.feed_url)
@@ -1126,7 +1126,7 @@ class FeedAdministrationTestCase(BaseTestCase):
              'alt=rss&v=2&orderby=published'),
             'http://www.youtube.com/rss/user/CLPPrj/videos.rss']
         Feed.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             last_updated=datetime.datetime.now(),
             status=Feed.INACTIVE,
             feed_url=urls[0])
@@ -1307,7 +1307,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         bit on the feed specified in the URL and redirect back to the referrer.
         It should also require the user to be an administrator.
         """
-        feed = Feed.objects.create(site=self.site_location.site,
+        feed = Feed.objects.create(site=self.site_settings.site,
                                           name='name',
                                           feed_url='feed_url',
                                           auto_approve=False,
@@ -1333,7 +1333,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         should remove the auto_approve bit on the feed specified in the URL and
         redirect back to the referrer.
         """
-        feed = Feed.objects.create(site=self.site_location.site,
+        feed = Feed.objects.create(site=self.site_settings.site,
                                           name='name',
                                           feed_url='feed_url',
                                           auto_approve=True,
@@ -1448,7 +1448,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
         v = Video.objects.get()
-        self.assertEqual(v.site, self.site_location.site)
+        self.assertEqual(v.site, self.site_settings.site)
         self.assertEqual(v.name, fake_video.name)
         self.assertEqual(v.description, fake_video.description)
         self.assertEqual(v.file_url, fake_video.file_url)
@@ -1557,7 +1557,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
         saved_search = SavedSearch.objects.get()
         self.assertEqual(saved_search.query_string, 'search string')
-        self.assertEqual(saved_search.site, self.site_location.site)
+        self.assertEqual(saved_search.site, self.site_settings.site)
         self.assertEqual(saved_search.user.username, 'admin')
 
         response = c.get(self.url,
@@ -1582,7 +1582,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         back to the referrer
         """
         saved_search = SavedSearch.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             query_string='search string')
 
         c = Client()
@@ -1616,7 +1616,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         object and redirect back to the referrer
         """
         saved_search = SavedSearch.objects.create(
-            site=self.site_location.site,
+            site=self.site_settings.site,
             auto_approve=True,
             query_string='search string')
 
@@ -1719,8 +1719,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             if key == 'submit':
                 pass
             elif key == 'role':
-                new_site_location = SiteLocation.objects.get()
-                self.assertFalse(new_site_location.user_is_admin(new))
+                new_site_settings = SiteSettings.objects.get()
+                self.assertFalse(new_site_settings.user_is_admin(new))
             else:
                 self.assertEqual(getattr(new, key), value)
 
@@ -1755,8 +1755,8 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
             if key in ('submit', 'password_f', 'password_f2'):
                 pass
             elif key == 'role':
-                new_site_location = SiteLocation.objects.get()
-                self.assertTrue(new_site_location.user_is_admin(new))
+                new_site_settings = SiteSettings.objects.get()
+                self.assertTrue(new_site_settings.user_is_admin(new))
             else:
                 self.assertEqual(getattr(new, key), value)
 
@@ -1837,7 +1837,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
 
         new_admin = User.objects.get(username='new_admin')
         self.assertEqual(new_admin.pk, 1)
-        self.assertTrue(self.site_location.user_is_admin(new_admin))
+        self.assertTrue(self.site_settings.user_is_admin(new_admin))
         self.assertTrue(new_admin.check_password('new_admin'))
         self.assertEqual(new_admin.get_profile().location, 'New Location')
 
@@ -1846,7 +1846,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(superuser.is_superuser, True)
         self.assertEqual(superuser.first_name, '')
         self.assertEqual(superuser.last_name, '')
-        self.assertFalse(superuser in self.site_location.admins.all())
+        self.assertFalse(superuser in self.site_settings.admins.all())
         self.assertTrue(superuser.check_password('superuser'))
         profile = superuser.get_profile()
         self.assertTrue(profile.logo.name.endswith('logo.png'))
@@ -1858,7 +1858,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(old_admin.pk, 3)
         self.assertEqual(old_admin.first_name, 'NewFirst')
         self.assertEqual(old_admin.last_name, 'NewLast')
-        self.assertFalse(self.site_location.user_is_admin(old_admin))
+        self.assertFalse(self.site_settings.user_is_admin(old_admin))
         self.assertTrue(old_admin.check_password('admin'))
 
     def test_POST_delete(self):
@@ -2095,7 +2095,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         new = Category.objects.order_by('-id')[0]
 
-        self.assertEqual(new.site, self.site_location.site)
+        self.assertEqual(new.site, self.site_settings.site)
 
         for key, value in POST_data.items():
             if key == 'submit':
@@ -2344,7 +2344,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue('headers' in response.context[0])
         self.assertEqual(list(response.context[0]['categories']),
                           list(Category.objects.filter(
-                site=self.site_location.site)))
+                site=self.site_settings.site)))
         self.assertEqual(list(response.context[0]['users']),
                           list(User.objects.order_by('username')))
 
@@ -2998,12 +2998,12 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
         self.POST_data = {
-            'title': self.site_location.site.name,
-            'tagline': self.site_location.tagline,
-            'about_html': self.site_location.about_html,
-            'sidebar_html': self.site_location.sidebar_html,
-            'footer_html': self.site_location.footer_html,
-            'css': self.site_location.css}
+            'title': self.site_settings.site.name,
+            'tagline': self.site_settings.tagline,
+            'about_html': self.site_settings.about_html,
+            'sidebar_html': self.site_settings.sidebar_html,
+            'footer_html': self.site_settings.footer_html,
+            'css': self.site_settings.css}
 
     @mock.patch('localtv.tiers.Tier.permit_custom_css', naysayer)
     def test_POST_css_failure(self):
@@ -3043,8 +3043,8 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
         the management page.  If the password isn't specified,
         User.has_unusable_password() should be True.
         """
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
         c = Client()
         c.login(username="superuser", password="superuser")
         POST_data = {
@@ -3058,8 +3058,8 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
         self.assertFalse(response.context['add_user_form'].is_valid())
 
         # but with 'premium' it works
-        self.site_location.tier_name = 'premium'
-        self.site_location.save()
+        self.site_settings.tier_name = 'premium'
+        self.site_settings.save()
 
         c = Client()
         c.login(username="admin", password="admin")
@@ -3084,12 +3084,12 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
         self.POST_data = {
-            'title': self.site_location.site.name,
-            'tagline': self.site_location.tagline,
-            'about_html': self.site_location.about_html,
-            'sidebar_html': self.site_location.sidebar_html,
-            'footer_html': self.site_location.footer_html,
-            'css': self.site_location.css}
+            'title': self.site_settings.site.name,
+            'tagline': self.site_settings.tagline,
+            'about_html': self.site_settings.about_html,
+            'sidebar_html': self.site_settings.sidebar_html,
+            'footer_html': self.site_settings.footer_html,
+            'css': self.site_settings.css}
 
     def test_GET(self):
         """
@@ -3165,25 +3165,25 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'testserver',
                 self.url))
 
-        site_location = SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertEqual(site_location.site.name, 'New Title')
-        self.assertEqual(site_location.tagline, 'New Tagline')
-        self.assertEqual(site_location.about_html, 'New About')
-        self.assertEqual(site_location.sidebar_html, 'New Sidebar')
-        self.assertEqual(site_location.footer_html, 'New Footer')
-        self.assertEqual(site_location.css, 'New Css')
-        self.assertTrue(site_location.display_submit_button)
-        self.assertTrue(site_location.submission_requires_login)
-        self.assertFalse(site_location.use_original_date)
-        self.assertTrue(site_location.screen_all_comments)
-        self.assertTrue(site_location.comments_required_login)
+        site_settings = SiteSettings.objects.get(
+            pk=self.site_settings.pk)
+        self.assertEqual(site_settings.site.name, 'New Title')
+        self.assertEqual(site_settings.tagline, 'New Tagline')
+        self.assertEqual(site_settings.about_html, 'New About')
+        self.assertEqual(site_settings.sidebar_html, 'New Sidebar')
+        self.assertEqual(site_settings.footer_html, 'New Footer')
+        self.assertEqual(site_settings.css, 'New Css')
+        self.assertTrue(site_settings.display_submit_button)
+        self.assertTrue(site_settings.submission_requires_login)
+        self.assertFalse(site_settings.use_original_date)
+        self.assertTrue(site_settings.screen_all_comments)
+        self.assertTrue(site_settings.comments_required_login)
 
         logo_data = file(self._data_file('logo.png')).read()
-        site_location.logo.open()
-        self.assertEqual(site_location.logo.read(), logo_data)
-        site_location.background.open()
-        self.assertEqual(site_location.background.read(), logo_data)
+        site_settings.logo.open()
+        self.assertEqual(site_settings.logo.read(), logo_data)
+        site_settings.background.open()
+        self.assertEqual(site_settings.background.read(), logo_data)
 
     def test_POST_logo_background_long_name(self):
         """
@@ -3205,16 +3205,16 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'testserver',
                 self.url))
 
-        site_location = SiteLocation.objects.get(
-            pk=self.site_location.pk)
+        site_settings = SiteSettings.objects.get(
+            pk=self.site_settings.pk)
         logo_data = file(self._data_file('logo.png')).read()
-        site_location.logo.open()
-        self.assertEqual(site_location.logo.read(), logo_data)
-        site_location.background.open()
-        self.assertEqual(site_location.background.read(), logo_data)
+        site_settings.logo.open()
+        self.assertEqual(site_settings.logo.read(), logo_data)
+        site_settings.background.open()
+        self.assertEqual(site_settings.background.read(), logo_data)
 
-        logo_name = site_location.logo.name
-        background_name = site_location.background.name
+        logo_name = site_settings.logo.name
+        background_name = site_settings.background.name
         # don't send them again, and make sure the names stay the same
         del self.POST_data['logo']
         del self.POST_data['background']
@@ -3226,10 +3226,10 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'testserver',
                 self.url))
 
-        site_location = SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertEqual(site_location.logo.name, logo_name)
-        self.assertEqual(site_location.background.name,
+        site_settings = SiteSettings.objects.get(
+            pk=self.site_settings.pk)
+        self.assertEqual(site_settings.logo.name, logo_name)
+        self.assertEqual(site_settings.background.name,
                           background_name)
 
     def test_POST_delete_background(self):
@@ -3238,8 +3238,8 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         should remove the background image and redirect back to the edit
         design view.
         """
-        self.site_location.background = File(file(self._data_file('logo.png')))
-        self.site_location.save()
+        self.site_settings.background = File(file(self._data_file('logo.png')))
+        self.site_settings.save()
 
         c = Client()
         c.login(username='admin', password='admin')
@@ -3252,9 +3252,9 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'testserver',
                 self.url))
 
-        site_location = SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertEqual(site_location.background, '')
+        site_settings = SiteSettings.objects.get(
+            pk=self.site_settings.pk)
+        self.assertEqual(site_settings.background, '')
 
     def test_POST_delete_background_missing(self):
         """
@@ -3273,9 +3273,9 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'testserver',
                 self.url))
 
-        site_location = SiteLocation.objects.get(
-            pk=self.site_location.pk)
-        self.assertEqual(site_location.background, '')
+        site_settings = SiteSettings.objects.get(
+            pk=self.site_settings.pk)
+        self.assertEqual(site_settings.background, '')
 
 
 # -----------------------------------------------------------------------------
@@ -3360,7 +3360,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
 
         new = FlatPage.objects.order_by('-id')[0]
 
-        self.assertEqual(list(new.sites.all()), [self.site_location.site])
+        self.assertEqual(list(new.sites.all()), [self.site_settings.site])
 
         for key, value in POST_data.items():
             if key == 'submit':
@@ -3537,11 +3537,11 @@ class CannotApproveVideoIfLimitExceeded(BaseTestCase):
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_videos_over_new_limit(self):
         # Let there be one video already approved
-        Video.objects.create(site_id=self.site_location.site_id,
+        Video.objects.create(site_id=self.site_settings.site_id,
                              status=Video.ACTIVE)
         # Create two in the queue
         for k in range(2):
-            Video.objects.create(site_id=self.site_location.site_id,
+            Video.objects.create(site_id=self.site_settings.site_id,
                                  status=Video.UNAPPROVED)
 
         first_video_id, second_video_id = [v.id for v in
@@ -3576,28 +3576,28 @@ class DowngradingDisablesThings(BaseTestCase):
     def test_videos_over_new_limit(self):
         # Create two videos
         for k in range(3):
-            Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
+            Video.objects.create(site_id=self.site_settings.site_id, status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
     
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_videos_within_new_limit(self):
         # Create just one video
-        Video.objects.create(site_id=self.site_location.site_id)
+        Video.objects.create(site_id=self.site_settings.site_id)
         self.assertTrue('videos' not in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
     
     def test_go_to_basic_from_max_warn_about_css_loss(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
         User.objects.get(username='admin').delete()
 
-        # Add some CSS to the sitelocation
-        self.site_location.css = '* { display: none; }'
-        self.site_location.save()
+        # Add some CSS to the site_settings
+        self.site_settings.css = '* { display: none; }'
+        self.site_settings.save()
 
         # Go to basic, noting that we will see an 'advertising' message
         # Now, make sure that the downgrade helper notices and complains
@@ -3607,7 +3607,7 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_go_to_basic_from_max_skip_warn_about_css_loss(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3624,7 +3624,7 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_go_to_basic_from_max_lose_advertising(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3638,8 +3638,8 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_go_to_basic_from_plus_no_advertising_msg(self):
         # Start out in Plus
-        self.site_location.tier_name = 'plus'
-        self.site_location.save()
+        self.site_settings.tier_name = 'plus'
+        self.site_settings.save()
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3652,11 +3652,11 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_go_to_basic_from_max_lose_custom_domain(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Make our site.domain be myawesomesite.example.com
-        self.site_location.site.domain = 'myawesomesite.example.com'
-        self.site_location.site.save()
+        self.site_settings.site.domain = 'myawesomesite.example.com'
+        self.site_settings.site.save()
 
         # Get warnings for downgrade.
         self.assertTrue(
@@ -3665,11 +3665,11 @@ class DowngradingDisablesThings(BaseTestCase):
 
     def test_go_to_basic_from_max_with_a_noncustom_domain(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Make our site.domain be within mirocommunity.org
-        self.site_location.site.domain = 'myawesomesite.mirocommunity.org'
-        self.site_location.site.save()
+        self.site_settings.site.domain = 'myawesomesite.mirocommunity.org'
+        self.site_settings.site.save()
 
         # Get warnings for downgrade.
         self.assertFalse(
@@ -3678,7 +3678,7 @@ class DowngradingDisablesThings(BaseTestCase):
 
     def test_go_to_basic_with_one_admin(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Delete user #2 so that we have only 1 admin, the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3702,7 +3702,7 @@ class DowngradingDisablesThings(BaseTestCase):
 
     def test_go_to_basic_with_two_admins(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Verify that we started with 2 admins, including the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3730,7 +3730,7 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_non_active_users_do_not_count_as_admins(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Verify that we started with 2 admins, including the super-user
         self.assertEqual(2, localtv.tiers.number_of_admins_including_superuser())
@@ -3743,11 +3743,11 @@ class DowngradingDisablesThings(BaseTestCase):
         
     def test_go_to_basic_with_a_custom_theme(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Create two themes -- one bundled, and one not.
-        Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_location.site_id)
-        Theme.objects.create(name='a custom guy', default=True, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', bundled=True, site_id=self.site_settings.site_id)
+        Theme.objects.create(name='a custom guy', default=True, site_id=self.site_settings.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' in 
@@ -3757,23 +3757,23 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertFalse(Theme.objects.get_default().bundled)
 
         # "Transition" from max to max, to make sure the theme stays
-        self.site_location.save()
+        self.site_settings.save()
         self.assertFalse(Theme.objects.get_default().bundled)
 
         # Now, force the transition
-        self.site_location.tier_name = 'premium'
-        self.site_location.save()
+        self.site_settings.tier_name = 'premium'
+        self.site_settings.save()
         # Check that the user is now on a bundled theme
         self.assertTrue(Theme.objects.get_default().bundled)
 
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_go_to_basic_with_too_many_videos(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Create three published videos
         for k in range(3):
-            Video.objects.create(site_id=self.site_location.site_id,
+            Video.objects.create(site_id=self.site_settings.site_id,
                                  status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
@@ -3782,23 +3782,23 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(3, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should only be two active videos now
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
         self.assertEqual(2, Video.objects.filter(status=Video.ACTIVE).count())
 
         # Make sure it's video 0 that is disabled
         self.assertEqual(Video.UNAPPROVED,
                          Video.objects.all().order_by('pk')[0].status)
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=False))
     @mock.patch('localtv.tiers.Tier.videos_limit', videos_limit_of_two)
     def test_go_to_basic_with_too_many_videos_but_do_not_enforce(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Create three published videos
         for k in range(3):
-            Video.objects.create(site_id=self.site_location.site_id, status=Video.ACTIVE)
+            Video.objects.create(site_id=self.site_settings.site_id, status=Video.ACTIVE)
         self.assertTrue('videos' in
                         localtv.tiers.user_warnings_for_downgrade(new_tier_name='basic'))
 
@@ -3806,8 +3806,8 @@ class DowngradingDisablesThings(BaseTestCase):
         self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
         # Do the downgrade -- there should still be three videos because enforcement is disabled
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
         self.assertEqual(3,Video.objects.filter(status=Video.ACTIVE).count())
 
     def test_go_to_basic_with_a_custom_theme_that_is_not_enabled(self):
@@ -3815,11 +3815,11 @@ class DowngradingDisablesThings(BaseTestCase):
         let the user know that it won't be accessible anymore.'''
 
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Create two themes -- one bundled, and one not.
-        Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_location.site_id)
-        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', bundled=True, default=True, site_id=self.site_settings.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_settings.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' in
@@ -3830,12 +3830,12 @@ class DowngradingDisablesThings(BaseTestCase):
         current tier does not permit custom themes, then do not bother
         telling the user that they may not use them.'''
         # Start out in Plus, where default themes are disabled.
-        self.site_location.tier_name = 'plus'
-        self.site_location.save()
+        self.site_settings.tier_name = 'plus'
+        self.site_settings.save()
 
         # Create two themes -- one bundled, and one not. Default is bundled.
-        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
-        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_settings.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_settings.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' not in
@@ -3846,12 +3846,12 @@ class DowngradingDisablesThings(BaseTestCase):
         current tier does not permit custom themes, then do not bother
         telling the user that they may not use them.'''
         # Start out in Plus, where default themes are disabled.
-        self.site_location.tier_name = 'plus'
-        self.site_location.save()
+        self.site_settings.tier_name = 'plus'
+        self.site_settings.save()
 
         # Create two themes -- one bundled, and one not. Default is bundled.
-        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_location.site_id)
-        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_location.site_id)
+        Theme.objects.create(name='a bundled guy', default=True, bundled=True, site_id=self.site_settings.site_id)
+        Theme.objects.create(name='a custom guy', default=False, site_id=self.site_settings.site_id)
         
         # Now, make sure that the downgrade helper notices and complains
         self.assertTrue('customtheme' not in
@@ -3880,7 +3880,7 @@ class NoEnforceMode(BaseTestCase):
         permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
         self.assertFalse(permit)
 
-    @mock.patch('localtv.models.SiteLocation.enforce_tiers', mock.Mock(return_value=False))
+    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=False))
     def test_theme_uploading_without_enforcement(self):
         permit = localtv.tiers.Tier('basic').enforce_permit_custom_template()
         self.assertTrue(permit)
@@ -3890,7 +3890,7 @@ class DowngradingSevenAdmins(BaseTestCase):
 
     def test_go_to_plus_with_seven_admins(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Verify that we started with 2 admins, including the super-user
         self.assertEqual(7, localtv.tiers.number_of_admins_including_superuser())
@@ -3935,15 +3935,15 @@ class NightlyTiersEmails(BaseTestCase):
         # long enough ago that the site is "inactive")
         self.admin.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=90)
         self.admin.save()
-        self.assertFalse(self.site_location.inactive_site_warning_sent)
+        self.assertFalse(self.site_settings.inactive_site_warning_sent)
 
         # Make sure it sends an email...
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 1)
         mail.outbox = []
 
-        # And make sure the SiteLocation knows that the email was sent...
-        self.assertTrue(self.site_location.inactive_site_warning_sent)
+        # And make sure the SiteSettings knows that the email was sent...
+        self.assertTrue(self.site_settings.inactive_site_warning_sent)
 
         # ..so that the next time, it doesn't send any email.
         self.tiers_cmd.handle()
@@ -3951,7 +3951,7 @@ class NightlyTiersEmails(BaseTestCase):
 
     @mock.patch('localtv.tiers.Tier.remaining_videos_as_proportion', mock.Mock(return_value=0.2))
     def test_video_allotment(self):
-        # First, it sends an email. But it saves a note in the SiteLocation...
+        # First, it sends an email. But it saves a note in the SiteSettings...
         self.tiers_cmd.handle()
         self.assertEqual(len(mail.outbox), 1)
         mail.outbox = []
@@ -4035,17 +4035,17 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
 
-        # Whatever changes the user makes to the SiteLocation should not
+        # Whatever changes the user makes to the SiteSettings should not
         # cause sending, so long as they don't adjust the tier_name.
-        site_location = SiteLocation.objects.get_current()
-        site_location.tagline = 'my site rules'
-        site_location.save()
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.tagline = 'my site rules'
+        site_settings.save()
         # No call yet. Tier Info still retains the flag.
         self.assertFalse(mock_send.called)
         self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
-        site_location = SiteLocation.objects.get_current()
-        self.assertEqual('basic', site_location.tier_name)
+        site_settings = SiteSettings.objects.get_current()
+        self.assertEqual('basic', site_settings.tier_name)
 
         # Now, call _paypal_return() as if the user got there from PayPal.
         localtv.admin.tiers._paypal_return('plus')
@@ -4054,8 +4054,8 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         self.assertTrue(mock_send.called)
         # Make sure the tier_name is plus, really, and that the flag is
         # now set to False.
-        site_location = SiteLocation.objects.get_current()
-        self.assertEqual('plus', site_location.tier_name)
+        site_settings = SiteSettings.objects.get_current()
+        self.assertEqual('plus', site_settings.tier_name)
         self.assertFalse(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
 
@@ -4089,20 +4089,20 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
         ti.save()
 
         self.assertFalse(mock_send.called)
-        self.assertEqual(SiteLocation.objects.get_current().tier_name,
+        self.assertEqual(SiteSettings.objects.get_current().tier_name,
                          'basic')
 
-        # Whatever changes the user makes to the SiteLocation should not
+        # Whatever changes the user makes to the SiteSettings should not
         # cause sending, so long as they don't adjust the tier_name.
-        site_location = SiteLocation.objects.get_current()
-        site_location.tagline = 'my site rules'
-        site_location.save()
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.tagline = 'my site rules'
+        site_settings.save()
         # No call yet. Tier Info still retains the flag.
         self.assertFalse(mock_send.called)
         self.assertTrue(TierInfo.objects.get_current(
                 ).should_send_welcome_email_on_paypal_event)
-        site_location = SiteLocation.objects.get_current()
-        self.assertEqual('basic', site_location.tier_name)
+        site_settings = SiteSettings.objects.get_current()
+        self.assertEqual('basic', site_settings.tier_name)
 
         PLUS_TEN_MIN = NOW + datetime.timedelta(minutes=10)
         PLUS_FORTY_MIN = NOW + datetime.timedelta(minutes=40)
@@ -4124,16 +4124,16 @@ class SendWelcomeEmailTestForSiteStartedAsBasic(BaseTestCase):
 class TestDisableEnforcement(BaseTestCase):
 
     def testTrue(self):
-        self.assertTrue(SiteLocation.enforce_tiers(override_setting=False))
+        self.assertTrue(SiteSettings.enforce_tiers(override_setting=False))
 
     def testFalse(self):
-        self.assertFalse(SiteLocation.enforce_tiers(override_setting=True))
+        self.assertFalse(SiteSettings.enforce_tiers(override_setting=True))
 
 class TestTiersComplianceEmail(BaseTestCase):
     def setUp(self):
         super(TestTiersComplianceEmail, self).setUp()
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
         from localtv.management.commands import send_tiers_compliance_email
         self.cmd = send_tiers_compliance_email.Command()
 
@@ -4177,15 +4177,15 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
 
     def test(self):
         # Start out in Executive mode, by default
-        self.assertEqual(self.site_location.tier_name, 'max')
+        self.assertEqual(self.site_settings.tier_name, 'max')
 
         # Give the site a custom domain
-        site = self.site_location.site
+        site = self.site_settings.site
         site.domain = 'custom.example.com'
         site.save()
 
         # Make sure it stuck
-        self.assertEqual(self.site_location.site.domain,
+        self.assertEqual(self.site_settings.site.domain,
                          'custom.example.com')
 
         # There are no emails in the outbox yet
@@ -4193,8 +4193,8 @@ class DowngradingCanNotifySupportAboutCustomDomain(BaseTestCase):
                          len(mail.outbox))
 
         # Bump down to 'basic'.
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
 
         self.assertEqual([], mail.outbox)
         import localtv.zendesk
@@ -4210,8 +4210,8 @@ class IpnIntegration(BaseTestCase):
         super(IpnIntegration, self).setUp()
 
         # Set current tier to 'basic'
-        self.site_location.tier_name = 'basic'
-        self.site_location.save()
+        self.site_settings.tier_name = 'basic'
+        self.site_settings.save()
 
         # At the start of this test, we have no current recurring payment profile
         new_tier_info = TierInfo.objects.get_current()
@@ -4242,7 +4242,7 @@ class IpnIntegration(BaseTestCase):
                                {'target_tier_name': 'plus'})
 
         # Make sure we switched
-        self.assertEqual('plus', self.site_location.tier_name)
+        self.assertEqual('plus', self.site_settings.tier_name)
 
         # Discover that we still have no paypal profile, because PayPal took a few sec to submit the IPN...
         new_tier_info = TierInfo.objects.get_current()
@@ -4262,8 +4262,8 @@ class IpnIntegration(BaseTestCase):
         Client().post(url,
                       ipn_data)
 
-        # Make sure SiteLocation recognizes we are in 'plus'
-        self.assertEqual(self.site_location.tier_name, 'plus')
+        # Make sure SiteSettings recognizes we are in 'plus'
+        self.assertEqual(self.site_settings.tier_name, 'plus')
 
         new_tier_info = TierInfo.objects.get_current()
         self.assertTrue(new_tier_info.in_free_trial)
@@ -4279,8 +4279,8 @@ class IpnIntegration(BaseTestCase):
 
         self.upgrade_and_submit_ipn_skipping_free_trial_post()
 
-        # Make sure SiteLocation recognizes we are in 'plus'
-        self.assertEqual(self.site_location.tier_name, 'plus')
+        # Make sure SiteSettings recognizes we are in 'plus'
+        self.assertEqual(self.site_settings.tier_name, 'plus')
 
         # Make sure we are in a free trial, etc.
         new_tier_info = TierInfo.objects.get_current()
@@ -4353,7 +4353,7 @@ class IpnIntegration(BaseTestCase):
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_upgrade_between_paid_tiers(self):
         self.test_success()
-        self.assertEqual(self.site_location.tier_name, 'plus')
+        self.assertEqual(self.site_settings.tier_name, 'plus')
 
         self.upgrade_between_paid_tiers()
 
@@ -4369,9 +4369,9 @@ class IpnIntegration(BaseTestCase):
         Client().post(url,
                       ipn_data)
 
-        # Make sure SiteLocation recognizes we are in 'premium'
-        fresh_site_location = SiteLocation.objects.get_current()
-        self.assertEqual(fresh_site_location.tier_name, 'premium')
+        # Make sure SiteSettings recognizes we are in 'premium'
+        fresh_site_settings = SiteSettings.objects.get_current()
+        self.assertEqual(fresh_site_settings.tier_name, 'premium')
 
         ti = TierInfo.objects.get_current()
         self.assertEqual(ti.current_paypal_profile_id, 'I-MEBGA2YXPNJR') # the new one
@@ -4391,9 +4391,9 @@ class IpnIntegration(BaseTestCase):
         Client().post(url,
                       ipn_data)
 
-        # Make sure SiteLocation still recognizes we are in 'premium'
-        fresh_site_location = SiteLocation.objects.get_current()
-        self.assertEqual(fresh_site_location.tier_name, 'premium')
+        # Make sure SiteSettings still recognizes we are in 'premium'
+        fresh_site_settings = SiteSettings.objects.get_current()
+        self.assertEqual(fresh_site_settings.tier_name, 'premium')
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def test_success(self):
@@ -4438,7 +4438,7 @@ class IpnIntegration(BaseTestCase):
 
         # Make sure it worked
         tierinfo = TierInfo.objects.get_current()
-        self.assertEqual('premium', self.site_location.tier_name)
+        self.assertEqual('premium', self.site_settings.tier_name)
         self.assertTrue(tierinfo.in_free_trial)
 
         # Now, submit an IPN event for changing the payment amount to '15.00'
@@ -4446,7 +4446,7 @@ class IpnIntegration(BaseTestCase):
         self.submit_ipn_subscription_modify(unicode(PLUS_COST))
 
         # Make sure it worked
-        self.assertEqual('plus', SiteLocation.objects.get_current().tier_name)
+        self.assertEqual('plus', SiteSettings.objects.get_current().tier_name)
         tierinfo = TierInfo.objects.get_current()
         self.assertFalse(tierinfo.in_free_trial)
 
@@ -4517,7 +4517,7 @@ class TestUpgradePage(BaseTestCase):
 
     ## Tests of various cases of the upgrade page
     def test_first_upgrade(self):
-        self.assertTrue(self.site_location.tierinfo.free_trial_available)
+        self.assertTrue(self.site_settings.tierinfo.free_trial_available)
         c = self._log_in_as_superuser()
         response = c.get(reverse('localtv_admin_tier'))
         self.assertTrue(response.context['offer_free_trial'])
@@ -4547,7 +4547,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'plus'. Let's consider what happens when
         # we want to upgrade to 'premium'
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4567,7 +4567,7 @@ class TestUpgradePage(BaseTestCase):
         # First, pretend the user went to the paypal_return view, and adjusted
         # the tier name, but without actually receiving the IPN.
         localtv.admin.tiers._paypal_return('premium')
-        self.assertEqual(SiteLocation.objects.get_current().tier_name, 'premium')
+        self.assertEqual(SiteSettings.objects.get_current().tier_name, 'premium')
         ti = TierInfo.objects.get_current()
         self.assertEqual('plus', ti.fully_confirmed_tier_name)
         # The tier name is updated, so the backend updates its state.
@@ -4586,7 +4586,7 @@ class TestUpgradePage(BaseTestCase):
         #
         # It also simulates a support staff person actually cancelling the
         # old payment.
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
         ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
@@ -4609,7 +4609,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'plus'. Let's consider what happens when
         # we want to upgrade to 'premium'
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4634,7 +4634,7 @@ class TestUpgradePage(BaseTestCase):
         #
         # It also simulates a support staff person actually cancelling the
         # old payment.
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
         ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
@@ -4642,7 +4642,7 @@ class TestUpgradePage(BaseTestCase):
         # First, pretend the user went to the paypal_return view, and adjusted
         # the tier name, but without actually receiving the IPN.
         localtv.admin.tiers._paypal_return('premium')
-        self.assertEqual(SiteLocation.objects.get_current().tier_name, 'premium')
+        self.assertEqual(SiteSettings.objects.get_current().tier_name, 'premium')
         ti = TierInfo.objects.get_current()
         self.assertEqual('', ti.fully_confirmed_tier_name)
         # The tier name was already updated, so the backend need not update its state.
@@ -4672,7 +4672,7 @@ class TestUpgradePage(BaseTestCase):
         self.assertFalse(ti.in_free_trial)
         self.assertFalse(ti.current_paypal_profile_id)
         # We are in 'basic' now.
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('basic', sl.tier_name)
 
         # If we upgrade to a paid tier...
@@ -4694,7 +4694,7 @@ class TestUpgradePage(BaseTestCase):
         self.assertTrue(ti.in_free_trial)
         self.assertTrue(ti.current_paypal_profile_id)
         first_profile = ti.current_paypal_profile_id
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         # If we want to upgrade... let's look at the upgrade page state:
@@ -4707,7 +4707,7 @@ class TestUpgradePage(BaseTestCase):
         # This means that if someone changes the payment amount to $35/mo
         # we will be at 'premium'.
         self._run_method_from_ipn_integration_test_case('upgrade_between_paid_tiers')
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
         ti = sl.tierinfo
         self.assertNotEqual(ti.current_paypal_profile_id, first_profile)
@@ -4716,7 +4716,7 @@ class TestUpgradePage(BaseTestCase):
         # First, upgrade and downgrade...
         self.test_downgrade_to_paid_not_during_a_trial()
 
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('plus', sl.tier_name)
 
         # Travel to the future
@@ -4745,7 +4745,7 @@ class TestUpgradePage(BaseTestCase):
                 '%d.00' % premium['cost_for_prorated_period'],
                 str(PREMIUM_COST),
                 '%d D' % premium['days_covered_by_prorating'])
-            sl = SiteLocation.objects.get_current()
+            sl = SiteSettings.objects.get_current()
             self.assertEqual('premium', sl.tier_name)
             # Also, no emails.
             self.assertEqual(set(['superuser@testserver.local']),
@@ -4768,7 +4768,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'max'. Let's consider what happens when
         # we want to downgrade to 'premium'
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('max', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4801,7 +4801,7 @@ class TestUpgradePage(BaseTestCase):
 
         # We are in 'premium'. Let's consider what happens when
         # we want to downgrade to 'plus'
-        sl = SiteLocation.objects.get_current()
+        sl = SiteSettings.objects.get_current()
         self.assertEqual('premium', sl.tier_name)
 
         c = self._log_in_as_superuser()
@@ -4828,7 +4828,7 @@ class TestUpgradePage(BaseTestCase):
         self.assertEqual(old_profile, ti.current_paypal_profile_id)
         self.assertEqual([], mail.outbox)
         self.assertFalse(ti.in_free_trial)
-        self.assertEqual('plus', SiteLocation.objects.get_current().tier_name)
+        self.assertEqual('plus', SiteSettings.objects.get_current().tier_name)
 
 class TestFreeTrial(BaseTestCase):
 

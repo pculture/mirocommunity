@@ -30,12 +30,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="col-one-half">
 			<div class="pod">
 				<header class="pod-header">
-					<h1 class="pod-title">{% blocktrans with sitelocation.site.name as name %}About {{ name }}{% endblocktrans %}</h1>
+					<h1 class="pod-title">{% blocktrans with site_settings.site.name as name %}About {{ name }}{% endblocktrans %}</h1>
 				</header>
 				<div class="pod-content">
-					<img class="logo" alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{{ sitelocation.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
+					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
 					{% autoescape off %}
-						{{ sitelocation.about_html }}
+						{{ site_settings.about_html }}
 					{% endautoescape %}
 				</div>
 			</div>{# /.pod #}

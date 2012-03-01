@@ -36,7 +36,8 @@ urlpatterns = patterns(
 # Listing patterns
 category_videos = CategoryVideoSearchView.as_view(
     template_name='localtv/category.html',
-    default_filter='category',
+    url_filter='category',
+    url_filter_kwarg='slug',
     default_sort='-date'
 )
 urlpatterns += patterns(
@@ -58,7 +59,7 @@ urlpatterns += patterns(
                     ), name='localtv_author_index'),
     url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
                         template_name='localtv/author.html',
-                        default_filter='author',
+                        url_filter='author',
                         default_sort='-date'
                     ), name='localtv_author'))
 

@@ -1,4 +1,6 @@
 {% extends "localtv/__base.html" %}
+{% load comments %}
+{% load author_comment %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -45,6 +47,41 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% if author.get_profile.website %}<li class="author-website"><a href="{{ author.get_profile.website }}">Website</a></li>{% endif %}
 				</ul>
 				<div>{{ author.get_profile.description|sanitize }}</div>
+				
+				{% get_author_comment_count for author as comment_count %}
+				
+				{% if comment_count %}
+					<div id="author_comments"><h2 class="comments-title">{{ comment_count }} Recent Comment{{ comment_count|pluralize }}</h2>{% endif %}
+					{% get_author_comments for author as comments %}
+						{% if comments %}
+						<ul id="author-comments">
+							{% for comment in comments %}
+								<li class="comment">
+									<div class="comment-poster">
+										<h4 id="c{{ comment.id }}">{% if comment.content_object %}<a href="{% url localtv_view_video comment.content_object.pk comment.content_object.slug %}">{{ comment.content_object.name }}</a>{% else %}{{ comment.user_name }}{% endif %}</h4>
+										<span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
+										{% if user_is_admin %}
+											<div class="comment-moderation">
+												<form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
+													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+													<button type="submit">delete</button>
+												</form>
+												<form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
+													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
+													<button type="submit">spam</button>
+												</form>
+											</div>
+										{% endif %}
+									</div>
+									<div class="comment-body">
+										{{ comment.comment|sanitize }}
+									</div>
+								</li>
+							{% endfor %}
+						</ul>
+					</div>
+				{% endif %}
+				
 			</aside>
 			<div class="author-videos col-two-thirds content-box right">
 				{% include "localtv/_video_summary_list.html" %}

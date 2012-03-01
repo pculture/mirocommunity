@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2009, 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -54,8 +55,8 @@ class SubmitPermissionsTestCase(BaseTestCase):
         check.
 
         """
-        self.site_location.submission_requires_login = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = False
+        self.site_settings.save()
         self.assertTrue(_has_submit_permissions(self.anonymous_request))
         self.assertTrue(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))
@@ -66,9 +67,9 @@ class SubmitPermissionsTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = True
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = True
+        self.site_settings.save()
         self.assertFalse(_has_submit_permissions(self.anonymous_request))
         self.assertTrue(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))
@@ -79,9 +80,9 @@ class SubmitPermissionsTestCase(BaseTestCase):
         requests should pass the permissions check.
 
         """
-        self.site_location.submission_requires_login = True
-        self.site_location.display_submit_button = False
-        self.site_location.save()
+        self.site_settings.submission_requires_login = True
+        self.site_settings.display_submit_button = False
+        self.site_settings.save()
         self.assertFalse(_has_submit_permissions(self.anonymous_request))
         self.assertFalse(_has_submit_permissions(self.user_request))
         self.assertTrue(_has_submit_permissions(self.admin_request))

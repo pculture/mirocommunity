@@ -47,12 +47,13 @@ urlpatterns = patterns(
                 ), name='localtv_list_featured'),
     url(r'^tag/(?P<name>.+)/$', VideoSearchView.as_view(
                     template_name='localtv/video_listing_tag.html',
-                    default_filter='tag',
+                    url_filter='tag',
+                    url_filter_kwarg='name',
                     default_sort='-date'
                 ), name='localtv_list_tag'),
     url(r'^feed/(?P<pk>\d+)/?$', VideoSearchView.as_view(
                     template_name='localtv/video_listing_feed.html',
-                    default_filter='feed',
+                    url_filter='feed',
                     default_sort='-date'
                 ), name='localtv_list_feed')
 )

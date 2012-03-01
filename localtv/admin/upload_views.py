@@ -36,8 +36,6 @@ def filter_admin_files(sender, file_paths=None, **kwargs):
             else:
                 # By default, we remove admin files from the zip file that you get back.
                 to_remove.append(path)
-        elif '/inline_edit' in path:
-            to_remove.append(path)
         elif '/uploadtemplate/' in path:
             to_remove.append(path)
         elif '/flatpages/' in path:

@@ -56,7 +56,7 @@ class Command(BaseCommand):
         html_template_name = args[0]
         subject_unformatted = 'Important: Changes to {% firstof site.name site.domain %}'
         subject = django.template.Template(subject_unformatted).render(
-                         django.template.Context({'site': localtv.models.SiteLocation.objects.get_current().site}))
+                         django.template.Context({'site': localtv.models.SiteSettings.objects.get_current().site}))
 
         if not html_template_name.endswith('.html'):
             print >> sys.stderr, "Eek, it has to end with .html."
@@ -67,30 +67,30 @@ class Command(BaseCommand):
             print >> sys.stderr, "Seems we have already sent this. Skipping."
             sys.exit(1)
 
-        sitelocation = localtv.models.SiteLocation.objects.get_current()
+        site_settings = localtv.models.SiteSettings.objects.get_current()
 
         # Check if the site is, for some reason, still in no_enforce mode.
         # If enforcement is disabled, bail out.
-        if not sitelocation.enforce_tiers():
+        if not site_settings.enforce_tiers():
             print >> sys.stderr, "Enforcement is disabled. Bailing out now!"
             return
 
-        if sitelocation.tier_name != 'basic':
+        if site_settings.tier_name != 'basic':
             print >> sys.stderr, "Um um um the site should really be in basic."
             print >> sys.stderr, "Bailing out."
             return
 
-        if sitelocation.tierinfo.site_is_subsidized():
+        if site_settings.tierinfo.site_is_subsidized():
             print >> sys.stderr, "Seems the site is subsidized. Skipping."
             self.mark_as_sent(html_template_name)
             return
 
-        warnings = localtv.tiers.user_warnings_for_downgrade(sitelocation.tier_name)
+        warnings = localtv.tiers.user_warnings_for_downgrade(site_settings.tier_name)
         # There is no reason to hack these warnings. They are the real deal.
 
         data = {'warnings': warnings}
-        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(sitelocation.get_tier().admins_limit())
-        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(sitelocation.get_tier())
+        data['would_lose_admin_usernames'] = localtv.tiers.push_number_of_admins_down(site_settings.get_tier().admins_limit())
+        data['videos_over_limit'] = localtv.tiers.hide_videos_above_limit(site_settings.get_tier())
         data['video_count'] = localtv.tiers.current_videos_that_count_toward_limit().count()
 
         # Okay! We need to create the text template object, and the html template object,
@@ -102,7 +102,7 @@ class Command(BaseCommand):
 
         if warnings:
             localtv.tiers.send_tiers_related_multipart_email(subject, template_name=None,
-                                                         sitelocation=localtv.models.SiteLocation.objects.get_current(),
+                                                         site_settings=localtv.models.SiteSettings.objects.get_current(),
                                                          override_text_template=text_template_obj,
                                                          override_html_template=html_template_obj,
                                                          extra_context=data)
@@ -110,7 +110,7 @@ class Command(BaseCommand):
             # to squish the site down to size.
 
             # Will we unpublish videos? If so, save a quick note about them.
-            new_limit = sitelocation.get_tier().videos_limit()
+            new_limit = site_settings.get_tier().videos_limit()
             current_count = localtv.tiers.current_videos_that_count_toward_limit(
                 ).count()
             if current_count <= new_limit:
@@ -122,13 +122,13 @@ class Command(BaseCommand):
                 disable_these_videos = localtv.tiers.current_videos_that_count_toward_limit().order_by('pk')[:count]
                 disable_these_pks = list(disable_these_videos.values_list('id', flat=True))
                 as_json = simplejson.dumps(disable_these_pks)
-                filename = os.path.join('/var/tmp/', 'videos-disabled-' + hashlib.sha1(sitelocation.site.domain).hexdigest() + '.json')
+                filename = os.path.join('/var/tmp/', 'videos-disabled-' + hashlib.sha1(site_settings.site.domain).hexdigest() + '.json')
                 file_obj = open(filename, 'w')
                 file_obj.write(as_json)
                 file_obj.close()
 
             # Okay. Now actually squish the site down to size.
-            localtv.tiers.pre_save_adjust_resource_usage(sitelocation, signal=None)
+            localtv.tiers.pre_save_adjust_resource_usage(site_settings, signal=None)
 
         else:
             print >> sys.stderr, "This site does not have any warnings, so, like, whatever."

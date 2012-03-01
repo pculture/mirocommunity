@@ -20,59 +20,36 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
+from daguerre.templatetags.images import ImageResizeNode, ImageProxy
+
 register = template.Library()
 
-class ThumbnailNode(template.Node):
+class ThumbnailNode(ImageResizeNode):
+    """
+    Essentially an implementation of daguerre's ImageResizeNode with a
+    different interface, to maintain backwards compatibility with old
+    localtv_thumbnail template tags.
+    
+    """
+    
     def __init__(self, video, size, as_varname=None, absolute=False):
+        self.asvar = as_varname
+        self.absolute = absolute # ???
         self.video = video
-        self.size = size
-        self.as_varname = as_varname
-        self.absolute = absolute
-
+        self.width, self.height = size
+    
     def render(self, context):
-        video = self.video.resolve(context)
-        thumbnail_url = self.get_thumbnail_url(video, context)
-        if self.as_varname is not None:
-            context[self.as_varname] = thumbnail_url
+        image = self.video.resolve(context).thumbnail
+        kwargs = {'width': self.width, 'height': self.height, 'method': 'fill'}
+        
+        proxy = ImageProxy(image, kwargs)
+        
+        if self.asvar is not None:
+            context[self.asvar] = proxy
             return ''
-        else:
-            return thumbnail_url
+        return proxy
 
-    def get_thumbnail_url(self, video, context):
-        if getattr(video, '_livesearch', False):
-            return video.thumbnail_url
 
-        thumbnail = None
-
-        if video.has_thumbnail:
-            thumbnail = video
-        elif video.feed and video.feed.has_thumbnail:
-            thumbnail = video.feed
-        elif video.search and video.search.has_thumbnail:
-            thumbnail = video.search
-
-        if not thumbnail:
-            return settings.STATIC_URL + 'localtv/images/default_vid.gif'
-
-        url = default_storage.url(
-            thumbnail.get_resized_thumb_storage_path(*self.size))
-
-        if thumbnail._meta.get_latest_by:
-            key = hex(hash(getattr(thumbnail,
-                                   thumbnail._meta.get_latest_by)))[-8:]
-            url = '%s?%s' % (url, key)
-        if not self.absolute or url.startswith(('http://', 'https://')):
-            # full URL, return it
-            return url
-        else:
-            # add the domain
-            if 'request' in context:
-                request = context['request']
-                scheme = 'https' if request.is_secure() else 'http'
-            else:
-                scheme = 'http'
-            domain = Site.objects.get_current().domain
-            return '%s://%s%s' % (scheme, domain, url)
 @register.tag('get_thumbnail_url')
 def get_thumbnail_url(parser, token):
     tokens = token.split_contents()

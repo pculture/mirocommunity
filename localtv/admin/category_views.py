@@ -22,15 +22,15 @@ from django.views.decorators.csrf import csrf_protect
 
 import localtv.settings
 from localtv.decorators import require_site_admin
-from localtv.models import Category, Video, SiteLocation
+from localtv.models import Category, Video, SiteSettings
 from localtv.utils import MockQueryset
 from localtv.admin import forms
 
 @require_site_admin
 @csrf_protect
 def categories(request):
-    sitelocation = SiteLocation.objects.get_current()
-    categories = MockQueryset(Category.in_order(sitelocation.site))
+    site_settings = SiteSettings.objects.get_current()
+    categories = MockQueryset(Category.in_order(site_settings.site))
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
@@ -41,7 +41,7 @@ def categories(request):
     add_category_form = forms.CategoryForm()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
-            category = Category(site=sitelocation.site)
+            category = Category(site=site_settings.site)
             add_category_form = forms.CategoryForm(request.POST,
                                                    request.FILES,
                                                    instance=category)

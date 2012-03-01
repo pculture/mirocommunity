@@ -26,7 +26,7 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.views.generic.list_detail import object_list
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
 
 from localtv.playlists import forms
@@ -34,10 +34,10 @@ from localtv.playlists.models import Playlist
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        sitelocation = SiteLocation.objects.get_current()
-        if not sitelocation.playlists_enabled:
+        site_settings = SiteSettings.objects.get_current()
+        if not site_settings.playlists_enabled:
             raise Http404
-        if sitelocation.playlists_enabled == 2 and \
+        if site_settings.playlists_enabled == 2 and \
                 not request.user_is_admin():
             raise Http404
         return func(request, *args, **kwargs)
@@ -132,6 +132,7 @@ def index(request):
                 request.POST = POST
             form = forms.PlaylistForm(request.POST,
                                       instance=Playlist(
+                    site=SiteSettings.objects.get_current().site,
                     user=request.user))
             if form.is_valid():
                 playlist = form.save()

@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 	<script type="text/javascript" src="{% get_static_url 'localtv/js/extern/jquery.form.js' bundled %}?version={{ mc_version }}"></script>
 	<script type="text/javascript" src="{% get_static_url 'localtv/js/comment.js' bundled %}?version={{ mc_version }}"></script>
-	{% if playlistitem_set or playlists or user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' bundled %}?version={{ mc_version }}"></script>{% endif %}
+	{% if playlistitem_set or playlists or user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' bundled %}?version={{ mc_version }}"></script>{% endif %}
 	{% include "localtv/_video_meta.html" %}
 	{% if current_video.video_service %}
 		<style type="text/css">
@@ -148,7 +148,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</div>
 				</div>{# /.comments.pod #}
 			{% endif %}{# endif comments #}
-			{% if not sitelocation.comments_required_login or request.user.is_authenticated %}
+			{% if not site_settings.comments_required_login or request.user.is_authenticated %}
 				{% get_comment_form for current_video as comment_form %}
 				<div class="pod">
 					<header class="pod-header">
@@ -176,7 +176,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					<ul class="share_links">
 						<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">{% trans "Post to Facebook" %}</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
 						<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
-						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ sitelocation.site.name }}: http://{{sitelocation.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
+						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ site_settings.site.name }}: http://{{site_settings.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
 						{% if current_video.file_url %}
 							<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
 						{% endif %}
@@ -226,7 +226,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</header>
 				<div class="pod-content">
 					{# TODO: I c/p'd all of the following playlist code from the previous template. Go through later and see what's really necessary. - Harris, 11 Feb 2012 #}
-					{% if sitelocation.playlists_enabled %}
+					{% if site_settings.playlists_enabled %}
 						{% if playlistitem %}
 							<div class="sidebar_header">
 								<h2>{% blocktrans with num=playlistitem.index count=playlistitem.playlist.items.count %}This video is number {{ num }} (of {{ count }}) in the playlist{% endblocktrans %}</h2>
@@ -243,8 +243,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 							</div>
 						{% endif %}
 						{# The logic I want is 'if can make playlists or (items and (not playlist or more than 1 item))' #}
-						{% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set %}
-							{% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
+						{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set %}
+							{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
 								{% if not playlistitem or playlistitem_set|length > 1 %}
 									<div class="sidebar_header">
 										<h2>{% if playlistitem %}{% trans "Other playlists that include this video" %}{% else %}{% trans "Playlists" %}{% endif %}</h2>
@@ -276,7 +276,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 									</div>
 								</div>
 							{% endif %}
-							{% if user_is_admin and sitelocation.playlists_enabled or request.user.is_authenticated and sitelocation.playlists_enabled == 1 %}
+							{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}
 								<form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
 									<select name="playlist" id="id_playlist">
 										<option value="">{% trans "Add video to your playlist" %}</option>

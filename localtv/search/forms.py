@@ -50,19 +50,13 @@ class VideoSearchForm(SmartSearchForm):
 
 
 class FilterForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    """
+    Form for filtering the results of a GET request for a filtered view. Takes
+    the view instance as an additional first argument on ``__init__``.
+
+    """
+    def __init__(self, view, *args, **kwargs):
         super(FilterForm, self).__init__(*args, **kwargs)
-        from localtv.search.utils import SortFilterMixin
-        for filter_name, filter_def in SortFilterMixin.filters.iteritems():
-            if filter_name not in self.fields:
-                model = filter_def['model']
-                qs = model._default_manager.all()
-                try:
-                    model._meta.get_field_by_name('site')
-                except FieldDoesNotExist:
-                    pass
-                else:
-                    qs = qs.filter(site=Site.objects.get_current())
-                self.fields[filter_name] = forms.ModelMultipleChoiceField(qs,
-                            required=False, widget=forms.CheckboxSelectMultiple,
-                            label=_(model._meta.verbose_name_plural))
+        for filter_name, f in view.filters.iteritems():
+            if filter_name not in view.filters:
+                self.fields[filter_name] = f.formfield()
