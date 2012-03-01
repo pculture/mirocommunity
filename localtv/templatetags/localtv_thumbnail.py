@@ -25,7 +25,13 @@ from daguerre.templatetags.images import ImageResizeNode, ImageProxy
 register = template.Library()
 
 class ThumbnailNode(ImageResizeNode):
-    "Essentially an implementation of daguerre.templatetags.images.ImageResizeNode with a different interface, to maintain backwards compatibility with old localtv_thumbnail template tags."
+    """
+    Essentially an implementation of daguerre's ImageResizeNode with a
+    different interface, to maintain backwards compatibility with old
+    localtv_thumbnail template tags.
+    
+    """
+    
     def __init__(self, video, size, as_varname=None, absolute=False):
         self.asvar = as_varname
         self.absolute = absolute # ???
