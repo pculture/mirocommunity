@@ -123,6 +123,10 @@ class Sort(object):
 
 
 class BestDateSort(Sort):
+
+    def __init__(self, descending=False):
+        self.descending = descending
+
     def get_field(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteLocation.objects.get_current().use_original_date):
@@ -130,6 +134,9 @@ class BestDateSort(Sort):
         return 'best_date'
 
     def sort(self, queryset, descending=False):
+        if self.descending:
+            # flips the default to descending, rather than ascending, time
+            descending = not descending
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_best_date(
                            SiteLocation.objects.get_current().use_original_date)
@@ -306,7 +313,7 @@ class SortFilterMixin(object):
         'approved': ApprovedSort(),
 
         # deprecated
-        'latest': BestDateSort()
+        'latest': BestDateSort(descending=True)
     }
 
     #: Defines the available filtering options and the indexes that they
@@ -396,6 +403,7 @@ class SortFilterMixin(object):
         sort_name, desc = self._process_sort(sort_string)
         sort = self.sorts.get(sort_name, None)
         if sort is not None:
+            print 'SORTING WITH', sort, desc
             return sort.sort(queryset, descending=desc)
         return queryset
 

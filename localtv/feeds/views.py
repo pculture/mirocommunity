@@ -42,7 +42,6 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 LOCALTV_FEED_LENGTH = 30
 
 class BaseVideosFeed(FeedView, SortFilterViewMixin):
-    title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
 
@@ -187,6 +186,9 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
                 value = default
 
         return value
+
+    def item_title(self, video):
+        return video.name
 
     def item_pubdate(self, video):
         if not video.status == Video.ACTIVE:
@@ -365,7 +367,7 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def _get_query(self, request):
         # HACK to pull the query out of the path
-        return u'/'.join(request.path.split('/')[3:])
+        return request.path.split('/')[-1]
 
     def link(self, obj):
         args = {'q': obj['obj'].encode('utf-8')}

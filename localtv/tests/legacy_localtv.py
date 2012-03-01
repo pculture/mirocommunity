@@ -2246,7 +2246,7 @@ class TierMethodsTests(BaseTestCase):
         self.assertEqual(datetime.timedelta(hours=5),
                          ti.time_until_free_trial_expires(now=now))
 
-class FeedViewTestCase(BaseTestCase):
+class LegacyFeedViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
