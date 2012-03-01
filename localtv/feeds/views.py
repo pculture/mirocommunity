@@ -50,7 +50,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         if json:
             self.feed_type = JSONGenerator
 
-    def _get_cache_key(self, vary):
+    def _get_cache_key(self, request, vary):
         return u'localtv_feed_cache:%(domain)s:%(class)s:%(vary)s' % {
             'domain': Site.objects.get_current().domain,
             'class': self.__class__.__name__,
@@ -74,7 +74,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             repr(args),
             repr(kwargs),
         )
-        cache_key = self._get_cache_key(vary)
+        cache_key = self._get_cache_key(request, vary)
 
         response = cache.get(cache_key)
         if response is None:
@@ -351,10 +351,21 @@ class TagVideosFeed(BaseVideosFeed):
 
 
 class SearchVideosFeed(BaseVideosFeed):
+
+    def _get_cache_key(self, request, vary):
+        key = super(SearchVideosFeed, self)._get_cache_key(request, vary)
+        if request.GET.get('sort', None) == 'latest':
+            return '%s:latest' % key
+        return key
+
     def get_object(self, request, query):
         obj = BaseVideosFeed.get_object(self, request, query)
         obj['obj'] = query
         return obj
+
+    def _get_query(self, request):
+        # HACK to pull the query out of the path
+        return u'/'.join(request.path.split('/')[3:])
 
     def link(self, obj):
         args = {'q': obj['obj'].encode('utf-8')}
@@ -371,6 +382,12 @@ class SearchVideosFeed(BaseVideosFeed):
 
 class PlaylistVideosFeed(BaseVideosFeed):
     url_filter = 'playlist'
+
+    def _get_cache_key(self, request, vary):
+        key = super(PlaylistVideosFeed, self)._get_cache_key(request, vary)
+        if request.GET.get('sort', None) == 'order':
+            return '%s:order' % key
+        return key
 
     def link(self, obj):
         return obj['obj'].get_absolute_url()
