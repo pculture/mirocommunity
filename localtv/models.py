@@ -186,8 +186,7 @@ class Thumbnailable(models.Model):
 
     @property
     def thumbnail(self):
-        filepath = os.path.join(settings.MEDIA_ROOT, self.get_original_thumb_storage_path())
-        return file(filepath)
+        return default_storage.open(self.get_original_thumb_storage_path())
 
     def get_original_thumb_storage_path(self):
         """
