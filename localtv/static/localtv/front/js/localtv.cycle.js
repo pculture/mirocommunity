@@ -1,5 +1,5 @@
 $(function(){
-    $('[data-cycle]').cycle({
-        fx: 'scrollUp'
-    })
+	$('[data-cycle]').cycle({
+		fx: 'scrollUp',
+	});
 })

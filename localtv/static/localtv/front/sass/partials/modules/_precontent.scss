@@ -5,6 +5,13 @@
 	margin:0 -100px; // Hides the edges of the shadow off the side of the window.
 }
 
+
+@media screen and (max-width: 740px){
+	.precontent{
+		margin:0; // That causes trouble in single column mode.
+	}
+}
+
 .precontent-details{
 	@extend .col-one-third;
 	@extend .right;

@@ -1188,28 +1188,29 @@ ol > li {
   margin: 0 -100px;
 }
 
-/* line 8, ../sass/partials/modules/_precontent.scss */
+@media screen and (max-width: 740px) {
+  /* line 10, ../sass/partials/modules/_precontent.scss */
+  .precontent, .video-full {
+    margin: 0;
+  }
+}
+/* line 15, ../sass/partials/modules/_precontent.scss */
 .precontent-details, .video-details, .details-large {
   color: #EEE;
   text-shadow: 0 -1px 0 black;
 }
-/* line 14, ../sass/partials/modules/_precontent.scss */
+/* line 21, ../sass/partials/modules/_precontent.scss */
 .precontent-details h1 > a, .video-details h1 > a, .details-large h1 > a {
   color: #FFF;
   border: none;
 }
 
-/* line 1, ../sass/partials/modules/_video_large_preview.scss */
-.video-large {
-  height: 400px;
-}
-
-/* line 4, ../sass/partials/modules/_video_large_preview.scss */
+/* line 3, ../sass/partials/modules/_video_large_preview.scss */
 .preview-large a {
   border: none;
 }
 
-/* line 7, ../sass/partials/modules/_video_large_preview.scss */
+/* line 6, ../sass/partials/modules/_video_large_preview.scss */
 .preview-large img {
   display: block;
 }
