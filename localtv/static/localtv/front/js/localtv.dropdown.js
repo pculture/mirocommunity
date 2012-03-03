@@ -5,9 +5,11 @@ $(function(){
 			dropdown_target = dropdown_parent.children('[data-dropdown-target]');
 		if($this.data('open')){
 			dropdown_target.hide()
+			dropdown_parent.removeClass('open')
 			$this.data('open', false)
 		}else{
 			dropdown_target.show()
+			dropdown_parent.addClass('open')
 			$this.data('open', true)
 		}
 		e.preventDefault()
