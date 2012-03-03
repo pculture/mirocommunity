@@ -32,9 +32,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
 	</li>
 	{% if categories %}
-		<li class="nav-item nav-categories">
+		<li class="nav-item nav-categories" data-dropdown="true">
 			<a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a>
-			<ul>
+			<ul data-dropdown-target="true">
 				{% for category in categories %}
 					<li class="nav-category-item">
 						<a href="{{ category.get_absolute_url }}">{{ category }}</a>

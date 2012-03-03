@@ -45,9 +45,9 @@
 .nav-categories{
 	position:relative;
 }
-.nav-categories:hover ul{
+/*.nav-categories:hover ul{
 	display:block;
-}
+}*/
 .nav-categories > ul{
 	@extend .unstyled-list;
 	@extend .row-nested;

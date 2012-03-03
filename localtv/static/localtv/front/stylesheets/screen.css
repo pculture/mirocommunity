@@ -822,11 +822,9 @@ ol > li {
   position: relative;
 }
 
-/* line 48, ../sass/partials/modules/_navigation.scss */
-.nav-categories:hover ul {
-  display: block;
-}
-
+/*.nav-categories:hover ul{
+	display:block;
+}*/
 /* line 51, ../sass/partials/modules/_navigation.scss */
 .nav-categories > ul {
   display: none;
