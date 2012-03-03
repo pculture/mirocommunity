@@ -889,13 +889,20 @@ ol > li {
   background-image: linear-gradient(#111111, #333333);
 }
 
+/* line 85, ../sass/partials/modules/_navigation.scss */
+.nav-item-dropdown > a::after {
+  content: "\25BC";
+  font-size: 8px;
+  margin-left: 4px;
+}
+
 @media screen and (max-width: 740px) {
-  /* line 89, ../sass/partials/modules/_navigation.scss */
+  /* line 92, ../sass/partials/modules/_navigation.scss */
   .nav-item, .navigation-list-secondary {
     float: none;
   }
 
-  /* line 92, ../sass/partials/modules/_navigation.scss */
+  /* line 95, ../sass/partials/modules/_navigation.scss */
   .nav-categories > ul {
     width: 100%;
   }

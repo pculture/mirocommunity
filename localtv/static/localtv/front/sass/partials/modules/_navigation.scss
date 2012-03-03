@@ -82,7 +82,10 @@
 	}
 }
 
-.nav-admin{
+.nav-item-dropdown > a::after{
+	content:"\25BC";
+	font-size:8px;
+	margin-left:4px;
 }
 
 @media screen and (max-width: 740px){
