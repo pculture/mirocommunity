@@ -14,9 +14,11 @@
 	overflow: hidden;
 }
 
-.home-page .popular > .pod-content,
-.home-page .popular > .pod-footer,
-.home-page .new > .pod-content,
-.home-page .new > .pod-footer{
+.basic .popular > .pod-content,
+.basic .popular > .pod-footer,
+.cyclops .popular > .pod-content,
+.cyclops .popular > .pod-footer,
+.basic .new > .pod-content,
+.basic .new > .pod-footer{
 	@extend .right-sidebar;
 }

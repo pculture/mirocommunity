@@ -7,12 +7,12 @@ $thumb-width: 140px;
 .video-summary{
 	@include pie-clearfix;
 	@include margin-trailer;
-	padding-left:$thumb-width + $gutter-width;
+	padding-left:$thumb-width + ($gutter-width/2);
 }
 
 .thumb{
 	width:$thumb-width;
-	margin-left:- $thumb-width - 2px - $gutter-width;
+	margin-left:- $thumb-width - 2px - ($gutter-width/2);
 	float:left;
 	position:relative;
 	& > a{

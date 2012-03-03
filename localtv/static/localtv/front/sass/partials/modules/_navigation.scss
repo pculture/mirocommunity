@@ -26,7 +26,7 @@
 
 .nav-item > a{
 	display:block;
-	@extend .padded;
+	@extend .padded-half;
 	color:#DDD;
 	text-shadow:0 -1px 0 #000;
 	margin:-1px 0;

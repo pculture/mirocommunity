@@ -1,0 +1,14 @@
+{% load daguerre i18n %}
+
+<article class="video-large">
+	<div class="preview-large col-two-thirds">
+		<a href="{{ video.get_absolute_url }}"><img src="{% resize video.thumbnail width=640 height=400 method="fill" %}" /></a>
+	</div>
+	<div class="details-large content-box col-one-third">
+		<header>
+			<h1><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h1>
+		</header>
+		<p>{{ video.description|safe }}</p>
+		<p><a href="{{ video.get_absolute_url }}" class="button-wide">{% trans "Watch Video" %}</a></p>
+	</div>
+</article>

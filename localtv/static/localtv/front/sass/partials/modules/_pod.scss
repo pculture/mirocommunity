@@ -20,17 +20,14 @@
 }
 
 .pod-actions {
-	@extend .unstyled-list;
+	@extend .padded-half;
 	position:absolute;
 	top:0;
 	right:0;
-	@include padding-leader(0.5);
-	@include padding-trailer(0.5);
-	padding-left: $gutter-width / 2;
-	padding-right: $gutter-width / 2;
 	li{
+		list-style-type:none;
 		float:left;
-		margin-left: $gutter-width / 2;
+		margin-left: $gutter-width / 4;
 	}
 	a{
 		display:block;

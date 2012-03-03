@@ -1,0 +1,18 @@
+.precontent{
+	background-color:#343639;
+	@include clearfix;
+	@include box-shadow(0 1px 0 0 #FFF, 0 -2px 32px rgba(0,0,0,.35) inset);
+	margin:0 -100px; // Hides the edges of the shadow off the side of the window.
+}
+
+.precontent-details{
+	@extend .col-one-third;
+	@extend .right;
+	@extend .padded;
+	color:#EEE;
+	text-shadow:0 -1px 0 #000;
+	h1 > a{
+		color:#FFF;
+		border:none;
+	}
+}

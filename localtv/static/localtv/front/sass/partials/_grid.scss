@@ -1,7 +1,7 @@
 @import "compass/css3/box-sizing",
 		"compass/utilities/general/clearfix";
 
-$gutter-width: 20px;
+$gutter-width: 40px;
 $column-gutter-width:0;
 $max-width-threshold: 960px;
 $single-column-threshold: 740px;
@@ -29,15 +29,28 @@ $single-column-threshold: 740px;
 	clear:right;
 }
 
-.padded{
+
+.padded-half{
 	@include padding-trailer(.5);
 	@include padding-leader(.5);
+	padding-left:$gutter-width/4;
+	padding-right:$gutter-width/4;
+}
+.padded{
+	@include padding-trailer(1);
+	@include padding-leader(1);
 	padding-left:$gutter-width/2;
 	padding-right:$gutter-width/2;
 }
-.unpadded{
+.unpadded-half{
 	@include margin-trailer(-.5);
 	@include margin-leader(-.5);
+	margin-left:-$gutter-width/4;
+	margin-right:-$gutter-width/4;
+}
+.unpadded{
+	@include margin-trailer(1);
+	@include margin-leader(1);
 	margin-left:-$gutter-width/2;
 	margin-right:-$gutter-width/2;
 }

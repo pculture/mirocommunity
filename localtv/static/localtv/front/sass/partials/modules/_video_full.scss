@@ -3,9 +3,7 @@
 		"compass/utilities/general/clearfix";
 
 .video-full{
-	background-color:#151617;
-	@include clearfix;
-	@include box-shadow(0 1px 0 0 #FFF);
+	@extend .precontent;
 }
 
 .video-player{
@@ -16,11 +14,7 @@
 }
 
 .video-details{
-	@extend .col-one-third;
-	@extend .right;
-	@extend .padded;
-	color:#EEE;
-	text-shadow:0 -1px 0 #000;
+	@extend .precontent-details;
 }
 .video-details > .video-header{
 	color:#FFF;
