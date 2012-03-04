@@ -2,15 +2,15 @@
 {% load i18n localtv_thumbnail uploadtemplate_tags %}
 
 <a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
-	<img alt="{{ sitelocation.site.name }} Logo" src="{% if sitelocation.logo %}{% get_thumbnail_url sitelocation 130 110 %}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" class="logo-img" />
+	<img alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{% get_thumbnail_url site_settings 130 110 %}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" class="logo-img" />
 </a>
 <h1 id="SiteTitle">
 	<a href="{{ localtv_index }}" class="site-name">
-		{{ sitelocation.site.name }}
+		{{ site_settings.site.name }}
 	</a>
 </h1>
 <h2 id="SiteTagline">
-	{{ sitelocation.tagline|safe }}
+	{{ site_settings.tagline|safe }}
 </h2>
 
 <form id="search" action="{% url 'localtv_search' %}" method="get">
