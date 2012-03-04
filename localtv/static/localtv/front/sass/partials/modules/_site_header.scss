@@ -34,7 +34,7 @@ $logo-width: 130px;
 }
 
 #search{
-	@extend .padded;
+	@extend .padded-half;
 	position:absolute;
 	top:0;
 	right:0;

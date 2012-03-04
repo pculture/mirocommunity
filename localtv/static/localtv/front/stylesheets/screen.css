@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 33, ../sass/partials/_grid.scss */
-.padded-half, .nav-item > a, .pod-actions, .page-actions {
+.padded-half, #search, .nav-item > a, .pod-actions, .page-actions {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -103,7 +103,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 39, ../sass/partials/_grid.scss */
-.padded, #header > .container, #search, #footer > .container, .pod-content, .pod-footer, .sidebar-about, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
+.padded, #header > .container, #footer > .container, .pod-content, .pod-footer, .sidebar-about, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
   padding-bottom: 18px;
   padding-top: 18px;
   padding-left: 20px;
