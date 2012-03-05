@@ -58,6 +58,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import vidscraper
+from haystack import connections
 
 from notification import models as notification
 import tagging
@@ -1817,10 +1818,24 @@ class Video(Thumbnailable, VideoBase):
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
 
+    def save(self, **kwargs):
+        """
+        Adds support for an ```update_index`` kwarg, defaulting to ``True``.
+        If this kwarg is ``False``, then no index updates will be run by the
+        search index.
+
+        """
+        # This actually relies on logic in
+        # :meth:`QueuedSearchIndex._enqueue_instance`
+        self._update_index = kwargs.pop('update_index', True)
+        super(Video, self).save(**kwargs)
+    save.alters_data = True
+
+
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
                               using='default', source_import=None, site_pk=None,
-                              authors=None, categories=None):
+                              authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
@@ -1912,9 +1927,12 @@ class Video(Thumbnailable, VideoBase):
                 source_import.handle_video(instance, video, using)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video, using=using)
+            if update_index:
+                index = connections[using].get_unified_index().get_index(cls)
+                index._enqueue_update(instance)
 
         if commit:
-            instance.save(using=using)
+            instance.save(using=using, update_index=False)
             save_m2m()
         else:
             instance._state.db = using
