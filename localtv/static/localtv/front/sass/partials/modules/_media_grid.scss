@@ -2,7 +2,7 @@
 
 .media-grid{
 	@extend .unstyled-list;
-	@include clearfix;
+	@include pie-clearfix;
 	margin-left:-$gutter-width;
 }
 

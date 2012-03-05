@@ -14,39 +14,6 @@ $thumb-width: 140px;
 	width:$thumb-width;
 	margin-left:- $thumb-width - 2px - ($gutter-width/2);
 	float:left;
-	position:relative;
-	& > a{
-		border:0;
-		display:block;
-		position:relative;
-		@include box-shadow(0 1px 2px 0 rgba(0,0,0,.35));
-		@include border-radius(3px);
-		overflow:hidden;
-		@include transition(all .25s linear);
-	}
-	& > a:hover{
-		border-color:$color2;
-		@include box-shadow(0 0 8px 0 $color2);
-	}
-	& > a > img{
-		display:block;
-		@include border-radius(3px);
-	}
-	// This adds gloss
-	& > a::after{
-		content: " ";
-		display:block;
-		position:absolute;
-		top:0;
-		left:0;
-		right:0;
-		bottom:0;
-		// @include background(linear-gradient(-45deg, rgba(255,255,255,.15) 0, rgba(255,255,255,.15) 50%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%));
-		@include background(linear-gradient(top left, rgba(255,255,255,.35), rgba(255,255,255,0)));
-		@include box-shadow(0 0 0 1px rgba(255,255,255,.25) inset);
-		@include border-radius(4px);
-		border:1px solid #000;
-	}
 }
 
 .video-title{

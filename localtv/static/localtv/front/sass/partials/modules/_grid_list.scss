@@ -3,7 +3,7 @@
 
 .grid-list{
 	@extend .unstyled-list;
-	@include clearfix;
+	@include pie-clearfix;
 }
 
 .grid-item{

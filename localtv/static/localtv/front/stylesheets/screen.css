@@ -584,83 +584,16 @@ ol > li {
   width: 140px;
   margin-left: -162px;
   float: left;
-  position: relative;
-}
-/* line 18, ../sass/partials/modules/_video_summary.scss */
-.video-summary > .thumb > a {
-  border: 0;
-  display: block;
-  position: relative;
-  -moz-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  -webkit-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  -o-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -o-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
-  overflow: hidden;
-  -moz-transition: all 0.25s linear;
-  -webkit-transition: all 0.25s linear;
-  -o-transition: all 0.25s linear;
-  transition: all 0.25s linear;
-}
-/* line 27, ../sass/partials/modules/_video_summary.scss */
-.video-summary > .thumb > a:hover {
-  border-color: #344f6d;
-  -moz-box-shadow: 0 0 8px 0 #344f6d;
-  -webkit-box-shadow: 0 0 8px 0 #344f6d;
-  -o-box-shadow: 0 0 8px 0 #344f6d;
-  box-shadow: 0 0 8px 0 #344f6d;
-}
-/* line 31, ../sass/partials/modules/_video_summary.scss */
-.video-summary > .thumb > a > img {
-  display: block;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -o-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
-}
-/* line 36, ../sass/partials/modules/_video_summary.scss */
-.video-summary > .thumb > a::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: -webkit-gradient(linear, 0% 0%, 100% 100%, color-stop(0%, rgba(255, 255, 255, 0.35)), color-stop(100%, rgba(255, 255, 255, 0)));
-  background: -webkit-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  background: -moz-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  background: -o-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  background: -ms-linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  background: linear-gradient(top left, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  -o-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -o-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -khtml-border-radius: 4px;
-  border-radius: 4px;
-  border: 1px solid #000;
 }
 
-/* line 52, ../sass/partials/modules/_video_summary.scss */
+/* line 19, ../sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 57, ../sass/partials/modules/_video_summary.scss */
+/* line 24, ../sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
@@ -1219,9 +1152,14 @@ ol > li {
 
 /* line 3, ../sass/partials/modules/_media_grid.scss */
 .media-grid {
-  overflow: hidden;
   *zoom: 1;
   margin-left: -40px;
+}
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+.media-grid:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* line 9, ../sass/partials/modules/_media_grid.scss */
@@ -1231,26 +1169,86 @@ ol > li {
   margin-bottom: 18px;
 }
 
-/* line 1, ../sass/partials/modules/_thumb.scss */
+/* line 4, ../sass/partials/modules/_thumb.scss */
 .thumb {
   margin-bottom: 9px;
+  position: relative;
+  background: black;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+}
+/* line 9, ../sass/partials/modules/_thumb.scss */
+.thumb > a {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  -moz-transition: all 0.25s linear;
+  -webkit-transition: all 0.25s linear;
+  -o-transition: all 0.25s linear;
+  transition: all 0.25s linear;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  border-bottom: 0;
+}
+/* line 17, ../sass/partials/modules/_thumb.scss */
+.thumb > a:hover {
+  border-color: #344f6d;
+  -moz-box-shadow: 0 0 8px 0 black;
+  -webkit-box-shadow: 0 0 8px 0 black;
+  -o-box-shadow: 0 0 8px 0 black;
+  box-shadow: 0 0 8px 0 black;
+}
+/* line 21, ../sass/partials/modules/_thumb.scss */
+.thumb > a > img {
+  display: block;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+}
+/* line 26, ../sass/partials/modules/_thumb.scss */
+.thumb > a::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -khtml-border-radius: 3px;
+  border-radius: 3px;
+  border: 3px solid black;
 }
 
-/* line 5, ../sass/partials/modules/_thumb.scss */
-.thumb a {
-  border: 0;
-  display: block;
-}
-
-/* line 10, ../sass/partials/modules/_thumb.scss */
-.thumb img {
-  display: block;
+/* line 1, ../sass/partials/modules/_title_link.scss */
+.title-link {
+  border-bottom: 0;
+  color: inherit;
 }
 
 /* line 4, ../sass/partials/modules/_grid_list.scss */
 .grid-list {
-  overflow: hidden;
   *zoom: 1;
+}
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+.grid-list:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* line 9, ../sass/partials/modules/_grid_list.scss */
@@ -1292,9 +1290,11 @@ ol > li {
 /* line 1, ../sass/partials/pages/_video_grid.scss */
 .video-grid > .media-item {
   width: 200px;
+  margin-bottom: 36px;
 }
 
-/* line 4, ../sass/partials/pages/_video_grid.scss */
-.video-grid a {
-  color: inherit;
+/* line 6, ../sass/partials/pages/_video_grid.scss */
+.video-grid > .media-item > .video-header {
+  height: 36px;
+  overflow: hidden;
 }
