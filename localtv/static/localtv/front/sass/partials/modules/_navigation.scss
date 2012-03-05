@@ -16,9 +16,6 @@
 
 .nav-item{
 	float:left;
-}
-
-.nav-item{
 	list-style-type:none;
 }
 
@@ -55,10 +52,17 @@
 	@include border-radius(5px);
 }
 
+.nav-item-dropdown > a{
+	position:relative;
+	padding-right:10px+$gutter-width/2;
+}
 .nav-item-dropdown > a::after{
 	content:"\25BC";
 	font-size:8px;
-	margin-left:4px;
+	position:absolute;
+	top: $base-line-height / 2;
+	right: 0;
+	margin-right: 10px;
 }
 
 @media screen and (max-width: 740px){

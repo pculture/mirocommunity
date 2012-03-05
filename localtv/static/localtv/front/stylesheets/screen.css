@@ -661,14 +661,10 @@ ol > li {
 /* line 17, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   float: left;
-}
-
-/* line 21, ../sass/partials/modules/_navigation.scss */
-.nav-item {
   list-style-type: none;
 }
 
-/* line 25, ../sass/partials/modules/_navigation.scss */
+/* line 22, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
   display: block;
   margin: -1px 0;
@@ -676,12 +672,12 @@ ol > li {
   border-top: 1px solid transparent;
 }
 
-/* line 33, ../sass/partials/modules/_navigation.scss */
+/* line 30, ../sass/partials/modules/_navigation.scss */
 .nav-categories {
   position: relative;
 }
 
-/* line 36, ../sass/partials/modules/_navigation.scss */
+/* line 33, ../sass/partials/modules/_navigation.scss */
 .nav-categories > ul {
   display: none;
   position: absolute;
@@ -697,12 +693,12 @@ ol > li {
   border-radius: 0 0 5px 5px;
 }
 
-/* line 47, ../sass/partials/modules/_navigation.scss */
+/* line 44, ../sass/partials/modules/_navigation.scss */
 .nav-category-item {
   padding: 3px;
 }
 
-/* line 51, ../sass/partials/modules/_navigation.scss */
+/* line 48, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a {
   display: block;
   border: 1px solid;
@@ -715,20 +711,29 @@ ol > li {
   border-radius: 5px;
 }
 
-/* line 58, ../sass/partials/modules/_navigation.scss */
+/* line 55, ../sass/partials/modules/_navigation.scss */
+.nav-item-dropdown > a {
+  position: relative;
+  padding-right: 30px;
+}
+
+/* line 59, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a::after {
   content: "\25BC";
   font-size: 8px;
-  margin-left: 4px;
+  position: absolute;
+  top: 9px;
+  right: 0;
+  margin-right: 10px;
 }
 
 @media screen and (max-width: 740px) {
-  /* line 65, ../sass/partials/modules/_navigation.scss */
+  /* line 69, ../sass/partials/modules/_navigation.scss */
   .nav-item, .navigation-list-secondary {
     float: none;
   }
 
-  /* line 68, ../sass/partials/modules/_navigation.scss */
+  /* line 72, ../sass/partials/modules/_navigation.scss */
   .nav-categories > ul {
     width: 100%;
   }
