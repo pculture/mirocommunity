@@ -45,6 +45,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.files.images import ImageFile
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
@@ -186,7 +187,8 @@ class Thumbnailable(models.Model):
 
     @property
     def thumbnail(self):
-        return default_storage.open(self.get_original_thumb_storage_path())
+        "Returns the original video thumbnail as an ImageFile."
+        return ImageFile(default_storage.open(self.get_original_thumb_storage_path()))
 
     def get_original_thumb_storage_path(self):
         """
