@@ -12,7 +12,8 @@
 			<li class="media-item">
 				<figure class="thumb">
 					<a href="{{ video.get_absolute_url }}">
-						<img src="{% resize video.thumbnail width=200 height=144 method="fill" %}" />
+						{% resize video.thumbnail width=200 height=144 method="fill" as image %}
+						<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
 					</a>
 				</figure>
 				<header class="video-header">
