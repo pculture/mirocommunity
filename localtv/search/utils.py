@@ -92,6 +92,14 @@ class Sort(object):
     #:           not be correctly handled by :mod:`haystack`.
     empty_value = EMPTY
 
+    def __init__(self, reversed=False):
+        """
+        `reversed` is a flag which, if True, reverses the search ordering.
+        This way, searches will default to descending, rather than ascending,
+        order.
+        """
+        self.reversed = reversed
+
     def get_field(self, queryset):
         """
         Returns the field which will be sorted on. By default, returns the value
@@ -110,6 +118,9 @@ class Sort(object):
         return self.empty_value
 
     def sort(self, queryset, descending=False):
+        if self.reversed:
+            # flips the default to descending, rather than ascending, values
+            descending = not descending
         field = self.get_field(queryset)
         empty_value = self.get_empty_value(queryset)
         if empty_value is not EMPTY:
@@ -124,9 +135,6 @@ class Sort(object):
 
 class BestDateSort(Sort):
 
-    def __init__(self, descending=False):
-        self.descending = descending
-
     def get_field(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteLocation.objects.get_current().use_original_date):
@@ -134,9 +142,6 @@ class BestDateSort(Sort):
         return 'best_date'
 
     def sort(self, queryset, descending=False):
-        if self.descending:
-            # flips the default to descending, rather than ascending, time
-            descending = not descending
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_best_date(
                            SiteLocation.objects.get_current().use_original_date)
@@ -313,7 +318,7 @@ class SortFilterMixin(object):
         'approved': ApprovedSort(),
 
         # deprecated
-        'latest': BestDateSort(descending=True)
+        'latest': BestDateSort(reversed=True)
     }
 
     #: Defines the available filtering options and the indexes that they
