@@ -1265,26 +1265,6 @@ ol > li {
     width: 50%;
   }
 }
-/* line 3, ../sass/partials/pages/_index.scss */
-.home-page .popular {
-  font-size: 12px;
-  line-height: 18px;
-}
-/* line 5, ../sass/partials/pages/_index.scss */
-.home-page .popular .video-title {
-  margin-bottom: 0;
-}
-/* line 8, ../sass/partials/pages/_index.scss */
-.home-page .popular .video-summary .details {
-  margin-top: 0;
-}
-
-/* line 12, ../sass/partials/pages/_index.scss */
-.home-page .popular .description {
-  max-height: 36px;
-  overflow: hidden;
-}
-
 /* line 1, ../sass/partials/pages/_video_grid.scss */
 .video-grid > .media-item {
   width: 200px;
