@@ -403,7 +403,6 @@ class SortFilterMixin(object):
         sort_name, desc = self._process_sort(sort_string)
         sort = self.sorts.get(sort_name, None)
         if sort is not None:
-            print 'SORTING WITH', sort, desc
             return sort.sort(queryset, descending=desc)
         return queryset
 
