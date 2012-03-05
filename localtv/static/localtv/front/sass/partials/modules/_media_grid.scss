@@ -1,0 +1,13 @@
+@import "compass/utilities/general/clearfix";
+
+.media-grid{
+	@extend .unstyled-list;
+	@include clearfix;
+	margin-left:-$gutter-width;
+}
+
+.media-item{
+	float:left;
+	margin-left:$gutter-width;
+	@include margin-trailer;
+}

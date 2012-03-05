@@ -1,0 +1,32 @@
+{% load daguerre i18n pagetabs %}
+
+{% if page_obj.has_other_pages %}
+	<div class="pagination upper">
+			{% pagetabs page_obj %}
+	</div>
+{% endif %}
+
+<div class="video-list-wrapper">
+	<ul class="media-grid video-grid">
+		{% for video in video_list %}
+			<li class="media-item">
+				<figure class="thumb">
+					<a href="{{ video.get_absolute_url }}">
+						<img src="{% resize video.thumbnail width=200 height=144 method="fill" %}" />
+					</a>
+				</figure>
+				<header class="video-header">
+					<h1 class="video-title"><a href="{{ video.get_asbolute_url }}">{{ video.name }}</a></h1>
+				</headeR>
+			</li>
+		{% empty %}
+			<li class="message warning">{% trans "No videos have been added yet." %}</li>
+		{% endfor %}
+	</ul>
+</div>
+
+{% if page_obj.has_other_pages %}
+	<div class="pagination lower">
+		{% pagetabs page_obj %}
+	</div>
+{% endif %}

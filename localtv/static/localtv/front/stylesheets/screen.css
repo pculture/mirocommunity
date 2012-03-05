@@ -480,12 +480,12 @@ ol > li {
 }
 
 /* line 13, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .errorlist, .action-list, .details-list, .navigation-list, .nav-categories > ul, .pagetabs, .pod-footer-actions, .tile-box, .grid-list {
+.unstyled-list, .errorlist, .action-list, .details-list, .navigation-list, .nav-categories > ul, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .grid-list {
   margin: 0;
   padding: 0;
 }
 /* line 16, ../sass/partials/modules/_lists.scss */
-.unstyled-list > li, .errorlist > li, .action-list > li, .details-list > li, .navigation-list > li, .nav-categories > ul > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .grid-list > li {
+.unstyled-list > li, .errorlist > li, .action-list > li, .details-list > li, .navigation-list > li, .nav-categories > ul > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .grid-list > li {
   list-style-type: none;
 }
 
@@ -580,14 +580,14 @@ ol > li {
 }
 
 /* line 13, ../sass/partials/modules/_video_summary.scss */
-.thumb {
+.video-summary > .thumb {
   width: 140px;
   margin-left: -162px;
   float: left;
   position: relative;
 }
 /* line 18, ../sass/partials/modules/_video_summary.scss */
-.thumb > a {
+.video-summary > .thumb > a {
   border: 0;
   display: block;
   position: relative;
@@ -608,7 +608,7 @@ ol > li {
   transition: all 0.25s linear;
 }
 /* line 27, ../sass/partials/modules/_video_summary.scss */
-.thumb > a:hover {
+.video-summary > .thumb > a:hover {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 8px 0 #344f6d;
   -webkit-box-shadow: 0 0 8px 0 #344f6d;
@@ -616,7 +616,7 @@ ol > li {
   box-shadow: 0 0 8px 0 #344f6d;
 }
 /* line 31, ../sass/partials/modules/_video_summary.scss */
-.thumb > a > img {
+.video-summary > .thumb > a > img {
   display: block;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -626,7 +626,7 @@ ol > li {
   border-radius: 3px;
 }
 /* line 36, ../sass/partials/modules/_video_summary.scss */
-.thumb > a::after {
+.video-summary > .thumb > a::after {
   content: " ";
   display: block;
   position: absolute;
@@ -1217,6 +1217,36 @@ ol > li {
   display: block;
 }
 
+/* line 3, ../sass/partials/modules/_media_grid.scss */
+.media-grid {
+  overflow: hidden;
+  *zoom: 1;
+  margin-left: -40px;
+}
+
+/* line 9, ../sass/partials/modules/_media_grid.scss */
+.media-item {
+  float: left;
+  margin-left: 40px;
+  margin-bottom: 18px;
+}
+
+/* line 1, ../sass/partials/modules/_thumb.scss */
+.thumb {
+  margin-bottom: 9px;
+}
+
+/* line 5, ../sass/partials/modules/_thumb.scss */
+.thumb a {
+  border: 0;
+  display: block;
+}
+
+/* line 10, ../sass/partials/modules/_thumb.scss */
+.thumb img {
+  display: block;
+}
+
 /* line 4, ../sass/partials/modules/_grid_list.scss */
 .grid-list {
   overflow: hidden;
@@ -1257,4 +1287,14 @@ ol > li {
 .home-page .popular .description {
   max-height: 36px;
   overflow: hidden;
+}
+
+/* line 1, ../sass/partials/pages/_video_grid.scss */
+.video-grid > .media-item {
+  width: 200px;
+}
+
+/* line 4, ../sass/partials/pages/_video_grid.scss */
+.video-grid a {
+  color: inherit;
 }

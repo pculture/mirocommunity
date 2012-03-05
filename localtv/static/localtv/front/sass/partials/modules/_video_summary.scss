@@ -10,7 +10,7 @@ $thumb-width: 140px;
 	padding-left:$thumb-width + ($gutter-width/2);
 }
 
-.thumb{
+.video-summary > .thumb{
 	width:$thumb-width;
 	margin-left:- $thumb-width - 2px - ($gutter-width/2);
 	float:left;

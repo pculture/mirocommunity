@@ -1,0 +1,12 @@
+.thumb{
+	@include margin-trailer(.5);
+}
+
+.thumb a{
+	border:0;
+	display:block;
+}
+
+.thumb img{
+	display:block;
+}
