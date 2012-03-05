@@ -1,14 +1,23 @@
-$(function(){
-	var show_image = function(){
+$(function () {
+	var DURATION = .5, // in seconds
+		show_image = function () {
 			var $this = $(this);
-			$this.css('opacity', 1)
+			// if css transitions work, just swap the opacity, otherwise fall back to jQuery animation
+			if (Modernizr.csstransitions) {
+				$this.css('opacity', 1);
+			} else {
+				$this.animate({'opacity': 1}, DURATION);
+			}
 		},
 		transition_key = Modernizr.prefixed('transition'),
 		img_css_dict = {};
-		
-	img_css_dict[transition_key] = "opacity linear .5s";
+	
+	// Prepare each image's initial CSS
+	img_css_dict[transition_key] = "opacity linear " + DURATION + "s";
 	img_css_dict['opacity'] = 0;
 	
+	// Set each image's initial CSS
 	$('img').css(img_css_dict);
+	// Set the load event for each image
 	$('img').on('load', show_image);
 });
