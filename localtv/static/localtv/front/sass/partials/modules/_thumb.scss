@@ -15,7 +15,6 @@ $thumb-background-color: #000 !default;
 		border-bottom:0;
 	}
 	& > a:hover{
-		border-color:$color2;
 		@include box-shadow(0 0 8px 0 $thumb-background-color);
 	}
 	& > a > img{

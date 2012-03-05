@@ -1,0 +1,100 @@
+$color1: #9E0007 !default;
+$color2: #344F6D !default;
+
+$main-background-color: #FFF !default;
+
+$button-text-color: #666 !default;
+$button-hover-text-color: #444 !default;
+$button-down-text-color: #444 !default;
+$button-background-color: #F5F5F5 !default;
+
+$input-border-color: #CCC !default;
+$input-background-color: #FFF !default;
+
+@import "compass/css3/images",
+		"compass/css3/box-shadow";
+
+/* base theme styles */
+a{
+	color:$color2;
+}
+
+a:hover{
+	color:darken($color2, 15%);
+}
+
+/* main container */
+
+#main > .container{
+	background:$main-background-color;
+}
+
+/* buttons */
+
+.button{
+	color:$button-text-color;
+	text-shadow: 0 1px 0 #FFF;
+	border-color: darken($button-background-color, 15%);
+	@include background(linear-gradient($button-background-color, darken($button-background-color, 10%)));
+	@include box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset);
+	&:hover{
+		color:$button-hover-text-color;
+		@include background(linear-gradient(darken($button-background-color, 7%), darken($button-background-color, 10%)));
+		@include box-shadow(0 1px 0 0 lighten($button-background-color, 5%) inset);
+	}
+}
+.button:active, .button-active{
+	color:$button-down-text-color;
+	@include background(linear-gradient(darken($button-background-color, 15%), darken($button-background-color, 25%)));
+	@include box-shadow(0 3px 8px 0 rgba(0,0,0,.35) inset);
+	border-color: darken($button-background-color, 50%);
+}
+
+/* forms */
+
+input, textarea{
+	border-color: $input-border-color;
+	background: $input-background-color;
+	&:focus{
+		border-color: $color2;
+		@include box-shadow(0 0 6px 0 transparentize($color2, .65), 1px 1px 3px 0 rgba(0,0,0,.15) inset);
+	}
+}
+
+/* pagetabs */
+
+.pagetabs .ellipse span{
+	color:lighten($button-text-color, 20%);
+	border-color:lighten($button-text-color, 50%);
+	&:hover, &:active{
+		color:lighten($button-text-color, 20%);
+		border-color:lighten($button-text-color, 50%);
+		@include background(linear-gradient($button-background-color, darken($button-background-color, 10%)));
+		@include box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset);
+	}
+}
+
+/* pod */
+
+.pod-header{
+	background-color: $color1;
+	@include background-image(linear-gradient($color1, darken($color1, 5%)));
+	border-bottom-color: darken($color1, 10%);
+	border-top-color: lighten($color1, 10%);
+	color:#FFF;
+	a{
+		color:#FFF;
+	}
+}
+
+.pod-actions {
+	a{
+		background-color:darken($color1, 10%);
+	}
+	a:hover{
+		background-color: #FFF;
+		color:darken($color1, 20%);
+	}
+}
+
+/* thumb */

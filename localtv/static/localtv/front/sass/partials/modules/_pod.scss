@@ -1,14 +1,8 @@
 .pod-header {
 	position:relative;
-	background-color: $color1;
-	@include background-image(linear-gradient($color1, darken($color1, 5%)));
-	border-bottom:1px solid darken($color1, 10%);
-	border-top:1px solid lighten($color1, 10%);
+	border-bottom:1px solid;
+	border-top:1px solid;
 	padding: #{$base-line-height / 2 - 1px} #{$gutter-width / 2};
-	color:#FFF;
-	a{
-		color:#FFF;
-	}
 	h1 a:hover{
 		border-bottom:0;
 	}
@@ -31,15 +25,12 @@
 	}
 	a{
 		display:block;
-		background-color:darken($color1, 10%);
 		padding:3px $gutter-width/2;
 		margin-top:-2px;
 		@include border-radius($base-line-height/2+3px)
 	}
 	a:hover{
 		border:0;
-		background-color: #FFF;
-		color:darken($color1, 20%);
 	}
 }
 

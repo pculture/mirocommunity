@@ -1,10 +1,9 @@
+$gutter-width: 40px !default;
+$column-gutter-width:0 !default;
+$max-width-threshold: 960px !default;
+
 @import "compass/css3/box-sizing",
 		"compass/utilities/general/clearfix";
-
-$gutter-width: 40px;
-$column-gutter-width:0;
-$max-width-threshold: 960px;
-$single-column-threshold: 740px;
 
 /* This grid structure is not going to work in IE7 and below. */
 

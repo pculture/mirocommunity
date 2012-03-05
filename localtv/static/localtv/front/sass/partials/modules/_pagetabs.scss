@@ -8,32 +8,11 @@
 	@include clearfix;
 	@include margin-trailer;
 	a, .ellipse span{
-		border:1px solid #CCC;
-		width:$base-line-height;
-		text-align:center;
+		@extend .button;
 		float:left;
-		padding:$base-line-height / 4 - 1px;
-		margin:#{$base-line-height / 4} #{$base-line-height / 4} #{$base-line-height / 4} 0;
-		@include background-image(linear-gradient(#F5F5F5, #E5E5E5));
-		@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 2px 0 #DDD);
-		@include border-radius(3px);
-		color:#666;
-		text-shadow:0 1px 0 #FFF;
-	}
-	.ellipse span{
-		color:#999;
-		border-color:#DDD;
-	}
-	a:hover{
-		border:1px solid #{$color2 * .5 + #CCC * .5};
-		color:$color2 * .5 + #666 * .5
+		margin-left:3px;
 	}
 	.selected > a{
-		color:#FFF;
-		@include background-image(linear-gradient(#999, #777));
-		@include box-shadow(0 1px 0 0 #AAA inset, 0 1px 2px 0 #DDD);
-		text-shadow:0 -1px 0 #666;
-		border:1px solid #666;
-		font-weight:bold;
+		@extend .button-active;
 	}
 }

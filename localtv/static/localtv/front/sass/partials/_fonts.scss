@@ -1,10 +1,14 @@
+$header-font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif !default;
+$header-font-weight: bold !default;
+$body-font-family: "Helvetica Neue", Arial, Helvetica, sans-serif !default;
+
 @mixin header {
-	font-weight: bold;
-	font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-weight: $header-font-weight;
+	font-family: $header-font-family;
 }
 
 @mixin body{
-	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-family: $body-font-family;
 }
 
 h1, h2, h3, h4, h5, h6{

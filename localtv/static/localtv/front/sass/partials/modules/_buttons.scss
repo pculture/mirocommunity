@@ -3,30 +3,17 @@
 		"compass/css3/box-sizing";
 
 .button{
-	border:1px solid #CCC;
-	@include background(linear-gradient(#F5F5F5, #E5E5E5));
-	@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 0 0 #FFF);
-	color:#666;
+	border:1px solid;
 	text-align:center;
-	text-shadow: 0 1px 0 #FFF;
 	@include box-sizing(border-box);
 	line-height:$base-line-height;
 	padding: $base-line-height*.25 $base-line-height*.5;
 	@include border-radius(5px);
 	margin:0;
-	&:hover{
-		color:#444;
-		@include background(linear-gradient(#EEE, #DDD));
-		@include box-shadow(0 1px 0 0 #FFF inset, 0 1px 0 0 #FFF);
-	}
-	&:active{
-		@include background(linear-gradient(#CCC, #DDD));
-		@include box-shadow(0 1px 3px 0 #BBB inset, 0 1px 0 0 #FFF);
-	}
 }
 
 .button-wide{
-	display:block;
 	@extend .button;
+	display:block;
 	line-height:2 * $base-line-height;
 }

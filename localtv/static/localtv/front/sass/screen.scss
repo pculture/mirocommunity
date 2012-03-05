@@ -1,8 +1,5 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,300,400,800);
 
-$color1: #9E0007;
-$color2: #344F6D;
-
 @import "compass/reset";
 @import "partials/vertical_rhythm",
 		"partials/grid",
@@ -10,4 +7,5 @@ $color2: #344F6D;
 @import "partials/base",
 		"partials/layout",
 		"partials/modules",
-		"partials/pages";
+		"partials/pages",
+		"partials/theme";
