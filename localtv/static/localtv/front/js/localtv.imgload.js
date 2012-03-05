@@ -17,7 +17,10 @@ $(function () {
 	img_css_dict['opacity'] = 0;
 	
 	// Set each image's initial CSS
-	$('img').css(img_css_dict);
+	$('img').each(function () {
+		var $this = $(this);
+		if (!this.complete) $this.css(img_css_dict);
+	});
 	// Set the load event for each image
 	$('img').on('load', show_image);
 });
