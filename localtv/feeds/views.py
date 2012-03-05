@@ -42,6 +42,7 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 LOCALTV_FEED_LENGTH = 30
 
 class BaseVideosFeed(FeedView, SortFilterViewMixin):
+    title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
 
@@ -186,9 +187,6 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
                 value = default
 
         return value
-
-    def item_title(self, video):
-        return video.name
 
     def item_pubdate(self, video):
         if not video.status == Video.ACTIVE:
