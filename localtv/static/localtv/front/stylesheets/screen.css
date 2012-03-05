@@ -642,16 +642,9 @@ ol > li {
 
 /* line 4, ../sass/partials/modules/_navigation.scss */
 #navigation {
-  background-color: #222;
+  border-bottom: 1px solid;
+  border-top: 1px solid;
   *zoom: 1;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(100%, #222222));
-  background-image: -webkit-linear-gradient(#333333, #222222);
-  background-image: -moz-linear-gradient(#333333, #222222);
-  background-image: -o-linear-gradient(#333333, #222222);
-  background-image: -ms-linear-gradient(#333333, #222222);
-  background-image: linear-gradient(#333333, #222222);
-  border-bottom: 1px solid #000;
-  border-top: 1px solid #444;
 }
 /* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 #navigation:after {
@@ -660,58 +653,41 @@ ol > li {
   clear: both;
 }
 
-/* line 15, ../sass/partials/modules/_navigation.scss */
+/* line 13, ../sass/partials/modules/_navigation.scss */
 .navigation-list-secondary {
   float: right;
 }
 
-/* line 19, ../sass/partials/modules/_navigation.scss */
+/* line 17, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   float: left;
 }
 
-/* line 23, ../sass/partials/modules/_navigation.scss */
+/* line 21, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   list-style-type: none;
 }
 
-/* line 27, ../sass/partials/modules/_navigation.scss */
+/* line 25, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
   display: block;
-  color: #DDD;
-  text-shadow: 0 -1px 0 black;
   margin: -1px 0;
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
 }
 
-/* line 37, ../sass/partials/modules/_navigation.scss */
-.nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a {
-  border-bottom: 1px solid #111;
-  border-top: 1px solid #666;
-  background-color: #444;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #555555), color-stop(100%, #333333));
-  background-image: -webkit-linear-gradient(#555555, #333333);
-  background-image: -moz-linear-gradient(#555555, #333333);
-  background-image: -o-linear-gradient(#555555, #333333);
-  background-image: -ms-linear-gradient(#555555, #333333);
-  background-image: linear-gradient(#555555, #333333);
-  color: #FFF;
-}
-
-/* line 45, ../sass/partials/modules/_navigation.scss */
+/* line 33, ../sass/partials/modules/_navigation.scss */
 .nav-categories {
   position: relative;
 }
 
-/* line 48, ../sass/partials/modules/_navigation.scss */
+/* line 36, ../sass/partials/modules/_navigation.scss */
 .nav-categories > ul {
   display: none;
   position: absolute;
   z-index: 1337;
   top: 37px;
   left: 0;
-  background: #333;
   width: 450px;
   -moz-border-radius: 0 0 5px 5px;
   -webkit-border-radius: 0 0 5px 5px;
@@ -721,16 +697,15 @@ ol > li {
   border-radius: 0 0 5px 5px;
 }
 
-/* line 60, ../sass/partials/modules/_navigation.scss */
+/* line 47, ../sass/partials/modules/_navigation.scss */
 .nav-category-item {
   padding: 3px;
 }
 
-/* line 64, ../sass/partials/modules/_navigation.scss */
+/* line 51, ../sass/partials/modules/_navigation.scss */
 .nav-category-item > a {
   display: block;
-  border: 1px solid #111;
-  border-top-color: #222;
+  border: 1px solid;
   padding: 5px 16px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
@@ -738,40 +713,9 @@ ol > li {
   -ms-border-radius: 5px;
   -khtml-border-radius: 5px;
   border-radius: 5px;
-  background-color: #333;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #333333), color-stop(100%, #1c1c1c));
-  background-image: -webkit-linear-gradient(#333333, #1c1c1c);
-  background-image: -moz-linear-gradient(#333333, #1c1c1c);
-  background-image: -o-linear-gradient(#333333, #1c1c1c);
-  background-image: -ms-linear-gradient(#333333, #1c1c1c);
-  background-image: linear-gradient(#333333, #1c1c1c);
-  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
-  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
-  -o-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
-  color: #CCC;
-  text-shadow: 0 -1px 0 black;
-}
-/* line 75, ../sass/partials/modules/_navigation.scss */
-.nav-category-item > a:hover {
-  color: #FFF;
-}
-/* line 78, ../sass/partials/modules/_navigation.scss */
-.nav-category-item > a:active {
-  background-color: #222;
-  -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
-  -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
-  -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #111111), color-stop(100%, #333333));
-  background-image: -webkit-linear-gradient(#111111, #333333);
-  background-image: -moz-linear-gradient(#111111, #333333);
-  background-image: -o-linear-gradient(#111111, #333333);
-  background-image: -ms-linear-gradient(#111111, #333333);
-  background-image: linear-gradient(#111111, #333333);
 }
 
-/* line 85, ../sass/partials/modules/_navigation.scss */
+/* line 58, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a::after {
   content: "\25BC";
   font-size: 8px;
@@ -779,12 +723,12 @@ ol > li {
 }
 
 @media screen and (max-width: 740px) {
-  /* line 92, ../sass/partials/modules/_navigation.scss */
+  /* line 65, ../sass/partials/modules/_navigation.scss */
   .nav-item, .navigation-list-secondary {
     float: none;
   }
 
-  /* line 95, ../sass/partials/modules/_navigation.scss */
+  /* line 68, ../sass/partials/modules/_navigation.scss */
   .nav-categories > ul {
     width: 100%;
   }
@@ -1162,24 +1106,24 @@ ol > li {
 }
 
 /* base theme styles */
-/* line 18, ../sass/partials/_theme.scss */
+/* line 21, ../sass/partials/_theme.scss */
 a {
   color: #344f6d;
 }
 
-/* line 22, ../sass/partials/_theme.scss */
+/* line 25, ../sass/partials/_theme.scss */
 a:hover {
   color: #1b2939;
 }
 
 /* main container */
-/* line 28, ../sass/partials/_theme.scss */
+/* line 31, ../sass/partials/_theme.scss */
 #main > .container {
   background: white;
 }
 
 /* buttons */
-/* line 34, ../sass/partials/_theme.scss */
+/* line 37, ../sass/partials/_theme.scss */
 .button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
   color: #666666;
   text-shadow: 0 1px 0 #FFF;
@@ -1195,7 +1139,7 @@ a:hover {
   -o-box-shadow: 0 1px 0 0 white inset;
   box-shadow: 0 1px 0 0 white inset;
 }
-/* line 40, ../sass/partials/_theme.scss */
+/* line 43, ../sass/partials/_theme.scss */
 .button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e3e3e3), color-stop(100%, #dcdcdc));
@@ -1210,8 +1154,8 @@ a:hover {
   box-shadow: 0 1px 0 0 white inset;
 }
 
-/* line 46, ../sass/partials/_theme.scss */
-.button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .pagetabs .selected > a {
+/* line 49, ../sass/partials/_theme.scss */
+.button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .button-selected, .pagetabs .selected > a {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cfcfcf), color-stop(100%, #b5b5b5));
   background: -webkit-linear-gradient(#cfcfcf, #b5b5b5);
@@ -1226,13 +1170,83 @@ a:hover {
   border-color: #767676;
 }
 
+/* navigation */
+/* line 58, ../sass/partials/_theme.scss */
+#navigation {
+  background-color: #222222;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3c3c3c), color-stop(100%, #222222));
+  background-image: -webkit-linear-gradient(#3c3c3c, #222222);
+  background-image: -moz-linear-gradient(#3c3c3c, #222222);
+  background-image: -o-linear-gradient(#3c3c3c, #222222);
+  background-image: -ms-linear-gradient(#3c3c3c, #222222);
+  background-image: linear-gradient(#3c3c3c, #222222);
+  border-bottom-color: black;
+  border-top-color: #555555;
+}
+
+/* line 65, ../sass/partials/_theme.scss */
+.nav-item a {
+  color: #dddddd;
+  text-shadow: 0 -1px 0 black;
+}
+
+/* line 70, ../sass/partials/_theme.scss */
+.nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a {
+  border-bottom: 1px solid black;
+  border-top: 1px solid #555555;
+  background-color: #555555;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #555555), color-stop(100%, #2f2f2f));
+  background-image: -webkit-linear-gradient(#555555, #2f2f2f);
+  background-image: -moz-linear-gradient(#555555, #2f2f2f);
+  background-image: -o-linear-gradient(#555555, #2f2f2f);
+  background-image: -ms-linear-gradient(#555555, #2f2f2f);
+  background-image: linear-gradient(#555555, #2f2f2f);
+  color: #FFF;
+}
+
+/* line 78, ../sass/partials/_theme.scss */
+.nav-item-dropdown > ul {
+  background: #2f2f2f;
+}
+
+/* line 82, ../sass/partials/_theme.scss */
+.nav-item-dropdown > ul > li > a {
+  border-color: #151515;
+  border-top-color: #222222;
+  background-color: #3c3c3c;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3c3c3c), color-stop(100%, #151515));
+  background-image: -webkit-linear-gradient(#3c3c3c, #151515);
+  background-image: -moz-linear-gradient(#3c3c3c, #151515);
+  background-image: -o-linear-gradient(#3c3c3c, #151515);
+  background-image: -ms-linear-gradient(#3c3c3c, #151515);
+  background-image: linear-gradient(#3c3c3c, #151515);
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  -o-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  color: #dddddd;
+  text-shadow: 0 -1px 0 black;
+}
+/* line 90, ../sass/partials/_theme.scss */
+.nav-item-dropdown > ul > li > a:hover {
+  color: ligten(#dddddd, 10%);
+}
+/* line 93, ../sass/partials/_theme.scss */
+.nav-item-dropdown > ul > li > a:active {
+  background: #222222;
+  -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
+}
+
 /* forms */
-/* line 55, ../sass/partials/_theme.scss */
+/* line 101, ../sass/partials/_theme.scss */
 input, textarea {
   border-color: #cccccc;
   background: white;
 }
-/* line 58, ../sass/partials/_theme.scss */
+/* line 104, ../sass/partials/_theme.scss */
 input:focus, textarea:focus {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -1242,12 +1256,12 @@ input:focus, textarea:focus {
 }
 
 /* pagetabs */
-/* line 66, ../sass/partials/_theme.scss */
+/* line 112, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span {
   color: #999999;
   border-color: #e6e6e6;
 }
-/* line 69, ../sass/partials/_theme.scss */
+/* line 115, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span:hover, .pagetabs .ellipse span:active {
   color: #999999;
   border-color: #e6e6e6;
@@ -1264,7 +1278,7 @@ input:focus, textarea:focus {
 }
 
 /* pod */
-/* line 79, ../sass/partials/_theme.scss */
+/* line 125, ../sass/partials/_theme.scss */
 .pod-header, .page-header {
   background-color: #9e0007;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #9e0007), color-stop(100%, #850006));
@@ -1277,16 +1291,16 @@ input:focus, textarea:focus {
   border-top-color: #d10009;
   color: #FFF;
 }
-/* line 85, ../sass/partials/_theme.scss */
+/* line 131, ../sass/partials/_theme.scss */
 .pod-header a, .page-header a {
   color: #FFF;
 }
 
-/* line 91, ../sass/partials/_theme.scss */
+/* line 137, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
   background-color: #6b0005;
 }
-/* line 94, ../sass/partials/_theme.scss */
+/* line 140, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
   background-color: #FFF;
   color: #380002;

@@ -8,6 +8,9 @@ $button-hover-text-color: #444 !default;
 $button-down-text-color: #444 !default;
 $button-background-color: #F5F5F5 !default;
 
+$navigation-background-color: #222 !default;
+$navigation-text-color: #DDD !default;
+
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
@@ -43,11 +46,54 @@ a:hover{
 		@include box-shadow(0 1px 0 0 lighten($button-background-color, 5%) inset);
 	}
 }
-.button:active, .button-active{
+.button:active, .button-active, .button-selected{
 	color:$button-down-text-color;
 	@include background(linear-gradient(darken($button-background-color, 15%), darken($button-background-color, 25%)));
 	@include box-shadow(0 3px 8px 0 rgba(0,0,0,.35) inset);
 	border-color: darken($button-background-color, 50%);
+}
+
+/* navigation */
+
+#navigation{
+	background-color:$navigation-background-color;
+	@include background-image(linear-gradient(lighten($navigation-background-color, 10%), $navigation-background-color));
+	border-bottom-color: darken($navigation-background-color, 20%);
+	border-top-color: lighten($navigation-background-color, 20%);
+}
+
+.nav-item a{
+	color:$navigation-text-color;
+	text-shadow:0 -1px 0 #000;
+}
+
+.nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a{
+	border-bottom:1px solid darken($navigation-background-color, 20%);
+	border-top:1px solid lighten($navigation-background-color, 20%);
+	background-color:lighten($navigation-background-color, 20%);
+	@include background-image(linear-gradient(lighten($navigation-background-color, 20%), lighten($navigation-background-color, 5%)));
+	color:#FFF;
+}
+
+.nav-item-dropdown > ul{
+	background:lighten($navigation-background-color, 5%);
+}
+
+.nav-item-dropdown > ul > li > a{
+	border-color:darken($navigation-background-color, 5%);
+	border-top-color:$navigation-background-color;
+	background-color:lighten($navigation-background-color, 10%);
+	@include background-image(linear-gradient(lighten($navigation-background-color, 10%), darken($navigation-background-color, 5%)));
+	@include box-shadow(0 1px 0 rgba(255,255,255,.15) inset);
+	color:$navigation-text-color;
+	text-shadow:0 -1px 0 #000;
+	&:hover{
+		color:ligten($navigation-text-color, 10%);
+	}
+	&:active{
+		background:$navigation-background-color;
+		@include box-shadow(0 1px 3px 0 rgba(0,0,0,.35) inset, 0 -1px 0 0 rgba(255,255,255,.05) inset);
+	}
 }
 
 /* forms */
