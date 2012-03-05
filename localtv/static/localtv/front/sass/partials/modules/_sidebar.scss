@@ -1,12 +1,10 @@
 @media screen and (min-width: 740px){
 	.right-sidebar{
-		border-left:1px solid #BBB;
 		background-color:#EEE;
 		@include background(linear-gradient(left, #CCC 0, #EEE 2%, #EEE 100%));
 	}
 
 	.left-sidebar{
-		border-right:1px solid #BBB;
 		background-color:#EEE;
 		@include background(linear-gradient(right, #CCC 0, #EEE 2%, #EEE 100%));
 	}

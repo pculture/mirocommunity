@@ -983,7 +983,6 @@ ol > li {
   .cyclops .popular > .pod-footer,
   .basic .new > .pod-content,
   .basic .new > .pod-footer {
-    border-left: 1px solid #BBB;
     background-color: #EEE;
     background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
     background: -webkit-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
@@ -993,9 +992,8 @@ ol > li {
     background: linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
   }
 
-  /* line 8, ../sass/partials/modules/_sidebar.scss */
+  /* line 7, ../sass/partials/modules/_sidebar.scss */
   .left-sidebar {
-    border-right: 1px solid #BBB;
     background-color: #EEE;
     background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
     background: -webkit-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);

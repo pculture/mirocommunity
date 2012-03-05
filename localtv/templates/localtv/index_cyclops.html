@@ -69,7 +69,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</header>{# /.pod-header #}
 			<div class="pod-content">
 				{% with new_videos|slice:"4" as video_list %}
-					{% include "localtv/_video_summary_list.html" %}
+					{% include "localtv/_video_grid_list.html" %}
 				{% endwith %}
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
@@ -90,13 +90,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ featured_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
 				</ul>
 			</header>{# /.pod-header #}
-			{% cache 3600 index_list_popular site_settings cache_invalidator %}{# one hour #}
-				<div class="pod-content">
-					{% with popular_videos|slice:"4" as video_list %}
-						{% include "localtv/_video_summary_list.html" %}
-					{% endwith %}
-				</div>{# /.pod-content #}
-			{% endcache %}
+			<div class="pod-content">
+				{% with popular_videos|slice:"4" as video_list %}
+					{% include "localtv/_video_grid_list.html" %}
+				{% endwith %}
+			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
 					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
