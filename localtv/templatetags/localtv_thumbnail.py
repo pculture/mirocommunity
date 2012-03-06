@@ -20,7 +20,8 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
-from daguerre.templatetags.images import ImageResizeNode, ImageProxy
+from daguerre.models import Image
+from daguerre.templatetags.daguerre import ImageResizeNode, ImageProxy
 
 register = template.Library()
 
@@ -39,8 +40,9 @@ class ThumbnailNode(ImageResizeNode):
         self.width, self.height = size
     
     def render(self, context):
-        image = self.video.resolve(context).thumbnail
+        storage_path = self.video.resolve(context).get_original_thumb_storage_path()
         kwargs = {'width': self.width, 'height': self.height, 'method': 'fill'}
+        image = Image.objects.for_storage_path(storage_path)
         
         proxy = ImageProxy(image, kwargs)
         
