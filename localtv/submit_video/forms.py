@@ -114,6 +114,8 @@ class SubmitVideoForm(forms.ModelForm):
         # HACK for backwards-compatibility
         if 'thumbnail_url' in self.fields:
             self.fields['thumbnail'] = self.fields['thumbnail_url']
+        if 'embed_code' in self.fields:
+            self.fields['embed'] = self.fields['embed_code']
 
     def clean(self):
         cleaned_data = super(SubmitVideoForm, self).clean()
@@ -121,8 +123,14 @@ class SubmitVideoForm(forms.ModelForm):
         if 'thumbnail' in cleaned_data:
             thumbnail_url = cleaned_data.pop('thumbnail')
             # prefer thumbnail_url.
-            if 'thumbnail_url' not in cleaned_data:
+            if not cleaned_data.get('thumbnail_url'):
                 cleaned_data['thumbnail_url'] = thumbnail_url
+
+        if 'embed' in cleaned_data:
+            embed_code = cleaned_data.pop('embed')
+            # prefer embed_code
+            if not cleaned_data.get('embed_code'):
+                cleaned_data['embed_code'] = embed_code
 
         return cleaned_data
 

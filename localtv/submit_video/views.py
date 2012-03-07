@@ -137,8 +137,6 @@ class SubmitVideoView(CreateView):
         except KeyError:
             raise Http404
 
-        import pdb
-        pdb.set_trace()
         if self.video is not None and (self.video.embed_code or
                 (self.video.file_url and not self.video.file_url_expires)):
             pass
