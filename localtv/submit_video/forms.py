@@ -111,6 +111,21 @@ class SubmitVideoForm(forms.ModelForm):
         elif not self.instance.website_url:
             self.instance.website_url = url
 
+        # HACK for backwards-compatibility
+        if 'thumbnail_url' in self.fields:
+            self.fields['thumbnail'] = self.fields['thumbnail_url']
+
+    def clean(self):
+        cleaned_data = super(SubmitVideoForm, self).clean()
+        # HACK for backwards-compatibility.
+        if 'thumbnail' in cleaned_data:
+            thumbnail_url = cleaned_data.pop('thumbnail')
+            # prefer thumbnail_url.
+            if 'thumbnail_url' not in cleaned_data:
+                cleaned_data['thumbnail_url'] = thumbnail_url
+
+        return cleaned_data
+
     def _post_clean(self):
         super(SubmitVideoForm, self)._post_clean()
         # By this time, cleaned data has been applied to the instance.

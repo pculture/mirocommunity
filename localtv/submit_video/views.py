@@ -137,13 +137,15 @@ class SubmitVideoView(CreateView):
         except KeyError:
             raise Http404
 
+        import pdb
+        pdb.set_trace()
         if self.video is not None and (self.video.embed_code or
                 (self.video.file_url and not self.video.file_url_expires)):
             pass
         elif is_video_url(self.url):
-            fields += ['name', 'description', 'website_url']
+            fields += ['name', 'description', 'thumbnail_url', 'website_url']
         else:
-            fields += ['name', 'description', 'embed_code']
+            fields += ['name', 'description', 'thumbnail_url', 'embed_code']
 
         if self.video is not None:
             self.object = Video.from_vidscraper_video(self.video, commit=False)
