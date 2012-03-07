@@ -21,11 +21,11 @@ from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 
 from daguerre.models import Image
-from daguerre.templatetags.daguerre import ImageResizeNode, ImageProxy
+from daguerre.utils.adjustments import get_adjustment_class
 
 register = template.Library()
 
-class ThumbnailNode(ImageResizeNode):
+class ThumbnailNode(template.Node):
     """
     Essentially an implementation of daguerre's ImageResizeNode with a
     different interface, to maintain backwards compatibility with old
@@ -41,15 +41,16 @@ class ThumbnailNode(ImageResizeNode):
     
     def render(self, context):
         storage_path = self.video.resolve(context).get_original_thumb_storage_path()
-        kwargs = {'width': self.width, 'height': self.height, 'method': 'fill'}
+        kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
         image = Image.objects.for_storage_path(storage_path)
-        
-        proxy = ImageProxy(image, kwargs)
+
+        adjustment_class = get_adjustment_class('fill')
+        adjustment = adjustment_class.from_image(image, width=self.width, height=self.height)
         
         if self.asvar is not None:
-            context[self.asvar] = proxy
+            context[self.asvar] = adjustment.info_dict()
             return ''
-        return proxy
+        return adjustment.url
 
 
 @register.tag('get_thumbnail_url')
