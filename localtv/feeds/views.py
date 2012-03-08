@@ -403,13 +403,15 @@ class PlaylistVideosFeed(BaseVideosFeed):
             # TODO: This probably breaks if a video is in multiple playlists.
             # Check.
             videos = obj['obj'].video_set.order_by('-playlistitem___order')
-            opensearch = self._get_opensearch_data(obj)
-            start= opensearch['startindex']
-            end = start + opensearch['itemsperpage']
-            opensearch['totalresults'] = len(videos)
-            videos = videos[start:end]
-            return videos
-        return BaseVideosFeed.items(self, obj)
+        else:
+            # default is to sort by ascending order
+            videos = obj['obj'].video_set.all()
+        opensearch = self._get_opensearch_data(obj)
+        start= opensearch['startindex']
+        end = start + opensearch['itemsperpage']
+        opensearch['totalresults'] = len(videos)
+        videos = videos[start:end]
+        return videos
 
     def title(self, obj):
         return u"%s: %s" % (
