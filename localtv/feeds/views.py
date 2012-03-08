@@ -365,7 +365,7 @@ class SearchVideosFeed(BaseVideosFeed):
 
     def _get_query(self, request):
         # HACK to pull the query out of the path
-        return request.path.rsplit('/')[1]
+        return request.path.rsplit('/', 1)[1]
 
     def link(self, obj):
         args = {'q': obj['obj'].encode('utf-8')}
