@@ -1980,15 +1980,26 @@ class Video(Thumbnailable, VideoBase):
             return
 
         try:
-            content_thumb = ContentFile(urllib.urlopen(
-                    utils.quote_unicode_url(self.thumbnail_url)).read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
+            remote_file = urllib.urlopen(utils.quote_unicode_url(
+                    self.thumbnail_url))
         except httplib.InvalidURL:
             # if the URL isn't valid, erase it and move on
             self.thumbnail_url = ''
             self.has_thumbnail = False
             self.save()
+            return
+
+        if remote_file.getcode() != 200:
+            logging.info('code %i when getting %r, ignoring',
+                         remote_file.getcode(), self.thumbnail_url)
+            self.has_thumbnail = False
+            self.save()
+            return
+
+        try:
+            content_thumb = ContentFile(remote_file)
+        except IOError:
+            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             try:
                 self.save_thumbnail_from_file(content_thumb)
