@@ -24,7 +24,7 @@ from localtv.models import Video
 from localtv.tests.base import BaseTestCase
 
 
-class FeedViewTestCase(BaseTestCase):
+class FeedViewIntegrationTestCase(BaseTestCase):
     urls = 'localtv.urls'
 
     def setUp(self):
