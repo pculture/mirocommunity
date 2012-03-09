@@ -42,7 +42,18 @@ class ThumbnailNode(template.Node):
     def render(self, context):
         storage_path = self.video.resolve(context).get_original_thumb_storage_path()
         kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
-        image = Image.objects.for_storage_path(storage_path)
+        try:
+            image = Image.objects.for_storage_path(storage_path)
+        except Image.DoesNotExist:
+            url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
+            if self.asvar is not None:
+                context[self.asvar] = {
+                    'width': self.width,
+                    'height': self.height,
+                    'url': url
+                }
+                return ''
+            return url
 
         adjustment_class = get_adjustment_class('fill')
         adjustment = adjustment_class.from_image(image, width=self.width, height=self.height)
