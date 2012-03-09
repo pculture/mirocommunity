@@ -234,52 +234,50 @@ body {
   font-size: 13px;
   line-height: 18px;
   font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-  background: #CCC;
-  color: #444;
 }
 
-/* line 15, ../sass/partials/_base.scss */
+/* line 13, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   font-smoothing: antialiased;
 }
 
-/* line 19, ../sass/partials/_base.scss */
+/* line 17, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl {
   margin-bottom: 18px;
 }
 
-/* line 23, ../sass/partials/_base.scss */
+/* line 21, ../sass/partials/_base.scss */
 h1 {
   font-size: 30px;
   line-height: 36px;
 }
 
-/* line 26, ../sass/partials/_base.scss */
+/* line 24, ../sass/partials/_base.scss */
 h2 {
   font-size: 24px;
   line-height: 36px;
 }
 
-/* line 29, ../sass/partials/_base.scss */
+/* line 27, ../sass/partials/_base.scss */
 h3 {
   font-size: 16px;
   line-height: 27px;
 }
 
-/* line 32, ../sass/partials/_base.scss */
+/* line 30, ../sass/partials/_base.scss */
 h4 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 35, ../sass/partials/_base.scss */
+/* line 33, ../sass/partials/_base.scss */
 h5 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 38, ../sass/partials/_base.scss */
+/* line 36, ../sass/partials/_base.scss */
 h6 {
   font-size: 13px;
   line-height: 18px;
@@ -1108,24 +1106,30 @@ ol > li {
 }
 
 /* base theme styles */
-/* line 31, ../sass/partials/_theme.scss */
+/* line 34, ../sass/partials/_theme.scss */
 a {
   color: #344f6d;
 }
 
-/* line 35, ../sass/partials/_theme.scss */
+/* line 38, ../sass/partials/_theme.scss */
 a:hover {
   color: #1b2939;
 }
 
+/* line 42, ../sass/partials/_theme.scss */
+body {
+  background: #cccccc;
+  color: #444444;
+}
+
 /* main container */
-/* line 41, ../sass/partials/_theme.scss */
+/* line 49, ../sass/partials/_theme.scss */
 #main > .container {
   background: white;
 }
 
 /* buttons */
-/* line 47, ../sass/partials/_theme.scss */
+/* line 55, ../sass/partials/_theme.scss */
 .button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
   color: #666666;
   text-shadow: 0 1px 0 #FFF;
@@ -1141,7 +1145,7 @@ a:hover {
   -o-box-shadow: 0 1px 0 0 white inset;
   box-shadow: 0 1px 0 0 white inset;
 }
-/* line 53, ../sass/partials/_theme.scss */
+/* line 61, ../sass/partials/_theme.scss */
 .button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e3e3e3), color-stop(100%, #dcdcdc));
@@ -1156,7 +1160,7 @@ a:hover {
   box-shadow: 0 1px 0 0 white inset;
 }
 
-/* line 59, ../sass/partials/_theme.scss */
+/* line 67, ../sass/partials/_theme.scss */
 .button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .button-selected, .pagetabs .selected > a {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cfcfcf), color-stop(100%, #b5b5b5));
@@ -1173,7 +1177,7 @@ a:hover {
 }
 
 /* navigation */
-/* line 68, ../sass/partials/_theme.scss */
+/* line 76, ../sass/partials/_theme.scss */
 #navigation {
   background-color: #222222;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3c3c3c), color-stop(100%, #222222));
@@ -1186,13 +1190,13 @@ a:hover {
   border-top-color: #555555;
 }
 
-/* line 75, ../sass/partials/_theme.scss */
+/* line 83, ../sass/partials/_theme.scss */
 .nav-item a {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
 
-/* line 80, ../sass/partials/_theme.scss */
+/* line 88, ../sass/partials/_theme.scss */
 .nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a {
   border-bottom: 1px solid black;
   border-top: 1px solid #555555;
@@ -1206,12 +1210,12 @@ a:hover {
   color: #FFF;
 }
 
-/* line 88, ../sass/partials/_theme.scss */
+/* line 96, ../sass/partials/_theme.scss */
 .dropdown-list {
   background: #2f2f2f;
 }
 
-/* line 92, ../sass/partials/_theme.scss */
+/* line 100, ../sass/partials/_theme.scss */
 .dropdown-list > li > a {
   border-color: #151515;
   border-top-color: #222222;
@@ -1229,11 +1233,11 @@ a:hover {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
-/* line 100, ../sass/partials/_theme.scss */
+/* line 108, ../sass/partials/_theme.scss */
 .dropdown-list > li > a:hover {
   color: ligten(#dddddd, 10%);
 }
-/* line 103, ../sass/partials/_theme.scss */
+/* line 111, ../sass/partials/_theme.scss */
 .dropdown-list > li > a:active {
   background: #222222;
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
@@ -1243,12 +1247,12 @@ a:hover {
 }
 
 /* forms */
-/* line 111, ../sass/partials/_theme.scss */
+/* line 119, ../sass/partials/_theme.scss */
 input, textarea {
   border-color: #cccccc;
   background: white;
 }
-/* line 114, ../sass/partials/_theme.scss */
+/* line 122, ../sass/partials/_theme.scss */
 input:focus, textarea:focus {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -1258,12 +1262,12 @@ input:focus, textarea:focus {
 }
 
 /* pagetabs */
-/* line 122, ../sass/partials/_theme.scss */
+/* line 130, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span {
   color: #999999;
   border-color: #e6e6e6;
 }
-/* line 125, ../sass/partials/_theme.scss */
+/* line 133, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span:hover, .pagetabs .ellipse span:active {
   color: #999999;
   border-color: #e6e6e6;
@@ -1280,36 +1284,36 @@ input:focus, textarea:focus {
 }
 
 /* pod */
-/* line 135, ../sass/partials/_theme.scss */
+/* line 143, ../sass/partials/_theme.scss */
 .pod-header, .page-header {
-  background-color: white;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #f2f2f2));
-  background-image: -webkit-linear-gradient(#ffffff, #f2f2f2);
-  background-image: -moz-linear-gradient(#ffffff, #f2f2f2);
-  background-image: -o-linear-gradient(#ffffff, #f2f2f2);
-  background-image: -ms-linear-gradient(#ffffff, #f2f2f2);
-  background-image: linear-gradient(#ffffff, #f2f2f2);
-  border-bottom-color: #e6e6e6;
+  background-color: #eeeeee;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #e1e1e1));
+  background-image: -webkit-linear-gradient(#eeeeee, #e1e1e1);
+  background-image: -moz-linear-gradient(#eeeeee, #e1e1e1);
+  background-image: -o-linear-gradient(#eeeeee, #e1e1e1);
+  background-image: -ms-linear-gradient(#eeeeee, #e1e1e1);
+  background-image: linear-gradient(#eeeeee, #e1e1e1);
+  border-bottom-color: #d4d4d4;
   border-top-color: white;
-  color: #333333;
+  color: #222222;
 }
-/* line 141, ../sass/partials/_theme.scss */
+/* line 149, ../sass/partials/_theme.scss */
 .pod-header a, .page-header a {
-  color: #333333;
+  color: #222222;
 }
 
-/* line 147, ../sass/partials/_theme.scss */
+/* line 155, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
-  background-color: #cccccc;
+  background-color: #bbbbbb;
 }
-/* line 150, ../sass/partials/_theme.scss */
+/* line 158, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
-  background-color: #333333;
-  color: white;
+  background-color: #222222;
+  color: #eeeeee;
 }
 
 /* site-blurb */
-/* line 158, ../sass/partials/_theme.scss */
+/* line 166, ../sass/partials/_theme.scss */
 .site-blurb {
   background-color: #222222;
   color: #dddddd;
@@ -1317,30 +1321,30 @@ input:focus, textarea:focus {
 
 /* sidebar */
 @media screen and (min-width: 740px) {
-  /* line 165, ../sass/partials/_theme.scss */
+  /* line 173, ../sass/partials/_theme.scss */
   .right-sidebar, .basic .popular > .pod-content,
   .basic .popular > .pod-footer,
   .cyclops .popular > .pod-content,
   .cyclops .popular > .pod-footer,
   .basic .new > .pod-content,
   .basic .new > .pod-footer {
-    background-color: white;
-    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #e6e6e6), color-stop(2%, #ffffff), color-stop(100%, #ffffff));
-    background: -webkit-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -moz-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -o-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -ms-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background-color: #f5f5f5;
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #dcdcdc), color-stop(2%, #f5f5f5), color-stop(100%, #f5f5f5));
+    background: -webkit-linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -moz-linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -o-linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -ms-linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
   }
 
-  /* line 170, ../sass/partials/_theme.scss */
+  /* line 178, ../sass/partials/_theme.scss */
   .left-sidebar {
-    background-color: white;
-    background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #e6e6e6), color-stop(2%, #ffffff), color-stop(100%, #ffffff));
-    background: -webkit-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -moz-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -o-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: -ms-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
-    background: linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background-color: #f5f5f5;
+    background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #dcdcdc), color-stop(2%, #f5f5f5), color-stop(100%, #f5f5f5));
+    background: -webkit-linear-gradient(right, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -moz-linear-gradient(right, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -o-linear-gradient(right, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: -ms-linear-gradient(right, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
+    background: linear-gradient(right, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
   }
 }

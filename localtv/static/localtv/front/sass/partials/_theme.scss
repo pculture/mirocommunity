@@ -1,9 +1,12 @@
 @import "compass/utilities/color/contrast";
 
-$color1: #FFF !default;
+$color1: #EEE !default;
 $color2: #344F6D !default;
 
 $main-background-color: #FFF !default;
+$main-text-color: #444 !default;
+
+$body-background-color: #CCC !default;
 
 $button-text-color: #666 !default;
 $button-hover-text-color: #444 !default;
@@ -19,7 +22,7 @@ $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($c
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
-$sidebar-background-color:#FFF !default;
+$sidebar-background-color:#F5F5F5 !default;
 
 $site-blurb-background-color: #222 !default;
 $site-blurb-text-color: #DDD !default;
@@ -34,6 +37,11 @@ a{
 
 a:hover{
 	color:darken($color2, 15%);
+}
+
+body{
+	background:$body-background-color;
+	color:$main-text-color;
 }
 
 /* main container */
