@@ -1,4 +1,6 @@
-$color1: #9E0007 !default;
+@import "compass/utilities/color/contrast";
+
+$color1: #FFF !default;
 $color2: #344F6D !default;
 
 $main-background-color: #FFF !default;
@@ -11,11 +13,16 @@ $button-background-color: #F5F5F5 !default;
 $navigation-background-color: #222 !default;
 $navigation-text-color: #DDD !default;
 
+$pod-header-background-color: $color1 !default;
+$pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($color1, 80%), 50%) !default;
+
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
+$sidebar-background-color:#FFF !default;
+
 $site-blurb-background-color: #222 !default;
-$site-blurb-text-color: #FEFFD6 !default;
+$site-blurb-text-color: #DDD !default;
 
 @import "compass/css3/images",
 		"compass/css3/box-shadow";
@@ -126,23 +133,23 @@ input, textarea{
 /* pod */
 
 .pod-header{
-	background-color: $color1;
-	@include background-image(linear-gradient($color1, darken($color1, 5%)));
-	border-bottom-color: darken($color1, 10%);
-	border-top-color: lighten($color1, 10%);
-	color:#FFF;
+	background-color: $pod-header-background-color;
+	@include background-image(linear-gradient($pod-header-background-color, darken($pod-header-background-color, 5%)));
+	border-bottom-color: darken($pod-header-background-color, 10%);
+	border-top-color: lighten($pod-header-background-color, 10%);
+	color:$pod-header-text-color;
 	a{
-		color:#FFF;
+		color:$pod-header-text-color;
 	}
 }
 
 .pod-actions {
 	a{
-		background-color:darken($color1, 10%);
+		background-color:darken($pod-header-background-color, 10%);
 	}
 	a:hover{
 		background-color: #FFF;
-		color:darken($color1, 20%);
+		color:darken($pod-header-background-color, 20%);
 	}
 }
 
@@ -151,4 +158,17 @@ input, textarea{
 .site-blurb{
 	background-color:$site-blurb-background-color;
 	color:$site-blurb-text-color;
+}
+
+/* sidebar */
+@media screen and (min-width: 740px){
+	.right-sidebar{
+		background-color:$sidebar-background-color;
+		@include background(linear-gradient(left, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%));
+	}
+
+	.left-sidebar{
+		background-color:$sidebar-background-color;
+		@include background(linear-gradient(right, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%));
+	}
 }

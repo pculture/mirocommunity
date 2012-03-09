@@ -818,34 +818,6 @@ ol > li {
   margin-bottom: 0;
 }
 
-@media screen and (min-width: 740px) {
-  /* line 2, ../sass/partials/modules/_sidebar.scss */
-  .right-sidebar, .basic .popular > .pod-content,
-  .basic .popular > .pod-footer,
-  .cyclops .popular > .pod-content,
-  .cyclops .popular > .pod-footer,
-  .basic .new > .pod-content,
-  .basic .new > .pod-footer {
-    background-color: #EEE;
-    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
-    background: -webkit-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -moz-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -o-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -ms-linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: linear-gradient(left, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  }
-
-  /* line 7, ../sass/partials/modules/_sidebar.scss */
-  .left-sidebar {
-    background-color: #EEE;
-    background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #cccccc), color-stop(2%, #eeeeee), color-stop(100%, #eeeeee));
-    background: -webkit-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -moz-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -o-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: -ms-linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-    background: linear-gradient(right, #cccccc 0%, #eeeeee 2%, #eeeeee 100%);
-  }
-}
 /* line 4, ../sass/partials/modules/_tile_box.scss */
 .tile-box {
   -moz-border-radius: 5px;
@@ -1130,24 +1102,24 @@ ol > li {
 }
 
 /* base theme styles */
-/* line 24, ../sass/partials/_theme.scss */
+/* line 31, ../sass/partials/_theme.scss */
 a {
   color: #344f6d;
 }
 
-/* line 28, ../sass/partials/_theme.scss */
+/* line 35, ../sass/partials/_theme.scss */
 a:hover {
   color: #1b2939;
 }
 
 /* main container */
-/* line 34, ../sass/partials/_theme.scss */
+/* line 41, ../sass/partials/_theme.scss */
 #main > .container {
   background: white;
 }
 
 /* buttons */
-/* line 40, ../sass/partials/_theme.scss */
+/* line 47, ../sass/partials/_theme.scss */
 .button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
   color: #666666;
   text-shadow: 0 1px 0 #FFF;
@@ -1163,7 +1135,7 @@ a:hover {
   -o-box-shadow: 0 1px 0 0 white inset;
   box-shadow: 0 1px 0 0 white inset;
 }
-/* line 46, ../sass/partials/_theme.scss */
+/* line 53, ../sass/partials/_theme.scss */
 .button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e3e3e3), color-stop(100%, #dcdcdc));
@@ -1178,7 +1150,7 @@ a:hover {
   box-shadow: 0 1px 0 0 white inset;
 }
 
-/* line 52, ../sass/partials/_theme.scss */
+/* line 59, ../sass/partials/_theme.scss */
 .button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .button-selected, .pagetabs .selected > a {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cfcfcf), color-stop(100%, #b5b5b5));
@@ -1195,7 +1167,7 @@ a:hover {
 }
 
 /* navigation */
-/* line 61, ../sass/partials/_theme.scss */
+/* line 68, ../sass/partials/_theme.scss */
 #navigation {
   background-color: #222222;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3c3c3c), color-stop(100%, #222222));
@@ -1208,13 +1180,13 @@ a:hover {
   border-top-color: #555555;
 }
 
-/* line 68, ../sass/partials/_theme.scss */
+/* line 75, ../sass/partials/_theme.scss */
 .nav-item a {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
 
-/* line 73, ../sass/partials/_theme.scss */
+/* line 80, ../sass/partials/_theme.scss */
 .nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a {
   border-bottom: 1px solid black;
   border-top: 1px solid #555555;
@@ -1228,12 +1200,12 @@ a:hover {
   color: #FFF;
 }
 
-/* line 81, ../sass/partials/_theme.scss */
+/* line 88, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul {
   background: #2f2f2f;
 }
 
-/* line 85, ../sass/partials/_theme.scss */
+/* line 92, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a {
   border-color: #151515;
   border-top-color: #222222;
@@ -1251,11 +1223,11 @@ a:hover {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
-/* line 93, ../sass/partials/_theme.scss */
+/* line 100, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a:hover {
   color: ligten(#dddddd, 10%);
 }
-/* line 96, ../sass/partials/_theme.scss */
+/* line 103, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a:active {
   background: #222222;
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
@@ -1265,12 +1237,12 @@ a:hover {
 }
 
 /* forms */
-/* line 104, ../sass/partials/_theme.scss */
+/* line 111, ../sass/partials/_theme.scss */
 input, textarea {
   border-color: #cccccc;
   background: white;
 }
-/* line 107, ../sass/partials/_theme.scss */
+/* line 114, ../sass/partials/_theme.scss */
 input:focus, textarea:focus {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -1280,12 +1252,12 @@ input:focus, textarea:focus {
 }
 
 /* pagetabs */
-/* line 115, ../sass/partials/_theme.scss */
+/* line 122, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span {
   color: #999999;
   border-color: #e6e6e6;
 }
-/* line 118, ../sass/partials/_theme.scss */
+/* line 125, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span:hover, .pagetabs .ellipse span:active {
   color: #999999;
   border-color: #e6e6e6;
@@ -1302,37 +1274,67 @@ input:focus, textarea:focus {
 }
 
 /* pod */
-/* line 128, ../sass/partials/_theme.scss */
+/* line 135, ../sass/partials/_theme.scss */
 .pod-header, .page-header {
-  background-color: #9e0007;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #9e0007), color-stop(100%, #850006));
-  background-image: -webkit-linear-gradient(#9e0007, #850006);
-  background-image: -moz-linear-gradient(#9e0007, #850006);
-  background-image: -o-linear-gradient(#9e0007, #850006);
-  background-image: -ms-linear-gradient(#9e0007, #850006);
-  background-image: linear-gradient(#9e0007, #850006);
-  border-bottom-color: #6b0005;
-  border-top-color: #d10009;
-  color: #FFF;
+  background-color: white;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #f2f2f2));
+  background-image: -webkit-linear-gradient(#ffffff, #f2f2f2);
+  background-image: -moz-linear-gradient(#ffffff, #f2f2f2);
+  background-image: -o-linear-gradient(#ffffff, #f2f2f2);
+  background-image: -ms-linear-gradient(#ffffff, #f2f2f2);
+  background-image: linear-gradient(#ffffff, #f2f2f2);
+  border-bottom-color: #e6e6e6;
+  border-top-color: white;
+  color: #333333;
 }
-/* line 134, ../sass/partials/_theme.scss */
+/* line 141, ../sass/partials/_theme.scss */
 .pod-header a, .page-header a {
-  color: #FFF;
+  color: #333333;
 }
 
-/* line 140, ../sass/partials/_theme.scss */
+/* line 147, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
-  background-color: #6b0005;
+  background-color: #e6e6e6;
 }
-/* line 143, ../sass/partials/_theme.scss */
+/* line 150, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
   background-color: #FFF;
-  color: #380002;
+  color: #cccccc;
 }
 
 /* site-blurb */
-/* line 151, ../sass/partials/_theme.scss */
+/* line 158, ../sass/partials/_theme.scss */
 .site-blurb {
   background-color: #222222;
-  color: #feffd6;
+  color: #dddddd;
+}
+
+/* sidebar */
+@media screen and (min-width: 740px) {
+  /* line 165, ../sass/partials/_theme.scss */
+  .right-sidebar, .basic .popular > .pod-content,
+  .basic .popular > .pod-footer,
+  .cyclops .popular > .pod-content,
+  .cyclops .popular > .pod-footer,
+  .basic .new > .pod-content,
+  .basic .new > .pod-footer {
+    background-color: white;
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #e6e6e6), color-stop(2%, #ffffff), color-stop(100%, #ffffff));
+    background: -webkit-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -moz-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -o-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -ms-linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: linear-gradient(left, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+  }
+
+  /* line 170, ../sass/partials/_theme.scss */
+  .left-sidebar {
+    background-color: white;
+    background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #e6e6e6), color-stop(2%, #ffffff), color-stop(100%, #ffffff));
+    background: -webkit-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -moz-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -o-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: -ms-linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+    background: linear-gradient(right, #e6e6e6 0%, #ffffff 2%, #ffffff 100%);
+  }
 }
