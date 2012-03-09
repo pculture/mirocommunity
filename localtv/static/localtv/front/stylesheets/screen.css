@@ -95,7 +95,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 32, ../sass/partials/_grid.scss */
-.padded-half, #search, .nav-item > a, .pod-actions, .page-actions {
+.padded-half, #search, .nav-item > a {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -776,6 +776,7 @@ ol > li {
 
 /* line 16, ../sass/partials/modules/_pod.scss */
 .pod-actions, .page-actions {
+  padding: 13.5px;
   position: absolute;
   top: 0;
   right: 0;
@@ -790,7 +791,7 @@ ol > li {
 .pod-actions a, .page-actions a {
   display: block;
   padding: 3px 20px;
-  margin-top: -2px;
+  margin-top: -3px;
   -moz-border-radius: 12px;
   -webkit-border-radius: 12px;
   -o-border-radius: 12px;
@@ -1294,12 +1295,12 @@ input:focus, textarea:focus {
 
 /* line 147, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
-  background-color: #e6e6e6;
+  background-color: #cccccc;
 }
 /* line 150, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
-  background-color: #FFF;
-  color: #cccccc;
+  background-color: #333333;
+  color: white;
 }
 
 /* site-blurb */

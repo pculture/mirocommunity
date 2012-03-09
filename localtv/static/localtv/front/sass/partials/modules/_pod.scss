@@ -14,7 +14,7 @@
 }
 
 .pod-actions {
-	@extend .padded-half;
+	padding:$base-line-height * .75;
 	position:absolute;
 	top:0;
 	right:0;
@@ -26,7 +26,7 @@
 	a{
 		display:block;
 		padding:3px $gutter-width/2;
-		margin-top:-2px;
+		margin-top:-3px;
 		@include border-radius($base-line-height/2+3px)
 	}
 	a:hover{

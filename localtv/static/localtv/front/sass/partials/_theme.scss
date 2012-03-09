@@ -145,11 +145,11 @@ input, textarea{
 
 .pod-actions {
 	a{
-		background-color:darken($pod-header-background-color, 10%);
+		background-color:darken($pod-header-background-color, 20%);
 	}
 	a:hover{
-		background-color: #FFF;
-		color:darken($pod-header-background-color, 20%);
+		background-color: $pod-header-text-color;
+		color: $pod-header-background-color;
 	}
 }
 
