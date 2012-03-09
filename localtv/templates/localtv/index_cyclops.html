@@ -56,7 +56,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <div class="row">
 	
-	<div class="col-one-half left">
+	<div class="col-three-quarters left">
 		<div class="pod new">
 	        {% url 'localtv_feeds_new' as new_rss%}
 			<header class="pod-header">
@@ -67,7 +67,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</ul>
 			</header>{# /.pod-header #}
 			<div class="pod-content">
-				{% with new_videos|slice:"4" as video_list %}
+				{% with new_videos|slice:"12" as video_list %}
 					{% include "localtv/_video_grid_list.html" %}
 				{% endwith %}
 			</div>{# /.pod-content #}
@@ -79,7 +79,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>{# /.pod #}
 	</div>{# /.col-one-third #}
 	
-	<div class="col-one-half right">
+	<div class="col-one-quarter right">
 		<div class="pod popular">
 			{% url 'localtv_feeds_popular' as popular_rss %}
 			<header class="pod-header">
