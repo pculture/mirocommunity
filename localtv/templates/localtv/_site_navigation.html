@@ -22,49 +22,62 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 
 <ul class="navigation-list">
-	<li class="nav-item nav-featured">
-		<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
-	</li>
-	<li class="nav-item nav-new">
-		<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
+	<li class="nav-item nav-item-dropdown" data-dropdown="true">
+		<a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a>
+		<ul class="dropdown-list" data-dropdown-target="true">
+			<li>
+				<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
+			</li>
+			<li>
+				<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
+			</li>
+			<li>
+				<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
+			</li>
+		</ul>
 	</li>
 	{% if categories %}
 		<li class="nav-item nav-categories nav-item-dropdown" data-dropdown="true">
 			<a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a>
-			<ul data-dropdown-target="true">
+			<ul class="dropdown-list category-list" data-dropdown-target="true">
 				{% for category in categories %}
-					<li class="nav-category-item">
+					<li>
 						<a href="{{ category.get_absolute_url }}">{{ category }}</a>
 					</li>
 				{% endfor %}
 			</ul>
 		</li>
 	{% endif %}
-	<li class="nav-item nav-popular">
-		<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
-	</li>
 	<li class="nav-item nav-submit">
 		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit A Video' %}</a>
 	</li>
 	<li class="nav-item nav-about">
-		<a href="{% url 'localtv_about' %}">{% trans 'About Us' %}</a>
+		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
 </ul>
 
 <ul class="navigation-list navigation-list-secondary">
 	{% if request.user.is_authenticated %}
-		<li class="nav-item nav-logout">
-			<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
-		</li>
+		{% if user_is_admin %}
+			<li class="nav-item nav-item-dropdown" data-dropdown="true">
+				<a href="#">{{ user.username }}</a>
+				<ul class="dropdown-list" data-dropdown-target="true">
+					<li class="nav-logout">
+						<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
+					</li>
+					<li class="nav-admin">
+						<a href="{% url 'localtv_admin_index' %}">{% trans 'View Admin' %}</a>
+					</li>
+				</ul>
+			</li>
+		{% else %}
+			<li class="nav-item nav-logout">
+				<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
+			</li>
+		{% endif %}
 	{% else %}
 		<li class="nav-item nav-login">
 			<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
-		</li>
-	{% endif %}
-
-	{% if user_is_admin %}
-		<li class="nav-item nav-admin">
-			<a href="{% url 'localtv_admin_index' %}">{% trans 'View Admin' %}</a>
 		</li>
 	{% endif %}
 </ul>

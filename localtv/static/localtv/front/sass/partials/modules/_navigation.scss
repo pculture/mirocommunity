@@ -1,4 +1,5 @@
 @import "compass/css3/border-radius",
+		"compass/css3/box-shadow",
 		"compass/css3/images";
 
 #navigation{
@@ -27,31 +28,11 @@
 	border-top:1px solid transparent;
 }
 
-.nav-categories{
+.nav-item-dropdown{
 	position:relative;
 }
-.nav-categories > ul{
-	@extend .unstyled-list;
-	@extend .row-nested;
-	display:none;
-	position:absolute;
-	z-index:1337;
-	top:$base-line-height*2+1px;
-	left:0;
-	width:450px;
-	@include border-radius(0 0 5px 5px);
-}
-.nav-category-item{
-	@extend .col-one-third;
-	padding: 3px;
-}
-.nav-category-item > a{
-	display:block;
-	border:1px solid;
-	padding:#{$base-line-height / 2 - 4px} #{$gutter-width / 2 - 4px};
-	@include border-radius(5px);
-}
 
+// This adds a cute arrow to the dropdown items in navbars
 .nav-item-dropdown > a{
 	position:relative;
 	padding-right:10px+$gutter-width/2;
@@ -65,11 +46,35 @@
 	margin-right: 10px;
 }
 
+// Positions the dropdown list appropriately
+.dropdown-list{
+	@extend .unstyled-list;
+	@extend .row-nested;
+	display:none;
+	position:absolute;
+	z-index:1337;
+	top:$base-line-height*2+1px;
+	left:0;
+	min-width:200px;
+	@include border-radius(0 0 5px 5px);
+	@include box-shadow(0 0 5px 0 rgba(0,0,0,.35));
+}
+.dropdown-list > li{
+	padding: 3px;
+}
+.dropdown-list > li > a{
+	display:block;
+	border:1px solid;
+	padding:#{$base-line-height / 2 - 4px} #{$gutter-width / 2 - 4px};
+	@include border-radius(5px);
+}
+
 @media screen and (max-width: 740px){
+	.dropdown-list{
+		position:static;
+		width:100%;
+	}
 	.nav-item, .navigation-list-secondary{
 		float:none;
-	}
-	.nav-categories > ul{
-		width:100%;
 	}
 }

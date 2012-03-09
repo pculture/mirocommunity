@@ -85,11 +85,11 @@ a:hover{
 	color:#FFF;
 }
 
-.nav-item-dropdown > ul{
+.dropdown-list{
 	background:lighten($navigation-background-color, 5%);
 }
 
-.nav-item-dropdown > ul > li > a{
+.dropdown-list > li > a{
 	border-color:darken($navigation-background-color, 5%);
 	border-top-color:$navigation-background-color;
 	background-color:lighten($navigation-background-color, 10%);
