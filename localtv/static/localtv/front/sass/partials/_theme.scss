@@ -14,6 +14,9 @@ $navigation-text-color: #DDD !default;
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
+$site-blurb-background-color: #222 !default;
+$site-blurb-text-color: #FEFFD6 !default;
+
 @import "compass/css3/images",
 		"compass/css3/box-shadow";
 
@@ -143,4 +146,9 @@ input, textarea{
 	}
 }
 
-/* thumb */
+/* site-blurb */
+
+.site-blurb{
+	background-color:$site-blurb-background-color;
+	color:$site-blurb-text-color;
+}

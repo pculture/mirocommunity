@@ -103,7 +103,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 38, ../sass/partials/_grid.scss */
-.padded, #header > .container, #footer > .container, .pod-content, .pod-footer, .sidebar-about, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
+.padded, #header > .container, #footer > .container, .pod-content, .pod-footer, .site-blurb, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
   padding-bottom: 18px;
   padding-top: 18px;
   padding-left: 20px;
@@ -803,10 +803,19 @@ ol > li {
   border: 0;
 }
 
-/* line 1, ../sass/partials/modules/_sidebar_about.scss */
-.sidebar-about {
-  background: #000;
-  color: #FFF;
+/* line 1, ../sass/partials/modules/_site_blurb.scss */
+.site-blurb {
+  font-size: 24px;
+  line-height: 36px;
+  -moz-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+  -webkit-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+  -o-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+/* line 7, ../sass/partials/modules/_site_blurb.scss */
+.site-blurb > :last-child {
+  margin-bottom: 0;
 }
 
 @media screen and (min-width: 740px) {
@@ -1121,24 +1130,24 @@ ol > li {
 }
 
 /* base theme styles */
-/* line 21, ../sass/partials/_theme.scss */
+/* line 24, ../sass/partials/_theme.scss */
 a {
   color: #344f6d;
 }
 
-/* line 25, ../sass/partials/_theme.scss */
+/* line 28, ../sass/partials/_theme.scss */
 a:hover {
   color: #1b2939;
 }
 
 /* main container */
-/* line 31, ../sass/partials/_theme.scss */
+/* line 34, ../sass/partials/_theme.scss */
 #main > .container {
   background: white;
 }
 
 /* buttons */
-/* line 37, ../sass/partials/_theme.scss */
+/* line 40, ../sass/partials/_theme.scss */
 .button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
   color: #666666;
   text-shadow: 0 1px 0 #FFF;
@@ -1154,7 +1163,7 @@ a:hover {
   -o-box-shadow: 0 1px 0 0 white inset;
   box-shadow: 0 1px 0 0 white inset;
 }
-/* line 43, ../sass/partials/_theme.scss */
+/* line 46, ../sass/partials/_theme.scss */
 .button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e3e3e3), color-stop(100%, #dcdcdc));
@@ -1169,7 +1178,7 @@ a:hover {
   box-shadow: 0 1px 0 0 white inset;
 }
 
-/* line 49, ../sass/partials/_theme.scss */
+/* line 52, ../sass/partials/_theme.scss */
 .button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .button-selected, .pagetabs .selected > a {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cfcfcf), color-stop(100%, #b5b5b5));
@@ -1186,7 +1195,7 @@ a:hover {
 }
 
 /* navigation */
-/* line 58, ../sass/partials/_theme.scss */
+/* line 61, ../sass/partials/_theme.scss */
 #navigation {
   background-color: #222222;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #3c3c3c), color-stop(100%, #222222));
@@ -1199,13 +1208,13 @@ a:hover {
   border-top-color: #555555;
 }
 
-/* line 65, ../sass/partials/_theme.scss */
+/* line 68, ../sass/partials/_theme.scss */
 .nav-item a {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
 
-/* line 70, ../sass/partials/_theme.scss */
+/* line 73, ../sass/partials/_theme.scss */
 .nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a {
   border-bottom: 1px solid black;
   border-top: 1px solid #555555;
@@ -1219,12 +1228,12 @@ a:hover {
   color: #FFF;
 }
 
-/* line 78, ../sass/partials/_theme.scss */
+/* line 81, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul {
   background: #2f2f2f;
 }
 
-/* line 82, ../sass/partials/_theme.scss */
+/* line 85, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a {
   border-color: #151515;
   border-top-color: #222222;
@@ -1242,11 +1251,11 @@ a:hover {
   color: #dddddd;
   text-shadow: 0 -1px 0 black;
 }
-/* line 90, ../sass/partials/_theme.scss */
+/* line 93, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a:hover {
   color: ligten(#dddddd, 10%);
 }
-/* line 93, ../sass/partials/_theme.scss */
+/* line 96, ../sass/partials/_theme.scss */
 .nav-item-dropdown > ul > li > a:active {
   background: #222222;
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.05) inset;
@@ -1256,12 +1265,12 @@ a:hover {
 }
 
 /* forms */
-/* line 101, ../sass/partials/_theme.scss */
+/* line 104, ../sass/partials/_theme.scss */
 input, textarea {
   border-color: #cccccc;
   background: white;
 }
-/* line 104, ../sass/partials/_theme.scss */
+/* line 107, ../sass/partials/_theme.scss */
 input:focus, textarea:focus {
   border-color: #344f6d;
   -moz-box-shadow: 0 0 6px 0 rgba(52, 79, 109, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -1271,12 +1280,12 @@ input:focus, textarea:focus {
 }
 
 /* pagetabs */
-/* line 112, ../sass/partials/_theme.scss */
+/* line 115, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span {
   color: #999999;
   border-color: #e6e6e6;
 }
-/* line 115, ../sass/partials/_theme.scss */
+/* line 118, ../sass/partials/_theme.scss */
 .pagetabs .ellipse span:hover, .pagetabs .ellipse span:active {
   color: #999999;
   border-color: #e6e6e6;
@@ -1293,7 +1302,7 @@ input:focus, textarea:focus {
 }
 
 /* pod */
-/* line 125, ../sass/partials/_theme.scss */
+/* line 128, ../sass/partials/_theme.scss */
 .pod-header, .page-header {
   background-color: #9e0007;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #9e0007), color-stop(100%, #850006));
@@ -1306,19 +1315,24 @@ input:focus, textarea:focus {
   border-top-color: #d10009;
   color: #FFF;
 }
-/* line 131, ../sass/partials/_theme.scss */
+/* line 134, ../sass/partials/_theme.scss */
 .pod-header a, .page-header a {
   color: #FFF;
 }
 
-/* line 137, ../sass/partials/_theme.scss */
+/* line 140, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
   background-color: #6b0005;
 }
-/* line 140, ../sass/partials/_theme.scss */
+/* line 143, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
   background-color: #FFF;
   color: #380002;
 }
 
-/* thumb */
+/* site-blurb */
+/* line 151, ../sass/partials/_theme.scss */
+.site-blurb {
+  background-color: #222222;
+  color: #feffd6;
+}

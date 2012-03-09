@@ -46,16 +46,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 
-<div class="row">
-	<div class="col-one-half right">
-		{% if site_settings.sidebar_html %}	
-			<div class="sidebar-about">
-				{% autoescape off %}
-					{{ site_settings.sidebar_html }}
-				{% endautoescape %}
-			</div>
-		{% endif %}
+{% if site_settings.sidebar_html %}	
+	<div class="site-blurb">
+		{% autoescape off %}
+			{{ site_settings.sidebar_html }}
+		{% endautoescape %}
 	</div>
+{% endif %}
+
+<div class="row">
 	
 	<div class="col-one-half left">
 		<div class="pod new">
