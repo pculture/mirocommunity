@@ -2,8 +2,14 @@
 
 <article class="video-large">
 	<div class="preview-large col-two-thirds">
-		{% resize video.thumbnail width=640 height=400 method="fill" as image %}
-		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
+		{% with video.thumbnail as thumbnail %}
+			{% if thumbnail.width > 640 and thumbnail.height > 400 %}
+				{% resize thumbnail width=640 height=400 method="fill" as image %}
+				<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
+			{% else %}
+				<a href="{{ video.get_absolute_url }}"><img src="{{ MEDIA_URL }}{{ video.get_original_thumb_storage_path }}" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}" /></a>
+			{% endif %}
+		{% endwith %}
 	</div>
 	<div class="details-large content-box col-one-third">
 		<header>

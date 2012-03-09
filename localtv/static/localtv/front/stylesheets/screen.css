@@ -972,14 +972,24 @@ ol > li {
   border: none;
 }
 
-/* line 3, ../sass/partials/modules/_video_large_preview.scss */
-.preview-large a {
-  border: none;
+/* line 1, ../sass/partials/modules/_video_large_preview.scss */
+.video-large, .preview-large a {
+  height: 360px;
 }
 
-/* line 6, ../sass/partials/modules/_video_large_preview.scss */
-.preview-large img {
+/* line 4, ../sass/partials/modules/_video_large_preview.scss */
+.preview-large a {
+  border: none;
+  background: #000;
   display: block;
+  line-height: 360px;
+  text-align: center;
+}
+
+/* line 11, ../sass/partials/modules/_video_large_preview.scss */
+.preview-large img {
+  margin: 0 auto;
+  vertical-align: middle;
 }
 
 /* line 3, ../sass/partials/modules/_media_grid.scss */

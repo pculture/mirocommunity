@@ -1,10 +1,16 @@
-.video-large{
+.video-large, .preview-large a{
+	height:360px;
 }
 .preview-large a{
 	border:none;
+	background:#000;
+	display:block;
+	line-height:360px;
+	text-align:center;
 }
 .preview-large img{
-	display:block;
+	margin:0 auto;
+	vertical-align:middle;
 }
 
 .details-large{
