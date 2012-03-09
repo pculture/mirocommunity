@@ -8,7 +8,7 @@ $xx-large-font-size: 30px !default;
 
 $small-line-height: $base-line-height !default;
 $normal-line-height: $base-line-height !default;
-$large-line-height: $base-line-height !default;
+$large-line-height: $base-line-height * 1.5 !default;
 $x-large-line-height: $base-line-height * 2 !default;
 $xx-large-line-height: $base-line-height * 2 !default;
 
@@ -26,7 +26,7 @@ $xx-large-line-height: $base-line-height * 2 !default;
 }
 @mixin x-large{
 	font-size: $x-large-font-size;
-	line-height: $x-large-line-height ;
+	line-height: $x-large-line-height;
 }
 @mixin xx-large{
 	font-size: $xx-large-font-size;

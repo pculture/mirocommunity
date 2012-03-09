@@ -264,7 +264,7 @@ h2 {
 /* line 29, ../sass/partials/_base.scss */
 h3 {
   font-size: 16px;
-  line-height: 18px;
+  line-height: 27px;
 }
 
 /* line 32, ../sass/partials/_base.scss */
@@ -400,7 +400,7 @@ form {
 /* line 77, ../sass/partials/modules/_forms.scss */
 .large > .controls > input {
   font-size: 16px;
-  line-height: 18px;
+  line-height: 27px;
 }
 
 /* line 82, ../sass/partials/modules/_forms.scss */
@@ -591,7 +591,7 @@ ol > li {
 /* line 26, ../sass/partials/modules/_site_header.scss */
 #SiteTagline {
   font-size: 16px;
-  line-height: 18px;
+  line-height: 27px;
 }
 
 /* line 30, ../sass/partials/modules/_site_header.scss */
@@ -771,7 +771,7 @@ ol > li {
 .pod-header > h1, .page-header > h1 {
   display: inline;
   font-size: 16px;
-  line-height: 18px;
+  line-height: 27px;
 }
 
 /* line 16, ../sass/partials/modules/_pod.scss */
@@ -805,8 +805,8 @@ ol > li {
 
 /* line 1, ../sass/partials/modules/_site_blurb.scss */
 .site-blurb {
-  font-size: 24px;
-  line-height: 36px;
+  font-size: 16px;
+  line-height: 27px;
   -moz-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
   -webkit-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
   -o-box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
