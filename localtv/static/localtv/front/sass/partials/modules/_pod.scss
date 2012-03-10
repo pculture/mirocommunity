@@ -25,9 +25,8 @@
 	}
 	a{
 		display:block;
-		padding:3px $gutter-width/2;
+		padding:3px 0;
 		margin-top:-3px;
-		@include border-radius($base-line-height/2+3px)
 	}
 	a:hover{
 		border:0;

@@ -153,11 +153,16 @@ input, textarea{
 
 .pod-actions {
 	a{
-		background-color:darken($pod-header-background-color, 20%);
+		color: contrast-color($pod-header-background-color,
+				darken($pod-header-background-color, 60%),
+				lighten($pod-header-background-color, 60%)
+			);
 	}
 	a:hover{
-		background-color: $pod-header-text-color;
-		color: $pod-header-background-color;
+		color: contrast-color($pod-header-background-color,
+				darken($pod-header-background-color, 80%),
+				lighten($pod-header-background-color, 80%)
+			);
 	}
 }
 

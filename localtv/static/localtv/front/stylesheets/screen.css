@@ -793,16 +793,10 @@ ol > li {
 /* line 26, ../sass/partials/modules/_pod.scss */
 .pod-actions a, .page-actions a {
   display: block;
-  padding: 3px 20px;
+  padding: 3px 0;
   margin-top: -3px;
-  -moz-border-radius: 12px;
-  -webkit-border-radius: 12px;
-  -o-border-radius: 12px;
-  -ms-border-radius: 12px;
-  -khtml-border-radius: 12px;
-  border-radius: 12px;
 }
-/* line 32, ../sass/partials/modules/_pod.scss */
+/* line 31, ../sass/partials/modules/_pod.scss */
 .pod-actions a:hover, .page-actions a:hover {
   border: 0;
 }
@@ -1304,16 +1298,15 @@ input:focus, textarea:focus {
 
 /* line 155, ../sass/partials/_theme.scss */
 .pod-actions a, .page-actions a {
-  background-color: #bbbbbb;
+  color: #555555;
 }
-/* line 158, ../sass/partials/_theme.scss */
+/* line 161, ../sass/partials/_theme.scss */
 .pod-actions a:hover, .page-actions a:hover {
-  background-color: #222222;
-  color: #eeeeee;
+  color: #222222;
 }
 
 /* site-blurb */
-/* line 166, ../sass/partials/_theme.scss */
+/* line 171, ../sass/partials/_theme.scss */
 .site-blurb {
   background-color: #222222;
   color: #dddddd;
@@ -1321,7 +1314,7 @@ input:focus, textarea:focus {
 
 /* sidebar */
 @media screen and (min-width: 740px) {
-  /* line 173, ../sass/partials/_theme.scss */
+  /* line 178, ../sass/partials/_theme.scss */
   .right-sidebar, .basic .popular > .pod-content,
   .basic .popular > .pod-footer,
   .cyclops .popular > .pod-content,
@@ -1337,7 +1330,7 @@ input:focus, textarea:focus {
     background: linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
   }
 
-  /* line 178, ../sass/partials/_theme.scss */
+  /* line 183, ../sass/partials/_theme.scss */
   .left-sidebar {
     background-color: #f5f5f5;
     background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #dcdcdc), color-stop(2%, #f5f5f5), color-stop(100%, #f5f5f5));
