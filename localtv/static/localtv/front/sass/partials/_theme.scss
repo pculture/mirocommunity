@@ -5,6 +5,7 @@ $color2: #344F6D !default;
 
 $main-background-color: #FFF !default;
 $main-text-color: #444 !default;
+$main-box-shadow: 0 0 3px rgba(0,0,0,.25) !default;
 
 $body-background-color: #CCC !default;
 
@@ -48,6 +49,7 @@ body{
 
 #main > .container{
 	background:$main-background-color;
+	@include box-shadow($main-box-shadow);
 }
 
 /* buttons */
