@@ -29,30 +29,23 @@ $max-width-threshold: 960px !default;
 }
 
 
-.padded-half{
-	@include padding-trailer(.5);
-	@include padding-leader(.5);
-	padding-left:$gutter-width/4;
-	padding-right:$gutter-width/4;
+@mixin padded($ratio:1){
+	@include padding-trailer($ratio);
+	@include padding-leader($ratio);
+	padding-left:$gutter-width*$ratio/2;
+	padding-right:$gutter-width*$ratio/2;
 }
-.padded{
-	@include padding-trailer(1);
-	@include padding-leader(1);
-	padding-left:$gutter-width/2;
-	padding-right:$gutter-width/2;
+@mixin unpadded($ratio:1){
+	@include margin-trailer(-$ratio);
+	@include margin-leader(-$ratio);
+	margin-left:-$gutter-width*$ratio/2;
+	margin-right:-$gutter-width*$ratio/2;
 }
-.unpadded-half{
-	@include margin-trailer(-.5);
-	@include margin-leader(-.5);
-	margin-left:-$gutter-width/4;
-	margin-right:-$gutter-width/4;
-}
-.unpadded{
-	@include margin-trailer(1);
-	@include margin-leader(1);
-	margin-left:-$gutter-width/2;
-	margin-right:-$gutter-width/2;
-}
+
+.padded-half{ @include padded(.5); }
+.padded{ @include padded; }
+.unpadded-half{ @include unpadded(.5); }
+.unpadded{ @include unpadded; }
 
 // Basic column widths
 

@@ -30,22 +30,12 @@
 }
 
 #search{
-	@extend .padded-half;
 	position:absolute;
 	top:0;
 	right:0;
 	width:300px;
-}
-
-.logo-link:hover{
-	border:0;
-}
-
-@media screen and (max-width: 740px){
-	#header > .container{
-		position:static;
-	}
-	#search{
+	@media screen and (max-width: 740px){
+		@include padded(.5);
 		top:0;
 		right:0;
 		left:0;
@@ -53,7 +43,20 @@
 		width:auto;
 		border-bottom:1px solid #CCC;
 	}
-	#SiteTitle, #SiteLogo{
-		margin-top:2*$base-line-height;
+}
+
+.logo-link:hover{
+	border:0;
+}
+
+@media screen and (max-width: 960px){
+	#header > .container{
+		padding:0 $gutter-width/4;
+	}
+}
+@media screen and (max-width: 740px){
+	#header > .container{
+		position:static;
+		margin-top:$base-line-height * 2.5;
 	}
 }
