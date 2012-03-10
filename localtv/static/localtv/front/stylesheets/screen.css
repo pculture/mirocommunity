@@ -466,26 +466,13 @@ ol > li {
 }
 
 /* line 13, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .errorlist, .action-list, .details-list, .navigation-list, .dropdown-list, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .grid-list {
+.unstyled-list, .errorlist, .details-list, .navigation-list, .dropdown-list, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .grid-list {
   margin: 0;
   padding: 0;
 }
 /* line 16, ../sass/partials/modules/_lists.scss */
-.unstyled-list > li, .errorlist > li, .action-list > li, .details-list > li, .navigation-list > li, .dropdown-list > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .grid-list > li {
+.unstyled-list > li, .errorlist > li, .details-list > li, .navigation-list > li, .dropdown-list > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .grid-list > li {
   list-style-type: none;
-}
-
-/* line 21, ../sass/partials/modules/_lists.scss */
-.pill-list a, .action-list a {
-  padding: 9px 18px;
-  -moz-border-radius: 18px;
-  -webkit-border-radius: 18px;
-  -o-border-radius: 18px;
-  -ms-border-radius: 18px;
-  -khtml-border-radius: 18px;
-  border-radius: 18px;
-  float: right;
-  background: #CCC;
 }
 
 /* line 5, ../sass/partials/modules/_buttons.scss */

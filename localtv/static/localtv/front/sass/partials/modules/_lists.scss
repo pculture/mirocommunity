@@ -17,15 +17,3 @@ ol > li{
 		list-style-type:none;
 	}
 }
-
-.pill-list a{
-	padding: #{$base-line-height / 2} $base-line-height;
-	@include border-radius($base-line-height);
-	float:right;
-	background:#CCC;
-}
-
-.action-list{
-	@extend .unstyled-list;
-	@extend .pill-list;
-}
