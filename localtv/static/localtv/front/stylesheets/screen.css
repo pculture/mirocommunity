@@ -103,7 +103,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 38, ../sass/partials/_grid.scss */
-.padded, #header > .container, #footer > .container, .pod-content, .pod-footer, .site-blurb, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
+.padded, #footer > .container, .pod-content, .pod-footer, .site-blurb, .content-box, .card, .card-link, .precontent-details, .video-details, .details-large, .grid-item {
   padding-bottom: 18px;
   padding-top: 18px;
   padding-left: 20px;
@@ -535,7 +535,7 @@ ol > li {
   color: #FFF;
 }
 
-/* line 3, ../sass/partials/modules/_site_header.scss */
+/* line 1, ../sass/partials/modules/_site_header.scss */
 #header {
   overflow: hidden;
   *zoom: 1;
@@ -544,41 +544,39 @@ ol > li {
   padding-top: 9px;
 }
 
-/* line 10, ../sass/partials/modules/_site_header.scss */
+/* line 8, ../sass/partials/modules/_site_header.scss */
 #header > .container {
   position: relative;
 }
 
-/* line 15, ../sass/partials/modules/_site_header.scss */
+/* line 12, ../sass/partials/modules/_site_header.scss */
 #SiteLogo {
-  width: 130px;
   float: left;
 }
-/* line 18, ../sass/partials/modules/_site_header.scss */
+/* line 14, ../sass/partials/modules/_site_header.scss */
 #SiteLogo img {
-  width: 130px;
+  display: block;
 }
 
-/* line 23, ../sass/partials/modules/_site_header.scss */
+/* line 19, ../sass/partials/modules/_site_header.scss */
 #SiteTitle {
-  font-size: 24px;
-  line-height: 36px;
+  font-weight: bold;
+}
+
+/* line 22, ../sass/partials/modules/_site_header.scss */
+#SiteTagline {
+  font-weight: 400;
 }
 
 /* line 26, ../sass/partials/modules/_site_header.scss */
-#SiteTagline {
+#SiteTitle, #SiteTagline {
+  margin: 0;
+  padding-left: 20px;
   font-size: 16px;
   line-height: 27px;
 }
 
-/* line 30, ../sass/partials/modules/_site_header.scss */
-#SiteTitle, #SiteTagline {
-  margin-bottom: 9px;
-  padding-left: 170px;
-  font-weight: 400;
-}
-
-/* line 36, ../sass/partials/modules/_site_header.scss */
+/* line 32, ../sass/partials/modules/_site_header.scss */
 #search {
   position: absolute;
   top: 0;
@@ -586,18 +584,18 @@ ol > li {
   width: 300px;
 }
 
-/* line 44, ../sass/partials/modules/_site_header.scss */
+/* line 40, ../sass/partials/modules/_site_header.scss */
 .logo-link:hover {
   border: 0;
 }
 
 @media screen and (max-width: 740px) {
-  /* line 49, ../sass/partials/modules/_site_header.scss */
+  /* line 45, ../sass/partials/modules/_site_header.scss */
   #header > .container {
     position: static;
   }
 
-  /* line 52, ../sass/partials/modules/_site_header.scss */
+  /* line 48, ../sass/partials/modules/_site_header.scss */
   #search {
     top: 0;
     right: 0;
@@ -607,7 +605,7 @@ ol > li {
     border-bottom: 1px solid #CCC;
   }
 
-  /* line 60, ../sass/partials/modules/_site_header.scss */
+  /* line 56, ../sass/partials/modules/_site_header.scss */
   #SiteTitle, #SiteLogo {
     margin-top: 36px;
   }

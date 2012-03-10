@@ -1,5 +1,3 @@
-$logo-width: 130px;
-
 #header{
 	@include clearfix;
 	background:#FFF;
@@ -8,29 +6,27 @@ $logo-width: 130px;
 }
 
 #header > .container{
-	@extend .padded;
 	position:relative;
 }
 
 #SiteLogo{
-	width:$logo-width;
 	float:left;
 	img{
-		width:$logo-width;
+		display:block;
 	}
 }
 
 #SiteTitle{
-	@include x-large;
+	font-weight:bold;
 }
 #SiteTagline{
-	@include large;
+	font-weight:400;
 }
 
 #SiteTitle, #SiteTagline{
-	@include margin-trailer(.5);
-	padding-left:$logo-width+$gutter-width;
-	font-weight:400;
+	margin:0;
+	padding-left: $gutter-width/2;
+	@include large;
 }
 
 #search{

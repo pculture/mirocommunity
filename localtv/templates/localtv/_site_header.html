@@ -1,15 +1,19 @@
 {% load url from future %}
-{% load i18n localtv_thumbnail uploadtemplate_tags %}
+{% load i18n daguerre uploadtemplate_tags %}
 
 <a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
-	<img alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{% get_thumbnail_url site_settings 130 110 %}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" class="logo-img" />
+	{% if site_settings.logo %}
+		{% resize site_settings.thumbnail method="fit" height=54 as logo %}
+		<img alt="{{ site_settings.site.name }} Logo" src="{{ logo }}" width="{{ logo.width }}" height="{{ logo.height }}" class="logo-img" />
+	{% endif %}
 </a>
-<h1 id="SiteTitle">
+{# Calculating the margins below is a little hacky... ideally this would happen in the CSS somehow #}
+<h1 id="SiteTitle" style="margin-left: {{ logo.width }}px;">
 	<a href="{{ localtv_index }}" class="site-name">
 		{{ site_settings.site.name }}
 	</a>
 </h1>
-<h2 id="SiteTagline">
+<h2 id="SiteTagline" style="margin-left: {{ logo.width }}px;">
 	{{ site_settings.tagline|safe }}
 </h2>
 
