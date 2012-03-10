@@ -38,7 +38,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 	<div class="page-content">
 		<div class="row">
-			<aside class="author-info col-one-third content-box">
+			<aside class="author-info col-one-quarter content-box">
 				{% if author.get_profile.logo %}
 					<img src="{{ author.get_profile.logo.url }}">
 				{% endif %}
@@ -83,8 +83,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				{% endif %}
 				
 			</aside>
-			<div class="author-videos col-two-thirds content-box right">
-				{% include "localtv/_video_summary_list.html" %}
+			<div class="author-videos col-three-quarters content-box right">
+				{% include "localtv/_video_grid_list.html" %}
 			</div>
 		</div>
 	</div>

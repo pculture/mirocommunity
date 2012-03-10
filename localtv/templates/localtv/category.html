@@ -35,12 +35,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</div>
 	</header>
 	<div class="row">
-		<div class="col-two-thirds">
+		<div class="col-three-quarters">
 			<div class="content-box">
-				{% include "localtv/_video_summary_list.html" %}
+				{% include "localtv/_video_grid_list.html" %}
 			</div>{# /.content-box #}
 		</div>{# /.col-two-thirds #}
-		<div class="col-one-third">
+		<div class="col-one-quarter right">
 			<div class="content-box">
 				{% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
 				{{ category.description|safe }}
