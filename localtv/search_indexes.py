@@ -60,6 +60,10 @@ class QueuedSearchIndex(indexes.SearchIndex):
         self._enqueue_instance(instance, True)
 
     def _enqueue_instance(self, instance, is_removal):
+        # This attribute can be set by passing ``update_index`` as a kwarg to
+        # :meth:`Video.save`. It defaults to ``True``.
+        if not getattr(instance, '_update_index', True):
+            return
         using = instance._state.db
         if using == 'default':
             # This gets called from both Celery and from the MC application.
@@ -69,7 +73,7 @@ class QueuedSearchIndex(indexes.SearchIndex):
             using = CELERY_USING
         haystack_update_index.delay(instance._meta.app_label,
                                     instance._meta.module_name,
-                                    instance.pk,
+                                    [instance.pk],
                                     is_removal,
                                     using=using)
 
@@ -131,12 +135,12 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
     def read_queryset(self):
         """
-        Adds a select_related call to the normal :meth:`.index_queryset`; the
-        related items only need to be in the index by id, but on read we will
-        probably need more.
+        Returns active videos and selects related feeds, users, and searches.
 
         """
-        return self.index_queryset().select_related('feed', 'user', 'search')
+        model = self.get_model()
+        return model._default_manager.filter(status=model.ACTIVE
+                                    ).select_related('feed', 'user', 'search')
 
     def get_updated_field(self):
         return 'when_modified'
