@@ -28,6 +28,8 @@ $sidebar-background-color:#F5F5F5 !default;
 $site-blurb-background-color: #222 !default;
 $site-blurb-text-color: #DDD !default;
 
+$site-title-color: #000;
+
 @import "compass/css3/images",
 		"compass/css3/box-shadow";
 
@@ -173,6 +175,15 @@ input, textarea{
 .site-blurb{
 	background-color:$site-blurb-background-color;
 	color:$site-blurb-text-color;
+}
+
+/* site-title */
+
+#SiteTitle{
+	color:$site-title-color;
+	& > a{
+		color:inherit;
+	}
 }
 
 /* sidebar */
