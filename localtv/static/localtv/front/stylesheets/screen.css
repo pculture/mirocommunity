@@ -469,7 +469,6 @@ ol > li {
   -ms-box-sizing: border-box;
   box-sizing: border-box;
   line-height: 18px;
-  padding: 4.5px 9px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   -o-border-radius: 5px;
@@ -477,6 +476,7 @@ ol > li {
   -khtml-border-radius: 5px;
   border-radius: 5px;
   margin: 0;
+  padding: 4.5px 9px;
 }
 
 /* line 15, ../sass/partials/modules/_buttons.scss */
@@ -569,16 +569,18 @@ ol > li {
   line-height: 27px;
 }
 
-/* line 32, ../sass/partials/modules/_site_header.scss */
-#search {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 300px;
+/* line 33, ../sass/partials/modules/_site_header.scss */
+#search #search_field {
+  width: 80%;
+}
+/* line 36, ../sass/partials/modules/_site_header.scss */
+#search .btn-right {
+  width: 20%;
 }
 @media screen and (max-width: 740px) {
   /* line 32, ../sass/partials/modules/_site_header.scss */
   #search {
+    position: absolute;
     padding-bottom: 9px;
     padding-top: 9px;
     padding-left: 10px;
@@ -592,19 +594,19 @@ ol > li {
   }
 }
 
-/* line 48, ../sass/partials/modules/_site_header.scss */
+/* line 51, ../sass/partials/modules/_site_header.scss */
 .logo-link:hover {
   border: 0;
 }
 
 @media screen and (max-width: 960px) {
-  /* line 53, ../sass/partials/modules/_site_header.scss */
+  /* line 56, ../sass/partials/modules/_site_header.scss */
   #header > .container {
     padding: 0 10px;
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 58, ../sass/partials/modules/_site_header.scss */
+  /* line 61, ../sass/partials/modules/_site_header.scss */
   #header > .container {
     position: static;
     margin-top: 45px;

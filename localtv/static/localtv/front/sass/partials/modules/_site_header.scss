@@ -30,11 +30,14 @@
 }
 
 #search{
-	position:absolute;
-	top:0;
-	right:0;
-	width:300px;
+	#search_field{
+		width:80%;
+	}
+	.btn-right{
+		width:20%;
+	}
 	@media screen and (max-width: 740px){
+		position:absolute;
 		@include padded(.5);
 		top:0;
 		right:0;
