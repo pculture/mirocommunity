@@ -1,4 +1,3 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,300,400,800);
 /* line 17, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -216,7 +215,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 /* line 14, ../sass/partials/_fonts.scss */
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
-  font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
 /* line 1, ../sass/partials/_base.scss */
@@ -237,47 +236,41 @@ body {
 }
 
 /* line 13, ../sass/partials/_base.scss */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: bold;
-  font-smoothing: antialiased;
-}
-
-/* line 17, ../sass/partials/_base.scss */
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl {
   margin-bottom: 18px;
 }
 
-/* line 21, ../sass/partials/_base.scss */
+/* line 17, ../sass/partials/_base.scss */
 h1 {
   font-size: 30px;
   line-height: 36px;
 }
 
-/* line 24, ../sass/partials/_base.scss */
+/* line 20, ../sass/partials/_base.scss */
 h2 {
   font-size: 24px;
   line-height: 36px;
 }
 
-/* line 27, ../sass/partials/_base.scss */
+/* line 23, ../sass/partials/_base.scss */
 h3 {
   font-size: 16px;
   line-height: 27px;
 }
 
-/* line 30, ../sass/partials/_base.scss */
+/* line 26, ../sass/partials/_base.scss */
 h4 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 33, ../sass/partials/_base.scss */
+/* line 29, ../sass/partials/_base.scss */
 h5 {
   font-size: 13px;
   line-height: 18px;
 }
 
-/* line 36, ../sass/partials/_base.scss */
+/* line 32, ../sass/partials/_base.scss */
 h6 {
   font-size: 13px;
   line-height: 18px;
