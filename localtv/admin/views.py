@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import urlparse
+
 from django import forms
 from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
@@ -168,6 +170,8 @@ class MiroCommunityAdminCRUDMixin(object):
     update_view_name = None
     delete_view_name = None
 
+    redirect_field_name = 'next'
+
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         return View.dispatch(self, request, *args, **kwargs)
@@ -179,7 +183,13 @@ class MiroCommunityAdminCRUDMixin(object):
             return list(self.template_name)
 
     def get_success_url(self):
-        return reverse(self.list_view_name)
+        redirect_to = self.request.POST.get(self.redirect_field_name, '')
+        netloc = urlparse.urlparse(redirect_to)[1]
+        if not redirect_to:
+            redirect_to = reverse(self.list_view_name)
+        elif netloc and netloc != self.request.get_host():
+            redirect_to = reverse(self.list_view_name)
+        return redirect_to
 
     def get_context_data(self, **kwargs):
         if hasattr(self, 'model') and self.model is not None:

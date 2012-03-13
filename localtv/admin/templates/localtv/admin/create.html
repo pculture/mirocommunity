@@ -38,6 +38,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% block form %}
       {% include 'localtv/admin/_form.html' %}
     {% endblock %}
-    <button type="submit">Save {{ verbose_name|capfirst }}</button>
+    <button type="submit" name="next" value="{% url list_view_name %}">Save</button>
+    <button type="submit" name="next" value="{{ request.path }}">Save and continue editing</button>
   </form>
 {% endblock %}

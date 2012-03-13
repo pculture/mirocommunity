@@ -30,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{% block page_title %}{{ object }} — {% blocktrans with verbose_name=verbose_name|capfirst %}Edit {{ verbose_name }}{% endblocktrans %}{% endblock %} — {{ block.super }}{% endblock %}
 
 
-{% block content_title %}<h1>Edit {{ verbose_name|capfirst }}: {{ object }}</h1>{% endblock %}
+{% block content_title %}<h1>Edit {{ object }}</h1>{% endblock %}
 
 
 {% block content %}
@@ -39,12 +39,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% block form %}
       {% include 'localtv/admin/_form.html' %}
     {% endblock %}
-    <button type="submit">Save {{ verbose_name|capfirst }}</button>
+    <button type="submit" name="next" value="{% url list_view_name %}">Save</button>
+    <button type="submit" name="next" value="{{ request.path }}">Save and continue editing</button>
   </form>
   {% if delete_view_name %}
   <form class="delete-form" action="{% url delete_view_name pk=object.pk %}" method="post">
     {% csrf_token %}
-    <button type="submit">Delete {{ verbose_name|capfirst }}</button>
+    <button type="submit" name="delete">Delete</button>
   </form>
   {% endif %}
 {% endblock %}
