@@ -22,6 +22,7 @@ from tagging.forms import TagField
 
 from localtv.models import Video, Category
 from localtv.submit_video.forms import SubmitURLForm
+from localtv.utils import edit_string_for_tags
 
 
 class VideoForm(forms.ModelForm):
@@ -31,7 +32,6 @@ class VideoForm(forms.ModelForm):
                                             widget=forms.CheckboxSelectMultiple)
     authors = Video._meta.get_field('authors').formfield(help_text=None,
                                             widget=forms.CheckboxSelectMultiple)
-    video_url = forms.URLField(verify_exists=False)
     status = Video._meta.get_field('status').formfield(
                         choices=Video.STATUS_CHOICES[:3],
                         widget=forms.RadioSelect)
@@ -42,7 +42,12 @@ class VideoForm(forms.ModelForm):
                   'authors', 'when_published', 'file_url', 'embed_code',
                   'status',)
 
+    def __init__(self, *args, **kwargs):
+        super(VideoForm, self).__init__(*args, **kwargs)
+        self.initial['tags'] = edit_string_for_tags(self.instance.tags)
+
     def save(self, *args, **kwargs):
+        self.instance.tags = self.cleaned_data['tags']
         thumbnail = self.cleaned_data.pop('thumbnail', None)
         thumbnail_url = self.cleaned_data.pop('thumbnail_url', None)
 
