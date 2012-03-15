@@ -16,6 +16,7 @@
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from haystack import connections
 from haystack.query import SearchQuerySet, SQ
 
 from tagging.models import Tag
@@ -134,6 +135,12 @@ class SmartSearchQuerySet(SearchQuerySet):
         those tokens.
 
         """
+        if 'WhooshEngine' in connections[sqs.query._using].options['ENGINE']:
+            # HACK Whoosh doesn't support __exact queries correctly, so we just
+            # use the default
+            field_format = '%s'
+        else:
+            field_format = '%s__exact'
         clean = sqs.query.clean
         for token in tokens:
             if isinstance(token, basestring):
@@ -158,12 +165,12 @@ class SmartSearchQuerySet(SearchQuerySet):
                         feed = self._get_object(Feed, rest,
                                            'name', 'pk')
                         if feed is not None:
-                            sqs = method(feed__exact=feed.pk)
+                            sqs = method(**{field_format % 'feed': feed.pk})
                     elif keyword == 'search':
                         search = self._get_object(SavedSearch, rest,
                                              'query_string', 'pk')
                         if search is not None:
-                            sqs = method(search__exact=search.pk)
+                            sqs = method(**{field_format % 'search': search.pk})
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
                         if tag is not None:
@@ -172,12 +179,12 @@ class SmartSearchQuerySet(SearchQuerySet):
                         user = self._get_object(User, rest,
                                            'username', 'pk')
                         if user is not None:
-                            if not negative:
-                                sqs = sqs.filter(SQ(user__exact=user.pk) |
-                                                 SQ(authors__contains=user.pk))
-                            else:
-                                sqs = sqs.exclude(user__exact=user.pk).exclude(
-                                        authors=user.pk)
+                            field = field_format % 'user'
+                            sq = (SQ(**{field: user.pk}) |
+                                  SQ(authors__contains=user.pk))
+                            if negative:
+                                sq = ~sq
+                            sqs = sqs.filter(sq)
                     elif keyword == 'playlist':
                         playlist = self._get_object(Playlist, rest, 'pk')
                         if playlist is None and '/' in rest:
@@ -190,7 +197,8 @@ class SmartSearchQuerySet(SearchQuerySet):
                             except Playlist.DoesNotExist:
                                 pass
                         if playlist is not None:
-                            sqs = method(playlists__exact=playlist.pk)
+                            sqs = method(
+                                **{field_format % 'playlists': playlist.pk})
                     else:
                         sqs = method(content=clean(token))
             else:
