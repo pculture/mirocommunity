@@ -231,7 +231,7 @@ class NotificationsFormTestCase(TestCase):
         form = forms.NotificationsForm({'notifications': []}, instance=user)
         self.assertTrue(form.is_valid(), form.errors)
         form.save()
-        for label in 'video_comment', 'video_approved':
+        for label in 'video_comment', 'video_approved', 'comment_post_comment':
             notice_type = notification.NoticeType.objects.get(label=label)
             self.assertFalse(notification.should_send(user, notice_type, "1"))
 
@@ -262,6 +262,7 @@ class NotificationsFormTestCase(TestCase):
         self.assertEqual(len(form.fields['notifications'].choices), choice_len)
         self.assertEqual(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
+                                  'comment_post_comment',
                                   'newsletter', 'admin_new_playlist']
                 })
 
@@ -279,7 +280,8 @@ class NotificationsFormTestCase(TestCase):
                         'admin_queue_weekly']}, instance=admin)
             self.assertTrue(form.is_valid(), form.errors)
             form.save()
-            for label in 'video_comment', 'video_approved', 'newsletter':
+            for label in ('video_comment', 'video_approved', 'newsletter',
+                          'comment_post_comment'):
                 notice_type = notification.NoticeType.objects.get(label=label)
                 self.assertFalse(notification.should_send(admin, notice_type,
                                                           "1"))
