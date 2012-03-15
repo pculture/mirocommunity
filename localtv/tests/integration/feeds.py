@@ -21,7 +21,7 @@ from django.test.client import Client
 import datetime
 import json
 
-from localtv.models import Video
+from localtv.models import Video, SiteLocation
 from localtv.playlists.models import Playlist
 from localtv.tests.base import BaseTestCase
 
@@ -31,6 +31,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
+        SiteLocation.objects.create(site_id=1)
         self._clear_index()
         now = datetime.datetime.now()
         yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
