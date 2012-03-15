@@ -175,9 +175,9 @@ class AutoQueryTestCase(BaseTestCase):
         video2.authors = [video.user]
         video2.save()
 
-        self.assertEqual(self.search('superuser'), [video2, video])
-        self.assertEqual(self.search('firstname'), [video2, video])
-        self.assertEqual(self.search('lastname'), [video2, video])
+        self.assertEqual(set(self.search('superuser')), set([video2, video]))
+        self.assertEqual(set(self.search('firstname')), set([video2, video]))
+        self.assertEqual(set(self.search('lastname')), set([video2, video]))
 
         self.assertEqual(set(self.search('user:SuperUser')),
                          set([video2, video])) # name

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+import operator
 import logging
 import sys
 
@@ -25,6 +25,7 @@ from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.query import Q, QuerySet
 from django.template.defaultfilters import capfirst
+from haystack import connections
 from haystack.backends import SQ
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
@@ -36,9 +37,33 @@ from localtv.search.forms import SmartSearchForm, FilterForm
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
-
 EMPTY = object()
 
+def _q_for_queryset(queryset, field, values):
+    q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
+    if len(values) == 1:
+        value = values[0]
+        if value is None:
+            return q_class(**{'%s__isnull' % field: True})
+        if (q_class is SQ and
+           'WhooshEngine' in
+           connections[queryset.query._using].options['ENGINE']):
+            # HACK __exact queries don't work on Whoosh:
+            # https://github.com/toastdriven/django-haystack/issues/529
+            # but they're required for at least Xapian.
+            return q_class(**{field: value})
+        return q_class(**{'%s__exact' % field: value})
+    else:
+        if (q_class is SQ and
+            'WhooshEngine' in
+            connections[queryset.query._using].options['ENGINE']):
+            # Whoosh doesn't properly support __in with multiple values, from
+            # what I can see.  This code calculates the SQ for each individual
+            # value and ORs them together.
+            qs = [_q_for_queryset(queryset, field, [value])
+                  for value in values]
+            return reduce(operator.or_, qs)
+        return q_class(**{'%s__in' % field: values})
 
 class NormalizedVideoList(object):
     """
@@ -124,12 +149,8 @@ class Sort(object):
         field = self.get_field(queryset)
         empty_value = self.get_empty_value(queryset)
         if empty_value is not EMPTY:
-            if empty_value is None:
-                kwargs = {'%s__isnull' % field: True}
-            else:
-                kwargs = {'%s__exact' % field: empty_value}
-
-            queryset = queryset.exclude(**kwargs)
+            q = _q_for_queryset(queryset, field, (empty_value,))
+            queryset = queryset.filter(~q)
         return queryset.order_by(''.join(('-' if descending else '', field)))
 
 
@@ -195,13 +216,9 @@ class Filter(object):
         :attr:`field`.
 
         """
-        q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
         q = None
         for lookup in self.field_lookups:
-            if len(values) == 1:
-                new_q = q_class(**{"%s__exact" % lookup: values[0]})
-            else:
-                new_q = q_class(**{"%s__in" % lookup: values})
+            new_q = _q_for_queryset(queryset, lookup, values)
 
             if q is None:
                 q = new_q

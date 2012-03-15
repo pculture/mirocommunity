@@ -153,17 +153,17 @@ class SmartSearchQuerySet(SearchQuerySet):
                         category = self._get_object(Category, rest,
                                                'name', 'slug', 'pk')
                         if category is not None:
-                            sqs = method(categories=category.pk)
+                            sqs = method(categories__contains=category.pk)
                     elif keyword == 'feed':
                         feed = self._get_object(Feed, rest,
                                            'name', 'pk')
                         if feed is not None:
-                            sqs = method(feed=feed.pk)
+                            sqs = method(feed__exact=feed.pk)
                     elif keyword == 'search':
                         search = self._get_object(SavedSearch, rest,
                                              'query_string', 'pk')
                         if search is not None:
-                            sqs = method(search=search.pk)
+                            sqs = method(search__exact=search.pk)
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
                         if tag is not None:
@@ -173,8 +173,8 @@ class SmartSearchQuerySet(SearchQuerySet):
                                            'username', 'pk')
                         if user is not None:
                             if not negative:
-                                sqs = sqs.filter(SQ(user=user.pk) |
-                                                 SQ(authors=user.pk))
+                                sqs = sqs.filter(SQ(user__exact=user.pk) |
+                                                 SQ(authors__contains=user.pk))
                             else:
                                 sqs = sqs.exclude(user__exact=user.pk).exclude(
                                         authors=user.pk)
@@ -190,7 +190,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                             except Playlist.DoesNotExist:
                                 pass
                         if playlist is not None:
-                            sqs = method(playlists__contains=playlist.pk)
+                            sqs = method(playlists__exact=playlist.pk)
                     else:
                         sqs = method(content=clean(token))
             else:

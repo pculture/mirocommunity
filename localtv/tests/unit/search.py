@@ -36,7 +36,8 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         self.nvl1 = utils.NormalizedVideoList(
                             Video.objects.filter(status=Video.ACTIVE))
         self.nvl2 = utils.NormalizedVideoList(
-                            SearchQuerySet().models(Video).filter(site=1))
+                            SearchQuerySet().models(Video).filter(
+                site__exact=1))
 
     def test_getitem(self):
         """
@@ -46,7 +47,6 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         """
         self.assertTrue(all(isinstance(v, Video) for v in self.nvl1[:]))
         self.assertTrue(isinstance(self.nvl1[0], Video))
-
         self.assertTrue(all(isinstance(v, Video) for v in self.nvl2[:]))
         self.assertTrue(isinstance(self.nvl2[0], Video))
 
