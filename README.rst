@@ -16,16 +16,11 @@ Project
 =======
 
 :website:      http://mirocommunity.org/
+:docs:         http://readthedocs.org/docs/mirocommunity/
 :code:         https://github.com/pculture/mirocommunity
 :wiki:         http://develop.participatoryculture.org/index.php/MiroCommunityStart
 :mailing list: http://groups.google.com/group/miro-community-development
 :irc:          ``#miro-hackers`` on irc.freenode.net
-
-
-Installing
-==========
-
-See the chapter on installation in ``docs/installation.rst``.
 
 
 Running tests
@@ -34,36 +29,6 @@ Running tests
 To run the tests::
 
     python manage.py test localtv
-    python manage.py test admin
-    python manage.py test submit_video
-    ...
-
-for each installed localtv app.
-
-
-Documentation
-=============
-
-Documentation is in the ``docs/`` directory.  It's written in
-`restructured text`_ and uses `Sphinx`_ to compile.  Documentation can
-be viewed with any text editor but can also be converted into HTML and
-PDF forms.
-
-To generate documentation in HTML form::
-
-    cd docs
-    make html
-
-
-To generate documentation in PDF form::
-
-    cd docs
-    make latexpdf
-
-
-.. _restructured text: http://docutils.sourceforge.net/rst.html
-.. _Sphinx: http://sphinx.pocoo.org/
-
 
 Have fun
 ========
