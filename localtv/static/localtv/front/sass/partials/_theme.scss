@@ -23,6 +23,12 @@ $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($c
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
+$precontent-background-color: #343639 !default;
+$precontent-header-background: #000 !default;
+$precontent-header-text-color: #FFF !default;
+$precontent-header-link-color: #6CF !default;
+$precontent-header-link-hover-color: #8ED2FB !default;
+
 $sidebar-background-color:#F5F5F5 !default;
 
 $site-blurb-background-color: #222 !default;
@@ -167,6 +173,24 @@ input, textarea{
 				darken($pod-header-background-color, 80%),
 				lighten($pod-header-background-color, 80%)
 			);
+	}
+}
+
+/* precontent */
+
+.precontent{
+	/* http://subtlepatterns.com/?p=1024 */
+	background: #343639 image-url('classy_fabric.png');
+}
+
+.precontent-header{
+	background:$precontent-header-background;
+	color:$precontent-header-text-color;
+	a{
+		color:$precontent-header-link-color;
+	}
+	a:hover{
+		color:$precontent-header-link-hover-color;
 	}
 }
 

@@ -1,21 +1,16 @@
-@import "compass/css3/images",
-		"compass/css3/box-shadow",
-		"compass/utilities/general/clearfix";
+@import "compass/css3/box-shadow";
 
-.video-full{
-	@extend .precontent;
-}
-
-.video-player{
-	@extend .col-two-thirds;
-	& > *{
-		display:block;
+.video-player > *{
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	@include margin-leader;
+	@include margin-trailer;
+	@include box-shadow(0 0 32px 0 rgba(0,0,0,.75));
+	
+	@media screen and (max-width: 740px){
+		max-width:100%;
+		@include margin-leader(0);
+		@include margin-trailer(0);
 	}
-}
-
-.video-details{
-	@extend .precontent-details;
-}
-.video-details > .video-header{
-	color:#FFF;
 }
