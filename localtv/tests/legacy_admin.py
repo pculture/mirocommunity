@@ -1265,8 +1265,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.email, '')
         self.assertEqual(user.get_profile().website,
-                          'http://www.youtube.com/profile?'
-                          'user=mphtower#p/u')
+                          'http://www.youtube.com/user/mphtower/videos')
         self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
@@ -1415,9 +1414,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response2 = c.get(self.url,
                          {'q': 'search string',
                           'page': '2'})
-        self.assertEqual(response2.context[2]['page_obj'].number, 2)
-        self.assertEqual(len(response2.context[2]['page_obj'].object_list),
-                          10)
+        page_obj = response2.context[2]['page_obj']
+        self.assertEqual(page_obj.number, 2)
+        if page_obj.has_next():
+            self.assertEqual(len(page_obj.object_list), 10)
+        else:
+            self.assertTrue(page_obj.object_list)
 
         self.assertNotEquals([v.id for v in
                               response.context[2]['page_obj'].object_list],
