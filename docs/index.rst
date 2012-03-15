@@ -15,9 +15,10 @@ than hosting video files.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    installation
+   contributing/index
 
 
 
