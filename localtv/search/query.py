@@ -167,7 +167,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
                         if tag is not None:
-                            sqs = method(tags=tag)
+                            sqs = method(tags__contains=tag.pk)
                     elif keyword == 'user':
                         user = self._get_object(User, rest,
                                            'username', 'pk')
@@ -176,7 +176,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                                 sqs = sqs.filter(SQ(user=user.pk) |
                                                  SQ(authors=user.pk))
                             else:
-                                sqs = sqs.exclude(user=user.pk).exclude(
+                                sqs = sqs.exclude(user__exact=user.pk).exclude(
                                         authors=user.pk)
                     elif keyword == 'playlist':
                         playlist = self._get_object(Playlist, rest, 'pk')
@@ -190,7 +190,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                             except Playlist.DoesNotExist:
                                 pass
                         if playlist is not None:
-                            sqs = method(playlists=playlist.pk)
+                            sqs = method(playlists__contains=playlist.pk)
                     else:
                         sqs = method(content=clean(token))
             else:

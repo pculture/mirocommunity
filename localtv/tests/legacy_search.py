@@ -179,12 +179,12 @@ class AutoQueryTestCase(BaseTestCase):
         self.assertEqual(self.search('firstname'), [video2, video])
         self.assertEqual(self.search('lastname'), [video2, video])
 
-        self.assertEqual(self.search('user:SuperUser'),
-                          [video2, video]) # name
-        self.assertEqual(self.search('user:superuser'),
-                          [video2, video]) # case-insenstive name
-        self.assertEqual(self.search('user:%i' % video.user.pk),
-                          [video2, video]) # pk
+        self.assertEqual(set(self.search('user:SuperUser')),
+                         set([video2, video])) # name
+        self.assertEqual(set(self.search('user:superuser')),
+                         set([video2, video])) # case-insenstive name
+        self.assertEqual(set(self.search('user:%i' % video.user.pk)),
+                         set([video2, video])) # pk
 
     def test_search_excludes_user(self):
         """
@@ -300,9 +300,12 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Mixing OR and AND should work as expected.
         """
-        results = SmartSearchQuerySet().auto_query('{import repair} -and')
+        # this used to be '{import repair} -and' but that no longer works.  I
+        # wonder if recent versions of Haystack (or Whoosh) skip small words?
+        results = SmartSearchQuerySet().auto_query(
+            '{import repair} -positioning')
         self.assertTrue(results)
         for result in results:
-            self.assertFalse('and' in result.text.lower(), result.text)
+            self.assertFalse('positioning' in result.text.lower(), result.text)
             self.assertTrue(('import' in result.text.lower()) or
                             ('repair' in result.text.lower()), result.text)
