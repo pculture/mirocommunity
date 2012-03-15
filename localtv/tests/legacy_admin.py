@@ -35,7 +35,6 @@ from django.conf import settings
 import mock
 from notification import models as notification
 from uploadtemplate.models import Theme
-import vidscraper
 
 from localtv import utils
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
@@ -1476,8 +1475,9 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url,
                          {'q': 'search string'})
+        self.assertTrue(len(response.context[2]['page_obj'].object_list) > 2,
+                        len(response.context[2]['page_obj'].object_list))
         metasearch_video = response.context[2]['page_obj'].object_list[0]
-        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
                          {'q': 'search string',
@@ -4237,8 +4237,7 @@ class IpnIntegration(BaseTestCase):
         # POST to the begin_free_trial element...
         url = reverse('localtv_admin_begin_free_trial',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
-        response = self.c.get(url,
-                               {'target_tier_name': 'plus'})
+        self.c.get(url, {'target_tier_name': 'plus'})
 
         # Make sure we switched
         self.assertEqual('plus', self.site_location.tier_name)

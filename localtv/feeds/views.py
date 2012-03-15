@@ -18,7 +18,6 @@
 from hashlib import sha1
 import urllib
 
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
@@ -28,11 +27,9 @@ from django.http import HttpResponse
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
-from tagging.models import Tag
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
-from localtv.models import Video, Category, Feed
-from localtv.playlists.models import Playlist
+from localtv.models import Video
 from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
 from localtv.templatetags.filters import simpletimesince
 
@@ -237,7 +234,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             return video.file_url
         elif video.flash_enclosure_url:
             return video.flash_enclosure_url
- 
+
     def item_enclosure_length(self, video):
         if video.file_url_length:
             return video.file_url_length
