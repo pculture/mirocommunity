@@ -268,6 +268,11 @@ class AutoQueryTestCase(BaseTestCase):
         self.assertEqual(self.search('playlist:%i' % playlist.pk), [video])
         self.assertEqual(self.search('playlist:user/test-list'), [video])
 
+        playlist.playlistitem_set.all().delete()
+
+        self.assertEqual(self.search('playlist:%i' % playlist.pk), [])
+        self.assertEqual(self.search('playlist:user/test-list'), [])
+
     def test_search_includes_search(self):
         """
         Search should include the saved search a video came from.

@@ -17,11 +17,10 @@
 from datetime import datetime
 
 from django.db.models import Count, signals
-from django.forms.models import model_to_dict
-from django.utils.encoding import force_unicode
 
 from haystack import indexes
 from localtv.models import Video, Watch
+from localtv.playlists.models import PlaylistItem
 from localtv.tasks import haystack_update_index
 
 from django.conf import settings
@@ -108,16 +107,38 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
-        signals.post_save.connect(self._enqueue_watch_update,
+        signals.post_save.connect(self._enqueue_related_update,
                                   sender=Watch)
+        signals.post_save.connect(self._enqueue_related_update,
+                                  sender=PlaylistItem)
+
+    def _setup_delete(self):
+        super(VideoIndex, self)._setup_save()
+        signals.post_delete.connect(self._enqueue_related_delete,
+                                    sender=PlaylistItem)
 
     def _teardown_save(self):
         super(VideoIndex, self)._teardown_save()
-        signals.post_save.disconnect(self._enqueue_watch_update,
+        signals.post_save.disconnect(self._enqueue_related_update,
                                      sender=Watch)
+        signals.post_save.disconnect(self._enqueue_related_update,
+                                     sender=PlaylistItem)
 
-    def _enqueue_watch_update(self, instance, **kwargs):
+    def _teardown_delete(self):
+        super(VideoIndex, self)._teardown_delete()
+        signals.post_delete.disconnect(self._enqueue_related_delete,
+                                       sender=PlaylistItem)
+
+    def _enqueue_related_update(self, instance, **kwargs):
         self._enqueue_instance(instance.video, False)
+
+    def _enqueue_related_delete(self, instance, **kwargs):
+        try:
+            self._enqueue_instance(instance.video, False)
+        except Video.DoesNotExist:
+            # We'll have picked up this delete from the Video directly, so
+            # don't worry about it here.
+            pass
 
     def get_model(self):
         return Video
