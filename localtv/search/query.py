@@ -160,7 +160,8 @@ class SmartSearchQuerySet(SearchQuerySet):
                         category = self._get_object(Category, rest,
                                                'name', 'slug', 'pk')
                         if category is not None:
-                            sqs = method(categories__contains=category.pk)
+                            sqs = method(
+                                **{field_format % 'categories': category.pk})
                     elif keyword == 'feed':
                         feed = self._get_object(Feed, rest,
                                            'name', 'pk')
@@ -170,18 +171,18 @@ class SmartSearchQuerySet(SearchQuerySet):
                         search = self._get_object(SavedSearch, rest,
                                              'query_string', 'pk')
                         if search is not None:
-                            sqs = method(**{field_format % 'search': search.pk})
+                            sqs = method(
+                                **{field_format % 'search': search.pk})
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
                         if tag is not None:
-                            sqs = method(tags__contains=tag.pk)
+                            sqs = method(**{field_format % 'tags': tag.pk})
                     elif keyword == 'user':
                         user = self._get_object(User, rest,
                                            'username', 'pk')
                         if user is not None:
-                            field = field_format % 'user'
-                            sq = (SQ(**{field: user.pk}) |
-                                  SQ(authors__contains=user.pk))
+                            sq = (SQ(**{field_format % 'user': user.pk}) |
+                                  SQ(**{field_format % 'authors': user.pk}))
                             if negative:
                                 sq = ~sq
                             sqs = sqs.filter(sq)
