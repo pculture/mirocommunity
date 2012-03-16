@@ -1894,7 +1894,12 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2012, 1, 4, 6, 56, 41),
+        # it seems like thumbnails are updated on the 8th of each month; this
+        # code should get the last 8th that happened.  Just replacing today's
+        # date with an 8 doesn't work early in the month, so backtrack a bit
+        # first.
+        'thumbnail_updated': (datetime.datetime.now() -
+                              datetime.timedelta(days=8)).replace(day=8),
         }
 
 
@@ -2259,7 +2264,7 @@ class TierMethodsTests(BaseTestCase):
         self.assertEqual(datetime.timedelta(hours=5),
                          ti.time_until_free_trial_expires(now=now))
 
-class FeedViewTestCase(BaseTestCase):
+class LegacyFeedViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
