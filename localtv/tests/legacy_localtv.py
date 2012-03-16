@@ -17,6 +17,7 @@
 
 import json
 import datetime
+import logging
 import os.path
 import shutil
 import tempfile
@@ -589,17 +590,24 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Feeds with long file URLs (>200 characters) should have them shortened
         so they fit in the database.
         """
+        if not getattr(settings, 'BITLY_LOGIN', None):
+            logging.warn(
+                'skipping FeedImportTestCase.test_entries_atom_with_long_item:'
+                ' cannot shorten URLs without BITLY_LOGIN')
+            return
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_long_item.atom')
         self._update_with_video_iter(video_iter, feed)
         self.assertEqual(feed.video_set.count(), 1)
 
+
     def test_entries_multiple_imports(self):
         """
-        Importing a feed multiple times shouldn't overwrite the existing videos.
+        Importing a feed multiple times shouldn't overwrite the existing
+        videos.
         """
         feed = Feed.objects.get(pk=1)
-        video_iter = list(self._parse_feed('feed_with_long_item.atom'))
+        video_iter = list(self._parse_feed('feed_with_media_player.atom'))
         self._update_with_video_iter(video_iter, feed)
         self.assertEqual(feed.video_set.count(), 1)
         self.assertEqual(feed.imports.latest().videos_imported, 1)

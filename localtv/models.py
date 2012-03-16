@@ -97,23 +97,20 @@ VIDEO_SERVICE_REGEXES = (
 
 
 class BitLyWrappingURLField(models.URLField):
-    def get_db_prep_value(self, value, *args, **kwargs):
-        if not getattr(settings, 'BITLY_LOGIN'):
-            return value
 
-        # Workaround for some cases
-        if value is None:
-            value = ''
-
-        if len(value) <= self.max_length: # short enough to save
-            return value
-        api = bitly.Api(login=settings.BITLY_LOGIN,
-                        apikey=settings.BITLY_API_KEY)
-        try:
-            return unicode(api.shorten(value))
-        except bitly.BitlyError:
-            return unicode(value)[:self.max_length]
-
+    def clean(self, value, video):
+        if getattr(settings, 'BITLY_LOGIN', None):
+            # Workaround for some cases
+            if value is None:
+                value = ''
+            if len(value) > self.max_length: # too long
+                api = bitly.Api(login=settings.BITLY_LOGIN,
+                                apikey=settings.BITLY_API_KEY)
+                try:
+                    value = unicode(api.shorten(value))
+                except bitly.BitlyError:
+                    pass
+        return super(BitLyWrappingURLField, self).clean(value, video)
 
 try:
     from south.modelsinspector import add_introspection_rules
@@ -1997,7 +1994,7 @@ class Video(Thumbnailable, VideoBase):
             return
 
         try:
-            content_thumb = ContentFile(remote_file)
+            content_thumb = ContentFile(remote_file.read())
         except IOError:
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
