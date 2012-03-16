@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 from localtv.models import Video, SiteLocation, Category
@@ -35,9 +36,12 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         self.create_video(status=Video.UNAPPROVED)
         self.nvl1 = utils.NormalizedVideoList(
                             Video.objects.filter(status=Video.ACTIVE))
-        self.nvl2 = utils.NormalizedVideoList(
-                            SearchQuerySet().models(Video).filter(
-                site__exact=1))
+        sqs = SearchQuerySet().models(Video)
+        if 'WhooshEngine' in connections['default'].options['ENGINE']:
+            sqs = sqs.filter(site=1)
+        else:
+            sqs = sqs.filter(site__exact=1)
+        self.nvl2 = utils.NormalizedVideoList(sqs)
 
     def test_getitem(self):
         """
