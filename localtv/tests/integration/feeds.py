@@ -16,6 +16,7 @@
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.test.client import Client
 
 import datetime
@@ -75,7 +76,8 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         user = User.objects.create(username='user')
         playlist = Playlist.objects.create(name='Test Playlist',
                                            slug='test-playlist',
-                                           user=user)
+                                           user=user,
+                                           site=Site.objects.get_current())
         playlist.add_video(self.test_video)
         playlist.add_video(self.yesterday_video)
 

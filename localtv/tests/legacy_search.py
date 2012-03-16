@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 
 from localtv.tests.legacy_localtv import BaseTestCase
 
@@ -259,6 +260,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         user = User.objects.get(username='user')
         playlist = Playlist.objects.create(
+            site=Site.objects.get_current(),
             user=user,
             name='Test List',
             slug='test-list',
