@@ -69,12 +69,12 @@ Ticket life cycle
 
 * Once a ticket is claimed, it is up to the assignee to start a branch for
    that ticket and submit a pull request to the canonical repository. When
-   a pull request is submitted, the assignee should mark the ticket as
-   ``RESOLVED/FIXED`` and link to the pull request.
+   a pull request is submitted, the assignee should set the ticket's
+   ``needs-peer-review`` flag to ``?`` and link to the pull request.
 
-* Once a pull request has been submitted and the ticket has been marked
-   ``RESOLVED/FIXED``, a core member can review the code. This should be
-   someone other than the assignee. If there are problems with the branch,
-   they should explain the problems by commenting on github, inline and on
-   the pull request. Otherwise, they can merge it in and change the ticket
-   status to ``RESOLVED/VERIFIED``.
+* Once a pull request has been submitted and the ticket has been flagged, a
+   core member will review the code. This should be someone other than the
+   assignee. If there are problems with the branch, they should explain the
+   problems by commenting on github, inline and on the pull request.
+   Otherwise, they can merge it in and change the ticket status to
+   ``RESOLVED/FIXED`` and the ``needs-peer-review`` flag to ``+``.
