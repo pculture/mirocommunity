@@ -3,9 +3,9 @@
 		"compass/css3/images";
 
 #navigation{
-	border-bottom:1px solid;
-	border-top:1px solid;
 	@include pie-clearfix;
+	@include border-radius(3px);
+	margin-right:$gutter-width/2;
 }
 
 .navigation-list{
@@ -21,11 +21,20 @@
 }
 
 .nav-item > a{
+	line-height:$base-line-height * 1.5;
+	padding:1px #{$gutter-width * .25} 0 #{$gutter-width * .25};
 	display:block;
-	@extend .padded-half;
-	margin:-1px 0;
-	border-bottom:1px solid transparent;
-	border-top:1px solid transparent;
+	&:hover{
+		border:0;
+	}
+}
+
+.nav-item:first-child > a{
+	@include border-radius(3px 0 0 3px);
+}
+
+.nav-item:last-child > a{
+	@include border-radius(0 3px 3px 0);
 }
 
 .nav-item-dropdown{
@@ -41,23 +50,30 @@
 	content:"\25BC";
 	font-size:8px;
 	position:absolute;
-	top: $base-line-height / 2;
+	line-height:$base-line-height * 1.5;
+	top: 1px;
 	right: 0;
 	margin-right: 10px;
 }
 
 // Positions the dropdown list appropriately
-.dropdown-list{
-	@extend .unstyled-list;
-	@extend .row-nested;
+.dropdown-list, .dropdown-box{
 	display:none;
 	position:absolute;
 	z-index:1337;
-	top:$base-line-height*2+1px;
+	top:$base-line-height * 1.5 + 3px;
 	left:0;
-	min-width:200px;
-	@include border-radius(0 0 5px 5px);
+	@include border-radius(3px);
 	@include box-shadow(0 0 5px 0 rgba(0,0,0,.35));
+}
+.dropdown-box{
+	min-width:300px;
+	@extend .padded-half;
+}
+.dropdown-list{
+	@extend .unstyled-list;
+	@extend .row-nested;
+	min-width:200px;
 }
 .dropdown-list > li{
 	padding: 3px;
@@ -69,10 +85,34 @@
 	@include border-radius(5px);
 }
 
+
+.browse-box-section{
+	@include margin-trailer;
+	&:last-child{
+		margin-bottom:0;
+	}
+}
+.browse-box-section > h1{
+	@include small;
+	text-transform:uppercase;
+	letter-spacing:1px;
+	@include margin-trailer(.5);
+}
+.browse-box-section > ul{
+	@extend .unstyled-list;
+	@include clearfix;
+}
+.browse-box-section > ul > li{
+	width:33%;
+	float:left;
+}
+
 @media screen and (max-width: 740px){
-	.dropdown-list{
+	.dropdown-list, .dropdown-box{
 		position:static;
 		width:100%;
+		@include border-radius(0);
+		@include box-shadow(none);
 	}
 	.nav-item, .navigation-list-secondary{
 		float:none;

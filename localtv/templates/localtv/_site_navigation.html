@@ -23,33 +23,38 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 <ul class="navigation-list">
 	<li class="nav-item nav-item-dropdown" data-dropdown="true">
-		<a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a>
-		<ul class="dropdown-list" data-dropdown-target="true">
-			<li>
-				<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
-			</li>
-			<li>
-				<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
-			</li>
-			<li>
-				<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
-			</li>
-		</ul>
-	</li>
-	{% if categories %}
-		<li class="nav-item nav-categories nav-item-dropdown" data-dropdown="true">
-			<a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a>
-			<ul class="dropdown-list category-list" data-dropdown-target="true">
-				{% for category in categories %}
+		<a href="#">{% trans "Browse" %}</a>
+		<div data-dropdown-target="true" class="dropdown-box browse-box">
+			<section class="browse-box-section">
+				<h1><a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a></h1>
+				<ul>
 					<li>
-						<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+						<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
 					</li>
-				{% endfor %}
-			</ul>
-		</li>
-	{% endif %}
+					<li>
+						<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
+					</li>
+					<li>
+						<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
+					</li>
+				</ul>
+			</section>
+			{% if categories %}
+			<section class="browse-box-section">
+				<h1><a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a></h1>
+				<ul>
+					{% for category in categories %}
+						<li>
+							<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</section>
+			{% endif %}
+		</div>
+	</li>
 	<li class="nav-item nav-submit">
-		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit A Video' %}</a>
+		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
 	</li>
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>

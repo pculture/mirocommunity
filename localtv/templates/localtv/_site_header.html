@@ -2,7 +2,7 @@
 {% load i18n daguerre uploadtemplate_tags %}
 
 <div class="row">
-	<div class="col-two-thirds">
+	<div class="col-two-fifths">
 		<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
 			{% if site_settings.logo %}
 				{% resize site_settings.thumbnail method="fit" height=54 as logo %}
@@ -19,11 +19,18 @@
 			{{ site_settings.tagline|safe }}
 		</h2>
 	</div>
-	<div class="col-one-third">
+	
+	<div class="col-two-fifths">
+		<nav id="navigation" role="navigation">
+			{% include "localtv/_site_navigation.html" %}
+		</nav>
+	</div>
+	
+	<div class="col-one-fifth">
 		<form id="search" action="{% url 'localtv_search' %}" method="get">
 			<div class="btn-right-controls">
 				<input name="q" type="text" id="search_field" value="{{ query }}"/>
-				<button class="btn-right">{% trans 'Search' %}</button>
+				<button class="btn-right"><span class="search-icon">{% trans 'Search' %}</span></button>
 			</div>
 		</form>
 	</div>

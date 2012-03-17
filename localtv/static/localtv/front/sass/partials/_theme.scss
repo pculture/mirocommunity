@@ -96,14 +96,12 @@ body{
 }
 
 .nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a{
-	border-bottom:1px solid darken($navigation-background-color, 20%);
-	border-top:1px solid lighten($navigation-background-color, 20%);
 	background-color:lighten($navigation-background-color, 20%);
 	@include background-image(linear-gradient(lighten($navigation-background-color, 20%), lighten($navigation-background-color, 5%)));
 	color:#FFF;
 }
 
-.dropdown-list{
+.dropdown-list, .dropdown-box{
 	background:lighten($navigation-background-color, 5%);
 }
 

@@ -14,7 +14,7 @@ $max-width-threshold: 960px !default;
 
 .row{
 	margin-left:-$column-gutter-width;
-	@include clearfix;
+	@include pie-clearfix;
 }
 
 .col{
@@ -69,6 +69,22 @@ $max-width-threshold: 960px !default;
 	@extend .col;
 	width:$max-width-threshold*2/3;
 }
+.col-one-fifth{
+	@extend .col;
+	width:$max-width-threshold*1/5;
+}
+.col-two-fifths{
+	@extend .col;
+	width:$max-width-threshold*2/5;
+}
+.col-three-fifths{
+	@extend .col;
+	width:$max-width-threshold*3/5;
+}
+.col-four-fifths{
+	@extend .col;
+	width:$max-width-threshold*4/5;
+}
 
 // Nested column widths
 .row-nested{
@@ -87,6 +103,18 @@ $max-width-threshold: 960px !default;
 	}
 	& > .col-two-thirds{
 		width:66.67%;
+	}
+	& > .col-one-fifth{
+		width:20%;
+	}
+	& > .col-two-fifths{
+		width:40%;
+	}
+	& > .col-three-fifths{
+		width:60%;
+	}
+	& > .col-four-fifths{
+		width:80%;
 	}
 }
 
