@@ -31,7 +31,7 @@ from django.views.generic import TemplateView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
-from localtv.search.utils import SortFilterMixin
+from localtv.search.utils import SortFilterMixin, NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -49,6 +49,7 @@ class IndexView(SortFilterMixin, TemplateView):
         new_videos = Video.objects.get_latest_videos().exclude(
                                             feed__avoid_frontpage=True)
 
+        sitelocation_videos = Video.objects.get_sitelocation_videos()
         recent_comments = comments.get_model().objects.filter(
             site=Site.objects.get_current(),
             content_type=ContentType.objects.get_for_model(Video),
@@ -58,7 +59,7 @@ class IndexView(SortFilterMixin, TemplateView):
 
         context.update({
             'featured_videos': featured_videos,
-            'popular_videos': popular_videos,
+            'popular_videos': NormalizedVideoList(popular_videos),
             'new_videos': new_videos,
             'comments': recent_comments
         })
