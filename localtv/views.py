@@ -27,9 +27,11 @@ from django.http import (Http404, HttpResponsePermanentRedirect,
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
+from django.views.generic import TemplateView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteLocation
+from localtv.search.utils import SortFilterMixin
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -37,27 +39,30 @@ from localtv.playlists.models import Playlist, PlaylistItem
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-def index(request):
-    featured_videos = Video.objects.get_featured_videos()
-    popular_videos = Video.objects.get_popular_videos()
-    new_videos = Video.objects.get_latest_videos().exclude(
+class IndexView(SortFilterMixin, TemplateView):
+    template_name = 'localtv/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        featured_videos = Video.objects.get_featured_videos()
+        popular_videos = self._sort(self._search(''), '-popular')
+        new_videos = Video.objects.get_latest_videos().exclude(
                                             feed__avoid_frontpage=True)
 
-    sitelocation_videos = Video.objects.get_sitelocation_videos()
-    recent_comments = comments.get_model().objects.filter(
-        site=Site.objects.get_current(),
-        content_type=ContentType.objects.get_for_model(Video),
-        object_pk__in=sitelocation_videos.values_list('pk', flat=True),
-        is_removed=False,
-        is_public=True).order_by('-submit_date')
+        recent_comments = comments.get_model().objects.filter(
+            site=Site.objects.get_current(),
+            content_type=ContentType.objects.get_for_model(Video),
+            object_pk__in=sitelocation_videos.values_list('pk', flat=True),
+            is_removed=False,
+            is_public=True).order_by('-submit_date')
 
-    return render_to_response(
-        'localtv/index.html',
-        {'featured_videos': featured_videos,
-         'popular_videos': popular_videos,
-         'new_videos': new_videos,
-         'comments': recent_comments},
-        context_instance=RequestContext(request))
+        context.update({
+            'featured_videos': featured_videos,
+            'popular_videos': popular_videos,
+            'new_videos': new_videos,
+            'comments': recent_comments
+        })
+        return context
 
 
 def about(request):
