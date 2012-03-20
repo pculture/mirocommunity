@@ -19,7 +19,6 @@ Project
 :docs:         http://readthedocs.org/docs/mirocommunity/
 :bugtracker:   http://bugzilla.pculture.org/
 :code:         https://github.com/pculture/mirocommunity
-:wiki:         http://develop.participatoryculture.org/index.php/MiroCommunityStart
 :mailing list: http://groups.google.com/group/miro-community-development
 :irc:          `#miro-hackers on irc.freenode.net <irc://irc.freenode.net/miro-hackers`
 
