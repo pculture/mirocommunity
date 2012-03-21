@@ -104,8 +104,6 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
         signals.post_save.connect(self._enqueue_related_update,
-                                  sender=Watch)
-        signals.post_save.connect(self._enqueue_related_update,
                                   sender=PlaylistItem)
 
     def _setup_delete(self):
@@ -115,8 +113,6 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
     def _teardown_save(self):
         super(VideoIndex, self)._teardown_save()
-        signals.post_save.disconnect(self._enqueue_related_update,
-                                     sender=Watch)
         signals.post_save.disconnect(self._enqueue_related_update,
                                      sender=PlaylistItem)
 
