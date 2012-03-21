@@ -24,8 +24,6 @@ from haystack import connections
 from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category
-from localtv.tasks import haystack_update_index
-
 
 
 class BaseTestCase(TestCase):

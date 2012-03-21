@@ -21,7 +21,7 @@ from django.db.models import Count, signals
 from haystack import indexes
 from localtv.models import Video, Watch
 from localtv.playlists.models import PlaylistItem
-from localtv.tasks import haystack_update_index
+from localtv.tasks import haystack_update, haystack_remove
 
 from django.conf import settings
 
@@ -52,16 +52,12 @@ class QueuedSearchIndex(indexes.SearchIndex):
                                     sender=self.get_model())
 
     def _enqueue_update(self, instance, **kwargs):
-        self._enqueue_instance(instance, False)
+        self._enqueue_instance(instance, haystack_update)
 
     def _enqueue_removal(self, instance, **kwargs):
-        self._enqueue_instance(instance, True)
+        self._enqueue_instance(instance, haystack_remove)
 
-    def _enqueue_instance(self, instance, is_removal):
-        # This attribute can be set by passing ``update_index`` as a kwarg to
-        # :meth:`Video.save`. It defaults to ``True``.
-        if not getattr(instance, '_update_index', True):
-            return
+    def _enqueue_instance(self, instance, task):
         using = instance._state.db
         if using == 'default':
             # This gets called from both Celery and from the MC application.
@@ -69,11 +65,10 @@ class QueuedSearchIndex(indexes.SearchIndex):
             # need to use CELERY_USING as our database.  If they're the same,
             # or we're not using separate databases, this is a no-op.
             using = CELERY_USING
-        haystack_update_index.delay(instance._meta.app_label,
-                                    instance._meta.module_name,
-                                    [instance.pk],
-                                    is_removal,
-                                    using=using)
+        task.delay(instance._meta.app_label,
+                   instance._meta.module_name,
+                   [instance.pk],
+                   using=using)
 
 
 class VideoIndex(QueuedSearchIndex, indexes.Indexable):
@@ -99,6 +94,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     best_date = indexes.DateTimeField()
     #: The best_date field if the original date is considered.
     best_date_with_published = indexes.DateTimeField()
+    #: Watch count for the last week.
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
                                           default=DATETIME_NULL_PLACEHOLDER)
@@ -130,11 +126,11 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
                                        sender=PlaylistItem)
 
     def _enqueue_related_update(self, instance, **kwargs):
-        self._enqueue_instance(instance.video, False)
+        self._enqueue_instance(instance.video, haystack_update)
 
     def _enqueue_related_delete(self, instance, **kwargs):
         try:
-            self._enqueue_instance(instance.video, False)
+            self._enqueue_instance(instance.video, haystack_update)
         except Video.DoesNotExist:
             # We'll have picked up this delete from the Video directly, so
             # don't worry about it here.
@@ -193,5 +189,9 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
             # fake instance for testing. TODO: This should probably not be done.
+            return
+        # This attribute can be set by passing ``update_index`` as a kwarg to
+        # :meth:`Video.save`. It defaults to ``True``.
+        if not getattr(instance, '_update_index', True):
             return
         super(VideoIndex, self)._enqueue_instance(instance, is_removal)

@@ -164,9 +164,8 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                          status=Video.ACTIVE).values_list('pk', flat=True)
     if active_pks:
         opts = Video._meta
-        haystack_update_index.delay(opts.app_label, opts.module_name,
-                                    list(active_pks), is_removal=False,
-                                    using=using)
+        haystack_batch_update.delay(opts.app_label, opts.module_name,
+                                    pks=list(active_pks), using=using)
 
     mark_import_complete.delay(import_app_label, import_model, import_pk,
                                using=using)
@@ -363,53 +362,75 @@ def video_save_thumbnail(video_pk, using='default'):
                 'video_save_thumbnail(%s, using=%r) exceeded max retries',
                 video_pk, using
             )
-        
+
+
+def haystack_database_retry(task, callback):
+    try:
+        callback()
+    except (DatabaseError, LockError), e:
+        # These errors might be resolved if we just wait a bit. The wait time is
+        # slightly random, with the intention of preventing LockError retries
+        # from reoccurring. Maximum wait is ~30s.
+        exp = min(task.request.retries, 4)
+        countdown = random.random() * (2 ** exp)
+        logging.debug(('%s with args %s and kwargs %s retrying due to %s '
+                       'with countdown %r'), task.name, task.request.args,
+                       task.request.kwargs, e.__class__.__name__, countdown)
+        task.retry(countdown=countdown)
+
 
 @task(ignore_result=True, max_retries=None)
-def haystack_update_index(app_label, model_name, pks, is_removal,
-                          using='default'):
+def haystack_update(app_label, model_name, pks, using='default'):
     """
-    Updates a haystack index for the given model (specified by ``app_label``
-    and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
-    constructed with the given ``pk`` and passed to the index's
-    :meth:`remove_object` method. Otherwise, the latest version of the instance
-    is fetched from the database and passed to the index's
-    :meth:`update_object` method.
-
-    If an import_app_label, import_model, and import_pk are provided, this task
-    will spawn ``mark_import_complete``.
+    Updates the haystack records for any valid instances with the given pks.
 
     """
     model_class = get_model(app_label, model_name)
     backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
-    try:
-        if is_removal:
-            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
-                         for pk in pks]
-            to_update = []
-        else:
-            base_qs = Video.objects.using(using).filter(pk__in=pks)
-            to_remove_pks = base_qs.exclude(status=Video.ACTIVE
-                                  ).values_list('pk', flat=True)
-            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
-                         for pk in to_remove_pks]
 
-            to_update = base_qs.filter(status=Video.ACTIVE)
+    qs = index.index_queryset().using(using).filter(pk__in=pks)
 
-        if to_remove:
-            for identifier in to_remove:
-                backend.remove(identifier)
-        if to_update:
-            backend.update(index, to_update)
-    except (DatabaseError, LockError), e:
-        # These errors might be resolved if we just wait a bit. The wait time is
-        # slightly random, with the intention of preventing LockError retries
-        # from reoccurring. Maximum wait is ~30s.
-        exp = min(haystack_update_index.request.retries, 4)
-        countdown = random.random() * (2 ** exp)
-        logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r) '
-                       'retrying due to %s with countdown %r'), app_label,
-                       model_name, pk, is_removal, using, e.__class__.__name__,
-                       countdown)
-        haystack_update_index.retry(countdown=countdown)
+    def callback():
+        backend.update(index, qs)
+
+    haystack_database_retry(haystack_update, callback)
+
+
+@task(ignore_result=True, max_retries=None)
+def haystack_remove(app_label, model_name, pks, using='default'):
+    """
+    Removes the haystack records for any instances with the given pks.
+
+    """
+    model_class = get_model(app_label, model_name)
+    backend = connections[using].get_backend()
+
+    def callback():
+        for pk in pks:
+            backend.remove(".".join((app_label, model_name, pk)))
+
+    haystack_database_retry(haystack_remove, callback)
+
+
+@task(ignore_result=True)
+def haystack_batch_update(app_label, model_name, pks=None, batch_size=1000,
+                          using='default'):
+    """
+    Batches haystack index updates for the given model. If no pks are given, a
+    general reindex will be launched.
+
+    """
+    model_class = get_model(app_label, model_name)
+    backend = connections[using].get_backend()
+    index = connections[using].get_unified_index().get_index(model_class)
+
+    if pks is None:
+        pks = list(index.index_queryset().using(using
+                       ).values_list('pk', flat=True))
+    total = len(pks)
+    batch_size = 1000
+
+    for start in xrange(0, total, batch_size):
+        end = min(start + batch_size, total)
+        haystack_update.delay(app_label, model_name, pks[start:end], using)
