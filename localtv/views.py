@@ -40,8 +40,7 @@ MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 def index(request):
     featured_videos = Video.objects.get_featured_videos()
     popular_videos = Video.objects.get_popular_videos()
-    new_videos = Video.objects.get_latest_videos().exclude(
-                                            feed__avoid_frontpage=True)
+    new_videos = Video.objects.get_latest_videos()
 
     site_settings_videos = Video.objects.get_site_settings_videos()
     recent_comments = comments.get_model().objects.filter(
