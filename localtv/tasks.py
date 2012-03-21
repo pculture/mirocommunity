@@ -364,7 +364,12 @@ def video_save_thumbnail(video_pk, using='default'):
             )
 
 
-def haystack_database_retry(task, callback):
+def _haystack_database_retry(task, callback):
+    """
+    Tries to call ``callback``; on a haystack database access error, retries
+    the task.
+
+    """
     try:
         callback()
     except (DatabaseError, LockError), e:
@@ -391,10 +396,8 @@ def haystack_update(app_label, model_name, pks, using='default'):
 
     qs = index.index_queryset().using(using).filter(pk__in=pks)
 
-    def callback():
-        backend.update(index, qs)
-
-    haystack_database_retry(haystack_update, callback)
+    _haystack_database_retry(haystack_update,
+                             lambda: backend.update(index, qs))
 
 
 @task(ignore_result=True, max_retries=None)
@@ -408,9 +411,9 @@ def haystack_remove(app_label, model_name, pks, using='default'):
 
     def callback():
         for pk in pks:
-            backend.remove(".".join((app_label, model_name, pk)))
+            backend.remove(".".join((app_label, model_name, str(pk))))
 
-    haystack_database_retry(haystack_remove, callback)
+    _haystack_database_retry(haystack_remove, callback)
 
 
 @task(ignore_result=True)
@@ -440,7 +443,6 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     pks = list(pk_qs.values_list('pk', flat=True))
     total = len(pks)
-    batch_size = 1000
 
     for start in xrange(0, total, batch_size):
         end = min(start + batch_size, total)

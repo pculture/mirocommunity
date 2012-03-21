@@ -16,3 +16,4 @@
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
 from localtv.tests.unit.search import *
+from localtv.tests.unit.tasks import *

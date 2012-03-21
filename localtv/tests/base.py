@@ -45,7 +45,7 @@ class BaseTestCase(TestCase):
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
-                     **kwargs):
+                     update_index=True, **kwargs):
         """
         Factory method for creating videos. Supplies the following defaults:
 
@@ -63,8 +63,9 @@ class BaseTestCase(TestCase):
         ``categories`` and ``authors``, respectively.
 
         """
-        video = Video.objects.create(name=name, status=status, site_id=site_id,
-                                     **kwargs)
+        video = Video(name=name, status=status, site_id=site_id, **kwargs)
+        video.save(update_index=update_index)
+
         for i in xrange(watches):
             self.create_watch(video, days=i)
 
