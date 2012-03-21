@@ -47,7 +47,7 @@ class BaseTestCase(TestCase):
                      watches=0, categories=None, authors=None, tags=None,
                      **kwargs):
         """
-        Factory function for creating videos. Supplies the following defaults:
+        Factory method for creating videos. Supplies the following defaults:
 
         * name: 'Test'
         * status: :attr:`Video.ACTIVE`
@@ -66,8 +66,7 @@ class BaseTestCase(TestCase):
         video = Video.objects.create(name=name, status=status, site_id=site_id,
                                      **kwargs)
         for i in xrange(watches):
-            Watch.objects.create(video=video, ip_address='0.0.0.0',
-                                 timestamp=datetime.now() - timedelta(i))
+            self.create_watch(video, days=i)
 
         if categories is not None:
             video.categories.add(*categories)
@@ -87,7 +86,7 @@ class BaseTestCase(TestCase):
 
     def create_category(self, site_id=1, **kwargs):
         """
-        Factory function for creating categories. Supplies the following
+        Factory method for creating categories. Supplies the following
         default:
 
         * site_id: 1
@@ -103,7 +102,7 @@ class BaseTestCase(TestCase):
 
     def create_user(self, **kwargs):
         """
-        Factory function for creating users. All arguments are passed directly
+        Factory method for creating users. All arguments are passed directly
         to :meth:`User.objects.create`.
 
         """
@@ -111,8 +110,22 @@ class BaseTestCase(TestCase):
 
     def create_tag(self, **kwargs):
         """
-        Factory function for creating tags. All arguments are passed directly
+        Factory method for creating tags. All arguments are passed directly
         to :meth:`Tag.objects.create`.
 
         """
         return Tag.objects.create(**kwargs)
+
+    def create_watch(self, video, ip_address='0.0.0.0', days=0):
+        """
+        Factory method for creating :class:`Watch` instances.
+
+        :param video: The video for the :class:`Watch`.
+        :param ip_address: An IP address for the watcher.
+        :param days: Number of days to place the :class:`Watch` in the past.
+
+        """
+        watch = Watch.objects.create(video=video, ip_address=ip_address)
+        watch.timestamp = datetime.now() - timedelta(days)
+        watch.save()
+        return watch
