@@ -151,7 +151,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         """
         model = self.get_model()
         return model._default_manager.filter(status=model.ACTIVE
-                                  ).annotate(watch_count=Count('watch'))
+                                  ).with_watch_count()
 
     def read_queryset(self):
         """
@@ -181,12 +181,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return self._prepare_rel_field(video, 'playlists')
 
     def prepare_watch_count(self, video):
-        # video.watch_count is set during :meth:`~VideoIndex.index_queryset`.
-        # If for some reason that isn't available, do a manual count.
-        try:
-            return video.watch_count
-        except AttributeError:
-            return video.watch_set.count()
+        return video.watch_count
 
     def prepare_best_date(self, video):
         return video.when_approved or video.when_submitted
