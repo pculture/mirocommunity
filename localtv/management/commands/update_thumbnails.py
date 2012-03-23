@@ -31,8 +31,8 @@ class Command(NoArgsCommand):
         if site_too_old():
             return
         for v in models.Video.objects.exclude(thumbnail_url=''):
-            path = v.get_original_thumb_storage_path()
-            if not v.has_thumbnail or not default_storage.exists(path):
+            if (not v.has_thumbnail or
+                not default_storage.exists(v.thumbnail_path)):
                 if verbosity >= 1:
                     print 'saving', repr(v), '(%i)' % v.pk
                 try:

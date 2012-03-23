@@ -40,7 +40,7 @@ class ThumbnailNode(template.Node):
         self.width, self.height = size
     
     def render(self, context):
-        storage_path = self.video.resolve(context).get_original_thumb_storage_path()
+        storage_path = self.video.resolve(context).thumbnail_path
         kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
         try:
             image = Image.objects.for_storage_path(storage_path)

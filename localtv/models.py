@@ -133,27 +133,24 @@ class Thumbnailable(models.Model):
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        delete_if_exists(
-            self.get_original_thumb_storage_path())
+        delete_if_exists(self.thumbnail_path)
 
         self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(
-            self.get_original_thumb_storage_path(),
-            content_thumb)
+        default_storage.save(self.thumbnail_path, content_thumb)
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
             # be invalid now.  to make sure we've got a valid file, we reopen
             # under the new path
             content_thumb.close()
-            content_thumb = default_storage.open(
-                self.get_original_thumb_storage_path())
+            content_thumb = default_storage.open(self.thumbnail_path)
             pil_image = PILImage.open(content_thumb)
 
         self.has_thumbnail = True
         self.save()
 
-    def get_original_thumb_storage_path(self):
+    @property
+    def thumbnail_path(self):
         """
         Return the path for the original thumbnail, relative to the default
         file storage system.
@@ -164,11 +161,10 @@ class Thumbnailable(models.Model):
 
     def delete_thumbnail(self):
         self.has_thumbnail = False
-        delete_if_exists(self.get_original_thumb_storage_path())
+        delete_if_exists(self.thumbnail_path)
         self.thumbnail_extension = ''
         try:
-            image = Image.objects.for_storage_path(
-                            self.get_original_thumb_storage_path())
+            image = Image.objects.for_storage_path(self.thumbnail_path)
         except Image.DoesNotExist:
             pass
         else:

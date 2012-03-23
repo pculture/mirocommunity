@@ -214,7 +214,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             else:
                 try:
                     image = Image.objects.for_storage_path(
-                                image.get_original_thumb_storage_path())
+                                item.thumbnail_path)
                 except Image.DoesNotExist:
                     thumbnail_url = ''
                 else:
