@@ -512,7 +512,9 @@ class SubmitVideoViewTestCase(BaseTestCase):
             submit_dict['hit'] = True
         submit_finished.connect(test_submit_finished)
 
-        form = view.form_class(data={'url': view.url}, **view.get_form_kwargs())
+        form = view.form_class(data={'url': view.url,
+                                     'contact': 'test@test.com'},
+                               **view.get_form_kwargs())
         form.is_valid()
         view.form_valid(form)
 
