@@ -16,6 +16,9 @@
 		@include normal;
 		font-weight:normal;
 	}
+	.title{
+		margin-right:$gutter-width/4;
+	}
 }
 
 .precontent-content{

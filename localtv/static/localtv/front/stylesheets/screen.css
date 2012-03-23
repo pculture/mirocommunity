@@ -1058,8 +1058,12 @@ ol > li {
   line-height: 18px;
   font-weight: normal;
 }
+/* line 19, ../sass/partials/modules/_precontent.scss */
+.precontent-header .title {
+  margin-right: 10px;
+}
 
-/* line 21, ../sass/partials/modules/_precontent.scss */
+/* line 24, ../sass/partials/modules/_precontent.scss */
 .precontent-content {
   margin: 0 -100px;
   -moz-box-shadow: 0 -2px 64px rgba(0, 0, 0, 0.5) inset;
@@ -1070,18 +1074,18 @@ ol > li {
   *zoom: 1;
 }
 @media screen and (max-width: 740px) {
-  /* line 21, ../sass/partials/modules/_precontent.scss */
+  /* line 24, ../sass/partials/modules/_precontent.scss */
   .precontent-content {
     margin: 0;
   }
 }
 
-/* line 31, ../sass/partials/modules/_precontent.scss */
+/* line 34, ../sass/partials/modules/_precontent.scss */
 .precontent-details, .details-large {
   color: #EEE;
   text-shadow: 0 -1px 0 black;
 }
-/* line 37, ../sass/partials/modules/_precontent.scss */
+/* line 40, ../sass/partials/modules/_precontent.scss */
 .precontent-details h1 > a, .details-large h1 > a {
   color: #FFF;
   border: none;
@@ -1204,7 +1208,7 @@ ol > li {
 
 /* line 6, ../sass/partials/modules/_icons.scss */
 .search-icon {
-  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1324223713');
+  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1332468330');
   background-size: 16px 16px;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1460,7 +1464,7 @@ input:focus, textarea:focus {
 /* line 172, ../sass/partials/_theme.scss */
 .precontent {
   /* http://subtlepatterns.com/?p=1024 */
-  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1331778854');
+  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1332468330');
 }
 
 /* line 177, ../sass/partials/_theme.scss */
