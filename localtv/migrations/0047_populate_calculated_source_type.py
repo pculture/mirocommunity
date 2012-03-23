@@ -18,21 +18,36 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import re
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 import logging
-import localtv.models
+
+VIDEO_SERVICE_REGEXES = (
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
+    ('YouTube', r'http://(www\.)?youtube\.com/'),
+    ('blip.tv', r'http://(.+\.)?blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'),
+    ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
         for feed in orm['localtv.Feed'].objects.all():
-            if hasattr(localtv.models, 'pre_save_set_calculated_source_type'):
-                localtv.models.pre_save_set_calculated_source_type(instance=feed)
-                feed.save()
-                print ".",
+            video_service = None
+            for service, regexp in VIDEO_SERVICE_REGEXES:
+                if re.search(regexp, feed.feed_url, re.I):
+                    video_service = service
+                    break
+
+            if video_service is None:
+                feed.calculated_source_type = 'Feed'
+            else:
+                feed.calculated_source_type = 'User: %s' % video_service
+
+            feed.save()
 
 
     def backwards(self, orm):
