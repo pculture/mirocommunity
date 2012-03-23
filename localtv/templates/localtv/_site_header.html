@@ -2,7 +2,7 @@
 {% load i18n daguerre uploadtemplate_tags %}
 
 <div class="row">
-	<div class="col-two-fifths">
+	<div class="col-two-fifths {% if site_settings.tagline %}with-tagline{% else %}no-tagline{% endif %}">
 		<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
 			{% if site_settings.logo %}
 				{% resize site_settings.thumbnail method="fit" height=54 as logo %}
@@ -15,9 +15,11 @@
 				{{ site_settings.site.name }}
 			</a>
 		</h1>
-		<h2 id="SiteTagline" style="margin-left: {{ logo.width }}px;">
-			{{ site_settings.tagline|safe }}
-		</h2>
+			{% if site_settings.tagline %}
+			<h2 id="SiteTagline" style="margin-left: {{ logo.width }}px;">
+				{{ site_settings.tagline|safe }}
+			</h2>
+		{% endif %}
 	</div>
 	
 	<div class="col-two-fifths">

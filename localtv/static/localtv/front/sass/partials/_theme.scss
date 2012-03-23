@@ -15,7 +15,7 @@ $button-down-text-color: #444 !default;
 $button-background-color: #F5F5F5 !default;
 
 $navigation-background-color: #222 !default;
-$navigation-text-color: #DDD !default;
+$navigation-text-color: #666 !default;
 
 $pod-header-background-color: $color1 !default;
 $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($color1, 80%), 50%) !default;
@@ -55,6 +55,10 @@ body{
 
 /* main container */
 
+#main{
+	border-top:1px solid darken($main-background-color, 20%);
+}
+
 #main > .container{
 	background:$main-background-color;
 	@include box-shadow($main-box-shadow);
@@ -83,22 +87,11 @@ body{
 
 /* navigation */
 
-#navigation{
-	background-color:$navigation-background-color;
-	@include background-image(linear-gradient(lighten($navigation-background-color, 10%), $navigation-background-color));
-	border-bottom-color: darken($navigation-background-color, 20%);
-	border-top-color: lighten($navigation-background-color, 20%);
-}
-
 .nav-item a{
 	color:$navigation-text-color;
-	text-shadow:0 -1px 0 #000;
 }
-
-.nav-item:hover > a, .nav-item > a:hover, .nav-item.open > a{
-	background-color:lighten($navigation-background-color, 20%);
-	@include background-image(linear-gradient(lighten($navigation-background-color, 20%), lighten($navigation-background-color, 5%)));
-	color:#FFF;
+.nav-item{
+	border-left-color:lighten($navigation-text-color, 40%);
 }
 
 .dropdown-list, .dropdown-box{
@@ -207,6 +200,13 @@ input, textarea{
 		color:inherit;
 	}
 }
+
+/* social-link-list */
+.social-link-list{
+	background:darken($main-background-color, 10%);
+	border-color:darken($main-background-color, 20%);
+}
+
 
 /* sidebar */
 @media screen and (min-width: 740px){

@@ -1,0 +1,12 @@
+.social-link-list{
+	@extend .unstyled-list;
+	@include clearfix;
+	border-bottom:1px solid;
+	& > li{
+		float:left;
+		& > a{
+			display: block;
+			@extend .padded-half;
+		}
+	}
+}

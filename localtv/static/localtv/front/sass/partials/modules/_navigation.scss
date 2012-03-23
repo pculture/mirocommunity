@@ -6,23 +6,25 @@
 	@include pie-clearfix;
 	@include border-radius(3px);
 	margin-right:$gutter-width/2;
+	float:right;
 }
 
 .navigation-list{
 	@extend .unstyled-list;
 }
-.navigation-list-secondary{
-	float:right;
-}
 
 .nav-item{
+	margin: #{1px + $base-line-height*.25} 0;
 	float:left;
 	list-style-type:none;
+	border-left:1px solid;
+}
+.nav-item:first-child{
+	border-left:none;
 }
 
 .nav-item > a{
-	line-height:$base-line-height * 1.5;
-	padding:1px #{$gutter-width * .25} 0 #{$gutter-width * .25};
+	padding: 0 #{$gutter-width * .25};
 	display:block;
 	&:hover{
 		border:0;
@@ -50,7 +52,6 @@
 	content:"\25BC";
 	font-size:8px;
 	position:absolute;
-	line-height:$base-line-height * 1.5;
 	top: 1px;
 	right: 0;
 	margin-right: 10px;
@@ -113,8 +114,5 @@
 		width:100%;
 		@include border-radius(0);
 		@include box-shadow(none);
-	}
-	.nav-item, .navigation-list-secondary{
-		float:none;
 	}
 }

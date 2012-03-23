@@ -59,9 +59,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
-</ul>
-
-<ul class="navigation-list navigation-list-secondary">
 	{% if request.user.is_authenticated %}
 		{% if user_is_admin %}
 			<li class="nav-item nav-item-dropdown" data-dropdown="true">

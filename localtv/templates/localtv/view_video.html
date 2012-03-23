@@ -65,13 +65,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 				</h1>
 				<h2 class="author">
-					{% if user_is_admin %}
-						({% editable_widget current_video "authors" %})
-					{% else %}
-						{% with current_video as instance %}
-							({% include "localtv/inline_edit/video_authors.html" %})
-						{% endwith %}
-					{% endif %}
+					{% with current_video as instance %}
+						({% include "localtv/inline_edit/video_authors.html" %})
+					{% endwith %}
 				</h2>
 			</div>
 		</header>
@@ -96,6 +92,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block content %}
+	<div class="social-media-share">
+		<ul class="social-link-list">
+			<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">{% trans "Post to Facebook" %}</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
+			<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
+			<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ site_settings.site.name }}: http://{{site_settings.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
+			{% if current_video.file_url %}
+				<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
+			{% endif %}
+		</ul>
+	</div>
 	<div class="row">
 		<div class="col-two-thirds">
 			<section class="video-details content-box">
@@ -168,48 +174,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>{# /.pod #}
 			{% endif %}
 		</div>{# /.col-two-thirds #}
-		<aside class="col-one-third right right-sidebar">
-			<section class="pod video-share">
-				<header class="pod-header">
-					<h1 class="pod-title">{% trans "Share This Video" %}</h1>
-				</header>
-				<div class="pod-content">
-					<ul class="share_links">
-						<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">{% trans "Post to Facebook" %}</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
-						<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
-						<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ site_settings.site.name }}: http://{{site_settings.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
-						{% if current_video.file_url %}
-							<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
-						{% endif %}
-					</ul>
-				</div>{# /.pod-content #}
-			</section>{# /.pod.video-share #}
+		<div class="col-one-third right-sidebar">
 			<section class="pod video-extra-details">
-				<header class="pod-header">
-					<h1 class="pod-title">{% trans "Details" %}</h1>
-				</header>
 				<div class="pod-content">
-					{% if user_is_admin or current_video.categories %}
-						<li class="item">
-							{% if user_is_admin %}
-								{% editable_widget current_video "categories" %}
-							{% else %}
-								{% with current_video as instance %}
-									{% include "localtv/inline_edit/video_categories.html" %}
-								{% endwith %}
-							{% endif %}
-						</li>
+					{% if current_video.categories.count > 0 %}
+						<div class="video-full-categories">
+							{% with current_video as instance %}
+								{% include "localtv/inline_edit/video_categories.html" %}
+							{% endwith %}
+						</div>{# /.video-full-categories #}
 					{% endif %}
-					{% if user_is_admin or current_video.tags %}
-						<li class="item">
-							{% if user_is_admin %}
-								{% editable_widget current_video "tags" %}
-							{% else %}
-								{% with current_video as instance %}
-									{% include "localtv/inline_edit/video_tags.html" %}
-								{% endwith %}
-							{% endif %}
-						</li>
+					{% if current_video.tags %}
+						<div class="video-full-tags">
+							{% with current_video as instance %}
+								{% include "localtv/inline_edit/video_tags.html" %}
+							{% endwith %}
+						</div>{# /.video-full-tags #}
 					{% endif %}
 					{% if user_is_admin %}
 						<li class="item">{% editable_widget current_video "website_url" %}</li>
