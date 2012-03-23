@@ -428,6 +428,15 @@ class BulkEditVideoForm(EditVideoForm):
         self.fields['authors'].queryset = cache_for_form_optimization[
             'authors_qs']
 
+    def _post_clean(self):
+        if not self.instance.pk:
+            # don't run the instance validation checks on the extra form field.
+            # This also doesn't set the values on the instance, but since we
+            # get the values directly from `cleaned_data` in bulk_edit_views.py
+            # it doesn't matter.
+            return
+        return super(BulkEditVideoForm, self)._post_clean()
+
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
             raise forms.ValidationError('This field is required.')

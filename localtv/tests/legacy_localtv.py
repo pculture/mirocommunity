@@ -17,6 +17,7 @@
 
 import json
 import datetime
+import logging
 import os.path
 import shutil
 import tempfile
@@ -589,17 +590,24 @@ University South Carolina, answers questions about teen pregnancy prevention.")
         Feeds with long file URLs (>200 characters) should have them shortened
         so they fit in the database.
         """
+        if not getattr(settings, 'BITLY_LOGIN', None):
+            logging.warn(
+                'skipping FeedImportTestCase.test_entries_atom_with_long_item:'
+                ' cannot shorten URLs without BITLY_LOGIN')
+            return
         feed = Feed.objects.get(pk=1)
         video_iter = self._parse_feed('feed_with_long_item.atom')
         self._update_with_video_iter(video_iter, feed)
         self.assertEqual(feed.video_set.count(), 1)
 
+
     def test_entries_multiple_imports(self):
         """
-        Importing a feed multiple times shouldn't overwrite the existing videos.
+        Importing a feed multiple times shouldn't overwrite the existing
+        videos.
         """
         feed = Feed.objects.get(pk=1)
-        video_iter = list(self._parse_feed('feed_with_long_item.atom'))
+        video_iter = list(self._parse_feed('feed_with_media_player.atom'))
         self._update_with_video_iter(video_iter, feed)
         self.assertEqual(feed.video_set.count(), 1)
         self.assertEqual(feed.imports.latest().videos_imported, 1)
@@ -1636,6 +1644,17 @@ class VideoModelTestCase(BaseTestCase):
         for i in xrange(len(results) - 1):
             self.assertTrue(results[i].when() >= results[i+1].when())
 
+    def test_thumbnail_404(self):
+        """
+        If a Video has a thumbnail that returns a 404, no error should be
+        raised, and `has_thumbnail` should be set to False.
+        """
+        v = Video.objects.get(pk=11)
+        v.thumbnail_url = 'http://pculture.org/doesnotexist'
+        v.has_thumbnail = True
+        v.save_thumbnail()
+        self.assertFalse(v.has_thumbnail)
+
     def test_thumbnail_deleted(self):
         """
         If a Video has a thumbnail, deleting the Video should remove the
@@ -1883,7 +1902,12 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2012, 1, 4, 6, 56, 41),
+        # it seems like thumbnails are updated on the 8th of each month; this
+        # code should get the last 8th that happened.  Just replacing today's
+        # date with an 8 doesn't work early in the month, so backtrack a bit
+        # first.
+        'thumbnail_updated': (datetime.datetime.now() -
+                              datetime.timedelta(days=8)).replace(day=8),
         }
 
 
@@ -2248,7 +2272,7 @@ class TierMethodsTests(BaseTestCase):
         self.assertEqual(datetime.timedelta(hours=5),
                          ti.time_until_free_trial_expires(now=now))
 
-class FeedViewTestCase(BaseTestCase):
+class LegacyFeedViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 

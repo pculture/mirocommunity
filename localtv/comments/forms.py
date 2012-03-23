@@ -37,8 +37,8 @@ class CommentForm(comment_forms.CommentForm):
                               max_length=comment_forms.COMMENT_MAX_LENGTH)
     email = forms.EmailField(label=_("Email address"),
                              required=False)
-    if ReCaptchaField and not settings.DEBUG and \
-            settings.RECAPTCHA_PRIVATE_KEY:
+    if (ReCaptchaField and not settings.DEBUG and
+        getattr(settings, 'RECAPTCHA_PRIVATE_KEY', '')):
         captcha = ReCaptchaField()
 
     def __init__(self, target_object, data=None, initial=None):

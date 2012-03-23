@@ -22,7 +22,6 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from tagging.models import Tag
 from vidscraper.suites import Video as VidscraperVideo
 
 from localtv.models import Video
@@ -30,7 +29,7 @@ from localtv.signals import submit_finished
 from localtv.submit_video.forms import SubmitVideoForm
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
                                         SubmitVideoView)
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 from localtv.utils import get_or_create_tags
 
 
@@ -322,15 +321,16 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
     def test_get_form_class__directlink(self):
         """
-        Tests that a form for a direct link provides name, description, and
-        website_url fields in addition to the basic fields.
+        Tests that a form for a direct link provides name, description,
+        thumbnail_url, and website_url fields in addition to the basic fields.
 
         """
         view = SubmitVideoView()
         view.request = self.factory.get('/')
         video_url = 'http://google.com/video.mov'
         expected_fields = (self.base_fields |
-                           set(['name', 'description', 'website_url']))
+                           set(['name', 'description', 'website_url',
+                                'thumbnail_url']))
 
         # Option one: No video, but a video file url.
         view.request.session[view.get_session_key()] = {
@@ -357,16 +357,17 @@ class SubmitVideoViewTestCase(BaseTestCase):
     def test_get_form_class__embedrequest(self):
         """
         Tests that a form for an embedrequest video - i.e. a video that
-        vidscraper can't parse and which doesn't look like a direct link - 
-        provides name, description, and embed_code fields in addition to the
-        basic fields.
+        vidscraper can't parse and which doesn't look like a direct link -
+        provides name, description, thumbnail_url, and embed_code fields in
+        addition to the basic fields.
 
         """
         view = SubmitVideoView()
         view.request = self.factory.get('/')
         video_url = 'http://google.com/'
         expected_fields = (self.base_fields |
-                           set(['name', 'description', 'embed_code']))
+                           set(['name', 'description', 'embed_code',
+                                'thumbnail_url']))
 
         # Option 1: no video
         view.request.session[view.get_session_key()] = {

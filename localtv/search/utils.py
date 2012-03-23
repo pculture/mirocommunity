@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+import operator
+import logging
+import sys
 
 from django import forms
 from django.contrib.auth.models import User
@@ -23,6 +25,7 @@ from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.query import Q, QuerySet
 from django.template.defaultfilters import capfirst
+from haystack import connections
 from haystack.backends import SQ
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
@@ -34,9 +37,33 @@ from localtv.search.forms import SmartSearchForm, FilterForm
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
-
 EMPTY = object()
 
+def _q_for_queryset(queryset, field, values):
+    q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
+    if len(values) == 1:
+        value = values[0]
+        if value is None:
+            return q_class(**{'%s__isnull' % field: True})
+        if (q_class is SQ and
+           'WhooshEngine' in
+           connections[queryset.query._using].options['ENGINE']):
+            # HACK __exact queries don't work on Whoosh:
+            # https://github.com/toastdriven/django-haystack/issues/529
+            # but they're required for at least Xapian.
+            return q_class(**{field: value})
+        return q_class(**{'%s__exact' % field: value})
+    else:
+        if (q_class is SQ and
+            'WhooshEngine' in
+            connections[queryset.query._using].options['ENGINE']):
+            # Whoosh doesn't properly support __in with multiple values, from
+            # what I can see.  This code calculates the SQ for each individual
+            # value and ORs them together.
+            qs = [_q_for_queryset(queryset, field, [value])
+                  for value in values]
+            return reduce(operator.or_, qs)
+        return q_class(**{'%s__in' % field: values})
 
 class NormalizedVideoList(object):
     """
@@ -90,6 +117,14 @@ class Sort(object):
     #:           not be correctly handled by :mod:`haystack`.
     empty_value = EMPTY
 
+    def __init__(self, reversed=False):
+        """
+        `reversed` is a flag which, if True, reverses the search ordering.
+        This way, searches will default to descending, rather than ascending,
+        order.
+        """
+        self.reversed = reversed
+
     def get_field(self, queryset):
         """
         Returns the field which will be sorted on. By default, returns the value
@@ -108,19 +143,19 @@ class Sort(object):
         return self.empty_value
 
     def sort(self, queryset, descending=False):
+        if self.reversed:
+            # flips the default to descending, rather than ascending, values
+            descending = not descending
         field = self.get_field(queryset)
         empty_value = self.get_empty_value(queryset)
         if empty_value is not EMPTY:
-            if empty_value is None:
-                kwargs = {'%s__isnull' % field: True}
-            else:
-                kwargs = {'%s__exact' % field: empty_value}
-
-            queryset = queryset.exclude(**kwargs)
+            q = _q_for_queryset(queryset, field, (empty_value,))
+            queryset = queryset.filter(~q)
         return queryset.order_by(''.join(('-' if descending else '', field)))
 
 
 class BestDateSort(Sort):
+
     def get_field(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteSettings.objects.get_current().use_original_date):
@@ -181,13 +216,9 @@ class Filter(object):
         :attr:`field`.
 
         """
-        q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
         q = None
         for lookup in self.field_lookups:
-            if len(values) == 1:
-                new_q = q_class(**{"%s__exact" % lookup: values[0]})
-            else:
-                new_q = q_class(**{"%s__in" % lookup: values})
+            new_q = _q_for_queryset(queryset, lookup, values)
 
             if q is None:
                 q = new_q
@@ -304,7 +335,7 @@ class SortFilterMixin(object):
         'approved': ApprovedSort(),
 
         # deprecated
-        'latest': BestDateSort()
+        'latest': BestDateSort(reversed=True)
     }
 
     #: Defines the available filtering options and the indexes that they
@@ -348,28 +379,40 @@ class SortFilterMixin(object):
     def _search(self, query):
         """
         Performs a search for the query and returns an initial :class:`QuerySet`
-        (or :class:`SearchQuerySet`.
+        (or :class:`SearchQuerySet`).
 
         """
-        form = self._make_search_form(query)
-        sqs = form.search()
         if USE_HAYSTACK:
-            # Work directly with the SearchQuerySet.
-            return sqs
+            # Work directly with the SearchQuerySet returned by the form.
+            form = self._make_search_form(query)
+            return form.search()
         else:
             qs = Video.objects.filter(status=Video.ACTIVE,
                                       site=Site.objects.get_current())
-            # If there was a query, limit the queryset to the pks from the
-            # SearchQuerySet and order by those pks to preserve the "relevance"
-            # sort. If there are no pks, return the full queryset.
+            # We can't actually fake a search with the database, so even if
+            # USE_HAYSTACK is false, if a search was executed, we try to
+            # run a haystack search, then query the database using the pks
+            # from the search results. If the database search errors out or
+            # returns no results, then an empty queryset will be returned.
             if query:
-                pks = [int(r.pk) for r in sqs]
-                if pks:
+                form = self._make_search_form(query)
+                try:
+                    results = list(form.search())
+                except Exception, e:
+                    logging.error('Haystack search failed with %s',
+                                  e.__class__.__name__,
+                                  exc_info=sys.exc_info())
+                    results = []
+
+                if results:
                     # We add ordering by pk to preserve the "relevance" sort of
                     # the search. If any other sort is applied, it will override
                     # this.
+                    pks = [int(r.pk) for r in results]
                     order = ['-localtv_video.id = %i' % pk for pk in pks]
                     qs = qs.filter(pk__in=pks).extra(order_by=order)
+                else:
+                    qs = Video.objects.none()
             return qs
 
     def _sort(self, queryset, sort_string):

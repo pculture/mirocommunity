@@ -43,6 +43,7 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
@@ -57,11 +58,12 @@ from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import vidscraper
+from haystack import connections
 
 from notification import models as notification
 import tagging
 
-from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
+from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
@@ -95,23 +97,20 @@ VIDEO_SERVICE_REGEXES = (
 
 
 class BitLyWrappingURLField(models.URLField):
-    def get_db_prep_value(self, value, *args, **kwargs):
-        if not getattr(settings, 'BITLY_LOGIN'):
-            return value
 
-        # Workaround for some cases
-        if value is None:
-            value = ''
-
-        if len(value) <= self.max_length: # short enough to save
-            return value
-        api = bitly.Api(login=settings.BITLY_LOGIN,
-                        apikey=settings.BITLY_API_KEY)
-        try:
-            return unicode(api.shorten(value))
-        except bitly.BitlyError:
-            return unicode(value)[:self.max_length]
-
+    def clean(self, value, video):
+        if getattr(settings, 'BITLY_LOGIN', None):
+            # Workaround for some cases
+            if value is None:
+                value = ''
+            if len(value) > self.max_length: # too long
+                api = bitly.Api(login=settings.BITLY_LOGIN,
+                                apikey=settings.BITLY_API_KEY)
+                try:
+                    value = unicode(api.shorten(value))
+                except bitly.BitlyError:
+                    pass
+        return super(BitLyWrappingURLField, self).clean(value, video)
 
 try:
     from south.modelsinspector import add_introspection_rules
@@ -712,7 +711,7 @@ class Source(Thumbnailable):
         abstract = True
 
     def update(self, video_iter, source_import, using='default',
-               clear_rejected=True):
+               clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
         returns :class:`vidscraper.suites.base.Video` objects.  We use
@@ -1767,25 +1766,78 @@ class Video(Thumbnailable, VideoBase):
     def __unicode__(self):
         return self.name
 
+    def clean(self):
+        if not self.embed_code and not self.file_url:
+            raise ValidationError("Video has no embed code or file url.")
+
+        qs = Video.objects.using(self._state.db).filter(site=self.site_id
+                                              ).exclude(status=Video.REJECTED)
+
+        if self.pk is not None:
+            qs = qs.exclude(pk=self.pk)
+
+        if self.guid and qs.filter(guid=self.guid).exists():
+            raise ValidationError("Another video with the same guid "
+                                  "already exists.")
+
+        if (self.website_url and
+            qs.filter(website_url=self.website_url).exists()):
+            raise ValidationError("Another video with the same website url "
+                                  "already exists.")
+
+        if self.file_url and qs.filter(file_url=self.file_url).exists():
+            raise ValidationError("Another video with the same file url "
+                                  "already exists.")
+
+    def clear_rejected_duplicates(self):
+        """
+        Deletes rejected copies of this video based on the file_url,
+        website_url, and guid fields.
+
+        """
+        if not any((self.website_url, self.file_url, self.guid)):
+            return
+
+        q_filter = models.Q()
+        if self.website_url:
+            q_filter |= models.Q(website_url=self.website_url)
+        if self.file_url:
+            q_filter |= models.Q(file_url=self.file_url)
+        if self.guid:
+            q_filter |= models.Q(guid=self.guid)
+        qs = Video.objects.using(self._state.db).filter(site_id=self.site_id
+                       ).exclude(status=Video.REJECTED).filter(q_filter)
+        qs.delete()
+
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
 
+    def save(self, **kwargs):
+        """
+        Adds support for an ```update_index`` kwarg, defaulting to ``True``.
+        If this kwarg is ``False``, then no index updates will be run by the
+        search index.
+
+        """
+        # This actually relies on logic in
+        # :meth:`QueuedSearchIndex._enqueue_instance`
+        self._update_index = kwargs.pop('update_index', True)
+        super(Video, self).save(**kwargs)
+    save.alters_data = True
+
+
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
                               using='default', source_import=None, site_pk=None,
-                              authors=None, categories=None):
+                              authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
         the :class:`Video` will not be saved, and the created instance will have
         a `save_m2m()` method that must be called after you call `save()`.
-
-        :raises: :class:`localtv.exceptions.InvalidVideo` if `commit` is
-                 ``True`` and the created :class:`Video` does not have a valid
-                 ``file_url`` or ``embed_code``.
 
         """
         if video.file_url_expires is None:
@@ -1837,6 +1889,22 @@ class Video(Thumbnailable, VideoBase):
         def save_m2m():
             if authors:
                 instance.authors = authors
+            elif video.user:
+                name = video.user
+                if ' ' in name:
+                    first, last = name.split(' ', 1)
+                else:
+                    first, last = name, ''
+                author, created = User.objects.db_manager(using).get_or_create(
+                    username=name[:30],
+                    defaults={'first_name': first[:30],
+                              'last_name': last[:30]})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    utils.get_profile_model()._default_manager.db_manager(using
+                        ).create(user=author, website=video.user_url or '')
+                instance.authors = [author]
             if categories:
                 instance.categories = categories
             if video.tags:
@@ -1856,14 +1924,12 @@ class Video(Thumbnailable, VideoBase):
                 source_import.handle_video(instance, video, using)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video, using=using)
+            if update_index:
+                index = connections[using].get_unified_index().get_index(cls)
+                index._enqueue_update(instance)
 
         if commit:
-            # Only run this check if they want to immediately commit the
-            # instance; otherwise, the calling code is responsible for ensuring
-            # that the instance makes sense before being saved.
-            if not (instance.embed_code or instance.file_url):
-                raise InvalidVideo
-            instance.save(using=using)
+            instance.save(using=using, update_index=False)
             save_m2m()
         else:
             instance._state.db = using
@@ -1911,15 +1977,26 @@ class Video(Thumbnailable, VideoBase):
             return
 
         try:
-            content_thumb = ContentFile(urllib.urlopen(
-                    utils.quote_unicode_url(self.thumbnail_url)).read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
+            remote_file = urllib.urlopen(utils.quote_unicode_url(
+                    self.thumbnail_url))
         except httplib.InvalidURL:
             # if the URL isn't valid, erase it and move on
             self.thumbnail_url = ''
             self.has_thumbnail = False
             self.save()
+            return
+
+        if remote_file.getcode() != 200:
+            logging.info('code %i when getting %r, ignoring',
+                         remote_file.getcode(), self.thumbnail_url)
+            self.has_thumbnail = False
+            self.save()
+            return
+
+        try:
+            content_thumb = ContentFile(remote_file.read())
+        except IOError:
+            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             try:
                 self.save_thumbnail_from_file(content_thumb)

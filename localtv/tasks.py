@@ -22,6 +22,7 @@ import random
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from haystack import connections
@@ -66,21 +67,24 @@ def update_sources(using='default'):
 
 
 @task(ignore_result=True)
-def feed_update(feed_id, using='default'):
+def feed_update(feed_id, using='default', clear_rejected=False):
     try:
-        feed = Feed.objects.using(using).get(pk=feed_id)
+        feed = Feed.objects.using(using).filter(status=Feed.ACTIVE,
+                                                auto_update=True
+                                       ).get(pk=feed_id)
     except Feed.DoesNotExist:
         logging.warn('feed_update(%s, using=%r) could not find feed',
                      feed_id, using)
         return
 
-    feed.update(using=using, clear_rejected=True)
+    feed.update(using=using, clear_rejected=clear_rejected)
 
 
 @task(ignore_result=True)
 def search_update(search_id, using='default'):
     try:
-        search = SavedSearch.objects.using(using).get(pk=search_id)
+        search = SavedSearch.objects.using(using).filter(auto_update=True
+                                                   ).get(pk=search_id)
     except SavedSearch.DoesNotExist:
         logging.warn('search_update(%s, using=%r) could not find search',
                      search_id, using)
@@ -165,10 +169,9 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                          status=Video.ACTIVE).values_list('pk', flat=True)
     if active_pks:
         opts = Video._meta
-        for pk in active_pks:
-            haystack_update_index.delay(opts.app_label, opts.module_name,
-                                        pk, is_removal=False,
-                                        using=using)
+        haystack_update_index.delay(opts.app_label, opts.module_name,
+                                    list(active_pks), is_removal=False,
+                                    using=using)
 
     mark_import_complete.delay(import_app_label, import_model, import_pk,
                                using=using)
@@ -261,80 +264,40 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                 with_exception=True)
             return
 
-        if not vidscraper_video.title:
-            source_import.handle_error(
-                ('Skipped %r: Failed to scrape basic data.'
-                 % vidscraper_video.url),
-                is_skip=True, using=using)
-            return
-
-        if ((vidscraper_video.file_url_expires or
-             not vidscraper_video.file_url)
-            and not vidscraper_video.embed_code):
-            source_import.handle_error(('Skipping %r: no file or embed code.'
-                                        % vidscraper_video.url),
-                                       is_skip=True, using=using)
-            return
-
-        site_videos = Video.objects.using(using).filter(site=site_pk)
-
-        if vidscraper_video.guid:
-            guid_videos = site_videos.filter(guid=vidscraper_video.guid)
-            if clear_rejected:
-                guid_videos.filter(status=Video.REJECTED).delete()
-            if guid_videos.exists():
-                source_import.handle_error(('Skipping %r: duplicate guid.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
-        if vidscraper_video.link:
-            videos_with_link = site_videos.filter(
-                website_url=vidscraper_video.link)
-            if clear_rejected:
-                videos_with_link.filter(status=Video.REJECTED).delete()
-            if videos_with_link.exists():
-                source_import.handle_error(('Skipping %r: duplicate link.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
-        categories = Category.objects.using(using).filter(pk__in=category_pks)
+        if category_pks:
+            categories = Category.objects.using(using).filter(pk__in=category_pks)
+        else:
+            categories = None
 
         if author_pks:
             authors = User.objects.using(using).filter(pk__in=author_pks)
         else:
-            if vidscraper_video.user:
-                name = vidscraper_video.user
-                if ' ' in name:
-                    first, last = name.split(' ', 1)
-                else:
-                    first, last = name, ''
-                author, created = User.objects.db_manager(using).get_or_create(
-                    username=name[:30],
-                    defaults={'first_name': first[:30],
-                              'last_name': last[:30]})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    utils.get_profile_model().objects.db_manager(using).create(
-                       user=author,
-                       website=vidscraper_video.user_url or '')
-                authors = [author]
-            else:
-                authors = []
+            authors = None
 
-        # Since we check above whether the vidscraper_video is valid, we don't
-        # catch InvalidVideo here, since it would be unexpected.
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                             using=using,
                                             source_import=source_import,
                                             authors=authors,
                                             categories=categories,
-                                            site_pk=site_pk)
-        logging.debug('Made video %i: %r', video.pk, video.name)
-        if video.thumbnail_url:
-            video_save_thumbnail.delay(video.pk, using=using)
+                                            site_pk=site_pk,
+                                            commit=False,
+                                            update_index=False)
+        try:
+            video.full_clean()
+        except ValidationError, e:
+            source_import.handle_error(("Skipping %r: %r" % (
+                                        vidscraper_video.url, e.message_dict)),
+                                        is_skip=True, using=using)
+            return
+        else:
+            video.save()
+            video.save_m2m()
+            if clear_rejected:
+                video.clear_rejected_duplicates()
+
+            logging.debug('Made video %i: %r', video.pk, video.name)
+            if video.thumbnail_url:
+                video_save_thumbnail.delay(video.pk, using=using)
     except Exception:
         source_import.handle_error(('Unknown error during import of %r'
                                     % vidscraper_video.url),
@@ -364,7 +327,7 @@ def video_save_thumbnail(video_pk, using='default'):
         
 
 @task(ignore_result=True, max_retries=None)
-def haystack_update_index(app_label, model_name, pk, is_removal,
+def haystack_update_index(app_label, model_name, pks, is_removal,
                           using='default'):
     """
     Updates a haystack index for the given model (specified by ``app_label``
@@ -379,23 +342,27 @@ def haystack_update_index(app_label, model_name, pk, is_removal,
 
     """
     model_class = get_model(app_label, model_name)
-    search_index = connections[using].get_unified_index().get_index(model_class)
+    backend = connections[using].get_backend()
+    index = connections[using].get_unified_index().get_index(model_class)
     try:
         if is_removal:
-            instance = model_class(pk=pk)
-            search_index.remove_object(instance)
+            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
+                         for pk in pks]
+            to_update = []
         else:
-            try:
-                instance = Video.objects.using(using).get(pk=pk)
-            except model_class.DoesNotExist:
-                logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r)'
-                               ' could not find video with pk %i'), app_label,
-                               model_name, pk, is_removal, using, pk)
-            else:
-                if instance.status == Video.ACTIVE:
-                    search_index.update_object(instance)
-                else:
-                    search_index.remove_object(instance)
+            base_qs = Video.objects.using(using).filter(pk__in=pks)
+            to_remove_pks = base_qs.exclude(status=Video.ACTIVE
+                                  ).values_list('pk', flat=True)
+            to_remove = ["%s.%s.%s" % (app_label, model_name, pk)
+                         for pk in to_remove_pks]
+
+            to_update = base_qs.filter(status=Video.ACTIVE)
+
+        if to_remove:
+            for identifier in to_remove:
+                backend.remove(identifier)
+        if to_update:
+            backend.update(index, to_update)
     except (DatabaseError, LockError), e:
         # These errors might be resolved if we just wait a bit. The wait time is
         # slightly random, with the intention of preventing LockError retries

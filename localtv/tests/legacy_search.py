@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 
 from localtv.tests.legacy_localtv import BaseTestCase
 
@@ -176,16 +177,16 @@ class AutoQueryTestCase(BaseTestCase):
         video2.authors = [video.user]
         video2.save()
 
-        self.assertEqual(self.search('superuser'), [video2, video])
-        self.assertEqual(self.search('firstname'), [video2, video])
-        self.assertEqual(self.search('lastname'), [video2, video])
+        self.assertEqual(set(self.search('superuser')), set([video2, video]))
+        self.assertEqual(set(self.search('firstname')), set([video2, video]))
+        self.assertEqual(set(self.search('lastname')), set([video2, video]))
 
-        self.assertEqual(self.search('user:SuperUser'),
-                          [video2, video]) # name
-        self.assertEqual(self.search('user:superuser'),
-                          [video2, video]) # case-insenstive name
-        self.assertEqual(self.search('user:%i' % video.user.pk),
-                          [video2, video]) # pk
+        self.assertEqual(set(self.search('user:SuperUser')),
+                         set([video2, video])) # name
+        self.assertEqual(set(self.search('user:superuser')),
+                         set([video2, video])) # case-insenstive name
+        self.assertEqual(set(self.search('user:%i' % video.user.pk)),
+                         set([video2, video])) # pk
 
     def test_search_excludes_user(self):
         """
@@ -259,6 +260,7 @@ class AutoQueryTestCase(BaseTestCase):
         """
         user = User.objects.get(username='user')
         playlist = Playlist.objects.create(
+            site=Site.objects.get_current(),
             user=user,
             name='Test List',
             slug='test-list',
@@ -268,6 +270,11 @@ class AutoQueryTestCase(BaseTestCase):
 
         self.assertEqual(self.search('playlist:%i' % playlist.pk), [video])
         self.assertEqual(self.search('playlist:user/test-list'), [video])
+
+        playlist.playlistitem_set.all().delete()
+
+        self.assertEqual(self.search('playlist:%i' % playlist.pk), [])
+        self.assertEqual(self.search('playlist:user/test-list'), [])
 
     def test_search_includes_search(self):
         """
@@ -296,9 +303,12 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Mixing OR and AND should work as expected.
         """
-        results = SmartSearchQuerySet().auto_query('{import repair} -and')
+        # this used to be '{import repair} -and' but that no longer works.  I
+        # wonder if recent versions of Haystack (or Whoosh) skip small words?
+        results = SmartSearchQuerySet().auto_query(
+            '{import repair} -positioning')
         self.assertTrue(results)
         for result in results:
-            self.assertFalse('and' in result.text.lower(), result.text)
+            self.assertFalse('positioning' in result.text.lower(), result.text)
             self.assertTrue(('import' in result.text.lower()) or
                             ('repair' in result.text.lower()), result.text)
