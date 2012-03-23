@@ -41,6 +41,7 @@ Contents
    installation
    contributing/index
    internals/branching-model
+   internals/release-process
 
 
 
