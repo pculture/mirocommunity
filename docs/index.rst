@@ -30,7 +30,7 @@ other groups, including universities, open-source communities, and more.
 :bugtracker:   http://bugzilla.pculture.org/
 :code:         https://github.com/pculture/mirocommunity
 :mailing list: http://groups.google.com/group/miro-community-development
-:irc:          `#miro-hackers on irc.freenode.net <irc://irc.freenode.net/miro-hackers`
+:irc:          `#miro-hackers on irc.freenode.net <irc://irc.freenode.net/miro-hackers>`_
 
 Contents
 ========
