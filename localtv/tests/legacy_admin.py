@@ -22,16 +22,17 @@ class Fakedatetime(datetime.datetime):
     def utcnow(cls):
         return cls(2011, 2, 20, 12, 35, 0)
 
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.flatpages.models import FlatPage
+from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
-from django.contrib.flatpages.models import FlatPage
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
-from django.conf import settings
 
 import mock
 from notification import models as notification
@@ -408,7 +409,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'localtv/admin/clear_confirm.html' and have a 'videos' variable
         in the context which is a list of all the unapproved videos.
         """
-        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                             site=Site.objects.get_current())
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -434,7 +436,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and have a 'videos' variable in the context which is a list of all the
         unapproved videos.
         """
-        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                             site=Site.objects.get_current())
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
