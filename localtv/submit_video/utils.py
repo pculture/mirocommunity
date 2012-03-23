@@ -38,7 +38,13 @@ def is_video_url(url):
         conn = httplib.HTTPSConnection(parsed.netloc)
     else:
         return False
-    conn.request('HEAD', parsed.path)
+
+    try:
+        conn.request('HEAD', parsed.path)
+    except IOError:
+        # can't connect to the server.
+        return False
+
     response = conn.getresponse()
 
     mimetype = response.getheader('Content-Type', '')

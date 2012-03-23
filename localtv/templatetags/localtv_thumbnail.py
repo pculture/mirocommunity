@@ -19,12 +19,12 @@ from django import template
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
-
-from daguerre.templatetags.daguerre import ImageResizeNode, ImageProxy
+from daguerre.models import Image
+from daguerre.utils.adjustments import get_adjustment_class
 
 register = template.Library()
 
-class ThumbnailNode(ImageResizeNode):
+class ThumbnailNode(template.Node):
     """
     Essentially an implementation of daguerre's ImageResizeNode with a
     different interface, to maintain backwards compatibility with old
@@ -39,15 +39,28 @@ class ThumbnailNode(ImageResizeNode):
         self.width, self.height = size
     
     def render(self, context):
-        image = self.video.resolve(context).thumbnail
-        kwargs = {'width': self.width, 'height': self.height, 'method': 'fill'}
-        
-        proxy = ImageProxy(image, kwargs)
+        storage_path = self.video.resolve(context).get_original_thumb_storage_path()
+        kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
+        try:
+            image = Image.objects.for_storage_path(storage_path)
+        except Image.DoesNotExist:
+            url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
+            if self.asvar is not None:
+                context[self.asvar] = {
+                    'width': self.width,
+                    'height': self.height,
+                    'url': url
+                }
+                return ''
+            return url
+
+        adjustment_class = get_adjustment_class('fill')
+        adjustment = adjustment_class.from_image(image, width=self.width, height=self.height)
         
         if self.asvar is not None:
-            context[self.asvar] = proxy
+            context[self.asvar] = adjustment.info_dict()
             return ''
-        return proxy
+        return adjustment.url
 
 
 @register.tag('get_thumbnail_url')
