@@ -1655,23 +1655,6 @@ class VideoModelTestCase(BaseTestCase):
         v.save_thumbnail()
         self.assertFalse(v.has_thumbnail)
 
-    def test_thumbnail_deleted(self):
-        """
-        If a Video has a thumbnail, deleting the Video should remove the
-        thumbnail.
-        """
-        v = Video.objects.get(pk=11)
-        v.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
-
-        paths = [v.get_original_thumb_storage_path()]
-        for size in Video.THUMB_SIZES:
-            paths.append(v.get_resized_thumb_storage_path(*size))
-
-        v.delete()
-        for path in paths:
-            self.assertFalse(storage.default_storage.exists(path),
-                             '%s was not deleted' % path)
-
     def test_original_video_created(self):
         """
         When an Video object is a created, an OriginalVideo object should also
