@@ -457,7 +457,7 @@ class SiteSettings(Thumbnailable):
         if user.is_superuser:
             return True
 
-        return bool(self.admins.filter(pk=user.pk).count())
+        return self.admins.filter(pk=user.pk).exists()
 
     def save(self, *args, **kwargs):
         SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
@@ -981,8 +981,9 @@ class Category(models.Model):
         def accumulate(categories):
             for category in categories:
                 objects.append(category)
-                if category.child_set.count():
-                    accumulate(category.child_set.all())
+                children = category.child_set.all()
+                if children:
+                    accumulate(children)
         if initial is None:
             initial = klass.objects.filter(site=site_settings, parent=None)
         accumulate(initial)
