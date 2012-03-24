@@ -27,7 +27,7 @@ from localtv.feeds.views import BaseVideosFeed, LOCALTV_FEED_LENGTH
 from localtv.models import Video
 
 def generate_secret():
-    sha = hashlib.sha1(settings.DATABASE_NAME)
+    sha = hashlib.sha1(settings.DATABASES['default']['NAME'])
     sha.update('admin_feed')
     sha.update(str(settings.SITE_ID))
     sha.update(settings.SECRET_KEY)
