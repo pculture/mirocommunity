@@ -94,9 +94,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 	<div class="social-media-share">
 		<ul class="social-link-list">
-			<li><a class="facebook" name="fb_share" type="icon_link" href="http://www.facebook.com/sharer.php">{% trans "Post to Facebook" %}</a><script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script></li>
+			<li>
+				<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
+			</li>
+			<li>
+				<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+			</li>
+			<li>
+				<g:plusone size="medium"></g:plusone>
+			</li>
+
 			<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
-			<li><a href="https://twitter.com/?status={% filter urlencode %}I'm watching {{ current_video.name|slice:":47" }}{% ifnotequal current_video.name current_video.name|slice:":47" %}...{% endifnotequal %} on {{ site_settings.site.name }}: http://{{site_settings.site.domain }}{% url localtv_view_video video_id=current_video.pk slug="" %}{% endfilter %}" target="_blank" class="twitter">{% trans "Tweet this Video" %}</a></li>
 			{% if current_video.file_url %}
 				<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
 			{% endif %}
@@ -118,74 +126,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 				</p>
 			</section>{# /.video-details #}
-			
-			{% get_comment_list for current_video as comments %}
-			{% if comments %}
-				<div class="comments pod">
-					{% get_comment_count for current_video as comment_count %}
-					<header class="pod-header">
-						{% if comment_count %}<h1 class="pod-title comments-count">{{ comment_count }} {% blocktrans %}Comment{{ comment_count|pluralize }}{% endblocktrans %}</h1>{% endif %}
-					</header>
-					<div class="pod-content">
-						<ul class="comments-list">
-							{% for comment in comments %}
-								<li class="comment">
-									<div class="comment-poster">
-										<h4 id="c{{ comment.id }}">{% if comment.user %}<a href="{% url localtv_author comment.user.pk %}">{{ comment.user_name }}</a>{% else %}{{ comment.user_name }}{% endif %}</h4>
-										<span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
-										{% if user_is_admin %}
-											<div class="comment-moderation">
-												<form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
-													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-													<button type="submit">{% trans "delete" %}</button>
-												</form>
-												<form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
-													<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-													<button type="submit">{% trans "spam" %}</button>
-												</form>
-											</div>
-										{% endif %}
-									</div>
-									<div class="comment-body">
-										{{ comment.comment|sanitize }}
-									</div>
-								</li>
-							{% endfor %}
-						</ul>
-					</div>
-				</div>{# /.comments.pod #}
-			{% endif %}{# endif comments #}
-			{% if not site_settings.comments_required_login or request.user.is_authenticated %}
-				{% get_comment_form for current_video as comment_form %}
-				<div class="pod">
-					<header class="pod-header">
-						<h1 class="pod-title">{% trans "Post a comment" %}</h1>
-					</header>
-					<div class="pod-content">
-						<form class="comments-form" action="{% comment_form_target %}" method="post">{% csrf_token %}
-						{% with comment_form as form %}
-								{% include "localtv/_form_inner.html" %}
-								<footer class="form-actions">
-									<button>Submit</button>
-								</footer>
-						{% endwith %}
-						</form>{# /.comments-form #}
-					</div>
-				</div>{# /.pod #}
-			{% endif %}
+			<div class="content-box">
+				<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2" data-width="600"></div>
+			</div>
 		</div>{# /.col-two-thirds #}
 		<div class="col-one-third right-sidebar">
 			<section class="pod video-extra-details">
 				<div class="pod-content">
 					{% if current_video.categories.count > 0 %}
-						<div class="video-full-categories">
+						<div class="video-full-categories compact">
 							{% with current_video as instance %}
 								{% include "localtv/inline_edit/video_categories.html" %}
 							{% endwith %}
 						</div>{# /.video-full-categories #}
 					{% endif %}
 					{% if current_video.tags %}
-						<div class="video-full-tags">
+						<div class="video-full-tags compact">
 							{% with current_video as instance %}
 								{% include "localtv/inline_edit/video_tags.html" %}
 							{% endwith %}
@@ -281,4 +237,23 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</section>
 		</aside>{# /.col-one-third.right #}
 	</div>
+	{# Facebook #}
+	<div id="fb-root"></div>
+	<script>(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));</script>
+	{# Twitter #}
+	<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+	{# Google+ #}
+	<script type="text/javascript">
+	  (function() {
+	    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+	    po.src = 'https://apis.google.com/js/plusone.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	  })();
+	</script>
 {% endblock content %}

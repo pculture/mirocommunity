@@ -99,7 +99,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 45, ../sass/partials/_grid.scss */
-.padded-half, .dropdown-box, .precontent-header, .social-link-list > li > a {
+.padded-half, .dropdown-box, .precontent-header {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -1200,6 +1200,11 @@ ol > li {
   color: inherit;
 }
 
+/* line 1, ../sass/partials/modules/_compact.scss */
+.compact * {
+  display: inline;
+}
+
 /* line 1, ../sass/partials/modules/_icons.scss */
 .replaced, .search-icon {
   text-indent: -9999px;
@@ -1218,15 +1223,15 @@ ol > li {
 .social-link-list {
   overflow: hidden;
   *zoom: 1;
+  padding: 9px 10px;
   border-bottom: 1px solid;
 }
-/* line 5, ../sass/partials/modules/_social_link_list.scss */
+/* line 6, ../sass/partials/modules/_social_link_list.scss */
 .social-link-list > li {
   float: left;
-}
-/* line 7, ../sass/partials/modules/_social_link_list.scss */
-.social-link-list > li > a {
   display: block;
+  line-height: 20px;
+  height: 20px;
 }
 
 /* line 4, ../sass/partials/modules/_grid_list.scss */
