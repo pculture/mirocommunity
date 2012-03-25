@@ -62,6 +62,7 @@ from haystack import connections
 
 from notification import models as notification
 import tagging
+import tagging.models
 
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
