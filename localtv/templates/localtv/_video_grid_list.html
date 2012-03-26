@@ -14,7 +14,7 @@
 		<li class="media-item">
 			<figure class="thumb">
 				<a href="{{ video.get_absolute_url }}">
-					{% adjust video.thumbnail width=200 height=144 adjustment="fill" as image %}
+					{% adjust video.get_original_thumb_storage_path width=200 height=144 adjustment="fill" as image %}
 					<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
 				</a>
 			</figure>

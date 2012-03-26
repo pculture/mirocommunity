@@ -2,7 +2,7 @@
 
 <article class="video-large">
 	<div class="preview-large col-two-thirds">
-		{% with video.thumbnail as thumbnail %}
+		{% with video.get_original_thumb_storage_path as thumbnail %}
 			{% if thumbnail.width > 640 and thumbnail.height > 400 %}
 				{% adjust thumbnail width=640 height=400 adjustment="fill" as image %}
 				<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>

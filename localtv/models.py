@@ -184,11 +184,6 @@ class Thumbnailable(models.Model):
                 self.get_resized_thumb_storage_path(width, height),
                 cf_image)
 
-    @property
-    def thumbnail(self):
-        "Returns the original video thumbnail as an ImageFile."
-        return ImageFile(default_storage.open(self.get_original_thumb_storage_path()))
-
     def get_original_thumb_storage_path(self):
         """
         Return the path for the original thumbnail, relative to the default
