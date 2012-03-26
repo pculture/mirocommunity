@@ -15,19 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
 
 class Command(NoArgsCommand):
-
-    args = ''
-
     def handle_noargs(self, **options):
         if site_too_old():
             return
 
-        from localtv import tasks
+        from localtv.tasks import update_sources, CELERY_USING
         
-        tasks.update_sources.delay(
-            using=tasks.CELERY_USING)
+        update_sources.delay(using=CELERY_USING)

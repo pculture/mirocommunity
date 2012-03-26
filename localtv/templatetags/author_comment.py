@@ -32,13 +32,9 @@ class AuthorCommentsNode(template.Node):
 
     def render(self, context):
         obj = self.obj.resolve(context)
-        comments = Comment.objects.filter(
-            site=Site.objects.get_current(),
-            user=obj.pk).reverse()
-        if comments.count() == 0:
-            context[self.as_varname] = None
-        else:
-            context[self.as_varname] = comments
+        context[self.as_varname] = Comment.objects.filter(
+                                        site=Site.objects.get_current(),
+                                        user=obj.pk).reverse()
         return ''
 
 @register.tag('get_author_comments')
@@ -54,13 +50,9 @@ class AuthorCommentCountNode(template.Node):
 
     def render(self, context):
         obj = self.obj.resolve(context)
-        comment_count = Comment.objects.filter(
-            site=Site.objects.get_current(),
-            user=obj.pk).count()
-        if comment_count == 0:
-            context[self.as_varname] = None
-        else:
-            context[self.as_varname] = comment_count
+        context[self.as_varname] = Comment.objects.filter(
+                                        site=Site.objects.get_current(),
+                                        user=obj.pk).count()
         return ''
 
 @register.tag('get_author_comment_count')

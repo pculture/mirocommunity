@@ -6,5 +6,4 @@ Contributing to Miro Community
 
    bugs-and-features
    documentation
-   code/index
-   code/branching-model
+   code

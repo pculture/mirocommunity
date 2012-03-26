@@ -62,6 +62,7 @@ from haystack import connections
 
 from notification import models as notification
 import tagging
+import tagging.models
 
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
@@ -457,7 +458,7 @@ class SiteSettings(Thumbnailable):
         if user.is_superuser:
             return True
 
-        return bool(self.admins.filter(pk=user.pk).count())
+        return self.admins.filter(pk=user.pk).exists()
 
     def save(self, *args, **kwargs):
         SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
@@ -870,30 +871,21 @@ class Feed(Source):
         return self.calculated_source_type
 
     def _calculate_source_type(self):
-        return _feed__calculate_source_type(self)
+        video_service = self.video_service()
+        if video_service is None:
+            return u'Feed'
+        else:
+            return u'User: %s' % video_service
 
     def video_service(self):
-        return feed__video_service(self)
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, self.feed_url, re.I):
+                return service
 
-def feed__video_service(feed):
-    # This implements the video_service method. It's outside the Feed class
-    # so we can use it safely from South.
-    for service, regexp in VIDEO_SERVICE_REGEXES:
-        if re.search(regexp, feed.feed_url, re.I):
-            return service
-
-def _feed__calculate_source_type(feed):
-    # This implements the _calculate_source_type method. It's outside the Feed
-    # class so we can use it safely from South.
-    video_service = feed__video_service(feed)
-    if video_service is None:
-        return u'Feed'
-    else:
-        return u'User: %s' % video_service
 
 def pre_save_set_calculated_source_type(instance, **kwargs):
     # Always save the calculated_source_type
-    instance.calculated_source_type = _feed__calculate_source_type(instance)
+    instance.calculated_source_type = instance._calculate_source_type()
     # Plus, if the name changed, we have to recalculate all the Videos that depend on us.
     try:
         v = Feed.objects.using(instance._state.db).get(id=instance.id)
@@ -903,7 +895,6 @@ def pre_save_set_calculated_source_type(instance, **kwargs):
         # recalculate all the sad little videos' calculated_source_type
         for vid in instance.video_set.all():
             vid.save()
-    return instance
 models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
 
@@ -990,8 +981,9 @@ class Category(models.Model):
         def accumulate(categories):
             for category in categories:
                 objects.append(category)
-                if category.child_set.count():
-                    accumulate(category.child_set.all())
+                children = category.child_set.all()
+                if children:
+                    accumulate(children)
         if initial is None:
             initial = klass.objects.filter(site=site_settings, parent=None)
         accumulate(initial)
@@ -2029,10 +2021,37 @@ class Video(Thumbnailable, VideoBase):
         return self.when_approved or self.when_submitted
 
     def source_type(self):
-        return video__source_type(self)
+        if self.id and self.search_id:
+            try:
+                return u'Search: %s' % self.search
+            except SavedSearch.DoesNotExist:
+                return u''
+
+        if self.id and self.feed_id:
+            try:
+                if self.feed.video_service():
+                    return u'User: %s: %s' % (
+                        self.feed.video_service(),
+                        self.feed.name)
+                else:
+                    return 'Feed: %s' % self.feed.name
+            except Feed.DoesNotExist:
+                return ''
+
+        if self.video_service_user:
+            return u'User: %s: %s' % (self.video_service(),
+                                      self.video_service_user)
+
+        return ''
 
     def video_service(self):
-        return video__video_service(self)
+        if not self.website_url:
+            return
+
+        url = self.website_url
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, url, re.I):
+                return service
 
     def when_prefix(self):
         """
@@ -2066,43 +2085,13 @@ class Video(Thumbnailable, VideoBase):
             return False
         return self.categories.filter(contest_mode__isnull=False).exists()
 
-def video__source_type(self):
-    '''This is not a method of the Video so that we can can call it from South.'''
-    try:
-        if self.id and self.search:
-            return u'Search: %s' % self.search
-        elif self.id and self.feed:
-            if feed__video_service(self.feed):
-                return u'User: %s: %s' % (
-                    feed__video_service(self.feed),
-                    self.feed.name)
-            else:
-                return 'Feed: %s' % self.feed.name
-        elif self.video_service_user:
-            return u'User: %s: %s' % (
-                video__video_service(self),
-                self.video_service_user)
-        else:
-            return ''
-    except Feed.DoesNotExist:
-        return ''
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
     # Always recalculate the source_type field.
-    instance.calculated_source_type = video__source_type(instance)
-    return instance
+    instance.calculated_source_type = instance.source_type()
 models.signals.pre_save.connect(pre_save_video_set_calculated_source_type,
                                 sender=Video)
 
-def video__video_service(self):
-    '''This is not a method of Video so we can call it from a South migration.'''
-    if not self.website_url:
-        return
-
-    url = self.website_url
-    for service, regexp in VIDEO_SERVICE_REGEXES:
-        if re.search(regexp, url, re.I):
-            return service
 
 class Watch(models.Model):
     """

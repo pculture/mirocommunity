@@ -38,12 +38,10 @@ class EditorsCommentNode(template.Node):
             content_type=content_type,
             object_pk=unicode(obj.pk),
             flags__flag='editors comment')
-        if comments.count() == 0:
-            context[self.as_varname] = None
-        else:
+        try:
             context[self.as_varname] = comments[0]
-            for extra in list(comments[1:]):
-                extra.delete()
+        except IndexError:
+            context[self.as_varname] = None
         return ''
 
 @register.tag('get_editors_comment')

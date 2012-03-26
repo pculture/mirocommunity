@@ -16,16 +16,21 @@
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime, timedelta
+from socket import getaddrinfo
 
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
-from django.test import TestCase
+from django.test.testcases import TestCase, _deferredSkip
 from haystack import connections
 from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category
 from localtv.tasks import haystack_update_index
 
+
+#: Global variable for storing whether the current global state believe that
+#: it's connected to the internet.
+HAVE_INTERNET_CONNECTION = None
 
 
 class BaseTestCase(TestCase):
@@ -118,3 +123,27 @@ class BaseTestCase(TestCase):
 
         """
         return Tag.objects.create(**kwargs)
+
+
+def _have_internet_connection():
+    global HAVE_INTERNET_CONNECTION
+
+    if HAVE_INTERNET_CONNECTION is None:
+        try:
+            getaddrinfo("google.com", "http")
+        except IOError:
+            HAVE_INTERNET_CONNECTION = False
+        else:
+            HAVE_INTERNET_CONNECTION = True
+
+    return HAVE_INTERNET_CONNECTION
+
+
+def skipUnlessInternet():
+    """
+    Skip a test unless it seems like the machine running the test is
+    connected to the internet.
+
+    """
+    return _deferredSkip(lambda: not _have_internet_connection(),
+                         "Not connected to the internet.")

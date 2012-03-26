@@ -37,7 +37,7 @@ class PlaylistForm(forms.ModelForm):
             return value
         if models.Playlist.objects.filter(**{
                 field: value,
-                'user': self.instance.user}).count():
+                'user': self.instance.user}).exists():
             raise forms.ValidationError(
                 "A playlist with that %s already exists" % field)
         return value

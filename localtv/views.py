@@ -85,8 +85,13 @@ def view_video(request, video_id, slug=None):
     site_settings = SiteSettings.objects.get_current()
     popular_videos = Video.objects.get_popular_videos()
 
-    if video.categories.count():
-        category_obj = None
+    try:
+        category_obj = video.categories.all()[0]
+    except IndexError:
+        pass
+    else:
+        # If there are categories, prefer the category that the user
+        # just came from the list view of.
         referrer = request.META.get('HTTP_REFERER')
         host = request.META.get('HTTP_HOST')
         if referrer and host:
@@ -103,18 +108,11 @@ def view_video(request, video_id, slug=None):
                     from localtv.urls import category_videos
                     if view == category_videos:
                         try:
-                            category_obj = Category.objects.get(
+                            category_obj = video.categories.get(
                                 slug=kwargs['slug'],
                                 site=site_settings.site)
                         except Category.DoesNotExist:
                             pass
-                        else:
-                            if not video.categories.filter(
-                                pk=category_obj.pk).count():
-                                category_obj = None
-
-        if category_obj is None:
-            category_obj = video.categories.all()[0]
 
         context['category'] = category_obj
         popular_videos = popular_videos.filter(categories=category_obj)
