@@ -69,7 +69,7 @@ class ProfileForm(forms.ModelForm):
         username = self.cleaned_data['username']
         if username == force_unicode(self.instance.username): # no change
             return username
-        if User.objects.filter(username=username).count():
+        if User.objects.filter(username=username).exists():
             raise forms.ValidationError('That username is already taken.')
         return username
 

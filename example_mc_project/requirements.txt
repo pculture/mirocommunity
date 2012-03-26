@@ -17,7 +17,7 @@ Pillow==1.7.5
 lxml==2.3.3
 feedparser==5.0.1
 python-openid==2.2.4
-django-tagging==0.3
+django-tagging==0.3.1
 django-celery==2.3.3
 celery==2.4.6
 kombu==2.0.0

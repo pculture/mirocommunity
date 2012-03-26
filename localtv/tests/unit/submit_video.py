@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from vidscraper.suites import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
