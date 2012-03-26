@@ -21,10 +21,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
-{% block title %}{{ block.super }} - {% blocktrans with feed.name=name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
+{% load url from future %}
+
+{% block title %}{{ block.super }} - {% blocktrans with name=feed.name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block body_classes %}{{ block.super }} feed-videos{% endblock %}
 
-{% block page_title %}{% blocktrans with feed.name=name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
+{% block page_title %}{% blocktrans with name=feed.name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
 
-{% block rss_url %}{% url localtv_feeds_feed feed.id %}{% endblock %}
+{% block rss_url %}{% url 'localtv_feeds_feed' feed.id %}{% endblock %}
