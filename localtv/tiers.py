@@ -286,7 +286,7 @@ class Tier(object):
         self.sitelocation = sitelocation
 
     @staticmethod
-    def get(log_warnings=False):
+    def get(log_warnings=False, using='default'):
         import localtv.models
         DEFAULT = None
 
@@ -298,7 +298,8 @@ class Tier(object):
             return DEFAULT
         # We have a SiteLocation, right?
         try:
-            sl = localtv.models.SiteLocation.objects.get(site=site_id)
+            sl = localtv.models.SiteLocation.objects.using(using).get(
+                site=site_id)
         except localtv.models.SiteLocation.DoesNotExist:
             if log_warnings:
                 logging.warn("Eek, SiteLocation does not exist.")

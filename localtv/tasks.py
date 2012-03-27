@@ -136,7 +136,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
             active_set = unapproved_set
             unapproved_set = None
         else:
-            remaining_videos = (Tier.get().videos_limit()
+            remaining_videos = (Tier.get(using=using).videos_limit()
                                 - Video.objects.using(using
                                     ).filter(status=Video.ACTIVE
                                     ).count())
@@ -396,7 +396,7 @@ def haystack_update_index(app_label, model_name, pks, is_removal,
                          for pk in to_remove_pks]
 
             to_update = base_qs.filter(status=Video.ACTIVE)
-
+        
         if to_remove:
             for identifier in to_remove:
                 backend.remove(identifier)
