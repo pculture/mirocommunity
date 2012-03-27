@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
@@ -117,3 +118,23 @@ class BaseTestCase(TestCase):
 
         """
         return Tag.objects.create(**kwargs)
+
+    def _data_file(self, filename):
+        """
+        Returns the absolute path to a file in our testdata directory.
+        """
+        return os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                'testdata',
+                filename))
+
+    def assertStatusCodeEquals(self, response, status_code):
+        """
+        Assert that the response has the given status code.  If not, give a
+        useful error mesage.
+        """
+        self.assertEqual(response.status_code, status_code,
+                          'Status Code: %i != %i\nData: %s' % (
+                response.status_code, status_code,
+                response.content or response.get('Location', '')))
