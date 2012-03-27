@@ -3,9 +3,12 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - MC_PAYPAL_REAL=
+  - MC_TEST_MYSQL=yes
   - MC_PAYPAL_REAL=yes
+before_script:
+  - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_bin;'
 install:
   - pip install -q -e . --use-mirrors
-  - pip install -q -r example_mc_project/requirements.txt
+  - pip install -q --use-mirrors mysql-python
+  - pip install -q --use-mirrors -r example_mc_project/requirements.txt
 script: django-admin.py test localtv --settings=example_mc_project.settings
