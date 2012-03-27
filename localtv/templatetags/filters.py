@@ -101,7 +101,7 @@ def sanitize(value, extra_filters=None):
                              for key, val in tag.attrs.iteritems()
                              if key in allowed_attributes)
 
-    return mark_safe(unicode(soup).decode('utf8'))
+    return mark_safe(unicode(soup))
 
 
 def wmode_transparent(value):
