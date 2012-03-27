@@ -34,7 +34,7 @@ try:
 except ImportError:
     import Image
 import time
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 from django.db import models
 from django.conf import settings
@@ -1866,7 +1866,7 @@ class Video(Thumbnailable, VideoBase):
 
         if instance.description:
             soup = BeautifulSoup(video.description)
-            for tag in soup.findAll(
+            for tag in soup.find_all(
                 'div', {'class': "miro-community-description"}):
                 instance.description = tag.renderContents()
                 break
