@@ -41,7 +41,7 @@ along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
 	
 	<div class="description">
 		{% autoescape off %}
-			{{ video.description|sanitize:"whitelist|a br p|href" }}
+			{{ video.description|sanitize:"whitelist|a br p|href"|truncatewords:8 }}
 		{% endautoescape %}
 	</div>
 	

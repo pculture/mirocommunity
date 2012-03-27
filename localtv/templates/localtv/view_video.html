@@ -20,6 +20,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 {% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags %}
+{% load url from future %}
 
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
@@ -147,84 +148,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 				</div>
 			</section>{# /.pod.video-extra-details #}
-			<section class="pod video-playlists">
+			<section class="pod video-suggested-videos">
 				<header class="pod-header">
-					<h1 class="pod-title">{% trans "Playlists"%}</h1>
+					<h1>More Videos</h1>
 				</header>
 				<div class="pod-content">
-					{# TODO: I c/p'd all of the following playlist code from the previous template. Go through later and see what's really necessary. - Harris, 11 Feb 2012 #}
-					{% if site_settings.playlists_enabled %}
-						{% if playlistitem %}
-							<div class="sidebar_header">
-								<h2>{% blocktrans with num=playlistitem.index count=playlistitem.playlist.items.count %}This video is number {{ num }} (of {{ count }}) in the playlist{% endblocktrans %}</h2>
-							</div>
-							<h3 class="playlist_title"><a href="{{ playlistitem.playlist.get_absolute_url }}">{{ playlistitem.playlist.name }}</a>{% if playlistitem.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans "private" %}</a>)</span>{% endif %}</h3>
-							<div class="playlist_thumbs">
-								{% for sibling in playlistitem.get_two_from_order %}
-									<a href="{{ sibling.video.get_absolute_url }}?playlist={{ playlistitem.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right{% endif %};">
-										<span class="thumb_number">{{ sibling.index }}</span>
-										<img src="{% get_thumbnail_url sibling.video 140 110 %}"/>
-										<div class="thumb_title">{{ sibling.video.name }}</div>
-									</a>
-								{% endfor %}
-							</div>
-						{% endif %}
-						{# The logic I want is 'if can make playlists or (items and (not playlist or more than 1 item))' #}
-						{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set %}
-							{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 or playlistitem_set|length != 1 or not playlistitem %}
-								{% if not playlistitem or playlistitem_set|length > 1 %}
-									<div class="sidebar_header">
-										<h2>{% if playlistitem %}{% trans "Other playlists that include this video" %}{% else %}{% trans "Playlists" %}{% endif %}</h2>
-									</div>
-								{% endif %}
-								<div id="playlists">
-									<div>
-										<ul>
-											{% for item in playlistitem_set %}
-												{% if item != playlistitem %}
-													<li>
-														<div class="playlist_title">
-															<a href="{{ item.playlist.get_absolute_url }}">{{ item.playlist.name }}</a>{% if item.playlist.status != 2%} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans "private" %}</a>)</span>{% endif %}
-															{% with item.playlist.video_set.count as count %}<span class="playlist_count"><a href="{{ item.playlist.get_absolute_url }}">({{ count }} {% blocktrans %}video{{ count|pluralize }}{% endblocktrans %})</a></span>{% endwith %}
-														</div>
-														<div class="playlist_thumbs">
-															{% for sibling in item.get_two_from_order %}
-																<a href="{{ sibling.video.get_absolute_url }}?playlist={{ item.playlist.pk }}" style="float: {% if forloop.first %}left{% else %}right{% endif %};">
-																	<span class="thumb_number">{{ sibling.index }}</span>
-																	<img src="{% get_thumbnail_url sibling.video 140 110 %}"/>
-																	<div class="thumb_title">{{ sibling.video.name }}</div>
-																</a>
-															{% endfor %}
-														</div>
-													</li>
-												{% endif %}
-											{% endfor %}
-										</ul>
-									</div>
-								</div>
-							{% endif %}
-							{% if user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}
-								<form method="POST" action="{% url localtv_playlist_add_video current_video.pk%}">{% csrf_token %}
-									<select name="playlist" id="id_playlist">
-										<option value="">{% trans "Add video to your playlist" %}</option>
-										{% for playlist in playlists %}
-											{% if playlist not in current_video.playlists.all %}<option value="{{ playlist.pk }}">{{ playlist.name }}</option>{% endif %}
-										{% endfor %}
-										{# <option value="new">New playlist...</option> #}
-									</select>
-									<input type="submit" value="Add"/>
-								</form>
-								<form method="POST" action="{% url localtv_playlist_index %}"> {% csrf_token %}
-									<input type="text" name="name" />
-									<input type="hidden" name="video" value="{{ current_video.pk }}">
-									<input type="submit" value="Add New Playlist">
-								</form>
-							{% endif %}
-						{% endif %}
-					{% endif %}
-					{# End c/p'd code. - Harris, 11 Feb 2012#}
+					{# TODO: calculate a suggested videos list #}
+					{% with popular_videos|slice:"4" as video_list %}
+						{% include "localtv/_video_summary_list.html" %}
+					{% endwith %}
 				</div>
-			</section>
+				<div class="pod-footer">
+					<ul class="pod-footer-actions">
+						<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
+					</ul>
+				</div>
+			</section>{# /.pod.video-suggested-videos #}
 		</aside>{# /.col-one-third.right #}
 	</div>
 	{# Facebook #}
