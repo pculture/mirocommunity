@@ -1,5 +1,5 @@
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,7 +19,3 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load filters %}
 {{ instance.when_prefix|title }} {{ instance.when|simpletimesince }} ago
-{% if rendered_within_get_display_content %}
-<span class="edit_link">Edit</span>
-{% endif %}
-

@@ -26,8 +26,9 @@ $input-background-color: #FFF !default;
 $precontent-background-color: #343639 !default;
 $precontent-header-background: #000 !default;
 $precontent-header-text-color: #FFF !default;
-$precontent-header-link-color: #6CF !default;
-$precontent-header-link-hover-color: #8ED2FB !default;
+$precontent-header-link-color: #5C86A0 !default;
+$precontent-header-link-hover-color: #4E9EDA !default;
+$precontent-quiet-color: #999 !default;
 
 $sidebar-background-color:#F5F5F5 !default;
 
@@ -185,6 +186,10 @@ input, textarea{
 	}
 }
 
+.colophon{
+	color:$precontent-quiet-color;
+}
+
 /* site-blurb */
 
 .site-blurb{
@@ -203,8 +208,11 @@ input, textarea{
 
 /* social-link-list */
 .social-link-list{
-	background:darken($main-background-color, 10%);
-	border-color:darken($main-background-color, 20%);
+	background:darken($main-background-color, 3%);
+	border-color:darken($main-background-color, 10%);
+	& > li{
+		border-color:darken($main-background-color, 10%);
+	}
 }
 
 

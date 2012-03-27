@@ -64,9 +64,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						{% trans "(no title)" %}
 					{% endif %}
 				</h1>
-				<h2 class="author">
+				<h2 class="colophon">
 					{% with current_video as instance %}
-						{% include "localtv/inline_edit/video_authors.html" %}
+						{% include "localtv/inline_edit/video_when_published.html" %} by {% include "localtv/inline_edit/video_authors.html" %}
 					{% endwith %}
 				</h2>
 			</div>
@@ -92,38 +92,29 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block content %}
-	<div class="social-media-share">
-		<ul class="social-link-list">
-			<li>
-				<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
-			</li>
-			<li>
-				<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
-			</li>
-			<li>
-				<g:plusone size="medium"></g:plusone>
-			</li>
-
-			<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
-			{% if current_video.file_url %}
-				<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
-			{% endif %}
-		</ul>
-	</div>
 	<div class="row">
 		<div class="col-two-thirds">
+			<div class="social-media-share">
+				<ul class="social-link-list">
+					<li>
+						<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
+					</li>
+					<li>
+						<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+					</li>
+					<li>
+						<g:plusone size="medium"></g:plusone>
+					</li>
+
+					<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
+					{% if current_video.file_url %}
+						<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
+					{% endif %}
+				</ul>
+			</div>
 			<section class="video-details content-box">
 				<p>
 				{{ current_video.description|safe }}
-				</p>
-				<p class="when">
-					{% if user_is_admin %}
-						{% editable_widget current_video "when_published" %}
-					{% else %}
-						{% with current_video as instance %}
-							{% include "localtv/inline_edit/video_when_published.html" %}
-						{% endwith %}
-					{% endif %}
 				</p>
 			</section>{# /.video-details #}
 			<div class="content-box">
@@ -148,7 +139,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						</div>{# /.video-full-tags #}
 					{% endif %}
 					{% if user_is_admin %}
-						<li class="item">{% editable_widget current_video "website_url" %}</li>
 						{% if current_video.submitter %}<li class="item"><h4>{% trans "Submitted by" %}</h4><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
 						{% if current_video.search %}<li class="item"><h4>{% trans "From search" %}</h4><ul><li> {{ current_video.search }}</li></ul></li>{% endif %}
 						{% if current_video.feed %}<li class="item"><h4>{% trans "From feed" %}</h4><ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}

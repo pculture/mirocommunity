@@ -1,12 +1,18 @@
 .social-link-list{
 	@extend .unstyled-list;
 	@include clearfix;
-	padding:#{$base-line-height/2} #{$gutter-width/4};
 	border-bottom:1px solid;
 	& > li{
 		float:left;
 		display: block;
-		line-height:20px;
-		height:20px;
+		line-height:19px;
+		height:39px;
+		width:25%;
+		@include box-sizing(border-box);
+		padding:#{$base-line-height/2} #{$gutter-width/2};
+		border-left:1px solid;
+		&:first-child{
+			border-left:0;
+		}
 	}
 }
