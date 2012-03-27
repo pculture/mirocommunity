@@ -107,7 +107,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						<g:plusone size="medium"></g:plusone>
 					</li>
 
-					<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email to Friends" %}</a></li>
+					<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
 					{% if current_video.file_url %}
 						<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
 					{% endif %}
@@ -150,7 +150,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</section>{# /.pod.video-extra-details #}
 			<section class="pod video-suggested-videos">
 				<header class="pod-header">
-					<h1>More Videos</h1>
+					<h1>{% trans "More Videos" %}</h1>
 				</header>
 				<div class="pod-content">
 					{# TODO: calculate a suggested videos list #}
