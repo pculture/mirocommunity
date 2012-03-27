@@ -18,17 +18,25 @@
 	}
 }
 
-#SiteTitle{
-	font-weight:bold;
-}
-#SiteTagline{
-	font-weight:400;
-}
 
 #SiteTitle, #SiteTagline{
 	margin:0;
 	padding-left: $gutter-width/2;
 	@include large;
+}
+
+
+#SiteTitle{
+	font-weight:bold;
+	.no-tagline > &{
+		@include xx-large;
+		line-height: 54px;
+	}
+}
+
+
+#SiteTagline{
+	font-weight:400;
 }
 
 #search{
