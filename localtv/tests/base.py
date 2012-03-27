@@ -24,7 +24,6 @@ from haystack import connections
 from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category
-from localtv.tasks import haystack_update_index
 
 
 
@@ -39,7 +38,7 @@ class BaseTestCase(TestCase):
         backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
         backend.update(index, index.index_queryset())
-        
+
     def _rebuild_index(self):
         """Clears and then updates the search index."""
         self._clear_index()
