@@ -1605,10 +1605,9 @@ class VideoManager(models.Manager):
         current sitelocation.
 
         """
-        return self.get_latest_videos(sitelocation).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(sitelocation),
+                                  descending=True)
 
     def get_category_videos(self, category, sitelocation=None):
         """

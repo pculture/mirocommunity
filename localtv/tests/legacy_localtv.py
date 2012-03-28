@@ -55,6 +55,7 @@ from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
                             Source)
 from localtv import utils
 import localtv.feeds.views
+from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
 from tagging.models import Tag
@@ -647,10 +648,9 @@ class ViewTestCase(BaseTestCase):
         should include 10 featured videos, 10 popular videos, 10 new views, and
         the base categories (those without parents).
         """
-        for watched in Watch.objects.all():
-            watched.timestamp = datetime.datetime.now() # so that they're
-                                                        # recent
-            watched.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name))
 
         c = Client()
         response = c.get(reverse('localtv_index'))
@@ -1166,9 +1166,9 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
-        for w in Watch.objects.all():
-            w.timestamp = datetime.datetime.now()
-            w.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name))
 
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
@@ -1176,12 +1176,12 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(response.template[0].name,
                           'localtv/video_listing_popular.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
-        self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.get_popular_videos(
-                                 self.site_location).filter(
-                                     watch__timestamp__gte=datetime.datetime.min
-                                 ).distinct()))
+
+        results = response.context['page_obj'].object_list
+        expected = Video.objects.get_popular_videos(self.site_location)
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
         """
