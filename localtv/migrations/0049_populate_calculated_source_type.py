@@ -21,17 +21,53 @@ import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
-import localtv.models
+
+
+VIDEO_SERVICE_REGEXES = (
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
+    ('YouTube', r'http://(www\.)?youtube\.com/'),
+    ('blip.tv', r'http://(.+\.)?blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'),
+    ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
+
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
         for video in orm['localtv.Video'].objects.all():
-            if hasattr(localtv.models, 'pre_save_video_set_calculated_source_type'):
-                localtv.models.pre_save_video_set_calculated_source_type(instance=video)
-                video.save()
-                print ".",
+            source_type = u''
+            if video.id and video.search_id:
+                try:
+                    source_type = u'Search: %s' % video.search
+                except SavedSearch.DoesNotExist:
+                    pass
+            elif video.id and video.feed_id:
+                try:
+                    video_service = None
+                    for service, regexp in VIDEO_SERVICE_REGEXES:
+                        if re.search(regexp, video.feed.feed_url, re.I):
+                            video_service = service
+                            break
+                    if video_service is None:
+                        source_type = 'Feed: %s' % video.feed.name
+                    else:
+                        source_type = u'User: %s: %s' % (
+                            video_service,
+                            video.feed.name)
+                except Feed.DoesNotExist:
+                    pass
+            elif video.video_service_user:
+                video_service = None
+                if video.website_url:
+                    for service, regexp in VIDEO_SERVICE_REGEXES:
+                        if re.search(regexp, video.website_url, re.I):
+                            video_service = service
+                            break
+                source_type = u'User: %s: %s' % (video_service,
+                                                 video.video_service_user)
+            video.calculated_source_type = source_type
+            video.save()
 
 
     def backwards(self, orm):

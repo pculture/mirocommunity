@@ -13,7 +13,7 @@ Here are some guidelines for good bug reports:
   reported.
 
 * Ask on the IRC channel (`#miro-hackers on irc.freenode.net
-  <irc://irc.freenode.net/miro-hackers`) or the `mailing list`_ to make
+  <irc://irc.freenode.net/miro-hackers>`_) or the `mailing list`_ to make
   sure that what you're seeing really is a bug.
 
 * Make sure that the bug is reproducible. Include instructions for how to
@@ -64,9 +64,8 @@ Ticket life cycle
   * ``DUPLICATE``: The ticket is already in the tracker.
   * ``WORKSFORME``: The ticket would be a valid bug, but it can't be
     reproduced.
-
-  They may also be marked as ``CLOSED/INCOMPLETE`` if more information is
-  required to confirm the bug.
+  * ``INCOMPLETE``: More information is required to confirm the bug or explain
+    the feature.
 
 * Once a ticket is claimed, it is up to the assignee to start a branch for
   that ticket and submit a pull request to the canonical repository. When

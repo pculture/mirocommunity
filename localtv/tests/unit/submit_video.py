@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from vidscraper.suites import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
@@ -512,7 +512,9 @@ class SubmitVideoViewTestCase(BaseTestCase):
             submit_dict['hit'] = True
         submit_finished.connect(test_submit_finished)
 
-        form = view.form_class(data={'url': view.url}, **view.get_form_kwargs())
+        form = view.form_class(data={'url': view.url,
+                                     'contact': 'test@test.com'},
+                               **view.get_form_kwargs())
         form.is_valid()
         view.form_valid(form)
 

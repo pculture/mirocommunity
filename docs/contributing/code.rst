@@ -33,15 +33,15 @@ Submitting code
 
 We accept code submissions as pull requests to our `github repository`__, not
 as patch files, diff files, or anything else. Most of the time, when you submit
-code, it will be as a :doc:`ticket branch <branching-model>` - though if the
+code, it will be as a :doc:`ticket branch </internals/branching-model>` - though if the
 change is extremely minor, you can submit a pull request without opening a
 ticket first. Pull requests must include any changes to unit tests and
-:doc:`documentation <../documentation>` that are needed.
+:doc:`documentation <documentation>` that are needed.
 
 __ http://github.com/pculture/mirocommunity
 
 Before we can accept your code submission, you will need to sign a
-:download:`Contributor Assignment Agreement <../../downloads/PCF__Contributor_Assignment_Agreement.pdf>`,
+:download:`Contributor Assignment Agreement </downloads/PCF__Contributor_Assignment_Agreement.pdf>`,
 digitize it with a scanner or a good camera, and send it to legal@pculture.org.
 It's super easy, and it lets us keep the project open source.
 

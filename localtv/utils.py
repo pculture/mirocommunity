@@ -23,7 +23,10 @@ import os
 import os.path
 import logging
 
-import Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 try:
     import cStringIO as StringIO
 except ImportError:
