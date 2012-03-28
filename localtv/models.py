@@ -1868,7 +1868,7 @@ class Video(Thumbnailable, VideoBase):
             soup = BeautifulSoup(video.description)
             for tag in soup.find_all(
                 'div', {'class': "miro-community-description"}):
-                instance.description = tag.renderContents()
+                instance.description = unicode(tag)
                 break
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])

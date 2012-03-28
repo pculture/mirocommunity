@@ -338,8 +338,8 @@ class FeedImportTestCase(BaseTestCase):
         self.assertEqual(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
         self.assertEqual(video.name, u'Dave Glassco Supports Miro')
         self.assertEqual(video.description,
-                          '>\n\n<br />\n\nDave is a great advocate and '
-                          'supporter of Miro.')
+                          '<p>&gt;\n\n<br/>\n\nDave is a great advocate and '
+                          'supporter of Miro.</p>')
         self.assertEqual(video.website_url, 'http://blip.tv/file/779122')
         self.assertEqual(video.file_url,
                           'http://blip.tv/file/get/'
@@ -515,7 +515,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
                           'smart-girls-at-the-party/the-dancer-kenaudra')
         self.assertEqual(video.description,
                           u'Kenaudra displays her many talents including a '
-                          'new dance called Praise Dancing.<br />'
+                          'new dance called Praise Dancing.<br/>'
                           '<a href="http://www.onnetworks.com/videos/'
                           'smart-girls-at-the-party/the-dancer-kenaudra"></a>')
         self.assertEqual(video.embed_code,
