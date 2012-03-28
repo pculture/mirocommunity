@@ -14,16 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.db.models import Count, signals
-
 from haystack import indexes
+
 from localtv.models import Video, Watch
 from localtv.playlists.models import PlaylistItem
 from localtv.tasks import haystack_update, haystack_remove
 
-from django.conf import settings
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -173,7 +173,11 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return self._prepare_rel_field(video, 'playlists')
 
     def prepare_watch_count(self, video):
-        return video.watch_count
+        try:
+            return video.watch_count
+        except AttributeError:
+            since = datetime.now() - timedelta(7)
+            return video.watch_set.filter(timestamp__gt=since).count()
 
     def prepare_best_date(self, video):
         return video.when_approved or video.when_submitted
