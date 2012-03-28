@@ -165,7 +165,8 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     if active_pks:
         opts = Video._meta
         haystack_batch_update.delay(opts.app_label, opts.module_name,
-                                    pks=list(active_pks), using=using)
+                                    pks=list(active_pks), remove=False,
+                                    using=using)
 
     mark_import_complete.delay(import_app_label, import_model, import_pk,
                                using=using)
@@ -385,9 +386,13 @@ def _haystack_database_retry(task, callback):
 
 
 @task(ignore_result=True, max_retries=None)
-def haystack_update(app_label, model_name, pks, using='default'):
+def haystack_update(app_label, model_name, pks, remove=True, using='default'):
     """
     Updates the haystack records for any valid instances with the given pks.
+    Generally, ``remove`` should be ``True`` so that items which are no longer
+    in the ``index_queryset()`` will be taken out of the index; however,
+    ``remove`` can be set to ``False`` to save some time if that behavior
+    isn't needed.
 
     """
     model_class = get_model(app_label, model_name)
@@ -398,6 +403,10 @@ def haystack_update(app_label, model_name, pks, using='default'):
 
     _haystack_database_retry(haystack_update,
                              lambda: backend.update(index, qs))
+
+    if remove:
+        unseen_pks = set(pks) - set((instance.pk for instance in qs))
+        haystack_remove.apply(args=(app_label, model_name, unseen_pks, using))
 
 
 @task(ignore_result=True, max_retries=None)
@@ -419,7 +428,7 @@ def haystack_remove(app_label, model_name, pks, using='default'):
 @task(ignore_result=True)
 def haystack_batch_update(app_label, model_name, pks=None, start=None,
                           end=None, date_lookup=None, batch_size=1000,
-                          using='default'):
+                          remove=True, using='default'):
     """
     Batches haystack index updates for the given model. If no pks are given, a
     general reindex will be launched.
@@ -446,4 +455,5 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     for start in xrange(0, total, batch_size):
         end = min(start + batch_size, total)
-        haystack_update.delay(app_label, model_name, pks[start:end], using)
+        haystack_update.delay(app_label, model_name, pks[start:end],
+                              remove=remove, using=using)

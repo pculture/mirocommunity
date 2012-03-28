@@ -185,7 +185,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     def prepare_best_date_with_published(self, video):
         return video.when_published or self.prepare_best_date(video)
 
-    def _enqueue_instance(self, instance, is_removal):
+    def _enqueue_instance(self, instance, task):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
             # fake instance for testing. TODO: This should probably not be done.
@@ -194,4 +194,4 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         # :meth:`Video.save`. It defaults to ``True``.
         if not getattr(instance, '_update_index', True):
             return
-        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        super(VideoIndex, self)._enqueue_instance(instance, task)

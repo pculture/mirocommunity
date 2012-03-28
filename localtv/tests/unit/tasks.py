@@ -52,6 +52,48 @@ class HaystackUpdateUnitTestCase(BaseTestCase):
         results = set((int(r.pk) for r in SearchQuerySet()))
         self.assertEqual(results, expected)
 
+    def test_remove(self):
+        """
+        Any instances which are not in the main queryset should be removed if
+        the ``remove`` kwarg is ``True``.
+
+        """
+        all_pks = [self.video0.pk, self.video1.pk, self.video2.pk,
+                   self.video3.pk, self.video4.pk]
+        haystack_update.apply(args=(Video._meta.app_label,
+                                    Video._meta.module_name,
+                                    all_pks))
+
+        # If remove is True, the changed instance should be removed.
+        self.video1.status = Video.REJECTED
+        self.video1.save(update_index=False)
+        expected = set(all_pks[1:])
+        results = set((int(r.pk) for r in SearchQuerySet()))
+        self.assertEqual(results, expected)
+
+        haystack_update.apply(args=(Video._meta.app_label,
+                                    Video._meta.module_name,
+                                    all_pks),
+                              kwargs={'remove': True})
+        expected = set(all_pks[2:])
+        results = set((int(r.pk) for r in SearchQuerySet()))
+        self.assertEqual(results, expected)
+
+        # Otherwise, it shouldn't be removed.
+        self.video2.status = Video.REJECTED
+        self.video2.save(update_index=False)
+        expected = set(all_pks[2:])
+        results = set((int(r.pk) for r in SearchQuerySet()))
+        self.assertEqual(results, expected)
+
+        haystack_update.apply(args=(Video._meta.app_label,
+                                    Video._meta.module_name,
+                                    all_pks),
+                              kwargs={'remove': False})
+        expected = set(all_pks[2:])
+        results = set((int(r.pk) for r in SearchQuerySet()))
+        self.assertEqual(results, expected)
+
 
 class HaystackRemoveUnitTestCase(BaseTestCase):
     def setUp(self):
@@ -156,3 +198,27 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
         expected = set((video3.pk,))
         results = set((int(r.pk) for r in SearchQuerySet()))
         self.assertEqual(results, expected)
+
+    def test_remove(self):
+        """
+        ``remove`` kwarg should be passed on to the batches.
+
+        """
+        self._clear_index()
+        video1 = self.create_video(name='Video1', update_index=False)
+        def get_remove_passed(sender, **kwargs):
+            self.assertTrue('remove' in kwargs['kwargs'])
+            self.remove = kwargs['kwargs']['remove']
+        task_postrun.connect(get_remove_passed, sender=haystack_update)
+
+        expected = True
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name),
+                                    kwargs={'remove': expected})
+        self.assertEqual(self.remove, expected)
+
+        expected = False
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name),
+                                    kwargs={'remove': expected})
+        self.assertEqual(self.remove, expected)
