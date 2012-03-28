@@ -14,8 +14,8 @@ $button-hover-text-color: #444 !default;
 $button-down-text-color: #444 !default;
 $button-background-color: #F5F5F5 !default;
 
-$navigation-background-color: #222 !default;
-$navigation-text-color: #666 !default;
+$navigation-background-color: #FFF !default;
+$navigation-text-color: #444 !default;
 
 $pod-header-background-color: $color1 !default;
 $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($color1, 80%), 50%) !default;
@@ -92,27 +92,30 @@ body{
 	color:$navigation-text-color;
 }
 .nav-item{
-	border-left-color:lighten($navigation-text-color, 40%);
+	border-left-color:lighten($navigation-text-color, 60%);
 }
 
+.nav-item-dropdown > a::after{
+	border-top-color:$navigation-text-color;
+}
+
+
 .dropdown-list, .dropdown-box{
-	background:lighten($navigation-background-color, 5%);
+	border-color:darken($navigation-background-color, 20%);
+	background:$navigation-background-color;
+	&::before{
+		border-bottom-color:darken($navigation-background-color, 20%);
+	}
 }
 
 .dropdown-list > li > a{
-	border-color:darken($navigation-background-color, 5%);
-	border-top-color:$navigation-background-color;
-	background-color:lighten($navigation-background-color, 10%);
-	@include background-image(linear-gradient(lighten($navigation-background-color, 10%), darken($navigation-background-color, 5%)));
-	@include box-shadow(0 1px 0 rgba(255,255,255,.15) inset);
 	color:$navigation-text-color;
-	text-shadow:0 -1px 0 #000;
 	&:hover{
-		color:ligten($navigation-text-color, 10%);
+		background:darken($navigation-background-color, 5%);
+		color:darken($navigation-text-color, 5%);
 	}
 	&:active{
-		background:$navigation-background-color;
-		@include box-shadow(0 1px 3px 0 rgba(0,0,0,.35) inset, 0 -1px 0 0 rgba(255,255,255,.05) inset);
+		background:darken($navigation-background-color, 10%);
 	}
 }
 

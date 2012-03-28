@@ -46,15 +46,17 @@
 // This adds a cute arrow to the dropdown items in navbars
 .nav-item-dropdown > a{
 	position:relative;
-	padding-right:10px+$gutter-width/2;
+	padding-right:4px+$gutter-width/2;
 }
 .nav-item-dropdown > a::after{
-	content:"\25BC";
-	font-size:8px;
+	content:' ';
+	border-left:4px solid transparent;
+	border-right:4px solid transparent;
+	border-top:4px solid;
+	display:inline-block;
 	position:absolute;
-	top: 1px;
-	right: 0;
-	margin-right: 10px;
+	right:$gutter-width/4;
+	top:6px;
 }
 
 // Positions the dropdown list appropriately
@@ -65,7 +67,18 @@
 	top:$base-line-height * 1.5 + 3px;
 	left:0;
 	@include border-radius(3px);
-	@include box-shadow(0 0 5px 0 rgba(0,0,0,.35));
+	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.15));
+	border:1px solid;
+	&::before{
+		content:' ';
+		border-left:7px solid transparent;
+		border-right:7px solid transparent;
+		border-bottom:7px solid;
+		display:inline-block;
+		position:absolute;
+		top:-7px;
+		left:10px;
+	}
 }
 .dropdown-box{
 	min-width:300px;
@@ -76,14 +89,16 @@
 	@extend .row-nested;
 	min-width:200px;
 }
-.dropdown-list > li{
-	padding: 3px;
-}
 .dropdown-list > li > a{
 	display:block;
-	border:1px solid;
+	border:0;
 	padding:#{$base-line-height / 2 - 4px} #{$gutter-width / 2 - 4px};
-	@include border-radius(5px);
+}
+.dropdown-list > li:first-child > a{
+	@include border-radius(3px 3px 0 0);
+}
+.dropdown-list > li:last-child > a{
+	@include border-radius(0 0 3px 3px);
 }
 
 
