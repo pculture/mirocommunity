@@ -30,12 +30,13 @@ import sys
 import traceback
 
 try:
-    from PIL import Image
+    from PIL import Image as PILImage
 except ImportError:
-    import Image
+    import Image as PILImage
 import time
 from bs4 import BeautifulSoup
 
+from daguerre.models import Image
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -76,15 +77,6 @@ def delete_if_exists(path):
         default_storage.delete(path)
 
 EMPTY = object()
-
-THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
-    (534, 430), # behind a video
-    (375, 295), # featured on frontpage
-    (140, 110),
-    (364, 271), # main thumb
-    (222, 169), # medium thumb
-    (88, 68),   # small thumb
-    ]
 
 FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
 FORCE_HEIGHT_PADDING = 2
@@ -131,60 +123,35 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb, resize=True):
+    def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
         """
         try:
-            pil_image = Image.open(content_thumb)
+            pil_image = PILImage.open(content_thumb)
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        delete_if_exists(
-            self.get_original_thumb_storage_path())
+        delete_if_exists(self.thumbnail_path)
 
         self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(
-            self.get_original_thumb_storage_path(),
-            content_thumb)
+        default_storage.save(self.thumbnail_path, content_thumb)
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
             # be invalid now.  to make sure we've got a valid file, we reopen
             # under the new path
             content_thumb.close()
-            content_thumb = default_storage.open(
-                self.get_original_thumb_storage_path())
-            pil_image = Image.open(content_thumb)
+            content_thumb = default_storage.open(self.thumbnail_path)
+            pil_image = PILImage.open(content_thumb)
 
-        if resize:
-            # save any resized versions
-            self.resize_thumbnail(pil_image)
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb, resized_images=None):
-        """
-        Creates resized versions of the video's thumbnail image
-        """
-        if not thumb:
-            thumb = Image.open(
-                default_storage.open(self.get_original_thumb_storage_path()))
-        if resized_images is None:
-            resized_images = utils.resize_image_returning_list_of_strings(
-                thumb, self.THUMB_SIZES)
-        for ( (width, height), data) in resized_images:
-            # write file, deleting old thumb if it exists
-            cf_image = ContentFile(data)
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(width, height))
-            default_storage.save(
-                self.get_resized_thumb_storage_path(width, height),
-                cf_image)
-
-    def get_original_thumb_storage_path(self):
+    @property
+    def thumbnail_path(self):
         """
         Return the path for the original thumbnail, relative to the default
         file storage system.
@@ -193,26 +160,20 @@ class Thumbnailable(models.Model):
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
-    def get_resized_thumb_storage_path(self, width, height):
-        """
-        Return the path for the a thumbnail of a resized width and height,
-        relative to the default file storage system.
-        """
-        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
-            self._meta.object_name.lower(),
-            self.id, width, height)
-
-    def delete_thumbnails(self):
+    def delete_thumbnail(self):
         self.has_thumbnail = False
-        delete_if_exists(self.get_original_thumb_storage_path())
-        for size in self.THUMB_SIZES:
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(*size[:2]))
+        delete_if_exists(self.thumbnail_path)
         self.thumbnail_extension = ''
+        try:
+            image = Image.objects.for_storage_path(self.thumbnail_path)
+        except Image.DoesNotExist:
+            pass
+        else:
+            image.delete()
         self.save()
 
     def delete(self, *args, **kwargs):
-        self.delete_thumbnails()
+        self.delete_thumbnail()
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
@@ -403,13 +364,6 @@ class SiteSettings(Thumbnailable):
         help_text="If True, comments require the user to be logged in.")
 
     objects = SiteSettingsManager()
-
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        (130, 110, FORCE_HEIGHT_PADDING) # Facebook
-        ]
 
     class Meta:
         db_table = 'localtv_sitelocation'
@@ -643,12 +597,6 @@ class WidgetSettings(Thumbnailable):
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
 
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        ]
-
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
         use_title = True
@@ -705,8 +653,6 @@ class Source(Thumbnailable):
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
-
-    THUMB_SIZES = THUMB_SIZES
 
     class Meta:
         abstract = True
@@ -1748,8 +1694,6 @@ class Video(Thumbnailable, VideoBase):
     taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
                                              content_type_field='content_type',
                                              object_id_field='object_id')
-
-    THUMB_SIZES = THUMB_SIZES
 
     class Meta:
         ordering = ['-when_submitted']

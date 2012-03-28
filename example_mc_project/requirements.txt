@@ -8,6 +8,7 @@ git+git://github.com/pculture/vidscraper.git@develop#egg=vidscraper
 git+git://github.com/paulswartz/Django-Socialauth.git@master#egg=django-socialauth
 git+git://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/dcramer/django-paypal.git@master#egg=django-paypal
+git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@tip#egg=django-registration
 beautifulsoup4==4.0.2
