@@ -16,3 +16,4 @@
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
 from localtv.tests.integration.feeds import *
+from localtv.tests.integration.imports import *
