@@ -20,6 +20,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
 from daguerre.models import Image
+from daguerre.utils import AdjustmentInfoDict
 from daguerre.utils.adjustments import get_adjustment_class
 
 register = template.Library()
@@ -39,18 +40,34 @@ class ThumbnailNode(template.Node):
         self.width, self.height = size
     
     def render(self, context):
-        storage_path = self.video.resolve(context).get_original_thumb_storage_path()
+        video = self.video.resolve(context)
+
+        storage_path = None
+
+        if video.has_thumbnail:
+            storage_path = video.thumbnail_path
+        elif video.feed_id and video.feed.has_thumbnail:
+            storage_path = video.feed.thumbnail_path
+        elif video.search_id and video.search.has_thumbnail:
+            storage_path = video.search.thumbnail_path
+
         kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
-        try:
-            image = Image.objects.for_storage_path(storage_path)
-        except Image.DoesNotExist:
+        if storage_path is None:
+            image = None
+        else:
+            try:
+                image = Image.objects.for_storage_path(storage_path)
+            except Image.DoesNotExist:
+                image = None
+
+        if image is None:
             url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
             if self.asvar is not None:
-                context[self.asvar] = {
+                context[self.asvar] = AdjustmentInfoDict({
                     'width': self.width,
                     'height': self.height,
                     'url': url
-                }
+                })
                 return ''
             return url
 

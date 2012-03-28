@@ -21,30 +21,18 @@ from django.db import models
 from localtv.models import *
 
 class Migration:
-
+    # This migration included external code for creating and deleting
+    # thumbnails, and it wasn't clearly useful, so it's just been removed,
+    # since the external code is no longer supported.
     no_dry_run = True
     
     def forwards(self, orm):
         "Write your forwards migration here"
-        if orm['localtv.SiteLocation'].objects.all():
-            sl = orm['localtv.SiteLocation'].objects.get_current()
-        else:
-            return
-
-        if sl.logo:
-            sl.logo.open()
-            cf = ContentFile(sl.logo.read())
-            sl.save_thumbnail_from_file(cf)
+        pass
     
     def backwards(self, orm):
         "Write your backwards migration here"
-        if orm['localtv.SiteLocation'].objects.all():
-            sl = orm['localtv.SiteLocation'].objects.get_current()
-        else:
-            return
-
-        if sl.has_thumbnail:
-            sl.delete_thumbnails()
+        pass
     
     
     models = {

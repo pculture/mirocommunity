@@ -18,6 +18,7 @@
 from hashlib import sha1
 import urllib
 
+from daguerre.models import AdjustedImage, Image
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
@@ -209,22 +210,21 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         if item.has_thumbnail:
             site = Site.objects.get_current()
             if item.thumbnail_url:
-                kwargs['thumbnail'] = iri_to_uri(item.thumbnail_url)
+                thumbnail_url = iri_to_uri(item.thumbnail_url)
             else:
-                default_url = default_storage.url(
-                    item.get_resized_thumb_storage_path(375, 295))
-                if not (default_url.startswith('http://') or
-                        default_url.startswith('https://')):
-                    default_url = 'http://%s%s' % (site.domain, default_url)
-                kwargs['thumbnail'] = default_url
-            kwargs['thumbnails_resized'] = resized = {}
-            for size in Video.THUMB_SIZES:
-                url = default_storage.url(
-                    item.get_resized_thumb_storage_path(*size))
-                if not (url.startswith('http://') or
-                        url.startswith('http://')):
-                    url = 'http://%s%s' % (site.domain, url)
-                resized[size] = url
+                try:
+                    image = Image.objects.for_storage_path(
+                                item.thumbnail_path)
+                except Image.DoesNotExist:
+                    thumbnail_url = ''
+                else:
+                    adjusted = AdjustedImage.objects.adjust(image, 375, 295)
+                    thumbnail_url = adjusted.adjusted.url
+                    if not (thumbnail_url.startswith('http://') or
+                            thumbnail_url.startswith('https://')):
+                        thumbnail_url = 'http://%s%s' % (site.domain,
+                                                         thumbnail_url)
+            kwargs['thumbnail'] = thumbnail_url
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs
