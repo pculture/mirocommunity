@@ -5,21 +5,16 @@
 	<div class="col-two-fifths {% if site_settings.tagline %}with-tagline{% else %}no-tagline{% endif %}">
 		<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
 			{% if site_settings.logo %}
-				{% adjust site_settings.thumbnail_path adjustment="fit" height=54 as logo %}
+				{% adjust site_settings.thumbnail_path adjustment="fit" height=28 as logo %}
 				<img alt="{{ site_settings.site.name }} Logo" src="{{ logo }}" width="{{ logo.width }}" height="{{ logo.height }}" class="logo-img" />
 			{% endif %}
 		</a>
 		{# Calculating the margins below is a little hacky... ideally this would happen in the CSS somehow #}
-		<h1 id="SiteTitle" style="margin-left: {{ logo.width }}px;">
+		<h1 id="SiteTitle" class="site-header-small" style="margin-left: {{ logo.width }}px;">
 			<a href="{{ localtv_index }}" class="site-name">
 				{{ site_settings.site.name }}
 			</a>
 		</h1>
-			{% if site_settings.tagline %}
-			<h2 id="SiteTagline" style="margin-left: {{ logo.width }}px;">
-				{{ site_settings.tagline|safe }}
-			</h2>
-		{% endif %}
 	</div>
 	
 	<div class="col-two-fifths">

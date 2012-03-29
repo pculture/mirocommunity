@@ -73,7 +73,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		
 		<header id="header">
 			<div class="container">
-				{% include "localtv/_site_header.html" %}
+				{% block header %}
+					{% include "localtv/_site_header_small.html" %}
+				{% endblock %}
 			</div>
 		</header>
 		

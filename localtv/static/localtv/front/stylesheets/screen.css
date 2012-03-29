@@ -325,7 +325,7 @@ h6 {
 }
 
 /* base form styles */
-/* line 9, ../sass/partials/modules/_forms.scss */
+/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 input, textarea {
   outline: none;
   border: 1px solid;
@@ -353,58 +353,58 @@ input, textarea {
   padding: 4.5px;
 }
 
-/* line 22, ../sass/partials/modules/_forms.scss */
+/* line 22, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 input {
   line-height: 18px;
 }
 
-/* line 26, ../sass/partials/modules/_forms.scss */
+/* line 26, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 label {
   line-height: 27px;
 }
 
-/* line 35, ../sass/partials/modules/_forms.scss */
+/* line 35, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 form {
   margin-bottom: 18px;
 }
 
 /* modular form styles */
-/* line 42, ../sass/partials/modules/_forms.scss */
+/* line 42, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .control-group {
   overflow: hidden;
   *zoom: 1;
   margin-bottom: 9px;
 }
 
-/* line 46, ../sass/partials/modules/_forms.scss */
+/* line 46, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .form-horizontal label, form label {
   width: 200px;
   float: left;
   text-align: right;
 }
 
-/* line 51, ../sass/partials/modules/_forms.scss */
+/* line 51, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .form-horizontal .controls, form .controls {
   margin-left: 240px;
 }
 
-/* line 54, ../sass/partials/modules/_forms.scss */
+/* line 54, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .form-horizontal > .form-actions, form > .form-actions {
   padding-left: 240px;
 }
 
-/* line 57, ../sass/partials/modules/_forms.scss */
+/* line 57, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .help-text {
   color: #888;
   padding-top: 9px;
   padding-bottom: 9px;
 }
 
-/* line 62, ../sass/partials/modules/_forms.scss */
+/* line 62, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .error .controls input {
   border-color: #800;
 }
-/* line 64, ../sass/partials/modules/_forms.scss */
+/* line 64, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .error .controls input:focus {
   -moz-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
   -webkit-box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
@@ -412,32 +412,32 @@ form {
   box-shadow: 0 0 6px 0 rgba(136, 0, 0, 0.35), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
-/* line 68, ../sass/partials/modules/_forms.scss */
+/* line 68, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .errorlist {
   color: #800;
 }
 
-/* line 74, ../sass/partials/modules/_forms.scss */
+/* line 74, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .large > label {
   line-height: 36px;
 }
-/* line 77, ../sass/partials/modules/_forms.scss */
+/* line 77, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .large > .controls > input {
   font-size: 16px;
   line-height: 27px;
 }
 
-/* line 82, ../sass/partials/modules/_forms.scss */
+/* line 82, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .x-large > label {
   line-height: 54px;
 }
-/* line 85, ../sass/partials/modules/_forms.scss */
+/* line 85, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .x-large > .controls > input {
   font-size: 24px;
   line-height: 36px;
 }
 
-/* line 90, ../sass/partials/modules/_forms.scss */
+/* line 90, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .btn-right-controls > input, .btn-left {
   -moz-border-radius: 3px 0 0 3px;
   -webkit-border-radius: 3px 0 0 3px;
@@ -448,7 +448,7 @@ form {
   float: left;
 }
 
-/* line 94, ../sass/partials/modules/_forms.scss */
+/* line 94, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .btn-right, .btn-left-controls > input {
   -moz-border-radius: 0 3px 3px 0;
   -webkit-border-radius: 0 3px 3px 0;
@@ -459,49 +459,49 @@ form {
   float: left;
 }
 
-/* line 99, ../sass/partials/modules/_forms.scss */
+/* line 99, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .btn-right {
   border-left: 0;
 }
 
-/* line 102, ../sass/partials/modules/_forms.scss */
+/* line 102, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .btn-left {
   border-right: 0;
 }
 
 /* specific fields */
-/* line 108, ../sass/partials/modules/_forms.scss */
+/* line 108, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_forms.scss */
 .control-group-honeypot {
   height: 0;
   overflow: hidden;
 }
 
-/* line 3, ../sass/partials/modules/_lists.scss */
+/* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
 ul, ol {
   padding-left: 1.5em;
 }
 
-/* line 6, ../sass/partials/modules/_lists.scss */
+/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
 ul > li {
   list-style-type: disc;
 }
 
-/* line 9, ../sass/partials/modules/_lists.scss */
+/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
 ol > li {
   list-style-type: decimal;
 }
 
-/* line 13, ../sass/partials/modules/_lists.scss */
+/* line 13, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
 .unstyled-list, .errorlist, .details-list, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .social-link-list, .grid-list {
   margin: 0;
   padding: 0;
 }
-/* line 16, ../sass/partials/modules/_lists.scss */
+/* line 16, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_lists.scss */
 .unstyled-list > li, .errorlist > li, .details-list > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .social-link-list > li, .grid-list > li {
   list-style-type: none;
 }
 
-/* line 5, ../sass/partials/modules/_buttons.scss */
+/* line 5, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_buttons.scss */
 .button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
   border: 1px solid;
   text-align: center;
@@ -520,13 +520,13 @@ ol > li {
   padding: 4.5px 9px;
 }
 
-/* line 15, ../sass/partials/modules/_buttons.scss */
+/* line 15, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_buttons.scss */
 .button-wide {
   display: block;
   line-height: 36px;
 }
 
-/* line 7, ../sass/partials/modules/_video_summary.scss */
+/* line 7, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
 .video-summary {
   *zoom: 1;
   margin-bottom: 18px;
@@ -539,27 +539,27 @@ ol > li {
   clear: both;
 }
 
-/* line 13, ../sass/partials/modules/_video_summary.scss */
+/* line 13, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
 .video-summary > .thumb {
   width: 140px;
   margin-left: -162px;
   float: left;
 }
 
-/* line 19, ../sass/partials/modules/_video_summary.scss */
+/* line 19, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
 .video-title {
   font-size: 13px;
   line-height: 18px;
   margin-bottom: 9px;
 }
 
-/* line 24, ../sass/partials/modules/_video_summary.scss */
+/* line 24, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_summary.scss */
 .video-summary .details {
   color: #999;
   margin-top: 9px;
 }
 
-/* line 3, ../sass/partials/modules/_video_full.scss */
+/* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_full.scss */
 .video-player > * {
   display: block;
   margin-left: auto;
@@ -572,7 +572,7 @@ ol > li {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75);
 }
 @media screen and (max-width: 740px) {
-  /* line 3, ../sass/partials/modules/_video_full.scss */
+  /* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_full.scss */
   .video-player > * {
     max-width: 100%;
     margin-top: 0px;
@@ -580,35 +580,35 @@ ol > li {
   }
 }
 
-/* line 3, ../sass/partials/modules/_site_header.scss */
+/* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #header {
   *zoom: 1;
   background: #FFF;
   padding-bottom: 9px;
   padding-top: 9px;
 }
-/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 #header:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 10, ../sass/partials/modules/_site_header.scss */
+/* line 10, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #header > .container {
   position: relative;
 }
 
-/* line 14, ../sass/partials/modules/_site_header.scss */
+/* line 14, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #SiteLogo {
   float: left;
 }
-/* line 16, ../sass/partials/modules/_site_header.scss */
+/* line 16, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #SiteLogo img {
   display: block;
 }
 
-/* line 22, ../sass/partials/modules/_site_header.scss */
+/* line 22, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #SiteTitle, #SiteTagline {
   margin: 0;
   padding-left: 20px;
@@ -616,32 +616,32 @@ ol > li {
   line-height: 27px;
 }
 
-/* line 29, ../sass/partials/modules/_site_header.scss */
+/* line 29, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #SiteTitle {
   font-weight: bold;
 }
-/* line 31, ../sass/partials/modules/_site_header.scss */
-.no-tagline > #SiteTitle {
+
+/* line 33, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
+.site-title-large {
   font-size: 30px;
   line-height: 36px;
-  line-height: 54px;
 }
 
-/* line 38, ../sass/partials/modules/_site_header.scss */
+/* line 38, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #SiteTagline {
   font-weight: 400;
 }
 
-/* line 43, ../sass/partials/modules/_site_header.scss */
+/* line 43, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #search #search_field {
   width: 80%;
 }
-/* line 46, ../sass/partials/modules/_site_header.scss */
+/* line 46, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 #search .btn-right {
   width: 20%;
 }
 @media screen and (max-width: 740px) {
-  /* line 42, ../sass/partials/modules/_site_header.scss */
+  /* line 42, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
   #search {
     position: absolute;
     padding-bottom: 9px;
@@ -657,30 +657,30 @@ ol > li {
   }
 }
 
-/* line 61, ../sass/partials/modules/_site_header.scss */
+/* line 61, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
 .logo-link:hover {
   border: 0;
 }
 
 @media screen and (max-width: 960px) {
-  /* line 66, ../sass/partials/modules/_site_header.scss */
+  /* line 66, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
   #header > .container {
     padding: 0 10px;
   }
 }
 @media screen and (max-width: 740px) {
-  /* line 71, ../sass/partials/modules/_site_header.scss */
+  /* line 71, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_header.scss */
   #header > .container {
     position: static;
     margin-top: 45px;
   }
 }
-/* line 1, ../sass/partials/modules/_site_footer.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_footer.scss */
 #footer {
   background: #222;
 }
 
-/* line 5, ../sass/partials/modules/_navigation.scss */
+/* line 5, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 #navigation {
   *zoom: 1;
   -moz-border-radius: 3px;
@@ -692,14 +692,14 @@ ol > li {
   margin-right: 20px;
   float: right;
 }
-/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 #navigation:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 16, ../sass/partials/modules/_navigation.scss */
+/* line 16, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item {
   margin: 5.5px 0;
   float: left;
@@ -707,22 +707,22 @@ ol > li {
   border-left: 1px solid;
 }
 
-/* line 22, ../sass/partials/modules/_navigation.scss */
+/* line 22, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item:first-child {
   border-left: none;
 }
 
-/* line 26, ../sass/partials/modules/_navigation.scss */
+/* line 26, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item > a {
   padding: 0 10px;
   display: block;
 }
-/* line 29, ../sass/partials/modules/_navigation.scss */
+/* line 29, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item > a:hover {
   border: 0;
 }
 
-/* line 34, ../sass/partials/modules/_navigation.scss */
+/* line 34, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item:first-child > a {
   -moz-border-radius: 3px 0 0 3px;
   -webkit-border-radius: 3px 0 0 3px;
@@ -732,7 +732,7 @@ ol > li {
   border-radius: 3px 0 0 3px;
 }
 
-/* line 38, ../sass/partials/modules/_navigation.scss */
+/* line 38, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item:last-child > a {
   -moz-border-radius: 0 3px 3px 0;
   -webkit-border-radius: 0 3px 3px 0;
@@ -742,18 +742,18 @@ ol > li {
   border-radius: 0 3px 3px 0;
 }
 
-/* line 42, ../sass/partials/modules/_navigation.scss */
+/* line 42, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item-dropdown {
   position: relative;
 }
 
-/* line 47, ../sass/partials/modules/_navigation.scss */
+/* line 47, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a {
   position: relative;
   padding-right: 24px;
 }
 
-/* line 51, ../sass/partials/modules/_navigation.scss */
+/* line 51, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a::after {
   content: ' ';
   border-left: 4px solid transparent;
@@ -765,7 +765,7 @@ ol > li {
   top: 6px;
 }
 
-/* line 63, ../sass/partials/modules/_navigation.scss */
+/* line 63, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list, .dropdown-box {
   display: none;
   position: absolute;
@@ -784,7 +784,7 @@ ol > li {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
   border: 1px solid;
 }
-/* line 72, ../sass/partials/modules/_navigation.scss */
+/* line 72, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list::before, .dropdown-box::before {
   content: ' ';
   border-left: 7px solid transparent;
@@ -796,24 +796,24 @@ ol > li {
   left: 10px;
 }
 
-/* line 83, ../sass/partials/modules/_navigation.scss */
+/* line 83, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-box {
   min-width: 300px;
 }
 
-/* line 87, ../sass/partials/modules/_navigation.scss */
+/* line 87, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list {
   min-width: 200px;
 }
 
-/* line 92, ../sass/partials/modules/_navigation.scss */
+/* line 92, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list > li > a {
   display: block;
   border: 0;
   padding: 5px 16px;
 }
 
-/* line 97, ../sass/partials/modules/_navigation.scss */
+/* line 97, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list > li:first-child > a {
   -moz-border-radius: 3px 3px 0 0;
   -webkit-border-radius: 3px 3px 0 0;
@@ -823,7 +823,7 @@ ol > li {
   border-radius: 3px 3px 0 0;
 }
 
-/* line 100, ../sass/partials/modules/_navigation.scss */
+/* line 100, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .dropdown-list > li:last-child > a {
   -moz-border-radius: 0 0 3px 3px;
   -webkit-border-radius: 0 0 3px 3px;
@@ -833,16 +833,16 @@ ol > li {
   border-radius: 0 0 3px 3px;
 }
 
-/* line 105, ../sass/partials/modules/_navigation.scss */
+/* line 105, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .browse-box-section {
   margin-bottom: 18px;
 }
-/* line 107, ../sass/partials/modules/_navigation.scss */
+/* line 107, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .browse-box-section:last-child {
   margin-bottom: 0;
 }
 
-/* line 111, ../sass/partials/modules/_navigation.scss */
+/* line 111, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .browse-box-section > h1 {
   font-size: 12px;
   line-height: 18px;
@@ -851,20 +851,20 @@ ol > li {
   margin-bottom: 9px;
 }
 
-/* line 117, ../sass/partials/modules/_navigation.scss */
+/* line 117, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .browse-box-section > ul {
   overflow: hidden;
   *zoom: 1;
 }
 
-/* line 121, ../sass/partials/modules/_navigation.scss */
+/* line 121, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
 .browse-box-section > ul > li {
   width: 33%;
   float: left;
 }
 
 @media screen and (max-width: 740px) {
-  /* line 127, ../sass/partials/modules/_navigation.scss */
+  /* line 127, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_navigation.scss */
   .dropdown-list, .dropdown-box {
     position: static;
     width: 100%;
@@ -880,13 +880,13 @@ ol > li {
     box-shadow: none;
   }
 }
-/* line 6, ../sass/partials/modules/_pagetabs.scss */
+/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pagetabs.scss */
 .pagetabs {
   overflow: hidden;
   *zoom: 1;
   margin-bottom: 18px;
 }
-/* line 10, ../sass/partials/modules/_pagetabs.scss */
+/* line 10, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pagetabs.scss */
 .pagetabs a, .pagetabs .ellipse span {
   float: left;
   margin-left: 3px;
@@ -897,50 +897,50 @@ ol > li {
 	@extend .pod-content;
 }
 */
-/* line 1, ../sass/partials/modules/_pod.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-header, .page-header {
   position: relative;
   border-bottom: 1px solid;
   border-top: 1px solid;
   padding: 8px 20px;
 }
-/* line 6, ../sass/partials/modules/_pod.scss */
+/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-header h1 a:hover, .page-header h1 a:hover {
   border-bottom: 0;
 }
 
-/* line 11, ../sass/partials/modules/_pod.scss */
+/* line 11, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-header > h1, .page-header > h1 {
   display: inline;
   font-size: 16px;
   line-height: 27px;
 }
 
-/* line 16, ../sass/partials/modules/_pod.scss */
+/* line 16, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-actions, .page-actions {
   padding: 13.5px;
   position: absolute;
   top: 0;
   right: 0;
 }
-/* line 21, ../sass/partials/modules/_pod.scss */
+/* line 21, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-actions li, .page-actions li {
   list-style-type: none;
   float: left;
   margin-left: 10px;
 }
-/* line 26, ../sass/partials/modules/_pod.scss */
+/* line 26, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-actions a, .page-actions a {
   display: block;
   padding: 3px 0;
   margin-top: -3px;
 }
-/* line 31, ../sass/partials/modules/_pod.scss */
+/* line 31, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_pod.scss */
 .pod-actions a:hover, .page-actions a:hover {
   border: 0;
 }
 
-/* line 1, ../sass/partials/modules/_site_blurb.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_blurb.scss */
 .site-blurb {
   font-size: 16px;
   line-height: 27px;
@@ -950,12 +950,12 @@ ol > li {
   box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
 }
 
-/* line 7, ../sass/partials/modules/_site_blurb.scss */
+/* line 7, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_site_blurb.scss */
 .site-blurb > :last-child {
   margin-bottom: 0;
 }
 
-/* line 4, ../sass/partials/modules/_tile_box.scss */
+/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile-box {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
@@ -974,18 +974,18 @@ ol > li {
   padding: 3px;
 }
 
-/* line 15, ../sass/partials/modules/_tile_box.scss */
+/* line 15, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile {
   width: 25%;
   overflow: hidden;
   float: left;
   height: 54px;
 }
-/* line 20, ../sass/partials/modules/_tile_box.scss */
+/* line 20, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile > img {
   display: block;
 }
-/* line 23, ../sass/partials/modules/_tile_box.scss */
+/* line 23, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile:first-child {
   -moz-border-radius: 5px 0 0 0;
   -webkit-border-radius: 5px 0 0 0;
@@ -995,7 +995,7 @@ ol > li {
   border-radius: 5px 0 0 0;
   overflow: hidden;
 }
-/* line 27, ../sass/partials/modules/_tile_box.scss */
+/* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile:nth-child(4) {
   -moz-border-radius: 0 5px 0 0;
   -webkit-border-radius: 0 5px 0 0;
@@ -1005,7 +1005,7 @@ ol > li {
   border-radius: 0 5px 0 0;
   overflow: hidden;
 }
-/* line 31, ../sass/partials/modules/_tile_box.scss */
+/* line 31, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile:nth-child(5) {
   -moz-border-radius: 0 0 0 5px;
   -webkit-border-radius: 0 0 0 5px;
@@ -1015,7 +1015,7 @@ ol > li {
   border-radius: 0 0 0 5px;
   overflow: hidden;
 }
-/* line 35, ../sass/partials/modules/_tile_box.scss */
+/* line 35, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_tile_box.scss */
 .tile:nth-child(8) {
   -moz-border-radius: 0 0 5px 0;
   -webkit-border-radius: 0 0 5px 0;
@@ -1026,7 +1026,7 @@ ol > li {
   overflow: hidden;
 }
 
-/* line 7, ../sass/partials/modules/_card.scss */
+/* line 7, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_card.scss */
 .card-link {
   padding-bottom: 0;
   overflow: hidden;
@@ -1039,29 +1039,29 @@ ol > li {
   -khtml-border-radius: 5px;
   border-radius: 5px;
 }
-/* line 14, ../sass/partials/modules/_card.scss */
+/* line 14, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_card.scss */
 .card-link:hover {
   background: #EEE;
   border: 0;
 }
 
-/* line 21, ../sass/partials/modules/_card.scss */
+/* line 21, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_card.scss */
 .card-header, .card-figure {
   margin-bottom: 9px;
 }
 
-/* line 24, ../sass/partials/modules/_card.scss */
+/* line 24, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_card.scss */
 .card-title {
   font-weight: bold;
   color: #444;
 }
 
-/* line 28, ../sass/partials/modules/_card.scss */
+/* line 28, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_card.scss */
 .card-title-quiet {
   color: #666;
 }
 
-/* line 1, ../sass/partials/modules/_precontent.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent {
   overflow: hidden;
   *zoom: 1;
@@ -1071,32 +1071,32 @@ ol > li {
   box-shadow: 0 1px 0 0 white;
 }
 
-/* line 8, ../sass/partials/modules/_precontent.scss */
+/* line 8, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-header h1, .precontent-header h2 {
   display: inline;
   margin: 0;
 }
-/* line 12, ../sass/partials/modules/_precontent.scss */
+/* line 12, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-header h1 {
   font-size: 16px;
   line-height: 27px;
 }
-/* line 15, ../sass/partials/modules/_precontent.scss */
+/* line 15, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-header h2 {
   font-size: 13px;
   line-height: 18px;
   font-weight: normal;
 }
-/* line 19, ../sass/partials/modules/_precontent.scss */
+/* line 19, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-header .title {
   margin-right: 10px;
 }
-/* line 22, ../sass/partials/modules/_precontent.scss */
+/* line 22, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-header a {
   border: none;
 }
 
-/* line 27, ../sass/partials/modules/_precontent.scss */
+/* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-content {
   margin: 0 -100px;
   -moz-box-shadow: 0 -2px 64px rgba(0, 0, 0, 0.5) inset;
@@ -1107,29 +1107,29 @@ ol > li {
   *zoom: 1;
 }
 @media screen and (max-width: 740px) {
-  /* line 27, ../sass/partials/modules/_precontent.scss */
+  /* line 27, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
   .precontent-content {
     margin: 0;
   }
 }
 
-/* line 37, ../sass/partials/modules/_precontent.scss */
+/* line 37, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-details, .details-large {
   color: #EEE;
   text-shadow: 0 -1px 0 black;
 }
-/* line 43, ../sass/partials/modules/_precontent.scss */
+/* line 43, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_precontent.scss */
 .precontent-details h1 > a, .details-large h1 > a {
   color: #FFF;
   border: none;
 }
 
-/* line 1, ../sass/partials/modules/_video_large_preview.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_large_preview.scss */
 .video-large, .preview-large a {
   height: 360px;
 }
 
-/* line 4, ../sass/partials/modules/_video_large_preview.scss */
+/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_large_preview.scss */
 .preview-large a {
   border: none;
   background: #000;
@@ -1138,32 +1138,32 @@ ol > li {
   text-align: center;
 }
 
-/* line 11, ../sass/partials/modules/_video_large_preview.scss */
+/* line 11, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_video_large_preview.scss */
 .preview-large img {
   margin: 0 auto;
   vertical-align: middle;
 }
 
-/* line 3, ../sass/partials/modules/_media_grid.scss */
+/* line 3, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_media_grid.scss */
 .media-grid {
   *zoom: 1;
   margin-left: -40px;
 }
-/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 .media-grid:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 9, ../sass/partials/modules/_media_grid.scss */
+/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_media_grid.scss */
 .media-item {
   float: left;
   margin-left: 40px;
   margin-bottom: 18px;
 }
 
-/* line 4, ../sass/partials/modules/_thumb.scss */
+/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_thumb.scss */
 .thumb {
   margin-bottom: 9px;
   position: relative;
@@ -1175,7 +1175,7 @@ ol > li {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 9, ../sass/partials/modules/_thumb.scss */
+/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_thumb.scss */
 .thumb > a {
   display: block;
   position: relative;
@@ -1192,14 +1192,14 @@ ol > li {
   border-radius: 3px;
   border-bottom: 0;
 }
-/* line 17, ../sass/partials/modules/_thumb.scss */
+/* line 17, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_thumb.scss */
 .thumb > a:hover {
   -moz-box-shadow: 0 0 8px 0 black;
   -webkit-box-shadow: 0 0 8px 0 black;
   -o-box-shadow: 0 0 8px 0 black;
   box-shadow: 0 0 8px 0 black;
 }
-/* line 20, ../sass/partials/modules/_thumb.scss */
+/* line 20, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_thumb.scss */
 .thumb > a > img {
   display: block;
   -moz-border-radius: 3px;
@@ -1209,7 +1209,7 @@ ol > li {
   -khtml-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 25, ../sass/partials/modules/_thumb.scss */
+/* line 25, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_thumb.scss */
 .thumb > a::after {
   content: " ";
   display: block;
@@ -1227,24 +1227,24 @@ ol > li {
   border: 3px solid black;
 }
 
-/* line 1, ../sass/partials/modules/_title_link.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_title_link.scss */
 .title-link {
   border-bottom: 0;
   color: inherit;
 }
 
-/* line 1, ../sass/partials/modules/_compact.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_compact.scss */
 .compact * {
   display: inline;
 }
 
-/* line 1, ../sass/partials/modules/_icons.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_icons.scss */
 .replaced, .search-icon {
   text-indent: -9999px;
   display: block;
 }
 
-/* line 6, ../sass/partials/modules/_icons.scss */
+/* line 6, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_icons.scss */
 .search-icon {
   background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1332893585');
   background-size: 16px 16px;
@@ -1252,13 +1252,13 @@ ol > li {
   background-repeat: no-repeat;
 }
 
-/* line 1, ../sass/partials/modules/_social_link_list.scss */
+/* line 1, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_social_link_list.scss */
 .social-link-list {
   overflow: hidden;
   *zoom: 1;
   border-bottom: 1px solid;
 }
-/* line 5, ../sass/partials/modules/_social_link_list.scss */
+/* line 5, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_social_link_list.scss */
 .social-link-list > li {
   float: left;
   display: block;
@@ -1272,29 +1272,29 @@ ol > li {
   padding: 9px 20px;
   border-left: 1px solid;
 }
-/* line 14, ../sass/partials/modules/_social_link_list.scss */
+/* line 14, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_social_link_list.scss */
 .social-link-list > li:first-child {
   border-left: 0;
 }
 
 /* Enforce facebook comments fill the space they are placed in. */
-/* line 2, ../sass/partials/modules/_facebook_comments.scss */
+/* line 2, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_facebook_comments.scss */
 .fb-comments, .fb-comments iframe {
   width: 100% !important;
 }
 
-/* line 4, ../sass/partials/modules/_grid_list.scss */
+/* line 4, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_grid_list.scss */
 .grid-list {
   *zoom: 1;
 }
-/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+/* line 38, /Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
 .grid-list:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 9, ../sass/partials/modules/_grid_list.scss */
+/* line 9, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_grid_list.scss */
 .grid-item {
   width: 25%;
   float: left;
@@ -1305,7 +1305,7 @@ ol > li {
 }
 
 @media screen and (max-width:740px) {
-  /* line 17, ../sass/partials/modules/_grid_list.scss */
+  /* line 17, /Users/harris/Projects/Miro/mirocommunity/localtv/static/localtv/front/sass/partials/modules/_grid_list.scss */
   .grid-item {
     width: 50%;
   }

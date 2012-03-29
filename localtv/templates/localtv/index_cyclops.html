@@ -30,20 +30,22 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} home-page cyclops{% endblock %}
 
+{% block header %}{% include "localtv/_site_header_large.html" %}{% endblock %}
+
 {% block pre_content %}
-<div class="precontent">
-	<div class="precontent-content">
-		<div class="container">
-			<div class="row" data-cycle="true">
-				{% with featured_videos|slice:"10" as video_list %}
-					{% for video in video_list %}
-						{% include "localtv/_video_large_preview.html" %}
-					{% endfor %}
-				{% endwith %}
-			</div>{# /.row #}
-		</div>{# /.container #}
-	</div>{# /.precontent-content #}
-</div>{# /.precontent #}
+	<div class="precontent">
+		<div class="precontent-content">
+			<div class="container">
+				<div class="row" data-cycle="true">
+					{% with featured_videos|slice:"10" as video_list %}
+						{% for video in video_list %}
+							{% include "localtv/_video_large_preview.html" %}
+						{% endfor %}
+					{% endwith %}
+				</div>{# /.row #}
+			</div>{# /.container #}
+		</div>{# /.precontent-content #}
+	</div>{# /.precontent #}
 {% endblock %}
 
 {% block content %}

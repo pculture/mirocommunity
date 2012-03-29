@@ -28,10 +28,10 @@
 
 #SiteTitle{
 	font-weight:bold;
-	.no-tagline > &{
-		@include xx-large;
-		line-height: 54px;
-	}
+}
+
+.site-title-large{
+	@include xx-large;
 }
 
 
