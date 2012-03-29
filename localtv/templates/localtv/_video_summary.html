@@ -45,30 +45,10 @@ along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
 		{% endautoescape %}
 	</div>
 	
-	<footer class="details">
-		<ul class="details-list">
-			<li class="when">
-				{% if is_featured_video %}
-					Featured {{ video.last_featured|simpletimesince }} ago
-				{% else %}
-					{{ video.when_prefix|title }} {{ video.when|simpletimesince }} ago
-				{% endif %}
-			</li>
-			<li class="authors">
-				{% with authors=video.authors.all %}
-					{% if authors %}
-						By
-						{% for user in authors %}
-							<span class="author"><a href="{% url localtv_author user.pk %}" title="{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}">{% if user.first_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</a></span>{% if not forloop.last %}, {% endif %}
-						{% endfor %}
-					{% else %}
-						{% if video.feed %}
-							By <span class="author"><a href="{% url localtv_list_feed video.feed.pk %}" title="{{ video.feed.name }}">{{ video.feed.name }}</a></span>
-						{% endif %}
-					{% endif %}
-				{% endwith %}
-			</li>
-		</ul>
+	<footer class="colophon">
+		{% with current_video as instance %}
+			{% include "localtv/inline_edit/video_when_published.html" %} by {% include "localtv/inline_edit/video_authors.html" %}
+		{% endwith %}
 	</footer>
 	
 </article>

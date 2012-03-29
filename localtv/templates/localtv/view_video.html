@@ -27,31 +27,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block head %}
-	{% if user_is_admin %}
-		{% include "localtv/inline_edit/header.html" %}
-	{% endif %}
-	{% get_comment_form for current_video as comment_form %}
-	{% if comment_form.fields.captcha %}
-		<script type="text/javascript" src="http://api.recaptcha.net/js/recaptcha_ajax.js"></script>
-		<script type="text/javascript">
-			function recaptcha_ajax_callback() {
-				Recaptcha.create("{{ settings.RECAPTCHA_PUBLIC_KEY }}", "recaptcha_ajax_field", {})
-			}
-		</script>
-	{% endif %}
-	<script type="text/javascript" src="{% get_static_url 'localtv/js/extern/jquery.form.js' bundled %}?version={{ mc_version }}"></script>
-	<script type="text/javascript" src="{% get_static_url 'localtv/js/comment.js' bundled %}?version={{ mc_version }}"></script>
-	{% if playlistitem_set or playlists or user_is_admin and site_settings.playlists_enabled or request.user.is_authenticated and site_settings.playlists_enabled == 1 %}<script type="text/javascript" src="{% get_static_url 'localtv/js/playlist.js' bundled %}?version={{ mc_version }}"></script>{% endif %}
+	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}
-	{% if current_video.video_service %}
-		<style type="text/css">
-			.video_wrapper embed, .video_wrapper object, .video_wrapper video .video_wrapper div.djvideo-flowplayer {
-				width: 100%;
-				height: 430px;
-				margin: 0 auto;
-			}
-		</style>
-	{% endif %}
 {% endblock %}
 
 {% block pre_content %}
@@ -114,9 +91,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</ul>
 			</div>
 			<section class="video-details content-box">
-				<p>
 				{{ current_video.description|safe }}
-				</p>
 			</section>{# /.video-details #}
 			<div class="content-box">
 				<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
