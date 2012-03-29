@@ -140,6 +140,18 @@ $max-width-threshold: 960px !default;
 	.col-two-thirds{
 		width:66.67%;
 	}
+	.col-one-fifth{
+		width:20%;
+	}
+	.col-two-fifths{
+		width:40%;
+	}
+	.col-three-fifths{
+		width:60%;
+	}
+	.col-four-fifths{
+		width:80%;
+	}
 }
 
 @media screen and (max-width: 740px){
