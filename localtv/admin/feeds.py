@@ -23,7 +23,7 @@ from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from localtv.feeds.views import BaseVideosFeed, LOCALTV_FEED_LENGTH
+from localtv.feeds.views import BaseVideosFeed
 from localtv.models import Video
 
 def generate_secret():
