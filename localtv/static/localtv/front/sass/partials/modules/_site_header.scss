@@ -22,7 +22,6 @@
 #SiteTitle, #SiteTagline{
 	margin:0;
 	padding-left: $gutter-width/2;
-	@include large;
 }
 
 
@@ -30,8 +29,12 @@
 	font-weight:bold;
 }
 
+.site-title-small, #SiteTagline{
+	@include large;
+}
 .site-title-large{
 	@include xx-large;
+	line-height:54px;
 }
 
 
