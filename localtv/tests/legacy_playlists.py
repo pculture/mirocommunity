@@ -116,7 +116,7 @@ class PlaylistModelTestCase(PlaylistBaseTestCase):
 
 class PlaylistViewTestCase(PlaylistBaseTestCase):
 
-    fixtures = PlaylistBaseTestCase.fixtures + ['videos']
+    fixtures = PlaylistBaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_index(self):
         """
