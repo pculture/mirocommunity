@@ -665,7 +665,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/index.html')
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
@@ -731,7 +731,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_about'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/about.html')
 
     def test_view_video(self):
@@ -865,7 +865,7 @@ class ViewTestCase(BaseTestCase):
                          {'q': 'blender'}) # lots of Blender videos in the test
                                            # data
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response, 
                                  SearchQuerySet().models(models.Video).filter(
@@ -880,7 +880,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response,
                                  SearchQuerySet().models(models.Video).filter(
@@ -895,7 +895,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_search'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
 
     def test_video_search_pagination(self):
@@ -1066,7 +1066,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_category_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/categories.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(list(response.context['page_obj'].object_list),
@@ -1085,7 +1085,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
         videos = list(models.Video.objects.with_best_date().filter(
@@ -1103,7 +1103,7 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_author_index'))
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(list(response.context['authors']),
@@ -1126,7 +1126,7 @@ class ViewTestCase(BaseTestCase):
             ).distinct().order_by('-best_date')
         )
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author.html')
         self.assertEqual(response.context['author'], author)
         self.assertEqual(len(videos), 2)
@@ -1150,7 +1150,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/browse.html')
 
     def test_latest_videos(self):
@@ -1162,7 +1162,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_new'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_new.html')
         self.assertEqual(response.context['paginator'].num_pages, 2)
         self.assertEqual(len(response.context['page_obj'].object_list), 15)
@@ -1183,7 +1183,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
@@ -1202,7 +1202,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_featured'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
@@ -1224,7 +1224,7 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_tag',
                          args=['tag1']))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_tag.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
@@ -1243,7 +1243,7 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_feed',
                                  args=[feed.pk]))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_feed.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)

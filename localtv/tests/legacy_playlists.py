@@ -131,7 +131,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='user', password='password')
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/index.html')
         self.assertEqual([form.instance for form in
                            response.context['formset'].forms], [self.list])
@@ -195,7 +195,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='user', password='password')
         response = c.post(reverse('localtv_playlist_index'), {})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/index.html')
         self.assertEqual([form.instance for form in
                            response.context['formset'].forms], [self.list])
@@ -213,7 +213,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(reverse('localtv_playlist_index'), {
                 'name': self.list.name})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/index.html')
         self.assertEqual([form.instance for form in
                            response.context['formset'].forms], [self.list])
@@ -234,7 +234,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='user', password='password')
         response = c.post(reverse('localtv_playlist_index'), data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/index.html')
         self.assertEqual([form.instance for form in
                            response.context['formset'].forms], [self.list])
@@ -443,7 +443,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c = Client()
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/view.html')
         self.assertEqual(response.context['playlist'], self.list)
 
@@ -485,7 +485,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         c.login(username='user', password='password')
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/playlists/edit.html')
         self.assertEqual(response.context['playlist'], self.list)
         self.assertFalse(response.context['formset'].is_bound)
