@@ -46,9 +46,9 @@ class UnapprovedVideosFeed(BaseVideosFeed):
 
     def title(self):
         return "%s: %s" % (
-            self.sitelocation.site.name, _('Videos Awaiting Moderation'))
+            Site.objects.get_current().name, _('Videos Awaiting Moderation'))
 
-    def _actual_items(self):
+    def items(self):
         return Video.objects.filter(
             status=Video.UNAPPROVED,
             site=Site.objects.get_current()
