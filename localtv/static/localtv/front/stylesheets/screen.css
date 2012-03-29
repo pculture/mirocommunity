@@ -1246,7 +1246,7 @@ ol > li {
 
 /* line 6, ../sass/partials/modules/_icons.scss */
 .search-icon {
-  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1332468330');
+  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1332893585');
   background-size: 16px 16px;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1275,6 +1275,12 @@ ol > li {
 /* line 14, ../sass/partials/modules/_social_link_list.scss */
 .social-link-list > li:first-child {
   border-left: 0;
+}
+
+/* Enforce facebook comments fill the space they are placed in. */
+/* line 2, ../sass/partials/modules/_facebook_comments.scss */
+.fb-comments, .fb-comments iframe {
+  width: 100% !important;
 }
 
 /* line 4, ../sass/partials/modules/_grid_list.scss */
@@ -1505,7 +1511,7 @@ input:focus, textarea:focus {
 /* line 176, ../sass/partials/_theme.scss */
 .precontent {
   /* http://subtlepatterns.com/?p=1024 */
-  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1332468330');
+  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1332893585');
 }
 
 /* line 181, ../sass/partials/_theme.scss */
