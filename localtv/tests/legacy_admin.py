@@ -101,7 +101,7 @@ class AdministrationBaseTestCase(BaseTestCase):
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'feeds', 'savedsearches']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'savedsearches']
 
     url = reverse('localtv_admin_approve_reject')
 
@@ -3922,7 +3922,6 @@ class DowngradingSevenAdmins(BaseTestCase):
         self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
 
 class NightlyTiersEmails(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
 
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()

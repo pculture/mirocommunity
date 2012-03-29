@@ -1258,7 +1258,7 @@ class ListingViewTestCase(BaseTestCase):
 
 class CommentModerationTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -1539,7 +1539,7 @@ class CommentModerationTestCase(BaseTestCase):
 
 class VideoModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_when(self):
         """
@@ -1742,7 +1742,7 @@ class SiteTierTests(BaseTestCase):
 
 class WatchModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_add(self):
         """
@@ -2257,7 +2257,7 @@ class TierMethodsTests(BaseTestCase):
 
 class LegacyFeedViewTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
     def test_feed_views_respect_count_when_set(self):
         fake_request = self.factory.get('?count=10')
@@ -2319,7 +2319,7 @@ if localtv.settings.voting_enabled():
 
     class VotingTestCase(BaseTestCase):
 
-        fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+        fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
         def setUp(self):
             BaseTestCase.setUp(self)
