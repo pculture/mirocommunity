@@ -75,7 +75,7 @@ media enclosures. All contents of this feed are for example only.""")
                                                         self.feed_url))
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_admin_manage_page')))
         feed = Feed.objects.get()
         finish_by = time.time() + 5 # 5s timeout
@@ -101,7 +101,7 @@ media enclosures. All contents of this feed are for example only.""")
                                     {'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEquals(response['Location'], 'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 reverse('localtv_admin_manage_page')))
         feed = Feed.objects.get()
         finish_by = time.time() + 5 # 5s timeout

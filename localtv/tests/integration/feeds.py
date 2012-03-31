@@ -107,7 +107,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
-        SiteLocation.objects.create(site_id=1)
+        SiteSettings.objects.create(site_id=1)
         self.feed = Feed.objects.create(name='Feed', site_id=1,
                                         last_updated=datetime.datetime.now())
         self.unapproved_video = self.create_video('Feed Video',
