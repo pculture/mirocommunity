@@ -103,7 +103,7 @@ SECRET_KEY = 'example_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'uploadtemplate.loader.load_template_source',
+    'uploadtemplate.loader.Loader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 # 'django.template.loaders.eggs.Loader',
