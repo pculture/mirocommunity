@@ -100,7 +100,6 @@ class BaseTestCase(TestCase):
         self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
-        self._rebuild_index()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -114,6 +113,24 @@ class BaseTestCase(TestCase):
                      'django.core.cache.backends.dummy.DummyCache'}}
         mail.outbox = [] # reset any email at the start of the suite
         self.factory = FakeRequestFactory()
+
+    def _fixture_setup(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_setup()
+        index._setup_save()
+        index._setup_delete()
+        self._rebuild_index()
+
+    def _fixture_teardown(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_teardown()
+        index._setup_save()
+        index._setup_delete()
+        self._clear_index()
 
     def _switch_into_tier(self):
         # By default, tests run on an 'max' account.
