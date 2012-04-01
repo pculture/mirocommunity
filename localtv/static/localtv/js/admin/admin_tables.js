@@ -90,8 +90,25 @@ function load_video(eventdata) {
                 viddiv.removeClass('unselected');
                 viddiv.addClass('selected');
                 scroll_admin();
+                adjust_video_size();
                 }});
     return false;
+}
+
+function adjust_video_size() {
+    var wrapper = $("#video_wrapper");
+    var video_element = wrapper.children()
+    var width = video_element.attr('width');
+    var height = video_element.attr('height');
+    if (width && height) {
+        var available_width = 357;
+        if (width > available_width) {
+            scale = available_width / width;
+            height = parseInt(scale * height);
+            width = available_width;
+            video_element.attr('width', width).attr('height', height);
+        }
+    }
 }
 
 function load_click_callbacks() {
@@ -118,3 +135,4 @@ else {
     window.addEventListener('resize', scroll_admin, false);
 }
 
+$(document).ready(adjust_video_size);
