@@ -666,8 +666,10 @@ class ViewTestCase(BaseTestCase):
         the base categories (those without parents).
         """
         Watch.objects.update(timestamp=datetime.datetime.now())
-        haystack_batch_update.apply(args=(Video._meta.app_label,
-                                          Video._meta.module_name))
+        # Rebuild index to work around https://bitbucket.org/mchaput/whoosh/issue/237
+        #haystack_batch_update.apply(args=(Video._meta.app_label,
+        #                                  Video._meta.module_name))
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_index'))
