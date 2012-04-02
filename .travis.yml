@@ -8,4 +8,4 @@ env:
 install:
   - pip install -q -e . --use-mirrors
   - pip install -q -r example_mc_project/requirements.txt
-script: django-admin.py test localtv --settings=example_mc_project.settings
+script: django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
