@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-
-from django.db.models import Count, signals
-
-from haystack import indexes
-from localtv.models import Video, Watch
-from localtv.playlists.models import PlaylistItem
-from localtv.tasks import haystack_update_index
+from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.db.models import Count, signals
+from haystack import indexes
+
+from localtv.models import Video, Watch
+from localtv.playlists.models import PlaylistItem
+from localtv.tasks import haystack_update, haystack_remove
+
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -53,16 +53,12 @@ class QueuedSearchIndex(indexes.SearchIndex):
                                     sender=self.get_model())
 
     def _enqueue_update(self, instance, **kwargs):
-        self._enqueue_instance(instance, False)
+        self._enqueue_instance(instance, haystack_update)
 
     def _enqueue_removal(self, instance, **kwargs):
-        self._enqueue_instance(instance, True)
+        self._enqueue_instance(instance, haystack_remove)
 
-    def _enqueue_instance(self, instance, is_removal):
-        # This attribute can be set by passing ``update_index`` as a kwarg to
-        # :meth:`Video.save`. It defaults to ``True``.
-        if not getattr(instance, '_update_index', True):
-            return
+    def _enqueue_instance(self, instance, task):
         using = instance._state.db
         if using == 'default':
             # This gets called from both Celery and from the MC application.
@@ -70,11 +66,10 @@ class QueuedSearchIndex(indexes.SearchIndex):
             # need to use CELERY_USING as our database.  If they're the same,
             # or we're not using separate databases, this is a no-op.
             using = CELERY_USING
-        haystack_update_index.delay(instance._meta.app_label,
-                                    instance._meta.module_name,
-                                    [instance.pk],
-                                    is_removal,
-                                    using=using)
+        task.delay(instance._meta.app_label,
+                   instance._meta.module_name,
+                   [instance.pk],
+                   using=using)
 
 
 class VideoIndex(QueuedSearchIndex, indexes.Indexable):
@@ -100,6 +95,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     best_date = indexes.DateTimeField()
     #: The best_date field if the original date is considered.
     best_date_with_published = indexes.DateTimeField()
+    #: Watch count for the last week.
     watch_count = indexes.IntegerField()
     last_featured = indexes.DateTimeField(model_attr='last_featured',
                                           default=DATETIME_NULL_PLACEHOLDER)
@@ -108,8 +104,6 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
-        signals.post_save.connect(self._enqueue_related_update,
-                                  sender=Watch)
         signals.post_save.connect(self._enqueue_related_update,
                                   sender=PlaylistItem)
 
@@ -121,8 +115,6 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     def _teardown_save(self):
         super(VideoIndex, self)._teardown_save()
         signals.post_save.disconnect(self._enqueue_related_update,
-                                     sender=Watch)
-        signals.post_save.disconnect(self._enqueue_related_update,
                                      sender=PlaylistItem)
 
     def _teardown_delete(self):
@@ -131,11 +123,11 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
                                        sender=PlaylistItem)
 
     def _enqueue_related_update(self, instance, **kwargs):
-        self._enqueue_instance(instance.video, False)
+        self._enqueue_instance(instance.video, haystack_update)
 
     def _enqueue_related_delete(self, instance, **kwargs):
         try:
-            self._enqueue_instance(instance.video, False)
+            self._enqueue_instance(instance.video, haystack_update)
         except Video.DoesNotExist:
             # We'll have picked up this delete from the Video directly, so
             # don't worry about it here.
@@ -152,7 +144,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         """
         model = self.get_model()
         return model._default_manager.filter(status=model.ACTIVE
-                                  ).annotate(watch_count=Count('watch'))
+                                  ).with_watch_count()
 
     def read_queryset(self):
         """
@@ -182,12 +174,11 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return self._prepare_rel_field(video, 'playlists')
 
     def prepare_watch_count(self, video):
-        # video.watch_count is set during :meth:`~VideoIndex.index_queryset`.
-        # If for some reason that isn't available, do a manual count.
         try:
             return video.watch_count
         except AttributeError:
-            return video.watch_set.count()
+            since = datetime.now() - timedelta(7)
+            return video.watch_set.filter(timestamp__gt=since).count()
 
     def prepare_best_date(self, video):
         return video.when_approved or video.when_submitted
@@ -195,9 +186,13 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     def prepare_best_date_with_published(self, video):
         return video.when_published or self.prepare_best_date(video)
 
-    def _enqueue_instance(self, instance, is_removal):
+    def _enqueue_instance(self, instance, task):
         if (not instance.name and not instance.description
             and not instance.website_url and not instance.file_url):
             # fake instance for testing. TODO: This should probably not be done.
             return
-        super(VideoIndex, self)._enqueue_instance(instance, is_removal)
+        # This attribute can be set by passing ``update_index`` as a kwarg to
+        # :meth:`Video.save`. It defaults to ``True``.
+        if not getattr(instance, '_update_index', True):
+            return
+        super(VideoIndex, self)._enqueue_instance(instance, task)

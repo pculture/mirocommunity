@@ -1482,8 +1482,12 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.filter(watch__timestamp__gt=since).annotate(
-                           watch_count=models.Count('watch'))
+        return self.extra(
+            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (since,)
+        )
 
 
 class VideoManager(models.Manager):
@@ -1540,10 +1544,9 @@ class VideoManager(models.Manager):
         current site_settings.
 
         """
-        return self.get_latest_videos(site_settings).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(site_settings),
+                                  descending=True)
 
     def get_category_videos(self, category, site_settings=None):
         """
