@@ -143,19 +143,38 @@ class Sort(object):
         return self.empty_value
 
     def sort(self, queryset, descending=False):
+        """
+        Runs the entire sort process; reverses the sort order if
+        :attr:`reversed` is ``True``, excludes instances which have an empty
+        sort field, and does the actual ordering.
+
+        """
         if self.reversed:
             # flips the default to descending, rather than ascending, values
             descending = not descending
+        queryset = self.exclude_empty(queryset)
+        field = self.get_field(queryset)
+        return self.order_by(queryset,
+                             ''.join(('-' if descending else '', field)))
+
+    def exclude_empty(self, queryset):
+        """
+        Excludes instances which have an "empty" value in the sort field.
+
+        """
         field = self.get_field(queryset)
         empty_value = self.get_empty_value(queryset)
         if empty_value is not EMPTY:
             q = _q_for_queryset(queryset, field, (empty_value,))
             queryset = queryset.filter(~q)
-        return queryset.order_by(''.join(('-' if descending else '', field)))
+        return queryset
+
+    def order_by(self, queryset, order_by):
+        """Performs the actual ordering for the :class:`Sort`."""
+        return queryset.order_by(order_by)
 
 
 class BestDateSort(Sort):
-
     def get_field(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteLocation.objects.get_current().use_original_date):
@@ -192,6 +211,19 @@ class PopularSort(Sort):
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_watch_count()
         return super(PopularSort, self).sort(queryset, descending)
+
+    def exclude_empty(self, queryset):
+        if not isinstance(queryset, SearchQuerySet):
+            field = self.get_field(queryset)
+            empty_value = self.get_empty_value(queryset)
+            return queryset.extra(where=["%s<>%%s" % field],
+                                  params=[empty_value])
+        return super(PopularSort, self).exclude_empty(queryset)
+
+    def order_by(self, queryset, order_by):
+        if not isinstance(queryset, SearchQuerySet):
+            return queryset.extra(order_by=[order_by])
+        return super(PopularSort, self).order_by(queryset, order_by)
 
 
 class Filter(object):
