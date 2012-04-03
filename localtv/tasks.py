@@ -69,9 +69,8 @@ def update_sources(using='default'):
 @task(ignore_result=True)
 def feed_update(feed_id, using='default', clear_rejected=False):
     try:
-        feed = Feed.objects.using(using).filter(status=Feed.ACTIVE,
-                                                auto_update=True
-                                       ).get(pk=feed_id)
+        feed = Feed.objects.using(using).filter(auto_update=True
+                                                ).get(pk=feed_id)
     except Feed.DoesNotExist:
         logging.warn('feed_update(%s, using=%r) could not find feed',
                      feed_id, using)

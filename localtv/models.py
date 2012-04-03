@@ -806,13 +806,13 @@ class Feed(Source):
                                      with_exception=True, using=using)
             return
 
-        super(Feed, self).update(video_iter, source_import=feed_import,
-                                 using=using, **kwargs)
-
         self.etag = getattr(video_iter, 'etag', None) or ''
         self.last_updated = (getattr(video_iter, 'last_modified', None) or
                                  datetime.datetime.now())
         self.save()
+
+        super(Feed, self).update(video_iter, source_import=feed_import,
+                                 using=using, **kwargs)
 
     def source_type(self):
         return self.calculated_source_type
@@ -1744,8 +1744,9 @@ class Video(Thumbnailable, VideoBase):
             q_filter |= models.Q(file_url=self.file_url)
         if self.guid:
             q_filter |= models.Q(guid=self.guid)
-        qs = Video.objects.using(self._state.db).filter(site_id=self.site_id
-                       ).exclude(status=Video.REJECTED).filter(q_filter)
+        qs = Video.objects.using(self._state.db).filter(
+            site_id=self.site_id,
+            status=Video.REJECTED).filter(q_filter)
         qs.delete()
 
     @models.permalink

@@ -82,14 +82,16 @@ media enclosures. All contents of this feed are for example only.""")
         while feed.status == feed.INACTIVE and time.time() < finish_by:
             time.sleep(0.3)
             feed = Feed.objects.get()
+
+        self.assertEquals(feed.status, Feed.ACTIVE)
         feed_import = feed.imports.get()
         self.assertEquals(feed_import.status, feed_import.COMPLETE)
         self.assertEquals(feed_import.total_videos, 6)
-        self.assertEquals(feed_import.videos_imported, 3)
-        self.assertEquals(feed_import.videos_skipped, 3)
+        self.assertEquals(feed_import.videos_imported, 2)
+        self.assertEquals(feed_import.videos_skipped, 4)
 
         self.assertEquals(
-            feed.video_set.filter(status=Video.UNAPPROVED).count(), 3)
+            feed.video_set.filter(status=Video.UNAPPROVED).count(), 2)
 
     def test_POST_auto_approve(self):
         """
@@ -108,13 +110,14 @@ media enclosures. All contents of this feed are for example only.""")
         while feed.status == feed.INACTIVE and time.time() < finish_by:
             time.sleep(0.3)
             feed = Feed.objects.get()
+        self.assertEquals(feed.status, Feed.ACTIVE)
         self.assertEquals(feed.auto_approve, True)
         feed_import = feed.imports.get()
         self.assertEquals(feed_import.auto_approve, True)
         self.assertEquals(feed_import.status, feed_import.COMPLETE)
         self.assertEquals(feed_import.total_videos, 6)
-        self.assertEquals(feed_import.videos_imported, 3)
-        self.assertEquals(feed_import.videos_skipped, 3)
+        self.assertEquals(feed_import.videos_imported, 2)
+        self.assertEquals(feed_import.videos_skipped, 4)
 
         self.assertEquals(
-            feed.video_set.filter(status=Video.ACTIVE).count(), 3)
+            feed.video_set.filter(status=Video.ACTIVE).count(), 2)
