@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from vidscraper.videos import Video as VidscraperVideo
+from vidscraper.suites.base import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
@@ -381,7 +381,7 @@ class ScrapedSubmitVideoViewTestCase(BaseTestCase):
     def test_get_object(self):
         """
         Test that `ScrapedSubmitVideoView.get_object()` actually creates a
-        video from the given `vidscraper.videos.Video` object.
+        video from the given `vidscraper.suites.base.Video` object.
         """
         view = ScrapedSubmitVideoView()
         view.video = VidscraperVideo('http://google.com')
