@@ -29,6 +29,7 @@ from django.utils.decorators import method_decorator
 from tagging.utils import parse_tag_input
 import vidscraper
 
+from localtv.decorators import request_passes_test
 from localtv.models import SiteSettings, Video
 from localtv.signals import submit_finished
 from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
@@ -47,15 +48,20 @@ def _has_submit_permissions(request):
             return request.user_is_admin()
 
 
+can_submit_video = request_passes_test(_has_submit_permissions)
+
+
 class SubmitURLView(FormView):
     form_class = SubmitURLForm
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
 
+    @method_decorator(can_submit_video)
     def get(self, request, *args, **kwargs):
         return FormView.post(self, request, *args, **kwargs)
 
     @method_decorator(csrf_protect)
+    @method_decorator(can_submit_video)
     def post(self, request, *args, **kwargs):
         # This method should be disallowed. Some forms may still use it in old
         # templates, so we handle it for backwards-compatibility.
@@ -113,6 +119,7 @@ class SubmitVideoView(CreateView):
     form_class = SubmitVideoForm
     session_key = "localtv_submit_video_info"
 
+    @method_decorator(can_submit_video)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         session_key = self.get_session_key()
@@ -128,7 +135,7 @@ class SubmitVideoView(CreateView):
         return reverse('localtv_submit_thanks', args=[self.object.pk])
 
     def get_form_class(self):
-        fields = ['tags', 'contact', 'notes']
+        fields = self.get_form_fields()
         session_key = self.get_session_key()
         try:
             session_dict = self.request.session[session_key]
@@ -137,18 +144,7 @@ class SubmitVideoView(CreateView):
         except KeyError:
             raise Http404
 
-        if self.video is not None and (self.video.embed_code or
-                (self.video.file_url and not self.video.file_url_expires)):
-            pass
-        elif is_video_url(self.url):
-            fields += ['name', 'description', 'thumbnail_url', 'website_url']
-        else:
-            fields += ['name', 'description', 'thumbnail_url', 'embed_code']
-
-        if self.video is not None:
-            self.object = Video.from_vidscraper_video(self.video, commit=False)
-        else:
-            self.object = Video()
+        self.object = self.get_object()
 
         return modelform_factory(Video, form=self.form_class, fields=fields)
 
@@ -160,6 +156,12 @@ class SubmitVideoView(CreateView):
             })
         return initial
 
+    def get_object(self):
+        return Video()
+
+    def get_form_fields(self):
+        return ['tags', 'contact', 'notes']
+
     def get_form_kwargs(self):
         kwargs = super(SubmitVideoView, self).get_form_kwargs()
         kwargs.update({
@@ -169,15 +171,7 @@ class SubmitVideoView(CreateView):
         return kwargs
 
     def get_template_names(self):
-        if self.video is not None and (self.video.embed_code or
-                (self.video.file_url and not self.video.file_url_expires)):
-            template_names = ['localtv/submit_video/scraped.html']
-        elif is_video_url(self.url):
-            template_names = ['localtv/submit_video/direct.html']
-        else:
-            template_names = ['localtv/submit_video/embed.html']
-
-        return template_names
+        return [self.template_name]
 
     def form_valid(self, form):
         response = super(SubmitVideoView, self).form_valid(form)
@@ -209,6 +203,25 @@ class SubmitVideoView(CreateView):
         }
         return context
 
+class ScrapedSubmitVideoView(SubmitVideoView):
+    template_name = 'localtv/submit_video/scraped.html'
+
+    def get_object(self):
+        return Video.from_vidscraper_video(self.video, commit=False)
+
+class EmbedSubmitVideoView(SubmitVideoView):
+    template_name = 'localtv/submit_video/embed.html'
+
+    def get_form_fields(self):
+        return super(EmbedSubmitVideoView, self).get_form_fields() + [
+            'name', 'description', 'thumbnail_url', 'embed_code']
+
+class DirectLinkSubmitVideoView(SubmitVideoView):
+    template_name = 'localtv/submit_video/direct.html'
+
+    def get_form_fields(self):
+        return super(EmbedSubmitVideoView, self).get_form_fields() + [
+            'name', 'description', 'thumbnail_url', 'website_url']
 
 def submit_thanks(request, video_id=None):
     if request.user_is_admin() and video_id:
