@@ -101,7 +101,7 @@ class AdministrationBaseTestCase(BaseTestCase):
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'feeds', 'savedsearches']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'savedsearches']
 
     url = reverse('localtv_admin_approve_reject')
 
@@ -116,7 +116,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/approve_reject_table.html')
         self.assertIsInstance(response.context['current_video'],
                               Video)
@@ -170,7 +170,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url,
                          {'video_id': str(video.pk)})
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
         self.assertEqual(response.context['current_video'],
                           video)
@@ -420,7 +420,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/clear_confirm.html')
         self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
@@ -446,7 +446,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/clear_confirm.html')
         self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
@@ -517,7 +517,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/manage_sources.html')
         self.assertTrue('add_feed_form' in response.context[0])
         self.assertTrue('page' in response.context[0])
@@ -1095,7 +1095,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
@@ -1150,7 +1150,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1166,7 +1166,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1182,7 +1182,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                           {'feed_url': self.feed_url,
                            'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
                         self.feed_url)
@@ -1375,7 +1375,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertTrue('current_video' in response.context[0])
         self.assertTrue('page_obj' in response.context[0])
@@ -1393,7 +1393,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url,
                          {'q': 'search string'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertIsInstance(response.context['current_video'],
                               Video)
@@ -1541,7 +1541,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'q': 'search string',
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
         self.assertEqual(response.context[0]['current_video'].id,
                           metasearch_video.id)
@@ -1657,7 +1657,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_user_form' in response.context[0])
@@ -1673,7 +1673,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -1690,7 +1690,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -1961,7 +1961,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_category_form' in response.context[0])
@@ -1976,7 +1976,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -1997,7 +1997,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -2021,7 +2021,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2044,7 +2044,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2069,7 +2069,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2332,7 +2332,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
 
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/bulk_edit.html')
         self.assertEqual(response.context[0]['page'].number, 1)
         self.assertTrue('formset' in response.context[0])
@@ -3021,7 +3021,7 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3105,7 +3105,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertTrue('form' in response.context[0])
 
@@ -3120,7 +3120,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, )
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3136,7 +3136,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3305,7 +3305,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('form' in response.context[0])
@@ -3320,7 +3320,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3336,7 +3336,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -3388,7 +3388,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3410,7 +3410,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3922,7 +3922,6 @@ class DowngradingSevenAdmins(BaseTestCase):
         self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
 
 class NightlyTiersEmails(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
 
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()
