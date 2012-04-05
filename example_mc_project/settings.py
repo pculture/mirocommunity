@@ -17,8 +17,12 @@
 
 # Example settings for a Miro Community project
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -170,6 +174,11 @@ INSTALLED_APPS = (
     'daguerre'
 )
 
+if USE_SOUTH:
+    if 'south' not in INSTALLED_APPS:
+        INSTALLED_APPS = INSTALLED_APPS + ('south',)
+    SOUTH_TESTS_MIGRATE = True
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
@@ -247,7 +256,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
 
-import os
 # haystack search
 HAYSTACK_CONNECTIONS = {
     'default': {
