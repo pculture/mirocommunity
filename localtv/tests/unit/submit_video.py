@@ -22,13 +22,16 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from vidscraper.suites import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
 from localtv.submit_video.forms import SubmitVideoForm
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
-                                        SubmitVideoView)
+                                        SubmitVideoView,
+                                        ScrapedSubmitVideoView,
+                                        EmbedSubmitVideoView,
+                                        DirectLinkSubmitVideoView)
 from localtv.tests.legacy_localtv import BaseTestCase
 from localtv.utils import get_or_create_tags
 
@@ -250,7 +253,6 @@ class SubmitURLViewTestCase(BaseTestCase):
 
 
 class SubmitVideoViewTestCase(BaseTestCase):
-    base_fields = set(['tags', 'contact', 'thumbnail_file', 'notes'])
     fixtures = BaseTestCase.fixtures + ['videos']
 
     def setUp(self):
@@ -285,124 +287,6 @@ class SubmitVideoViewTestCase(BaseTestCase):
         self.assertEqual(view.get_success_url(),
                          reverse('localtv_submit_thanks', args=[obj.pk]))
 
-    def test_get_form_class__scraped(self):
-        """
-        Tests that a form for a scraped video only provides the most basic
-        fields for additional information.
-
-        """
-        view = SubmitVideoView()
-        view.request = self.factory.get('/')
-        expected_fields = set(self.base_fields)
-        video = VidscraperVideo('http://google.com')
-
-        # Option one: Video with embed code
-        video.embed_code = 'hola'
-        view.request.session[view.get_session_key()] = {
-            'url': video.url,
-            'video': video
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-        # Option two: Video with non-expiring file_url.
-        video.embed_code = None
-        video.file_url = 'hola'
-        view.request.session[view.get_session_key()] = {
-            'url': video.url,
-            'video': video
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-    def test_get_form_class__directlink(self):
-        """
-        Tests that a form for a direct link provides name, description,
-        thumbnail_url, and website_url fields in addition to the basic fields.
-
-        """
-        view = SubmitVideoView()
-        view.request = self.factory.get('/')
-        video_url = 'http://google.com/video.mov'
-        expected_fields = (self.base_fields |
-                           set(['name', 'description', 'website_url',
-                                'thumbnail_url']))
-
-        # Option one: No video, but a video file url.
-        view.request.session[view.get_session_key()] = {
-            'url': video_url,
-            'video': None
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-        # Option two: A video missing embed_code and file_url data, but a video
-        # file url.
-        video = VidscraperVideo(video_url)
-        view.request.session[view.get_session_key()] = {
-            'url': video.url,
-            'video': video
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-    def test_get_form_class__embedrequest(self):
-        """
-        Tests that a form for an embedrequest video - i.e. a video that
-        vidscraper can't parse and which doesn't look like a direct link -
-        provides name, description, thumbnail_url, and embed_code fields in
-        addition to the basic fields.
-
-        """
-        view = SubmitVideoView()
-        view.request = self.factory.get('/')
-        video_url = 'http://google.com/'
-        expected_fields = (self.base_fields |
-                           set(['name', 'description', 'embed_code',
-                                'thumbnail_url']))
-
-        # Option 1: no video
-        view.request.session[view.get_session_key()] = {
-            'url': video_url,
-            'video': None
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-        # Option two: video missing embed & file_url
-        video = VidscraperVideo(video_url)
-        view.request.session[view.get_session_key()] = {
-            'url': video.url,
-            'video': video
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
-        # Option three: video with expiring file_url.
-        video.file_url = 'hola'
-        video.file_url_expires = datetime.datetime.now() + datetime.timedelta(1)
-
-        view.request.session[view.get_session_key()] = {
-            'url': video.url,
-            'video': video
-        }
-        form_class = view.get_form_class()
-        self.assertEqual(set(form_class.base_fields),
-                         expected_fields)
-        self.assertIsInstance(view.object, Video)
-
     def test_get_initial_tags(self):
         """
         Tests that tags are in the initial data only if tags are defined on the
@@ -421,78 +305,6 @@ class SubmitVideoViewTestCase(BaseTestCase):
         self.assertTrue('tags' in initial)
         # This is perhaps not the best way to test this.
         self.assertEqual(initial['tags'], get_or_create_tags(tags))
-
-    def test_get_template_names__scraped(self):
-        """
-        Tests that if the video is a scraped video, the scraped video template
-        will be used.
-
-        """
-        view = SubmitVideoView()
-        expected_template_names = ['localtv/submit_video/scraped.html']
-        view.video = VidscraperVideo('http://google.com')
-        view.url = 'http://google.com'
-
-        # Option one: Video with embed code
-        view.video.embed_code = 'hola'
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-        # Option two: Video with non-expiring file_url.
-        view.video.embed_code = None
-        view.video.file_url = 'hola'
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-    def test_get_template_names__directlink(self):
-        """
-        Tests that if the video is a direct link, the direct link template
-        will be used.
-
-        """
-        view = SubmitVideoView()
-        video_url = 'http://google.com/video.mov'
-        view.url = video_url
-        expected_template_names = ['localtv/submit_video/direct.html']
-
-        # Option one: No video, but a video file url.
-        view.video = None
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-        # Option two: A video missing embed_code and file_url data, but a video
-        # file url.
-        view.video = VidscraperVideo(video_url)
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-    def test_get_template_names__embedrequest(self):
-        """
-        Tests that if the video is an embedrequest video - i.e. a video that
-        vidscraper can't parse and which doesn't look like a direct link - the
-        embedrequest template will be used.
-
-        """
-        view = SubmitVideoView()
-        video_url = 'http://google.com'
-        view.url = video_url
-        expected_template_names = ['localtv/submit_video/embed.html']
-
-        # Option 1: no video
-        view.video = None
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-        # Option two: video missing embed & file_url
-        view.video = VidscraperVideo(video_url)
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
-
-        # Option three: video with expiring file_url.
-        view.video.file_url = 'hola'
-        view.video.file_url_expires = datetime.datetime.now() + datetime.timedelta(1)
-        template_names = view.get_template_names()
-        self.assertEqual(template_names, expected_template_names)
 
     def test_form_valid(self):
         """
@@ -545,6 +357,119 @@ class SubmitVideoViewTestCase(BaseTestCase):
                          set(['link', 'publish_date', 'tags', 'title',
                               'description', 'thumbnail_url', 'user',
                               'user_url']))
+
+
+class ScrapedSubmitVideoViewTestCase(BaseTestCase):
+    def test_get_form_class(self):
+        """
+        Tests that a form for a scraped video only provides the most basic
+        fields for additional information.
+
+        """
+        view = ScrapedSubmitVideoView()
+        view.request = self.factory.get('/')
+        expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes'])
+        view.request.session[view.get_session_key()] = {
+            'url': '',
+            'video': VidscraperVideo('http://google.com/')
+        }
+        form_class = view.get_form_class()
+        self.assertEqual(set(form_class.base_fields),
+                         expected_fields)
+        self.assertIsInstance(view.object, Video)
+
+    def test_get_object(self):
+        """
+        Test that `ScrapedSubmitVideoView.get_object()` actually creates a
+        video from the given `vidscraper.videos.Video` object.
+        """
+        view = ScrapedSubmitVideoView()
+        view.video = VidscraperVideo('http://google.com')
+        view.video.title = 'Title'
+        view.video.embed_code = 'embed_code'
+        obj = view.get_object()
+        self.assertEqual(obj.name, 'Title')
+        self.assertEqual(obj.embed_code, 'embed_code')
+
+    def test_get_template_names(self):
+        """
+        Tests that if the video is a scraped video, the scraped video template
+        will be used.
+
+        """
+        view = ScrapedSubmitVideoView()
+        expected_template_names = ['localtv/submit_video/scraped.html']
+        self.assertEqual(view.get_template_names(), expected_template_names)
+
+
+class EmbedSubmitVideoViewTestCase(BaseTestCase):
+
+    def test_get_form_class(self):
+        """
+        Tests that a form for an embedrequest video - i.e. a video that
+        vidscraper can't parse and which doesn't look like a direct link -
+        provides name, description, thumbnail_url, and embed_code fields in
+        addition to the basic fields.
+
+        """
+        view = EmbedSubmitVideoView()
+        view.request = self.factory.get('/')
+        expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes',
+                               'name', 'description', 'embed_code',
+                               'thumbnail_url'])
+
+        view.request.session[view.get_session_key()] = {
+            'url': '',
+            'video': None
+        }
+        form_class = view.get_form_class()
+        self.assertEqual(set(form_class.base_fields),
+                         expected_fields)
+        self.assertIsInstance(view.object, Video)
+
+    def test_get_template_names(self):
+        """
+        Tests that if the video is an embedrequest video - i.e. a video that
+        vidscraper can't parse and which doesn't look like a direct link - the
+        embedrequest template will be used.
+
+        """
+        view = EmbedSubmitVideoView()
+        self.assertEqual(view.get_template_names(),
+                         ['localtv/submit_video/embed.html'])
+
+
+class DirectLinkSubmitVideoViewTestCase(BaseTestCase):
+
+    def test_get_form_class(self):
+        """
+        Tests that a form for a direct link provides name, description,
+        thumbnail_url, and website_url fields in addition to the basic fields.
+
+        """
+        view = DirectLinkSubmitVideoView()
+        view.request = self.factory.get('/')
+        expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes',
+                               'name', 'description', 'website_url',
+                               'thumbnail_url'])
+        view.request.session[view.get_session_key()] = {
+            'url': '',
+            'video': None
+        }
+        form_class = view.get_form_class()
+        self.assertEqual(set(form_class.base_fields),
+                         expected_fields)
+        self.assertIsInstance(view.object, Video)
+
+    def test_get_template_names(self):
+        """
+        Tests that if the video is a direct link, the direct link template
+        will be used.
+
+        """
+        view = DirectLinkSubmitVideoView()
+        expected_template_names = ['localtv/submit_video/direct.html']
+        self.assertEqual(view.get_template_names(), expected_template_names)
 
 
 class SubmitVideoFormTestCase(BaseTestCase):

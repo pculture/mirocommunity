@@ -203,11 +203,13 @@ class SubmitVideoView(CreateView):
         }
         return context
 
+
 class ScrapedSubmitVideoView(SubmitVideoView):
     template_name = 'localtv/submit_video/scraped.html'
 
     def get_object(self):
         return Video.from_vidscraper_video(self.video, commit=False)
+
 
 class EmbedSubmitVideoView(SubmitVideoView):
     template_name = 'localtv/submit_video/embed.html'
@@ -216,12 +218,14 @@ class EmbedSubmitVideoView(SubmitVideoView):
         return super(EmbedSubmitVideoView, self).get_form_fields() + [
             'name', 'description', 'thumbnail_url', 'embed_code']
 
+
 class DirectLinkSubmitVideoView(SubmitVideoView):
     template_name = 'localtv/submit_video/direct.html'
 
     def get_form_fields(self):
-        return super(EmbedSubmitVideoView, self).get_form_fields() + [
+        return super(DirectLinkSubmitVideoView, self).get_form_fields() + [
             'name', 'description', 'thumbnail_url', 'website_url']
+
 
 def submit_thanks(request, video_id=None):
     if request.user_is_admin() and video_id:
