@@ -1335,6 +1335,15 @@ ol > li {
     width: 50%;
   }
 }
+/* line 2, ../sass/partials/modules/_tabs.scss */
+.js .tab-pane {
+  display: none;
+}
+/* line 5, ../sass/partials/modules/_tabs.scss */
+.js .tab-pane.active {
+  display: block;
+}
+
 /* line 1, ../sass/partials/pages/_video_grid.scss */
 .video-grid > .media-item {
   width: 200px;

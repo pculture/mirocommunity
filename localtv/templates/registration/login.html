@@ -41,97 +41,109 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="LoginForm" class="tab-pane active">
 				<div class="row">
 					<div class="col-one-half">
-						<h1>Login</h1>
-						<form action="{{ settings.LOGIN_URL }}" method="POST">
-							{% csrf_token %}
-							{% include "localtv/_form_inner.html" %}
+						<div class="content-box">
+							<h1>Login</h1>
+							<form action="{{ settings.LOGIN_URL }}" method="POST">
+								{% csrf_token %}
+								{% include "localtv/_form_inner.html" %}
 							
 							
-							<div class="control-group">
-								<div class="controls">
-									<button>Login</button>
+								<div class="control-group">
+									<div class="controls">
+										<button>Login</button>
+									</div>
 								</div>
-							</div>
-						</form>
+							</form>
+						</div>
 					</div>{# /.col-one-hal #}
 					<div class="col-one-half">
-						<h1>Sign Up</h1>
-						<form action="/accounts/register/" method="POST">
-							{% csrf_token %}
-							<div class="control-group control-group-username">
-								<label for="id_username">Username</label>
-								<div class="controls">
-									<input id="id_username" type="text" class="required" name="username" maxlength="30" />
+						<div class="content-box">
+							<h1>Sign Up</h1>
+							<form action="/accounts/register/" method="POST">
+								{% csrf_token %}
+								<div class="control-group control-group-username">
+									<label for="id_username">Username</label>
+									<div class="controls">
+										<input id="id_username" type="text" class="required" name="username" maxlength="30" />
+									</div>
 								</div>
-							</div>
-							<div class="control-group control-group-username">
-								<label for="id_email">Email</label>
-								<div class="controls">
-									<input id="id_email" type="text" class="required" name="email" maxlength="75" />
+								<div class="control-group control-group-username">
+									<label for="id_email">Email</label>
+									<div class="controls">
+										<input id="id_email" type="text" class="required" name="email" maxlength="75" />
+									</div>
 								</div>
-							</div>
 							
-							<div class="control-group control-group-password">
-								<label for="id_email">Password</label>
-								<div class="controls">
-									<input id="id_password1" type="password" class="required" name="password1" />
+								<div class="control-group control-group-password">
+									<label for="id_email">Password</label>
+									<div class="controls">
+										<input id="id_password1" type="password" class="required" name="password1" />
+									</div>
 								</div>
-							</div>
 							
-							<div class="control-group control-group-password">
-								<label for="id_email">Password (again)</label>
-								<div class="controls">
-									<input id="id_password2" type="password" class="required" name="password2" />
+								<div class="control-group control-group-password">
+									<label for="id_email">Password (again)</label>
+									<div class="controls">
+										<input id="id_password2" type="password" class="required" name="password2" />
+									</div>
 								</div>
-							</div>
 							
-							<div class="control-group">
-								<div class="controls">
-									<button>Sign Up</button>
+								<div class="control-group">
+									<div class="controls">
+										<button>Sign Up</button>
+									</div>
 								</div>
-							</div>
-						</form>
+							</form>
+						</div>
 					</div>{# /.col-one-half #}
 				</div>{# /.row #}
 			</div>{# /#LoginForm #}
 			<div id="FacebookForm" class="tab-pane">
-				<h1>Login with Facebook</h1>
-				<a href="{% url socialauth_facebook_login %}?next={{ next }}">
-					<img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Facebook" />
-				</a>
+				<div class="content-box">
+					<h1>Login with Facebook</h1>
+					<a href="{% url socialauth_facebook_login %}?next={{ next }}">
+						<img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Facebook" />
+					</a>
+				</div>
 			</div>{# /#FacebookForm #}
 			<div id="TwitterForm" class="tab-pane">
-				<h1>Login with Twitter</h1>
-				<a href="{% url socialauth_twitter_login %}?next={{ next }}">
-					<img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" />
-				</a>
+				<div class="content-box">
+					<h1>Login with Twitter</h1>
+					<a href="{% url socialauth_twitter_login %}?next={{ next }}">
+						<img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" />
+					</a>
+				</div>
 			</div>{# /#TwitterForm #}
 			<div id="OpenIDForm" class="tab-pane">
-				<h1>Login with OpenID</h1>
-				<form action="{% url socialauth_openid_login %}" method="post">
-					{% csrf_token %}
-					{% if next %}
-						<input type="hidden" name="openid_next" value="{{ next }}">
-					{% endif %}
-					<div class="control-group">
-						<label for="openid_url">OpenID Url</label>
-						<div class="controls">
-							<input class="openid" type="text" id="openid_url" name="openid_url" />
+				<div class="content-box">
+					<h1>Login with OpenID</h1>
+					<form action="{% url socialauth_openid_login %}" method="post">
+						{% csrf_token %}
+						{% if next %}
+							<input type="hidden" name="openid_next" value="{{ next }}">
+						{% endif %}
+						<div class="control-group">
+							<label for="openid_url">OpenID Url</label>
+							<div class="controls">
+								<input class="openid" type="text" id="openid_url" name="openid_url" />
+							</div>
 						</div>
-					</div>
-					<div class="control-group">
-						<div class="controls">
-							<button>Sign In</button>
-							<a href="http://openid.net/get/" class="forgot oi" target="_blank">Don't have an openid? Get One!</a>
+						<div class="control-group">
+							<div class="controls">
+								<button>Sign In</button>
+								<a href="http://openid.net/get/" class="forgot oi" target="_blank">Don't have an openid? Get One!</a>
+							</div>
 						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>{# /#OpenIDForm #}
 			<div id="GoogleForm" class="tab-pane">
-				<h1>Login with Google Account</h1>
-				<form action="{% url socialauth_google_login %}" method="post">{% csrf_token %}
-				<p><input type="submit" value="Sign in" class="button" /></p>
-				</form>
+				<div class="content-box">
+					<h1>Login with Google Account</h1>
+					<form action="{% url socialauth_google_login %}" method="post">{% csrf_token %}
+					<p><input type="submit" value="Sign in" class="button" /></p>
+					</form>
+				</div>
 			</div>{# /#GoogleForm #}
 		</div>{# /.tab-content #}
 	</div>{# /.page-content.content-box #}
