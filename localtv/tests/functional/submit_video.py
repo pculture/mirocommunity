@@ -36,7 +36,7 @@ from localtv.tests import BaseTestCase
 
 
 class SubmitThanksFunctionalTestCase(BaseTestCase):
-    fixtures = ['videos'] + BaseTestCase.fixtures
+    fixtures = ['feeds', 'videos'] + BaseTestCase.fixtures
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -55,12 +55,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         """
         response = self.client.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
     def test_get__admin(self):
@@ -72,12 +72,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         self.client.login(username='admin', password='admin')
         response = self.client.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertTrue('video' in response.context[0])
         self.assertEqual(response.context['video'], self.video)
 
