@@ -91,7 +91,7 @@ class SubmitPermissionsTestCase(BaseTestCase):
 
 
 class SubmitURLViewTestCase(BaseTestCase):
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_GET_submission(self):
         """
@@ -253,7 +253,7 @@ class SubmitURLViewTestCase(BaseTestCase):
 
 
 class SubmitVideoViewBaseTestCase(BaseTestCase):
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
     abstract = True
     view_class = None
 

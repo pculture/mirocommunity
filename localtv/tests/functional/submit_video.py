@@ -375,7 +375,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
 class ReviewStatusEmailCommandTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def setUp(self):
         BaseTestCase.setUp(self)
