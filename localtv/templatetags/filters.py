@@ -19,12 +19,14 @@ import datetime
 import re
 import lxml.html
 
-from BeautifulSoup import BeautifulSoup, Comment, Tag
+from bs4 import BeautifulSoup, Comment, Tag
 from django.template import Library
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 
+
 register = Library()
+
 
 def simpletimesince(value, arg=None):
     """Formats a date as the time since that date (i.e. "4 days, 6 hours")."""
@@ -37,6 +39,7 @@ def simpletimesince(value, arg=None):
         return timesince(value, datetime.datetime.utcnow()).split(', ')[0]
     except (ValueError, TypeError):
         return u''
+
 
 def sanitize(value, extra_filters=None):
     """
@@ -86,19 +89,20 @@ def sanitize(value, extra_filters=None):
         allowed_attributes = set(allowed_attributes) - set(extra_attributes)
 
     soup = BeautifulSoup(value)
-    for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
+    for comment in soup.find_all(text=lambda text: isinstance(text, Comment)):
         # remove comments
         comment.extract()
 
-    for tag in soup.findAll(True):
+    for tag in soup.find_all(True):
         if tag.name not in allowed_tags:
             tag.hidden = True
         else:
-            tag.attrs = [(attr, js_regex.sub('', val))
-                         for attr, val in tag.attrs
-                         if attr in allowed_attributes]
+            tag.attrs = dict((key, js_regex.sub('', val))
+                             for key, val in tag.attrs.iteritems()
+                             if key in allowed_attributes)
 
-    return mark_safe(soup.renderContents().decode('utf8'))
+    return mark_safe(unicode(soup))
+
 
 def wmode_transparent(value):
     doc = lxml.html.fromstring('<div>' + value + '</div>')
@@ -122,6 +126,7 @@ def wmode_transparent(value):
         return mark_safe(wrapped_in_a_div[start:end])
     # else, uh, return the wrapped thing.
     return mark_safe(wrapped_in_a_div)
+
 
 register.filter(simpletimesince)
 register.filter(sanitize)

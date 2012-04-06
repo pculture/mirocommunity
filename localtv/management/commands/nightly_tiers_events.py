@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import time
 
 from django.core.management.base import BaseCommand
@@ -68,8 +69,9 @@ class Command(BaseCommand):
             site_settings.tierinfo.free_trial_available and
             site_settings.tier_name == 'max'):
 
-            print ("UM YIKES, I THOUGHT THE SITE SHOULD BE SUBSIDIZED",
-                   site_settings.site.domain)
+            print >> sys.stderr, (
+                "UM YIKES, I THOUGHT THE SITE SHOULD BE SUBSIDIZED",
+                site_settings.site.domain)
             return
 
         # Is there something stored in the
@@ -87,4 +89,5 @@ class Command(BaseCommand):
             if (in_paid_tier and
                 not site_settings.tierinfo.current_paypal_profile_id and
                 not site_settings.tierinfo.free_trial_available):
-                print 'This site looks delinquent: ', site_settings.site.domain
+                print >> sys.stderr, ('This site looks delinquent: ',
+                                      site_settings.site.domain)

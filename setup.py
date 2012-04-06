@@ -27,4 +27,4 @@ setup(name="mirocommunity",
           'Topic :: Multimedia :: Video',
       ],
       platforms=['OS Independent'],
-      install_requires=['django>=1.3,<1.4'])
+      install_requires=['django>=1.4'])

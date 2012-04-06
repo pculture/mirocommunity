@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import traceback
 
 from django.core.files.storage import default_storage
@@ -31,10 +32,10 @@ class Command(NoArgsCommand):
         if site_too_old():
             return
         for v in models.Video.objects.exclude(thumbnail_url=''):
-            path = v.get_original_thumb_storage_path()
-            if not v.has_thumbnail or not default_storage.exists(path):
+            if (not v.has_thumbnail or
+                not default_storage.exists(v.thumbnail_path)):
                 if verbosity >= 1:
-                    print 'saving', repr(v), '(%i)' % v.pk
+                    print >> sys.stderr, 'saving', repr(v), '(%i)' % v.pk
                 try:
                     # resave the thumbnail
                     v.save_thumbnail()

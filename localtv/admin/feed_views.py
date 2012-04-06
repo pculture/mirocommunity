@@ -17,11 +17,8 @@
 
 import datetime
 import re
-import sys
-import os
 import urllib2
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
@@ -29,11 +26,7 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.utils import simplejson
 from django.views.decorators.csrf import csrf_protect
-
-import celery
-from importlib import import_module
 
 import vidscraper
 

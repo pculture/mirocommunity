@@ -287,7 +287,7 @@ class Tier(object):
         self.site_settings = site_settings
 
     @staticmethod
-    def get(log_warnings=False):
+    def get(log_warnings=False, using='default'):
         import localtv.models
         DEFAULT = None
 
@@ -299,7 +299,8 @@ class Tier(object):
             return DEFAULT
         # We have a SiteSettings, right?
         try:
-            sl = localtv.models.SiteSettings.objects.get(site=site_id)
+            sl = localtv.models.SiteSettings.objects.using(using).get(
+                site=site_id)
         except localtv.models.SiteSettings.DoesNotExist:
             if log_warnings:
                 logging.warn("Eek, SiteSettings does not exist.")

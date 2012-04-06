@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from datetime import datetime, timedelta
 from socket import getaddrinfo
 
@@ -25,7 +26,6 @@ from haystack import connections
 from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category
-from localtv.tasks import haystack_update_index
 
 
 #: Global variable for storing whether the current global state believe that
@@ -44,7 +44,7 @@ class BaseTestCase(TestCase):
         backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
         backend.update(index, index.index_queryset())
-        
+
     def _rebuild_index(self):
         """Clears and then updates the search index."""
         self._clear_index()
@@ -52,9 +52,9 @@ class BaseTestCase(TestCase):
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
-                     **kwargs):
+                     update_index=True, **kwargs):
         """
-        Factory function for creating videos. Supplies the following defaults:
+        Factory method for creating videos. Supplies the following defaults:
 
         * name: 'Test'
         * status: :attr:`Video.ACTIVE`
@@ -70,11 +70,11 @@ class BaseTestCase(TestCase):
         ``categories`` and ``authors``, respectively.
 
         """
-        video = Video.objects.create(name=name, status=status, site_id=site_id,
-                                     **kwargs)
+        video = Video(name=name, status=status, site_id=site_id, **kwargs)
+        video.save(update_index=update_index)
+
         for i in xrange(watches):
-            Watch.objects.create(video=video, ip_address='0.0.0.0',
-                                 timestamp=datetime.now() - timedelta(i))
+            self.create_watch(video, days=i)
 
         if categories is not None:
             video.categories.add(*categories)
@@ -94,7 +94,7 @@ class BaseTestCase(TestCase):
 
     def create_category(self, site_id=1, **kwargs):
         """
-        Factory function for creating categories. Supplies the following
+        Factory method for creating categories. Supplies the following
         default:
 
         * site_id: 1
@@ -110,7 +110,7 @@ class BaseTestCase(TestCase):
 
     def create_user(self, **kwargs):
         """
-        Factory function for creating users. All arguments are passed directly
+        Factory method for creating users. All arguments are passed directly
         to :meth:`User.objects.create`.
 
         """
@@ -118,11 +118,45 @@ class BaseTestCase(TestCase):
 
     def create_tag(self, **kwargs):
         """
-        Factory function for creating tags. All arguments are passed directly
+        Factory method for creating tags. All arguments are passed directly
         to :meth:`Tag.objects.create`.
 
         """
         return Tag.objects.create(**kwargs)
+
+    def create_watch(self, video, ip_address='0.0.0.0', days=0):
+        """
+        Factory method for creating :class:`Watch` instances.
+
+        :param video: The video for the :class:`Watch`.
+        :param ip_address: An IP address for the watcher.
+        :param days: Number of days to place the :class:`Watch` in the past.
+
+        """
+        watch = Watch.objects.create(video=video, ip_address=ip_address)
+        watch.timestamp = datetime.now() - timedelta(days)
+        watch.save()
+        return watch
+
+    def _data_file(self, filename):
+        """
+        Returns the absolute path to a file in our testdata directory.
+        """
+        return os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                'testdata',
+                filename))
+
+    def assertStatusCodeEquals(self, response, status_code):
+        """
+        Assert that the response has the given status code.  If not, give a
+        useful error mesage.
+        """
+        self.assertEqual(response.status_code, status_code,
+                          'Status Code: %i != %i\nData: %s' % (
+                response.status_code, status_code,
+                response.content or response.get('Location', '')))
 
 
 def _have_internet_connection():

@@ -928,12 +928,6 @@ margin: 10px 0;
 display: block;
 }
 
-#admin_rightpane #video_wrapper {
-	height: 317px;
-	width: 100%;
-}
-
-
 #admin_rightpane .vid_title h2{
 font-size: 15px;
 }
