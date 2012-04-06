@@ -730,6 +730,26 @@ class EmbedRequestFunctionalTestCase(SubmitVideoViewFunctionalTestCase):
             'name': 'name',
             'description': 'description',
             'thumbnail': 'http://www.getmiro.com/favicon.ico',
+            'embed_code': '<h1>hi!</h1>',
+            'tags': 'tag1, tag2',
+            'contact': 'Foo <bar@example.com>',
+            'notes': "here's a note!"
+        }
+        SubmitVideoViewFunctionalTestCase.setUp(self)
+
+class EmbedRequestWithEmbedFunctionalTestCase(
+    SubmitVideoViewFunctionalTestCase):
+    def setUp(self):
+        # this TestCase tests the old behavior where the form field was called
+        # 'embed'
+        self.url = reverse('localtv_submit_embedrequest_video')
+        self.template_name = 'localtv/submit_video/embed.html'
+        self.session_url = 'http://www.getmiro.com/'
+        self.session_video = None
+        self.POST_data = {
+            'name': 'name',
+            'description': 'description',
+            'thumbnail': 'http://www.getmiro.com/favicon.ico',
             'embed': '<h1>hi!</h1>',
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',

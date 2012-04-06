@@ -210,19 +210,17 @@ class ScrapedSubmitVideoForm(SubmitVideoFormBase):
 
 class EmbedSubmitVideoForm(ThumbnailSubmitVideoForm):
 
-    def __init_(self, request, url, *args, **kwargs):
+    def __init__(self, request, url, *args, **kwargs):
         super(EmbedSubmitVideoForm, self).__init__(request, url, *args,
                                                    **kwargs)
-        if 'embed_code' in self.fields:
-            self.fields['embed'] = self.fields['embed_code']
+        self.fields['embed'] = self.fields['embed_code']
 
     def clean(self):
         cleaned_data = super(EmbedSubmitVideoForm, self).clean()
-        if 'embed' in cleaned_data:
-            embed_code = cleaned_data.pop('embed')
-            # prefer embed_code
-            if not cleaned_data.get('embed_code'):
-                cleaned_data['embed_code'] = embed_code
+        embed_code = cleaned_data.pop('embed')
+        # prefer embed_code
+        if not cleaned_data.get('embed_code'):
+            cleaned_data['embed_code'] = embed_code
         return cleaned_data
 
 
