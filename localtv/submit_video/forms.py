@@ -103,16 +103,12 @@ class SubmitVideoFormBase(forms.ModelForm):
             self.instance.user = request.user
         self.instance.site = Site.objects.get_current()
         self.instance.status = Video.UNAPPROVED
-        if 'website_url' in self.fields:
-            self.instance.file_url = url
-        elif not self.instance.website_url:
+        if not self.instance.website_url:
             self.instance.website_url = url
 
         # HACK for backwards-compatibility
         if 'thumbnail_url' in self.fields:
             self.fields['thumbnail'] = self.fields['thumbnail_url']
-        if 'embed_code' in self.fields:
-            self.fields['embed'] = self.fields['embed_code']
 
     def clean(self):
         cleaned_data = super(SubmitVideoFormBase, self).clean()
@@ -122,12 +118,6 @@ class SubmitVideoFormBase(forms.ModelForm):
             # prefer thumbnail_url.
             if not cleaned_data.get('thumbnail_url'):
                 cleaned_data['thumbnail_url'] = thumbnail_url
-
-        if 'embed' in cleaned_data:
-            embed_code = cleaned_data.pop('embed')
-            # prefer embed_code
-            if not cleaned_data.get('embed_code'):
-                cleaned_data['embed_code'] = embed_code
 
         return cleaned_data
 
@@ -219,7 +209,38 @@ class ScrapedSubmitVideoForm(SubmitVideoFormBase):
 
 
 class EmbedSubmitVideoForm(ThumbnailSubmitVideoForm):
-    pass
+
+    def __init_(self, request, url, *args, **kwargs):
+        super(EmbedSubmitVideoForm, self).__init__(request, url, *args,
+                                                   **kwargs)
+        if 'embed_code' in self.fields:
+            self.fields['embed'] = self.fields['embed_code']
+
+    def clean(self):
+        cleaned_data = super(EmbedSubmitVideoForm, self).clean()
+        if 'embed' in cleaned_data:
+            embed_code = cleaned_data.pop('embed')
+            # prefer embed_code
+            if not cleaned_data.get('embed_code'):
+                cleaned_data['embed_code'] = embed_code
+        return cleaned_data
+
 
 class DirectLinkSubmitVideoForm(ThumbnailSubmitVideoForm):
-    pass
+
+    def __init__(self, request, url, *args, **kwargs):
+        super(DirectLinkSubmitVideoForm, self).__init__(request, url, *args,
+                                                        **kwargs)
+
+        self.instance.file_url = url
+        if self.instance.website_url == url:
+            self.instance.website_url = u''
+
+    def save(self, commit=True):
+        instance = super(DirectLinkSubmitVideoForm, self).save(commit=False)
+        instance.try_to_get_file_url_data()
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
