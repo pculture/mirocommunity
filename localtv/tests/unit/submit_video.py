@@ -28,11 +28,10 @@ from localtv.models import Video
 from localtv.signals import submit_finished
 from localtv.submit_video import forms
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
-                                        SubmitVideoView,
                                         ScrapedSubmitVideoView,
                                         EmbedSubmitVideoView,
                                         DirectLinkSubmitVideoView)
-from localtv.tests.legacy_localtv import BaseTestCase
+from localtv.tests.base import BaseTestCase, FakeRequestFactory
 from localtv.utils import get_or_create_tags
 
 
@@ -91,7 +90,6 @@ class SubmitPermissionsTestCase(BaseTestCase):
 
 
 class SubmitURLViewTestCase(BaseTestCase):
-    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_GET_submission(self):
         """
@@ -238,7 +236,7 @@ class SubmitURLViewTestCase(BaseTestCase):
         attributes is tested in the form unit tests.
 
         """
-        video = Video.objects.all()[0]
+        video = self.create_video()
         url = video.website_url or video.file_url or video.guid
         view = SubmitURLView()
         form = view.form_class(data={'url': url})
@@ -252,20 +250,19 @@ class SubmitURLViewTestCase(BaseTestCase):
         self.assertEqual(context['video'], video)
 
 
-class SubmitVideoViewBaseTestCase(BaseTestCase):
-    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
-    abstract = True
+class SubmitVideoViewTestCaseMixin(object):
     view_class = None
+    POST_data = None
 
     def setUp(self):
-        BaseTestCase.setUp(self)
+        super(SubmitVideoViewTestCaseMixin, self).setUp()
         self.old_LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL = getattr(settings,
                                     'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', None)
         settings.LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL = True
         self.view = self.view_class()
 
     def tearDown(self):
-        BaseTestCase.tearDown(self)
+        super(SubmitVideoViewTestCaseMixin, self).tearDown()
         if self.old_LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL is not None:
             settings.LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL = self.old_LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL
 
@@ -284,10 +281,10 @@ class SubmitVideoViewBaseTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_success_url(self):
-        obj = Video.objects.all()[0]
-        self.view.object = obj
+        self.view.object = self.create_video()
         self.assertEqual(self.view.get_success_url(),
-                         reverse('localtv_submit_thanks', args=[obj.pk]))
+                         reverse('localtv_submit_thanks',
+                                 args=[self.view.object.pk]))
 
     def test_get_initial_tags(self):
         """
@@ -314,22 +311,26 @@ class SubmitVideoViewBaseTestCase(BaseTestCase):
 
         """
         self.view.request = self.factory.get('/')
-        self.view.request.session[self.view.get_session_key()] = True
-        self.view.object = Video.objects.all()[0]
-        self.view.url = (self.view.object.website_url or
-                         self.view.object.file_url)
+        self.view.object = Video()
+        self.view.url = u'http://google.com/'
         self.view.video = VidscraperVideo(self.view.url)
+        self.view.video.embed_code = 'Test Code'
+        self.view.request.session[self.view.get_session_key()] = {
+            'url': self.view.url,
+            'video': self.view.video
+        }
 
         submit_dict = {'hit': False}
         def test_submit_finished(sender, **kwargs):
             submit_dict['hit'] = True
         submit_finished.connect(test_submit_finished)
-
-        form = self.view.form_class(data={'url': self.view.url,
-                                     'contact': 'test@test.com'},
-                               **self.view.get_form_kwargs())
-        self.assertTrue(form.is_valid())
-        self.view.form_valid(form)
+        form = self.view.get_form_class()(data={'url': self.view.url,
+                                                'name': 'Test Video',
+                                                'embed_code': 'Test Code',
+                                                'contact': 'test@test.com'},
+                                          **self.view.get_form_kwargs())
+        self.assertTrue(form.is_valid(), form.errors.items())
+        self.assertTrue(self.view.form_valid(form))
 
         self.assertEqual(submit_dict['hit'], True)
         self.assertFalse(
@@ -344,12 +345,15 @@ class SubmitVideoViewBaseTestCase(BaseTestCase):
 
         """
         self.view.request = self.factory.get('/')
-        self.view.request.session[self.view.get_session_key()] = True
-        self.view.object = Video.objects.all()[0]
+        self.view.request.session[self.view.get_session_key()] = {
+            'url': '',
+            'video': VidscraperVideo('')
+            }
+        self.view.object = self.create_video()
         self.view.url = (self.view.object.website_url or
                          self.view.object.file_url)
         self.view.video = VidscraperVideo(self.view.url)
-        form = self.view.form_class(**self.view.get_form_kwargs())
+        form = self.view.get_form_class()(**self.view.get_form_kwargs())
 
         context_data = self.view.get_context_data(form=form)
         self.assertEqual(context_data.get('video'), self.view.object)
@@ -361,7 +365,8 @@ class SubmitVideoViewBaseTestCase(BaseTestCase):
                               'user_url']))
 
 
-class ScrapedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+class ScrapedSubmitVideoViewTestCase(SubmitVideoViewTestCaseMixin,
+                                     BaseTestCase):
 
     view_class = ScrapedSubmitVideoView
 
@@ -405,7 +410,7 @@ class ScrapedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
                          expected_template_names)
 
 
-class EmbedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+class EmbedSubmitVideoViewTestCase(SubmitVideoViewTestCaseMixin, BaseTestCase):
 
     view_class = EmbedSubmitVideoView
 
@@ -442,7 +447,8 @@ class EmbedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
                          ['localtv/submit_video/embed.html'])
 
 
-class DirectLinkSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+class DirectLinkSubmitVideoViewTestCase(SubmitVideoViewTestCaseMixin,
+                                        BaseTestCase):
 
     view_class = DirectLinkSubmitVideoView
 
