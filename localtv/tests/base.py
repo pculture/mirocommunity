@@ -36,9 +36,12 @@ HAVE_INTERNET_CONNECTION = None
 
 class FakeRequestFactory(RequestFactory):
     """Constructs requests with any necessary attributes set."""
-    def request(self, **request):
+    def request(self, user=None, **request):
         request = super(FakeRequestFactory, self).request(**request)
-        request.user = AnonymousUser()
+        if user is None:
+            request.user = AnonymousUser()
+        else:
+            request.user = user
         UserIsAdminMiddleware().process_request(request)
         SessionMiddleware().process_request(request)
         return request

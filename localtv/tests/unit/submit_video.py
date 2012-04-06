@@ -46,11 +46,10 @@ class SubmitPermissionsTestCase(BaseTestCase):
         self.site_settings = SiteSettings.objects.get()
         url = reverse('localtv_submit_video')
         self.anonymous_request = self.factory.get(url)
-        self.user_request = self.factory.get(url)
-        self.admin_request = self.factory.get(url)
-
-        self.user_request.user = User.objects.get(username='user')
-        self.admin_request.user = User.objects.get(username='admin')
+        self.user_request = self.factory.get(
+            url, user=User.objects.get(username='user'))
+        self.admin_request = self.factory.get(
+            url, user=User.objects.get(username='admin'))
 
     def test_all_permitted(self):
         """
