@@ -32,7 +32,7 @@ import vidscraper
 from localtv.decorators import request_passes_test
 from localtv.models import SiteSettings, Video
 from localtv.signals import submit_finished
-from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
+from localtv.submit_video import forms
 from localtv.submit_video.utils import is_video_url
 from localtv.utils import get_or_create_tags
 
@@ -52,7 +52,7 @@ can_submit_video = request_passes_test(_has_submit_permissions)
 
 
 class SubmitURLView(FormView):
-    form_class = SubmitURLForm
+    form_class = forms.SubmitURLForm
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
 
@@ -114,7 +114,6 @@ class SubmitURLView(FormView):
 
 
 class SubmitVideoView(CreateView):
-    form_class = SubmitVideoForm
     session_key = "localtv_submit_video_info"
 
     @method_decorator(csrf_protect)
@@ -202,6 +201,7 @@ class SubmitVideoView(CreateView):
 
 
 class ScrapedSubmitVideoView(SubmitVideoView):
+    form_class = forms.ScrapedSubmitVideoForm
     template_name = 'localtv/submit_video/scraped.html'
 
     def get_object(self):
@@ -209,6 +209,7 @@ class ScrapedSubmitVideoView(SubmitVideoView):
 
 
 class EmbedSubmitVideoView(SubmitVideoView):
+    form_class = forms.EmbedSubmitVideoForm
     template_name = 'localtv/submit_video/embed.html'
 
     def get_form_fields(self):
@@ -217,6 +218,7 @@ class EmbedSubmitVideoView(SubmitVideoView):
 
 
 class DirectLinkSubmitVideoView(SubmitVideoView):
+    form_class = forms.DirectLinkSubmitVideoForm
     template_name = 'localtv/submit_video/direct.html'
 
     def get_form_fields(self):

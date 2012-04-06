@@ -85,7 +85,7 @@ class SubmitURLForm(forms.Form):
         return url
 
 
-class SubmitVideoForm(forms.ModelForm):
+class SubmitVideoFormBase(forms.ModelForm):
     tags = TagField(required=False, label="Tags (optional)",
                     help_text=("You can also <span class='url'>optionally add "
                                "tags</span> for the video (below)."))
@@ -95,12 +95,9 @@ class SubmitVideoForm(forms.ModelForm):
                               label='E-mail (required)',
                               required=True)
 
-    thumbnail_file = forms.ImageField(required=False,
-                                      label="Thumbnail File (optional)")
-
     def __init__(self, request, url, *args, **kwargs):
         self.request = request
-        super(SubmitVideoForm, self).__init__(*args, **kwargs)
+        super(SubmitVideoFormBase, self).__init__(*args, **kwargs)
         if request.user.is_authenticated():
             self.initial['contact'] = request.user.email
             self.instance.user = request.user
@@ -118,7 +115,7 @@ class SubmitVideoForm(forms.ModelForm):
             self.fields['embed'] = self.fields['embed_code']
 
     def clean(self):
-        cleaned_data = super(SubmitVideoForm, self).clean()
+        cleaned_data = super(SubmitVideoFormBase, self).clean()
         # HACK for backwards-compatibility.
         if 'thumbnail' in cleaned_data:
             thumbnail_url = cleaned_data.pop('thumbnail')
@@ -135,7 +132,7 @@ class SubmitVideoForm(forms.ModelForm):
         return cleaned_data
 
     def _post_clean(self):
-        super(SubmitVideoForm, self)._post_clean()
+        super(SubmitVideoFormBase, self)._post_clean()
         # By this time, cleaned data has been applied to the instance.
         identifiers = Q()
         if self.instance.website_url:
@@ -157,7 +154,7 @@ class SubmitVideoForm(forms.ModelForm):
                                  extra_filters=['img'])
 
     def save(self, commit=True):
-        instance = super(SubmitVideoForm, self).save(commit=False)
+        instance = super(SubmitVideoFormBase, self).save(commit=False)
 
         if self.request.user_is_admin():
             site_settings = SiteSettings.objects.get_current()
@@ -179,11 +176,6 @@ class SubmitVideoForm(forms.ModelForm):
             if hasattr(instance, 'save_m2m'):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
-            
-            if self.cleaned_data.get('thumbnail_file', None):
-                instance.thumbnail_url = ''
-                instance.save_thumbnail_from_file(
-                    self.cleaned_data['thumbnail_file'])
 
             # TODO: Should be delayed as a task
             if instance.thumbnail_url and not instance.has_thumbnail:
@@ -200,3 +192,34 @@ class SubmitVideoForm(forms.ModelForm):
         else:
             self.save_m2m = save_m2m
         return instance
+
+
+class ThumbnailSubmitVideoForm(SubmitVideoFormBase):
+    thumbnail_file = forms.ImageField(required=False,
+                                      label="Thumbnail File (optional)")
+
+    def save(self, commit=True):
+        instance = super(ThumbnailSubmitVideoForm, self).save(commit=False)
+        old_m2m = self.save_m2m
+        def save_m2m():
+            if self.cleaned_data.get('thumbnail_file', None):
+                instance.thumbnail_url = ''
+                instance.save_thumbnail_from_file(
+                    self.cleaned_data['thumbnail_file'])
+            old_m2m()
+        if commit:
+            instance.save()
+            save_m2m()
+        else:
+            self.save_m2m = save_m2m
+        return instance
+
+class ScrapedSubmitVideoForm(SubmitVideoFormBase):
+    pass
+
+
+class EmbedSubmitVideoForm(ThumbnailSubmitVideoForm):
+    pass
+
+class DirectLinkSubmitVideoForm(ThumbnailSubmitVideoForm):
+    pass

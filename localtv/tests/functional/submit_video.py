@@ -28,7 +28,7 @@ from notification import models as notification
 from vidscraper.suites.base import Video as VidscraperVideo
 
 from localtv.models import Video
-from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
+from localtv.submit_video import forms
 from localtv.submit_video.management.commands import review_status_email
 from localtv.submit_video.views import SubmitURLView
 
@@ -188,14 +188,14 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
-        self.assertIsInstance(response.context['form'], SubmitURLForm)
+        self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
         response = self.client.get(self.url, {'q': 'hello', 'next': '/blink/'})
         self.assertStatusCodeEquals(response, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
-        self.assertIsInstance(response.context['form'], SubmitURLForm)
+        self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
     def test_submit__succeed(self):
@@ -502,7 +502,8 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('form' in response.context[0])
         self.assertFalse(response.context['form'].is_bound)
-        self.assertIsInstance(response.context['form'], SubmitVideoForm)
+        self.assertIsInstance(response.context['form'],
+                              forms.SubmitVideoFormBase)
 
     def test_submit__succeed(self):
         """

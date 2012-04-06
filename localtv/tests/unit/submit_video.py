@@ -26,7 +26,7 @@ from vidscraper.suites.base import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
-from localtv.submit_video.forms import SubmitVideoForm
+from localtv.submit_video import forms
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
                                         SubmitVideoView,
                                         ScrapedSubmitVideoView,
@@ -472,10 +472,11 @@ class DirectLinkSubmitVideoViewTestCase(BaseTestCase):
         self.assertEqual(view.get_template_names(), expected_template_names)
 
 
-class SubmitVideoFormTestCase(BaseTestCase):
+class SubmitVideoFormBaseTestCase(BaseTestCase):
     def setUp(self):
+
         BaseTestCase.setUp(self)
-        self.form_class = modelform_factory(Video, SubmitVideoForm)
+        self.form_class = modelform_factory(Video, forms.SubmitVideoFormBase)
 
     def test_sanitize_description(self):
         """
@@ -487,6 +488,14 @@ class SubmitVideoFormTestCase(BaseTestCase):
         form = self.form_class(request, 'http://google.com')
         form.cleaned_data = {'description': "<img src='http://www.google.com/' alt='this should be stripped' />"}
         self.assertEqual(form.clean_description(), '')
+
+
+class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.form_class = modelform_factory(Video,
+                                            forms.ThumbnailSubmitVideoForm)
 
     def test_thumbnail_file_override(self):
         """
