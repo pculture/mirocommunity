@@ -20,13 +20,16 @@ from django.conf.urls.defaults import patterns, url
 from localtv.submit_video import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.SubmitURLView.as_view(),
+    url(r'^$', views.can_submit_video(views.SubmitURLView.as_view()),
     	name='localtv_submit_video'),
-    url(r'^scraped/$', views.ScrapedSubmitVideoView.as_view(),
+    url(r'^scraped/$', views.can_submit_video(
+            views.ScrapedSubmitVideoView.as_view()),
         name='localtv_submit_scraped_video'),
-    url(r'^embed/$', views.EmbedSubmitVideoView.as_view(),
+    url(r'^embed/$', views.can_submit_video(
+            views.EmbedSubmitVideoView.as_view()),
         name='localtv_submit_embedrequest_video'),
-    url(r'^directlink/$', views.DirectLinkSubmitVideoView.as_view(),
+    url(r'^directlink/$', views.can_submit_video(
+            views.DirectLinkSubmitVideoView.as_view()),
         name='localtv_submit_directlink_video'),
     url(r'^thanks/(?P<video_id>\d+)?$', views.submit_thanks,
         name='localtv_submit_thanks')

@@ -56,12 +56,10 @@ class SubmitURLView(FormView):
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
 
-    @method_decorator(can_submit_video)
     def get(self, request, *args, **kwargs):
         return FormView.post(self, request, *args, **kwargs)
 
     @method_decorator(csrf_protect)
-    @method_decorator(can_submit_video)
     def post(self, request, *args, **kwargs):
         # This method should be disallowed. Some forms may still use it in old
         # templates, so we handle it for backwards-compatibility.
@@ -119,7 +117,6 @@ class SubmitVideoView(CreateView):
     form_class = SubmitVideoForm
     session_key = "localtv_submit_video_info"
 
-    @method_decorator(can_submit_video)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         session_key = self.get_session_key()
