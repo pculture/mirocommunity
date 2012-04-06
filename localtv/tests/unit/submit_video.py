@@ -24,14 +24,14 @@ from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
 from vidscraper.suites.base import Video as VidscraperVideo
 
-from localtv.models import Video
+from localtv.models import Video, SiteSettings
 from localtv.signals import submit_finished
 from localtv.submit_video import forms
 from localtv.submit_video.views import (_has_submit_permissions, SubmitURLView,
                                         ScrapedSubmitVideoView,
                                         EmbedSubmitVideoView,
                                         DirectLinkSubmitVideoView)
-from localtv.tests.base import BaseTestCase, FakeRequestFactory
+from localtv.tests.base import BaseTestCase
 from localtv.utils import get_or_create_tags
 
 
@@ -40,8 +40,10 @@ class SubmitPermissionsTestCase(BaseTestCase):
     Test case for submit permissions.
 
     """
+    fixtures = ['users']
     def setUp(self):
         BaseTestCase.setUp(self)
+        self.site_settings = SiteSettings.objects.get()
         url = reverse('localtv_submit_video')
         self.anonymous_request = self.factory.get(url)
         self.user_request = self.factory.get(url)
