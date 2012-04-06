@@ -252,14 +252,17 @@ class SubmitURLViewTestCase(BaseTestCase):
         self.assertEqual(context['video'], video)
 
 
-class SubmitVideoViewTestCase(BaseTestCase):
+class SubmitVideoViewBaseTestCase(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ['videos']
+    abstract = True
+    view_class = None
 
     def setUp(self):
         BaseTestCase.setUp(self)
         self.old_LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL = getattr(settings,
                                     'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', None)
         settings.LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL = True
+        self.view = self.view_class()
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
@@ -270,68 +273,67 @@ class SubmitVideoViewTestCase(BaseTestCase):
         # This differs from the functional testing in that it tests the view
         # directly. The inputs given can only result in a 302 response or a 200
         # response, depending on whether there is correct session data or not.
-        view = SubmitVideoView()
         request = self.factory.get('/')
-        response = view.dispatch(request)
+        response = self.view.dispatch(request)
         self.assertEqual(response.status_code, 302)
 
-        request.session[view.get_session_key()] = {'url': 'http://google.com',
-                                                   'video': None}
-        response = view.dispatch(request)
+        request.session[self.view.get_session_key()] = {
+            'url': 'http://google.com',
+            'video': VidscraperVideo('http://google.com/')}
+        response = self.view.dispatch(request)
         self.assertEqual(response.status_code, 200)
 
     def test_get_success_url(self):
         obj = Video.objects.all()[0]
-        view = SubmitVideoView()
-        view.object = obj
-        self.assertEqual(view.get_success_url(),
+        self.view.object = obj
+        self.assertEqual(self.view.get_success_url(),
                          reverse('localtv_submit_thanks', args=[obj.pk]))
 
     def test_get_initial_tags(self):
         """
         Tests that tags are in the initial data only if tags are defined on the
-        video, and that the tags in the expected format - at the moment, this is
-        the return value of get_or_create_tags(tags).
+        video, and that the tags in the expected format - at the moment, this
+        is the return value of get_or_create_tags(tags).
 
         """
-        view = SubmitVideoView()
-        view.video = VidscraperVideo('http://google.com')
-        initial = view.get_initial()
+        self.view.video = VidscraperVideo('http://google.com')
+        initial = self.view.get_initial()
         self.assertFalse('tags' in initial)
 
         tags = ['hello', 'goodbye']
-        view.video.tags = tags
-        initial = view.get_initial()
+        self.view.video.tags = tags
+        initial = self.view.get_initial()
         self.assertTrue('tags' in initial)
         # This is perhaps not the best way to test this.
         self.assertEqual(initial['tags'], get_or_create_tags(tags))
 
     def test_form_valid(self):
         """
-        Tests that when the form_valid method is run, the session information is
-        cleared, and the submit_finished signal is sent.
+        Tests that when the form_valid method is run, the session information
+        is cleared, and the submit_finished signal is sent.
 
         """
-        view = SubmitVideoView()
-        view.request = self.factory.get('/')
-        view.request.session[view.get_session_key()] = True
-        view.object = Video.objects.all()[0]
-        view.url = view.object.website_url or view.object.file_url
-        view.video = VidscraperVideo(view.url)
+        self.view.request = self.factory.get('/')
+        self.view.request.session[self.view.get_session_key()] = True
+        self.view.object = Video.objects.all()[0]
+        self.view.url = (self.view.object.website_url or
+                         self.view.object.file_url)
+        self.view.video = VidscraperVideo(self.view.url)
 
         submit_dict = {'hit': False}
         def test_submit_finished(sender, **kwargs):
             submit_dict['hit'] = True
         submit_finished.connect(test_submit_finished)
 
-        form = view.form_class(data={'url': view.url,
+        form = self.view.form_class(data={'url': self.view.url,
                                      'contact': 'test@test.com'},
-                               **view.get_form_kwargs())
-        form.is_valid()
-        view.form_valid(form)
+                               **self.view.get_form_kwargs())
+        self.assertTrue(form.is_valid())
+        self.view.form_valid(form)
 
         self.assertEqual(submit_dict['hit'], True)
-        self.assertFalse(view.get_session_key() in view.request.session)
+        self.assertFalse(
+            self.view.get_session_key() in self.view.request.session)
         submit_finished.disconnect(test_submit_finished)
 
     def test_compatible_context(self):
@@ -341,17 +343,17 @@ class SubmitVideoViewTestCase(BaseTestCase):
         context.
 
         """
-        view = SubmitVideoView()
-        view.request = self.factory.get('/')
-        view.request.session[view.get_session_key()] = True
-        view.object = Video.objects.all()[0]
-        view.url = view.object.website_url or view.object.file_url
-        view.video = VidscraperVideo(view.url)
-        form = view.form_class(**view.get_form_kwargs())
+        self.view.request = self.factory.get('/')
+        self.view.request.session[self.view.get_session_key()] = True
+        self.view.object = Video.objects.all()[0]
+        self.view.url = (self.view.object.website_url or
+                         self.view.object.file_url)
+        self.view.video = VidscraperVideo(self.view.url)
+        form = self.view.form_class(**self.view.get_form_kwargs())
 
-        context_data = view.get_context_data(form=form)
-        self.assertEqual(context_data.get('video'), view.object)
-        self.assertIsInstance(context_data.get('form'), view.form_class)
+        context_data = self.view.get_context_data(form=form)
+        self.assertEqual(context_data.get('video'), self.view.object)
+        self.assertIsInstance(context_data.get('form'), self.view.form_class)
         self.assertTrue('data' in context_data)
         self.assertEqual(set(context_data['data']),
                          set(['link', 'publish_date', 'tags', 'title',
@@ -359,35 +361,36 @@ class SubmitVideoViewTestCase(BaseTestCase):
                               'user_url']))
 
 
-class ScrapedSubmitVideoViewTestCase(BaseTestCase):
+class ScrapedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+
+    view_class = ScrapedSubmitVideoView
+
     def test_get_form_class(self):
         """
         Tests that a form for a scraped video only provides the most basic
         fields for additional information.
 
         """
-        view = ScrapedSubmitVideoView()
-        view.request = self.factory.get('/')
-        expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes'])
-        view.request.session[view.get_session_key()] = {
+        self.view.request = self.factory.get('/')
+        expected_fields = set(['tags', 'contact', 'notes'])
+        self.view.request.session[self.view.get_session_key()] = {
             'url': '',
             'video': VidscraperVideo('http://google.com/')
         }
-        form_class = view.get_form_class()
+        form_class = self.view.get_form_class()
         self.assertEqual(set(form_class.base_fields),
                          expected_fields)
-        self.assertIsInstance(view.object, Video)
+        self.assertIsInstance(self.view.object, Video)
 
     def test_get_object(self):
         """
-        Test that `ScrapedSubmitVideoView.get_object()` actually creates a
+        Test that `ScrapedSubmitVideoSelf.View.get_object()` actually creates a
         video from the given `vidscraper.suites.base.Video` object.
         """
-        view = ScrapedSubmitVideoView()
-        view.video = VidscraperVideo('http://google.com')
-        view.video.title = 'Title'
-        view.video.embed_code = 'embed_code'
-        obj = view.get_object()
+        self.view.video = VidscraperVideo('http://google.com')
+        self.view.video.title = 'Title'
+        self.view.video.embed_code = 'embed_code'
+        obj = self.view.get_object()
         self.assertEqual(obj.name, 'Title')
         self.assertEqual(obj.embed_code, 'embed_code')
 
@@ -397,12 +400,14 @@ class ScrapedSubmitVideoViewTestCase(BaseTestCase):
         will be used.
 
         """
-        view = ScrapedSubmitVideoView()
         expected_template_names = ['localtv/submit_video/scraped.html']
-        self.assertEqual(view.get_template_names(), expected_template_names)
+        self.assertEqual(self.view.get_template_names(),
+                         expected_template_names)
 
 
-class EmbedSubmitVideoViewTestCase(BaseTestCase):
+class EmbedSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+
+    view_class = EmbedSubmitVideoView
 
     def test_get_form_class(self):
         """
@@ -412,20 +417,19 @@ class EmbedSubmitVideoViewTestCase(BaseTestCase):
         addition to the basic fields.
 
         """
-        view = EmbedSubmitVideoView()
-        view.request = self.factory.get('/')
+        self.view.request = self.factory.get('/')
         expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes',
                                'name', 'description', 'embed_code',
                                'thumbnail_url'])
 
-        view.request.session[view.get_session_key()] = {
+        self.view.request.session[self.view.get_session_key()] = {
             'url': '',
             'video': None
         }
-        form_class = view.get_form_class()
+        form_class = self.view.get_form_class()
         self.assertEqual(set(form_class.base_fields),
                          expected_fields)
-        self.assertIsInstance(view.object, Video)
+        self.assertIsInstance(self.view.object, Video)
 
     def test_get_template_names(self):
         """
@@ -434,12 +438,13 @@ class EmbedSubmitVideoViewTestCase(BaseTestCase):
         embedrequest template will be used.
 
         """
-        view = EmbedSubmitVideoView()
-        self.assertEqual(view.get_template_names(),
+        self.assertEqual(self.view.get_template_names(),
                          ['localtv/submit_video/embed.html'])
 
 
-class DirectLinkSubmitVideoViewTestCase(BaseTestCase):
+class DirectLinkSubmitVideoViewTestCase(SubmitVideoViewBaseTestCase):
+
+    view_class = DirectLinkSubmitVideoView
 
     def test_get_form_class(self):
         """
@@ -447,19 +452,18 @@ class DirectLinkSubmitVideoViewTestCase(BaseTestCase):
         thumbnail_url, and website_url fields in addition to the basic fields.
 
         """
-        view = DirectLinkSubmitVideoView()
-        view.request = self.factory.get('/')
+        self.view.request = self.factory.get('/')
         expected_fields = set(['tags', 'contact', 'thumbnail_file', 'notes',
                                'name', 'description', 'website_url',
                                'thumbnail_url'])
-        view.request.session[view.get_session_key()] = {
+        self.view.request.session[self.view.get_session_key()] = {
             'url': '',
             'video': None
         }
-        form_class = view.get_form_class()
+        form_class = self.view.get_form_class()
         self.assertEqual(set(form_class.base_fields),
                          expected_fields)
-        self.assertIsInstance(view.object, Video)
+        self.assertIsInstance(self.view.object, Video)
 
     def test_get_template_names(self):
         """
@@ -467,9 +471,9 @@ class DirectLinkSubmitVideoViewTestCase(BaseTestCase):
         will be used.
 
         """
-        view = DirectLinkSubmitVideoView()
         expected_template_names = ['localtv/submit_video/direct.html']
-        self.assertEqual(view.get_template_names(), expected_template_names)
+        self.assertEqual(self.view.get_template_names(),
+                         expected_template_names)
 
 
 class SubmitVideoFormBaseTestCase(BaseTestCase):
