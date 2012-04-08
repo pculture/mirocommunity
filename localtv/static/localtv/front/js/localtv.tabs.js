@@ -1,13 +1,15 @@
 $(function(){
 	var tab_toggle = function (e) {
 			var $this = $(this),
-				$target = $($this.attr('href'));
+				$target = $($this.attr('href')),
+				$parent = $this.parent();
 			
 			// if the target tab is currently active, do nothing
-			if ($this.hasClass('active')) return;
+			if ($parent.hasClass('active')) return;
 			
 			// otherwise, deactivate other tabs and activate the selected one
-			$this.siblings('.active').removeClass('active');
+			$parent.siblings('.active').removeClass('active');
+			$parent.addClass('active');
 			$target.siblings('.tab-pane.active').removeClass('active');
 			$target.addClass('active');
 			

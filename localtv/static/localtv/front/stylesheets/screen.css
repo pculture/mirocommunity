@@ -99,7 +99,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 45, ../sass/partials/_grid.scss */
-.padded-half, .dropdown-box, .precontent-header {
+.padded-half, .dropdown-box, .precontent-header, .tabs > li > a {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -512,12 +512,12 @@ ol > li {
 }
 
 /* line 13, ../sass/partials/modules/_lists.scss */
-.unstyled-list, .errorlist, .details-list, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .social-link-list, .grid-list {
+.unstyled-list, .errorlist, .details-list, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-footer-actions, .tile-box, .media-grid, .social-link-list, .grid-list, .tabs {
   margin: 0;
   padding: 0;
 }
 /* line 16, ../sass/partials/modules/_lists.scss */
-.unstyled-list > li, .errorlist > li, .details-list > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .social-link-list > li, .grid-list > li {
+.unstyled-list > li, .errorlist > li, .details-list > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-footer-actions > li, .tile-box > li, .media-grid > li, .social-link-list > li, .grid-list > li, .tabs > li {
   list-style-type: none;
 }
 
@@ -1271,7 +1271,7 @@ ol > li {
 
 /* line 6, ../sass/partials/modules/_icons.scss */
 .search-icon {
-  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1332893585');
+  background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1333911364');
   background-size: 16px 16px;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1341,6 +1341,43 @@ ol > li {
 }
 /* line 5, ../sass/partials/modules/_tabs.scss */
 .js .tab-pane.active {
+  display: block;
+}
+
+/* line 10, ../sass/partials/modules/_tabs.scss */
+.tabs {
+  margin-top: 18px;
+  *zoom: 1;
+  border-bottom: 1px solid;
+}
+/* line 38, ../../../../../../../../../../Library/Ruby/Gems/1.8/gems/compass-0.11.7/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+.tabs:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+/* line 15, ../sass/partials/modules/_tabs.scss */
+.tabs > li {
+  float: left;
+}
+/* line 17, ../sass/partials/modules/_tabs.scss */
+.tabs > li.active > a {
+  position: relative;
+  padding-bottom: 10px;
+  margin-bottom: -1px;
+}
+/* line 22, ../sass/partials/modules/_tabs.scss */
+.tabs > li > a {
+  border: 1px solid;
+  border-bottom: 0;
+  -moz-border-radius: 5px 5px 0 0;
+  -webkit-border-radius: 5px 5px 0 0;
+  -o-border-radius: 5px 5px 0 0;
+  -ms-border-radius: 5px 5px 0 0;
+  -khtml-border-radius: 5px 5px 0 0;
+  border-radius: 5px 5px 0 0;
+  margin-left: 20px;
+  text-align: center;
   display: block;
 }
 
@@ -1545,7 +1582,7 @@ input:focus, textarea:focus {
 /* line 176, ../sass/partials/_theme.scss */
 .precontent {
   /* http://subtlepatterns.com/?p=1024 */
-  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1332893585');
+  background: #343639 url('/static/localtv/front/images/classy_fabric.png?1333911364');
 }
 
 /* line 181, ../sass/partials/_theme.scss */
@@ -1595,9 +1632,28 @@ input:focus, textarea:focus {
   border-color: #e6e6e6;
 }
 
+/* tabs */
+/* line 223, ../sass/partials/_theme.scss */
+.tabs {
+  border-color: #cccccc;
+}
+
+/* line 226, ../sass/partials/_theme.scss */
+.tabs > .active > a {
+  background: white;
+  color: #444444;
+}
+
+/* line 230, ../sass/partials/_theme.scss */
+.tabs > li > a {
+  color: #999999;
+  background: #f2f2f2;
+  border-color: #cccccc;
+}
+
 /* sidebar */
 @media screen and (min-width: 740px) {
-  /* line 224, ../sass/partials/_theme.scss */
+  /* line 239, ../sass/partials/_theme.scss */
   .right-sidebar, .basic .popular > .pod-content,
   .basic .popular > .pod-footer,
   .cyclops .popular > .pod-content,
@@ -1613,7 +1669,7 @@ input:focus, textarea:focus {
     background: linear-gradient(left, #dcdcdc 0%, #f5f5f5 2%, #f5f5f5 100%);
   }
 
-  /* line 229, ../sass/partials/_theme.scss */
+  /* line 244, ../sass/partials/_theme.scss */
   .left-sidebar {
     background-color: #f5f5f5;
     background: -webkit-gradient(linear, 100% 50%, 0% 50%, color-stop(0%, #dcdcdc), color-stop(2%, #f5f5f5), color-stop(100%, #f5f5f5));

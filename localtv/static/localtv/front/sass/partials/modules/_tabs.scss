@@ -6,3 +6,27 @@
 		display:block;
 	}
 }
+
+.tabs{
+	@extend .unstyled-list;
+	@include margin-leader;
+	@include pie-clearfix;
+	border-bottom:1px solid;
+	& > li{
+		float:left;
+		&.active > a{
+			position:relative;
+			padding-bottom:$base-line-height/2+1px;
+			margin-bottom:-1px;
+		}
+		& > a{
+			border:1px solid;
+			border-bottom:0;
+			@include border-radius(5px 5px 0 0);
+			@extend .padded-half;
+			margin-left:$gutter-width/2;
+			text-align:center;
+			display:block;
+		}
+	}
+}

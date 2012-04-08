@@ -218,6 +218,21 @@ input, textarea{
 	}
 }
 
+/* tabs */
+
+.tabs{
+	border-color:darken($main-background-color, 20%);
+}
+.tabs > .active > a{
+	background:$main-background-color;
+	color:$main-text-color;
+}
+.tabs > li > a{
+	color:darken($main-background-color, 40%);
+	background:darken($main-background-color, 5%);
+	border-color:darken($main-background-color, 20%);
+}
+
 
 /* sidebar */
 @media screen and (min-width: 740px){
