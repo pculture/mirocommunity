@@ -57,6 +57,7 @@ from localtv.models import (Watch, Category, SiteSettings, Video, TierInfo,
                             Source)
 from localtv import utils
 import localtv.feeds.views
+from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
 from tagging.models import Tag
@@ -102,7 +103,6 @@ class BaseTestCase(TestCase):
         self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
-        self._rebuild_index()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -116,6 +116,24 @@ class BaseTestCase(TestCase):
                      'django.core.cache.backends.dummy.DummyCache'}}
         mail.outbox = [] # reset any email at the start of the suite
         self.factory = FakeRequestFactory()
+
+    def _fixture_setup(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_setup()
+        index._setup_save()
+        index._setup_delete()
+        self._rebuild_index()
+
+    def _fixture_teardown(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_teardown()
+        index._setup_save()
+        index._setup_delete()
+        self._clear_index()
 
     def _switch_into_tier(self):
         # By default, tests run on an 'max' account.
@@ -338,8 +356,8 @@ class FeedImportTestCase(BaseTestCase):
         self.assertEqual(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
         self.assertEqual(video.name, u'Dave Glassco Supports Miro')
         self.assertEqual(video.description,
-                          '>\n\n<br />\n\nDave is a great advocate and '
-                          'supporter of Miro.')
+                          '<p>&gt;\n\n<br/>\n\nDave is a great advocate and '
+                          'supporter of Miro.</p>')
         self.assertEqual(video.website_url, 'http://blip.tv/file/779122')
         self.assertEqual(video.file_url,
                           'http://blip.tv/file/get/'
@@ -515,7 +533,7 @@ University South Carolina, answers questions about teen pregnancy prevention.")
                           'smart-girls-at-the-party/the-dancer-kenaudra')
         self.assertEqual(video.description,
                           u'Kenaudra displays her many talents including a '
-                          'new dance called Praise Dancing.<br />'
+                          'new dance called Praise Dancing.<br/>'
                           '<a href="http://www.onnetworks.com/videos/'
                           'smart-girls-at-the-party/the-dancer-kenaudra"></a>')
         self.assertEqual(video.embed_code,
@@ -657,15 +675,16 @@ class ViewTestCase(BaseTestCase):
         should include 10 featured videos, 10 popular videos, 10 new views, and
         the base categories (those without parents).
         """
-        for watched in Watch.objects.all():
-            watched.timestamp = datetime.datetime.now() # so that they're
-                                                        # recent
-            watched.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        # Rebuild index to work around https://bitbucket.org/mchaput/whoosh/issue/237
+        #haystack_batch_update.apply(args=(Video._meta.app_label,
+        #                                  Video._meta.module_name))
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/index.html')
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
@@ -731,7 +750,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_about'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/about.html')
 
     def test_view_video(self):
@@ -865,7 +884,7 @@ class ViewTestCase(BaseTestCase):
                          {'q': 'blender'}) # lots of Blender videos in the test
                                            # data
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response, 
                                  SearchQuerySet().models(models.Video).filter(
@@ -880,7 +899,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response,
                                  SearchQuerySet().models(models.Video).filter(
@@ -895,7 +914,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_search'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
 
     def test_video_search_pagination(self):
@@ -1066,7 +1085,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_category_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/categories.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(list(response.context['page_obj'].object_list),
@@ -1085,7 +1104,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
         videos = list(models.Video.objects.with_best_date().filter(
@@ -1103,7 +1122,7 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_author_index'))
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(list(response.context['authors']),
@@ -1126,7 +1145,7 @@ class ViewTestCase(BaseTestCase):
             ).distinct().order_by('-best_date')
         )
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author.html')
         self.assertEqual(response.context['author'], author)
         self.assertEqual(len(videos), 2)
@@ -1150,7 +1169,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/browse.html')
 
     def test_latest_videos(self):
@@ -1162,7 +1181,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_new'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_new.html')
         self.assertEqual(response.context['paginator'].num_pages, 2)
         self.assertEqual(len(response.context['page_obj'].object_list), 15)
@@ -1176,22 +1195,21 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
-        for w in Watch.objects.all():
-            w.timestamp = datetime.datetime.now()
-            w.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name))
 
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
-        self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.get_popular_videos(
-                                 self.site_settings).filter(
-                                     watch__timestamp__gte=datetime.datetime.min
-                                 ).distinct()))
+        results = response.context['page_obj'].object_list
+        expected = Video.objects.get_popular_videos(self.site_settings)
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
         """
@@ -1202,7 +1220,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_featured'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
@@ -1224,7 +1242,7 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_tag',
                          args=['tag1']))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_tag.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
@@ -1243,7 +1261,7 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_feed',
                                  args=[feed.pk]))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_feed.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
@@ -1258,7 +1276,7 @@ class ListingViewTestCase(BaseTestCase):
 
 class CommentModerationTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -1539,7 +1557,7 @@ class CommentModerationTestCase(BaseTestCase):
 
 class VideoModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_when(self):
         """
@@ -1742,7 +1760,7 @@ class SiteTierTests(BaseTestCase):
 
 class WatchModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_add(self):
         """
@@ -2257,7 +2275,7 @@ class TierMethodsTests(BaseTestCase):
 
 class LegacyFeedViewTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
     def test_feed_views_respect_count_when_set(self):
         fake_request = self.factory.get('?count=10')
@@ -2319,7 +2337,7 @@ if localtv.settings.voting_enabled():
 
     class VotingTestCase(BaseTestCase):
 
-        fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+        fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
         def setUp(self):
             BaseTestCase.setUp(self)

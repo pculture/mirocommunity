@@ -15,14 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
+from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test.client import Client
 
 import datetime
 import json
+import feedparser
 
-from localtv.models import Video, SiteSettings
+from localtv.models import Video, Feed, SiteSettings
+from localtv.admin import feeds
 from localtv.playlists.models import Playlist
 from localtv.tests.base import BaseTestCase
 
@@ -98,3 +101,43 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         # yesterday video last in the order, should appear first
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
+
+class AdminFeedViewIntegrationTestCase(BaseTestCase):
+    urls = 'localtv.urls'
+
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        SiteSettings.objects.create(site_id=1)
+        self.feed = Feed.objects.create(name='Feed', site_id=1,
+                                        last_updated=datetime.datetime.now())
+        self.unapproved_video = self.create_video('Feed Video',
+                                                  status=Video.UNAPPROVED,
+                                                  feed=self.feed)
+        self.unapproved_user_video = self.create_video('User Video',
+                                                       status=Video.UNAPPROVED)
+
+    def test_unapproved(self):
+        url = reverse('localtv_admin_feed_unapproved',
+                      args=[feeds.generate_secret()])
+        response = self.client.get(url)
+        self.assertStatusCodeEquals(response, 200)
+        fp = feedparser.parse(response.content)
+        expected_titles = Video.objects.filter(
+            status=Video.UNAPPROVED,
+            site=1).order_by('when_submitted', 'when_published'
+            ).values_list('name', flat=True)
+        self.assertEquals([entry.title for entry in fp.entries],
+                          list(expected_titles))
+
+    def test_unapproved_user(self):
+        url = reverse('localtv_admin_feed_unapproved_user',
+                      args=[feeds.generate_secret()])
+        response = self.client.get(url)
+        self.assertStatusCodeEquals(response, 200)
+        fp = feedparser.parse(response.content)
+        expected_titles = Video.objects.filter(
+            status=Video.UNAPPROVED, feed=None, search=None,
+            site=1).order_by('when_submitted', 'when_published'
+            ).values_list('name', flat=True)
+        self.assertEquals([entry.title for entry in fp.entries],
+                          list(expected_titles))

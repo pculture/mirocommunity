@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from vidscraper.videos import Video as VidscraperVideo
+from vidscraper.suites import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.signals import submit_finished
@@ -88,7 +88,7 @@ class SubmitPermissionsTestCase(BaseTestCase):
 
 
 class SubmitURLViewTestCase(BaseTestCase):
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_GET_submission(self):
         """
@@ -251,7 +251,7 @@ class SubmitURLViewTestCase(BaseTestCase):
 
 class SubmitVideoViewTestCase(BaseTestCase):
     base_fields = set(['tags', 'contact', 'thumbnail_file', 'notes'])
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def setUp(self):
         BaseTestCase.setUp(self)

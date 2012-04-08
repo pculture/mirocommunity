@@ -807,13 +807,13 @@ class Feed(Source):
                                      with_exception=True, using=using)
             return
 
-        super(Feed, self).update(video_iter, source_import=feed_import,
-                                 using=using, **kwargs)
-
         self.etag = getattr(video_iter, 'etag', None) or ''
         self.last_updated = (getattr(video_iter, 'last_modified', None) or
                                  datetime.datetime.now())
         self.save()
+
+        super(Feed, self).update(video_iter, source_import=feed_import,
+                                 using=using, **kwargs)
 
     def source_type(self):
         return self.calculated_source_type
@@ -1483,8 +1483,12 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.filter(watch__timestamp__gt=since).annotate(
-                           watch_count=models.Count('watch'))
+        return self.extra(
+            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (since,)
+        )
 
 
 class VideoManager(models.Manager):
@@ -1541,10 +1545,9 @@ class VideoManager(models.Manager):
         current site_settings.
 
         """
-        return self.get_latest_videos(site_settings).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(site_settings),
+                                  descending=True)
 
     def get_category_videos(self, category, site_settings=None):
         """
@@ -1742,8 +1745,9 @@ class Video(Thumbnailable, VideoBase):
             q_filter |= models.Q(file_url=self.file_url)
         if self.guid:
             q_filter |= models.Q(guid=self.guid)
-        qs = Video.objects.using(self._state.db).filter(site_id=self.site_id
-                       ).exclude(status=Video.REJECTED).filter(q_filter)
+        qs = Video.objects.using(self._state.db).filter(
+            site_id=self.site_id,
+            status=Video.REJECTED).filter(q_filter)
         qs.delete()
 
     @models.permalink
@@ -1813,7 +1817,7 @@ class Video(Thumbnailable, VideoBase):
             soup = BeautifulSoup(video.description)
             for tag in soup.find_all(
                 'div', {'class': "miro-community-description"}):
-                instance.description = tag.renderContents()
+                instance.description = unicode(tag)
                 break
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])
