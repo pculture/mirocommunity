@@ -1356,17 +1356,40 @@ ol > li {
   display: table;
   clear: both;
 }
-/* line 15, ../sass/partials/modules/_tabs.scss */
+@media screen and (max-width: 740px) {
+  /* line 10, ../sass/partials/modules/_tabs.scss */
+  .tabs {
+    border-bottom: 0;
+    padding-bottom: 9px;
+    padding-top: 9px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+/* line 16, ../sass/partials/modules/_tabs.scss */
 .tabs > li {
   float: left;
 }
-/* line 17, ../sass/partials/modules/_tabs.scss */
+@media screen and (max-width: 740px) {
+  /* line 16, ../sass/partials/modules/_tabs.scss */
+  .tabs > li {
+    float: none;
+  }
+}
+/* line 19, ../sass/partials/modules/_tabs.scss */
 .tabs > li.active > a {
   position: relative;
   padding-bottom: 10px;
   margin-bottom: -1px;
 }
-/* line 22, ../sass/partials/modules/_tabs.scss */
+@media screen and (max-width: 740px) {
+  /* line 19, ../sass/partials/modules/_tabs.scss */
+  .tabs > li.active > a {
+    margin-bottom: 9px;
+    padding-bottom: 9px;
+  }
+}
+/* line 28, ../sass/partials/modules/_tabs.scss */
 .tabs > li > a {
   border: 1px solid;
   border-bottom: 0;
@@ -1379,6 +1402,20 @@ ol > li {
   margin-left: 20px;
   text-align: center;
   display: block;
+}
+@media screen and (max-width: 740px) {
+  /* line 28, ../sass/partials/modules/_tabs.scss */
+  .tabs > li > a {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -o-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -khtml-border-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid;
+    margin-left: 0;
+    margin-bottom: 9px;
+  }
 }
 
 /* line 1, ../sass/partials/pages/_video_grid.scss */
