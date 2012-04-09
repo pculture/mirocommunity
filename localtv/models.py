@@ -1588,14 +1588,6 @@ class VideoManager(models.Manager):
                            '-id')
 
 
-class CategoryVideo(models.Model):
-    category = models.ForeignKey(Category)
-    video = models.ForeignKey('Video')
-
-    class Meta:
-        unique_together = ('category', 'video')
-
-
 class Video(Thumbnailable, VideoBase):
     """
     Fields:
@@ -1652,8 +1644,7 @@ class Video(Thumbnailable, VideoBase):
     )
 
     site = models.ForeignKey(Site)
-    categories = models.ManyToManyField(Category, blank=True,
-                                        through=CategoryVideo)
+    categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
     file_url = BitLyWrappingURLField(verify_exists=False, blank=True)
