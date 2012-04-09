@@ -25,38 +25,9 @@ from django.utils.decorators import method_decorator
 from django.views.generic import FormView, UpdateView
 from voting.models import Vote
 
-from localtv.contrib.contest.forms import VotingForm, AdminForm
-from localtv.contrib.contest.models import ContestSettings
+from localtv.contrib.contests.forms import VotingForm, AdminForm
+from localtv.contrib.contests.models import Contest
 from localtv.decorators import require_site_admin
-from localtv.models import CategoryVideo
-
-
-class ContestVoteView(FormView):
-    form_class = VotingForm
-
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(ContestVoteView, self).dispatch(*args, **kwargs)
-
-    def get_success_url(self):
-        return self.form.cleaned_data['video'].get_absolute_url()
-
-    def form_valid(self, form):
-        if self.request.is_ajax():
-            return json.dumps({
-               'success': True,
-               'score': Vote.objects.get_score(form.category_video)
-            })
-        return super(ContestVoteView, self).form_valid()
-    
-    def form_invalid(self, form):
-        if self.request.is_ajax():
-            return json.dumps({
-                'success': False,
-                'errors': form.errors
-            })
-        return super(ContestVoteView, self).form_invalid()
 
 
 class ContestAdminView(UpdateView):

@@ -22,8 +22,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from voting.models import Vote
 
-from localtv.models import Category, Video, CategoryVideo
-from localtv.contrib.contest.models import ContestSettings
+from localtv.models import Category, Video
+from localtv.contrib.contests.models import Contest
 
 
 class VotingForm(forms.Form):
@@ -107,5 +107,5 @@ class AdminForm(forms.ModelForm):
                                        )
 
     class Meta:
-        model = ContestSettings
+        model = Contest
         exclude = ('site',)

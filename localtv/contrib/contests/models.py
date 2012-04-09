@@ -16,38 +16,47 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
-from localtv.models import Category
-
-
-class ContestSettingsManager(models.Manager):
-    # This is a template for future settings managers.
-    def get_current(self, **kwargs):
-        current_site = Site.objects.get_current()
-        try:
-            current_site.contestsettings
-        except ContestSettings.DoesNotExist:
-            current_site.contestsettings = self.get_or_create(
-                                                site=current_site)[0]
-        return current_site.contestsettings
+from localtv.models import Category, Video
 
 
+class Contest(models.Model):
+    #: The name of this contest.
+    name = models.CharField(max_length=100)
 
-class ContestSettings(models.Model):
-    objects = ContestSettingsManager()
+    #: The site this contest is tied to.
+    site = models.ForeignKey(Site)
 
-    #: The site these settings are for.
-    site = models.OneToOneField(Site)
-
-    #: Categories for which voting is enabled.
+    #: Categories for which this contest is open. If no categories are
+    #: selected, the contest will be open for all categories.
     categories = models.ManyToManyField(Category, blank=True, null=True)
 
-    #: Max number of votes per category
+    #: Max number of votes per user for this contest.
     max_votes = models.PositiveIntegerField(validators=[MinValueValidator(1)],
-                                            blank=True, null=True)
+                                            blank=True, null=True, default=1)
 
-    def get_absolute_url(self):
-        return reverse('localtv_contest_admin')
+    #: Whether down-voting is a valid option.
+    allow_downvotes = models.BooleanField(default=True)
+
+
+class ContestVote(models.Model):
+    UP = +1
+    DOWN = -1
+
+    VOTE_CHOICES = (
+        (UP, u'+'),
+        (DOWN, u'-'),
+    )
+
+    vote = models.SmallIntegerField(choices=VOTE_CHOICES)
+    contest = models.ForeignKey(Contest, related_name='votes')
+    video = models.ForeignKey(Video)
+    user = models.ForeignKey(User)
+
+    class Meta:
+        unique_together = ('contest', 'video', 'user')

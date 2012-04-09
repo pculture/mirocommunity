@@ -17,12 +17,12 @@
 
 from django.conf.urls.defaults import patterns, include, url
 
-from localtv.contrib.contest.views import ContestVoteView, ContestAdminView
+from localtv.contrib.contests.api.v1 import api as api_v1
+from localtv.contrib.contests.views import ContestAdminView
 
 
 urlpatterns = patterns('localtv.contrib.voting.views',
-    url(r'^contest/vote/(?P<category_slug>[\w-])/(?P<video_pk>\d+)/$',
-        ContestVoteView.as_view(), name='localtv_contest_vote'),
+    url(r'^api/', include(api_v1.urls)),
     url(r'^admin/contest/$', ContestAdminView.as_view(),
         name='localtv_contest_admin'),
 )
