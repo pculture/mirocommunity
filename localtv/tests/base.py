@@ -82,7 +82,7 @@ class BaseTestCase(TestCase):
 
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        if status == Video.ACTIVE and site_id == 1:
+        if update_index and status == Video.ACTIVE and site_id == 1:
             index = connections['default'].get_unified_index().get_index(Video)
             index._enqueue_update(video)
         return video
