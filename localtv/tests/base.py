@@ -19,12 +19,13 @@ import os
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.template.defaultfilters import slugify
 from django.test import TestCase
 from haystack import connections
 from tagging.models import Tag
 
-from localtv.models import Video, Watch, Category
+from localtv.models import Video, Watch, Category, Feed, SavedSearch
 
 
 class BaseTestCase(TestCase):
@@ -81,7 +82,7 @@ class BaseTestCase(TestCase):
 
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        if status == Video.ACTIVE and site_id == 1:
+        if update_index and status == Video.ACTIVE and site_id == 1:
             index = connections['default'].get_unified_index().get_index(Video)
             index._enqueue_update(video)
         return video
@@ -131,6 +132,32 @@ class BaseTestCase(TestCase):
         watch.timestamp = datetime.now() - timedelta(days)
         watch.save()
         return watch
+
+    def create_feed(self, feed_url, name=None, description='Lorem ipsum',
+                    last_updated=None, status=Feed.ACTIVE, site_id=1,
+                    **kwargs):
+        if name is None:
+            name = feed_url
+        if last_updated is None:
+            last_updated = datetime.now()
+        return Feed.objects.create(feed_url=feed_url,
+                                   name=name,
+                                   description=description,
+                                   last_updated=last_updated,
+                                   status=status,
+                                   site_id=site_id,
+                                   **kwargs)
+
+    def create_search(self, query_string, site_id=1, **kwargs):
+        return SavedSearch.objects.create(query_string=query_string,
+                                          site_id=site_id,
+                                          **kwargs)
+
+    def create_site(self, domain='example.com', name=None):
+        if name is None:
+            name = domain
+
+        return Site.objects.create(domain=domain, name=name)
 
     def _data_file(self, filename):
         """
