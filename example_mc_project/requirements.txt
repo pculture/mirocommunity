@@ -5,7 +5,7 @@ git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_
 git+http://git.participatoryculture.org/python-bitly@master#egg=python_bitly
 git+git://github.com/pculture/mirocommunity.git@develop#egg=mirocommunity
 git+git://github.com/paulswartz/Django-Socialauth.git@master#egg=django-socialauth
-git+git://github.com/facebook/python-sdk.git@master#egg=facebook_python_sdk
+git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
@@ -32,4 +32,5 @@ whoosh==2.3.2
 httplib2==0.7.2
 django-voting==0.1
 requests==0.10.8
-vidscraper==0.5
+vidscraper==0.5.1
+
