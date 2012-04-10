@@ -24,4 +24,4 @@ http://develop.participatoryculture.org/index.php/MiroCommunity/Theming
 {% endif %}
 
 Still have questions? Don't hesitate to get in touch  -
-questions@mirocommunity.org.
+support@mirocommunity.org.
