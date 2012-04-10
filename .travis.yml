@@ -7,5 +7,5 @@ env:
   - MC_PAYPAL_REAL=yes
 install:
   - pip install -q -e . --use-mirrors
-  - pip install -q -r example_mc_project/requirements.txt
+  - pip install -q --use-mirrors -r example_mc_project/requirements.txt
 script: django-admin.py test localtv --settings=example_mc_project.settings
