@@ -18,13 +18,15 @@
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.db.models import Count, signals
 from haystack import indexes
+from haystack.query import SearchQuerySet
 
-from localtv.models import Video, Watch
+from localtv.models import Video, Watch, Feed, SavedSearch
 from localtv.playlists.models import PlaylistItem
 from localtv.tasks import haystack_update, haystack_remove
-
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -59,17 +61,19 @@ class QueuedSearchIndex(indexes.SearchIndex):
         self._enqueue_instance(instance, haystack_remove)
 
     def _enqueue_instance(self, instance, task):
-        using = instance._state.db
+        self._enqueue(instance._meta.app_label,
+                      instance._meta.module_name,
+                      [instance.pk], task,
+                      using=instance._state.db)
+
+    def _enqueue(self, app_label, model_name, pks, task, using='default'):
         if using == 'default':
             # This gets called from both Celery and from the MC application.
             # If we're in the web app, `using` is generally 'default', so we
             # need to use CELERY_USING as our database.  If they're the same,
             # or we're not using separate databases, this is a no-op.
             using = CELERY_USING
-        task.delay(instance._meta.app_label,
-                   instance._meta.module_name,
-                   [instance.pk],
-                   using=using)
+        task.delay(app_label, model_name, pks, using=using)
 
 
 class VideoIndex(QueuedSearchIndex, indexes.Indexable):
@@ -111,6 +115,9 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         super(VideoIndex, self)._setup_save()
         signals.post_delete.connect(self._enqueue_related_delete,
                                     sender=PlaylistItem)
+        for model in (Feed, Site, User, SavedSearch):
+            signals.post_delete.connect(self._enqueue_fk_delete,
+                                        sender=model)
 
     def _teardown_save(self):
         super(VideoIndex, self)._teardown_save()
@@ -121,17 +128,39 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         super(VideoIndex, self)._teardown_delete()
         signals.post_delete.disconnect(self._enqueue_related_delete,
                                        sender=PlaylistItem)
+        for model in (Feed, Site, User, SavedSearch):
+            signals.post_delete.disconnect(self._enqueue_fk_delete,
+                                           sender=model)
 
     def _enqueue_related_update(self, instance, **kwargs):
-        self._enqueue_instance(instance.video, haystack_update)
+        self._enqueue_update(instance.video)
 
     def _enqueue_related_delete(self, instance, **kwargs):
         try:
-            self._enqueue_instance(instance.video, haystack_update)
+            self._enqueue_update(instance.video)
         except Video.DoesNotExist:
             # We'll have picked up this delete from the Video directly, so
             # don't worry about it here.
             pass
+
+    def _enqueue_fk_delete(self, instance, **kwargs):
+        related = {
+            Feed: 'feed',
+            SavedSearch: 'search',
+            User: 'user',
+            Site: 'site',
+        }
+        try:
+            field_name = related[instance.__class__]
+        except KeyError:
+            raise ValueError('Unknown related model.')
+        sqs = SearchQuerySet().models(self.get_model()).filter(
+                                                  **{field_name: instance.pk})
+        pks = [r.pk for r in sqs]
+        self._enqueue(Video._meta.app_label,
+                      Video._meta.module_name,
+                      pks, haystack_remove,
+                      using=instance._state.db)
 
     def get_model(self):
         return Video
