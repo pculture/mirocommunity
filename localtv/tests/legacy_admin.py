@@ -1232,8 +1232,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(self.url + "?feed_url=%s" % self.feed_url,
                           {'feed_url': self.feed_url,
-                           'auto_approve': 'yes',
-                           'avoid_frontpage': 'on'})
+                           'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1245,7 +1244,6 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEqual(feed.feed_url, self.feed_url)
         # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
         self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
-        self.assertEqual(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
 
     def test_GET_creates_user(self):
