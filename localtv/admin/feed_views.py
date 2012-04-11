@@ -31,6 +31,7 @@ from django.views.decorators.csrf import csrf_protect
 import vidscraper
 
 from localtv.decorators import require_site_admin, referrer_redirect
+from localtv.exceptions import CannotOpenImageUrl
 from localtv import tasks, utils
 from localtv.models import Feed, SiteSettings
 from localtv.admin import forms
@@ -113,10 +114,16 @@ def add_feed(request):
                     thumbnail_file = ContentFile(
                         urllib2.urlopen(
                             utils.quote_unicode_url(thumbnail_url)).read())
-                except IOError: # couldn't get the thumbnail
+                except IOError:
+                    # couldn't get the thumbnail
                     pass
                 else:
-                    feed.save_thumbnail_from_file(thumbnail_file)
+                    try:
+                        feed.save_thumbnail_from_file(thumbnail_file)
+                    except CannotOpenImageUrl:
+                        # couldn't parse the thumbnail. Not sure why this
+                        # raises CannotOpenImageUrl, tbh.
+                        pass
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],

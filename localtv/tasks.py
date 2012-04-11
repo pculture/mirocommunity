@@ -361,8 +361,9 @@ def haystack_update(app_label, model_name, pks, remove=True, using='default'):
 
     qs = index.index_queryset().using(using).filter(pk__in=pks)
 
-    _haystack_database_retry(haystack_update,
-                             lambda: backend.update(index, qs))
+    if qs:
+        _haystack_database_retry(haystack_update,
+                                 lambda: backend.update(index, qs))
 
     if remove:
         unseen_pks = set(pks) - set((instance.pk for instance in qs))

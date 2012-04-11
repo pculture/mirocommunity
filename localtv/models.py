@@ -752,7 +752,6 @@ class Feed(Source):
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
-    avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 

@@ -46,8 +46,7 @@ class IndexView(SortFilterMixin, TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
         popular_videos = self._sort(self._search(''), '-popular')
-        new_videos = Video.objects.get_latest_videos().exclude(
-                                            feed__avoid_frontpage=True)
+        new_videos = Video.objects.get_latest_videos()
 
         site_settings_videos = Video.objects.get_site_settings_videos()
         recent_comments = comments.get_model().objects.filter(

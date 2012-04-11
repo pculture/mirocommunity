@@ -47,6 +47,8 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # BROKER_PASSWORD = 'testing'
 # BROKER_VHOST = '/'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
