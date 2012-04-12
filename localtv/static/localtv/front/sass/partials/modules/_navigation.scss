@@ -1,0 +1,133 @@
+@import "compass/css3/border-radius",
+		"compass/css3/box-shadow",
+		"compass/css3/images";
+
+#navigation{
+	@include pie-clearfix;
+	@include border-radius(3px);
+	margin-right:$gutter-width/2;
+	float:right;
+}
+
+.navigation-list{
+	@extend .unstyled-list;
+}
+
+.nav-item{
+	margin: #{1px + $base-line-height*.25} 0;
+	float:left;
+	list-style-type:none;
+	border-left:1px solid;
+}
+.nav-item:first-child{
+	border-left:none;
+}
+
+.nav-item > a{
+	padding: 0 #{$gutter-width * .25};
+	display:block;
+	&:hover{
+		border:0;
+	}
+}
+
+.nav-item:first-child > a{
+	@include border-radius(3px 0 0 3px);
+}
+
+.nav-item:last-child > a{
+	@include border-radius(0 3px 3px 0);
+}
+
+.nav-item-dropdown{
+	position:relative;
+}
+
+// This adds a cute arrow to the dropdown items in navbars
+.nav-item-dropdown > a{
+	position:relative;
+	padding-right:4px+$gutter-width/2;
+}
+.nav-item-dropdown > a::after{
+	content:' ';
+	border-left:4px solid transparent;
+	border-right:4px solid transparent;
+	border-top:4px solid;
+	display:inline-block;
+	position:absolute;
+	right:$gutter-width/4;
+	top:6px;
+}
+
+// Positions the dropdown list appropriately
+.dropdown-list, .dropdown-box{
+	display:none;
+	position:absolute;
+	z-index:1337;
+	top:$base-line-height * 1.5 + 3px;
+	left:0;
+	@include border-radius(3px);
+	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.15));
+	border:1px solid;
+	&::before{
+		content:' ';
+		border-left:7px solid transparent;
+		border-right:7px solid transparent;
+		border-bottom:7px solid;
+		display:inline-block;
+		position:absolute;
+		top:-7px;
+		left:10px;
+	}
+}
+.dropdown-box{
+	min-width:300px;
+	@extend .padded-half;
+}
+.dropdown-list{
+	@extend .unstyled-list;
+	@extend .row-nested;
+	min-width:200px;
+}
+.dropdown-list > li > a{
+	display:block;
+	border:0;
+	padding:#{$base-line-height / 2 - 4px} #{$gutter-width / 2 - 4px};
+}
+.dropdown-list > li:first-child > a{
+	@include border-radius(3px 3px 0 0);
+}
+.dropdown-list > li:last-child > a{
+	@include border-radius(0 0 3px 3px);
+}
+
+
+.browse-box-section{
+	@include margin-trailer;
+	&:last-child{
+		margin-bottom:0;
+	}
+}
+.browse-box-section > h1{
+	@include small;
+	text-transform:uppercase;
+	letter-spacing:1px;
+	@include margin-trailer(.5);
+}
+.browse-box-section > ul{
+	@extend .unstyled-list;
+	@include clearfix;
+}
+.browse-box-section > ul > li{
+	width:33%;
+	float:left;
+}
+
+@media screen and (max-width: 740px){
+	.dropdown-list, .dropdown-box{
+		position:static;
+		width:100%;
+		@include border-radius(0);
+		@include box-shadow(none);
+	}
+}

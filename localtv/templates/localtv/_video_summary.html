@@ -1,0 +1,54 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.	If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load i18n localtv_thumbnail filters uploadtemplate_tags %}
+
+<article class="video-summary">
+
+	<figure class="thumb">
+		<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumb-link">
+			<img src="{% get_thumbnail_url video 140 110 %}" width="140" height="110" class="thumb-image">
+		</a>
+	</figure>
+
+	<header class="video-header">
+		<h1 class="video-title">
+			<a href="{{ video.get_absolute_url }}{{ video_url_extra }}" title="{{ video.name }}">
+				{% if video.name %}
+					{{ video.name }}
+				{% else %}
+					{% trans "(no title)" %}
+				{% endif %}
+			</a>
+		</h1>
+	</header>
+	
+	<div class="description">
+		{% autoescape off %}
+			{{ video.description|sanitize:"whitelist|a br p|href"|truncatewords:8 }}
+		{% endautoescape %}
+	</div>
+	
+	<footer class="colophon">
+		{% with current_video as instance %}
+			{% include "localtv/inline_edit/video_when_published.html" %} by {% include "localtv/inline_edit/video_authors.html" %}
+		{% endwith %}
+	</footer>
+	
+</article>

@@ -19,7 +19,6 @@ from django import template
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.sites.models import Site
-
 from daguerre.models import Image
 from daguerre.utils import AdjustmentInfoDict
 from daguerre.utils.adjustments import get_adjustment_class

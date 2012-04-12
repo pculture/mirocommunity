@@ -1,0 +1,9 @@
+.video-grid > .media-item{
+	width:200px;
+	@include margin-trailer(2);
+}
+
+.video-grid > .media-item > .video-header{
+	height:$base-line-height * 2;
+	overflow:hidden;
+}

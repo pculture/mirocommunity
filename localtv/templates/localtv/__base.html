@@ -1,0 +1,126 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load uploadtemplate_tags i18n daguerre %}
+{% load url from future %}
+
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head>
+	
+	{% block meta %}
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+	{% endblock meta %}
+	
+	{% if site_settings.has_thumbnail %}<link rel="image_src" href="{{ MEDIA_URL }}{{ site_settings.thumbnail_path }}" />{% endif %}
+	
+	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
+	
+	{% block styles %}
+		<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' bundled %}" media="screen" />
+		{% if site_settings.css or site_settings.background %}
+			<style type="text/css">
+				{{ site_settings.get_css_for_display_if_permitted|safe }}
+				{% if site_settings.background %}
+					body {
+						background: url("{{ site_settings.background.url }}") !important;
+					}
+				{% endif %}
+			</style>
+		{% endif %}
+	{% endblock %}
+
+	{% block scripts %}
+		<script src="{% get_static_url 'localtv/front/js/modernizr-2.0.6.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/jquery-1.7.1.min.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/localtv.dropdown.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/localtv.imgload.js' bundled %}"></script>
+		<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' bundled %}"></script>
+	{% endblock %}
+	
+	{% block head %}
+		{% if site_settings.has_thumbnail %}<link rel="image_src" href="{{ MEDIA_URL }}{{ site_settings.thumbnail_path }}" />{% endif %}
+	{% endblock %}
+	
+</head>
+<body class="{% block body_classes %}miro_community{% endblock %}">
+	
+	{% url 'localtv_index' as localtv_index %}
+	
+	<div id="container">
+		
+		<header id="header">
+			<div class="container">
+				{% block header %}
+					{% include "localtv/_site_header_small.html" %}
+				{% endblock %}
+			</div>
+		</header>
+		
+		<div id="main" role="main">
+			{% block pre_content %}
+			{% endblock %}
+			<div class="container">
+				{% block content %}
+				{% endblock %}
+			</div>
+		</div>
+		
+		<footer id="footer">
+			<div class="container">
+				{% include "localtv/_site_footer.html" %}
+			</div>
+		</footer>
+		
+	</div>{# /#container #}
+	
+	{% if settings.GOOGLE_ANALYTICS_UA %}
+		<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ?
+		"https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost +
+		"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+		</script>
+		<script type="text/javascript">
+		try {
+		  var pageTracker = _gat._getTracker("{{ settings.GOOGLE_ANALYTICS_UA }}");
+		  {% if settings.GOOGLE_ANALYTICS_DOMAIN %}
+		  pageTracker._setDomainName(".{{ settings.GOOGLE_ANALYTICS_DOMAIN }}");
+		  {% endif %}
+		  pageTracker._trackPageview();
+		} catch(err) {}</script>
+	{% endif %}
+	
+	{% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
+		{% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
+			<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+			<script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+		{% endif %}
+	{% endif %}
+	
+</body>
+
+</html>
