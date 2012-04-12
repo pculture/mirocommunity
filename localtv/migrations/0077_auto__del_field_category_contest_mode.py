@@ -70,7 +70,6 @@ class Migration(SchemaMigration):
             'auto_authors': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'auto_feed_set'", 'blank': 'True', 'to': "orm['auth.User']"}),
             'auto_categories': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['localtv.Category']", 'symmetrical': 'False', 'blank': 'True'}),
             'auto_update': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'avoid_frontpage': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'calculated_source_type': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'etag': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
