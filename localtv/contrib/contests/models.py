@@ -26,10 +26,10 @@ from localtv.models import Category, Video
 
 
 class Contest(models.Model):
-    NEW = 1
-    RANDOM = 2
-    TOP = 3
-    HOMEPAGE_COLUMN_CHOICES = (
+    NEW = '1'
+    RANDOM = '2'
+    TOP = '3'
+    DETAIL_COLUMN_CHOICES = (
         (NEW, _("Show new submissions")),
         (RANDOM, _("Show all submissions (randomized)")),
         (TOP, _("Show top voted videos"))
@@ -40,10 +40,10 @@ class Contest(models.Model):
     #: A description of the contest.
     description = models.TextField(blank=True)
 
-    #: Columns to display on the contest homepage.
-    homepage_columns = models.CommaSeparatedIntegerField(max_length=10,
-                                              choices=HOMEPAGE_COLUMN_CHOICES,
-                                              blank=True)
+    #: Columns to display on the contest detail page.
+    detail_columns = models.CommaSeparatedIntegerField(max_length=10,
+                                                choices=DETAIL_COLUMN_CHOICES,
+                                                blank=True)
 
     #: The site this contest is tied to.
     site = models.ForeignKey(Site)

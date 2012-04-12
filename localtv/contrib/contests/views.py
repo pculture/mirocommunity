@@ -1,4 +1,4 @@
-# Copyright 2011 - Participatory Culture Foundation
+# Copyright 2012 - Participatory Culture Foundation
 # 
 # This file is part of Miro Community.
 # 
@@ -15,59 +15,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib.auth.decorators import login_required
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.sites.models import Site
-from django.db.models import Sum
-from django.http import Http404
-from django.utils import simplejson as json
-from django.utils.decorators import method_decorator
-from django.views.generic import FormView, UpdateView
-from voting.models import Vote
+from django.conf import settings
+from django.db.models import Count
+from django.views.generic import DetailView
 
-from localtv.contrib.contests.forms import VotingForm, AdminForm
 from localtv.contrib.contests.models import Contest
-from localtv.decorators import require_site_admin
 
 
-class ContestAdminView(UpdateView):
-    form_class = AdminForm
-    template_name = 'localtv/admin/contest.html'
+class ContestDetailView(DetailView):
+    model = Contest
+    context_object_name = 'contest'
+    template_name = 'contests/detail.html'
 
-    @method_decorator(login_required)
-    @method_decorator(require_site_admin)
-    def dispatch(self, *args, **kwargs):
-        return super(ContestAdminView, self).dispatch(*args, **kwargs)
-    
-    def get_object(self):
-        return ContestSettings.objects.get_current()
+    def get_queryset(self):
+        qs = super(ContestDetailView, self).get_queryset()
+        return qs.filter(site=settings.SITE_ID)
 
     def get_context_data(self, **kwargs):
-        context = super(ContestAdminView, self).get_context_data(**kwargs)
-        current_categories = self.object.categories.filter(
-                                    site=Site.objects.get_current())
-        categories = {}
-        for category in current_categories:
-            videos = dict((
-                (categoryvideo._get_pk_val(), categoryvideo.video)
-                for categoryvideo in
-                category.categoryvideo_set.select_related('video')
-            ))
-            ct = ContentType.objects.get_for_model(CategoryVideo)
-            bulk_scores = Vote.objects.filter(
-                              object_id__in=videos.keys(),
-                              content_type=ct,
-                          ).values_list(
-                              'object_id'
-                          ).annotate(
-                              score=Sum('vote')
-                          ).filter(
-                              score__gt=0
-                          ).order_by('-score')[:10]
+        context = super(ContestDetailView, self).get_context_data(**kwargs)
+        if Contest.NEW in self.object.detail_columns:
+            context['new_videos'] = self.object.videos.order_by(
+                                                            '-when_submitted')
+        if Contest.RANDOM in self.object.detail_columns:
+            context['random_videos'] = self.object.videos.order_by('?')
 
-            categories[category] = [
-                {'video': videos[pk], 'score': score}
-                for pk, score in bulk_scores
-            ]
-        context.update({'contest_categories': categories})
+        if Contest.TOP in self.object.detail_columns:
+            context['top_videos'] = self.object.videos.filter(
+                                              contestvote__contest=self.object
+                                   ).annotate(vote_count=Count('contestvote')
+                                   ).order_by('-vote_count')
+
         return context
