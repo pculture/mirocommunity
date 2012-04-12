@@ -26,22 +26,50 @@ from localtv.models import Category, Video
 
 
 class Contest(models.Model):
+    NEW = 1
+    RANDOM = 2
+    TOP = 3
+    HOMEPAGE_COLUMN_CHOICES = (
+        (NEW, _("Show new submissions")),
+        (RANDOM, _("Show all submissions (randomized)")),
+        (TOP, _("Show top voted videos"))
+    )
     #: The name of this contest.
     name = models.CharField(max_length=100)
+
+    #: A description of the contest.
+    description = models.TextField(blank=True)
+
+    #: Columns to display on the contest homepage.
+    homepage_columns = models.CommaSeparatedIntegerField(max_length=10,
+                                              choices=HOMEPAGE_COLUMN_CHOICES,
+                                              blank=True)
 
     #: The site this contest is tied to.
     site = models.ForeignKey(Site)
 
-    #: Categories for which this contest is open. If no categories are
-    #: selected, the contest will be open for all categories.
-    categories = models.ManyToManyField(Category, blank=True, null=True)
-
     #: Max number of votes per user for this contest.
-    max_votes = models.PositiveIntegerField(validators=[MinValueValidator(1)],
-                                            blank=True, null=True, default=1)
+    votes_per_user = models.PositiveIntegerField(blank=True, null=True,
+                                            validators=[MinValueValidator(1)],
+                                            default=1, help_text=_("Leave "
+                                            "blank for unlimited votes. Even "
+                                            "with unlimited votes, each user "
+                                            "can only vote once per video."))
+
+    #: Videos which have been submitted to this contest.
+    videos = models.ManyToManyField(Video, blank=True)
 
     #: Whether down-voting is a valid option.
     allow_downvotes = models.BooleanField(default=True)
+
+    #: Whether videos can be submitted to the contest.
+    submissions_open = models.BooleanField(default=False)
+
+    #: Whether videos can be voted on.
+    voting_open = models.BooleanField(default=False)
+
+    #: Whether the actual vote counts should be displayed by the videos.
+    display_vote_counts = models.BooleanField(default=False)
 
 
 class ContestVote(models.Model):
