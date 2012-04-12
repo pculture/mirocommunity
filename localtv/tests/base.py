@@ -19,19 +19,34 @@ import os
 from datetime import datetime, timedelta
 from socket import getaddrinfo
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sites.models import Site
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.template.defaultfilters import slugify
 from django.test.testcases import TestCase, _deferredSkip
+from django.test.client import RequestFactory
 from haystack import connections
 from tagging.models import Tag
 
 from localtv.models import Video, Watch, Category, Feed, SavedSearch
+from localtv.middleware import UserIsAdminMiddleware
 
 
 #: Global variable for storing whether the current global state believe that
 #: it's connected to the internet.
 HAVE_INTERNET_CONNECTION = None
+
+class FakeRequestFactory(RequestFactory):
+    """Constructs requests with any necessary attributes set."""
+    def request(self, user=None, **request):
+        request = super(FakeRequestFactory, self).request(**request)
+        if user is None:
+            request.user = AnonymousUser()
+        else:
+            request.user = user
+        UserIsAdminMiddleware().process_request(request)
+        SessionMiddleware().process_request(request)
+        return request
 
 
 class BaseTestCase(TestCase):
@@ -50,6 +65,10 @@ class BaseTestCase(TestCase):
         """Clears and then updates the search index."""
         self._clear_index()
         self._update_index()
+
+    def setUp(self):
+        super(BaseTestCase, self).setUp()
+        self.factory = FakeRequestFactory()
 
     def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
