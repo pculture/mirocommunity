@@ -145,7 +145,7 @@ class SubmitVideoView(CreateView):
         return modelform_factory(Video, form=self.form_class, fields=fields)
 
     def get_initial(self):
-        initial = super(SubmitVideoView, self).get_initial()
+        initial = super(SubmitVideoView, self).get_initial().copy()
         if getattr(self.video, 'tags', None):
             initial.update({
                 'tags': get_or_create_tags(self.video.tags),
