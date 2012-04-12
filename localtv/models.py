@@ -1744,7 +1744,7 @@ class Video(Thumbnailable, VideoBase):
         if self.guid:
             q_filter |= models.Q(guid=self.guid)
         qs = Video.objects.using(self._state.db).filter(
-            site_id=self.site_id,
+            site=self.site_id,
             status=Video.REJECTED).filter(q_filter)
         qs.delete()
 
