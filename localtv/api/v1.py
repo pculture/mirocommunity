@@ -16,49 +16,72 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.contrib.sites.models import Site
+from django.contrib.auth.models import User
 from django.db.models import Count
 from tastypie import fields
 from tastypie.api import Api
 from tastypie.resources import ModelResource
 
-from localtv.models import (Video, Feed, SavedSearch, Category)
+from localtv.models import Video, Feed, SavedSearch, Category
 
 
-class VideoResource(ModelResource):
-    class Meta:
-        queryset = Video.objects.filter(status=Video.ACTIVE,
-                                        site=settings.SITE_ID)
-
-
-class FeedResource(ModelResource):
-    class Meta:
-        queryset = Feed.objects.filter(status=Feed.ACTIVE,
-                                       site=settings.SITE_ID)
-
-
-class SearchResource(ModelResource):
-    thumbnail_url = fields.CharField(blank=True, readonly=True)
-
-    class Meta:
-        queryset = SavedSearch.objects.filter(site=settings.SITE_ID)
-        excludes = ('has_thumbnail', 'thumbnail_extension')
+class ThumbnailableMixin(ModelResource):
+    """Handles the crazy thumbnail storage on Thumbnailable subclasses."""
+    thumbnail_url = fields.CharField(null=True, readonly=True)
 
     def dehydrate_thumbnail_url(self, bundle):
         if not bundle.obj.has_thumbnail:
             thumbnail_url = None
         else:
-            thumbnail_url = 'http://{netloc}{media_url}{path}'.format(
-                                     netloc=Site.objects.get_current().domain,
+            thumbnail_url = '{media_url}{path}'.format(
                                      media_url=settings.MEDIA_URL,
                                      path=bundle.obj.thumbnail_path)
         return thumbnail_url
 
 
+class UserResource(ModelResource):
+    class Meta:
+        queryset = User.objects.all()
+        fields = ('id', 'username', 'first_name', 'last_name')
+
+
 class CategoryResource(ModelResource):
     class Meta:
         queryset = Category.objects.filter(site=settings.SITE_ID)
-        excludes = ('contest_mode',)
+        fields = ('id', 'name', 'slug', 'logo', 'description',)
+
+
+class FeedResource(ThumbnailableMixin, ModelResource):
+    class Meta:
+        queryset = Feed.objects.filter(status=Feed.ACTIVE,
+                                       site=settings.SITE_ID)
+        fields = ('id', 'auto_approve', 'auto_update', 'feed_url',
+                  'name', 'webpage', 'description', 'last_updated',
+                  'when_submitted', 'etag')
+
+
+class SearchResource(ThumbnailableMixin, ModelResource):
+    class Meta:
+        queryset = SavedSearch.objects.filter(site=settings.SITE_ID)
+        fields = ('id', 'auto_approve', 'auto_update', 'query_string',
+                  'when_created')
+
+
+class VideoResource(ThumbnailableMixin, ModelResource):
+    when_featured = fields.DateField(attribute='last_featured', null=True)
+    categories = fields.ToManyField(CategoryResource, 'categories')
+    authors = fields.ToManyField(UserResource, 'authors')
+    feed = fields.ToOneField(FeedResource, 'feed', null=True)
+    search = fields.ToOneField(SearchResource, 'search', null=True)
+    user = fields.ToOneField(UserResource, 'user', null=True)
+    tags = fields.ListField(attribute='tags')
+
+    class Meta:
+        queryset = Video.objects.filter(status=Video.ACTIVE,
+                                        site=settings.SITE_ID)
+        fields = ('id', 'file_url', 'when_modified', 'when_submitted',
+                  'when_published', 'website_url', 'embed_code',
+                  'guid', 'tags')
 
 
 api = Api(api_name='v1')
@@ -66,3 +89,4 @@ api.register(VideoResource())
 api.register(FeedResource())
 api.register(SearchResource())
 api.register(CategoryResource())
+api.register(UserResource())
