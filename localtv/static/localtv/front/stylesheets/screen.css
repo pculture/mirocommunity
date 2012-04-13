@@ -723,31 +723,61 @@ ol > li {
   display: table;
   clear: both;
 }
+@media screen and (max-width: 740px) {
+  /* line 5, ../sass/partials/modules/_navigation.scss */
+  #navigation {
+    float: none;
+    margin-right: 0;
+  }
+}
 
-/* line 16, ../sass/partials/modules/_navigation.scss */
+/* line 20, ../sass/partials/modules/_navigation.scss */
 .nav-item {
   margin: 5.5px 0;
   float: left;
   list-style-type: none;
   border-left: 1px solid;
 }
+@media screen and (max-width: 740px) {
+  /* line 20, ../sass/partials/modules/_navigation.scss */
+  .nav-item {
+    float: none;
+    border: 1px solid;
+    padding-bottom: 4.5px;
+    padding-top: 4.5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -o-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+  }
+}
 
-/* line 22, ../sass/partials/modules/_navigation.scss */
+/* line 32, ../sass/partials/modules/_navigation.scss */
 .nav-item:first-child {
   border-left: none;
 }
+@media screen and (max-width: 740px) {
+  /* line 32, ../sass/partials/modules/_navigation.scss */
+  .nav-item:first-child {
+    border: 1px solid;
+  }
+}
 
-/* line 26, ../sass/partials/modules/_navigation.scss */
+/* line 39, ../sass/partials/modules/_navigation.scss */
 .nav-item > a {
   padding: 0 10px;
   display: block;
 }
-/* line 29, ../sass/partials/modules/_navigation.scss */
+/* line 42, ../sass/partials/modules/_navigation.scss */
 .nav-item > a:hover {
   border: 0;
 }
 
-/* line 34, ../sass/partials/modules/_navigation.scss */
+/* line 47, ../sass/partials/modules/_navigation.scss */
 .nav-item:first-child > a {
   -moz-border-radius: 3px 0 0 3px;
   -webkit-border-radius: 3px 0 0 3px;
@@ -757,7 +787,7 @@ ol > li {
   border-radius: 3px 0 0 3px;
 }
 
-/* line 38, ../sass/partials/modules/_navigation.scss */
+/* line 51, ../sass/partials/modules/_navigation.scss */
 .nav-item:last-child > a {
   -moz-border-radius: 0 3px 3px 0;
   -webkit-border-radius: 0 3px 3px 0;
@@ -767,18 +797,18 @@ ol > li {
   border-radius: 0 3px 3px 0;
 }
 
-/* line 42, ../sass/partials/modules/_navigation.scss */
+/* line 55, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown {
   position: relative;
 }
 
-/* line 47, ../sass/partials/modules/_navigation.scss */
+/* line 60, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a {
   position: relative;
   padding-right: 24px;
 }
 
-/* line 51, ../sass/partials/modules/_navigation.scss */
+/* line 64, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a::after {
   content: ' ';
   border-left: 4px solid transparent;
@@ -790,7 +820,7 @@ ol > li {
   top: 6px;
 }
 
-/* line 63, ../sass/partials/modules/_navigation.scss */
+/* line 76, ../sass/partials/modules/_navigation.scss */
 .dropdown-list, .dropdown-box {
   display: none;
   position: absolute;
@@ -809,7 +839,7 @@ ol > li {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
   border: 1px solid;
 }
-/* line 72, ../sass/partials/modules/_navigation.scss */
+/* line 85, ../sass/partials/modules/_navigation.scss */
 .dropdown-list::before, .dropdown-box::before {
   content: ' ';
   border-left: 7px solid transparent;
@@ -820,25 +850,43 @@ ol > li {
   top: -7px;
   left: 10px;
 }
+@media screen and (max-width: 740px) {
+  /* line 85, ../sass/partials/modules/_navigation.scss */
+  .dropdown-list::before, .dropdown-box::before {
+    display: none;
+  }
+}
 
-/* line 83, ../sass/partials/modules/_navigation.scss */
+/* line 99, ../sass/partials/modules/_navigation.scss */
 .dropdown-box {
   min-width: 300px;
 }
+@media screen and (max-width: 740px) {
+  /* line 99, ../sass/partials/modules/_navigation.scss */
+  .dropdown-box {
+    min-width: auto;
+  }
+}
 
-/* line 87, ../sass/partials/modules/_navigation.scss */
+/* line 106, ../sass/partials/modules/_navigation.scss */
 .dropdown-list {
   min-width: 200px;
 }
+@media screen and (max-width: 740px) {
+  /* line 106, ../sass/partials/modules/_navigation.scss */
+  .dropdown-list {
+    min-width: auto;
+  }
+}
 
-/* line 92, ../sass/partials/modules/_navigation.scss */
+/* line 114, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li > a {
   display: block;
   border: 0;
   padding: 5px 16px;
 }
 
-/* line 97, ../sass/partials/modules/_navigation.scss */
+/* line 119, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li:first-child > a {
   -moz-border-radius: 3px 3px 0 0;
   -webkit-border-radius: 3px 3px 0 0;
@@ -848,7 +896,7 @@ ol > li {
   border-radius: 3px 3px 0 0;
 }
 
-/* line 100, ../sass/partials/modules/_navigation.scss */
+/* line 122, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li:last-child > a {
   -moz-border-radius: 0 0 3px 3px;
   -webkit-border-radius: 0 0 3px 3px;
@@ -858,16 +906,16 @@ ol > li {
   border-radius: 0 0 3px 3px;
 }
 
-/* line 105, ../sass/partials/modules/_navigation.scss */
+/* line 127, ../sass/partials/modules/_navigation.scss */
 .browse-box-section {
   margin-bottom: 18px;
 }
-/* line 107, ../sass/partials/modules/_navigation.scss */
+/* line 129, ../sass/partials/modules/_navigation.scss */
 .browse-box-section:last-child {
   margin-bottom: 0;
 }
 
-/* line 111, ../sass/partials/modules/_navigation.scss */
+/* line 133, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > h1 {
   font-size: 12px;
   line-height: 18px;
@@ -876,29 +924,28 @@ ol > li {
   margin-bottom: 9px;
 }
 
-/* line 117, ../sass/partials/modules/_navigation.scss */
+/* line 139, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > ul {
   overflow: hidden;
   *zoom: 1;
 }
 
-/* line 121, ../sass/partials/modules/_navigation.scss */
+/* line 143, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > ul > li {
   width: 33%;
   float: left;
 }
 
 @media screen and (max-width: 740px) {
-  /* line 127, ../sass/partials/modules/_navigation.scss */
+  /* line 149, ../sass/partials/modules/_navigation.scss */
   .dropdown-list, .dropdown-box {
     position: static;
-    width: 100%;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
-    -o-border-radius: 0;
-    -ms-border-radius: 0;
-    -khtml-border-radius: 0;
-    border-radius: 0;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -o-border-radius: 3px;
+    -ms-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    border-radius: 3px;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     -o-box-shadow: none;
@@ -1518,7 +1565,7 @@ body {
 
 /* line 94, ../sass/partials/_theme.scss */
 .nav-item {
-  border-left-color: #dddddd;
+  border-color: #dddddd;
 }
 
 /* line 98, ../sass/partials/_theme.scss */

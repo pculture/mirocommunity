@@ -7,6 +7,10 @@
 	@include border-radius(3px);
 	margin-right:$gutter-width/2;
 	float:right;
+	@media screen and (max-width: 740px){
+		float:none;
+		margin-right:0;
+	}
 }
 
 .navigation-list{
@@ -18,9 +22,18 @@
 	float:left;
 	list-style-type:none;
 	border-left:1px solid;
+	@media screen and (max-width: 740px){
+		float:none;
+		border:1px solid;
+		@include padded(.25);
+		@include border-radius(4px);
+	}
 }
 .nav-item:first-child{
 	border-left:none;
+	@media screen and (max-width: 740px){
+		border:1px solid;
+	}
 }
 
 .nav-item > a{
@@ -78,16 +91,25 @@
 		position:absolute;
 		top:-7px;
 		left:10px;
+		@media screen and (max-width: 740px){
+			display:none;
+		}
 	}
 }
 .dropdown-box{
 	min-width:300px;
 	@extend .padded-half;
+	@media screen and (max-width: 740px){
+		min-width:auto;
+	}
 }
 .dropdown-list{
 	@extend .unstyled-list;
 	@extend .row-nested;
 	min-width:200px;
+	@media screen and (max-width: 740px){
+		min-width:auto;
+	}
 }
 .dropdown-list > li > a{
 	display:block;
@@ -126,8 +148,7 @@
 @media screen and (max-width: 740px){
 	.dropdown-list, .dropdown-box{
 		position:static;
-		width:100%;
-		@include border-radius(0);
+		@include border-radius(3px);
 		@include box-shadow(none);
 	}
 }

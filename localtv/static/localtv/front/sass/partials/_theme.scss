@@ -92,7 +92,7 @@ body{
 	color:$navigation-text-color;
 }
 .nav-item{
-	border-left-color:lighten($navigation-text-color, 60%);
+	border-color:lighten($navigation-text-color, 60%);
 }
 
 .nav-item-dropdown > a::after{
