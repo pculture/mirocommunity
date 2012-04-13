@@ -68,7 +68,7 @@ class SearchResource(ThumbnailableMixin, ModelResource):
 
 
 class VideoResource(ThumbnailableMixin, ModelResource):
-    when_featured = fields.DateField(attribute='last_featured', null=True)
+    when_featured = fields.DateTimeField(attribute='last_featured', null=True)
     categories = fields.ToManyField(CategoryResource, 'categories')
     authors = fields.ToManyField(UserResource, 'authors')
     feed = fields.ToOneField(FeedResource, 'feed', null=True)
