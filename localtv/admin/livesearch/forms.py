@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import hashlib
 import time
 
@@ -24,7 +25,6 @@ from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
 from vidscraper.utils.search import intersperse_results
 
-from localtv.exceptions import InvalidVideo
 from localtv.models import Video
 
 from vidscraper.errors import Error as VidscraperError
@@ -68,6 +68,10 @@ class LiveSearchForm(forms.Form):
                     vidscraper_video.load()
                 except VidscraperError:
                     pass
+                except Exception:
+                    logging.error('error while loading search result: %r',
+                                  vidscraper_video.url,
+                                  exc_info=True)
                 else:
                     results.append(vidscraper_video)
                 if time.time() > finish_by:

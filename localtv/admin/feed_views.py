@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import datetime
 import re
 import urllib2
@@ -66,6 +67,13 @@ def add_feed(request):
         return HttpResponseBadRequest(
             '* It does not appear that %s is an RSS/Atom feed URL.' % (
                 scraped_feed.url,))
+    except Exception:
+        logging.error('unknown error loading scraped feed: %r',
+                      feed_url,
+                      exc_info=None)
+        return HttpResponseBadRequest(
+            '* There was an unknown error loading %s' % (
+                feed_url,))
     title = scraped_feed.title or ''
 
     for regexp in VIDEO_SERVICE_TITLES:
