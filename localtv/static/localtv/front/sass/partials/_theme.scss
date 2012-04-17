@@ -29,6 +29,7 @@ $precontent-header-text-color: #FFF !default;
 $precontent-header-link-color: #5C86A0 !default;
 $precontent-header-link-hover-color: #4E9EDA !default;
 $precontent-quiet-color: #999 !default;
+$precontent-link-color:#6CF !default;
 
 $sidebar-background-color:#F5F5F5 !default;
 
@@ -185,6 +186,13 @@ input, textarea{
 .precontent{
 	/* http://subtlepatterns.com/?p=1024 */
 	background: #343639 image-url('classy_fabric.png');
+}
+
+.precontent a{
+	color:$precontent-link-color;
+	&:hover{
+		border-color:#666;
+	}
 }
 
 .precontent-header{
