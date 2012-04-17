@@ -27,19 +27,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block header %}{% include "localtv/_site_header_large.html" %}{% endblock %}
 
 {% block pre_content %}
-	<div class="precontent">
-		<div class="precontent-content">
-			<div class="container">
-				<div class="row" data-cycle="true">
-					{% with featured_videos|slice:"10" as video_list %}
-						{% for video in video_list %}
-							{% include "localtv/_video_large_preview.html" %}
-						{% endfor %}
-					{% endwith %}
-				</div>{# /.row #}
-			</div>{# /.container #}
-		</div>{# /.precontent-content #}
-	</div>{# /.precontent #}
+	{% if featured_videos %}
+		<div class="precontent">
+			<div class="precontent-content">
+				<div class="container">
+					<div class="row" data-cycle="true">
+						{% with featured_videos|slice:"10" as video_list %}
+							{% for video in video_list %}
+								{% include "localtv/_video_large_preview.html" %}
+							{% endfor %}
+						{% endwith %}
+					</div>{# /.row #}
+				</div>{# /.container #}
+			</div>{# /.precontent-content #}
+		</div>{# /.precontent #}
+	{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -65,9 +67,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</ul>
 			</header>{# /.pod-header #}
 			<div class="pod-content">
-				{% with new_videos|slice:"12" as video_list %}
-					{% include "localtv/_video_grid_list.html" %}
-				{% endwith %}
+				{% if new_videos %}
+					{% with new_videos|slice:"12" as video_list %}
+						{% include "localtv/_video_grid_list.html" %}
+					{% endwith %}
+				{% else %}
+					<div class="message warning">
+						<p>{% trans "No videos have been added yet." %}</p>
+					</div>
+				{% endif %}
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
@@ -88,9 +96,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</ul>
 			</header>{# /.pod-header #}
 			<div class="pod-content">
-				{% with popular_videos|slice:"4" as video_list %}
-					{% include "localtv/_video_grid_list.html" %}
-				{% endwith %}
+				{% if popular_videos %}
+					{% with popular_videos|slice:"4" as video_list %}
+						{% include "localtv/_video_grid_list.html" %}
+					{% endwith %}
+				{% else %}
+					<div class="message warning">
+						<p>{% trans "No videos have been added yet." %}</p>
+					</div>
+				{% endif %}
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
