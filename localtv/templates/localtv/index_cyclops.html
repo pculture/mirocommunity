@@ -20,12 +20,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load uploadtemplate_tags cache i18n %}
 {% load url from future %}
 
-{% block scripts %}
-	{{ block.super }}
-	<script src="{% get_static_url 'localtv/front/js/jquery.cycle.js' bundled %}"></script>
-	<script src="{% get_static_url 'localtv/front/js/localtv.cycle.js' bundled %}"></script>
-{% endblock %}
-
 {% block title %}{{ block.super }}{% if site_settings.tagline %} - {{ site_settings.tagline }}{% endif %}{% endblock %}
 
 {% block body_classes %}{{ block.super }} home-page cyclops{% endblock %}

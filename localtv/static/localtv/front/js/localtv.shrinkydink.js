@@ -6,6 +6,7 @@
 	
 	Shrinkydink.prototype = {
 		constructor: Shrinkydink,
+		animationSpeed: 200,
 		_getLineHeight: function () {
 			if (!this.cache.lineHeight) {
 				var temp = $('<div>N</div>').css('width', 100).appendTo(this.element);
@@ -14,21 +15,39 @@
 			}
 			return this.cache.lineHeight;
 		},
+		_getFullHeight: function () {
+			if (!this.cache.fullHeight) {
+				// get the current height of the element
+				var currheight = this.element.height();
+				// briefly expand the element to measure it
+				this.element.css('height', 'auto');
+				this.cache.fullHeight = this.element.height();
+				// shrink it back to its previous height
+				this.element.css('height', currheight);
+			}
+			return this.cache.fullHeight;
+		},
 		initialize: function () {
-			this.handle = $('<a href="#" data-shrinkydinkhandle="true" class="shrinkydink-handle">More</a>').data('shrinkydink-target', this.element);
+			this.handle = $('<a href="#" data-shrinkydinkhandle="true" class="shrinkydink-handle"><span class="shrinkydink-handle-inner"></span></a>').data('shrinkydink-target', this.element);
+			this.handleInner = $('.shrinkydink-handle-inner', this.handle);
 			this.element.after(this.handle);
 			this.element.css('overflow', 'hidden');
-			this.shrink();
+			this.shrink(true);
 		},
-		shrink: function () {
-			this.element.height(this._getLineHeight()*3);
+		shrink: function (instant) {
+			if (instant) {
+				this.element.css({height:this._getLineHeight() * 3});
+			} else {
+				this.element.animate({height:this._getLineHeight() * 3}, this.animationSpeed);
+			}
 			this.element.data('shrinkydink-state', 'shrunk');
-			this.handle.html('More');
+			this.element.toggleClass('shrunk');
+			this.handleInner.html('Read More');
 		},
 		expand: function () {
-			this.element.height('auto');
+			this.element.animate({height: this._getFullHeight()}, this.animationSpeed);
 			this.element.data('shrinkydink-state', 'expanded');
-			this.handle.html('Less');
+			this.handleInner.html('Collapse');
 		},
 		toggle: function () {
 			if (this.element.data('shrinkydink-state') === 'shrunk'){

@@ -90,9 +90,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 				</ul>
 			</div>
-			<section class="video-details content-box">
-				{{ current_video.description|safe }}
-			</section>{# /.video-details #}
+			<div class="content-box">
+				<section class="video-details">
+					{{ current_video.description|safe }}
+				</section>{# /.video-details #}
+			</div>
 			<div class="content-box">
 				<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
 			</div>

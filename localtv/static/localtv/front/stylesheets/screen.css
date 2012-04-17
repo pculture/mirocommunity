@@ -522,7 +522,7 @@ ol > li {
 }
 
 /* line 5, ../sass/partials/modules/_buttons.scss */
-.button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
+.button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span, .shrinkydink-handle {
   border: 1px solid;
   text-align: center;
   -moz-box-sizing: border-box;
@@ -1324,6 +1324,15 @@ ol > li {
   background-repeat: no-repeat;
 }
 
+/* line 1, ../sass/partials/modules/_shrinkydink.scss */
+.shrinkydink-handle {
+  font-size: 12px;
+  line-height: 18px;
+  margin-top: 9px;
+  display: block;
+  text-align: center;
+}
+
 /* line 1, ../sass/partials/modules/_social_link_list.scss */
 .social-link-list {
   overflow: hidden;
@@ -1511,7 +1520,7 @@ body {
 
 /* buttons */
 /* line 70, ../sass/partials/_theme.scss */
-.button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span {
+.button, button, .button-wide, .pagetabs a, .pagetabs .ellipse span, .shrinkydink-handle {
   color: #666666;
   text-shadow: 0 1px 0 #FFF;
   border-color: #cfcfcf;
@@ -1527,7 +1536,7 @@ body {
   box-shadow: 0 1px 0 0 white inset;
 }
 /* line 76, ../sass/partials/_theme.scss */
-.button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover {
+.button:hover, button:hover, .button-wide:hover, .pagetabs a:hover, .pagetabs .ellipse span:hover, .shrinkydink-handle:hover {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e3e3e3), color-stop(100%, #dcdcdc));
   background: -webkit-linear-gradient(#e3e3e3, #dcdcdc);
@@ -1542,7 +1551,7 @@ body {
 }
 
 /* line 82, ../sass/partials/_theme.scss */
-.button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .button-active, .button-selected, .pagetabs .selected > a {
+.button:active, button:active, .button-wide:active, .pagetabs a:active, .pagetabs .ellipse span:active, .shrinkydink-handle:active, .button-active, .button-selected, .pagetabs .selected > a {
   color: #444444;
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #cfcfcf), color-stop(100%, #b5b5b5));
   background: -webkit-linear-gradient(#cfcfcf, #b5b5b5);

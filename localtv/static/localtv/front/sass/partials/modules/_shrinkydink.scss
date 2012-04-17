@@ -1,0 +1,6 @@
+.shrinkydink-handle{
+	@include small;
+	@extend .button;
+	@include margin-leader(.5);
+	display:block;
+}
