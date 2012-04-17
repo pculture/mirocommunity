@@ -99,7 +99,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 }
 
 /* line 45, ../sass/partials/_grid.scss */
-.padded-half, .dropdown-box, .precontent-header, .popover, .tabs > li > a {
+.padded-half, .video-player p, .dropdown-box, .precontent-header, .popover, .tabs > li > a {
   padding-bottom: 9px;
   padding-top: 9px;
   padding-left: 10px;
@@ -598,6 +598,7 @@ ol > li {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  background: #000;
   margin-top: 18px;
   margin-bottom: 18px;
   -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75);
@@ -612,6 +613,11 @@ ol > li {
     margin-top: 0px;
     margin-bottom: 0px;
   }
+}
+
+/* line 19, ../sass/partials/modules/_video_full.scss */
+.video-player p {
+  color: #EEE;
 }
 
 /* line 3, ../sass/partials/modules/_site_header.scss */
