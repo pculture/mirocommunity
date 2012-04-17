@@ -825,16 +825,18 @@ ol > li {
 /* line 64, ../sass/partials/modules/_navigation.scss */
 .nav-item-dropdown > a::after {
   content: ' ';
+  margin-left: -2px;
+  border-top: 4px solid black;
+  border-bottom: 0;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 4px solid;
   display: inline-block;
   position: absolute;
   right: 10px;
   top: 6px;
 }
 
-/* line 76, ../sass/partials/modules/_navigation.scss */
+/* line 74, ../sass/partials/modules/_navigation.scss */
 .dropdown-list, .dropdown-box {
   display: none;
   position: absolute;
@@ -853,54 +855,56 @@ ol > li {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
   border: 1px solid;
 }
-/* line 85, ../sass/partials/modules/_navigation.scss */
+/* line 83, ../sass/partials/modules/_navigation.scss */
 .dropdown-list::before, .dropdown-box::before {
   content: ' ';
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 7px solid;
+  margin-left: -4px;
+  border-top: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid black;
   display: inline-block;
   position: absolute;
-  top: -7px;
+  top: -8px;
   left: 10px;
 }
 @media screen and (max-width: 740px) {
-  /* line 85, ../sass/partials/modules/_navigation.scss */
+  /* line 83, ../sass/partials/modules/_navigation.scss */
   .dropdown-list::before, .dropdown-box::before {
     display: none;
   }
 }
 
-/* line 99, ../sass/partials/modules/_navigation.scss */
+/* line 95, ../sass/partials/modules/_navigation.scss */
 .dropdown-box {
   min-width: 300px;
 }
 @media screen and (max-width: 740px) {
-  /* line 99, ../sass/partials/modules/_navigation.scss */
+  /* line 95, ../sass/partials/modules/_navigation.scss */
   .dropdown-box {
     min-width: auto;
   }
 }
 
-/* line 106, ../sass/partials/modules/_navigation.scss */
+/* line 102, ../sass/partials/modules/_navigation.scss */
 .dropdown-list {
   min-width: 200px;
 }
 @media screen and (max-width: 740px) {
-  /* line 106, ../sass/partials/modules/_navigation.scss */
+  /* line 102, ../sass/partials/modules/_navigation.scss */
   .dropdown-list {
     min-width: auto;
   }
 }
 
-/* line 114, ../sass/partials/modules/_navigation.scss */
+/* line 110, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li > a {
   display: block;
   border: 0;
   padding: 5px 16px;
 }
 
-/* line 119, ../sass/partials/modules/_navigation.scss */
+/* line 115, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li:first-child > a {
   -moz-border-radius: 3px 3px 0 0;
   -webkit-border-radius: 3px 3px 0 0;
@@ -910,7 +914,7 @@ ol > li {
   border-radius: 3px 3px 0 0;
 }
 
-/* line 122, ../sass/partials/modules/_navigation.scss */
+/* line 118, ../sass/partials/modules/_navigation.scss */
 .dropdown-list > li:last-child > a {
   -moz-border-radius: 0 0 3px 3px;
   -webkit-border-radius: 0 0 3px 3px;
@@ -920,16 +924,16 @@ ol > li {
   border-radius: 0 0 3px 3px;
 }
 
-/* line 127, ../sass/partials/modules/_navigation.scss */
+/* line 123, ../sass/partials/modules/_navigation.scss */
 .browse-box-section {
   margin-bottom: 18px;
 }
-/* line 129, ../sass/partials/modules/_navigation.scss */
+/* line 125, ../sass/partials/modules/_navigation.scss */
 .browse-box-section:last-child {
   margin-bottom: 0;
 }
 
-/* line 133, ../sass/partials/modules/_navigation.scss */
+/* line 129, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > h1 {
   font-size: 12px;
   line-height: 18px;
@@ -938,20 +942,20 @@ ol > li {
   margin-bottom: 9px;
 }
 
-/* line 139, ../sass/partials/modules/_navigation.scss */
+/* line 135, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > ul {
   overflow: hidden;
   *zoom: 1;
 }
 
-/* line 143, ../sass/partials/modules/_navigation.scss */
+/* line 139, ../sass/partials/modules/_navigation.scss */
 .browse-box-section > ul > li {
   width: 33%;
   float: left;
 }
 
 @media screen and (max-width: 740px) {
-  /* line 149, ../sass/partials/modules/_navigation.scss */
+  /* line 145, ../sass/partials/modules/_navigation.scss */
   .dropdown-list, .dropdown-box {
     position: static;
     -moz-border-radius: 3px;

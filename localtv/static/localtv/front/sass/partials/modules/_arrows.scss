@@ -1,6 +1,6 @@
-@mixin arrow($direction, $size, $color){
+@mixin arrow($direction, $size, $color, $center: true){
 	@if $direction == "up" {
-		margin-left:-$size/2;
+		@if $center { margin-left:-$size/2; }
 		border:{
 			top:0;
 			left:$size solid transparent;
@@ -8,7 +8,7 @@
 			bottom:$size solid $color;
 		};
 	} @else if $direction == "down" {
-		margin-left:-$size/2;
+		@if $center { margin-left:-$size/2; }
 		border:{
 			top:$size solid $color;
 			bottom:0;
@@ -16,7 +16,7 @@
 			right:$size solid transparent;
 		};
 	} @else if $direction == "right" {
-		margin-top:-$size/2;
+		@if $center { margin-top:-$size/2; }
 		border:{
 			top:$size solid transparent;
 			bottom:$size solid transparent;
@@ -24,7 +24,7 @@
 			right:0;
 		};
 	} @else if $direction == "left" {
-		margin-top:-$size/2;
+		@if $center { margin-top:-$size/2; }
 		border:{
 			top:$size solid transparent;
 			bottom:$size solid transparent;

@@ -63,9 +63,7 @@
 }
 .nav-item-dropdown > a::after{
 	content:' ';
-	border-left:4px solid transparent;
-	border-right:4px solid transparent;
-	border-top:4px solid;
+	@include arrow("down", 4px, #000);
 	display:inline-block;
 	position:absolute;
 	right:$gutter-width/4;
@@ -84,12 +82,10 @@
 	border:1px solid;
 	&::before{
 		content:' ';
-		border-left:7px solid transparent;
-		border-right:7px solid transparent;
-		border-bottom:7px solid;
+		@include arrow("up", 8px, #000);
 		display:inline-block;
 		position:absolute;
-		top:-7px;
+		top:-8px;
 		left:10px;
 		@media screen and (max-width: 740px){
 			display:none;
