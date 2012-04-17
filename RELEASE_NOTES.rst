@@ -1,3 +1,21 @@
+Miro Community 1.8.2 Release Notes
+==================================
+
+* Added instance creation methods to new test cases.
+* Disabled haystack indexing during fixture loading for legacy tests.
+* Disabled haystack indexing during source imports.
+* Added bulk indexing/removal support.
+* Added flexible class-based sorting for SortFilter classes.
+* Corrected feed caching issues.
+* Fixed non-functional search feeds.
+* Standardized handling of video popularity between the front page and
+  the popular videos listing page.
+	* This includes a new ``update_popularity`` management command,
+	  which should be run at least once per day.
+* Fix to video preview size in the admin live search.
+* Fix for the admin unapproved videos feed.
+* Deleting a source, user, or site will now remove all related videos
+  from the search index.
 
 Miro Community 1.8.1 Release Notes
 ==================================
