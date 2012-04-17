@@ -7,6 +7,7 @@
 	Shrinkydink.prototype = {
 		constructor: Shrinkydink,
 		animationSpeed: 200,
+		lineCount: 3,
 		_getLineHeight: function () {
 			if (!this.cache.lineHeight) {
 				var temp = $('<div>N</div>').css('width', 100).appendTo(this.element);
@@ -16,7 +17,11 @@
 			return this.cache.lineHeight;
 		},
 		_getFullHeight: function () {
-			if (!this.cache.fullHeight) {
+			var windowWidth = $(window).width();
+			// if the height hasn't been cached yet or the window width has changed since the last time it was
+			if (!this.cache.fullHeight || windowWidth != this.cache.windowWidth) {
+				// cache the window width for comparison later
+				this.cache.windowWidth = windowWidth;
 				// get the current height of the element
 				var currheight = this.element.height();
 				// briefly expand the element to measure it
@@ -28,6 +33,9 @@
 			return this.cache.fullHeight;
 		},
 		initialize: function () {
+			// short-circuit, if the element is not tall enough to be worth shrinking
+			if (this._getLineHeight() * this.lineCount > this.element.height() ) return;
+			// otherwise, run the stuff
 			this.handle = $('<a href="#" data-shrinkydinkhandle="true" class="shrinkydink-handle"><span class="shrinkydink-handle-inner"></span></a>').data('shrinkydink-target', this.element);
 			this.handleInner = $('.shrinkydink-handle-inner', this.handle);
 			this.element.after(this.handle);
@@ -36,9 +44,9 @@
 		},
 		shrink: function (instant) {
 			if (instant) {
-				this.element.css({height:this._getLineHeight() * 3});
+				this.element.css({height:this._getLineHeight() * this.lineCount});
 			} else {
-				this.element.animate({height:this._getLineHeight() * 3}, this.animationSpeed);
+				this.element.animate({height:this._getLineHeight() * this.lineCount}, this.animationSpeed);
 			}
 			this.element.data('shrinkydink-state', 'shrunk');
 			this.element.toggleClass('shrunk');
