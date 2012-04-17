@@ -22,5 +22,5 @@ If no administrator logs on to your site in the next month, your feeds will
 stop updating. Don't worry - as soon as you log in again, all your feeds will
 refresh.
 
-Have questions about Miro Community? Email us - questions@mirocommunity.org -
+Have questions about Miro Community? Email us - status@mirocommunity.org -
 or check out the Miro Community Manual at http://develop.participatoryculture.org/index.php/MiroCommunityManual
