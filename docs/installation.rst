@@ -14,7 +14,7 @@ Installation
 
 Run the following commands::
 
-	pip install -r https://raw.github.com/pculture/mirocommunity/1.8.2/example_mc_project/requirements.txt
+	pip install -r https://raw.github.com/pculture/mirocommunity/develop/example_mc_project/requirements.txt
 	cd lib/python2.7/site-packages/example_mc_project
 	python manage.py syncdb # This will prompt you to create an admin user
 	python manage.py runserver
