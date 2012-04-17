@@ -24,26 +24,26 @@ from django.core.urlresolvers import reverse
 from django.core import mail
 from django.forms.fields import URLField
 from django.template import Context, loader
-from django.test.client import Client
 from notification import models as notification
 from vidscraper.suites.base import Video as VidscraperVideo
 
 from localtv.models import Video
-from localtv.submit_video.forms import SubmitURLForm, SubmitVideoForm
+from localtv.submit_video import forms
 from localtv.submit_video.management.commands import review_status_email
-from localtv.submit_video.views import (SubmitURLView, SubmitVideoView,
-                                        submit_thanks)
+from localtv.submit_video.views import SubmitURLView
+
 from localtv.tests import BaseTestCase
 
 
 class SubmitThanksFunctionalTestCase(BaseTestCase):
-    fixtures = ['videos'] + BaseTestCase.fixtures
+    fixtures = ['feeds', 'videos'] + BaseTestCase.fixtures
 
     def setUp(self):
         BaseTestCase.setUp(self)
         self.url = reverse('localtv_submit_thanks')
         self.video = Video.objects.filter(status=Video.ACTIVE)[0]
-        self.url_with_video = reverse('localtv_submit_thanks', args=[self.video.pk])
+        self.url_with_video = reverse('localtv_submit_thanks', args=[
+                self.video.pk])
         self.template_name = 'localtv/submit_video/thanks.html'
 
     def test_get__simple(self):
@@ -55,12 +55,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         """
         response = self.client.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
     def test_get__admin(self):
@@ -72,12 +72,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         self.client.login(username='admin', password='admin')
         response = self.client.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name, self.template_name)
+        self.assertEqual(response.templates[0].name, self.template_name)
         self.assertTrue('video' in response.context[0])
         self.assertEqual(response.context['video'], self.video)
 
@@ -114,7 +114,7 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
             self.client.login(username=username, password=password)
 
         response = self.client.get(url)
-        self.assertFalse(response.status_code == 302 and 
+        self.assertFalse(response.status_code == 302 and
                          response['Location'] == (
                          'http://%s%s?next=%s' %
                          ('testserver',
@@ -133,7 +133,8 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.assertNoLoginRedirect(self.url)
         self.assertNoLoginRedirect(self.url, username='user',
                                    password='password')
-        self.assertNoLoginRedirect(self.url, username='admin', password='admin')
+        self.assertNoLoginRedirect(self.url, username='admin',
+                                   password='admin')
 
     def test_login_required(self):
         """
@@ -148,7 +149,8 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.assertLoginRedirect(self.url)
         self.assertNoLoginRedirect(self.url, username='user',
                                    password='password')
-        self.assertNoLoginRedirect(self.url, username='admin', password='admin')
+        self.assertNoLoginRedirect(self.url, username='admin',
+                                   password='admin')
 
     def test_admin_required(self):
         """
@@ -161,8 +163,10 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.site_settings.save()
 
         self.assertLoginRedirect(self.url)
-        self.assertLoginRedirect(self.url, username='user', password='password')
-        self.assertNoLoginRedirect(self.url, username='admin', password='admin')
+        self.assertLoginRedirect(self.url, username='user',
+                                 password='password')
+        self.assertNoLoginRedirect(self.url, username='admin',
+                                   password='admin')
 
 
 class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
@@ -174,8 +178,8 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
     def test_get(self):
         """
         A GET request to the SubmitURLView without any GET data is expected to
-        render the 'localtv/submit_video/submit.html' template, and get passed a
-        'form' in the context which is an instance of SubmitURLForm. The same
+        render the 'localtv/submit_video/submit.html' template, and get passed
+        a 'form' in the context which is an instance of SubmitURLForm. The same
         should be true if GET parameters are supplied which do not overlap with
         the form fields.
 
@@ -184,14 +188,14 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
-        self.assertIsInstance(response.context['form'], SubmitURLForm)
+        self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
         response = self.client.get(self.url, {'q': 'hello', 'next': '/blink/'})
         self.assertStatusCodeEquals(response, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
-        self.assertIsInstance(response.context['form'], SubmitURLForm)
+        self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
     def test_submit__succeed(self):
@@ -201,8 +205,8 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         should be redirected to the correct submission completion view,
         preserving GET data.
 
-        All the views to which the user could be redirected are instances of the
-        same class-based view. This is essentially a test for
+        All the views to which the user could be redirected are instances of
+        the same class-based view. This is essentially a test for
         backwards-compatibility.
 
         """
@@ -246,7 +250,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         """
         data = {'url': ('http://media.river-valley.tv/conferences/'
                             'lgm2009/0302-Jean_Francois_Fortin_Tam-ogg.php')}
-        
+
         expected_url = "%s?%s" % (
             reverse('localtv_submit_directlink_video'),
             urlencode(data)
@@ -257,9 +261,9 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
     def test_submit__existing_rejected(self):
         """
-        If the URL represents an existing but rejected video, the user should be
-        redirected to the correct submission view, but the existing video should
-        not yet be deleted.
+        If the URL represents an existing but rejected video, the user should
+        be redirected to the correct submission view, but the existing video
+        should not yet be deleted.
 
         """
         video = Video.objects.create(
@@ -278,13 +282,13 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
     def test_submit__existing_unapproved(self):
         """
-        If the URL represents an existing but unmoderated video, the form should
-        be redisplayed. Additionally, the context should contain two variables
-        for backwards-compatibility:
+        If the URL represents an existing but unmoderated video, the form
+        should be redisplayed. Additionally, the context should contain two
+        variables for backwards-compatibility:
 
             * ``was_duplicate``: ``True``
             * ``video``: ``None``
-        
+
         """
         expected_error = "That video has already been submitted!"
         video = Video.objects.create(
@@ -303,9 +307,9 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
     def test_submit__existing_approved(self):
         """
-        If the URL represents an existing and approved video, the form should be
-        redisplayed. Additionally, the context should contain two variables for
-        backwards-compatibility:
+        If the URL represents an existing and approved video, the form should
+        be redisplayed. Additionally, the context should contain two variables
+        for backwards-compatibility:
 
             * ``was_duplicate``: True
             * ``video``: The duplicate video instance
@@ -340,15 +344,17 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertEqual(response.context['video'], video)
 
-        # Case three: duplicate guid. TODO: It would be preferable to mock this.
-        # TODO: vidscraper currently is changing the guids on youtube videos.
-        # Once that is resolved one way or another, this will need to be tweaked
-        # accordingly.
-        #video.guid = 'tag:youtube.com,2008:video:J_DV9b0x7v4'
+        # Case three: duplicate guid. TODO: It would be preferable to mock
+        # this.  TODO: vidscraper currently is changing the guids on youtube
+        # videos.  Once that is resolved one way or another, this will need to
+        # be tweaked accordingly.  video.guid =
+        # 'tag:youtube.com,2008:video:J_DV9b0x7v4'
         video.guid = u'http://gdata.youtube.com/feeds/api/videos/J_DV9b0x7v4'
         video.save()
 
-        response = self.client.get(self.url, {'url': 'http://www.youtube.com/watch?v=J_DV9b0x7v4'})
+        response = self.client.get(
+            self.url,
+            {'url': 'http://www.youtube.com/watch?v=J_DV9b0x7v4'})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertFormError(response, 'form', 'url', [expected_error])
@@ -446,7 +452,7 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
     Subclasses must define the following attributes, either in the class or
     during setUp:
- 
+
     * template_name - the template name for this view.
     * url - the url where this view will be found.
     * session_video - the vidscraper_video instance expected in the session.
@@ -466,7 +472,8 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         session['test'] = 'hi'
         del session['test']
         session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = session._session_key
+        self.client.cookies[
+            settings.SESSION_COOKIE_NAME] = session._session_key
 
     def test_get__no_session(self):
         """
@@ -479,9 +486,9 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
     def test_get__simple(self):
         """
-        A GET request to a SubmitVideoView with correct session data is expected
-        to render the correct template containing an unbound form of the correct
-        type.
+        A GET request to a SubmitVideoView with correct session data is
+        expected to render the correct template containing an unbound form of
+        the correct type.
 
         """
         session = self.client.session
@@ -495,7 +502,8 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('form' in response.context[0])
         self.assertFalse(response.context['form'].is_bound)
-        self.assertIsInstance(response.context['form'], SubmitVideoForm)
+        self.assertIsInstance(response.context['form'],
+                              forms.SubmitVideoFormBase)
 
     def test_submit__succeed(self):
         """
@@ -700,10 +708,10 @@ class ScrapedFunctionalTestCase(SubmitVideoViewFunctionalTestCase):
         self.session_video.embed_code = 'hi'
         self.session_video.description = (u"<p>In my first produced vlog, I "
                                           u"talk a bit about breaking blip.tv,"
-                                          u" and fixing it. The audio's pretty "
-                                          u"bad, sorry about that.</p>")
-        self.session_video.thumbnail_url = ('http://a.images.blip.tv/'
-                                           '11156136631.95334664852457-424.jpg')
+                                          u" and fixing it. The audio's "
+                                          u"pretty bad, sorry about that.</p>")
+        self.session_video.thumbnail_url = (
+            'http://a.images.blip.tv/11156136631.95334664852457-424.jpg')
         self.POST_data = {
             'tags': 'tag1, tag2',
             'contact': 'Foo <bar@example.com>',
@@ -714,6 +722,26 @@ class ScrapedFunctionalTestCase(SubmitVideoViewFunctionalTestCase):
 
 class EmbedRequestFunctionalTestCase(SubmitVideoViewFunctionalTestCase):
     def setUp(self):
+        self.url = reverse('localtv_submit_embedrequest_video')
+        self.template_name = 'localtv/submit_video/embed.html'
+        self.session_url = 'http://www.getmiro.com/'
+        self.session_video = None
+        self.POST_data = {
+            'name': 'name',
+            'description': 'description',
+            'thumbnail': 'http://www.getmiro.com/favicon.ico',
+            'embed_code': '<h1>hi!</h1>',
+            'tags': 'tag1, tag2',
+            'contact': 'Foo <bar@example.com>',
+            'notes': "here's a note!"
+        }
+        SubmitVideoViewFunctionalTestCase.setUp(self)
+
+class EmbedRequestWithEmbedFunctionalTestCase(
+    SubmitVideoViewFunctionalTestCase):
+    def setUp(self):
+        # this TestCase tests the old behavior where the form field was called
+        # 'embed'
         self.url = reverse('localtv_submit_embedrequest_video')
         self.template_name = 'localtv/submit_video/embed.html'
         self.session_url = 'http://www.getmiro.com/'

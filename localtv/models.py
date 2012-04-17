@@ -753,7 +753,6 @@ class Feed(Source):
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
-    avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
@@ -1746,7 +1745,7 @@ class Video(Thumbnailable, VideoBase):
         if self.guid:
             q_filter |= models.Q(guid=self.guid)
         qs = Video.objects.using(self._state.db).filter(
-            site_id=self.site_id,
+            site=self.site_id,
             status=Video.REJECTED).filter(q_filter)
         qs.delete()
 
