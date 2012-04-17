@@ -45,6 +45,7 @@ except ImportError:
 from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
+from localtv.settings import USE_HAYSTACK
 from localtv.tiers import Tier
 
 
@@ -64,7 +65,7 @@ def update_sources(using='default'):
 
 
 @task(ignore_result=True)
-def feed_update(feed_id, using='default'):
+def feed_update(feed_id, using='default', clear_rejected=False):
     try:
         feed = Feed.objects.using(using).get(pk=feed_id)
     except Feed.DoesNotExist:
@@ -72,7 +73,7 @@ def feed_update(feed_id, using='default'):
                      feed_id, using)
         return
 
-    feed.update(using=using, clear_rejected=True)
+    feed.update(using=using, clear_rejected=clear_rejected)
 
 
 @task(ignore_result=True)
@@ -135,7 +136,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
             active_set = unapproved_set
             unapproved_set = None
         else:
-            remaining_videos = (Tier.get().videos_limit()
+            remaining_videos = (Tier.get(using=using).videos_limit()
                                 - Video.objects.using(using
                                     ).filter(status=Video.ACTIVE
                                     ).count())
@@ -163,10 +164,9 @@ def mark_import_pending(import_app_label, import_model, import_pk,
                          status=Video.ACTIVE).values_list('pk', flat=True)
     if active_pks:
         opts = Video._meta
-        for pk in active_pks:
-            haystack_update_index.delay(opts.app_label, opts.module_name,
-                                        pk, is_removal=False,
-                                        using=using)
+        haystack_batch_update.delay(opts.app_label, opts.module_name,
+                                    pks=list(active_pks), remove=False,
+                                    using=using)
 
     mark_import_complete.delay(import_app_label, import_model, import_pk,
                                using=using)
@@ -193,24 +193,32 @@ def mark_import_complete(import_app_label, import_model, import_pk,
             raise MaxRetriesExceededError
         mark_import_complete.retry()
 
-    video_pks = list(source_import.get_videos(using).filter(
-                            status=Video.ACTIVE).values_list('pk', flat=True))
-    video_count = len(video_pks)
-    if not video_pks:
-        # Don't bother with the haystack query.
-        haystack_count = 0
+    if not USE_HAYSTACK:
+        # No need to do any comparisons - just mark it complete.
+        video_count = haystack_count = 0
+        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). Skipping '
+                       'check because haystack is disabled.'), import_app_label,
+                       import_model, import_pk, using)
     else:
-        if 'xapian' in connections[using].options['ENGINE']:
-            # The pk_hack field shadows the model's pk/django_id because
-            # xapian-haystack's django_id filtering is broken.
-            haystack_filter = {'pk_hack__in': video_pks}
+        video_pks = list(source_import.get_videos(using).filter(
+                                status=Video.ACTIVE).values_list('pk', flat=True))
+        video_count = len(video_pks)
+        if not video_pks:
+            # Don't bother with the haystack query.
+            haystack_count = 0
         else:
-            haystack_filter = {'django_id__in': video_pks}
-        haystack_count = SearchQuerySet().using(using).models(Video).filter(
-           **haystack_filter).count()
-    logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
-                   '%i, haystack_count: %i'), import_app_label, import_model,
-                   import_pk, using, video_count, haystack_count)
+            if 'xapian' in connections[using].options['ENGINE']:
+                # The pk_hack field shadows the model's pk/django_id because
+                # xapian-haystack's django_id filtering is broken.
+                haystack_filter = {'pk_hack__in': video_pks}
+            else:
+                haystack_filter = {'django_id__in': video_pks}
+            haystack_count = SearchQuerySet().using(using).models(Video).filter(
+               **haystack_filter).count()
+        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
+                       '%i, haystack_count: %i'), import_app_label, import_model,
+                       import_pk, using, video_count, haystack_count)
+
     if haystack_count >= video_count:
         source_import.status = import_class.COMPLETE
         if import_app_label == 'localtv' and import_model == 'feedimport':
@@ -315,13 +323,17 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                 authors = []
 
         # Since we check above whether the vidscraper_video is valid, we don't
-        # catch InvalidVideo here, since it would be unexpected.
+        # catch InvalidVideo here, since it would be unexpected. We don't
+        # update the index because this is expected to be run as part of the
+        # import process; the video will be indexed in bulk after the feed
+        # import is complete.
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                             using=using,
                                             source_import=source_import,
                                             authors=authors,
                                             categories=categories,
-                                            site_pk=site_pk)
+                                            site_pk=site_pk,
+                                            update_index=False)
         logging.debug('Made video %i: %r', video.pk, video.name)
         if video.thumbnail_url:
             video_save_thumbnail.delay(video.pk, using=using)
@@ -351,49 +363,98 @@ def video_save_thumbnail(video_pk, using='default'):
                 'video_save_thumbnail(%s, using=%r) exceeded max retries',
                 video_pk, using
             )
-        
 
-@task(ignore_result=True, max_retries=None)
-def haystack_update_index(app_label, model_name, pk, is_removal,
-                          using='default'):
+
+def _haystack_database_retry(task, callback):
     """
-    Updates a haystack index for the given model (specified by ``app_label``
-    and ``model_name``). If ``is_removal`` is ``True``, a fake instance is
-    constructed with the given ``pk`` and passed to the index's
-    :meth:`remove_object` method. Otherwise, the latest version of the instance
-    is fetched from the database and passed to the index's
-    :meth:`update_object` method.
-
-    If an import_app_label, import_model, and import_pk are provided, this task
-    will spawn ``mark_import_complete``.
+    Tries to call ``callback``; on a haystack database access error, retries
+    the task.
 
     """
-    model_class = get_model(app_label, model_name)
-    search_index = connections[using].get_unified_index().get_index(model_class)
     try:
-        if is_removal:
-            instance = model_class(pk=pk)
-            search_index.remove_object(instance)
-        else:
-            try:
-                instance = Video.objects.using(using).get(pk=pk)
-            except model_class.DoesNotExist:
-                logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r)'
-                               ' could not find video with pk %i'), app_label,
-                               model_name, pk, is_removal, using, pk)
-            else:
-                if instance.status == Video.ACTIVE:
-                    search_index.update_object(instance)
-                else:
-                    search_index.remove_object(instance)
+        callback()
     except (DatabaseError, LockError), e:
         # These errors might be resolved if we just wait a bit. The wait time is
         # slightly random, with the intention of preventing LockError retries
         # from reoccurring. Maximum wait is ~30s.
-        exp = min(haystack_update_index.request.retries, 4)
+        exp = min(task.request.retries, 4)
         countdown = random.random() * (2 ** exp)
-        logging.debug(('haystack_update_index(%r, %r, %r, %r, using=%r) '
-                       'retrying due to %s with countdown %r'), app_label,
-                       model_name, pk, is_removal, using, e.__class__.__name__,
-                       countdown)
-        haystack_update_index.retry(countdown=countdown)
+        logging.debug(('%s with args %s and kwargs %s retrying due to %s '
+                       'with countdown %r'), task.name, task.request.args,
+                       task.request.kwargs, e.__class__.__name__, countdown)
+        task.retry(countdown=countdown)
+
+
+@task(ignore_result=True, max_retries=None)
+def haystack_update(app_label, model_name, pks, remove=True, using='default'):
+    """
+    Updates the haystack records for any valid instances with the given pks.
+    Generally, ``remove`` should be ``True`` so that items which are no longer
+    in the ``index_queryset()`` will be taken out of the index; however,
+    ``remove`` can be set to ``False`` to save some time if that behavior
+    isn't needed.
+
+    """
+    model_class = get_model(app_label, model_name)
+    backend = connections[using].get_backend()
+    index = connections[using].get_unified_index().get_index(model_class)
+
+    qs = index.index_queryset().using(using).filter(pk__in=pks)
+
+    if qs:
+        _haystack_database_retry(haystack_update,
+                                 lambda: backend.update(index, qs))
+
+    if remove:
+        unseen_pks = set(pks) - set((instance.pk for instance in qs))
+        haystack_remove.apply(args=(app_label, model_name, unseen_pks, using))
+
+
+@task(ignore_result=True, max_retries=None)
+def haystack_remove(app_label, model_name, pks, using='default'):
+    """
+    Removes the haystack records for any instances with the given pks.
+
+    """
+    model_class = get_model(app_label, model_name)
+    backend = connections[using].get_backend()
+
+    def callback():
+        for pk in pks:
+            backend.remove(".".join((app_label, model_name, str(pk))))
+
+    _haystack_database_retry(haystack_remove, callback)
+
+
+@task(ignore_result=True)
+def haystack_batch_update(app_label, model_name, pks=None, start=None,
+                          end=None, date_lookup=None, batch_size=1000,
+                          remove=True, using='default'):
+    """
+    Batches haystack index updates for the given model. If no pks are given, a
+    general reindex will be launched.
+
+    """
+    model_class = get_model(app_label, model_name)
+    backend = connections[using].get_backend()
+    index = connections[using].get_unified_index().get_index(model_class)
+
+    pk_qs = index.index_queryset().using(using)
+    if pks is not None:
+        pk_qs = pk_qs.filter(pk__in=pks)
+
+    if date_lookup is None:
+        date_lookup = index.get_updated_field()
+    if date_lookup is not None:
+        if start is not None:
+            pk_qs = pk_qs.filter(**{"%s__gte" % date_lookup: start})
+        if end is not None:
+            pk_qs = pk_qs.filter(**{"%s__lte" % date_lookup: end})
+
+    pks = list(pk_qs.values_list('pk', flat=True))
+    total = len(pks)
+
+    for start in xrange(0, total, batch_size):
+        end = min(start + batch_size, total)
+        haystack_update.delay(app_label, model_name, pks[start:end],
+                              remove=remove, using=using)

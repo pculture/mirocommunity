@@ -58,9 +58,11 @@ from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import vidscraper
+from haystack import connections
 
 from notification import models as notification
 import tagging
+import tagging.models
 
 from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
@@ -710,7 +712,7 @@ class Source(Thumbnailable):
         abstract = True
 
     def update(self, video_iter, source_import, using='default',
-               clear_rejected=True):
+               clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
         returns :class:`vidscraper.suites.base.Video` objects.  We use
@@ -1603,10 +1605,9 @@ class VideoManager(models.Manager):
         current sitelocation.
 
         """
-        return self.get_latest_videos(sitelocation).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(sitelocation),
+                                  descending=True)
 
     def get_category_videos(self, category, sitelocation=None):
         """
@@ -1775,10 +1776,24 @@ class Video(Thumbnailable, VideoBase):
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
 
+    def save(self, **kwargs):
+        """
+        Adds support for an ```update_index`` kwarg, defaulting to ``True``.
+        If this kwarg is ``False``, then no index updates will be run by the
+        search index.
+
+        """
+        # This actually relies on logic in
+        # :meth:`QueuedSearchIndex._enqueue_instance`
+        self._update_index = kwargs.pop('update_index', True)
+        super(Video, self).save(**kwargs)
+    save.alters_data = True
+
+
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
                               using='default', source_import=None, site_pk=None,
-                              authors=None, categories=None):
+                              authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
@@ -1858,6 +1873,9 @@ class Video(Thumbnailable, VideoBase):
                 source_import.handle_video(instance, video, using)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video, using=using)
+            if update_index:
+                index = connections[using].get_unified_index().get_index(cls)
+                index._enqueue_update(instance)
 
         if commit:
             # Only run this check if they want to immediately commit the
@@ -1865,7 +1883,7 @@ class Video(Thumbnailable, VideoBase):
             # that the instance makes sense before being saved.
             if not (instance.embed_code or instance.file_url):
                 raise InvalidVideo
-            instance.save(using=using)
+            instance.save(using=using, update_index=False)
             save_m2m()
         else:
             instance._state.db = using

@@ -15,13 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import datetime
 import re
-import sys
-import os
 import urllib2
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
@@ -29,15 +27,12 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.utils import simplejson
 from django.views.decorators.csrf import csrf_protect
-
-import celery
-from importlib import import_module
 
 import vidscraper
 
 from localtv.decorators import require_site_admin, referrer_redirect
+from localtv.exceptions import CannotOpenImageUrl
 from localtv import tasks, utils
 from localtv.models import Feed, SiteLocation
 from localtv.admin import forms
@@ -72,6 +67,13 @@ def add_feed(request):
         return HttpResponseBadRequest(
             '* It does not appear that %s is an RSS/Atom feed URL.' % (
                 scraped_feed.url,))
+    except Exception:
+        logging.error('unknown error loading scraped feed: %r',
+                      feed_url,
+                      exc_info=None)
+        return HttpResponseBadRequest(
+            '* There was an unknown error loading %s' % (
+                feed_url,))
     title = scraped_feed.title or ''
 
     for regexp in VIDEO_SERVICE_TITLES:
@@ -120,10 +122,16 @@ def add_feed(request):
                     thumbnail_file = ContentFile(
                         urllib2.urlopen(
                             utils.quote_unicode_url(thumbnail_url)).read())
-                except IOError: # couldn't get the thumbnail
+                except IOError:
+                    # couldn't get the thumbnail
                     pass
                 else:
-                    feed.save_thumbnail_from_file(thumbnail_file)
+                    try:
+                        feed.save_thumbnail_from_file(thumbnail_file)
+                    except CannotOpenImageUrl:
+                        # couldn't parse the thumbnail. Not sure why this
+                        # raises CannotOpenImageUrl, tbh.
+                        pass
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],
@@ -139,8 +147,9 @@ def add_feed(request):
 
             tasks.feed_update.delay(
                 feed.pk,
-                using=tasks.CELERY_USING)
-            
+                using=tasks.CELERY_USING,
+                clear_rejected=True)
+
             return HttpResponseRedirect(reverse('localtv_admin_manage_page'))
 
     else:

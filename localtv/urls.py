@@ -22,11 +22,12 @@ from django.views.generic import ListView
 from localtv.listing.views import VideoSearchView, SiteListView, \
                         CategoryVideoSearchView
 from localtv.models import Category
+from localtv.views import IndexView
 
 # "Base" patterns
 urlpatterns = patterns(
     'localtv.views',
-    url(r'^$', 'index', name='localtv_index'),
+    url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
     url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
@@ -36,7 +37,8 @@ urlpatterns = patterns(
 # Listing patterns
 category_videos = CategoryVideoSearchView.as_view(
     template_name='localtv/category.html',
-    default_filter='category',
+    url_filter='category',
+    url_filter_kwarg='slug',
     default_sort='-date'
 )
 urlpatterns += patterns(
@@ -58,7 +60,7 @@ urlpatterns += patterns(
                     ), name='localtv_author_index'),
     url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
                         template_name='localtv/author.html',
-                        default_filter='author',
+                        url_filter='author',
                         default_sort='-date'
                     ), name='localtv_author'))
 

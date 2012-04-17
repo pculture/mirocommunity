@@ -102,7 +102,7 @@ SECRET_KEY = 'example_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'uploadtemplate.loader.load_template_source',
+    'uploadtemplate.loader.Loader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 # 'django.template.loaders.eggs.Loader',
@@ -266,6 +266,7 @@ TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
 
 # For debugging
+PAYPAL_TEST = bool(os.environ.get('MC_PAYPAL_REAL', False))
 LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
 LOCALTV_SKIP_PAYPAL = True
 PAYPAL_RECEIVER_EMAIL = ''

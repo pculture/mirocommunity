@@ -43,6 +43,7 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 
+from haystack import connections
 from haystack.query import SearchQuerySet
 
 import localtv.settings
@@ -54,6 +55,7 @@ from localtv.models import (Watch, Category, SiteLocation, Video, TierInfo,
                             Source)
 from localtv import utils
 import localtv.feeds.views
+from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
 from tagging.models import Tag
@@ -98,7 +100,6 @@ class BaseTestCase(TestCase):
         self.tier_info = TierInfo.objects.get_current()
 
         self._switch_into_tier()
-        self._rebuild_index()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -112,6 +113,24 @@ class BaseTestCase(TestCase):
                      'django.core.cache.backends.dummy.DummyCache'}}
         mail.outbox = [] # reset any email at the start of the suite
         self.factory = FakeRequestFactory()
+
+    def _fixture_setup(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_setup()
+        index._setup_save()
+        index._setup_delete()
+        self._rebuild_index()
+
+    def _fixture_teardown(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_teardown()
+        index._setup_save()
+        index._setup_delete()
+        self._clear_index()
 
     def _switch_into_tier(self):
         # By default, tests run on an 'max' account.
@@ -176,14 +195,21 @@ class BaseTestCase(TestCase):
                           ('testserver',
                            settings.LOGIN_URL,
                            quote_plus(url, safe='/')))
+    def _clear_index(self):
+        """Clears the search index."""
+        backend = connections['default'].get_backend()
+        backend.clear()
 
-    def _rebuild_index(self):
-        """
-        Rebuilds the search index.
-        """
-        from haystack import connections
+    def _update_index(self):
+        """Updates the search index."""
+        backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
-        index.reindex()
+        backend.update(index, index.index_queryset())
+        
+    def _rebuild_index(self):
+        """Clears and then updates the search index."""
+        self._clear_index()
+        self._update_index()
 
 
 # -----------------------------------------------------------------------------
@@ -639,10 +665,11 @@ class ViewTestCase(BaseTestCase):
         should include 10 featured videos, 10 popular videos, 10 new views, and
         the base categories (those without parents).
         """
-        for watched in Watch.objects.all():
-            watched.timestamp = datetime.datetime.now() # so that they're
-                                                        # recent
-            watched.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        # Rebuild index to work around https://bitbucket.org/mchaput/whoosh/issue/237
+        #haystack_batch_update.apply(args=(Video._meta.app_label,
+        #                                  Video._meta.module_name))
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_index'))
@@ -1158,9 +1185,9 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
-        for w in Watch.objects.all():
-            w.timestamp = datetime.datetime.now()
-            w.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name))
 
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
@@ -1168,12 +1195,12 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(response.template[0].name,
                           'localtv/video_listing_popular.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
-        self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.get_popular_videos(
-                                 self.site_location).filter(
-                                     watch__timestamp__gte=datetime.datetime.min
-                                 ).distinct()))
+
+        results = response.context['page_obj'].object_list
+        expected = Video.objects.get_popular_videos(self.site_location)
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
         """
@@ -1873,7 +1900,12 @@ of our sponsors. Please watch this video for a message from our sponsors. If \
 you wish to support Miro yourself, please donate $10 today.</p>""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
-        'thumbnail_updated': datetime.datetime(2012, 1, 4, 6, 56, 41),
+        # it seems like thumbnails are updated on the 8th of each month; this
+        # code should get the last 8th that happened.  Just replacing today's
+        # date with an 8 doesn't work early in the month, so backtrack a bit
+        # first.
+        'thumbnail_updated': (datetime.datetime.now() -
+                              datetime.timedelta(days=8)).replace(day=8),
         }
 
 
@@ -2238,7 +2270,7 @@ class TierMethodsTests(BaseTestCase):
         self.assertEqual(datetime.timedelta(hours=5),
                          ti.time_until_free_trial_expires(now=now))
 
-class FeedViewTestCase(BaseTestCase):
+class LegacyFeedViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
 
@@ -2265,7 +2297,7 @@ class FeedViewTestCase(BaseTestCase):
     def test_category_feed_renders_at_all(self):
         fake_request = self.factory.get('?count=10')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
 
     def test_feed_views_respect_count_when_set_integration(self):
@@ -2282,7 +2314,7 @@ class FeedViewTestCase(BaseTestCase):
         # Do a GET for the first 2 in the feed
         fake_request = self.factory.get('?count=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_first_GET = parsed['items']
@@ -2291,7 +2323,7 @@ class FeedViewTestCase(BaseTestCase):
         # Do a GET for the next "2" (just 1 left)
         fake_request = self.factory.get('?count=2&start-index=2')
         view = localtv.feeds.views.CategoryVideosFeed()
-        response = view(fake_request, 'linux')
+        response = view(fake_request, slug='linux')
         self.assertEqual(200, response.status_code)
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']

@@ -25,7 +25,7 @@ from django.test.client import Client
 
 from localtv import models
 from localtv.submit_video.management.commands import review_status_email
-from localtv.tests import BaseTestCase
+from localtv.tests.legacy_localtv import BaseTestCase
 
 from notification import models as notification
 
