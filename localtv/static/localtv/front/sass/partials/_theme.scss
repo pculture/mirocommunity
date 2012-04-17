@@ -99,7 +99,6 @@ body{
 	border-top-color:$navigation-text-color;
 }
 
-
 .dropdown-list, .dropdown-box{
 	border-color:darken($navigation-background-color, 20%);
 	background:$navigation-background-color;
@@ -116,6 +115,16 @@ body{
 	}
 	&:active{
 		background:darken($navigation-background-color, 10%);
+	}
+}
+
+/* popover */
+
+.popover{
+	border-color:darken($main-background-color, 20%);
+	background:$main-background-color;
+	.arrow{
+		border-right-color:darken($main-background-color, 20%);
 	}
 }
 

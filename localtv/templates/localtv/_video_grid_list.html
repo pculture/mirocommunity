@@ -11,7 +11,16 @@
 		{% if forloop.first %}
 			<ul class="media-grid video-grid">
 		{% endif %}
-		<li class="media-item">
+		<li class="media-item video-grid-item"
+			data-original-title="
+				{% filter force_escape %}
+					{% with video as instance %}
+						{% include "localtv/inline_edit/video_when_published.html" %} by {% include "localtv/inline_edit/video_authors.html" %}
+					{% endwith %}
+				{% endfilter %}
+			"
+			data-content="{{ video.description }}"
+		>
 			<figure class="thumb">
 				<a href="{{ video.get_absolute_url }}">
 					{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
