@@ -119,7 +119,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% if user_is_admin %}
 						{% if current_video.submitter %}<li class="item"><h4>{% trans "Submitted by" %}</h4><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
 						{% if current_video.search %}<li class="item"><h4>{% trans "From search" %}</h4><ul><li> {{ current_video.search }}</li></ul></li>{% endif %}
-						{% if current_video.feed %}<li class="item"><h4>{% trans "From feed" %}</h4><ul><li> <a href="{% url localtv_list_feed current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
+						{% if current_video.feed %}<li class="item"><h4>{% trans "From feed" %}</h4><ul><li> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
 						{% if current_video.contact %}<li class="item"><h4>{% trans "Contact" %}</h4><ul><li> {{ current_video.contact }}</li></ul></li>{% endif %}
 						{% if current_video.notes %}<li class="item"><h4>{% trans "Notes" %}</h4><ul><li> {{ current_video.notes }}</li></ul></li>{% endif %}
 					{% endif %}
