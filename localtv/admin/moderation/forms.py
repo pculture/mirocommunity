@@ -105,7 +105,7 @@ class VideoModerationForm(ModerationForm):
                                widget=forms.RadioSelect)
 
     def approve(self, commit=True):
-        if not self.instance.is_active():
+        if not self.instance.status == Video.ACTIVE:
             self.instance.status = Video.ACTIVE
             self.instance.when_approved = datetime.datetime.now()
             if commit:
