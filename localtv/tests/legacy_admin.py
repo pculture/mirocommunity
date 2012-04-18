@@ -29,7 +29,7 @@ from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy, reverse
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
@@ -103,7 +103,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'savedsearches']
 
-    url = reverse('localtv_admin_approve_reject')
+    url = reverse_lazy('localtv_admin_approve_reject')
 
     def test_GET(self):
         """
@@ -492,7 +492,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
     fixtures = AdministrationBaseTestCase.fixtures + [
         'feeds', 'savedsearches', 'videos', 'categories']
 
-    url = reverse('localtv_admin_manage_page')
+    url = reverse_lazy('localtv_admin_manage_page')
 
     def test_GET(self):
         """
@@ -1080,7 +1080,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 
 class FeedAdministrationTestCase(BaseTestCase):
 
-    url = reverse('localtv_admin_feed_add')
+    url = reverse_lazy('localtv_admin_feed_add')
     feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
 
     def test_GET(self):
@@ -1356,7 +1356,7 @@ class FeedAdministrationTestCase(BaseTestCase):
 
 class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_search')
+    url = reverse_lazy('localtv_admin_search')
 
     def test_GET(self):
         """
@@ -1643,7 +1643,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
 class UserAdministrationTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_users')
+    url = reverse_lazy('localtv_admin_users')
 
     def test_GET(self):
         """
@@ -1947,7 +1947,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
     fixtures = AdministrationBaseTestCase.fixtures + [
         'categories']
 
-    url = reverse('localtv_admin_categories')
+    url = reverse_lazy('localtv_admin_categories')
 
     def test_GET(self):
         """
@@ -2295,7 +2295,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     fixtures = AdministrationBaseTestCase.fixtures + [
         'feeds', 'videos', 'categories']
 
-    url = reverse('localtv_admin_bulk_edit')
+    url = reverse_lazy('localtv_admin_bulk_edit')
 
     @staticmethod
     def Video_sort_lower(*args, **kwargs):
@@ -2996,7 +2996,7 @@ def naysayer(*args, **kwargs):
 
 class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_settings')
+    url = reverse_lazy('localtv_admin_settings')
 
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
@@ -3037,7 +3037,7 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
         self.assertStatusCodeEquals(POST_response, 302)
 
 class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
-    url = reverse('localtv_admin_users')
+    url = reverse_lazy('localtv_admin_users')
 
     def test_POST_rejects_first_admin_beyond_superuser(self):
         """
@@ -3082,7 +3082,7 @@ class EditUsersDeniedSometimesTestCase(AdministrationBaseTestCase):
 
 class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
-    url = reverse('localtv_admin_settings')
+    url = reverse_lazy('localtv_admin_settings')
 
     def setUp(self):
         AdministrationBaseTestCase.setUp(self)
@@ -3291,7 +3291,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
     fixtures = AdministrationBaseTestCase.fixtures + [
         'flatpages']
 
-    url = reverse('localtv_admin_flatpages')
+    url = reverse_lazy('localtv_admin_flatpages')
 
     def test_GET(self):
         """
@@ -3863,7 +3863,7 @@ class DowngradingDisablesThings(BaseTestCase):
 
 
 class AdminDashboardLoadsWithoutError(BaseTestCase):
-    url = reverse('localtv_admin_index')
+    url = reverse_lazy('localtv_admin_index')
 
     def test(self):
         """
