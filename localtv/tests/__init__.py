@@ -20,4 +20,6 @@ from localtv.tests.legacy_admin import *
 from localtv.tests.legacy_playlists import *
 from localtv.tests.legacy_search import *
 
+from localtv.tests.integration import *
+from localtv.tests.functional import *
 from localtv.tests.unit import *

@@ -45,7 +45,7 @@ def widget_settings(request):
             if request.POST.get('delete_icon'):
                 if widgetsettings.icon:
                     widgetsettings.icon.delete()
-                    widgetsettings.delete_thumbnails()
+                    widgetsettings.delete_thumbnail()
             if request.POST.get('delete_css'):
                 if widgetsettings.css:
                     widgetsettings.css.delete()

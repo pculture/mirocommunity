@@ -25,7 +25,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     depends_on = (
-        ('localtv', '0008_add_profile'),
+        ('localtv', '0028_remove_email_settings'),
     )
 
     def forwards(self, orm):

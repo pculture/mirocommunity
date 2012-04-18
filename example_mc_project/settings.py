@@ -17,8 +17,12 @@
 
 # Example settings for a Miro Community project
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -42,6 +46,8 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # BROKER_USER = 'celery'
 # BROKER_PASSWORD = 'testing'
 # BROKER_VHOST = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -103,7 +109,7 @@ SECRET_KEY = 'example_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'uploadtemplate.loader.load_template_source',
+    'uploadtemplate.loader.Loader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 # 'django.template.loaders.eggs.Loader',
@@ -166,8 +172,14 @@ INSTALLED_APPS = (
     'socialauth',
     'openid_consumer',
     'paypal.standard.ipn',
-    'voting'
+    'voting',
+    'daguerre'
 )
+
+if USE_SOUTH:
+    if 'south' not in INSTALLED_APPS:
+        INSTALLED_APPS = INSTALLED_APPS + ('south',)
+    SOUTH_TESTS_MIGRATE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
@@ -246,7 +258,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
 
-import os
 # haystack search
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -267,6 +278,7 @@ TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
 
 # For debugging
+PAYPAL_TEST = bool(os.environ.get('MC_PAYPAL_REAL', False))
 LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
 LOCALTV_SKIP_PAYPAL = True
 PAYPAL_RECEIVER_EMAIL = ''

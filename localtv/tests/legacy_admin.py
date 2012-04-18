@@ -22,21 +22,21 @@ class Fakedatetime(datetime.datetime):
     def utcnow(cls):
         return cls(2011, 2, 20, 12, 35, 0)
 
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.flatpages.models import FlatPage
+from django.contrib.sites.models import Site
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
-from django.contrib.flatpages.models import FlatPage
 from django.db.models import Q
 from django.test.client import Client
 from django.utils.encoding import force_unicode
-from django.conf import settings
 
 import mock
 from notification import models as notification
 from uploadtemplate.models import Theme
-import vidscraper
 
 from localtv import utils
 import localtv.management.commands.check_frequently_for_invalid_tiers_state
@@ -101,7 +101,7 @@ class AdministrationBaseTestCase(BaseTestCase):
 
 class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'feeds', 'savedsearches']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'savedsearches']
 
     url = reverse('localtv_admin_approve_reject')
 
@@ -116,7 +116,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/approve_reject_table.html')
         self.assertIsInstance(response.context['current_video'],
                               Video)
@@ -170,7 +170,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url,
                          {'video_id': str(video.pk)})
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
         self.assertEqual(response.context['current_video'],
                           video)
@@ -409,7 +409,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         'localtv/admin/clear_confirm.html' and have a 'videos' variable
         in the context which is a list of all the unapproved videos.
         """
-        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                             site=Site.objects.get_current())
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -419,7 +420,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/clear_confirm.html')
         self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
@@ -435,7 +436,8 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         and have a 'videos' variable in the context which is a list of all the
         unapproved videos.
         """
-        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED)
+        unapproved_videos = Video.objects.filter(status=Video.UNAPPROVED,
+                                             site=Site.objects.get_current())
         unapproved_videos_count = unapproved_videos.count()
 
         url = reverse('localtv_admin_clear_all')
@@ -444,7 +446,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/clear_confirm.html')
         self.assertEqual(list(response.context['videos']),
                           list(unapproved_videos))
@@ -515,7 +517,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/manage_sources.html')
         self.assertTrue('add_feed_form' in response.context[0])
         self.assertTrue('page' in response.context[0])
@@ -1093,7 +1095,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         self.feed_url)
@@ -1148,7 +1150,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1164,7 +1166,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url, {'feed_url': url})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[2]['form'].instance.feed_url,
                         url)
@@ -1180,7 +1182,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                           {'feed_url': self.feed_url,
                            'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
         self.assertTrue(response.context[0]['form'].instance.feed_url,
                         self.feed_url)
@@ -1230,8 +1232,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         response = c.post(self.url + "?feed_url=%s" % self.feed_url,
                           {'feed_url': self.feed_url,
-                           'auto_approve': 'yes',
-                           'avoid_frontpage': 'on'})
+                           'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1243,7 +1244,6 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEqual(feed.feed_url, self.feed_url)
         # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
         self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
-        self.assertEqual(feed.avoid_frontpage, True)
         self.assertTrue(feed.auto_approve)
 
     def test_GET_creates_user(self):
@@ -1267,8 +1267,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.email, '')
         self.assertEqual(user.get_profile().website,
-                          'http://www.youtube.com/profile?'
-                          'user=mphtower#p/u')
+                          'http://www.youtube.com/user/mphtower/videos')
         self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
@@ -1374,7 +1373,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertTrue('current_video' in response.context[0])
         self.assertTrue('page_obj' in response.context[0])
@@ -1392,7 +1391,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url,
                          {'q': 'search string'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
         self.assertIsInstance(response.context['current_video'],
                               Video)
@@ -1417,9 +1416,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         response2 = c.get(self.url,
                          {'q': 'search string',
                           'page': '2'})
-        self.assertEqual(response2.context[2]['page_obj'].number, 2)
-        self.assertEqual(len(response2.context[2]['page_obj'].object_list),
-                          10)
+        page_obj = response2.context[2]['page_obj']
+        self.assertEqual(page_obj.number, 2)
+        if page_obj.has_next():
+            self.assertEqual(len(page_obj.object_list), 10)
+        else:
+            self.assertTrue(page_obj.object_list)
 
         self.assertNotEquals([v.id for v in
                               response.context[2]['page_obj'].object_list],
@@ -1477,8 +1479,9 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url,
                          {'q': 'search string'})
+        self.assertTrue(len(response.context[2]['page_obj'].object_list) > 2,
+                        len(response.context[2]['page_obj'].object_list))
         metasearch_video = response.context[2]['page_obj'].object_list[0]
-        metasearch_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
                          {'q': 'search string',
@@ -1536,7 +1539,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                          {'q': 'search string',
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
         self.assertEqual(response.context[0]['current_video'].id,
                           metasearch_video.id)
@@ -1652,7 +1655,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_user_form' in response.context[0])
@@ -1668,7 +1671,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -1685,7 +1688,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/users.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -1956,7 +1959,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('add_category_form' in response.context[0])
@@ -1971,7 +1974,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -1992,7 +1995,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -2016,7 +2019,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2039,7 +2042,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2064,7 +2067,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/categories.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -2327,7 +2330,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
 
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/bulk_edit.html')
         self.assertEqual(response.context[0]['page'].number, 1)
         self.assertTrue('formset' in response.context[0])
@@ -3016,7 +3019,7 @@ class EditSettingsDeniedSometimesTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3100,7 +3103,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertTrue('form' in response.context[0])
 
@@ -3115,7 +3118,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, )
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3131,7 +3134,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         POST_response = c.post(self.url, self.POST_data)
 
         self.assertStatusCodeEquals(POST_response, 200)
-        self.assertEqual(POST_response.template[0].name,
+        self.assertEqual(POST_response.templates[0].name,
                           'localtv/admin/edit_settings.html')
         self.assertFalse(POST_response.context['form'].is_valid())
 
@@ -3300,7 +3303,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue('form' in response.context[0])
@@ -3315,7 +3318,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         response = c.post(self.url,
                           {'submit': 'Add'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3331,7 +3334,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue(
             getattr(response.context[0]['formset'], 'errors') is not None)
@@ -3383,7 +3386,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3405,7 +3408,7 @@ class FlatPageAdministrationTestCase(AdministrationBaseTestCase):
             }
         response = c.post(self.url, POST_data)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/admin/flatpages.html')
         self.assertTrue('formset' in response.context[0])
         self.assertTrue(
@@ -3917,7 +3920,6 @@ class DowngradingSevenAdmins(BaseTestCase):
         self.assertEqual(5, localtv.tiers.number_of_admins_including_superuser())
 
 class NightlyTiersEmails(BaseTestCase):
-    fixtures = BaseTestCase.fixtures
 
     def setUp(self):
         super(NightlyTiersEmails, self).setUp()
@@ -4238,8 +4240,7 @@ class IpnIntegration(BaseTestCase):
         # POST to the begin_free_trial element...
         url = reverse('localtv_admin_begin_free_trial',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
-        response = self.c.get(url,
-                               {'target_tier_name': 'plus'})
+        self.c.get(url, {'target_tier_name': 'plus'})
 
         # Make sure we switched
         self.assertEqual('plus', self.site_settings.tier_name)
@@ -4254,8 +4255,10 @@ class IpnIntegration(BaseTestCase):
         message = mail.outbox[0].body
         self.assertFalse('until midnight on None' in message)
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4294,8 +4297,10 @@ class IpnIntegration(BaseTestCase):
         else:
             amount3 = unicode(PLUS_COST)
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4305,7 +4310,9 @@ class IpnIntegration(BaseTestCase):
 
     @mock.patch('paypal.standard.ipn.models.PayPalIPN._postback', mock.Mock(return_value='VERIFIED'))
     def upgrade_including_prorated_duration_and_amount(self, amount1, amount3, period1):
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': amount1, u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'prorated change', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': period1, u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': amount1, u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 20, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': amount1, u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_signup', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'prorated change', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': period1, u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': amount3, u'amount1': amount1, u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 20, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4325,8 +4332,10 @@ class IpnIntegration(BaseTestCase):
         else:
             subscr_id = u'I-MEBGA2YXPNJK'
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_modify', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_modify', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount3': amount3, u'amount1': u'0.00', u'mc_amount3': amount3, u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4341,8 +4350,10 @@ class IpnIntegration(BaseTestCase):
         else:
             subscr_id = u'I-MEBGA2YXPNJK'
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # Now, PayPal sends us the IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount1': u'0.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': subscr_id, u'amount1': u'0.00', u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4382,9 +4393,11 @@ class IpnIntegration(BaseTestCase):
         localtv.zendesk.outbox = [] 
         mail.outbox = []
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # PayPal eventually sends us the IPN cancelling the old subscription, because someone
         # in the MC team ends it.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_cancel', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'period3': u'1 M', u'period1': u'30 D', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'amount3': unicode(PLUS_COST), u'amount1': u'0.00', u'mc_amount3': unicode(PLUS_COST), u'mc_currency': u'USD', u'subscr_date': u'12:06:48 Feb 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 
@@ -4407,8 +4420,10 @@ class IpnIntegration(BaseTestCase):
         tier_info = TierInfo.objects.get_current()
         self.assertEqual(tier_info.current_paypal_profile_id, 'I-MEBGA2YXPNJK')
 
+        test_ipn = u'1' if getattr(settings, 'PAYPAL_TEST', False) else u'0'
+
         # Send ourselves a payment IPN.
-        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': u'1', u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': unicode(PLUS_COST), u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
+        ipn_data = {u'last_name': u'User', u'receiver_email': settings.PAYPAL_RECEIVER_EMAIL, u'residence_country': u'US', u'mc_amount1': u'0.00', u'invoice': u'premium', u'payer_status': u'verified', u'txn_type': u'subscr_payment', u'txn_id':u'S-4LF64589B35985347', u'payment_status': 'Completed', u'first_name': u'Test', u'item_name': u'Miro Community subscription (plus)', u'charset': u'windows-1252', u'custom': u'plus for example.com', u'notify_version': u'3.0', u'recurring': u'1', u'test_ipn': test_ipn, u'business': settings.PAYPAL_RECEIVER_EMAIL, u'payer_id': u'SQRR5KCD7Z266', u'verify_sign': u'AKcOzwh6cb1eCtGrfvM.18Ri5hWDAWoRIoMoZm39KHDsLIoVZyWJDM7B', u'subscr_id': u'I-MEBGA2YXPNJK', u'payment_gross': unicode(PLUS_COST), u'payment_date': u'12:06:48 Mar 17, 2011 PST', u'payer_email': u'paypal_1297894110_per@s.asheesh.org', u'reattempt': u'1'}
         url = reverse('localtv_admin_ipn_endpoint',
                       kwargs={'payment_secret': self.tier_info.get_payment_secret()})
 

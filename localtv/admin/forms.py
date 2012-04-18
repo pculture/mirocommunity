@@ -61,8 +61,9 @@ class BulkFormSetMixin(object):
     @property
     def bulk_forms(self):
         for form in self.initial_forms:
-            if form.cleaned_data and form.cleaned_data['BULK'] and \
-                    not self._should_delete_form(form):
+            if (hasattr(form, 'cleaned_data') and
+                form.cleaned_data.get('BULK') and
+                not self._should_delete_form(form)):
                 yield form
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):

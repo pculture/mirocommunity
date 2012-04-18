@@ -27,9 +27,11 @@ from django.http import (Http404, HttpResponsePermanentRedirect,
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.vary import vary_on_headers
+from django.views.generic import TemplateView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
+from localtv.search.utils import SortFilterMixin, NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -37,27 +39,30 @@ from localtv.playlists.models import Playlist, PlaylistItem
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-def index(request):
-    featured_videos = Video.objects.get_featured_videos()
-    popular_videos = Video.objects.get_popular_videos()
-    new_videos = Video.objects.get_latest_videos().exclude(
-                                            feed__avoid_frontpage=True)
+class IndexView(SortFilterMixin, TemplateView):
+    template_name = 'localtv/index.html'
 
-    site_settings_videos = Video.objects.get_site_settings_videos()
-    recent_comments = comments.get_model().objects.filter(
-        site=Site.objects.get_current(),
-        content_type=ContentType.objects.get_for_model(Video),
-        object_pk__in=site_settings_videos.values_list('pk', flat=True),
-        is_removed=False,
-        is_public=True).order_by('-submit_date')
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        featured_videos = Video.objects.get_featured_videos()
+        popular_videos = self._sort(self._search(''), '-popular')
+        new_videos = Video.objects.get_latest_videos()
 
-    return render_to_response(
-        'localtv/index.html',
-        {'featured_videos': featured_videos,
-         'popular_videos': popular_videos,
-         'new_videos': new_videos,
-         'comments': recent_comments},
-        context_instance=RequestContext(request))
+        site_settings_videos = Video.objects.get_site_settings_videos()
+        recent_comments = comments.get_model().objects.filter(
+            site=Site.objects.get_current(),
+            content_type=ContentType.objects.get_for_model(Video),
+            object_pk__in=site_settings_videos.values_list('pk', flat=True),
+            is_removed=False,
+            is_public=True).order_by('-submit_date')
+
+        context.update({
+            'featured_videos': featured_videos,
+            'popular_videos': NormalizedVideoList(popular_videos),
+            'new_videos': new_videos,
+            'comments': recent_comments
+        })
+        return context
 
 
 def about(request):
@@ -86,8 +91,13 @@ def view_video(request, video_id, slug=None):
     site_settings = SiteSettings.objects.get_current()
     popular_videos = Video.objects.get_popular_videos()
 
-    if video.categories.count():
-        category_obj = None
+    try:
+        category_obj = video.categories.all()[0]
+    except IndexError:
+        pass
+    else:
+        # If there are categories, prefer the category that the user
+        # just came from the list view of.
         referrer = request.META.get('HTTP_REFERER')
         host = request.META.get('HTTP_HOST')
         if referrer and host:
@@ -104,18 +114,11 @@ def view_video(request, video_id, slug=None):
                     from localtv.urls import category_videos
                     if view == category_videos:
                         try:
-                            category_obj = Category.objects.get(
+                            category_obj = video.categories.get(
                                 slug=kwargs['slug'],
                                 site=site_settings.site)
                         except Category.DoesNotExist:
                             pass
-                        else:
-                            if not video.categories.filter(
-                                pk=category_obj.pk).count():
-                                category_obj = None
-
-        if category_obj is None:
-            category_obj = video.categories.all()[0]
 
         context['category'] = category_obj
         popular_videos = popular_videos.filter(categories=category_obj)

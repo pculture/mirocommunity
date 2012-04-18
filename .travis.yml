@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+env:
+  - MC_TEST_USE_SOUTH= MC_PAYPAL_REAL=
+  - MC_TEST_USE_SOUTH=yes
+  - MC_PAYPAL_REAL=yes
+install:
+  - pip install -q -e . --use-mirrors
+  - pip install -q --use-mirrors -r example_mc_project/requirements.txt
+  - test x$MC_TEST_USE_SOUTH == xyes && pip install -q south || true
+script:
+  - django-admin.py test localtv --settings=example_mc_project.settings

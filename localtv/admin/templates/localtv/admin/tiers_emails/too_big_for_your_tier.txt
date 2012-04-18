@@ -43,6 +43,6 @@ http://{{site.domain}}{% url localtv_admin_index %}
 Check out the Miro Community Manual for more information and tips:
 http://develop.participatoryculture.org/index.php/MiroCommunityManual
 
-Have questions? Please get in touch: email questions@mirocommunity.org.
+Have questions? Please get in touch: email support@mirocommunity.org.
 
 --The Miro Community Team

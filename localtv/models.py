@@ -30,12 +30,13 @@ import sys
 import traceback
 
 try:
-    from PIL import Image
+    from PIL import Image as PILImage
 except ImportError:
-    import Image
+    import Image as PILImage
 import time
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
+from daguerre.models import Image
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -43,6 +44,7 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
@@ -57,11 +59,13 @@ from django.utils.translation import ugettext_lazy as _
 
 import bitly
 import vidscraper
+from haystack import connections
 
 from notification import models as notification
 import tagging
+import tagging.models
 
-from localtv.exceptions import InvalidVideo, CannotOpenImageUrl
+from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
@@ -75,15 +79,6 @@ def delete_if_exists(path):
 
 EMPTY = object()
 
-THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
-    (534, 430), # behind a video
-    (375, 295), # featured on frontpage
-    (140, 110),
-    (364, 271), # main thumb
-    (222, 169), # medium thumb
-    (88, 68),   # small thumb
-    ]
-
 FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
 FORCE_HEIGHT_PADDING = 2
 
@@ -96,23 +91,20 @@ VIDEO_SERVICE_REGEXES = (
 
 
 class BitLyWrappingURLField(models.URLField):
-    def get_db_prep_value(self, value, *args, **kwargs):
-        if not getattr(settings, 'BITLY_LOGIN'):
-            return value
 
-        # Workaround for some cases
-        if value is None:
-            value = ''
-
-        if len(value) <= self.max_length: # short enough to save
-            return value
-        api = bitly.Api(login=settings.BITLY_LOGIN,
-                        apikey=settings.BITLY_API_KEY)
-        try:
-            return unicode(api.shorten(value))
-        except bitly.BitlyError:
-            return unicode(value)[:self.max_length]
-
+    def clean(self, value, video):
+        if getattr(settings, 'BITLY_LOGIN', None):
+            # Workaround for some cases
+            if value is None:
+                value = ''
+            if len(value) > self.max_length: # too long
+                api = bitly.Api(login=settings.BITLY_LOGIN,
+                                apikey=settings.BITLY_API_KEY)
+                try:
+                    value = unicode(api.shorten(value))
+                except bitly.BitlyError:
+                    pass
+        return super(BitLyWrappingURLField, self).clean(value, video)
 
 try:
     from south.modelsinspector import add_introspection_rules
@@ -133,60 +125,35 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb, resize=True):
+    def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
         """
         try:
-            pil_image = Image.open(content_thumb)
+            pil_image = PILImage.open(content_thumb)
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        delete_if_exists(
-            self.get_original_thumb_storage_path())
+        delete_if_exists(self.thumbnail_path)
 
         self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(
-            self.get_original_thumb_storage_path(),
-            content_thumb)
+        default_storage.save(self.thumbnail_path, content_thumb)
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
             # be invalid now.  to make sure we've got a valid file, we reopen
             # under the new path
             content_thumb.close()
-            content_thumb = default_storage.open(
-                self.get_original_thumb_storage_path())
-            pil_image = Image.open(content_thumb)
+            content_thumb = default_storage.open(self.thumbnail_path)
+            pil_image = PILImage.open(content_thumb)
 
-        if resize:
-            # save any resized versions
-            self.resize_thumbnail(pil_image)
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb, resized_images=None):
-        """
-        Creates resized versions of the video's thumbnail image
-        """
-        if not thumb:
-            thumb = Image.open(
-                default_storage.open(self.get_original_thumb_storage_path()))
-        if resized_images is None:
-            resized_images = utils.resize_image_returning_list_of_strings(
-                thumb, self.THUMB_SIZES)
-        for ( (width, height), data) in resized_images:
-            # write file, deleting old thumb if it exists
-            cf_image = ContentFile(data)
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(width, height))
-            default_storage.save(
-                self.get_resized_thumb_storage_path(width, height),
-                cf_image)
-
-    def get_original_thumb_storage_path(self):
+    @property
+    def thumbnail_path(self):
         """
         Return the path for the original thumbnail, relative to the default
         file storage system.
@@ -195,26 +162,20 @@ class Thumbnailable(models.Model):
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
-    def get_resized_thumb_storage_path(self, width, height):
-        """
-        Return the path for the a thumbnail of a resized width and height,
-        relative to the default file storage system.
-        """
-        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
-            self._meta.object_name.lower(),
-            self.id, width, height)
-
-    def delete_thumbnails(self):
+    def delete_thumbnail(self):
         self.has_thumbnail = False
-        delete_if_exists(self.get_original_thumb_storage_path())
-        for size in self.THUMB_SIZES:
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(*size[:2]))
+        delete_if_exists(self.thumbnail_path)
         self.thumbnail_extension = ''
+        try:
+            image = Image.objects.for_storage_path(self.thumbnail_path)
+        except Image.DoesNotExist:
+            pass
+        else:
+            image.delete()
         self.save()
 
     def delete(self, *args, **kwargs):
-        self.delete_thumbnails()
+        self.delete_thumbnail()
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
@@ -443,13 +404,6 @@ class SiteSettings(Thumbnailable):
 
     objects = SiteSettingsManager()
 
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        (130, 110, FORCE_HEIGHT_PADDING) # Facebook
-        ]
-
     class Meta:
         db_table = 'localtv_sitelocation'
 
@@ -497,7 +451,7 @@ class SiteSettings(Thumbnailable):
         if user.is_superuser:
             return True
 
-        return bool(self.admins.filter(pk=user.pk).count())
+        return self.admins.filter(pk=user.pk).exists()
 
     def save(self, *args, **kwargs):
         SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
@@ -682,12 +636,6 @@ class WidgetSettings(Thumbnailable):
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
 
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        ]
-
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
         use_title = True
@@ -745,13 +693,11 @@ class Source(Thumbnailable):
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
 
-    THUMB_SIZES = THUMB_SIZES
-
     class Meta:
         abstract = True
 
     def update(self, video_iter, source_import, using='default',
-               clear_rejected=True):
+               clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
         returns :class:`vidscraper.suites.base.Video` objects.  We use
@@ -852,7 +798,6 @@ class Feed(Source):
     last_updated = models.DateTimeField(blank=True, null=True)
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
-    avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
@@ -929,7 +874,12 @@ class Feed(Source):
                 except IOError:
                     pass
                 else:
-                    self.save_thumbnail_from_file(thumbnail_file)
+                    try:
+                        self.save_thumbnail_from_file(thumbnail_file)
+                    except CannotOpenImageUrl:
+                        # couldn't parse the thumbnail. Not sure why this
+                        # raises CannotOpenImageUrl, tbh.
+                        pass
 
             if self.video_service():
                 user, created = User.objects.get_or_create(
@@ -955,30 +905,21 @@ class Feed(Source):
         return self.calculated_source_type
 
     def _calculate_source_type(self):
-        return _feed__calculate_source_type(self)
+        video_service = self.video_service()
+        if video_service is None:
+            return u'Feed'
+        else:
+            return u'User: %s' % video_service
 
     def video_service(self):
-        return feed__video_service(self)
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, self.feed_url, re.I):
+                return service
 
-def feed__video_service(feed):
-    # This implements the video_service method. It's outside the Feed class
-    # so we can use it safely from South.
-    for service, regexp in VIDEO_SERVICE_REGEXES:
-        if re.search(regexp, feed.feed_url, re.I):
-            return service
-
-def _feed__calculate_source_type(feed):
-    # This implements the _calculate_source_type method. It's outside the Feed
-    # class so we can use it safely from South.
-    video_service = feed__video_service(feed)
-    if video_service is None:
-        return u'Feed'
-    else:
-        return u'User: %s' % video_service
 
 def pre_save_set_calculated_source_type(instance, **kwargs):
     # Always save the calculated_source_type
-    instance.calculated_source_type = _feed__calculate_source_type(instance)
+    instance.calculated_source_type = instance._calculate_source_type()
     # Plus, if the name changed, we have to recalculate all the Videos that depend on us.
     try:
         v = Feed.objects.using(instance._state.db).get(id=instance.id)
@@ -988,7 +929,6 @@ def pre_save_set_calculated_source_type(instance, **kwargs):
         # recalculate all the sad little videos' calculated_source_type
         for vid in instance.video_set.all():
             vid.save()
-    return instance
 models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
 
@@ -1076,8 +1016,9 @@ class Category(models.Model):
         def accumulate(categories):
             for category in categories:
                 objects.append(category)
-                if category.child_set.count():
-                    accumulate(category.child_set.all())
+                children = category.child_set.all()
+                if children:
+                    accumulate(children)
         if initial is None:
             initial = klass.objects.filter(site=site_settings, parent=None)
         accumulate(initial)
@@ -1632,8 +1573,12 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.filter(watch__timestamp__gt=since).annotate(
-                           watch_count=models.Count('watch'))
+        return self.extra(
+            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (since,)
+        )
 
 
 class VideoManager(models.Manager):
@@ -1690,10 +1635,9 @@ class VideoManager(models.Manager):
         current site_settings.
 
         """
-        return self.get_latest_videos(site_settings).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(site_settings),
+                                  descending=True)
 
     def get_category_videos(self, category, site_settings=None):
         """
@@ -1845,8 +1789,6 @@ class Video(Thumbnailable, VideoBase):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
-    THUMB_SIZES = THUMB_SIZES
-
     class Meta:
         ordering = ['-when_submitted']
         get_latest_by = 'when_modified'
@@ -1854,25 +1796,79 @@ class Video(Thumbnailable, VideoBase):
     def __unicode__(self):
         return self.name
 
+    def clean(self):
+        if not self.embed_code and not self.file_url:
+            raise ValidationError("Video has no embed code or file url.")
+
+        qs = Video.objects.using(self._state.db).filter(site=self.site_id
+                                              ).exclude(status=Video.REJECTED)
+
+        if self.pk is not None:
+            qs = qs.exclude(pk=self.pk)
+
+        if self.guid and qs.filter(guid=self.guid).exists():
+            raise ValidationError("Another video with the same guid "
+                                  "already exists.")
+
+        if (self.website_url and
+            qs.filter(website_url=self.website_url).exists()):
+            raise ValidationError("Another video with the same website url "
+                                  "already exists.")
+
+        if self.file_url and qs.filter(file_url=self.file_url).exists():
+            raise ValidationError("Another video with the same file url "
+                                  "already exists.")
+
+    def clear_rejected_duplicates(self):
+        """
+        Deletes rejected copies of this video based on the file_url,
+        website_url, and guid fields.
+
+        """
+        if not any((self.website_url, self.file_url, self.guid)):
+            return
+
+        q_filter = models.Q()
+        if self.website_url:
+            q_filter |= models.Q(website_url=self.website_url)
+        if self.file_url:
+            q_filter |= models.Q(file_url=self.file_url)
+        if self.guid:
+            q_filter |= models.Q(guid=self.guid)
+        qs = Video.objects.using(self._state.db).filter(
+            site=self.site_id,
+            status=Video.REJECTED).filter(q_filter)
+        qs.delete()
+
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
                 {'video_id': self.id,
                  'slug': slugify(self.name)[:30]})
 
+    def save(self, **kwargs):
+        """
+        Adds support for an ```update_index`` kwarg, defaulting to ``True``.
+        If this kwarg is ``False``, then no index updates will be run by the
+        search index.
+
+        """
+        # This actually relies on logic in
+        # :meth:`QueuedSearchIndex._enqueue_instance`
+        self._update_index = kwargs.pop('update_index', True)
+        super(Video, self).save(**kwargs)
+    save.alters_data = True
+
+
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
                               using='default', source_import=None, site_pk=None,
-                              authors=None, categories=None):
+                              authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
         :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
         the :class:`Video` will not be saved, and the created instance will have
         a `save_m2m()` method that must be called after you call `save()`.
-
-        :raises: :class:`localtv.exceptions.InvalidVideo` if `commit` is
-                 ``True`` and the created :class:`Video` does not have a valid
-                 ``file_url`` or ``embed_code``.
 
         """
         if video.file_url_expires is None:
@@ -1909,9 +1905,9 @@ class Video(Thumbnailable, VideoBase):
 
         if instance.description:
             soup = BeautifulSoup(video.description)
-            for tag in soup.findAll(
+            for tag in soup.find_all(
                 'div', {'class': "miro-community-description"}):
-                instance.description = tag.renderContents()
+                instance.description = unicode(tag)
                 break
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])
@@ -1924,6 +1920,22 @@ class Video(Thumbnailable, VideoBase):
         def save_m2m():
             if authors:
                 instance.authors = authors
+            elif video.user:
+                name = video.user
+                if ' ' in name:
+                    first, last = name.split(' ', 1)
+                else:
+                    first, last = name, ''
+                author, created = User.objects.db_manager(using).get_or_create(
+                    username=name[:30],
+                    defaults={'first_name': first[:30],
+                              'last_name': last[:30]})
+                if created:
+                    author.set_unusable_password()
+                    author.save()
+                    utils.get_profile_model()._default_manager.db_manager(using
+                        ).create(user=author, website=video.user_url or '')
+                instance.authors = [author]
             if categories:
                 instance.categories = categories
             if video.tags:
@@ -1943,14 +1955,12 @@ class Video(Thumbnailable, VideoBase):
                 source_import.handle_video(instance, video, using)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video, using=using)
+            if update_index:
+                index = connections[using].get_unified_index().get_index(cls)
+                index._enqueue_update(instance)
 
         if commit:
-            # Only run this check if they want to immediately commit the
-            # instance; otherwise, the calling code is responsible for ensuring
-            # that the instance makes sense before being saved.
-            if not (instance.embed_code or instance.file_url):
-                raise InvalidVideo
-            instance.save(using=using)
+            instance.save(using=using, update_index=False)
             save_m2m()
         else:
             instance._state.db = using
@@ -1998,15 +2008,26 @@ class Video(Thumbnailable, VideoBase):
             return
 
         try:
-            content_thumb = ContentFile(urllib.urlopen(
-                    utils.quote_unicode_url(self.thumbnail_url)).read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
+            remote_file = urllib.urlopen(utils.quote_unicode_url(
+                    self.thumbnail_url))
         except httplib.InvalidURL:
             # if the URL isn't valid, erase it and move on
             self.thumbnail_url = ''
             self.has_thumbnail = False
             self.save()
+            return
+
+        if remote_file.getcode() != 200:
+            logging.info('code %i when getting %r, ignoring',
+                         remote_file.getcode(), self.thumbnail_url)
+            self.has_thumbnail = False
+            self.save()
+            return
+
+        try:
+            content_thumb = ContentFile(remote_file.read())
+        except IOError:
+            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             try:
                 self.save_thumbnail_from_file(content_thumb)
@@ -2040,10 +2061,37 @@ class Video(Thumbnailable, VideoBase):
         return self.when_approved or self.when_submitted
 
     def source_type(self):
-        return video__source_type(self)
+        if self.id and self.search_id:
+            try:
+                return u'Search: %s' % self.search
+            except SavedSearch.DoesNotExist:
+                return u''
+
+        if self.id and self.feed_id:
+            try:
+                if self.feed.video_service():
+                    return u'User: %s: %s' % (
+                        self.feed.video_service(),
+                        self.feed.name)
+                else:
+                    return 'Feed: %s' % self.feed.name
+            except Feed.DoesNotExist:
+                return ''
+
+        if self.video_service_user:
+            return u'User: %s: %s' % (self.video_service(),
+                                      self.video_service_user)
+
+        return ''
 
     def video_service(self):
-        return video__video_service(self)
+        if not self.website_url:
+            return
+
+        url = self.website_url
+        for service, regexp in VIDEO_SERVICE_REGEXES:
+            if re.search(regexp, url, re.I):
+                return service
 
     def when_prefix(self):
         """
@@ -2077,43 +2125,13 @@ class Video(Thumbnailable, VideoBase):
             return False
         return self.categories.filter(contest_mode__isnull=False).exists()
 
-def video__source_type(self):
-    '''This is not a method of the Video so that we can can call it from South.'''
-    try:
-        if self.id and self.search:
-            return u'Search: %s' % self.search
-        elif self.id and self.feed:
-            if feed__video_service(self.feed):
-                return u'User: %s: %s' % (
-                    feed__video_service(self.feed),
-                    self.feed.name)
-            else:
-                return 'Feed: %s' % self.feed.name
-        elif self.video_service_user:
-            return u'User: %s: %s' % (
-                video__video_service(self),
-                self.video_service_user)
-        else:
-            return ''
-    except Feed.DoesNotExist:
-        return ''
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
     # Always recalculate the source_type field.
-    instance.calculated_source_type = video__source_type(instance)
-    return instance
+    instance.calculated_source_type = instance.source_type()
 models.signals.pre_save.connect(pre_save_video_set_calculated_source_type,
                                 sender=Video)
 
-def video__video_service(self):
-    '''This is not a method of Video so we can call it from a South migration.'''
-    if not self.website_url:
-        return
-
-    url = self.website_url
-    for service, regexp in VIDEO_SERVICE_REGEXES:
-        if re.search(regexp, url, re.I):
-            return service
 
 class Watch(models.Model):
     """

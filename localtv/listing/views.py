@@ -24,6 +24,7 @@ from django.core.paginator import Paginator, Page
 from django.http import Http404
 from django.views.generic import ListView
 from django.conf import settings
+from haystack.query import SearchQuerySet
 from voting.models import Vote
 
 import localtv.settings
@@ -31,6 +32,7 @@ from localtv.models import Video, Category
 from localtv.search.forms import VideoSearchForm
 from localtv.search.utils import (SortFilterViewMixin, NormalizedVideoList,
                                   ApprovedSort)
+from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
@@ -80,16 +82,13 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         qs = self._filter(qs, self._cleaned_filters)
 
         if self.approved_since is not None:
-            if localtv.settings.USE_HAYSTACK:
-                qs = qs.exclude(when_approved=ApprovedSort().empty_value)
+            if isinstance(qs, SearchQuerySet):
+                qs = qs.exclude(when_approved__exact=DATETIME_NULL_PLACEHOLDER)
             else:
                 qs = qs.exclude(when_approved__isnull=True)
             qs = qs.filter(when_approved__gt=(
                                 datetime.datetime.now() - self.approved_since))
 
-        # :meth:`SearchQuerySet.load_all` sets the queryset up to load all, but
-        # doesn't actually perform any loading; this will only happen when the
-        # cache is filled.
         return NormalizedVideoList(qs)
 
     def get_context_data(self, **kwargs):

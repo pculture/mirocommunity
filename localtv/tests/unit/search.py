@@ -19,9 +19,10 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from haystack import connections
 from haystack.query import SearchQuerySet
 
-from localtv.models import Video, SiteSettings, Category
+from localtv.models import Video, SiteSettings, Category, Watch
 from localtv.search import utils
 from localtv.tests.base import BaseTestCase
 
@@ -35,8 +36,12 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         self.create_video(status=Video.UNAPPROVED)
         self.nvl1 = utils.NormalizedVideoList(
                             Video.objects.filter(status=Video.ACTIVE))
-        self.nvl2 = utils.NormalizedVideoList(
-                            SearchQuerySet().models(Video).filter(site=1))
+        sqs = SearchQuerySet().models(Video)
+        if 'WhooshEngine' in connections['default'].options['ENGINE']:
+            sqs = sqs.filter(site=1)
+        else:
+            sqs = sqs.filter(site__exact=1)
+        self.nvl2 = utils.NormalizedVideoList(sqs)
 
     def test_getitem(self):
         """
@@ -46,7 +51,6 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         """
         self.assertTrue(all(isinstance(v, Video) for v in self.nvl1[:]))
         self.assertTrue(isinstance(self.nvl1[0], Video))
-
         self.assertTrue(all(isinstance(v, Video) for v in self.nvl2[:]))
         self.assertTrue(isinstance(self.nvl2[0], Video))
 
@@ -224,9 +228,12 @@ class PopularSortUnitTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self._clear_index()
         self.video0 = self.create_video(name="0 watches", watches=0)
-        self.video2 = self.create_video(name="2 watches", watches=2)
+        self.video2 = self.create_video(name="3 watches", watches=3)
         self.video1 = self.create_video(name="1 watch", watches=1)
-        self.video3 = self.create_video(name="3 watches", watches=3)
+        self.video3 = self.create_video(name="4 watches", watches=4)
+        self.video4 = self.create_video(name="2 watches (5 total)", watches=2)
+        for i in xrange(14, 17):
+            self.create_watch(self.video4, days=i)
         self.sort = utils.PopularSort()
 
     def test_sort(self):
@@ -235,10 +242,13 @@ class PopularSortUnitTestCase(BaseTestCase):
         that videos with no watches are excluded.
 
         """
-        all_videos = [self.video1, self.video2, self.video3]
-        expected_asc = sorted(all_videos, key=lambda v: v.watch_set.count())
-        expected_desc = sorted(all_videos, key=lambda v: v.watch_set.count(),
-                               reverse=True)
+        all_videos = [self.video1, self.video2, self.video3, self.video4]
+        watch_qs = Watch.objects.filter(
+            timestamp__gte=datetime.now() - timedelta(7))
+        expected_asc = sorted(all_videos,
+                              key=lambda v: watch_qs.filter(video=v).count())
+        expected_desc = sorted(all_videos, reverse=True,
+                               key=lambda v: watch_qs.filter(video=v).count())
 
         results = list(self.sort.sort(Video.objects.all()))
         self.assertEqual(results, expected_asc)
