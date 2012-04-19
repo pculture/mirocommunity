@@ -62,7 +62,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<header class="pod-header">
 				<h1><a href="{% url 'localtv_list_new' %}">{% trans "New" %}</a></h1>
 				<ul class="pod-actions">
-					<li><a href="{% url 'localtv_feeds_new' %}" class="rss">{% trans "RSS" %}</a></li>
+					<li><a href="{{ new_rss }}" class="rss">{% trans "RSS" %}</a></li>
 					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
 				</ul>
 			</header>{# /.pod-header #}
