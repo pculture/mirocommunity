@@ -5,11 +5,11 @@
 	& > li{
 		float:left;
 		display: block;
+		height:28px;
 		line-height:19px;
-		height:39px;
-		width:25%;
+		width:17%;
 		@include box-sizing(border-box);
-		padding:#{$base-line-height/2} #{$gutter-width/2};
+		@include padded(.25);
 		border-left:1px solid;
 		&:first-child{
 			border-left:0;

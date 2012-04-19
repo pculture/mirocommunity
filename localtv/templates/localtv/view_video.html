@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags %}
+{% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags daguerre %}
 {% load url from future %}
 
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
@@ -83,7 +83,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					<li>
 						<g:plusone size="medium"></g:plusone>
 					</li>
-
+					<li>
+						<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|iriencode }}&amp;media={% filter iriencode %}{% adjust current_video.thumbnail_url adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+					</li>
 					<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
 					{% if current_video.file_url %}
 						<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
