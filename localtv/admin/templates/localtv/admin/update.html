@@ -39,13 +39,17 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% block form %}
       {% include 'localtv/admin/_form.html' %}
     {% endblock %}
+    {% block form-save %}
     <button type="submit" name="next" value="{% url list_view_name %}">Save</button>
     <button type="submit" name="next" value="{{ request.path }}">Save and continue editing</button>
+    {% endblock %}
   </form>
-  {% if delete_view_name %}
-  <form class="delete-form" action="{% url delete_view_name pk=object.pk %}" method="post">
-    {% csrf_token %}
-    <button type="submit" name="delete">Delete</button>
-  </form>
-  {% endif %}
+  {% block form-delete %}
+    {% if delete_view_name %}
+    <form class="delete-form" action="{% url delete_view_name pk=object.pk %}" method="post">
+      {% csrf_token %}
+      <button type="submit" name="delete">Delete</button>
+    </form>
+    {% endif %}
+  {% endblock %}
 {% endblock %}
