@@ -60,9 +60,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="pod new">
 	        {% url 'localtv_feeds_new' as new_rss%}
 			<header class="pod-header">
-				<h1><a href="{{ new_rss }}">{% trans "New" %}</a></h1>
+				<h1><a href="{% url 'localtv_list_new' %}">{% trans "New" %}</a></h1>
 				<ul class="pod-actions">
-					<li><a href="{% url 'localtv_feeds_popular' %}" class="rss">{% trans "RSS" %}</a></li>
+					<li><a href="{% url 'localtv_feeds_new' %}" class="rss">{% trans "RSS" %}</a></li>
 					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe">{% trans "Subscribe" %}</a></li>
 				</ul>
 			</header>{# /.pod-header #}
@@ -79,7 +79,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">
-					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All New Videos" %}</a></li>
+					<li><a class="button-wide continue" href="{% url 'localtv_list_new' %}">{% trans "All New Videos" %}</a></li>
 				</ul>
 			</div>
 		</div>{# /.pod #}
