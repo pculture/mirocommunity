@@ -33,4 +33,4 @@ httplib2==0.7.2
 django-voting==0.1
 requests==0.10.8
 vidscraper==0.5.1
-
+django-tastypie==0.9.11
