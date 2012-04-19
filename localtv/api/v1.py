@@ -25,18 +25,18 @@ from tastypie.resources import ModelResource
 from localtv.models import Video, Feed, SavedSearch, Category
 
 
-class ThumbnailableMixin(ModelResource):
+class ThumbnailableResource(ModelResource):
     """Handles the crazy thumbnail storage on Thumbnailable subclasses."""
-    thumbnail_url = fields.CharField(null=True, readonly=True)
+    thumbnail = fields.CharField(null=True, readonly=True)
 
-    def dehydrate_thumbnail_url(self, bundle):
+    def dehydrate_thumbnail(self, bundle):
         if not bundle.obj.has_thumbnail:
-            thumbnail_url = None
+            thumbnail = None
         else:
-            thumbnail_url = '{media_url}{path}'.format(
+            thumbnail = '{media_url}{path}'.format(
                                      media_url=settings.MEDIA_URL,
                                      path=bundle.obj.thumbnail_path)
-        return thumbnail_url
+        return thumbnail
 
 
 class UserResource(ModelResource):
@@ -51,23 +51,23 @@ class CategoryResource(ModelResource):
         fields = ('id', 'name', 'slug', 'logo', 'description',)
 
 
-class FeedResource(ThumbnailableMixin, ModelResource):
+class FeedResource(ThumbnailableResource):
     class Meta:
         queryset = Feed.objects.filter(status=Feed.ACTIVE,
                                        site=settings.SITE_ID)
         fields = ('id', 'auto_approve', 'auto_update', 'feed_url',
                   'name', 'webpage', 'description', 'last_updated',
-                  'when_submitted', 'etag')
+                  'when_submitted', 'etag', 'thumbnail')
 
 
-class SearchResource(ThumbnailableMixin, ModelResource):
+class SearchResource(ThumbnailableResource):
     class Meta:
         queryset = SavedSearch.objects.filter(site=settings.SITE_ID)
         fields = ('id', 'auto_approve', 'auto_update', 'query_string',
-                  'when_created')
+                  'when_created', 'thumbnail')
 
 
-class VideoResource(ThumbnailableMixin, ModelResource):
+class VideoResource(ThumbnailableResource):
     when_featured = fields.DateTimeField(attribute='last_featured', null=True)
     categories = fields.ToManyField(CategoryResource, 'categories')
     authors = fields.ToManyField(UserResource, 'authors')
@@ -81,7 +81,7 @@ class VideoResource(ThumbnailableMixin, ModelResource):
                                         site=settings.SITE_ID)
         fields = ('id', 'file_url', 'when_modified', 'when_submitted',
                   'when_published', 'website_url', 'embed_code',
-                  'guid', 'tags')
+                  'guid', 'tags', 'thumbnail')
 
 
 api = Api(api_name='v1')
