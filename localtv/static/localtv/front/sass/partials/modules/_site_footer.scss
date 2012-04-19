@@ -1,6 +1,26 @@
-#footer{
-	background:#222;
-}
 #footer > .container{
 	@extend .padded;
+	@include clearfix;
+}
+.miro-footer{
+	@extend .col-two-thirds;
+	& > p:last-child{
+		margin:0;
+	}
+}
+.footer-nav{
+	@extend .col-one-third;
+	ul{
+		@extend .unstyled-list;
+	}
+	li{
+		float:left;
+	}
+	a{
+		display:block;
+		padding:0 $gutter-width/2;
+		&:hover{
+			border:0;
+		}
+	}
 }

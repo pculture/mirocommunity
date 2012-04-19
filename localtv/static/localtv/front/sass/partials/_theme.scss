@@ -36,7 +36,12 @@ $sidebar-background-color:#F5F5F5 !default;
 $site-blurb-background-color: #222 !default;
 $site-blurb-text-color: #DDD !default;
 
-$site-title-color: #000;
+$site-title-color: #000 !default;
+
+$footer-background: #222 !default;
+$footer-text-color: #AAA !default;
+$footer-link-color: #5C86A0 !default;
+$footer-link-hover-color: #4E9EDA !default;
 
 @import "compass/css3/images",
 		"compass/css3/box-shadow";
@@ -261,5 +266,17 @@ input, textarea{
 	.left-sidebar{
 		background-color:$sidebar-background-color;
 		@include background(linear-gradient(right, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%));
+	}
+}
+
+/* footer */
+#footer{
+	background:$footer-background;
+	color:$footer-text-color;
+	a{
+		color:$footer-link-color;
+	}
+	a:hover{
+		color:$footer-link-hover-color;
 	}
 }
