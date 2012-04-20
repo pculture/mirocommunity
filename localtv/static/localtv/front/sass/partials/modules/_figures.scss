@@ -1,0 +1,14 @@
+.figure-left{
+	float:left;
+	margin-right:$gutter-width/2;
+}
+
+.figure-right{
+	float:right;
+	margin-left:$gutter-width/2;
+}
+
+/* Just to keep text from bumping up right along the bottom of an image. */
+.figure-left, .figure-right{
+	margin-bottom:3px;
+}

@@ -114,6 +114,13 @@ h6 { font-size: 13px; line-height: 18px; color: #CCC; }
 /* Enforce facebook comments fill the space they are placed in. */
 .fb-comments, .fb-comments iframe { width: 100% !important; }
 
+.figure-left { float: left; margin-right: 20px; }
+
+.figure-right { float: right; margin-left: 20px; }
+
+/* Just to keep text from bumping up right along the bottom of an image. */
+.figure-left, .figure-right { margin-bottom: 3px; }
+
 /* base form styles */
 input, textarea { outline: none; border: 1px solid; -moz-border-radius: 3px; -webkit-border-radius: 3px; -o-border-radius: 3px; -ms-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; -moz-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.5); -webkit-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.5); -o-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.5); box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.5); padding: 0; margin: 0; -moz-transition: box-shadow 0.15s linear; -webkit-transition: box-shadow 0.15s linear; -o-transition: box-shadow 0.15s linear; transition: box-shadow 0.15s linear; width: 80%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box; padding: 4.5px; }
 
