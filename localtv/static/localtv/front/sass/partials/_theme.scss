@@ -68,10 +68,6 @@ body{
 
 /* main container */
 
-#main{
-	border-top:1px solid darken($main-background-color, 20%);
-}
-
 #main > .container{
 	background:$main-background-color;
 	@include box-shadow($main-box-shadow);
@@ -170,7 +166,7 @@ input, textarea{
 	background-color: $pod-header-background-color;
 	@include background-image(linear-gradient($pod-header-background-color, darken($pod-header-background-color, 5%)));
 	border-bottom-color: darken($pod-header-background-color, 10%);
-	border-top-color: lighten($pod-header-background-color, 10%);
+	border-top-color: darken($pod-header-background-color, 5%);
 	color:$pod-header-text-color;
 	a{
 		color:$pod-header-text-color;

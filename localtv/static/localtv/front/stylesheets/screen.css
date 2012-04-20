@@ -386,8 +386,6 @@ a:hover { color: #1b2939; }
 body { background: #cccccc; color: #444444; }
 
 /* main container */
-#main { border-top: 1px solid #cccccc; }
-
 #main > .container { background: white; -moz-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25); -webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25); -o-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25); box-shadow: 0 0 3px rgba(0, 0, 0, 0.25); }
 
 /* buttons */
@@ -423,7 +421,7 @@ input:focus, textarea:focus { border-color: #344f6d; -moz-box-shadow: 0 0 6px 0 
 .pagetabs .ellipse span:hover, .pagetabs .ellipse span:active { color: #999999; border-color: #e6e6e6; background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5f5f5), color-stop(100%, #dcdcdc)); background: -webkit-linear-gradient(#f5f5f5, #dcdcdc); background: -moz-linear-gradient(#f5f5f5, #dcdcdc); background: -o-linear-gradient(#f5f5f5, #dcdcdc); background: -ms-linear-gradient(#f5f5f5, #dcdcdc); background: linear-gradient(#f5f5f5, #dcdcdc); -moz-box-shadow: 0 1px 0 0 white inset; -webkit-box-shadow: 0 1px 0 0 white inset; -o-box-shadow: 0 1px 0 0 white inset; box-shadow: 0 1px 0 0 white inset; }
 
 /* pod */
-.pod-header, .page-header { background-color: #eeeeee; background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #e1e1e1)); background-image: -webkit-linear-gradient(#eeeeee, #e1e1e1); background-image: -moz-linear-gradient(#eeeeee, #e1e1e1); background-image: -o-linear-gradient(#eeeeee, #e1e1e1); background-image: -ms-linear-gradient(#eeeeee, #e1e1e1); background-image: linear-gradient(#eeeeee, #e1e1e1); border-bottom-color: #d4d4d4; border-top-color: white; color: #222222; }
+.pod-header, .page-header { background-color: #eeeeee; background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #e1e1e1)); background-image: -webkit-linear-gradient(#eeeeee, #e1e1e1); background-image: -moz-linear-gradient(#eeeeee, #e1e1e1); background-image: -o-linear-gradient(#eeeeee, #e1e1e1); background-image: -ms-linear-gradient(#eeeeee, #e1e1e1); background-image: linear-gradient(#eeeeee, #e1e1e1); border-bottom-color: #d4d4d4; border-top-color: #e1e1e1; color: #222222; }
 .pod-header a, .page-header a { color: #222222; }
 
 .pod-actions a, .page-actions a { color: #555555; }
