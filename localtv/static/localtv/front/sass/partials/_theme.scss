@@ -23,6 +23,12 @@ $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($c
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
+$message-default-color: #EEE !default;
+$message-info-color: #C4DFFC !default;
+$message-warning-color: #FFFCC5 !default;
+$message-error-color: #F6C2C2 !default;
+$message-success-color: #CDFBC3 !default;
+
 $precontent-background-color: #343639 !default;
 $precontent-header-background: #000 !default;
 $precontent-header-text-color: #FFF !default;
@@ -184,6 +190,22 @@ input, textarea{
 				lighten($pod-header-background-color, 80%)
 			);
 	}
+}
+
+/* messages */
+
+@mixin message($color){
+	background-color: $color;
+	border-color: darken(desaturate($color, 60%),20%);
+	text: darken($color, 80%);
+}
+
+.message{
+	@include message($message-default-color);
+	&.error{ @include message($message-error-color); }
+	&.success{ @include message($message-success-color); }
+	&.info{ @include message($message-info-color); }
+	&.warning{ @include message($message-warning-color); }
 }
 
 /* precontent */
