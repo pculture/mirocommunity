@@ -317,8 +317,9 @@ ol > li { list-style-type: decimal; }
 @media screen and (max-width: 960px) { #header > .container { padding: 0 10px; } }
 @media screen and (max-width: 740px) { #header > .container { position: static; margin-top: 45px; } }
 .social-link-list { overflow: hidden; *zoom: 1; border-bottom: 1px solid; }
-.social-link-list > li { float: left; display: block; height: 28px; line-height: 19px; width: 17%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box; padding-bottom: 4.5px; padding-top: 4.5px; padding-left: 5px; padding-right: 5px; border-left: 1px solid; }
+.social-link-list > li { float: left; display: block; height: 20px; line-height: 19px; width: 90px; padding-bottom: 4.5px; padding-top: 4.5px; padding-left: 5px; padding-right: 5px; }
 .social-link-list > li:first-child { border-left: 0; }
+.social-link-list a:hover { border: 0; }
 
 .js .tab-pane { display: none; }
 .js .tab-pane.active { display: block; }
