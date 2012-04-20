@@ -94,6 +94,22 @@ body{
 	border-color: darken($button-background-color, 50%);
 }
 
+/* carousel */
+
+.carousel-pager{
+	background:#000;
+	& > a{
+		border-color:#FFF;
+	}
+	& > a:hover{
+		border-color:#FFF;
+	}
+	& > .activeSlide{
+		border-color:#FFF;
+		background-color:#FFF;
+	}
+}
+
 /* navigation */
 
 .nav-item a{

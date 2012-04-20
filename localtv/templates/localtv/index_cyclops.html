@@ -30,8 +30,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% if featured_videos %}
 		<div class="precontent">
 			<div class="precontent-content">
-				<div class="container">
-					<div class="row" data-cycle="true">
+				<div class="container carousel-wrapper">
+					<div class="row carousel">
 						{% with featured_videos|slice:"10" as video_list %}
 							{% for video in video_list %}
 								{% include "localtv/_video_large_preview.html" %}
