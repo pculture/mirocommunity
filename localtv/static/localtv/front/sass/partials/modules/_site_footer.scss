@@ -3,13 +3,13 @@
 	@include clearfix;
 }
 .miro-footer{
-	@extend .col-two-thirds;
+	@extend .col-one-half;
 	& > p:last-child{
 		margin:0;
 	}
 }
 .footer-nav{
-	@extend .col-one-third;
+	@extend .col-one-half;
 	ul{
 		@extend .unstyled-list;
 	}

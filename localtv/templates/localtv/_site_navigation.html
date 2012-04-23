@@ -59,27 +59,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
-	{% if request.user.is_authenticated %}
-		{% if user_is_admin %}
-			<li class="nav-item nav-item-dropdown" data-dropdown="true">
-				<a href="#">{{ user.username }}</a>
-				<ul class="dropdown-list" data-dropdown-target="true">
-					<li class="nav-logout">
-						<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
-					</li>
-					<li class="nav-admin">
-						<a href="{% url 'localtv_admin_index' %}">{% trans 'View Admin' %}</a>
-					</li>
-				</ul>
-			</li>
-		{% else %}
-			<li class="nav-item nav-logout">
-				<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
-			</li>
-		{% endif %}
-	{% else %}
-		<li class="nav-item nav-login">
-			<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
-		</li>
-	{% endif %}
 </ul>
