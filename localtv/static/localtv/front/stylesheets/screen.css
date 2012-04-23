@@ -193,6 +193,8 @@ ol > li { list-style-type: decimal; }
 
 .media-item { float: left; margin-left: 40px; margin-bottom: 18px; }
 
+.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1335181385') center center no-repeat; }
+
 .message { border: 1px solid; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; margin-bottom: 18px; }
 
 #navigation { *zoom: 1; -moz-border-radius: 3px; -webkit-border-radius: 3px; -o-border-radius: 3px; -ms-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; margin-right: 20px; float: right; }
@@ -383,9 +385,9 @@ ol > li { list-style-type: decimal; }
 
 .video-summary .details { color: #999; margin-top: 9px; }
 
-.video-grid > .media-item { width: 200px; margin-bottom: 36px; }
+.video-grid > .video-grid-item { width: 200px; margin-bottom: 36px; }
 
-.video-grid > .media-item > .video-header { height: 36px; overflow: hidden; }
+.video-grid > .video-grid-item > .video-header { height: 36px; overflow: hidden; }
 
 /* base theme styles */
 a { color: #344f6d; }

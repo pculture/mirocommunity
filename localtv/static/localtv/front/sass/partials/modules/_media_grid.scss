@@ -11,3 +11,11 @@
 	margin-left:$gutter-width;
 	@include margin-trailer;
 }
+
+.media-grid > #infscr-loading{
+	float:none;
+	clear:both;
+	text-indent:-9999px;
+	height:66px;
+	background:transparent image-url('ajax-loader.gif') center center no-repeat;
+}
