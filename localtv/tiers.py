@@ -299,7 +299,7 @@ class Tier(object):
             return DEFAULT
         # We have a SiteSettings, right?
         try:
-            sl = localtv.models.SiteSettings.objects.using(using).get(
+            sl = localtv.models.SiteSettings.objects.db_manager(using).get(
                 site=site_id)
         except localtv.models.SiteSettings.DoesNotExist:
             if log_warnings:

@@ -19,6 +19,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
+from localtv.api.v1 import api as api_v1
 from localtv.listing.views import VideoSearchView, SiteListView
 from localtv.models import Category
 from localtv.views import IndexView
@@ -31,7 +32,8 @@ urlpatterns = patterns(
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
     url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
                     name='localtv_view_video'),
-    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'))
+    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
+    url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
 # This has to be importable for now because of a hack in the view_video view

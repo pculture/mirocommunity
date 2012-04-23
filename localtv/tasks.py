@@ -289,7 +289,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                         is_skip=True, using=using)
             return
         else:
-            video.save()
+            video.save(update_index=False)
             video.save_m2m()
             if clear_rejected:
                 video.clear_rejected_duplicates()

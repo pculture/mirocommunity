@@ -15,4 +15,5 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from localtv.tests.functional.api_v1 import *
 from localtv.tests.functional.submit_video import *

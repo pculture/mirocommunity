@@ -203,7 +203,7 @@ def begin_free_trial(request, payment_secret):
     in the ?target_tier_name=... GET parameter.
 
     If it is some nonsense, we should show an obscure error message and tell them to email
-    questions@MC if they got it.
+    support@MC if they got it.
 
     If it what we expect, then:
 
@@ -215,10 +215,10 @@ def begin_free_trial(request, payment_secret):
     # FIXME: This doesn't check the payment secret anymore.
     # That will be okay once we turn on PDT.
     #if payment_secret != site_settings.tierinfo.payment_secret:
-    #    return HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email questions@mirocommunity.org")
+    #    return HttpResponseForbidden("You are accessing this URL with invalid parameters. If you think you are seeing this message in error, email support@mirocommunity.org")
     target_tier_name = request.GET.get('target_tier_name', '')
     if target_tier_name not in dict(tiers.CHOICES):
-        return HttpResponse("Something went wrong switching your site level. Please send an email to questions@mirocommunity.org immediately.")
+        return HttpResponse("Something went wrong switching your site level. Please send an email to support@mirocommunity.org immediately.")
 
     # Switch the tier!
     return _start_free_trial_unconfirmed(target_tier_name)

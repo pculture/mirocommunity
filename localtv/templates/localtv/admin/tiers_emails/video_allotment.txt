@@ -13,4 +13,4 @@ Or you can cull some videos from your current offerings on the Bulk Edit page:
 http://{{site.domain}}{% url localtv_admin_bulk_edit %}
 
 Still have questions? Don't hesitate to get in touch -
-questions@mirocommunity.org.
+support@mirocommunity.org.
