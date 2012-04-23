@@ -1,1 +1,1 @@
-
+from localtv.contrib.contests.api import v1

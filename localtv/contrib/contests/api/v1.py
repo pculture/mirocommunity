@@ -15,16 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.conf.urls.defaults import url, include
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from tastypie import fields
-from tastypie.api import Api
 from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import Authorization
 from tastypie.http import HttpGone, HttpMultipleChoices
 from tastypie.resources import ModelResource
 
+from localtv.api.v1 import api, UserResource, VideoResource
 from localtv.contrib.contests.models import Contest, ContestVote
 
 
@@ -32,16 +33,20 @@ class ContestResource(ModelResource):
     votes = fields.ToManyField(
                 'localtv.contrib.contests.api.v1.ContestVoteResource',
                 'votes')
+    videos = fields.ToManyField(VideoResource, 'videos')
+
     class Meta:
-        queryset = Contest.objects.all()
+        queryset = Contest.objects.filter(site=settings.SITE_ID)
 
 
 class ContestVoteResource(ModelResource):
     contest = fields.ToOneField(ContestResource, 'contest')
-    video_id = fields.IntegerField('video_id')
+    video = fields.ToOneField(VideoResource, 'video')
+    user = fields.ToOneField(UserResource, 'user')
+    vote = fields.IntegerField('vote')
 
     class Meta:
-        queryset = ContestVote.objects.all()
+        queryset = ContestVote.objects.filter(contest__site=settings.SITE_ID)
         authorization = Authorization()
         authentication = BasicAuthentication()
 
@@ -59,6 +64,5 @@ class ContestVoteResource(ModelResource):
                                                            **kwargs)
 
 
-api = Api(api_name='v1')
 api.register(ContestResource())
 api.register(ContestVoteResource())
