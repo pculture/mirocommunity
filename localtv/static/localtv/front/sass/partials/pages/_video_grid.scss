@@ -7,3 +7,9 @@
 	height:$base-line-height * 2;
 	overflow:hidden;
 }
+
+.timestamp-link, .byline{
+	@include small;
+	@extend .quiet;
+	margin-bottom:0;
+}
