@@ -19,3 +19,12 @@
 	height:66px;
 	background:transparent image-url('ajax-loader.gif') center center no-repeat;
 }
+
+.media-grid > #infscr-done{
+	float:none;
+	clear:both;
+	height:66px;
+	@include xx-large;
+	font-weight:bold;
+	@include margin-leader;
+}

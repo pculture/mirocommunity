@@ -25,32 +25,43 @@
 	$('.video-grid').popover({selector: '.video-grid-item'});
 	
 	// Infinite Scroll
-	$('.pagetabs').hide(); // hide pagination
-	// preload the ajax loader image
-	var ajax_image = new Image();
-	ajax_image.src = STATIC_URL + "localtv/front/images/ajax-loader.gif";
-	// kick off the infinite scrolling
-	$('.video-grid').infinitescroll({
-		loading: {
-			img: null,
-			// override a lot of the default behavior
-			finished: function (opts) {
-				window.location.hash = "#!?page=" + opts.state.currPage;
-				$('#infscr-loading').remove();
+	// Only triggered if a `body.video-list-page` exists and we're on the first page
+	// TODO: handle the case where we are not on the first page.
+	if ($('body').hasClass('video-list-page') && $('.pagetabs').find('li:first').hasClass('selected')) {
+		$('.pagetabs').hide(); // hide pagination
+		// preload the ajax loader image
+		var ajax_image = new Image();
+		ajax_image.src = STATIC_URL + "localtv/front/images/ajax-loader.gif";
+		// kick off the infinite scrolling
+		$('.video-grid').infinitescroll({
+			loading: {
+				img: null,
+				// override a lot of the default behavior
+				finished: function (opts) {
+					window.location.hash = "#!?page=" + opts.state.currPage;
+					$('#infscr-loading').remove();
+				},
+				start: function (opts) {
+					opts.loading.msg = $("<li class=\"media-item loading\" id=\"infscr-loading\">Loading&hellip;</li>")
+					$(opts.navSelector).hide();
+					opts.loading.msg
+						.appendTo(opts.loading.selector)
+						.show(opts.loading.speed, function () {
+							beginAjax(opts);
+						});
+				}
 			},
-			start: function (opts) {
-				opts.loading.msg = $("<li class=\"media-item loading\" id=\"infscr-loading\">Loading&hellip;</li>")
-				$(opts.navSelector).hide();
-				opts.loading.msg
-					.appendTo(opts.loading.selector)
-					.show(opts.loading.speed, function () {
-						beginAjax(opts);
-					});
-			}
-		},
-		navSelector: '.pagetabs',
-		nextSelector: '.pagetabs > .selected + li > a',
-		itemSelector: '.media-item'
-	});
+			errorCallback: function (error) {
+				if(error === "done"){
+					var $infscrLoading = $('#infscr-loading');
+					$infscrLoading.after("<li class=\"media-item done\" id=\"infscr-done\">End of Videos</li>");
+					$infscrLoading.remove();
+				}
+			},
+			navSelector: '.pagetabs',
+			nextSelector: '.pagetabs > .selected + li > a',
+			itemSelector: '.media-item'
+		});
+	}
 	
 });
