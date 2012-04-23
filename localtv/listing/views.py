@@ -39,17 +39,14 @@ VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class VideoSearchView(ListView, SortFilterViewMixin):
+class BrowseView(ListView, SortFilterViewMixin):
     """
     Generic view for videos; implements pagination, filtering and searching.
 
     """
     paginate_by = VIDEOS_PER_PAGE
     form_class = VideoSearchForm
-    context_object_name = 'video_list'
-
-    #: Period of time within which the video was approved.
-    approved_since = None
+    context_object_name = 'videos'
 
     def get_paginate_by(self, queryset):
         paginate_by = self.request.GET.get('count')
@@ -64,9 +61,7 @@ class VideoSearchView(ListView, SortFilterViewMixin):
 
     def _get_query(self, request):
         """Fetches the query for the current request."""
-        # Support old-style templates that used "query". Remove in 2.0.
-        key = 'q' if 'q' in request.GET else 'query'
-        return request.GET.get(key, "")
+        return request.GET.get('q', "")
 
     def get_queryset(self):
         """
@@ -81,15 +76,7 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         self._cleaned_filters = self._clean_filter_values(filters)
         qs = self._filter(qs, self._cleaned_filters)
 
-        if self.approved_since is not None:
-            if isinstance(qs, SearchQuerySet):
-                qs = qs.exclude(when_approved__exact=DATETIME_NULL_PLACEHOLDER)
-            else:
-                qs = qs.exclude(when_approved__isnull=True)
-            qs = qs.filter(when_approved__gt=(
-                                datetime.datetime.now() - self.approved_since))
-
-        return NormalizedVideoList(qs)
+        return qs
 
     def get_context_data(self, **kwargs):
         """
@@ -102,11 +89,10 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         ``popular`` would switch to sorting by ascending popularity.
 
         """
-        context = ListView.get_context_data(self, **kwargs)
+        context = super(BrowseView, self).get_context_data(**kwargs)
         form = self._make_search_form(self._get_query(self.request))
-        context['form'] = form
+        context['search_form'] = form
         form.is_valid()
-        context['query'] = form.cleaned_data['q']
 
         sort, desc = self._process_sort(self._get_sort(self.request))
         sort_links = {}
@@ -138,6 +124,55 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         return context
 
 
+class CompatibleBrowseView(BrowseView):
+    """
+    This is the backwards-compatible version of the :class:`BrowseView`,
+    which provides some extra context, normalizes the search results as
+    :class:`.Video` instances, and provides some querystring handling.
+
+    """
+    #: Period of time within which the video was approved.
+    approved_since = None
+
+    def get_paginate_by(self, queryset):
+        paginate_by = self.request.GET.get('count')
+        if paginate_by:
+            try:
+                paginate_by = int(paginate_by)
+            except ValueError:
+                paginate_by = None
+        if paginate_by is None:
+            paginate_by = self.paginate_by
+        return paginate_by
+
+    def _get_query(self, request):
+        """Fetches the query for the current request."""
+        # Support old-style templates that used "query".
+        key = 'q' if 'q' in request.GET else 'query'
+        return request.GET.get(key, "")
+
+    def get_queryset(self):
+        """Wraps the normal queryset in a :class:`.NormalizedVideoList`."""
+        qs = super(CompatibleBrowseView, self).get_queryset()
+
+        if self.approved_since is not None:
+            if isinstance(qs, SearchQuerySet):
+                qs = qs.exclude(when_approved__exact=DATETIME_NULL_PLACEHOLDER)
+            else:
+                qs = qs.exclude(when_approved__isnull=True)
+            qs = qs.filter(when_approved__gt=(
+                                datetime.datetime.now() - self.approved_since))
+
+        return NormalizedVideoList(qs)
+
+    def get_context_data(self, **kwargs):
+        context = super(CompatibleBrowseView, self).get_context_data(**kwargs)
+        context['form'] = context['search_form']
+        context['query'] = context['form'].cleaned_data['q']
+        context['video_list'] = context['videos']
+        return context
+
+
 class SiteListView(ListView):
     """
     Filters the ordinary queryset according to the current site.
@@ -148,14 +183,14 @@ class SiteListView(ListView):
                                 site=Site.objects.get_current())
 
 
-class CategoryVideoSearchView(VideoSearchView):
+class CategoryVideoSearchView(CompatibleBrowseView):
     """
     Adds support for voting on categories. Essentially, all this means is that
     a ``user_can_vote`` variable is added to the context.
 
     """
     def get_context_data(self, **kwargs):
-        context = VideoSearchView.get_context_data(self, **kwargs)
+        context = CompatibleBrowseView.get_context_data(self, **kwargs)
         category = context['category']
 
         user_can_vote = False

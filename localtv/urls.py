@@ -20,8 +20,8 @@ from django.contrib.auth.models import User
 from django.views.generic import ListView
 
 from localtv.api.v1 import api as api_v1
-from localtv.listing.views import VideoSearchView, SiteListView, \
-                        CategoryVideoSearchView
+from localtv.listing.views import (BrowseView, CompatibleBrowseView,
+                                   SiteListView, CategoryVideoSearchView)
 from localtv.models import Category
 from localtv.views import IndexView
 
@@ -31,6 +31,9 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
+    url(r'^videos/$',
+         BrowseView.as_view(template_name='localtv/videos.html'),
+         name='localtv_browse'),
     url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
                     name='localtv_view_video'),
     url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
@@ -45,7 +48,7 @@ category_videos = CategoryVideoSearchView.as_view(
 )
 urlpatterns += patterns(
     'localtv.listing.views',
-    url(r'^search/$', VideoSearchView.as_view(
+    url(r'^search/$', CompatibleBrowseView.as_view(
                         template_name='localtv/video_listing_search.html',
                     ), name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
@@ -60,7 +63,7 @@ urlpatterns += patterns(
                         model=User,
                         context_object_name='authors'
                     ), name='localtv_author_index'),
-    url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
+    url(r'^author/(?P<pk>\d+)/$', CompatibleBrowseView.as_view(
                         template_name='localtv/author.html',
                         url_filter='author',
                         default_sort='-date'
