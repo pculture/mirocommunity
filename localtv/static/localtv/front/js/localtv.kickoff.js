@@ -22,7 +22,7 @@
 	$('.video-details').shrinkydink();
 	
 	// add popovers to the video thumbs
-	$('.video-grid-item').popover();
+	$('.video-grid').popover({selector: '.video-grid-item'});
 	
 	// Infinite Scroll
 	$('.pagetabs').hide(); // hide pagination
