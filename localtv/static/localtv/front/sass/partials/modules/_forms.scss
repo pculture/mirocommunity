@@ -17,6 +17,7 @@ input, textarea{
 	width:80%;
 	@include box-sizing(border-box);
 	padding: $base-line-height*.25;
+	height: $base-line-height + $base-line-height * .5 + 2px;
 }
 
 input{
