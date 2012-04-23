@@ -20,3 +20,11 @@
 	@extend .padded-half;
 	color:#EEE;
 }
+
+.extra-details{
+	@include margin-leader;
+	@include small;
+	h4{
+		@include small;
+	}
+}

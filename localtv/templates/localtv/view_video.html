@@ -95,6 +95,29 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<div class="content-box">
 				<section class="video-details">
 					{{ current_video.description|safe }}
+					<div class="extra-details">
+						{% if current_video.categories.count > 0 %}
+							<div class="video-full-categories compact">
+								{% with current_video as instance %}
+									{% include "localtv/inline_edit/video_categories.html" %}
+								{% endwith %}
+							</div>{# /.video-full-categories #}
+						{% endif %}
+						{% if current_video.tags %}
+							<div class="video-full-tags compact">
+								{% with current_video as instance %}
+									{% include "localtv/inline_edit/video_tags.html" %}
+								{% endwith %}
+							</div>{# /.video-full-tags #}
+						{% endif %}
+						{% if user_is_admin %}
+							{% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
+							{% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
+							{% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
+							{% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
+							{% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
+						{% endif %}
+					</div>
 				</section>{# /.video-details #}
 			</div>
 			<div class="content-box">
@@ -102,31 +125,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</div>{# /.col-two-thirds #}
 		<div class="col-one-third right-sidebar">
-			<section class="pod video-extra-details">
-				<div class="pod-content">
-					{% if current_video.categories.count > 0 %}
-						<div class="video-full-categories compact">
-							{% with current_video as instance %}
-								{% include "localtv/inline_edit/video_categories.html" %}
-							{% endwith %}
-						</div>{# /.video-full-categories #}
-					{% endif %}
-					{% if current_video.tags %}
-						<div class="video-full-tags compact">
-							{% with current_video as instance %}
-								{% include "localtv/inline_edit/video_tags.html" %}
-							{% endwith %}
-						</div>{# /.video-full-tags #}
-					{% endif %}
-					{% if user_is_admin %}
-						{% if current_video.submitter %}<li class="item"><h4>{% trans "Submitted by" %}</h4><ul><li> {{ current_video.submitter }}</li></ul></li>{% endif %}
-						{% if current_video.search %}<li class="item"><h4>{% trans "From search" %}</h4><ul><li> {{ current_video.search }}</li></ul></li>{% endif %}
-						{% if current_video.feed %}<li class="item"><h4>{% trans "From feed" %}</h4><ul><li> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></li></ul></li>{% endif %}
-						{% if current_video.contact %}<li class="item"><h4>{% trans "Contact" %}</h4><ul><li> {{ current_video.contact }}</li></ul></li>{% endif %}
-						{% if current_video.notes %}<li class="item"><h4>{% trans "Notes" %}</h4><ul><li> {{ current_video.notes }}</li></ul></li>{% endif %}
-					{% endif %}
-				</div>
-			</section>{# /.pod.video-extra-details #}
 			<section class="pod video-suggested-videos">
 				<header class="pod-header">
 					<h1>{% trans "More Videos" %}</h1>
