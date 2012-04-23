@@ -11,6 +11,7 @@
 	@include border-radius(5px);
 	margin:0;
 	padding: $base-line-height*.25 $base-line-height*.5;
+	height: $base-line-height + $base-line-height * .5 + 2px;
 }
 
 .button-wide{
