@@ -34,9 +34,10 @@
 		},
 		initialize: function () {
 			// short-circuit, if the element is not tall enough to be worth shrinking
-			if (this._getLineHeight() * this.lineCount > this.element.height() ) return;
+			if (this._getLineHeight() * this.lineCount >= this.element.height() ) return;
+			console.log(this._getLineHeight() * this.lineCount, this.element.height());
 			// otherwise, run the stuff
-			this.handle = $('<a href="#" data-shrinkydinkhandle="true" class="shrinkydink-handle"><span class="shrinkydink-handle-inner"></span></a>').data('shrinkydink-target', this.element);
+			this.handle = $('<a href="#" class="shrinkydink-handle"><span class="shrinkydink-handle-inner"></span></a>').data('shrinkydink-target', this.element);
 			this.handleInner = $('.shrinkydink-handle-inner', this.handle);
 			this.element.after(this.handle);
 			this.element.css('overflow', 'hidden');
@@ -81,7 +82,7 @@
 		});
 	};
 	
-	$(document).on('click.shrinkydink', '[data-shrinkydinkhandle]', function ( e ) {
+	$(document).on('click.shrinkydink', '.shrinkydink-handle', function ( e ) {
 		var $this = $(this),
 			$target = $this.data('shrinkydink-target');
 		$target.shrinkydink('toggle');

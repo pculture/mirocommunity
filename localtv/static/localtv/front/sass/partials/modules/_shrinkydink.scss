@@ -1,6 +1,14 @@
 .shrinkydink-handle{
 	@include small;
-	@extend .button;
 	@include margin-leader(.5);
 	display:block;
+	border-bottom:1px solid;
+	text-align:center;
+	height:$small-line-height/2;
+}
+
+.shrinkydink-handle-inner{
+	display:inline-block;
+	background:#FFF;
+	padding:0 5px;
 }

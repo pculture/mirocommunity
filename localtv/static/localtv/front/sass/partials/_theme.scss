@@ -291,6 +291,21 @@ input, textarea{
 	border-color:darken($main-background-color, 20%);
 }
 
+/* shrinkydink */
+
+.shrinkydink-handle{
+	border-color:$quiet-color;
+	&:hover{
+		border-color:darken($quiet-color, 20%);
+	}
+}
+.shrinkydink-handle-inner{
+	background-color:$main-background-color;
+	color:darken($quiet-color, 20%);
+	.shrinkydink-handle:hover > &{
+		color:darken($quiet-color, 40%);
+	}
+}
 
 /* sidebar */
 @media screen and (min-width: 740px){
