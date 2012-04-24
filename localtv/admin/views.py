@@ -25,7 +25,6 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 from localtv.decorators import require_site_admin
 from localtv.models import Video, SiteSettings
-import localtv.tiers
 
 @require_site_admin
 def index(request):
@@ -33,9 +32,12 @@ def index(request):
     Simple index page for the admin site.
     """
     site_settings = SiteSettings.objects.get_current()
-    total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
-    percent_videos_used = math.floor(
-        (100.0 * total_count) / site_settings.get_tier().videos_limit())
+    total_count = Video.objects.filter(
+        status=Video.ACTIVE,
+        site=site_settings.site).count()
+    #total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
+    #percent_videos_used = math.floor(
+    #    (100.0 * total_count) / site_settings.get_tier().videos_limit())
     videos_this_week_count = Video.objects.filter(
         status=Video.ACTIVE,
         when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
@@ -43,7 +45,7 @@ def index(request):
     return render_to_response(
         'localtv/admin/index.html',
         {'total_count': total_count,
-         'percent_videos_used': percent_videos_used,
+         #'percent_videos_used': percent_videos_used,
          'unreviewed_count': Video.objects.filter(
                 status=Video.UNAPPROVED,
                 site=site_settings.site).count(),

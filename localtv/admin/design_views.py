@@ -84,8 +84,6 @@ def widget_settings(request):
 @csrf_protect
 def newsletter_settings(request):
     newsletter = NewsletterSettings.objects.get_current()
-    if not newsletter.site_settings.get_tier().permit_newsletter():
-        raise Http404
 
     form = forms.NewsletterSettingsForm(instance=newsletter)
 

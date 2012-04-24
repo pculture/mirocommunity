@@ -69,7 +69,6 @@ from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
 from localtv.signals import post_video_from_vidscraper, submit_finished
-import localtv.tiers
 
 def delete_if_exists(path):
     if default_storage.exists(path):
@@ -281,8 +280,6 @@ class SiteSettings(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='basic', blank=False,
-                                 choices=localtv.tiers.CHOICES)
     hide_get_started = models.BooleanField(default=False)
 
     # ordering options
@@ -309,16 +306,6 @@ class SiteSettings(Thumbnailable):
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
-    def add_queued_mail(self, data):
-        if not hasattr(self, '_queued_mail'):
-            self._queued_mail = []
-        self._queued_mail.append(data)
-
-    def get_queued_mail_destructively(self):
-        ret = getattr(self, '_queued_mail', [])
-        self._queued_mail = []
-        return ret
-
     def user_is_admin(self, user):
         """
         Return True if the given User is an admin for this SiteSettings.
@@ -334,9 +321,6 @@ class SiteSettings(Thumbnailable):
     def save(self, *args, **kwargs):
         SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
         return models.Model.save(self, *args, **kwargs)
-
-    def get_tier(self):
-        return localtv.tiers.Tier(self.tier_name, self)
 
     def get_css_for_display_if_permitted(self):
         '''This function checks the site tier, and if permitted, returns the
@@ -2167,14 +2151,6 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
-
-### register pre-save handler for Tiers and payment due dates
-models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
-                                sender=SiteSettings)
-models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
-                                sender=SiteSettings)
-models.signals.post_save.connect(localtv.tiers.post_save_send_queued_mail,
-                                 sender=SiteSettings)
 
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:

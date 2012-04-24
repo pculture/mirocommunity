@@ -48,7 +48,6 @@ from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video, Feed, SiteSettings, SavedSearch, Category
 from localtv.settings import USE_HAYSTACK
-from localtv.tiers import Tier
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
