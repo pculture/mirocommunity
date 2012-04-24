@@ -17,11 +17,25 @@
 
 from django.conf.urls.defaults import patterns, include, url
 
-from localtv.contrib.contests.views import ContestDetailView
+from localtv.contrib.contests.views import (ContestDetailView,
+                                            ContestAdminListView,
+                                            ContestAdminCreateView,
+                                            ContestAdminUpdateView,
+                                            ContestAdminDeleteView)
 
 
 urlpatterns = patterns('localtv.contrib.voting.views',
     url(r'^contest/(?P<pk>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
     	ContestDetailView.as_view(),
         name='contests_contest_detail'),
+    url(r'^admin/contests/?$', ContestAdminListView.as_view(),
+    	name='localtv_admin_contests'),
+    url(r'^admin/contests/add/?$', ContestAdminCreateView.as_view(),
+        name='localtv_admin_contests_create'),
+    url(r'^admin/contests/edit/(?P<pk>[\d]+)/?$',
+        ContestAdminUpdateView.as_view(),
+        name='localtv_admin_contests_update'),
+    url(r'^admin/contests/delete/(?P<pk>[\d]+)/?$',
+        ContestAdminDeleteView.as_view(),
+        name='localtv_admin_contests_delete'),
 )

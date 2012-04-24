@@ -71,6 +71,9 @@ class Contest(models.Model):
     #: Whether the actual vote counts should be displayed by the videos.
     display_vote_counts = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return unicode(self.name)
+
 
 class ContestVote(models.Model):
     UP = +1
