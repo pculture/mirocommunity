@@ -125,6 +125,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</div>{# /.col-three-quarters #}
 		<div class="col-one-quarter right-sidebar">
+			{% if current_video.contest_set %}
+				{% for contest in current_video.contest_set.all %}
+					<section class="pod video-contest">
+						<header class="pod-header">
+							<h1>{{ contest.name }}</h1>
+						</header>
+						<div class="pod-content">
+							<p>
+								{% url 'contests_contest_detail' contest.pk contest.slug as contest_url %}
+								{% blocktrans with video=current_video.name contest=contest.name url=contest_url %}
+									{{ video }} is competing in <a href="{{ url }}">{{ contest }}</a>.
+								{% endblocktrans %}
+							</p>
+							{# TOOD: These buttons should actually vote #}
+							<button>{% trans "Vote Up" %}</button>
+							{% if contest.allow_downvotes %}
+								<button>{% trans "Vote Down" %}</button>
+							{% endif %}
+						</div>{# /.pod-content #}
+					</section>{# /.pod.video-contest #}
+				{% endfor %}
+			{% endif %}
 			<section class="pod video-suggested-videos">
 				<header class="pod-header">
 					<h1>{% trans "More Videos" %}</h1>
