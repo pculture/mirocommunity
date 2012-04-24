@@ -23,19 +23,33 @@ $pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($c
 $input-border-color: #CCC !default;
 $input-background-color: #FFF !default;
 
+$message-default-color: #EEE !default;
+$message-info-color: #C4DFFC !default;
+$message-warning-color: #FFFCC5 !default;
+$message-error-color: #F6C2C2 !default;
+$message-success-color: #CDFBC3 !default;
+
 $precontent-background-color: #343639 !default;
 $precontent-header-background: #000 !default;
 $precontent-header-text-color: #FFF !default;
 $precontent-header-link-color: #5C86A0 !default;
 $precontent-header-link-hover-color: #4E9EDA !default;
 $precontent-quiet-color: #999 !default;
+$precontent-link-color:#6CF !default;
 
 $sidebar-background-color:#F5F5F5 !default;
 
 $site-blurb-background-color: #222 !default;
 $site-blurb-text-color: #DDD !default;
 
-$site-title-color: #000;
+$site-title-color: #000 !default;
+
+$footer-background: #222 !default;
+$footer-text-color: #AAA !default;
+$footer-link-color: #5C86A0 !default;
+$footer-link-hover-color: #4E9EDA !default;
+
+$quiet-color: #999;
 
 @import "compass/css3/images",
 		"compass/css3/box-shadow";
@@ -55,10 +69,6 @@ body{
 }
 
 /* main container */
-
-#main{
-	border-top:1px solid darken($main-background-color, 20%);
-}
 
 #main > .container{
 	background:$main-background-color;
@@ -86,19 +96,34 @@ body{
 	border-color: darken($button-background-color, 50%);
 }
 
+/* carousel */
+
+.carousel-pager{
+	background:#000;
+	& > a{
+		border-color:#FFF;
+	}
+	& > a:hover{
+		border-color:#FFF;
+	}
+	& > .activeSlide{
+		border-color:#FFF;
+		background-color:#FFF;
+	}
+}
+
 /* navigation */
 
 .nav-item a{
 	color:$navigation-text-color;
 }
 .nav-item{
-	border-left-color:lighten($navigation-text-color, 60%);
+	border-color:lighten($navigation-text-color, 60%);
 }
 
 .nav-item-dropdown > a::after{
 	border-top-color:$navigation-text-color;
 }
-
 
 .dropdown-list, .dropdown-box{
 	border-color:darken($navigation-background-color, 20%);
@@ -116,6 +141,16 @@ body{
 	}
 	&:active{
 		background:darken($navigation-background-color, 10%);
+	}
+}
+
+/* popover */
+
+.popover{
+	border-color:darken($main-background-color, 20%);
+	background:$main-background-color;
+	.arrow{
+		border-right-color:darken($main-background-color, 20%);
 	}
 }
 
@@ -149,7 +184,7 @@ input, textarea{
 	background-color: $pod-header-background-color;
 	@include background-image(linear-gradient($pod-header-background-color, darken($pod-header-background-color, 5%)));
 	border-bottom-color: darken($pod-header-background-color, 10%);
-	border-top-color: lighten($pod-header-background-color, 10%);
+	border-top-color: darken($pod-header-background-color, 5%);
 	color:$pod-header-text-color;
 	a{
 		color:$pod-header-text-color;
@@ -171,11 +206,34 @@ input, textarea{
 	}
 }
 
+/* messages */
+
+@mixin message($color){
+	background-color: $color;
+	border-color: darken(desaturate($color, 60%),20%);
+	text: darken($color, 80%);
+}
+
+.message{
+	@include message($message-default-color);
+	&.error{ @include message($message-error-color); }
+	&.success{ @include message($message-success-color); }
+	&.info{ @include message($message-info-color); }
+	&.warning{ @include message($message-warning-color); }
+}
+
 /* precontent */
 
 .precontent{
 	/* http://subtlepatterns.com/?p=1024 */
 	background: #343639 image-url('classy_fabric.png');
+}
+
+.precontent a{
+	color:$precontent-link-color;
+	&:hover{
+		border-color:#666;
+	}
 }
 
 .precontent-header{
@@ -233,6 +291,21 @@ input, textarea{
 	border-color:darken($main-background-color, 20%);
 }
 
+/* shrinkydink */
+
+.shrinkydink-handle{
+	border-color:$quiet-color;
+	&:hover{
+		border-color:darken($quiet-color, 20%);
+	}
+}
+.shrinkydink-handle-inner{
+	background-color:$main-background-color;
+	color:darken($quiet-color, 20%);
+	.shrinkydink-handle:hover > &{
+		color:darken($quiet-color, 40%);
+	}
+}
 
 /* sidebar */
 @media screen and (min-width: 740px){
@@ -245,4 +318,22 @@ input, textarea{
 		background-color:$sidebar-background-color;
 		@include background(linear-gradient(right, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%));
 	}
+}
+
+/* footer */
+#footer{
+	background:$footer-background;
+	color:$footer-text-color;
+	a{
+		color:$footer-link-color;
+	}
+	a:hover{
+		color:$footer-link-hover-color;
+	}
+}
+
+/* quiet */
+
+.quiet{
+	color:$quiet-color;
 }

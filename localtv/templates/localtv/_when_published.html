@@ -1,4 +1,3 @@
-{% extends "localtv/submit_video/second.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -18,37 +17,5 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block form_action %}{% url localtv_submit_directlink_video %}{% endblock %}
-{% block form %}
-	<p>
-		{{ form.name.errors }}
-		{{ form.name.label_tag }}
-		{{ form.name }}
-	</p>
-	<p>
-		{{ form.embed.errors }}
-		{{ form.embed.label_tag }}
-		{{ form.embed }}
-	</p>
-	<p>
-		{{ form.website_url.errors }}
-		{{ form.website_url.label_tag }}
-		{{ form.website_url }}
-	</p>
-	<p>
-		{{ form.thumbnail_file.errors }}
-		{{ form.thumbnail_file.label_tag }}
-		{{ form.thumbnail_file }}
-	</p>
-	<p>
-		or<br />
-		{{ form.thumbnail.errors }}
-		{{ form.thumbnail.label_tag }}
-		{{ form.thumbnail }}
-	</p>
-	<p>
-		{{ form.description.errors }}
-		{{ form.description.label_tag }}
-		{{ form.description }}
-	</p>
-{% endblock %}
+{% load filters %}
+{{ instance.when|simpletimesince }} ago

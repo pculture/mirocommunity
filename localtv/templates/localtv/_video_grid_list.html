@@ -11,7 +11,14 @@
 		{% if forloop.first %}
 			<ul class="media-grid video-grid">
 		{% endif %}
-		<li class="media-item">
+		<li class="media-item video-grid-item" data-content="
+			{{ video.description }}
+			{% filter force_escape %}
+				{% with video as instance %}
+					<p class="byline">by {% include "localtv/inline_edit/video_authors.html" %}</p>
+				{% endwith %}
+			{% endfilter %}
+		">
 			<figure class="thumb">
 				<a href="{{ video.get_absolute_url }}">
 					{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
@@ -19,8 +26,13 @@
 				</a>
 			</figure>
 			<header class="video-header">
-				<h1 class="video-title"><a href="{{ video.get_asbolute_url }}" class="title-link">{{ video.name }}</a></h1>
+				<h1 class="video-title"><a href="{{ video.get_absolute_url }}" class="title-link">{{ video.name }}</a></h1>
 			</headeR>
+			<div class="video-details">
+				{% with video as instance %}
+					<a  href="{{ video.get_absolute_url }}" class="timestamp-link">{% include "localtv/_when_published.html" %}</a>
+				{% endwith %}
+			</div>
 		</li>
 		{% if forloop.last %}
 			</ul>

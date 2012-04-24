@@ -5,14 +5,15 @@
 	& > li{
 		float:left;
 		display: block;
+		height:20px;
 		line-height:19px;
-		height:39px;
-		width:25%;
-		@include box-sizing(border-box);
-		padding:#{$base-line-height/2} #{$gutter-width/2};
-		border-left:1px solid;
+		width:90px;
+		@include padded(.25);
 		&:first-child{
 			border-left:0;
 		}
+	}
+	a:hover{
+		border:0;
 	}
 }

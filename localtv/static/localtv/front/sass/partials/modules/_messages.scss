@@ -1,0 +1,6 @@
+.message{
+	@extend .padded-half;
+	border:1px solid;
+	@include border-radius(5px);
+	@include margin-trailer;
+}

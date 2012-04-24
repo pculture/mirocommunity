@@ -15,7 +15,7 @@
 		<header>
 			<h1><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h1>
 		</header>
-		<p>{{ video.description|safe }}</p>
-		<p><a href="{{ video.get_absolute_url }}" class="button-wide">{% trans "Watch Video" %}</a></p>
+		<p>{{ video.description|safe|truncatewords:40 }}</p>
+		<p><a href="{{ video.get_absolute_url }}" class="watch-video-button">{% trans "Watch Video" %}</a></p>
 	</div>
 </article>

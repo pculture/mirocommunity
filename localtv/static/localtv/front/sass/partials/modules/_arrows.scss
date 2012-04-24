@@ -1,0 +1,35 @@
+@mixin arrow($direction, $size, $color, $center: true){
+	@if $direction == "up" {
+		@if $center { margin-left:-$size/2; }
+		border:{
+			top:0;
+			left:$size solid transparent;
+			right:$size solid transparent;
+			bottom:$size solid $color;
+		};
+	} @else if $direction == "down" {
+		@if $center { margin-left:-$size/2; }
+		border:{
+			top:$size solid $color;
+			bottom:0;
+			left:$size solid transparent;
+			right:$size solid transparent;
+		};
+	} @else if $direction == "right" {
+		@if $center { margin-top:-$size/2; }
+		border:{
+			top:$size solid transparent;
+			bottom:$size solid transparent;
+			left:$size solid $color;
+			right:0;
+		};
+	} @else if $direction == "left" {
+		@if $center { margin-top:-$size/2; }
+		border:{
+			top:$size solid transparent;
+			bottom:$size solid transparent;
+			left:0;
+			right:$size solid $color;
+		};
+	}
+}

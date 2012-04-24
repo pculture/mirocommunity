@@ -4,6 +4,7 @@
 	display:block;
 	margin-left:auto;
 	margin-right:auto;
+	background:#000;
 	@include margin-leader;
 	@include margin-trailer;
 	@include box-shadow(0 0 0 1px rgba(255,255,255,.1), 0 0 32px 0 rgba(0,0,0,.75));
@@ -12,5 +13,18 @@
 		max-width:100%;
 		@include margin-leader(0);
 		@include margin-trailer(0);
+	}
+}
+
+.video-player p{
+	@extend .padded-half;
+	color:#EEE;
+}
+
+.extra-details{
+	@include margin-leader;
+	@include small;
+	h4{
+		@include small;
 	}
 }
