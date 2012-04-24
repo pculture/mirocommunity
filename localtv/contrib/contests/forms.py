@@ -22,12 +22,26 @@ from localtv.contrib.contests.models import Contest
 
 
 class ContestAdminForm(forms.ModelForm):
-	class Meta:
-		model = Contest
-		exclude = ('videos', 'site',)
+    detail_columns = forms.MultipleChoiceField(
+                                        choices=Contest.DETAIL_COLUMN_CHOICES,
+                                        widget=forms.CheckboxSelectMultiple)
 
-	def _post_clean(self):
-		super(ContestAdminForm, self)._post_clean()
+    class Meta:
+        model = Contest
+        exclude = ('videos', 'site', 'detail_columns')
 
-		if self.instance.site_id is None:
-			self.instance.site = Site.objects.get_current()
+    def __init__(self, *args, **kwargs):
+        super(ContestAdminForm, self).__init__(*args, **kwargs)
+        self.initial['detail_columns'] = self.instance.detail_columns.split(
+                                                                          ',')
+
+    def clean_detail_columns(self):
+        return ','.join(self.cleaned_data['detail_columns'])
+
+    def _post_clean(self):
+        super(ContestAdminForm, self)._post_clean()
+
+        if self.instance.site_id is None:
+            self.instance.site = Site.objects.get_current()
+
+        self.instance.detail_columns = self.cleaned_data['detail_columns']
