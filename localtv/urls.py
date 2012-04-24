@@ -85,6 +85,7 @@ urlpatterns += patterns(
     url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
