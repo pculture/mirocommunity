@@ -10,7 +10,7 @@ git+git://github.com/dcramer/django-paypal.git@master#egg=django-paypal
 git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@tip#egg=django-registration
-beautifulsoup4==4.0.2
+beautifulsoup4==4.0.4
 Django==1.4
 Pillow==1.7.5
 lxml==2.3.4
