@@ -101,6 +101,9 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         # yesterday video last in the order, should appear first
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
+        response = client.get('/feeds/json/playlist/2')
+        self.assertStatusCodeEquals(response, 404)
+
 
 class AdminFeedViewIntegrationTestCase(BaseTestCase):
     urls = 'localtv.urls'
