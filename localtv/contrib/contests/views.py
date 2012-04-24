@@ -21,7 +21,9 @@ from django.db.models import Count
 from django.views.generic import (DetailView, CreateView, UpdateView,
                                   ListView, DeleteView)
 
+from localtv.contrib.contests.forms import ContestAdminForm
 from localtv.contrib.contests.models import Contest
+from localtv.models import Video
 from localtv.utils import SortHeaders
 
 
@@ -39,16 +41,16 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ContestDetailView, self).get_context_data(**kwargs)
+        base_qs = Video.objects.filter(contestvideo__contest=self.object)
         if Contest.NEW in self.object.detail_columns:
-            context['new_videos'] = self.object.videos.order_by(
-                                                            '-when_submitted')
+            context['new_videos'] = base_qs.order_by('-contestvideo__added')
+
         if Contest.RANDOM in self.object.detail_columns:
-            context['random_videos'] = self.object.videos.order_by('?')
+            context['random_videos'] = base_qs.order_by('?')
 
         if Contest.TOP in self.object.detail_columns:
-            context['top_videos'] = self.object.videos.filter(
-                                              contestvote__contest=self.object
-                                   ).annotate(vote_count=Count('contestvote')
+            context['top_videos'] = base_qs.annotate(
+                                  vote_count=Count('contestvideo__contestvote')
                                    ).order_by('-vote_count')
 
         return context
@@ -65,8 +67,9 @@ class ContestAdminListView(ContestQuerySetMixin, ListView):
                                    ('Votes', 'vote_count'),
                                    ('Videos', 'video_count')))
         queryset = super(ContestAdminListView, self).get_queryset()
-        queryset = queryset.annotate(vote_count=Count('votes'),
-                                     video_count=Count('videos'))
+        queryset = queryset.annotate(
+                                vote_count=Count('contestvideo__contestvote'),
+                                video_count=Count('contestvideo'))
         return queryset.order_by(self.headers.order_by())
 
     def get_context_data(self, **kwargs):
@@ -80,6 +83,7 @@ class ContestAdminListView(ContestQuerySetMixin, ListView):
 class ContestAdminCreateView(ContestQuerySetMixin, CreateView):
     context_object_name = 'contest'
     template_name = 'localtv/admin/contests/edit.html'
+    form_class = ContestAdminForm
 
     def get_success_url(self):
         return reverse('localtv_admin_contests_update',
@@ -89,6 +93,7 @@ class ContestAdminCreateView(ContestQuerySetMixin, CreateView):
 class ContestAdminUpdateView(ContestQuerySetMixin, UpdateView):
     context_object_name = 'contest'
     template_name = 'localtv/admin/contests/edit.html'
+    form_class = ContestAdminForm
 
     def get_success_url(self):
         return reverse('localtv_admin_contests_update',

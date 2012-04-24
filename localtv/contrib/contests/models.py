@@ -57,7 +57,7 @@ class Contest(models.Model):
                                             "can only vote once per video."))
 
     #: Videos which have been submitted to this contest.
-    videos = models.ManyToManyField(Video, blank=True)
+    videos = models.ManyToManyField(Video, blank=True, through='ContestVideo')
 
     #: Whether down-voting is a valid option.
     allow_downvotes = models.BooleanField(default=True)
@@ -75,6 +75,15 @@ class Contest(models.Model):
         return unicode(self.name)
 
 
+class ContestVideo(models.Model):
+    contest = models.ForeignKey(Contest)
+    video = models.ForeignKey(Video)
+    added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('contest', 'video')
+
+
 class ContestVote(models.Model):
     UP = +1
     DOWN = -1
@@ -85,9 +94,8 @@ class ContestVote(models.Model):
     )
 
     vote = models.SmallIntegerField(choices=VOTE_CHOICES)
-    contest = models.ForeignKey(Contest, related_name='votes')
-    video = models.ForeignKey(Video)
     user = models.ForeignKey(User)
+    contestvideo = models.ForeignKey(ContestVideo)
 
     class Meta:
-        unique_together = ('contest', 'video', 'user')
+        unique_together = ('contestvideo', 'user')

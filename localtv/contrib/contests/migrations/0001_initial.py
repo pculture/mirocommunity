@@ -12,42 +12,53 @@ class Migration(SchemaMigration):
         db.create_table('contests_contest', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('detail_columns', self.gf('django.db.models.fields.CommaSeparatedIntegerField')(max_length=10, blank=True)),
             ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sites.Site'])),
-            ('max_votes', self.gf('django.db.models.fields.PositiveIntegerField')(default=1, null=True, blank=True)),
+            ('votes_per_user', self.gf('django.db.models.fields.PositiveIntegerField')(default=1, null=True, blank=True)),
             ('allow_downvotes', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('submissions_open', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('voting_open', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('display_vote_counts', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('contests', ['Contest'])
 
-        # Adding M2M table for field categories on 'Contest'
-        db.create_table('contests_contest_categories', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('contest', models.ForeignKey(orm['contests.contest'], null=False)),
-            ('category', models.ForeignKey(orm['localtv.category'], null=False))
+        # Adding model 'ContestVideo'
+        db.create_table('contests_contestvideo', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('contest', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contests.Contest'])),
+            ('video', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['localtv.Video'])),
+            ('added', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
         ))
-        db.create_unique('contests_contest_categories', ['contest_id', 'category_id'])
+        db.send_create_signal('contests', ['ContestVideo'])
+
+        # Adding unique constraint on 'ContestVideo', fields ['contest', 'video']
+        db.create_unique('contests_contestvideo', ['contest_id', 'video_id'])
 
         # Adding model 'ContestVote'
         db.create_table('contests_contestvote', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('vote', self.gf('django.db.models.fields.SmallIntegerField')()),
-            ('contest', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contests.Contest'])),
-            ('video', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['localtv.Video'])),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('contestvideo', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contests.ContestVideo'])),
         ))
         db.send_create_signal('contests', ['ContestVote'])
 
-        # Adding unique constraint on 'ContestVote', fields ['contest', 'video', 'user']
-        db.create_unique('contests_contestvote', ['contest_id', 'video_id', 'user_id'])
+        # Adding unique constraint on 'ContestVote', fields ['contestvideo', 'user']
+        db.create_unique('contests_contestvote', ['contestvideo_id', 'user_id'])
 
     def backwards(self, orm):
-        # Removing unique constraint on 'ContestVote', fields ['contest', 'video', 'user']
-        db.delete_unique('contests_contestvote', ['contest_id', 'video_id', 'user_id'])
+        # Removing unique constraint on 'ContestVote', fields ['contestvideo', 'user']
+        db.delete_unique('contests_contestvote', ['contestvideo_id', 'user_id'])
+
+        # Removing unique constraint on 'ContestVideo', fields ['contest', 'video']
+        db.delete_unique('contests_contestvideo', ['contest_id', 'video_id'])
 
         # Deleting model 'Contest'
         db.delete_table('contests_contest')
 
-        # Removing M2M table for field categories on 'Contest'
-        db.delete_table('contests_contest_categories')
+        # Deleting model 'ContestVideo'
+        db.delete_table('contests_contestvideo')
 
         # Deleting model 'ContestVote'
         db.delete_table('contests_contestvote')
@@ -92,18 +103,29 @@ class Migration(SchemaMigration):
         'contests.contest': {
             'Meta': {'object_name': 'Contest'},
             'allow_downvotes': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'categories': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['localtv.Category']", 'null': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'detail_columns': ('django.db.models.fields.CommaSeparatedIntegerField', [], {'max_length': '10', 'blank': 'True'}),
+            'display_vote_counts': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'max_votes': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"})
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
+            'submissions_open': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'videos': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['localtv.Video']", 'symmetrical': 'False', 'through': "orm['contests.ContestVideo']", 'blank': 'True'}),
+            'votes_per_user': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1', 'null': 'True', 'blank': 'True'}),
+            'voting_open': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
-        'contests.contestvote': {
-            'Meta': {'unique_together': "(('contest', 'video', 'user'),)", 'object_name': 'ContestVote'},
+        'contests.contestvideo': {
+            'Meta': {'unique_together': "(('contest', 'video'),)", 'object_name': 'ContestVideo'},
+            'added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'contest': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contests.Contest']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'video': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Video']"})
+        },
+        'contests.contestvote': {
+            'Meta': {'unique_together': "(('contestvideo', 'user'),)", 'object_name': 'ContestVote'},
+            'contestvideo': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contests.ContestVideo']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'video': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Video']"}),
             'vote': ('django.db.models.fields.SmallIntegerField', [], {})
         },
         'localtv.category': {
@@ -122,7 +144,6 @@ class Migration(SchemaMigration):
             'auto_authors': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'auto_feed_set'", 'blank': 'True', 'to': "orm['auth.User']"}),
             'auto_categories': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['localtv.Category']", 'symmetrical': 'False', 'blank': 'True'}),
             'auto_update': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'avoid_frontpage': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'calculated_source_type': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'etag': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),

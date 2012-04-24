@@ -26,7 +26,7 @@ from tastypie.http import HttpGone, HttpMultipleChoices
 from tastypie.resources import ModelResource
 
 from localtv.api.v1 import api, UserResource, VideoResource
-from localtv.contrib.contests.models import Contest, ContestVote
+from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
 
 
 class ContestResource(ModelResource):
@@ -39,14 +39,23 @@ class ContestResource(ModelResource):
         queryset = Contest.objects.filter(site=settings.SITE_ID)
 
 
-class ContestVoteResource(ModelResource):
+class ContestVideoResource(ModelResource):
     contest = fields.ToOneField(ContestResource, 'contest')
     video = fields.ToOneField(VideoResource, 'video')
+    added = fields.DateTimeField('added')
+
+    class Meta:
+        queryset = ContestVideo.objects.filter(contest__site=settings.SITE_ID)
+
+
+class ContestVoteResource(ModelResource):
+    contestvideo = fields.ToOneField(ContestVideoResource, 'contestvideo')
     user = fields.ToOneField(UserResource, 'user')
     vote = fields.IntegerField('vote')
 
     class Meta:
-        queryset = ContestVote.objects.filter(contest__site=settings.SITE_ID)
+        queryset = ContestVote.objects.filter(
+                                 contestvideo__contest__site=settings.SITE_ID)
         authorization = Authorization()
         authentication = BasicAuthentication()
 
@@ -65,4 +74,5 @@ class ContestVoteResource(ModelResource):
 
 
 api.register(ContestResource())
+api.register(ContestVideoResource())
 api.register(ContestVoteResource())
