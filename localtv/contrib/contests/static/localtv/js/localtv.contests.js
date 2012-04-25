@@ -1,5 +1,6 @@
 ;var localtv_contests;jQuery(function($){
-    var contests = localtv_contests = [];
+    var contests = localtv_contests = [],
+        activeClass = 'button-selected';
     function Contest(parent){
         contest = this
         contest.parent = $(parent);
@@ -43,11 +44,11 @@
             if (vote != contest.vote) {
                 old_button = contest.voteButtons[contest.vote];
                 if (old_button != undefined) {
-                    old_button.removeClass('active');
+                    old_button.removeClass(activeClass);
                 };
                 new_button = contest.voteButtons[vote];
                 if (new_button != undefined) {
-                    new_button.addClass('active');
+                    new_button.addClass(activeClass);
                 };
                 contest.vote = vote
         };
@@ -88,7 +89,7 @@
         }
         contest.clickButton = function(){
             var $this = $(this);
-            contest.setVote($this.hasClass('active') ? '0' : $this.val());
+            contest.setVote($this.hasClass(activeClass) ? '0' : $this.val());
             contest.sendVote();
         }
         contest.voteButtons['1'].on('click', contest.clickButton)
