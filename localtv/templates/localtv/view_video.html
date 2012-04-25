@@ -26,6 +26,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
+{% block scripts %}
+	{{ block.super }}
+	<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+{% endblock %}
+
 {% block head %}
 	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}
@@ -139,9 +144,18 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 								{% endblocktrans %}
 							</p>
 							{# TOOD: These buttons should actually vote #}
-							<button>{% trans "Vote Up" %}</button>
+							{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contesturl %}
+							<form action="{{ contesturl }}?format=json" method="post">
+								<input type="hidden" name="contest" value="{{ contest.pk }}" />
+								<input type="hidden" name="vote" value="1">
+								<button>{% trans "Vote Up" %}</button>
+							</form>
 							{% if contest.allow_downvotes %}
-								<button>{% trans "Vote Down" %}</button>
+								<form action="{{ contesturl }}?format=json" method="post">
+									<input type="hidden" name="contest" value="{{ contest.pk }}" />
+									<input type="hidden" name="vote" value="-1">
+									<button>{% trans "Vote Down" %}</button>
+								</form>
 							{% endif %}
 						</div>{# /.pod-content #}
 					</section>{# /.pod.video-contest #}

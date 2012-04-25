@@ -57,7 +57,7 @@ class ContestVoteResource(ModelResource):
         queryset = ContestVote.objects.filter(
                                  contestvideo__contest__site=settings.SITE_ID)
         authorization = Authorization()
-        authentication = BasicAuthentication()
+        # authentication = BasicAuthentication()
 
     def get_object_list(self, request):
         qs = super(ContestVoteResource, self).get_object_list(request)
