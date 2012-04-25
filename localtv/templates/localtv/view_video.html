@@ -130,9 +130,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</div>{# /.col-three-quarters #}
 		<div class="col-one-quarter right-sidebar">
-			{% if current_video.contest_set %}
-				{% for contest in current_video.contest_set.all %}
-					<section class="pod video-contest">
+			{% with contestvideos=current_video.contestvideo_set.all %}
+				{% if contestvideos %}
+				{% for contestvideo in contestvideos %}
+					{% with contest=contestvideo.contest %}
+					<section class="pod video-contest" data-contestvideo="{{ contestvideo.pk }}" data-user="{{ request.user.pk }}" data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}">
 						<header class="pod-header">
 							<h1>{{ contest.name }}</h1>
 						</header>
@@ -143,24 +145,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 									{{ video }} is competing in <a href="{{ url }}">{{ contest }}</a>.
 								{% endblocktrans %}
 							</p>
-							{# TOOD: These buttons should actually vote #}
-							{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contesturl %}
-							<form action="{{ contesturl }}?format=json" method="post">
-								<input type="hidden" name="contest" value="{{ contest.pk }}" />
-								<input type="hidden" name="vote" value="1">
-								<button>{% trans "Vote Up" %}</button>
-							</form>
-							{% if contest.allow_downvotes %}
-								<form action="{{ contesturl }}?format=json" method="post">
-									<input type="hidden" name="contest" value="{{ contest.pk }}" />
-									<input type="hidden" name="vote" value="-1">
-									<button>{% trans "Vote Down" %}</button>
-								</form>
-							{% endif %}
 						</div>{# /.pod-content #}
 					</section>{# /.pod.video-contest #}
+					{% endwith %}
 				{% endfor %}
-			{% endif %}
+				{% endif %}
+			{% endwith %}
 			<section class="pod video-suggested-videos">
 				<header class="pod-header">
 					<h1>{% trans "More Videos" %}</h1>

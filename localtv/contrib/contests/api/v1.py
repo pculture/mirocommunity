@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import Authorization
+from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.http import HttpGone, HttpMultipleChoices
 from tastypie.resources import ModelResource
 
@@ -57,20 +58,25 @@ class ContestVoteResource(ModelResource):
         queryset = ContestVote.objects.filter(
                                  contestvideo__contest__site=settings.SITE_ID)
         authorization = Authorization()
+        filtering = {
+            'user': ALL_WITH_RELATIONS,
+            'contestvideo': ALL_WITH_RELATIONS
+        }
+        always_return_data = True
         # authentication = BasicAuthentication()
 
-    def get_object_list(self, request):
-        qs = super(ContestVoteResource, self).get_object_list(request)
-        if hasattr(request, 'user') and request.user.is_authenticated():
-            qs = qs.filter(user=request.user)
-        return qs
+    #def get_object_list(self, request):
+    #    qs = super(ContestVoteResource, self).get_object_list(request)
+    #    if hasattr(request, 'user') and request.user.is_authenticated():
+    #        qs = qs.filter(user=request.user)
+    #    return qs
 
-    def obj_create(self, bundle, request=None, **kwargs):
-        if hasattr(request, 'user') and request.user.is_authenticated():
-            kwargs['user'] = request.user
-        return super(ContestVoteResource, self).obj_create(bundle,
-                                                           request=request,
-                                                           **kwargs)
+    #def obj_create(self, bundle, request=None, **kwargs):
+    #    if hasattr(request, 'user') and request.user.is_authenticated():
+    #        kwargs['user'] = request.user
+    #    return super(ContestVoteResource, self).obj_create(bundle,
+    #                                                       request=request,
+    #                                                       **kwargs)
 
 
 api.register(ContestResource())
