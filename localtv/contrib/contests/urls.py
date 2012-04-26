@@ -22,20 +22,23 @@ from localtv.contrib.contests.views import (ContestDetailView,
                                             ContestAdminCreateView,
                                             ContestAdminUpdateView,
                                             ContestAdminDeleteView)
+from localtv.decorators import require_site_admin
 
 
 urlpatterns = patterns('localtv.contrib.voting.views',
     url(r'^contest/(?P<pk>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
     	ContestDetailView.as_view(),
         name='contests_contest_detail'),
-    url(r'^admin/contests/?$', ContestAdminListView.as_view(),
+    url(r'^admin/contests/?$',
+        require_site_admin(ContestAdminListView.as_view()),
     	name='localtv_admin_contests'),
-    url(r'^admin/contests/add/?$', ContestAdminCreateView.as_view(),
+    url(r'^admin/contests/add/?$',
+        require_site_admin(ContestAdminCreateView.as_view()),
         name='localtv_admin_contests_create'),
     url(r'^admin/contests/edit/(?P<pk>[\d]+)/?$',
-        ContestAdminUpdateView.as_view(),
+        require_site_admin(ContestAdminUpdateView.as_view()),
         name='localtv_admin_contests_update'),
     url(r'^admin/contests/delete/(?P<pk>[\d]+)/?$',
-        ContestAdminDeleteView.as_view(),
+        require_site_admin(ContestAdminDeleteView.as_view()),
         name='localtv_admin_contests_delete'),
 )
