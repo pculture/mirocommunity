@@ -45,7 +45,6 @@ class LiveSearchForm(forms.Form):
         return self.cleaned_data.get('order_by') or self.LATEST
 
     def _get_cache_key(self):
-        print 'GETTING CACHE KEY', self.cleaned_data
         return 'localtv-livesearch-%s' % (
             hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
                         ).hexdigest())
@@ -59,7 +58,6 @@ class LiveSearchForm(forms.Form):
     def get_results(self):
         cache_key = self._get_cache_key()
         results = cache.get(cache_key)
-        print 'GOT', cache_key, results
         if results is None:
             finish_by = time.time() + 20
             search_results = auto_search(self.cleaned_data['q'],
