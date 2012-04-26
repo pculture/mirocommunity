@@ -25,11 +25,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.loading import get_model
-from django.dispatch import Signal
 from django.contrib.auth.models import User
 from haystack import connections
 from haystack.query import SearchQuerySet
 
+from localtv.signals import pre_mark_as_active
 
 class DummyException(Exception):
     """

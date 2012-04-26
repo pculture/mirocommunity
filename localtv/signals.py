@@ -35,3 +35,7 @@ post_video_from_vidscraper = Signal(providing_args=["instance",
 #: TODO: Depending on what happens with submit_video, this should perhaps be
 #: moved elsewhere.
 submit_finished = Signal()
+
+# This signal is first from the mark_import_pending task, to optionally filter
+# what videos should be marked as active.
+pre_mark_as_active = Signal(providing_args=['active_set'])
