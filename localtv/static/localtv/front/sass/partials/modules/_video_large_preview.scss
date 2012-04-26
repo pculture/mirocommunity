@@ -1,7 +1,7 @@
 .video-large, .preview-large a{
 	height:360px;
 }
-.preview-large a{
+.video-large-preview a{
 	border:none;
 	background:#000;
 	display:block;
@@ -40,17 +40,22 @@
 			margin-top:-$width/2;
 			margin-left:-$width/2;
 			z-index:1337;
-			border:1px solid #000;
-			@include box-shadow(0 0 1px 0 rgba(255,255,255,.75) inset, 0 0 5px 0 rgba(0,0,0,.35));
+			@include box-shadow(0 0 0 1px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.25) inset, 0 0 5px 0 rgba(0,0,0,.35));
 			@include background(linear-gradient(top left, rgba(80,80,80,.75), rgba(0,0,0,1)));
 		}
 	}
 }
-.preview-large img{
+.video-large-preview img{
 	margin:0 auto;
 	vertical-align:middle;
 }
 
-.details-large{
+.video-large-details{
 	@extend .precontent-details;
+}
+
+.video-large-description{
+	@include margin-trailer;
+	max-height: $base-line-height * 5;
+	overflow:hidden;
 }

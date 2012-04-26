@@ -1,11 +1,15 @@
-.video-grid > .video-grid-item{
+.video-grid-item{
 	width:200px;
 	@include margin-trailer(2);
+	height:210px;
 }
 
-.video-grid > .video-grid-item > .video-header{
-	height:$base-line-height * 2;
+.video-grid-item > .video-header{
+	max-height:$base-line-height * 2;
 	overflow:hidden;
+	& > h1{
+		margin-bottom:0;
+	}
 }
 
 .timestamp-link, .byline{
