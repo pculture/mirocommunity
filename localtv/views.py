@@ -223,8 +223,6 @@ def newsletter(request):
     newsletter = NewsletterSettings.objects.get_current()
     if newsletter.status == NewsletterSettings.DISABLED:
         raise Http404
-    elif not newsletter.site_settings.get_tier().permit_newsletter():
-        raise Http404
 
     return HttpResponse(newsletter.as_html(
             {'preview': True}), content_type='text/html')
