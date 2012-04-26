@@ -203,6 +203,9 @@ class SortHeaders:
     def __iter__(self):
         return iter(self.headers())
 
+    def __len__(self):
+        return len(self.header_defs)
+
     def _query_string(self, sort):
         """
         Creates a query string from the given dictionary of

@@ -23,7 +23,7 @@ import urlparse
 
 import django.template.defaultfilters
 from django import forms
-from django.forms.formsets import BaseFormSet
+from django.forms.formsets import BaseFormSet, DELETION_FIELD_NAME
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
     construct_instance
 from django.contrib.auth.models import User
@@ -459,8 +459,72 @@ class BulkEditVideoForm(EditVideoForm):
         self.instance.tags = self.cleaned_data['tags']
         return super(BulkEditVideoForm, self).save(*args, **kwargs)
 
+
+class BulkEditVideoFormSet(BaseModelFormSet):
+
+    def save_new_objects(self, commit):
+        return []
+
+    def clean(self):
+        BaseModelFormSet.clean(self)
+
+        if any(self.errors):
+            # don't bother doing anything if the form isn't valid
+            return
+
+        for form in list(self.deleted_forms):
+            form.cleaned_data[DELETION_FIELD_NAME] = False
+            form.instance.status = models.Video.REJECTED
+            form.instance.save()
+        bulk_edits = self.extra_forms[0].cleaned_data
+        for key in list(bulk_edits.keys()): # get the list because we'll be
+                                            # changing the dictionary
+            if not bulk_edits[key]:
+                del bulk_edits[key]
+        bulk_action = self.data.get('bulk_action', '')
+        if bulk_action:
+            bulk_edits['action'] = bulk_action
+        if bulk_edits:
+            for form in self.initial_forms:
+                if not form.cleaned_data['BULK']:
+                    continue
+                for key, value in bulk_edits.items():
+                    if key == 'action': # do something to the video
+                        method = getattr(self, 'action_%s' % value)
+                        method(form)
+                    elif key == 'tags':
+                        form.cleaned_data[key] = value
+                    elif key == 'categories':
+                        # categories append, not replace
+                        form.cleaned_data[key] = (
+                            list(form.cleaned_data[key]) +
+                            list(value))
+                    elif key == 'authors':
+                        form.cleaned_data[key] = value
+                    else:
+                        setattr(form.instance, key, value)
+
+        self.can_delete = False
+
+    def action_delete(self, form):
+        form.instance.status = models.Video.REJECTED
+
+    def action_approve(self, form):
+        form.instance.status = models.Video.ACTIVE
+
+    def action_unapprove(self, form):
+        form.instance.status = models.Video.UNAPPROVED
+
+    def action_feature(self, form):
+        form.instance.status = models.Video.ACTIVE
+        form.instance.last_featured = datetime.datetime.now()
+
+    def action_unfeature(self, form):
+        form.instance.last_featured = None
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
+                                    formset=BulkEditVideoFormSet,
                                     can_delete=True,
                                     extra=1)
 
