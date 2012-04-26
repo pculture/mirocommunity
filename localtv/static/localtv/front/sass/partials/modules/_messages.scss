@@ -3,4 +3,8 @@
 	border:1px solid;
 	@include border-radius(5px);
 	@include margin-trailer;
+	& > :last-child{
+		// prevent excessive space at the end of a message
+		margin-bottom:0;
+	}
 }

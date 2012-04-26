@@ -177,7 +177,7 @@ form { margin-bottom: 18px; }
 @media screen and (max-width:740px) { .grid-item { width: 50%; } }
 .replaced, .search-icon { text-indent: -9999px; display: block; }
 
-.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1335218763'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
+.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1335404649'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
 
 ul, ol { padding-left: 1.5em; }
 
@@ -193,11 +193,12 @@ ol > li { list-style-type: decimal; }
 
 .media-item { float: left; margin-left: 40px; margin-bottom: 18px; }
 
-.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1335218763') center center no-repeat; }
+.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1335404649') center center no-repeat; }
 
 .media-grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
 .message { border: 1px solid; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; margin-bottom: 18px; }
+.message > :last-child { margin-bottom: 0; }
 
 #navigation { *zoom: 1; -moz-border-radius: 3px; -webkit-border-radius: 3px; -o-border-radius: 3px; -ms-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; margin-right: 20px; float: right; }
 #navigation:after { content: ""; display: table; clear: both; }
@@ -463,7 +464,7 @@ input:focus, textarea:focus { border-color: #344f6d; -moz-box-shadow: 0 0 6px 0 
 .message.warning { background-color: #fffcc5; border-color: #cfcc8f; text: #2c2a00; }
 
 /* precontent */
-.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1335218763'); }
+.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1335404649'); }
 
 .precontent a { color: #66ccff; }
 .precontent a:hover { border-color: #666; }
