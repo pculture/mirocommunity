@@ -10,7 +10,7 @@
 	bottom:0;
 	right:0;
 	@include margin-trailer(.5);
-	z-index:9999;
+	z-index:1337;
 	@extend .padded-half;
 	@include clearfix;
 	@include border-radius(5px);

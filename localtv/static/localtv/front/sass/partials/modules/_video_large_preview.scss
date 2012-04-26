@@ -1,7 +1,7 @@
 .video-large, .preview-large a{
 	height:360px;
 }
-.preview-large a{
+.video-large-preview a{
 	border:none;
 	background:#000;
 	display:block;
@@ -45,11 +45,17 @@
 		}
 	}
 }
-.preview-large img{
+.video-large-preview img{
 	margin:0 auto;
 	vertical-align:middle;
 }
 
-.details-large{
+.video-large-details{
 	@extend .precontent-details;
+}
+
+.video-large-description{
+	@include margin-trailer;
+	max-height: $base-line-height * 5;
+	overflow:hidden;
 }
