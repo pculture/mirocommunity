@@ -44,6 +44,7 @@ class SubmitPermissionsTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         url = reverse('localtv_submit_video')
+        self.site_settings = SiteSettings.objects.get()
         self.anonymous_request = self.factory.get(url)
         self.user_request = self.factory.get(
             url, user=User.objects.get(username='user'))
