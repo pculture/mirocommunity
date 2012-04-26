@@ -30,11 +30,6 @@ not an admin. If you are an admin, we show some special links:
     <li id="admin_settings"><a href="{% url localtv_admin_settings %}">Settings</a></li>
     <li id="admin_users"><a href="{% url localtv_admin_users %}">Users</a></li>
     <li id="admin_comments"><a href="{% url comments-moderation-queue %}">Comments</a></li>
-
-        {% if site_settings.should_show_account_level %}
-        <li id="admin_account"><a class="account" href="{% url localtv_admin_tier %}"><span>Account</span></a></li>
-        {% endif %}
-
     {% endif %}
 
 {% comment %}
