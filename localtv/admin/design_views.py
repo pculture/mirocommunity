@@ -28,12 +28,12 @@ from localtv.models import SiteSettings, WidgetSettings, NewsletterSettings
 
 @require_site_admin
 @csrf_protect
-def edit_settings(request):
+def edit_settings(request, form_class=forms.EditSettingsForm):
     site_settings = SiteSettings.objects.get_current()
-    form = forms.EditSettingsForm(instance=site_settings)
+    form = form_class(instance=site_settings)
 
     if request.method == 'POST':
-        form = forms.EditSettingsForm(request.POST, request.FILES,
+        form = form_class(request.POST, request.FILES,
                                       instance=site_settings)
         if form.is_valid():
             site_settings = form.save()
