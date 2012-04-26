@@ -145,6 +145,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 									{{ video }} is competing in <a href="{{ url }}">{{ contest }}</a>.
 								{% endblocktrans %}
 							</p>
+							{% if user.is_authenticated %}
+								{% url "api_dispatch_detail" api_name="v1" resource_name="contestvideo" pk=contestvideo.pk as contestvideo_detail_uri %}
+								{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contestvote_list_uri %}
+								{% url "api_dispatch_detail" api_name="v1" resource_name="user" pk=user.pk as user_detail_uri %}
+								<div class="video-contest-vote-widget"
+									data-contestvideo-detail-uri="{{ contestvideo_detail_uri }}"
+									data-contestvote-list-uri="{{ contestvote_list_uri }}"
+									data-user-detail-uri="{{ user_detail_uri }}"
+									data-user="{{ user.pk }}"
+									data-contestvideo="{{ contestvideo.pk }}"
+									data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}"
+									>
+									<div class="message warning">You must have javascript enabled to vote in a contest.</div>
+								</div>
+							{% else %}
+								<div class="video-contest-vote-widget-fake">
+									<a href="{{ settings.LOGIN_URL }}" class="button">{% trans "Vote Up" %}</a>
+									{% if contest.allow_downvotes %}
+										<a href="{{ settings.LOGIN_URL }}" class="button">{% trans "Vote Down" %}</a>
+									{% endif %}
+								</div>
+							{% endif %}
 						</div>{# /.pod-content #}
 					</section>{# /.pod.video-contest #}
 					{% endwith %}
