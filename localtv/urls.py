@@ -23,7 +23,7 @@ from localtv.api.v1 import api as api_v1
 from localtv.listing.views import (BrowseView, CompatibleBrowseView,
                                    SiteListView, CategoryVideoSearchView)
 from localtv.models import Category
-from localtv.views import IndexView
+from localtv.views import IndexView, VideoView
 
 # "Base" patterns
 urlpatterns = patterns(
@@ -34,8 +34,9 @@ urlpatterns = patterns(
     url(r'^videos/$',
          BrowseView.as_view(template_name='localtv/videos.html'),
          name='localtv_browse'),
-    url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
-                    name='localtv_view_video'),
+    url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
+        VideoView.as_view(),
+        name='localtv_view_video'),
     url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
     url(r'^api/', include(api_v1.urls)))
 
@@ -87,6 +88,7 @@ urlpatterns += patterns(
     url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
