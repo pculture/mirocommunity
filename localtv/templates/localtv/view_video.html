@@ -161,9 +161,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 								</div>
 							{% else %}
 								<div class="video-contest-vote-widget-fake">
-									<a href="{{ settings.LOGIN_URL }}" class="button">{% trans "Vote Up" %}</a>
+									<a href="{{ settings.LOGIN_URL }}?next={{ request.path }}" class="button">{% trans "Vote Up" %}</a>
 									{% if contest.allow_downvotes %}
-										<a href="{{ settings.LOGIN_URL }}" class="button">{% trans "Vote Down" %}</a>
+										<a href="{{ settings.LOGIN_URL }}?next={{ request.path }}" class="button">{% trans "Vote Down" %}</a>
 									{% endif %}
 								</div>
 							{% endif %}
