@@ -395,9 +395,10 @@ ol > li { list-style-type: decimal; }
 
 .video-summary .details { color: #999; margin-top: 9px; }
 
-.video-grid > .video-grid-item { width: 200px; margin-bottom: 36px; }
+.video-grid-item { width: 200px; margin-bottom: 36px; height: 210px; }
 
-.video-grid > .video-grid-item > .video-header { height: 36px; overflow: hidden; }
+.video-grid-item > .video-header { max-height: 36px; overflow: hidden; }
+.video-grid-item > .video-header > h1 { margin-bottom: 0; }
 
 .timestamp-link, .byline { font-size: 11px; line-height: 18px; margin-bottom: 0; }
 
