@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
 import datetime
 
 from django.contrib import comments
@@ -35,9 +34,6 @@ def index(request):
     total_count = Video.objects.filter(
         status=Video.ACTIVE,
         site=site_settings.site).count()
-    #total_count = localtv.tiers.current_videos_that_count_toward_limit().count()
-    #percent_videos_used = math.floor(
-    #    (100.0 * total_count) / site_settings.get_tier().videos_limit())
     videos_this_week_count = Video.objects.filter(
         status=Video.ACTIVE,
         when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
@@ -45,7 +41,6 @@ def index(request):
     return render_to_response(
         'localtv/admin/index.html',
         {'total_count': total_count,
-         #'percent_videos_used': percent_videos_used,
          'unreviewed_count': Video.objects.filter(
                 status=Video.UNAPPROVED,
                 site=site_settings.site).count(),
