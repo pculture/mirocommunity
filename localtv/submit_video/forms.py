@@ -147,10 +147,10 @@ class SubmitVideoFormBase(forms.ModelForm):
         instance = super(SubmitVideoFormBase, self).save(commit=False)
 
         if self.request.user_is_admin():
-            site_settings = SiteSettings.objects.get_current()
-            if (not site_settings.enforce_tiers() or
-                site_settings.get_tier().remaining_videos() >= 1):
-                instance.status = Video.ACTIVE
+            # site_settings = SiteSettings.objects.get_current()
+            # if (not site_settings.enforce_tiers() or
+            #     site_settings.get_tier().remaining_videos() >= 1):
+            instance.status = Video.ACTIVE
 
         if 'website_url' in self.fields:
             # Then this was a form which required a website_url - i.e. a direct
