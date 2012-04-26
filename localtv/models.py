@@ -255,7 +255,6 @@ class SiteSettings(Thumbnailable):
        actually can though)
      - submission_requires_login: whether or not users need to log in to submit
        videos.
-     - tier_name: A short string representing the class of site. This relates to paid extras.
     """
     DISABLED = 0
     ACTIVE = 1
@@ -324,7 +323,7 @@ class SiteSettings(Thumbnailable):
 
     def should_show_dashboard(self):
         '''On /admin/, most sites will see a dashboard that gives them
-        information at a glance about the site, including its tier status.
+        information at a glance about the site.
 
         Some sites want to disable that, which they can do by setting the
         LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
@@ -334,17 +333,6 @@ class SiteSettings(Thumbnailable):
         will be an empty page with a META REFRESH that points to
         /admin/approve_reject/.'''
         return lsettings.SHOW_ADMIN_DASHBOARD
-
-    def should_show_account_level(self):
-        '''On /admin/upgrade/, most sites will see an info page that
-        shows how to change their account level (AKA site tier).
-
-        Some sites want to disable that, which they can do by setting the
-        LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL variable to False.
-
-        This simply removes the link from the sidebar; if you visit the
-        /admin/upgrade/ page, it renders as usual.'''
-        return lsettings.SHOW_ADMIN_ACCOUNT_LEVEL
 
 
 class NewsletterSettings(models.Model):

@@ -43,20 +43,12 @@ class SubmitPermissionsTestCase(BaseTestCase):
     fixtures = ['users']
     def setUp(self):
         BaseTestCase.setUp(self)
-        self.site_settings = SiteSettings.objects.get()
-        self.site_settings.tier_name = 'max'
-        self.site_settings.save()
         url = reverse('localtv_submit_video')
         self.anonymous_request = self.factory.get(url)
         self.user_request = self.factory.get(
             url, user=User.objects.get(username='user'))
         self.admin_request = self.factory.get(
             url, user=User.objects.get(username='admin'))
-
-    def tearDown(self):
-        BaseTestCase.tearDown(self)
-        self.site_settings.tier_name = 'basic'
-        self.site_settings.save()
 
     def test_all_permitted(self):
         """
