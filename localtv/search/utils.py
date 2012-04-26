@@ -37,7 +37,9 @@ from localtv.search.forms import SmartSearchForm, FilterForm
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
+
 EMPTY = object()
+
 
 def _q_for_queryset(queryset, field, values):
     q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
@@ -64,6 +66,7 @@ def _q_for_queryset(queryset, field, values):
                   for value in values]
             return reduce(operator.or_, qs)
         return q_class(**{'%s__in' % field: values})
+
 
 class NormalizedVideoList(object):
     """
