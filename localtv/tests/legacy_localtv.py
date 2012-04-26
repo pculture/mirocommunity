@@ -711,6 +711,7 @@ class ViewTestCase(BaseTestCase):
             watched.timestamp = datetime.datetime.now() # so that they're
                                                         # recent
             watched.save()
+        self._rebuild_index()
 
         video = Video.objects.get(pk=20)
 
@@ -720,9 +721,7 @@ class ViewTestCase(BaseTestCase):
         self.assertTrue('localtv/view_video.html' in [
                 template.name for template in response.templates])
         self.assertEqual(response.context['current_video'], video)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings)))
+        self.assertTrue('popular_videos' in response.context)
 
     def test_view_video_admins_see_rejected(self):
         """
@@ -749,8 +748,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_view_video',
                                  args=[20, 'wrong-slug']))
-        # 301 is a permanent redirect
-        self.assertStatusCodeEquals(response, 301)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
@@ -758,7 +756,7 @@ class ViewTestCase(BaseTestCase):
 
         response = c.get(reverse('localtv_view_video',
                                  args=[20, '']))
-        self.assertStatusCodeEquals(response, 301)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
@@ -766,9 +764,8 @@ class ViewTestCase(BaseTestCase):
 
     def test_view_video_category(self):
         """
-        If the video has categories, the view_video view should include a
-        category in the template and those videos should be shown in place of
-        the regular popular videos.
+        Mostly just checks that we're in the right place. Some additional
+        checks were removed since they weren't checking in a repeatable manner.
         """
         video = Video.objects.get(pk=20)
         video.categories = [2]
@@ -778,15 +775,11 @@ class ViewTestCase(BaseTestCase):
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 2)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings).filter(categories__pk=2)))
 
     def test_view_video_category_referer(self):
         """
         If the view_video referrer was a category page, that category should be
-        included in the template and those videos should be shown in place of
-        the regular popular videos.
+        the one included in the template.
         """
         video = Video.objects.get(pk=20)
         video.categories = [1, 2]
@@ -801,9 +794,6 @@ class ViewTestCase(BaseTestCase):
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 1)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings).filter(categories__pk=1)))
 
     def assertSearchResults(self, response, expected_sqs,
                             expected_object_count, expected_page_num):

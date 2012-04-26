@@ -208,6 +208,39 @@ class BaseTestCase(TestCase):
                 response.status_code, status_code,
                 response.content or response.get('Location', '')))
 
+    def assertDictEqual(self, data, expected_data, msg=None):
+        errors = []
+        keys = set(data)
+        expected_keys = set(expected_data)
+
+        missing_keys = expected_keys - keys
+        if missing_keys:
+            errors.append('Expected keys missing')
+            errors.append('=====================')
+            errors.extend(('{0}: {1}'.format(key, expected_data[key])
+                           for key in missing_keys))
+            errors.append('')
+
+        added_keys = keys - expected_keys
+        if added_keys:
+            errors.append('Unexpected keys found')
+            errors.append('=====================')
+            errors.extend(('{0}: {1}'.format(key, data[key])
+                           for key in added_keys))
+            errors.append('')
+
+        shared_keys = keys & expected_keys
+        if shared_keys:
+            for key in shared_keys:
+                if data[key] != expected_data[key]:
+                    errors.append('value for {0} not equal:\n'
+                                  '{1!r} != {2!r}'.format(
+                                  key, data[key], expected_data[key]))
+
+        if errors:
+            errors = ['Dictionaries not equal', ''] + errors
+            raise AssertionError('\n'.join(errors))
+
 
 def _have_internet_connection():
     global HAVE_INTERNET_CONNECTION
