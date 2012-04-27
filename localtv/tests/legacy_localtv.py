@@ -23,8 +23,6 @@ import shutil
 import tempfile
 from urllib import quote_plus, urlencode
 
-import mock
-
 import feedparser
 import vidscraper
 

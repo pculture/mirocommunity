@@ -23,15 +23,6 @@ import os
 import os.path
 import logging
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
-
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage

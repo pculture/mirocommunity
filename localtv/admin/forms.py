@@ -20,7 +20,6 @@ import re
 import os.path
 import urlparse
 
-import django.template.defaultfilters
 from django import forms
 from django.forms.formsets import BaseFormSet, DELETION_FIELD_NAME
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
