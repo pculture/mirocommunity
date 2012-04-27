@@ -36,7 +36,6 @@ CommentForm = get_form()
 
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.sites.models import Site
-from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
 from django.core.urlresolvers import reverse

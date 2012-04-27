@@ -115,7 +115,6 @@ def bulk_edit(request):
 
     sort = headers.order_by()
     if sort.endswith('source'):
-        reverse = sort.startswith('-')
         videos = videos.extra(select={
                 'name_lower':'LOWER(localtv_video.name)'})
         videos = videos.order_by(sort.replace('source', 'calculated_source_type'))

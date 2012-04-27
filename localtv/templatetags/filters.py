@@ -17,12 +17,12 @@
 
 import datetime
 import re
-import lxml.html
 
-from bs4 import BeautifulSoup, Comment, Tag
+from bs4 import BeautifulSoup, Comment
 from django.template import Library
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
+import lxml.html
 
 
 register = Library()

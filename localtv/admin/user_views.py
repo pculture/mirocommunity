@@ -18,7 +18,7 @@
 from django.db.models import Count, Q
 from django.conf import settings
 from django.contrib.auth.models import User, UNUSABLE_PASSWORD
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
@@ -57,7 +57,7 @@ def users(request):
     except ValueError:
         return HttpResponseBadRequest('Not a page number')
     except EmptyPage:
-        page = user_paginator.page(video_paginator.num_pages)
+        page = user_paginator.page(user_paginator.num_pages)
 
     formset = forms.AuthorFormSet(queryset=page.object_list)
     add_user_form = forms.AuthorForm()

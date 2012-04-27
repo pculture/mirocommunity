@@ -18,7 +18,6 @@
 import urlparse
 
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.conf import settings

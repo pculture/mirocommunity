@@ -18,7 +18,6 @@
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponseRedirect
 
-from localtv import models
 
 def _make_safe(decorator, original):
     """
@@ -28,6 +27,7 @@ def _make_safe(decorator, original):
     decorator.__dict__ = original.__dict__
     decorator.__doc__ = original.__doc__
     return decorator
+
 
 def request_passes_test(test_func):
     def decorate(view_func):
@@ -43,6 +43,7 @@ def request_passes_test(test_func):
 
 
 require_site_admin = request_passes_test(lambda request: request.user_is_admin())
+
 
 def referrer_redirect(view_func):
     def new_view_func(request, *args, **kwargs):

@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.views.decorators.vary import vary_on_headers
 from django.views.generic import TemplateView, DetailView
 
 import localtv.settings
@@ -241,4 +239,3 @@ def newsletter(request):
 
     return HttpResponse(newsletter.as_html(
             {'preview': True}), content_type='text/html')
-

@@ -17,15 +17,14 @@
 
 from django import template
 from django.contrib import comments
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 
-Comment = comments.get_model()
 
+Comment = comments.get_model()
 register = template.Library()
 
-class AuthorCommentsNode(template.Node):
 
+class AuthorCommentsNode(template.Node):
     def __init__(self, obj, as_varname):
         self.obj = obj
         self.as_varname = as_varname
@@ -37,13 +36,14 @@ class AuthorCommentsNode(template.Node):
                                         user=obj.pk).reverse()
         return ''
 
+
 @register.tag('get_author_comments')
 def get_author_comments(parser, token):
     tokens = validate_tag_tokens(token)
     return AuthorCommentsNode(template.Variable(tokens[2]), tokens[4])
 
-class AuthorCommentCountNode(template.Node):
 
+class AuthorCommentCountNode(template.Node):
     def __init__(self, obj, as_varname):
         self.obj = obj
         self.as_varname = as_varname
@@ -55,10 +55,12 @@ class AuthorCommentCountNode(template.Node):
                                         user=obj.pk).count()
         return ''
 
+
 @register.tag('get_author_comment_count')
 def get_author_comment_count(parser, token):
     tokens = validate_tag_tokens(token)
     return AuthorCommentCountNode(template.Variable(tokens[2]), tokens[4])
+
 
 def validate_tag_tokens(token):
     tokens = token.split_contents()

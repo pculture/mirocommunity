@@ -17,7 +17,6 @@
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Count
 from tastypie import fields
 from tastypie.api import Api
 from tastypie.resources import ModelResource
