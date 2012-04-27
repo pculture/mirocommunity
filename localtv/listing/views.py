@@ -23,20 +23,46 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, Page
 from django.http import Http404
 from django.views.generic import ListView
+from django.views.generic.edit import FormMixin
 from django.conf import settings
 from haystack.query import SearchQuerySet
 from voting.models import Vote
 
 import localtv.settings
 from localtv.models import Video, Category
-from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import (SortFilterViewMixin, NormalizedVideoList,
-                                  ApprovedSort)
+from localtv.search.forms import SortFilterForm
+from localtv.search.utils import ApprovedSort
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
+
+
+class SortFilterMixin(FormMixin):
+    """
+    Views can define default sorts and filters which can be overridden by GET
+    parameters.
+
+    """
+    #: The name of a filter which will be provided as part of the url arguments
+    #: rather than as a GET parameter.
+    url_filter = None
+
+    #: The kwarg expected from the urlpattern for this view if
+    #: :attr:`url_filter` is not ``None``. Default: 'pk'.
+    url_filter_kwarg = 'pk'
+
+    form_class = SortFilterForm
+
+    def get_form_kwargs(self):
+        data = self.request.GET.copy()
+        if self.url_filter is not None:
+            data[self.url_filter] = [self.kwargs[self.url_filter_kwarg]]
+        return {
+            'initial': self.get_initial(),
+            'data': data
+        }
 
 
 class BrowseView(ListView, SortFilterViewMixin):
