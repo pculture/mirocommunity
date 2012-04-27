@@ -27,7 +27,7 @@ import vidscraper
 from vidscraper.errors import CantIdentifyUrl
 
 from localtv.exceptions import CannotOpenImageUrl
-from localtv.models import Video, SiteSettings
+from localtv.models import Video
 from localtv.templatetags.filters import sanitize
 
 
