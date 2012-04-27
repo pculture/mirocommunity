@@ -26,9 +26,6 @@ ENABLE_ORIGINAL_VIDEO = not getattr(settings,
                                     None)
 ENABLE_CHANGE_STAMPS = getattr(settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
 VOTING_ENABLED = 'voting' in settings.INSTALLED_APPS
-USE_ZENDESK = getattr(settings, 'LOCALTV_USE_ZENDESK', False)
-DISABLE_TIERS_ENFORCEMENT = getattr(settings,
-                                    'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
 SHOW_ADMIN_DASHBOARD = getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 SHOW_ADMIN_ACCOUNT_LEVEL = getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL',
                                    True)

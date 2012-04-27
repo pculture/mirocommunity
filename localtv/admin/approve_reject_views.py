@@ -91,12 +91,6 @@ def approve_video(request):
         id=request.GET['video_id'],
         site=site_settings.site)
 
-    # If the site would exceed its video allotment, then fail
-    # with a HTTP 402 and a clear message about why.
-    if (SiteSettings.enforce_tiers() and
-        site_settings.get_tier().remaining_videos() < 1):
-        return HttpResponse(content="You are over the video limit. You will need to upgrade to approve that video.", status=402)
-
     current_video.status = Video.ACTIVE
     current_video.when_approved = datetime.datetime.now()
 
@@ -142,9 +136,6 @@ def feature_video(request):
     current_video = get_object_or_404(
         Video, pk=video_id, site=site_settings.site)
     if not current_video.status == Video.ACTIVE:
-        if (SiteSettings.enforce_tiers() and
-            site_settings.get_tier().remaining_videos() < 1):
-            return HttpResponse(content="You are over the video limit. You will need to upgrade to feature that video.", status=402)
         current_video.status = Video.ACTIVE
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
@@ -197,16 +188,6 @@ def approve_all(request):
     except EmptyPage:
         return HttpResponseBadRequest(
             'Page number request exceeded available pages')
-
-    if SiteSettings.enforce_tiers():
-        tier_remaining_videos = site_settings.get_tier().remaining_videos()
-        if len(page.object_list) > tier_remaining_videos:
-            remaining = str(tier_remaining_videos)
-            need = str(len(page.object_list))
-            return HttpResponse(content=(
-                    ("You are trying to approve %s videos at a time. " % need) +
-                    ("However, you can approve only %s more videos under your video limit. " % remaining) +
-                    ("Please upgrade your account to increase your limit, or unapprove some older videos to make space for newer ones.")), status=402)
 
     for video in page.object_list:
         video.status = Video.ACTIVE

@@ -28,7 +28,7 @@ from django.test.client import RequestFactory
 from haystack import connections
 from tagging.models import Tag
 
-from localtv.models import Video, Watch, Category, Feed, SavedSearch
+from localtv import models
 from localtv.middleware import UserIsAdminMiddleware
 
 
@@ -58,7 +58,8 @@ class BaseTestCase(TestCase):
     def _update_index(self):
         """Updates the search index."""
         backend = connections['default'].get_backend()
-        index = connections['default'].get_unified_index().get_index(Video)
+        index = connections['default'].get_unified_index().get_index(
+            models.Video)
         backend.update(index, index.index_queryset())
 
     def _rebuild_index(self):
@@ -69,8 +70,9 @@ class BaseTestCase(TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
         self.factory = FakeRequestFactory()
+        models.SiteSettings.objects.clear_cache()
 
-    def create_video(self, name='Test.', status=Video.ACTIVE, site_id=1,
+    def create_video(self, name='Test.', status=models.Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
                      update_index=True, **kwargs):
         """
@@ -90,7 +92,8 @@ class BaseTestCase(TestCase):
         ``categories`` and ``authors``, respectively.
 
         """
-        video = Video(name=name, status=status, site_id=site_id, **kwargs)
+        video = models.Video(name=name, status=status, site_id=site_id,
+                             **kwargs)
         video.save(update_index=update_index)
 
         for i in xrange(watches):
@@ -107,8 +110,9 @@ class BaseTestCase(TestCase):
 
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        if update_index and status == Video.ACTIVE and site_id == 1:
-            index = connections['default'].get_unified_index().get_index(Video)
+        if update_index and status == models.Video.ACTIVE and site_id == 1:
+            index = connections['default'].get_unified_index().get_index(
+                models.Video)
             index._enqueue_update(video)
         return video
 
@@ -126,7 +130,7 @@ class BaseTestCase(TestCase):
         """
         if 'slug' not in kwargs:
             kwargs['slug'] = slugify(kwargs.get('name', ''))
-        return Category.objects.create(site_id=site_id, **kwargs)
+        return models.Category.objects.create(site_id=site_id, **kwargs)
 
     def create_user(self, **kwargs):
         """
@@ -153,30 +157,30 @@ class BaseTestCase(TestCase):
         :param days: Number of days to place the :class:`Watch` in the past.
 
         """
-        watch = Watch.objects.create(video=video, ip_address=ip_address)
+        watch = models.Watch.objects.create(video=video, ip_address=ip_address)
         watch.timestamp = datetime.now() - timedelta(days)
         watch.save()
         return watch
 
     def create_feed(self, feed_url, name=None, description='Lorem ipsum',
-                    last_updated=None, status=Feed.ACTIVE, site_id=1,
+                    last_updated=None, status=models.Feed.ACTIVE, site_id=1,
                     **kwargs):
         if name is None:
             name = feed_url
         if last_updated is None:
             last_updated = datetime.now()
-        return Feed.objects.create(feed_url=feed_url,
-                                   name=name,
-                                   description=description,
-                                   last_updated=last_updated,
-                                   status=status,
-                                   site_id=site_id,
-                                   **kwargs)
-
-    def create_search(self, query_string, site_id=1, **kwargs):
-        return SavedSearch.objects.create(query_string=query_string,
+        return models.Feed.objects.create(feed_url=feed_url,
+                                          name=name,
+                                          description=description,
+                                          last_updated=last_updated,
+                                          status=status,
                                           site_id=site_id,
                                           **kwargs)
+
+    def create_search(self, query_string, site_id=1, **kwargs):
+        return models.SavedSearch.objects.create(query_string=query_string,
+                                                 site_id=site_id,
+                                                 **kwargs)
 
     def create_site(self, domain='example.com', name=None):
         if name is None:

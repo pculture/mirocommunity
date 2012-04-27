@@ -22,7 +22,7 @@ import urlparse
 
 import django.template.defaultfilters
 from django import forms
-from django.forms.formsets import BaseFormSet
+from django.forms.formsets import BaseFormSet, DELETION_FIELD_NAME
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
     construct_instance
 from django.contrib.auth.models import User
@@ -42,7 +42,6 @@ from tagging.forms import TagField
 import localtv.settings
 from localtv import models
 from localtv import utils
-import localtv.tiers
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
@@ -459,8 +458,72 @@ class BulkEditVideoForm(EditVideoForm):
         self.instance.tags = self.cleaned_data['tags']
         return super(BulkEditVideoForm, self).save(*args, **kwargs)
 
+
+class BulkEditVideoFormSet(BaseModelFormSet):
+
+    def save_new_objects(self, commit):
+        return []
+
+    def clean(self):
+        BaseModelFormSet.clean(self)
+
+        if any(self.errors):
+            # don't bother doing anything if the form isn't valid
+            return
+
+        for form in list(self.deleted_forms):
+            form.cleaned_data[DELETION_FIELD_NAME] = False
+            form.instance.status = models.Video.REJECTED
+            form.instance.save()
+        bulk_edits = self.extra_forms[0].cleaned_data
+        for key in list(bulk_edits.keys()): # get the list because we'll be
+                                            # changing the dictionary
+            if not bulk_edits[key]:
+                del bulk_edits[key]
+        bulk_action = self.data.get('bulk_action', '')
+        if bulk_action:
+            bulk_edits['action'] = bulk_action
+        if bulk_edits:
+            for form in self.initial_forms:
+                if not form.cleaned_data['BULK']:
+                    continue
+                for key, value in bulk_edits.items():
+                    if key == 'action': # do something to the video
+                        method = getattr(self, 'action_%s' % value)
+                        method(form)
+                    elif key == 'tags':
+                        form.cleaned_data[key] = value
+                    elif key == 'categories':
+                        # categories append, not replace
+                        form.cleaned_data[key] = (
+                            list(form.cleaned_data[key]) +
+                            list(value))
+                    elif key == 'authors':
+                        form.cleaned_data[key] = value
+                    else:
+                        setattr(form.instance, key, value)
+
+        self.can_delete = False
+
+    def action_delete(self, form):
+        form.instance.status = models.Video.REJECTED
+
+    def action_approve(self, form):
+        form.instance.status = models.Video.ACTIVE
+
+    def action_unapprove(self, form):
+        form.instance.status = models.Video.UNAPPROVED
+
+    def action_feature(self, form):
+        form.instance.status = models.Video.ACTIVE
+        form.instance.last_featured = datetime.datetime.now()
+
+    def action_unfeature(self, form):
+        form.instance.last_featured = None
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
+                                    formset=BulkEditVideoFormSet,
                                     can_delete=True,
                                     extra=1)
 
@@ -514,48 +577,13 @@ class EditSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.SiteSettings
-        exclude = ['site', 'status', 'admins', 'tier_name', 'hide_get_started']
+        exclude = ['site', 'status', 'admins', 'hide_get_started']
 
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if (not models.SiteSettings.enforce_tiers()
-            or localtv.tiers.Tier.get().permit_custom_css()):
-            pass # Sweet, CSS is permitted.
-        else:
-            # Uh-oh: custom CSS is not permitted!
-            #
-            # To handle only letting certain paid users edit CSS,
-            # we do two things.
-            #
-            # 1. Cosmetically, we set the CSS editing box's CSS class
-            # to be 'hidden'. (We have some CSS that makes it not show
-            # up.)
-            css_field = self.fields['css']
-            css_field.label += ' (upgrade to enable this form field)'
-            css_field.widget.attrs['readonly'] = True
-            #
-            # 2. In validation, we make sure that changing the CSS is
-            # rejected as invalid if the site does not have permission
-            # to do that.
-
-    def clean_css(self):
-        css = self.cleaned_data.get('css')
-        # Does thes SiteSettings permit CSS modifications? If so,
-        # return the data the user inputted.
-        if (not models.SiteSettings.enforce_tiers() or
-            localtv.tiers.Tier.get().permit_custom_css()):
-            return css # no questions asked
-
-        # We permit the value if it's the same as self.instance has:
-        if self.instance.css == css:
-            return css
-
-        # Otherwise, reject the change.
-        self.data['css'] = self.instance.css
-        raise ValidationError("To edit CSS for your site, you have to upgrade.")
 
     def clean_logo(self):
         logo = self.cleaned_data.get('logo')
@@ -936,57 +964,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
             for field_name in ['name', 'logo', 'location',
                                'description', 'website']:
                 del self.fields[field_name]
-        ## Add a note to the 'role' help text indicating how many admins
-        ## are permitted with this kind of account.
-        tier = localtv.tiers.Tier.get()
-        if tier.admins_limit() is not None:
-            message = 'With a %s, you may have %d administrator%s.' % (
-                models.SiteSettings.objects.get_current().get_tier_name_display(),
-                tier.admins_limit(),
-                django.template.defaultfilters.pluralize(tier.admins_limit()))
-            self.fields['role'].help_text = message
 
-    def clean_role(self):
-        if models.SiteSettings.enforce_tiers():
-            future_role = self.cleaned_data['role']
-
-            looks_good = self._validate_role_with_tiers_enforcement(
-                future_role)
-            if not looks_good:
-                permitted_admins = localtv.tiers.Tier.get().admins_limit()
-                raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
-                    permitted_admins,
-                    django.template.defaultfilters.pluralize(permitted_admins)))
-
-        return self.cleaned_data['role']
-
-    def _validate_role_with_tiers_enforcement(self, future_role):
-        # If the user tried to create an admin, but the tier does not
-        # permit creating another admin, raise an error.
-        permitted_admins = localtv.tiers.Tier.get().admins_limit()
-
-        # Some tiers permit an unbounded number of admins. Then, anything goes.
-        if permitted_admins is None:
-            return True
-
-        # All non-admin values are permitted
-        if future_role !='admin':
-            return True
-
-        if self.instance and self.site_settings.user_is_admin(
-            self.instance):
-            return True # all role values permitted if you're already an admin
-
-        # Okay, so now we know we are trying to make someone an admin in a
-        # tier where admins are limited.
-        #
-        # The question becomes: is there room for one more?
-        num_admins = localtv.tiers.number_of_admins_including_superuser()
-        if (num_admins + 1) <= permitted_admins:
-            return True
-
-        # Otherwise, gotta say no.
-        return False
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:

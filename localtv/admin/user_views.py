@@ -37,7 +37,8 @@ def _filter_just_humans():
 
 @require_site_admin
 @csrf_protect
-def users(request):
+def users(request, formset_class=forms.AuthorFormSet,
+          form_class=forms.AuthorForm):
     headers = SortHeaders(request, (
             ('Username', 'username'),
             ('Email', None),
@@ -59,16 +60,16 @@ def users(request):
     except EmptyPage:
         page = user_paginator.page(user_paginator.num_pages)
 
-    formset = forms.AuthorFormSet(queryset=page.object_list)
-    add_user_form = forms.AuthorForm()
+    formset = formset_class(queryset=page.object_list)
+    add_user_form = form_class()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
-            add_user_form = forms.AuthorForm(request.POST, request.FILES)
+            add_user_form = form_class(request.POST, request.FILES)
             if add_user_form.is_valid():
                 add_user_form.save()
                 return HttpResponseRedirect(request.path)
         else:
-            formset = forms.AuthorFormSet(request.POST, request.FILES,
+            formset = formset_class(request.POST, request.FILES,
                                           queryset=User.objects.all())
             if formset.is_valid():
                 formset.save()
