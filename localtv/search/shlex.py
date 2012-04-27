@@ -19,7 +19,9 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+
 __all__ = ["shlex"]
+
 
 class shlex:
     "A lexical analyzer class for simple shell-like syntaxes."

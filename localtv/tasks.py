@@ -23,11 +23,13 @@ from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from haystack import connections
 from haystack.query import SearchQuerySet
 
+from localtv.signals import pre_mark_as_active
 
 class DummyException(Exception):
     """
@@ -44,11 +46,9 @@ except ImportError:
     LockError = DummyException
 
 
-from localtv import utils
 from localtv.exceptions import CannotOpenImageUrl
-from localtv.models import Video, Feed, SiteSettings, SavedSearch, Category
+from localtv.models import Video, Feed, SavedSearch, Category
 from localtv.settings import USE_HAYSTACK
-from localtv.tiers import Tier
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -130,36 +130,25 @@ def mark_import_pending(import_app_label, import_model, import_pk,
         # Retry raises an exception, ending task execution.
         mark_import_pending.retry()
 
-    # Otherwise the first stage is complete. Check whether they can take all the
-    # videos.
-    active_set = None
-    unapproved_set = source_import.get_videos(using).filter(
-        status=Video.PENDING)
+    # Otherwise the first stage is complete. Check whether they can take all
+    # the videos.
     if source_import.auto_approve:
-        if not SiteSettings.enforce_tiers(using=using):
-            active_set = unapproved_set
-            unapproved_set = None
-        else:
-            remaining_videos = (Tier.get(using=using).videos_limit()
-                                - Video.objects.using(using
-                                    ).filter(status=Video.ACTIVE
-                                    ).count())
-            if remaining_videos > source_import.videos_imported:
-                active_set = unapproved_set
-                unapproved_set = None
-            elif remaining_videos > 0:
-                unapproved_set = unapproved_set.order_by('when_submitted')
-                # only approve `remaining_videos` videos
-                when_submitted = unapproved_set[
-                    remaining_videos].when_submitted
-                active_set = unapproved_set.filter(
-                    when_submitted__lt=when_submitted)
-                unapproved_set = unapproved_set.filter(
-                    when_submitted__gte=when_submitted)
-    if unapproved_set is not None:
-        unapproved_set.update(status=Video.UNAPPROVED)
-    if active_set is not None:
+        active_set = source_import.get_videos(using).filter(
+            status=Video.PENDING)
+
+        for receiver, response in pre_mark_as_active.send_robust(
+            sender=source_import,
+            active_set=active_set):
+            if response:
+                if isinstance(response, Q):
+                    active_set = active_set.filter(response)
+                elif isinstance(response, dict):
+                    active_set = active_set.filter(**response)
+
         active_set.update(status=Video.ACTIVE)
+
+    source_import.get_videos(using).filter(status=Video.PENDING).update(
+        status=Video.UNAPPROVED)
 
     source_import.status = import_class.PENDING
     source_import.save()
@@ -376,7 +365,6 @@ def haystack_remove(app_label, model_name, pks, using='default'):
     Removes the haystack records for any instances with the given pks.
 
     """
-    model_class = get_model(app_label, model_name)
     backend = connections[using].get_backend()
 
     def callback():
@@ -396,7 +384,6 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     """
     model_class = get_model(app_label, model_name)
-    backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
 
     pk_qs = index.index_queryset().using(using)
@@ -418,3 +405,4 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
         end = min(start + batch_size, total)
         haystack_update.delay(app_label, model_name, pks[start:end],
                               remove=remove, using=using)
+

@@ -36,7 +36,6 @@ CommentForm = get_form()
 
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.sites.models import Site
-from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -52,7 +51,7 @@ import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
-from localtv.models import (Watch, Category, SiteSettings, Video, TierInfo,
+from localtv.models import (Watch, Category, SiteSettings, Video,
                             Feed, OriginalVideo, SavedSearch, FeedImport,
                             Source)
 from localtv import utils
@@ -64,11 +63,6 @@ from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
-NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
-PLUS_COST = NAME_TO_COST['plus']
-PREMIUM_COST = NAME_TO_COST['premium']
-MAX_COST = NAME_TO_COST['max']
-
 
 class FakeRequestFactory(RequestFactory):
     """Constructs requests with any necessary attributes set."""
@@ -82,7 +76,6 @@ class FakeRequestFactory(RequestFactory):
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
-    target_tier_name = 'max'
 
     def run(self, *args, **kwargs):
         # hack to prevent the test runner from treating abstract classes as
@@ -96,13 +89,8 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        self.old_DISABLE = localtv.settings.DISABLE_TIERS_ENFORCEMENT
-        localtv.settings.DISABLE_TIERS_ENFORCEMENT = False
         SiteSettings.objects.clear_cache()
         self.site_settings = SiteSettings.objects.get_current()
-        self.tier_info = TierInfo.objects.get_current()
-
-        self._switch_into_tier()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -135,17 +123,10 @@ class BaseTestCase(TestCase):
         index._setup_delete()
         self._clear_index()
 
-    def _switch_into_tier(self):
-        # By default, tests run on an 'max' account.
-        if self.site_settings.tier_name != self.target_tier_name:
-            self.site_settings.tier_name = self.target_tier_name
-            self.site_settings.save()
-
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
-        localtv.settings.DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
         settings.CACHES = self.old_CACHES
         Profile.__dict__['logo'].field.storage = \
             storage.default_storage
@@ -267,23 +248,6 @@ class FeedImportTestCase(BaseTestCase):
         self.assertEqual(Video.objects.count(), 5)
         self.assertEqual(Video.objects.filter(
                 status=Video.ACTIVE).count(), 5)
-
-    @mock.patch('localtv.tiers.Tier.videos_limit', lambda *args: 4)
-    def test_auto_approve_True_when_user_past_video_limit(self):
-        """
-        If FeedImport.auto_approve is True, but approving the videos in the feed
-        would put the site past the video limit, the imported videos should be
-        marked as unapproved.
-
-        """
-        feed = Feed.objects.get(pk=1)
-        feed.auto_approve = True
-        self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEqual(Video.objects.count(), 5)
-        self.assertEqual(Video.objects.filter(
-                status=Video.ACTIVE).count(), 4)
-        self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 1)
 
     def test_auto_approve_False(self):
         """
@@ -1681,53 +1645,6 @@ class VideoModelTestCase(BaseTestCase):
                           lambda: v.original)
 
 # -----------------------------------------------------------------------------
-# Site tier tests
-# -----------------------------------------------------------------------------
-class SiteTierTests(BaseTestCase):
-    def test_basic_account(self):
-        # Create a SiteSettings whose site_tier is set to 'basic'
-        self.site_settings.tier_name = 'basic'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(0, tier.dollar_cost())
-        self.assertEqual(500, tier.videos_limit())
-        self.assertEqual(1, tier.admins_limit())
-        self.assertFalse(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_plus_account(self):
-        # Create a SiteSettings whose site_tier is set to 'plus'
-        self.site_settings.tier_name = 'plus'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(PLUS_COST, tier.dollar_cost())
-        self.assertEqual(1000, tier.videos_limit())
-        self.assertEqual(5, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_premium_account(self):
-        # Create a SiteSettings whose site_tier is set to 'premium'
-        self.site_settings.tier_name = 'premium'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(PREMIUM_COST, tier.dollar_cost())
-        self.assertEqual(5000, tier.videos_limit())
-        self.assertEqual(None, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_max_account(self):
-        self.site_settings.tier_name = 'max'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(MAX_COST, tier.dollar_cost())
-        self.assertEqual(25000, tier.videos_limit())
-        self.assertEqual(None, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertTrue(tier.permit_custom_template())
-
-# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 
@@ -2195,57 +2112,6 @@ class TestWmodeFilter(BaseTestCase):
         self.assertEqual(output,
                          localtv.templatetags.filters.wmode_transparent(input))
                 
-class SiteSettingsEnablesRestrictionsAfterPayment(BaseTestCase):
-    def test_unit(self):
-        self.assertFalse(SiteSettings.enforce_tiers(override_setting=True))
-        tier_info = TierInfo.objects.get_current()
-        tier_info.user_has_successfully_performed_a_paypal_transaction = True
-        tier_info.save()
-        self.assertTrue(SiteSettings.enforce_tiers(override_setting=True))
-
-class TierMethodsTests(BaseTestCase):
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=False))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
-    def test_can_add_more_videos(self):
-        # This is true because enforcement is off.
-        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
-    def test_can_add_more_videos_returns_false(self):
-        # This is False because the number of videos remaining is zero.
-        self.assertFalse(localtv.tiers.Tier.get().can_add_more_videos())
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=1))
-    def test_can_add_video_lets_you_add_final_video(self):
-        # This is False because the number of videos remaining is zero.
-        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
-
-    def test_time_until_free_trial_expires_none_when_not_in_free_trial(self):
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = False
-        ti.save()
-        self.assertEqual(None, ti.time_until_free_trial_expires())
-
-    def test_time_until_free_trial_expires_none_when_no_payment_due(self):
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = True
-        ti.payment_due_date = None # Note that this is a kind of insane state.
-        ti.save()
-        self.assertEqual(None, ti.time_until_free_trial_expires())
-
-    def test_time_until_free_trial_expires(self):
-        now = datetime.datetime(2011, 5, 24, 23, 44, 30)
-        a_bit_in_the_future = now + datetime.timedelta(hours=5)
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = True
-        ti.payment_due_date = a_bit_in_the_future
-        ti.save()
-        self.assertEqual(datetime.timedelta(hours=5),
-                         ti.time_until_free_trial_expires(now=now))
-
 class LegacyFeedViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']

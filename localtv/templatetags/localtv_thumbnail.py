@@ -17,14 +17,14 @@
 
 from django import template
 from django.conf import settings
-from django.core.files.storage import default_storage
-from django.contrib.sites.models import Site
 
 from daguerre.models import Image
 from daguerre.utils import AdjustmentInfoDict
 from daguerre.utils.adjustments import get_adjustment_class
 
+
 register = template.Library()
+
 
 class ThumbnailNode(template.Node):
     """
@@ -52,7 +52,6 @@ class ThumbnailNode(template.Node):
         elif video.search_id and video.search.has_thumbnail:
             storage_path = video.search.thumbnail_path
 
-        kwargs = {'width': self.width, 'height': self.height, 'adjustment': 'fill'}
         if storage_path is None:
             image = None
         else:
@@ -113,4 +112,3 @@ def get_thumbnail_url(parser, token):
     else:
         return ThumbnailNode(video, (width, height),
                              absolute=absolute)
-

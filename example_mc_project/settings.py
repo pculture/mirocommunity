@@ -135,7 +135,6 @@ UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
-UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteSettings.objects.get_current().get_tier().enforce_permit_custom_template()
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -171,7 +170,6 @@ INSTALLED_APPS = (
     'notification',
     'socialauth',
     'openid_consumer',
-    'paypal.standard.ipn',
     'voting',
     'daguerre'
 )
@@ -276,9 +274,3 @@ FACEBOOK_CONNECT_DOMAIN = None
 # Twitter options
 TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
-
-# For debugging
-PAYPAL_TEST = bool(os.environ.get('MC_PAYPAL_REAL', False))
-LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
-LOCALTV_SKIP_PAYPAL = True
-PAYPAL_RECEIVER_EMAIL = ''

@@ -29,14 +29,6 @@
 {% if site_settings.should_show_dashboard %}
 <div id="dashboard">
 <h1 id="hdr_activity">Activity</h1>
-<div id="video_limit">
-  <h2>You've used <strong>{{ total_count }}</strong> of your <strong>{{ site_settings.get_tier.videos_limit }}</strong> video limit.</h2>
-  <div id="limit_bar">
-  <div id="limit_progress" style="width: {{ percent_videos_used }}%;">
-    <a href="{% url localtv_admin_tier %}"><em class="icon"></em>Upgrade</a>
-  </div><!-- // limit_progress -->
-  </div><!-- // limit_bar -->
-</div><!-- // video_limit -->
 
 <div class="clear"></div>
 <div id="account_stats">

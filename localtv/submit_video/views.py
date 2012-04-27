@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -27,7 +26,6 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.generic import FormView, CreateView
 from django.utils.decorators import method_decorator
 from tagging.utils import parse_tag_input
-import vidscraper
 
 from localtv.decorators import request_passes_test
 from localtv.models import SiteSettings, Video
