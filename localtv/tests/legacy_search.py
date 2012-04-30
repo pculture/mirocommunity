@@ -291,10 +291,23 @@ class AutoQueryTestCase(BaseTestCase):
         Terms bracketed in {}s should be ORed together.
         """
         results = SmartSearchQuerySet().auto_query('{elephant render}')
-        self.assertTrue(results)
+        self.assertGreater(len(results), 0)
         for result in results:
             self.assertTrue(('elephant' in result.text.lower()) or
                             ('render' in result.text.lower()), result.text)
+
+    def test_search_or__user_first(self):
+        """
+        bz19056. If the first term in {} is a user: keyword search, it should
+        behave as expected.
+        """
+        user = User.objects.get(username='admin')
+        results = SmartSearchQuerySet().auto_query('{user:admin repair}')
+        self.assertGreater(len(results), 0)
+        for result in results:
+            self.assertTrue('repair' in result.text.lower() or
+                            result.user == user.pk or
+                            user.pk in result.authors)
 
     def test_search_or_and(self):
         """
@@ -304,7 +317,7 @@ class AutoQueryTestCase(BaseTestCase):
         # wonder if recent versions of Haystack (or Whoosh) skip small words?
         results = SmartSearchQuerySet().auto_query(
             '{import repair} -positioning')
-        self.assertTrue(results)
+        self.assertGreater(len(results), 0)
         for result in results:
             self.assertFalse('positioning' in result.text.lower(), result.text)
             self.assertTrue(('import' in result.text.lower()) or
