@@ -43,7 +43,7 @@ class SortFilterMixin(FormMixin):
     form_class = SortFilterForm
 
     def _request_form_data(self, request, **kwargs):
-        data = dict(request.GET.iteritems())
+        data = request.GET.dict()
         if self.url_filter is not None:
             data[self.url_filter] = [kwargs[self.url_filter_kwarg]]
         return data

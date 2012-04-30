@@ -166,11 +166,15 @@ class SortFilterForm(SmartSearchForm):
 
     def clean(self):
         cleaned_data = self.cleaned_data
+        # If there is a search, and no explicit sort was selected, sort by
+        # relevance.
+        if cleaned_data.get('q') and not cleaned_data.get('sort'):
+            cleaned_data['sort'] = 'relevant'
         # If there's no search, but relevant is selected for sorting, use the
         # default sort instead.
-        if (cleaned_data.get('sort', None) == 'relevant' and
-            not cleaned_data['q']):
-            self.cleaned_data['sort'] = self.fields['sort'].initial
+        if (not cleaned_data.get('q') and
+            cleaned_data.get('sort') == 'relevant'):
+            cleaned_data.pop('sort')
         return cleaned_data
 
     def _search(self):

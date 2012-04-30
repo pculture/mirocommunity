@@ -93,54 +93,57 @@ class BestDateSortUnitTestCase(BaseTestCase):
                                                           date3.strftime(f)),
                                         when_approved=date3,
                                         when_published=date3)
-        self.sort = utils.BestDateSort()
         self.site_settings = SiteSettings.objects.get_current()
 
+    def key_with_original(self, v):
+        return v.when_published or v.when_approved or v.when_submitted
+
+    def key_without_original(self, v):
+        return v.when_approved or v.when_submitted
+
     def test_sort(self):
-        """
-        Checks that the sorted queryset is actually correctly sorted.
-
-        """
-        def key_with_original(v):
-            return v.when_published or v.when_approved or v.when_submitted
-
-        def key_without_original(v):
-            return v.when_approved or v.when_submitted
-
-        self.site_settings.use_original_date = True
-        self.site_settings.save()
-        expected_asc = sorted(list(Video.objects.all()), key=key_with_original)
-        expected_desc = sorted(list(Video.objects.all()), key=key_with_original,
-                               reverse=True)
-
-        results = list(self.sort.sort(Video.objects.all()))
-        self.assertEqual(results, expected_asc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet())]
-        self.assertEqual(results, expected_asc)
-
-        results = list(self.sort.sort(Video.objects.all(), descending=True))
-        self.assertEqual(results, expected_desc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet(),
-                                                    descending=True)]
-        self.assertEqual(results, expected_desc)
-
+        """Check sorting if ``use_original_date`` is ``False``."""
+        sort_newest = utils.BestDateSort()
+        sort_oldest = utils.BestDateSort(descending=False)
         self.site_settings.use_original_date = False
         self.site_settings.save()
         expected_asc = sorted(list(Video.objects.all()),
-                              key=key_without_original)
+                              key=self.key_without_original)
         expected_desc = sorted(list(Video.objects.all()),
-                               key=key_without_original,
+                               key=self.key_without_original,
                                reverse=True)
 
-        results = list(self.sort.sort(Video.objects.all()))
+        results = list(sort_oldest.sort(Video.objects.all()))
         self.assertEqual(results, expected_asc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet())]
+        results = [r.object for r in sort_oldest.sort(SearchQuerySet())]
         self.assertEqual(results, expected_asc)
 
-        results = list(self.sort.sort(Video.objects.all(), descending=True))
+        results = list(sort_newest.sort(Video.objects.all()))
         self.assertEqual(results, expected_desc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet(),
-                                                    descending=True)]
+        results = [r.object for r in sort_newest.sort(SearchQuerySet())]
+        self.assertEqual(results, expected_desc)
+
+    def test_sort__original(self):
+        """Check sorting if ``use_original_date`` is ``True``."""
+        sort_newest = utils.BestDateSort()
+        sort_oldest = utils.BestDateSort(descending=False)
+
+        self.site_settings.use_original_date = True
+        self.site_settings.save()
+        expected_asc = sorted(list(Video.objects.all()),
+                              key=self.key_with_original)
+        expected_desc = sorted(list(Video.objects.all()),
+                               key=self.key_with_original,
+                               reverse=True)
+
+        results = list(sort_oldest.sort(Video.objects.all()))
+        self.assertEqual(results, expected_asc)
+        results = [r.object for r in sort_oldest.sort(SearchQuerySet())]
+        self.assertEqual(results, expected_asc)
+
+        results = list(sort_newest.sort(Video.objects.all()))
+        self.assertEqual(results, expected_desc)
+        results = [r.object for r in sort_newest.sort(SearchQuerySet())]
         self.assertEqual(results, expected_desc)
 
 
@@ -168,20 +171,13 @@ class FeaturedSortUnitTestCase(BaseTestCase):
 
         """
         all_videos = [self.video1, self.video2, self.video3]
-        expected_asc = sorted(all_videos, key=lambda v: v.last_featured)
-        expected_desc = sorted(all_videos, key=lambda v: v.last_featured,
-                               reverse=True)
+        expected = sorted(all_videos, key=lambda v: v.last_featured,
+                          reverse=True)
 
         results = list(self.sort.sort(Video.objects.all()))
-        self.assertEqual(results, expected_asc)
+        self.assertEqual(results, expected)
         results = [r.object for r in self.sort.sort(SearchQuerySet())]
-        self.assertEqual(results, expected_asc)
-
-        results = list(self.sort.sort(Video.objects.all(), descending=True))
-        self.assertEqual(results, expected_desc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet(),
-                                                    descending=True)]
-        self.assertEqual(results, expected_desc)
+        self.assertEqual(results, expected)
 
 
 class ApprovedSortUnitTestCase(BaseTestCase):
@@ -208,20 +204,13 @@ class ApprovedSortUnitTestCase(BaseTestCase):
 
         """
         all_videos = [self.video1, self.video2, self.video3]
-        expected_asc = sorted(all_videos, key=lambda v: v.when_approved)
-        expected_desc = sorted(all_videos, key=lambda v: v.when_approved,
-                               reverse=True)
+        expected = sorted(all_videos, key=lambda v: v.when_approved,
+                          reverse=True)
 
         results = list(self.sort.sort(Video.objects.all()))
-        self.assertEqual(results, expected_asc)
+        self.assertEqual(results, expected)
         results = [r.object for r in self.sort.sort(SearchQuerySet())]
-        self.assertEqual(results, expected_asc)
-
-        results = list(self.sort.sort(Video.objects.all(), descending=True))
-        self.assertEqual(results, expected_desc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet(),
-                                                    descending=True)]
-        self.assertEqual(results, expected_desc)
+        self.assertEqual(results, expected)
 
 
 class PopularSortUnitTestCase(BaseTestCase):
@@ -246,21 +235,13 @@ class PopularSortUnitTestCase(BaseTestCase):
         all_videos = [self.video1, self.video2, self.video3, self.video4]
         watch_qs = Watch.objects.filter(
             timestamp__gte=datetime.now() - timedelta(7))
-        expected_asc = sorted(all_videos,
-                              key=lambda v: watch_qs.filter(video=v).count())
-        expected_desc = sorted(all_videos, reverse=True,
+        expected = sorted(all_videos, reverse=True,
                                key=lambda v: watch_qs.filter(video=v).count())
 
         results = list(self.sort.sort(Video.objects.all()))
-        self.assertEqual(results, expected_asc)
+        self.assertEqual(results, expected)
         results = [r.object for r in self.sort.sort(SearchQuerySet())]
-        self.assertEqual(results, expected_asc)
-
-        results = list(self.sort.sort(Video.objects.all(), descending=True))
-        self.assertEqual(results, expected_desc)
-        results = [r.object for r in self.sort.sort(SearchQuerySet(),
-                                                    descending=True)]
-        self.assertEqual(results, expected_desc)
+        self.assertEqual(results, expected)
 
 
 class ModelFilterFieldUnitTestCase(BaseTestCase):

@@ -16,14 +16,13 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from hashlib import sha1
-import urllib
 
 from daguerre.models import AdjustedImage, Image
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, QueryDict
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset
@@ -43,6 +42,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
+    view_name = None
 
     def __init__(self, json=False):
         if json:
@@ -72,6 +72,9 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             repr(args),
             repr(kwargs),
         )
+        # Vary on search/sort/filter parameters, as well.
+        vary += tuple(request.GET.get(name)
+                      for name in self.form_class.base_fields)
         cache_key = self._get_cache_key(request, vary)
 
         response = cache.get(cache_key)
@@ -120,6 +123,13 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         feed = super(BaseVideosFeed, self).get_feed(obj, request)
         feed.opensearch_data = self._get_opensearch_data(obj)
         return feed
+
+    def link(self, obj):
+        if self.view_name is None:
+            raise NotImplementedError
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((reverse(self.view_name), qd.urlencode()))
 
     def items(self, obj):
         """
@@ -256,9 +266,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
 class NewVideosFeed(BaseVideosFeed):
     default_sort = '-date'
-
-    def link(self):
-        return reverse('localtv_list_new')
+    view_name = 'localtv_list_new'
 
     def title(self):
         return u"%s: %s" % (
@@ -267,9 +275,7 @@ class NewVideosFeed(BaseVideosFeed):
 
 class FeaturedVideosFeed(BaseVideosFeed):
     default_sort = '-featured'
-
-    def link(self):
-        return reverse('localtv_list_featured')
+    view_name = 'localtv_list_featured'
 
     def title(self):
         return u"%s: %s" % (
@@ -278,9 +284,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
 
 class PopularVideosFeed(BaseVideosFeed):
     default_sort = '-popular'
-
-    def link(self):
-        return reverse('localtv_list_popular')
+    view_name = 'localtv_list_popular'
 
     def title(self):
         return u"%s: %s" % (
@@ -290,10 +294,11 @@ class PopularVideosFeed(BaseVideosFeed):
 class CategoryVideosFeed(BaseVideosFeed):
     url_filter = 'category'
     url_filter_kwarg = 'slug'
-    default_sort = '-date'
 
     def link(self, obj):
-        return obj['obj'].get_absolute_url()
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((obj['obj'].get_absolute_url(), qd.urlencode()))
 
     def title(self, obj):
         return u"%s: %s" % (
@@ -303,10 +308,12 @@ class CategoryVideosFeed(BaseVideosFeed):
 
 class AuthorVideosFeed(BaseVideosFeed):
     url_filter = 'author'
-    default_sort = '-date'
 
     def link(self, obj):
-        return reverse('localtv_author', args=[obj['obj'].pk])
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((reverse('localtv_author', args=[obj['obj'].pk]),
+                          qd.urlencode()))
 
     def title(self, obj):
         name_or_username = obj['obj'].get_full_name()
@@ -327,10 +334,12 @@ class FeedVideosFeed(BaseVideosFeed):
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
     url_filter = 'feed'
-    default_sort = '-date'
 
     def link(self, obj):
-        return reverse('localtv_list_feed', args=[obj['obj'].pk])
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((reverse('localtv_list_feed', args=[obj['obj'].pk]),
+                          qd.urlencode()))
 
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
@@ -341,10 +350,12 @@ class FeedVideosFeed(BaseVideosFeed):
 class TagVideosFeed(BaseVideosFeed):
     url_filter = 'tag'
     url_filter_kwarg = 'name'
-    default_sort = '-date'
 
     def link(self, obj):
-        return reverse('localtv_list_tag', args=[obj['obj'].name])
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((reverse('localtv_list_tag', args=[obj['obj'].name]),
+                          qd.urlencode()))
 
     def title(self, obj):
         return u"%s: %s" % (Site.objects.get_current().name,
@@ -352,28 +363,17 @@ class TagVideosFeed(BaseVideosFeed):
 
 
 class SearchVideosFeed(BaseVideosFeed):
+    view_name = 'localtv_search'
 
-    def _get_cache_key(self, request, vary):
-        key = super(SearchVideosFeed, self)._get_cache_key(request, vary)
-        if request.GET.get('sort', None) == 'latest':
-            return '%s:latest' % key
-        return key
+    def _request_form_data(self, request, query):
+        data = super(SearchVideosFeed, self)._request_form_data(request)
+        data['q'] = query
+        return data
 
     def get_object(self, request, query):
-        obj = BaseVideosFeed.get_object(self, request, query)
+        obj = BaseVideosFeed.get_object(self, request, query=query)
         obj['obj'] = query
         return obj
-
-    def _get_query(self, request):
-        # HACK to pull the query out of the path
-        return request.path.rsplit('/', 1)[1]
-
-    def link(self, obj):
-        args = {'q': obj['obj'].encode('utf-8')}
-        sort = obj['request'].GET.get('sort', None)
-        if sort == 'latest':
-            args['sort'] = 'latest'
-        return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
     def title(self, obj):
         return u"%s: %s" % (
@@ -384,14 +384,10 @@ class SearchVideosFeed(BaseVideosFeed):
 class PlaylistVideosFeed(BaseVideosFeed):
     url_filter = 'playlist'
 
-    def _get_cache_key(self, request, vary):
-        key = super(PlaylistVideosFeed, self)._get_cache_key(request, vary)
-        if request.GET.get('sort', None) == 'order':
-            return '%s:order' % key
-        return key
-
     def link(self, obj):
-        return obj['obj'].get_absolute_url()
+        qd = QueryDict('', mutable=True)
+        qd.update(obj['form'].cleaned_data)
+        return u"?".join((obj['obj'].get_absolute_url(), qd.urlencode()))
 
     def _request_form_data(self, request, **kwargs):
         data = super(PlaylistVideosFeed, self)._request_form_data(request, **kwargs)
