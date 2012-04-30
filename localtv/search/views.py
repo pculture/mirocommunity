@@ -64,17 +64,6 @@ class SortFilterView(ListView, SortFilterMixin):
     form_class = SortFilterForm
     context_object_name = 'videos'
 
-    def get_paginate_by(self, queryset):
-        paginate_by = self.request.GET.get('count')
-        if paginate_by:
-            try:
-                paginate_by = int(paginate_by)
-            except ValueError:
-                paginate_by = None
-        if paginate_by is None:
-            paginate_by = self.paginate_by
-        return paginate_by
-
     def _get_query(self, request):
         """Fetches the query for the current request."""
         return request.GET.get('q', "")
