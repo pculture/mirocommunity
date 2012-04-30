@@ -22,7 +22,6 @@ import sys
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
@@ -93,7 +92,7 @@ class ModelFilterField(FilterField):
 class TagFilterField(ModelFilterField):
     def __init__(self, *args, **kwargs):
         queryset = Tag.objects.usage_for_queryset(Video.objects.filter(
-                                              site=Site.objects.get_current(),
+                                              site=settings.SITE_ID,
                                               status=Video.ACTIVE))
         super(TagFilterField, self).__init__(queryset, *args, **kwargs)
 
