@@ -265,7 +265,6 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
 
 class NewVideosFeed(BaseVideosFeed):
-    default_sort = '-date'
     view_name = 'localtv_list_new'
 
     def title(self):
@@ -274,7 +273,6 @@ class NewVideosFeed(BaseVideosFeed):
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
-    default_sort = '-featured'
     view_name = 'localtv_list_featured'
 
     def title(self):
@@ -283,7 +281,6 @@ class FeaturedVideosFeed(BaseVideosFeed):
 
 
 class PopularVideosFeed(BaseVideosFeed):
-    default_sort = '-popular'
     view_name = 'localtv_list_popular'
 
     def title(self):

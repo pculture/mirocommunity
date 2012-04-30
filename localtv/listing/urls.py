@@ -37,12 +37,10 @@ urlpatterns = patterns(
                 ), name='localtv_list_this_week'),
     url(r'^popular/$', CompatibleListingView.as_view(
                     template_name='localtv/video_listing_popular.html',
-                    initial={'sort': 'popular'}
-                ), name='localtv_list_popular'),
+                ), {'sort': 'popular'}, name='localtv_list_popular'),
     url(r'^featured/$', CompatibleListingView.as_view(
                     template_name='localtv/video_listing_featured.html',
-                    initial={'sort': 'featured'}
-                ), name='localtv_list_featured'),
+                ), {'sort': 'featured'}, name='localtv_list_featured'),
     url(r'^tag/(?P<name>.+)/$', CompatibleListingView.as_view(
                     template_name='localtv/video_listing_tag.html',
                     url_filter='tag',

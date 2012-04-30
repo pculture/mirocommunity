@@ -46,6 +46,9 @@ class SortFilterMixin(FormMixin):
         data = request.GET.dict()
         if self.url_filter is not None:
             data[self.url_filter] = [kwargs[self.url_filter_kwarg]]
+        # If the sort is provided in the kwargs, enforce it.
+        if 'sort' in kwargs:
+            data['sort'] = kwargs['sort']
         return data
 
     def get_form_kwargs(self):
