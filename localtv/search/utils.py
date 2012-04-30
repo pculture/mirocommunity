@@ -16,11 +16,8 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import operator
-import logging
-import sys
 
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.query import Q, QuerySet
@@ -120,6 +117,9 @@ class Sort(object):
     #:           not be correctly handled by :mod:`haystack`.
     empty_value = EMPTY
 
+    #: A human-readable name for this sort.
+    verbose_name = _('Sort')
+
     def __init__(self, descending=True):
         self.descending = descending
 
@@ -179,6 +179,10 @@ class DummySort(Sort):
 
 
 class BestDateSort(Sort):
+    @property
+    def verbose_name(self):
+        return _('Newest') if self.descending else _('Oldest')
+
     def get_field(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteSettings.objects.get_current().use_original_date):
@@ -230,128 +234,3 @@ class PopularSort(Sort):
         if not isinstance(queryset, SearchQuerySet):
             return queryset.extra(order_by=[order_by])
         return super(PopularSort, self).order_by(queryset, order_by)
-
-
-class Filter(object):
-    """
-    Represents a filter which can be applied to either a :class:`QuerySet` or a
-    :class:`SearchQuerySet`.
-    """
-    #: The field lookups which will be let through the filter if they have a
-    #: matching value.
-    field_lookups = None
-
-    #: A human-friendly name for the filter, to be used e.g. with
-    #: :class:`.FilterForm`.
-    verbose_name = None
-
-    def __init__(self, field_lookups):
-        self.field_lookups = field_lookups
-
-    def filter(self, queryset, values):
-        """
-        Returns a queryset filtered to match any of the given ``values`` in
-        :attr:`field`.
-
-        """
-        q = None
-        for lookup in self.field_lookups:
-            new_q = _q_for_queryset(queryset, lookup, values)
-
-            if q is None:
-                q = new_q
-            else:
-                q |= new_q
-        return queryset.filter(q)
-
-    def clean(self, values):
-        """
-        Given a list of values used to create a filter, returns a list of values
-        which are known to be valid and which are in a standard format. This is
-        expected to be called on values *before* they are passed to
-        :meth:`filter`.
-
-        """
-        return values
-
-    def formfield(self, form_class=forms.MultipleChoiceField, **kwargs):
-        defaults = {
-            'required': False,
-            'label': capfirst(self.verbose_name)
-        }
-        defaults.update(kwargs)
-        return form_class(**defaults)
-
-
-class ModelFilter(Filter):
-    #: The model class to be used for cleaning the filter's values.
-    model = None
-
-    #: The field on that model which is matched to the values during cleaning.
-    field = None
-
-    def __init__(self, field_lookups, model, field='pk'):
-        self.model = model
-        self.field = field
-        super(ModelFilter, self).__init__(field_lookups)
-
-    @property
-    def verbose_name(self):
-        return self.model._meta.verbose_name_plural
-
-    def filter(self, queryset, values):
-        pks = [instance.pk for instance in values]
-        return super(ModelFilter, self).filter(queryset, pks)
-
-    def clean(self, values):
-        """
-        Given a queryset of :attr:`model`, a list or tuple of instances of
-        :attr:`model`, or a list of values corresponding to :attr:`field`,
-        returns a list, tuple, or queryset of instances of :attr:`model`
-
-        """
-        if isinstance(values, QuerySet) and values.model == self.model:
-            return values._clone()
-        elif (isinstance(values, (list, tuple))
-              and all((isinstance(v, self.model) for v in values))):
-            return values
-        return self.get_query_set().filter(**{'%s__in' % self.field: values})
-
-    def get_query_set(self):
-        qs = self.model._default_manager.all()
-        try:
-            self.model._meta.get_field_by_name('site')
-        except FieldDoesNotExist:
-            pass
-        else:
-            qs = qs.filter(site=Site.objects.get_current())
-        return qs
-
-    def formfield(self, form_class=forms.ModelMultipleChoiceField, **kwargs):
-        defaults = {
-            'widget': forms.CheckboxSelectMultiple,
-            'queryset': self.get_query_set()
-        }
-        defaults.update(kwargs)
-        return super(ModelFilter, self).formfield(form_class, **defaults)
-
-
-class TagFilter(Filter):
-    def filter(self, queryset, values):
-        if not isinstance(queryset, SearchQuerySet):
-            return TaggedItem.objects.get_union_by_model(queryset, values)
-        pks = [instance.pk for instance in values]
-        return super(TagFilter, self).filter(queryset, pks)
-
-    def clean(self, values):
-        return get_tag_list(values)
-
-    def formfield(self, form_class=forms.ModelMultipleChoiceField, **kwargs):
-        defaults = {
-            'widget': forms.CheckboxSelectMultiple,
-            'queryset': Tag.objects.usage_for_queryset(Video.objects.filter(
-                            site=Site.objects.get_current(),
-                            status=Video.ACTIVE))
-        }
-        defaults.update(kwargs)
-        return super(TagFilter, self).formfield(form_class, **defaults)

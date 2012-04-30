@@ -30,7 +30,8 @@ from django.utils.tzinfo import FixedOffset
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video
-from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterMixin
 from localtv.templatetags.filters import simpletimesince
 
 
@@ -38,7 +39,7 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-class BaseVideosFeed(FeedView, SortFilterViewMixin):
+class BaseVideosFeed(FeedView, SortFilterMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
@@ -90,15 +91,19 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         and are thus unsuitable for storage.
 
         """
-        obj = {'request': request}
-        filter_form = self._get_filter_form(request)
-        filters = self._get_filters(filter_form, **kwargs)
-        obj['cleaned_filters'] = self._clean_filter_values(filters)
-        if self.url_filter in self.filters:
+        form = self.form_class(self._request_form_data(request, **kwargs))
+        if not form.is_valid():
+            raise Http404
+
+        obj = {
+            'request': request,
+            'form': form,
+        }
+
+        if self.url_filter is not None:
             try:
-                obj['obj'] = obj['cleaned_filters'][self.url_filter][0]
+                obj['obj'] = form.cleaned_data[self.url_filter][0]
             except IndexError:
-                # Then this is a URL for a page that shouldn't exist.
                 raise Http404
 
         return obj
@@ -128,16 +133,16 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        qs = self._search(self._get_query(obj['request']))
-        qs = self._sort(qs, self._get_sort(obj['request']))
-        qs = self._filter(qs, obj['cleaned_filters'])
-        videos = NormalizedVideoList(qs)
+        qs = obj['form'].get_queryset()
+        items = NormalizedVideoList(qs)
+        return self._opensearch_items(items, obj)
 
+    def _opensearch_items(self, items, obj):
         opensearch = self._get_opensearch_data(obj)
         start = opensearch['startindex']
         end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(videos)
-        return videos[start:end]
+        opensearch['totalresults'] = len(items)
+        return items[start:end]
 
     def _get_opensearch_data(self, obj):
         """
@@ -388,26 +393,39 @@ class PlaylistVideosFeed(BaseVideosFeed):
     def link(self, obj):
         return obj['obj'].get_absolute_url()
 
+    def _request_form_data(self, request, **kwargs):
+        data = super(PlaylistVideosFeed, self)._request_form_data(request, **kwargs)
+        if data.get('sort') in ('order', '-order'):
+            # This HACK helps us sort by playlist order.
+            data.pop('sort')
+        return data
+
+    def get_object(self, request, *args, **kwargs):
+        obj = super(PlaylistVideosFeed, self).get_object(request, *args,
+                                                         **kwargs)
+        if request.GET.get('sort') in ('order', '-order'):
+            # This HACK helps us sort by playlist order.
+            obj['playlist_order'] = request.GET['sort']
+        return obj
+
     def items(self, obj):
         """
         This feed is unusual enough that we actually need to override
         :meth:`items`.
 
         """
-        sort = self._get_sort(obj['request'])
-        if sort == 'order':
-            # TODO: This probably breaks if a video is in multiple playlists.
-            # Check.
-            videos = obj['obj'].video_set.order_by('-playlistitem___order')
+        form = obj['form']
+        # We currently don't support searching combined with the 'order' sort.
+        if 'playlist_order' in obj:
+            # This is a HACK for backwards-compatibility.
+            order_by = '{0}playlistitem___order'.format(
+                               '' if obj['playlist_order'][0] == '-' else '-')
+            queryset = obj['obj'].items.order_by(order_by)
         else:
-            # default is to sort by ascending order
-            videos = obj['obj'].video_set.all()
-        opensearch = self._get_opensearch_data(obj)
-        start= opensearch['startindex']
-        end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(videos)
-        videos = videos[start:end]
-        return videos
+            queryset = form._search()
+            queryset = form._sort(queryset)
+        queryset = NormalizedVideoList(form._filter(queryset))
+        return self._opensearch_items(queryset, obj)
 
     def title(self, obj):
         return u"%s: %s" % (

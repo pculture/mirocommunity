@@ -27,7 +27,8 @@ from django.views.generic import TemplateView, DetailView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.utils import SortFilterMixin, NormalizedVideoList
+from localtv.search.forms import SortFilterForm
+from localtv.search.utils import NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -35,13 +36,15 @@ from localtv.playlists.models import Playlist, PlaylistItem
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class IndexView(SortFilterMixin, TemplateView):
+class IndexView(TemplateView):
     template_name = 'localtv/index.html'
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
-        popular_videos = self._sort(self._search(''), '-popular')
+        form = SortFilterForm({'sort': 'popular'})
+        form.is_valid()
+        popular_videos = form.get_queryset()
         new_videos = Video.objects.get_latest_videos()
 
         site_settings_videos = Video.objects.get_site_settings_videos()
@@ -67,7 +70,7 @@ def about(request):
         {}, context_instance=RequestContext(request))
 
 
-class VideoView(SortFilterMixin, DetailView):
+class VideoView(DetailView):
     pk_url_kwarg = 'video_id'
     context_object_name = 'current_video'
     template_name = 'localtv/view_video.html'
@@ -100,7 +103,9 @@ class VideoView(SortFilterMixin, DetailView):
         })
 
         site_settings = SiteSettings.objects.get_current()
-        popular_videos = self._sort(self._search(''), '-popular')
+        form = SortFilterForm({'sort': 'popular'})
+        form.is_valid()
+        popular_videos = form.get_queryset()
 
         try:
             category_obj = self.object.categories.all()[0]
