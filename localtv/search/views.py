@@ -75,9 +75,11 @@ class SortFilterView(ListView, SortFilterMixin):
         """
         self.form = self.get_form(self.get_form_class())
         self.form.is_valid()
-        if (self.url_filter is not None and
-            not self.form.cleaned_data.get(self.url_filter)):
-            raise Http404
+        if self.url_filter is not None:
+            try:
+                self.form.cleaned_data[self.url_filter][0]
+            except IndexError:
+                raise Http404
         return self.form.get_queryset()
 
     def get_context_data(self, **kwargs):
