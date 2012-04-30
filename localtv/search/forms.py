@@ -181,8 +181,7 @@ class SortFilterForm(SmartSearchForm):
     def _search(self):
         """
         Returns a queryset or searchqueryset for the given query, depending
-        Adjusts the searchqueryset to return only videos associated with the
-        current site before performing the search.
+        on the LOCALTV_USE_HAYSTACK setting.
 
         """
         if USE_HAYSTACK:
@@ -218,6 +217,7 @@ class SortFilterForm(SmartSearchForm):
         return qs
 
     def _filter(self, queryset):
+        """Runs each FilterField's filter method on the given queryset."""
         for name, field in self.fields.iteritems():
             if isinstance(field, FilterField) and hasattr(self, 'cleaned_data'):
                 values = self.cleaned_data[name]
@@ -226,6 +226,7 @@ class SortFilterForm(SmartSearchForm):
         return queryset
 
     def _sort(self, queryset):
+        """Runs the cleaned sort on the given queryset."""
         try:
             sort = self.sorts[self.cleaned_data['sort']]
         except KeyError:
