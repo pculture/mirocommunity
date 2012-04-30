@@ -37,6 +37,7 @@ from django.core.urlresolvers import resolve
 from django.http import Http404
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from haystack import connections
 
 from tagging.forms import TagField
 
@@ -76,7 +77,7 @@ class EditVideoForm(forms.ModelForm):
         model = models.Video
         fields = ('thumbnail', 'thumbnail_url', )
 
-    def save(self, *args, **kwargs):
+    def save(self, commit=True):
         if 'thumbnail' in self.cleaned_data:
             thumbnail = self.cleaned_data.pop('thumbnail')
             if thumbnail:
@@ -94,7 +95,7 @@ class EditVideoForm(forms.ModelForm):
                     self.instance.save_thumbnail()
                 except models.CannotOpenImageUrl:
                     pass # wwe'll get it in a later update
-        return forms.ModelForm.save(self, *args, **kwargs)
+        return forms.ModelForm.save(self, commit=commit)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
@@ -446,11 +447,19 @@ class BulkEditVideoForm(EditVideoForm):
     def _restore_authors(self):
         self.cleaned_data['authors'] = [unicode(x.id) for x in self.instance.authors.all()]
 
-    def save(self, *args, **kwargs):
+    def save(self, commit=True):
         # We need to update the Video.tags descriptor manually because
         # Django's model forms does not (django.forms.models.construct_instance)
         self.instance.tags = self.cleaned_data['tags']
-        return super(BulkEditVideoForm, self).save(*args, **kwargs)
+        instance = super(BulkEditVideoForm, self).save(commit=False)
+        if commit:
+            instance.save(update_index=False)
+            self.save_m2m()
+            instance._update_index = True
+            index = connections['default'].get_unified_index().get_index(
+                                                                 models.Video)
+            index._enqueue_update(instance)
+        return instance
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
