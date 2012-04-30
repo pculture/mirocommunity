@@ -26,6 +26,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django.utils.datastructures import SortedDict
+from django.utils.functional import SimpleLazyObject
 from haystack.forms import SearchForm
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
@@ -91,9 +92,10 @@ class ModelFilterField(FilterField):
 
 class TagFilterField(ModelFilterField):
     def __init__(self, *args, **kwargs):
-        queryset = Tag.objects.usage_for_queryset(Video.objects.filter(
-                                              site=settings.SITE_ID,
-                                              status=Video.ACTIVE))
+        queryset = SimpleLazyObject(lambda: Tag.objects.usage_for_queryset(
+                                                Video.objects.filter(
+                                                    site=settings.SITE_ID,
+                                                    status=Video.ACTIVE)))
         super(TagFilterField, self).__init__(queryset, *args, **kwargs)
 
     def clean(self, value):
