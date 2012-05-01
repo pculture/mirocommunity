@@ -60,7 +60,9 @@ class BaseTestCase(TestCase):
         backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(
             models.Video)
-        backend.update(index, index.index_queryset())
+        qs = index.index_queryset()
+        if qs:
+            backend.update(index, qs)
 
     def _rebuild_index(self):
         """Clears and then updates the search index."""
