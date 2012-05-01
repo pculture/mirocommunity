@@ -27,6 +27,7 @@ from django.core.urlresolvers import reverse_lazy, reverse
 from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.test.client import Client
+from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
 from haystack.query import SearchQuerySet
 
@@ -2225,6 +2226,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
         form.save()
         self.assertTrue(mock_save_thumbnail.called)
 
+    @override_settings(CELERY_ALWAYS_EAGER=True)
     def test_index_after_m2m(self):
         """
         After the videos are saved, their indexed equivalents should have the
