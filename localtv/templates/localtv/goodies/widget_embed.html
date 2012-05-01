@@ -16,5 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-<script src="http://{{ site_settings.site.domain }}/js/widget.js"></script>
+{% load static from staticfiles %}
+<script src="{% static "localtv/js/widget.js" %}"></script>
 <script type="text/javascript">new MiroCommunity.Widget(JSON).render();</script>
