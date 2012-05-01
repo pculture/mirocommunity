@@ -137,13 +137,7 @@ class SmartSearchQuerySet(SearchQuerySet):
         those tokens.
 
         """
-        if 'WhooshEngine' in connections[self.query._using].options['ENGINE']:
-            # HACK Whoosh doesn't support __exact queries correctly, so we just
-            # use the default
-            field_format = '%s'
-        else:
-            field_format = '%s__exact'
-
+        from localtv.search.utils import _exact_q
         sq_list = []
         for token in tokens:
             if isinstance(token, basestring):
@@ -162,31 +156,31 @@ class SmartSearchQuerySet(SearchQuerySet):
                                                'name', 'slug', 'pk')
                         if category is None:
                             continue
-                        sq = SQ(**{field_format % 'categories': category.pk})
+                        sq = _exact_q(self, 'categories', category.pk)
                     elif keyword == 'feed':
                         feed = self._get_object(Feed, rest,
                                            'name', 'pk')
                         if feed is None:
                             continue
-                        sq = SQ(**{field_format % 'feed': feed.pk})
+                        sq = _exact_q(self, 'feed', feed.pk)
                     elif keyword == 'search':
                         search = self._get_object(SavedSearch, rest,
                                              'query_string', 'pk')
                         if search is None:
                             continue
-                        sq = SQ(**{field_format % 'search': search.pk})
+                        sq = _exact_q(self, 'search', search.pk)
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
                         if tag is None:
                             continue
-                        sq = SQ(**{field_format % 'tags': tag.pk})
+                        sq = _exact_q(self, 'tags', tag.pk)
                     elif keyword == 'user':
                         user = self._get_object(User, rest,
                                            'username', 'pk')
                         if user is None:
                             continue
-                        sq = (SQ(**{field_format % 'user': user.pk}) |
-                              SQ(**{field_format % 'authors': user.pk}))
+                        sq = (_exact_q(self, 'user', user.pk) |
+                              _exact_q(self, 'authors', user.pk))
                     elif keyword == 'playlist':
                         playlist = self._get_object(Playlist, rest, 'pk')
                         if playlist is None and '/' in rest:
@@ -200,7 +194,7 @@ class SmartSearchQuerySet(SearchQuerySet):
                                 pass
                         if playlist is None:
                             continue
-                        sq = SQ(**{field_format % 'playlists': playlist.pk})
+                        sq = _exact_q(self, 'playlists', playlist.pk)
                     else:
                         sq = SQ(content=token)
                 if negated:
