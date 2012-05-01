@@ -2235,10 +2235,12 @@ class BulkEditVideoFormTestCase(BaseTestCase):
         instance = Video.objects.filter(status=Video.ACTIVE)[0]
         result = SearchQuerySet().filter(django_id=instance.pk)[0]
 
-        self.assertEqual(result.categories,
-                         list(instance.categories.values_list('pk', flat=True)))
-        self.assertEqual(result.authors,
-                         list(instance.authors.values_list('pk', flat=True)))
+        self.assertEqual([unicode(pk) for pk in result.categories],
+                         [unicode(pk) for pk in
+                          instance.categories.values_list('pk', flat=True)])
+        self.assertEqual([unicode(pk) for pk in result.authors],
+                         [unicode(pk) for pk in
+                          instance.authors.values_list('pk', flat=True)])
 
         data = model_to_dict(instance)
         data.update({
@@ -2256,10 +2258,12 @@ class BulkEditVideoFormTestCase(BaseTestCase):
                          list(Category.objects.all()))
         self.assertEqual(list(instance.authors.all()),
                          list(User.objects.all()))
-        self.assertEqual(set(result.categories),
-                         set(Category.objects.values_list('pk', flat=True)))
-        self.assertEqual(set(result.authors),
-                         set(User.objects.values_list('pk', flat=True)))
+        self.assertEqual(set([unicode(pk) for pk in result.categories]),
+                         set([unicode(pk) for pk in
+                              Category.objects.values_list('pk', flat=True)]))
+        self.assertEqual(set([unicode(pk) for pk in result.authors]),
+                         set([unicode(pk) for pk in
+                              User.objects.values_list('pk', flat=True)]))
 
 
 class BulkEditAdministrationTestCase(AdministrationBaseTestCase):

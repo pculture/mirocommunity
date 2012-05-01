@@ -309,8 +309,9 @@ class AutoQueryTestCase(BaseTestCase):
         self.assertGreater(len(results), 0)
         for result in results:
             self.assertTrue('repair' in result.text.lower() or
-                            result.user == user.pk or
-                            user.pk in result.authors)
+                            unicode(result.user) == unicode(user.pk) or
+                            unicode(user.pk) in [unicode(a)
+                                                 for a in result.authors])
 
     def test_search_or_and(self):
         """

@@ -24,10 +24,12 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
+from haystack.query import SearchQuerySet
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.utils import SortFilterMixin, NormalizedVideoList
+from localtv.search.utils import (SortFilterMixin, NormalizedVideoList,
+                                  _exact_q)
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -100,7 +102,7 @@ class VideoView(SortFilterMixin, DetailView):
         })
 
         site_settings = SiteSettings.objects.get_current()
-        popular_videos = self._sort(self._search(''), '-popular')
+        popular_videos = self._search('')
 
         try:
             category_obj = self.object.categories.all()[0]
@@ -132,9 +134,11 @@ class VideoView(SortFilterMixin, DetailView):
                                 pass
 
             context['category'] = category_obj
-            popular_videos = popular_videos.filter(
-                                            categories__exact=category_obj.pk)
+            popular_videos = popular_videos.filter(_exact_q(popular_videos,
+                                                            'categories',
+                                                            category_obj.pk))
 
+        popular_videos = self._sort(popular_videos, '-popular')
         context['popular_videos'] = NormalizedVideoList(popular_videos)
 
         if self.object.voting_enabled():
