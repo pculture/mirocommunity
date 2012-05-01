@@ -226,6 +226,10 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
                                                          thumbnail_url)
             kwargs['thumbnail'] = thumbnail_url
             if thumbnail_url and self.feed_type is JSONGenerator:
+                # Version 2 of the MC widgets expect a 'thumbnails_resized'
+                # argument which includes thumbnails of these sizes for the
+                # various sizes of widget.  These are only here for backwards
+                # compatibility with those widgets.
                 thumbnails_resized = kwargs['thumbnails_resized'] = []
                 if image is None:
                     image = Image.objects.for_storage_path(
