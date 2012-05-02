@@ -74,21 +74,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="col-three-quarters">
 			<div class="social-media-share">
 				<ul class="social-link-list">
-					<li>
+					<li class="facebook-social">
 						<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
 					</li>
-					<li>
+					<li class="twitter-social">
 						<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
 					</li>
-					<li>
+					<li class="gplus-social">
 						<g:plusone size="medium"></g:plusone>
 					</li>
-					<li>
+					<li class="pinterest-social">
 						<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|iriencode }}&amp;media={% filter iriencode %}{% adjust current_video.thumbnail_url adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
 					</li>
-					<li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
+					<li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
 					{% if current_video.file_url %}
-						<li><a href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
+						<li class="file-social"><a class="button" href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
 					{% endif %}
 				</ul>
 			</div>
