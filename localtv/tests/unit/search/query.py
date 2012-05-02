@@ -232,6 +232,9 @@ class AutoQueryTestCase(BaseTestCase):
                     set(self.rocket_videos[1:3]))
         self.assertQueryResults('-"foo bar"', expected)
 
+        expected = self.all_videos - set(self.blender_videos[6:7])
+        self.assertQueryResults('-feed:blender', expected)
+
         expected = self.all_videos - set(self.blender_user_videos[:2])
         self.assertQueryResults('-user:blender', expected)
 
