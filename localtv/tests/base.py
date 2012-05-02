@@ -35,6 +35,7 @@ from tagging.models import Tag
 
 from localtv import models
 from localtv.middleware import UserIsAdminMiddleware
+from localtv.playlists.models import Playlist
 
 
 #: Global variable for storing whether the current global state believe that
@@ -225,6 +226,15 @@ class BaseTestCase(TestCase):
                                           status=status,
                                           site_id=site_id,
                                           **kwargs)
+
+    @classmethod
+    def create_playlist(cls, user, name='Playlist', status=Playlist.PUBLIC,
+                        site_id=1, slug=None, description=''):
+        if slug is None:
+            slug = slugify(name)
+        return Playlist.objects.create(name=name, status=status,
+                                       site_id=site_id, user=user, slug=slug,
+                                       description=description)
 
     @classmethod
     def create_search(cls, query_string, site_id=1, **kwargs):

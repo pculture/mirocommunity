@@ -156,8 +156,16 @@ class AutoQueryTestCase(BaseTestCase):
                 cls.create_video(authors=[user])
             )
 
-        cls.all_videos = (cls.blender_videos + cls.blender_user_videos +
-                           cls.rocket_videos + cls.rocket_user_videos)
+        cls.search_videos = (
+            cls.create_video(search=cls.create_search("rogue")),
+        )
+        cls.playlist = cls.create_playlist(cls.blender_users[0])
+        cls.playlist.add_video(cls.blender_videos[0])
+        cls.playlist.add_video(cls.rocket_videos[0])
+
+        cls.all_videos = set((cls.blender_videos + cls.blender_user_videos +
+                              cls.rocket_videos + cls.rocket_user_videos +
+                              cls.search_videos))
         cls._enable_index_updates()
         cls._rebuild_index()
 
@@ -180,10 +188,12 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         results = SmartSearchQuerySet().auto_query(query)
-        result_pks = set([unicode(r.pk) for r in results])
+        results = dict((unicode(r.pk), r) for r in results)
         expected = dict((unicode(v.pk), v) for v in expected)
 
-        self.assertEqual(result_pks, set(expected))
+        result_pks = set(results)
+        expected_pks = set(expected)
+        self.assertEqual(result_pks, expected_pks)
 
     def test_search(self):
         """
@@ -192,6 +202,7 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.blender_videos + self.blender_user_videos
+        self.assertQueryResults("blender", expected)
 
     def test_search_phrase(self):
         """
@@ -204,8 +215,25 @@ class AutoQueryTestCase(BaseTestCase):
     def test_search_blank(self):
         """
         Searching for a blank string should be handled gracefully.
+
         """
         self.assertQueryResults('', self.all_videos)
+
+    def test_search_exclude(self):
+        """
+        Search should exclude strings, phrases, and keywords preceded by a '-'
+
+        """
+        expected = (self.all_videos - set(self.blender_videos) -
+                    set(self.blender_user_videos))
+        self.assertQueryResults('-blender', expected)
+
+        expected = (self.all_videos - set(self.blender_videos[1:3]) -
+                    set(self.rocket_videos[1:3]))
+        self.assertQueryResults('-"foo bar"', expected)
+
+        expected = self.all_videos - set(self.blender_user_videos[:2])
+        self.assertQueryResults('-user:blender', expected)
 
     def test_search_keyword__tag(self):
         """
@@ -244,3 +272,49 @@ class AutoQueryTestCase(BaseTestCase):
         expected = self.blender_videos[6:7]
         self.assertQueryResults('feed:Blender', expected)
         self.assertQueryResults('feed:1', expected)
+
+    def test_search_keyword__playlist(self):
+        """
+        Playlist keyword should search the videos' playlists, accepting a pk
+        or a username/slug combination.
+
+        """
+        expected = self.blender_videos[:1] + self.rocket_videos[:1]
+        self.assertQueryResults('playlist:blender/playlist', expected)
+        self.assertQueryResults('playlist:1', expected)
+
+    def test_search_keyword__search(self):
+        """
+        Search keyword should search the videos' related saved searches,
+        accepting a pk or a query string.
+
+        """
+        expected = self.search_videos
+        self.assertQueryResults('search:1', expected)
+        self.assertQueryResults('search:rogue', expected)
+        self.assertQueryResults('search:"rogue"', expected)
+
+    def test_search_or(self):
+        """
+        Terms bracketed in {}s should be ORed together.
+
+        """
+        expected = (self.rocket_videos + self.rocket_user_videos +
+                    self.blender_videos[1:3])
+        self.assertQueryResults("{rocket foo}", expected)
+
+        # For posterity, this test was added because of bz19056.
+        expected = (self.rocket_videos + self.rocket_user_videos +
+                    self.blender_user_videos[0:2])
+        self.assertQueryResults("{user:blender rocket}", expected)
+
+    def test_search_or_and(self):
+        """
+        Mixing OR and AND should work as expected.
+
+        """
+        expected = (self.blender_videos[:1] + self.blender_videos[3:] +
+                    self.rocket_videos[:1] + self.rocket_videos[3:] +
+                    self.blender_user_videos + self.rocket_user_videos)
+        self.assertQueryResults('{rocket blender} -foo', expected)
+        self.assertQueryResults('-foo {rocket blender}', expected)
