@@ -22,14 +22,20 @@ from socket import getaddrinfo
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sites.models import Site
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.management import call_command
+from django.db import transaction
 from django.template.defaultfilters import slugify
-from django.test.testcases import TestCase, _deferredSkip
+from django.test.testcases import (TestCase, _deferredSkip,
+                                   disable_transaction_methods,
+                                   restore_transaction_methods,
+                                   connections_support_transactions)
 from django.test.client import RequestFactory
 from haystack import connections
 from tagging.models import Tag
 
 from localtv import models
 from localtv.middleware import UserIsAdminMiddleware
+from localtv.playlists.models import Playlist
 
 
 #: Global variable for storing whether the current global state believe that
@@ -50,29 +56,68 @@ class FakeRequestFactory(RequestFactory):
 
 
 class BaseTestCase(TestCase):
-    def _clear_index(self):
+    @staticmethod
+    def _clear_index():
         """Clears the search index."""
         backend = connections['default'].get_backend()
         backend.clear()
 
-    def _update_index(self):
+    @staticmethod
+    def _update_index():
         """Updates the search index."""
         backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(
             models.Video)
-        backend.update(index, index.index_queryset())
+        qs = index.index_queryset()
+        if qs:
+            backend.update(index, qs)
 
-    def _rebuild_index(self):
+    @classmethod
+    def _rebuild_index(cls):
         """Clears and then updates the search index."""
-        self._clear_index()
-        self._update_index()
+        cls._clear_index()
+        cls._update_index()
+
+    @staticmethod
+    def _disable_index_updates():
+        """Disconnects the index update listeners."""
+        index = connections['default'].get_unified_index().get_index(
+                                                                 models.Video)
+        index._teardown_save()
+        index._teardown_delete()
+
+    @staticmethod
+    def _enable_index_updates():
+        """Connects the index update listeners."""
+        index = connections['default'].get_unified_index().get_index(
+                                                                 models.Video)
+        index._setup_save()
+        index._setup_delete()
+
+    @staticmethod
+    def _start_test_transaction():
+        if connections_support_transactions():
+            transaction.enter_transaction_management(using='default')
+            transaction.managed(True, using='default')
+        else:
+            call_command('flush', verbosity=0, interactive=False,
+                         database='default')
+        disable_transaction_methods()
+
+    @staticmethod
+    def _end_test_transaction():
+        restore_transaction_methods()
+        if connections_support_transactions():
+            transaction.rollback(using='default')
+            transaction.leave_transaction_management(using='default')
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
         self.factory = FakeRequestFactory()
         models.SiteSettings.objects.clear_cache()
 
-    def create_video(self, name='Test.', status=models.Video.ACTIVE, site_id=1,
+    @classmethod
+    def create_video(cls, name='Test.', status=models.Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
                      update_index=True, **kwargs):
         """
@@ -97,7 +142,7 @@ class BaseTestCase(TestCase):
         video.save(update_index=update_index)
 
         for i in xrange(watches):
-            self.create_watch(video, days=i)
+            cls.create_watch(video, days=i)
 
         if categories is not None:
             video.categories.add(*categories)
@@ -116,7 +161,8 @@ class BaseTestCase(TestCase):
             index._enqueue_update(video)
         return video
 
-    def create_category(self, site_id=1, **kwargs):
+    @classmethod
+    def create_category(cls, site_id=1, **kwargs):
         """
         Factory method for creating categories. Supplies the following
         default:
@@ -132,7 +178,8 @@ class BaseTestCase(TestCase):
             kwargs['slug'] = slugify(kwargs.get('name', ''))
         return models.Category.objects.create(site_id=site_id, **kwargs)
 
-    def create_user(self, **kwargs):
+    @classmethod
+    def create_user(cls, **kwargs):
         """
         Factory method for creating users. All arguments are passed directly
         to :meth:`User.objects.create`.
@@ -140,7 +187,8 @@ class BaseTestCase(TestCase):
         """
         return User.objects.create(**kwargs)
 
-    def create_tag(self, **kwargs):
+    @classmethod
+    def create_tag(cls, **kwargs):
         """
         Factory method for creating tags. All arguments are passed directly
         to :meth:`Tag.objects.create`.
@@ -148,7 +196,8 @@ class BaseTestCase(TestCase):
         """
         return Tag.objects.create(**kwargs)
 
-    def create_watch(self, video, ip_address='0.0.0.0', days=0):
+    @classmethod
+    def create_watch(cls, video, ip_address='0.0.0.0', days=0):
         """
         Factory method for creating :class:`Watch` instances.
 
@@ -162,7 +211,8 @@ class BaseTestCase(TestCase):
         watch.save()
         return watch
 
-    def create_feed(self, feed_url, name=None, description='Lorem ipsum',
+    @classmethod
+    def create_feed(cls, feed_url, name=None, description='Lorem ipsum',
                     last_updated=None, status=models.Feed.ACTIVE, site_id=1,
                     **kwargs):
         if name is None:
@@ -177,18 +227,30 @@ class BaseTestCase(TestCase):
                                           site_id=site_id,
                                           **kwargs)
 
-    def create_search(self, query_string, site_id=1, **kwargs):
+    @classmethod
+    def create_playlist(cls, user, name='Playlist', status=Playlist.PUBLIC,
+                        site_id=1, slug=None, description=''):
+        if slug is None:
+            slug = slugify(name)
+        return Playlist.objects.create(name=name, status=status,
+                                       site_id=site_id, user=user, slug=slug,
+                                       description=description)
+
+    @classmethod
+    def create_search(cls, query_string, site_id=1, **kwargs):
         return models.SavedSearch.objects.create(query_string=query_string,
                                                  site_id=site_id,
                                                  **kwargs)
 
-    def create_site(self, domain='example.com', name=None):
+    @classmethod
+    def create_site(cls, domain='example.com', name=None):
         if name is None:
             name = domain
 
         return Site.objects.create(domain=domain, name=name)
 
-    def _data_file(self, filename):
+    @staticmethod
+    def _data_file(filename):
         """
         Returns the absolute path to a file in our testdata directory.
         """

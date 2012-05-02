@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import operator
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from haystack import connections
@@ -130,29 +132,22 @@ class SmartSearchQuerySet(SearchQuerySet):
                 except (model.DoesNotExist, ValueError):
                     pass
 
-    def _tokens_to_sqs(self, tokens, sqs):
+    def _tokens_to_sq(self, tokens):
         """
-        Turns a list of tokens and a SearchQuerySet into a SQS representing
-        those tokens.
+        Takes a list of tokens and returns a single SQ instance representing
+        those tokens, or ``None`` if no valid tokens were supplied.
 
         """
-        if 'WhooshEngine' in connections[sqs.query._using].options['ENGINE']:
-            # HACK Whoosh doesn't support __exact queries correctly, so we just
-            # use the default
-            field_format = '%s'
-        else:
-            field_format = '%s__exact'
-        clean = sqs.query.clean
+        from localtv.search.utils import _exact_q
+        sq_list = []
         for token in tokens:
             if isinstance(token, basestring):
-                method = sqs.filter
-                negative = False
+                negated = False
                 if token[0] == '-':
-                    negative = True
-                    method = sqs.exclude
+                    negated = True
                     token = token[1:]
                 if ':' not in token:
-                    sqs = method(content=clean(token))
+                    sq = SQ(content=token)
                 else:
                     # possibly a special keyword
                     keyword, rest = token.split(':', 1)
@@ -160,33 +155,33 @@ class SmartSearchQuerySet(SearchQuerySet):
                     if keyword == 'category':
                         category = self._get_object(Category, rest,
                                                'name', 'slug', 'pk')
-                        if category is not None:
-                            sqs = method(
-                                **{field_format % 'categories': category.pk})
+                        if category is None:
+                            continue
+                        sq = _exact_q(self, 'categories', category.pk)
                     elif keyword == 'feed':
                         feed = self._get_object(Feed, rest,
                                            'name', 'pk')
-                        if feed is not None:
-                            sqs = method(**{field_format % 'feed': feed.pk})
+                        if feed is None:
+                            continue
+                        sq = _exact_q(self, 'feed', feed.pk)
                     elif keyword == 'search':
                         search = self._get_object(SavedSearch, rest,
                                              'query_string', 'pk')
-                        if search is not None:
-                            sqs = method(
-                                **{field_format % 'search': search.pk})
+                        if search is None:
+                            continue
+                        sq = _exact_q(self, 'search', search.pk)
                     elif keyword == 'tag':
                         tag = self._get_object(Tag, rest, 'name')
-                        if tag is not None:
-                            sqs = method(**{field_format % 'tags': tag.pk})
+                        if tag is None:
+                            continue
+                        sq = _exact_q(self, 'tags', tag.pk)
                     elif keyword == 'user':
                         user = self._get_object(User, rest,
                                            'username', 'pk')
-                        if user is not None:
-                            sq = (SQ(**{field_format % 'user': user.pk}) |
-                                  SQ(**{field_format % 'authors': user.pk}))
-                            if negative:
-                                sq = ~sq
-                            sqs = sqs.filter(sq)
+                        if user is None:
+                            continue
+                        sq = (_exact_q(self, 'user', user.pk) |
+                              _exact_q(self, 'authors', user.pk))
                     elif keyword == 'playlist':
                         playlist = self._get_object(Playlist, rest, 'pk')
                         if playlist is None and '/' in rest:
@@ -198,22 +193,41 @@ class SmartSearchQuerySet(SearchQuerySet):
                                     slug=slug)
                             except Playlist.DoesNotExist:
                                 pass
-                        if playlist is not None:
-                            sqs = method(
-                                **{field_format % 'playlists': playlist.pk})
+                        if playlist is None:
+                            continue
+                        sq = _exact_q(self, 'playlists', playlist.pk)
                     else:
-                        sqs = method(content=clean(token))
-            else:
+                        sq = SQ(content=token)
+                if negated:
+                    sq = ~sq
+            elif isinstance(token, (list, tuple)):
                 # or block
-                clone = sqs._clone()
-                for or_token in token:
-                    sqs = sqs | clone._tokens_to_sqs([or_token], clone)
+                or_sq_list = [self._tokens_to_sq([or_token])
+                              for or_token in token]
+                if not or_sq_list:
+                    continue
+                sq = reduce(operator.or_, or_sq_list)
+            else:
+                raise ValueError("Invalid token: {0!r}".format(token))
+            sq_list.append(sq)
+        if not sq_list:
+            return None
+        return reduce(operator.and_, sq_list)
 
-        return sqs
+    def _filter_for_tokens(self, tokens):
+        """
+        Takes a list of tokens and returns a copy of the current
+        SearchQuerySet filtered for those tokens.
+
+        """
+        sq = self._tokens_to_sq(tokens)
+        if sq is None:
+            return self._clone()
+        return self.filter(sq)
 
     def auto_query(self, query_string):
         """
         Performs a best guess constructing the search query.
 
         """
-        return self._tokens_to_sqs(self.tokenize(query_string), self)
+        return self._filter_for_tokens(self.tokenize(query_string))

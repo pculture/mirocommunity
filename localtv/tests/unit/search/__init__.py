@@ -15,11 +15,5 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
 
-from localtv.tests.legacy_localtv import *
-from localtv.tests.legacy_admin import *
-from localtv.tests.legacy_playlists import *
-from localtv.tests.legacy_user_profile import *
-
-from localtv.tests.integration import *
-from localtv.tests.functional import *
-from localtv.tests.unit import *
+from localtv.tests.unit.search.query import *
+from localtv.tests.unit.search.utils import *

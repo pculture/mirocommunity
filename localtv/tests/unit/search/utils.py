@@ -38,10 +38,7 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         self.nvl1 = utils.NormalizedVideoList(
                             Video.objects.filter(status=Video.ACTIVE))
         sqs = SearchQuerySet().models(Video)
-        if 'WhooshEngine' in connections['default'].options['ENGINE']:
-            sqs = sqs.filter(site=1)
-        else:
-            sqs = sqs.filter(site__exact=1)
+        sqs = sqs.filter(utils._exact_q(sqs, 'site', 1))
         self.nvl2 = utils.NormalizedVideoList(sqs)
 
     def test_getitem(self):

@@ -25,8 +25,11 @@ from django.core.paginator import Page
 from django.core import mail
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.db.models import Q
+from django.forms.models import model_to_dict
 from django.test.client import Client
+from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
+from haystack.query import SearchQuerySet
 
 import mock
 from notification import models as notification
@@ -2222,6 +2225,48 @@ class BulkEditVideoFormTestCase(BaseTestCase):
         self.assertTrue(form.is_valid())
         form.save()
         self.assertTrue(mock_save_thumbnail.called)
+
+    @override_settings(CELERY_ALWAYS_EAGER=True)
+    def test_index_after_m2m(self):
+        """
+        After the videos are saved, their indexed equivalents should have the
+        same authors and categories that they have.
+
+        """
+        from localtv.admin.forms import BulkEditVideoForm
+        instance = Video.objects.filter(status=Video.ACTIVE)[0]
+        result = SearchQuerySet().filter(django_id=instance.pk)[0]
+
+        self.assertEqual([unicode(pk) for pk in result.categories],
+                         [unicode(pk) for pk in
+                          instance.categories.values_list('pk', flat=True)])
+        self.assertEqual([unicode(pk) for pk in result.authors],
+                         [unicode(pk) for pk in
+                          instance.authors.values_list('pk', flat=True)])
+
+        data = model_to_dict(instance)
+        data.update({
+            'categories': list(Category.objects.values_list('pk', flat=True)),
+            'authors': list(User.objects.values_list('pk', flat=True)),
+        })
+
+        form = BulkEditVideoForm(data=data, instance=instance)
+
+        self.assertTrue(form.is_valid())
+        instance = form.save()
+        result = SearchQuerySet().filter(django_id=instance.pk)[0]
+
+        self.assertEqual(list(instance.categories.all()),
+                         list(Category.objects.all()))
+        self.assertEqual(list(instance.authors.all()),
+                         list(User.objects.all()))
+        self.assertEqual(set([unicode(pk) for pk in result.categories]),
+                         set([unicode(pk) for pk in
+                              Category.objects.values_list('pk', flat=True)]))
+        self.assertEqual(set([unicode(pk) for pk in result.authors]),
+                         set([unicode(pk) for pk in
+                              User.objects.values_list('pk', flat=True)]))
+
 
 class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
     fixtures = AdministrationBaseTestCase.fixtures + [

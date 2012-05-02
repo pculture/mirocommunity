@@ -36,31 +36,41 @@ from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 EMPTY = object()
 
 
+def _exact_q(queryset, field, value):
+    # Returns a Q or SQ instance representing an __exact query for the given
+    # field/value. This facilitates a HACK necessitated by Whoosh __exact
+    # queries working strangely.
+    # https://github.com/toastdriven/django-haystack/issues/529
+    q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
+    if value is None:
+        return q_class(**{'{0}__isnull'.format(field): True})
+    if (q_class is SQ and
+       'WhooshEngine' in
+       connections[queryset.query._using].options['ENGINE']):
+        return q_class(**{field: value})
+    return q_class(**{'{0}__exact'.format(field): value})
+
+
+def _in_q(queryset, field, values):
+    # Returns a Q or SQ instance representing an __in query for the given
+    # field/value. This facilitates a HACK necessitated by Whoosh, which
+    # doesn't properly support __in with multiple values. Instead, we
+    # calculate each value separately and OR them together.
+    q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
+    if (q_class is SQ and
+        'WhooshEngine' in
+        connections[queryset.query._using].options['ENGINE']):
+        qs = [_exact_q(queryset, field, value) for value in values]
+        return reduce(operator.or_, qs)
+    return q_class(**{'{0}__in'.format(field): values})
+
+
 def _q_for_queryset(queryset, field, values):
     q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
     if len(values) == 1:
-        value = values[0]
-        if value is None:
-            return q_class(**{'%s__isnull' % field: True})
-        if (q_class is SQ and
-           'WhooshEngine' in
-           connections[queryset.query._using].options['ENGINE']):
-            # HACK __exact queries don't work on Whoosh:
-            # https://github.com/toastdriven/django-haystack/issues/529
-            # but they're required for at least Xapian.
-            return q_class(**{field: value})
-        return q_class(**{'%s__exact' % field: value})
+        return _exact_q(queryset, field, values[0])
     else:
-        if (q_class is SQ and
-            'WhooshEngine' in
-            connections[queryset.query._using].options['ENGINE']):
-            # Whoosh doesn't properly support __in with multiple values, from
-            # what I can see.  This code calculates the SQ for each individual
-            # value and ORs them together.
-            qs = [_q_for_queryset(queryset, field, [value])
-                  for value in values]
-            return reduce(operator.or_, qs)
-        return q_class(**{'%s__in' % field: values})
+        return _in_q(queryset, field, values)
 
 
 class NormalizedVideoList(object):
