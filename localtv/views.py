@@ -43,7 +43,7 @@ class IndexView(TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
         form = SortFilterForm({'sort': 'popular'})
-        form.is_valid()
+        form.full_clean()
         popular_videos = form.get_queryset()
         new_videos = Video.objects.get_latest_videos()
 
@@ -104,7 +104,7 @@ class VideoView(DetailView):
 
         site_settings = SiteSettings.objects.get_current()
         form = SortFilterForm({'sort': 'popular'})
-        form.is_valid()
+        form.full_clean()
         popular_videos = form.get_queryset()
 
         try:
