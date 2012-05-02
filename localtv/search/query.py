@@ -135,7 +135,7 @@ class SmartSearchQuerySet(SearchQuerySet):
     def _tokens_to_sq(self, tokens):
         """
         Takes a list of tokens and returns a single SQ instance representing
-        those tokens.
+        those tokens, or ``None`` if no valid tokens were supplied.
 
         """
         from localtv.search.utils import _exact_q
@@ -202,11 +202,16 @@ class SmartSearchQuerySet(SearchQuerySet):
                     sq = ~sq
             elif isinstance(token, (list, tuple)):
                 # or block
-                sq = reduce(operator.or_, [self._tokens_to_sq([or_token])
-                                           for or_token in token])
+                or_sq_list = [self._tokens_to_sq([or_token])
+                              for or_token in token]
+                if not or_sq_list:
+                    continue
+                sq = reduce(operator.or_, or_sq_list)
             else:
                 raise ValueError("Invalid token: {0!r}".format(token))
             sq_list.append(sq)
+        if not sq_list:
+            return None
         return reduce(operator.and_, sq_list)
 
     def _filter_for_tokens(self, tokens):
@@ -215,7 +220,10 @@ class SmartSearchQuerySet(SearchQuerySet):
         SearchQuerySet filtered for those tokens.
 
         """
-        return self.filter(self._tokens_to_sq(tokens))
+        sq = self._tokens_to_sq(tokens)
+        if sq is None:
+            return self._clone()
+        return self.filter(sq)
 
     def auto_query(self, query_string):
         """
