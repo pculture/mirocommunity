@@ -1177,7 +1177,7 @@ class ListingViewTestCase(BaseTestCase):
 
         c = Client()
         response = c.get(reverse('localtv_list_tag',
-                         args=['tag1']))
+                         kwargs={'name': 'tag1'}))
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_tag.html')

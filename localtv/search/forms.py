@@ -26,7 +26,6 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django.utils.datastructures import SortedDict
-from django.utils.functional import SimpleLazyObject
 from haystack.forms import SearchForm
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
@@ -49,6 +48,9 @@ class SmartSearchForm(SearchForm):
 
     def no_query_found(self):
         return self.searchqueryset.all()
+
+    def invalid_query(self):
+        return self.searchqueryset.none()
 
 
 class FilterField(forms.ModelMultipleChoiceField):
@@ -77,12 +79,15 @@ class ModelFilterField(FilterField):
         self.field_lookups = field_lookups
         if label is None:
             label = queryset.model._meta.verbose_name_plural
+        if hasattr(queryset, 'model'):
+            self.model = queryset.model
         super(ModelFilterField, self).__init__(queryset, cache_choices,
                                                required, widget, label, *args,
                                                **kwargs)
 
     def clean(self, value):
-        if (isinstance(value, QuerySet) or
+        if ((isinstance(value, QuerySet) and
+             value.model == self.queryset.model) or
             (isinstance(value, (list, tuple)) and
              isinstance(value[0], self.queryset.model))):
             key = self.to_field_name or 'pk'
@@ -91,12 +96,17 @@ class ModelFilterField(FilterField):
 
 
 class TagFilterField(ModelFilterField):
-    def __init__(self, *args, **kwargs):
-        queryset = SimpleLazyObject(lambda: Tag.objects.usage_for_queryset(
-                                                Video.objects.filter(
+    def __init__(self, field_lookups=('tags',), cache_choices=False,
+                 required=False, widget=None, label=_('Tags'), initial=None,
+                 help_text=None, to_field_name='name', *args, **kwargs):
+        self.model = Tag
+        queryset = Tag.objects.usage_for_queryset(Video.objects.filter(
                                                     site=settings.SITE_ID,
-                                                    status=Video.ACTIVE)))
-        super(TagFilterField, self).__init__(queryset, *args, **kwargs)
+                                                    status=Video.ACTIVE))
+        super(TagFilterField, self).__init__(queryset, field_lookups,
+                                             cache_choices, required, widget,
+                                             label, initial, help_text,
+                                             to_field_name, *args, **kwargs)
 
     def clean(self, value):
         if self.required and not value:
@@ -156,6 +166,7 @@ class SortFilterForm(SmartSearchForm):
         super(SortFilterForm, self).__init__(*args, **kwargs)
         self.searchqueryset = self.searchqueryset.filter(
                                                         site=settings.SITE_ID)
+        self.fields['tag'] = TagFilterField()
 
     def filter_fields(self):
         """

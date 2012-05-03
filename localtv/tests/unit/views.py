@@ -83,15 +83,11 @@ class CompatibleListingViewTestCase(BaseTestCase):
 
         """
         view = CompatibleListingView()
-        view.request = self.factory.get('/', {'query': 'foo'})
-        view.kwargs = {}
-        form_kwargs = view.get_form_kwargs()
-        self.assertEqual(form_kwargs['data'].get('q'), 'foo')
+        data = view.get_form_data({'query': 'foo'})
+        self.assertEqual(data.get('q'), 'foo')
 
-        view.request = self.factory.get('/', {'query': 'foo', 'q': 'bar'})
-        view.kwargs = {}
-        form_kwargs = view.get_form_kwargs()
-        self.assertEqual(form_kwargs['data'].get('q'), 'bar')
+        data = view.get_form_data({'query': 'foo', 'q': 'bar'})
+        self.assertEqual(data.get('q'), 'bar')
 
     def test_queryset(self):
         """
@@ -105,8 +101,7 @@ class CompatibleListingViewTestCase(BaseTestCase):
 
     def test_get_context_data(self):
         """
-        Compatible listing views should include 'query', 'video_list', and
-        (if relevant) the current filter object in the context data.
+        Compatible listing views should include 'query' and 'video_list'.
 
         """
         view = CompatibleListingView()
@@ -118,19 +113,30 @@ class CompatibleListingViewTestCase(BaseTestCase):
         for f in context['form'].filter_fields():
             self.assertFalse(f.name in context)
 
-        category = self.create_category()
-        view.request = self.factory.get('/')
-        view.kwargs = {'slug': category.slug}
-        view.url_filter = 'category'
-        view.url_filter_kwarg = 'slug'
-        context = view.get_context_data(object_list=view.get_queryset())
-        self.assertEqual(context['category'], category)
-
 
 class SortFilterViewTestCase(BaseTestCase):
-    def test_queryset(self):
+    def test_get_object(self):
         view = SortFilterView()
         view.request = self.factory.get('/')
         view.kwargs = {'pk': 1}
-        view.url_filter = 'author'
-        self.assertRaises(Http404, view.get_queryset)
+        view.filter_name = 'author'
+        self.assertRaises(Http404, view.get_object)
+        view.kwargs = {'pk': 'foo'}
+        self.assertRaises(Http404, view.get_object)
+
+    def test_get_context_data(self):
+        """
+        The SortFilterView should provide 'videos', 'form', and, if relevant,
+        the current enforced filter object.
+
+        """
+        view = SortFilterView()
+        category = self.create_category()
+        view.request = self.factory.get('/')
+        view.kwargs = {'slug': category.slug}
+        view.filter_name = 'category'
+        view.filter_kwarg = 'slug'
+        context = view.get_context_data(object_list=view.get_queryset())
+        self.assertEqual(context['category'], category)
+        self.assertTrue('videos' in context)
+        self.assertTrue('form' in context)

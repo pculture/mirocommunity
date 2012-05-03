@@ -56,10 +56,9 @@ class CompatibleListingView(SortFilterView):
             paginate_by = self.paginate_by
         return paginate_by
 
-    def _request_form_data(self, request, **kwargs):
-        """Supports the old-style "query" GET parameter."""
-        data = super(CompatibleListingView, self)._request_form_data(request,
-                                                                     **kwargs)
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(CompatibleListingView, self).get_form_data(base_data,
+                                                                filter_value)
         if 'q' not in data:
             data['q'] = data.get('query', '')
         return data
@@ -84,12 +83,6 @@ class CompatibleListingView(SortFilterView):
         form = context['form']
         context['query'] = form.cleaned_data['q']
         context['video_list'] = context['videos']
-
-        url_filter = self.url_filter
-        if url_filter is not None:
-            # SortFilterView would have raised a 404 in get_queryset() if
-            # anything were wrong with the url filter.
-            context[url_filter] = form.cleaned_data[url_filter][0]
         return context
 
 

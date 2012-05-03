@@ -43,6 +43,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
     view_name = None
+    filter_kwarg = 'pk'
 
     def __init__(self, json=False):
         if json:
@@ -94,19 +95,18 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         and are thus unsuitable for storage.
 
         """
-        form = self.form_class(self._request_form_data(request, **kwargs))
-        if not form.is_valid():
-            raise Http404
-
         obj = {
-            'request': request,
-            'form': form,
+            'request': request
         }
 
-        if self.url_filter is not None:
+        if self.filter_name is not None:
+            field = self.form_class.base_fields[self.filter_name]
+            model = field.queryset.model
             try:
-                obj['obj'] = form.cleaned_data[self.url_filter][0]
-            except IndexError:
+                key = field.to_field_name or 'pk'
+                obj['obj'] = model.objects.get(**{
+                                            key: kwargs[self.filter_kwarg]})
+            except (ValueError, model.DoesNotExist):
                 raise Http404
 
         return obj
@@ -124,12 +124,17 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         feed.opensearch_data = self._get_opensearch_data(obj)
         return feed
 
-    def link(self, obj):
-        if self.view_name is None:
+    def _base_link(self, obj):
+        if self.view_name is not None:
+            return reverse(self.view_name)
+        elif 'obj' in obj:
+            return obj['obj'].get_absolute_url()
+        else:
             raise NotImplementedError
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((reverse(self.view_name), qd.urlencode()))
+
+    def link(self, obj):
+        return u"?".join((self._base_link(obj),
+                          obj['request'].GET.urlencode()))
 
     def items(self, obj):
         """
@@ -143,7 +148,11 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        qs = obj['form'].get_queryset()
+        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
+        if form.is_valid():
+            qs = form.get_queryset()
+        else:
+            qs = form.invalid_query()
         items = NormalizedVideoList(qs)
         return self._opensearch_items(items, obj)
 
@@ -266,6 +275,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
 class NewVideosFeed(BaseVideosFeed):
     view_name = 'localtv_list_new'
+    sort = 'newest'
 
     def title(self):
         return u"%s: %s" % (
@@ -274,6 +284,7 @@ class NewVideosFeed(BaseVideosFeed):
 
 class FeaturedVideosFeed(BaseVideosFeed):
     view_name = 'localtv_list_featured'
+    sort = 'featured'
 
     def title(self):
         return u"%s: %s" % (
@@ -282,6 +293,7 @@ class FeaturedVideosFeed(BaseVideosFeed):
 
 class PopularVideosFeed(BaseVideosFeed):
     view_name = 'localtv_list_popular'
+    sort = 'popular'
 
     def title(self):
         return u"%s: %s" % (
@@ -289,13 +301,8 @@ class PopularVideosFeed(BaseVideosFeed):
 
 
 class CategoryVideosFeed(BaseVideosFeed):
-    url_filter = 'category'
-    url_filter_kwarg = 'slug'
-
-    def link(self, obj):
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((obj['obj'].get_absolute_url(), qd.urlencode()))
+    filter_name = 'category'
+    filter_kwarg = 'slug'
 
     def title(self, obj):
         return u"%s: %s" % (
@@ -304,13 +311,10 @@ class CategoryVideosFeed(BaseVideosFeed):
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
-    url_filter = 'author'
+    filter_name = 'author'
 
-    def link(self, obj):
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((reverse('localtv_author', args=[obj['obj'].pk]),
-                          qd.urlencode()))
+    def _base_link(self, obj):
+        return reverse('localtv_author', args=[obj['obj'].pk])
 
     def title(self, obj):
         name_or_username = obj['obj'].get_full_name()
@@ -330,13 +334,10 @@ class FeedVideosFeed(BaseVideosFeed):
     #
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
-    url_filter = 'feed'
+    filter_name = 'feed'
 
-    def link(self, obj):
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((reverse('localtv_list_feed', args=[obj['obj'].pk]),
-                          qd.urlencode()))
+    def _base_link(self, obj):
+        return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
     def title(self, obj):
         return u"%s: Videos imported from %s" % (
@@ -345,14 +346,11 @@ class FeedVideosFeed(BaseVideosFeed):
 
 
 class TagVideosFeed(BaseVideosFeed):
-    url_filter = 'tag'
-    url_filter_kwarg = 'name'
+    filter_name = 'tag'
+    filter_kwarg = 'name'
 
-    def link(self, obj):
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((reverse('localtv_list_tag', args=[obj['obj'].name]),
-                          qd.urlencode()))
+    def _base_link(self, obj):
+        return reverse('localtv_list_tag', args=[obj['obj'].name])
 
     def title(self, obj):
         return u"%s: %s" % (Site.objects.get_current().name,
@@ -362,9 +360,9 @@ class TagVideosFeed(BaseVideosFeed):
 class SearchVideosFeed(BaseVideosFeed):
     view_name = 'localtv_search'
 
-    def _request_form_data(self, request, query):
-        data = super(SearchVideosFeed, self)._request_form_data(request)
-        data['q'] = query
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(SearchVideosFeed, self).get_form_data(base_data)
+        data['q'] = filter_value
         return data
 
     def get_object(self, request, query):
@@ -379,15 +377,11 @@ class SearchVideosFeed(BaseVideosFeed):
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
-    url_filter = 'playlist'
+    filter_name = 'playlist'
 
-    def link(self, obj):
-        qd = QueryDict('', mutable=True)
-        qd.update(obj['form'].cleaned_data)
-        return u"?".join((obj['obj'].get_absolute_url(), qd.urlencode()))
-
-    def _request_form_data(self, request, **kwargs):
-        data = super(PlaylistVideosFeed, self)._request_form_data(request, **kwargs)
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(PlaylistVideosFeed, self).get_form_data(base_data,
+                                                             filter_value)
         if data.get('sort') in ('order', '-order'):
             # This HACK helps us sort by playlist order.
             data.pop('sort')
@@ -407,7 +401,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
         :meth:`items`.
 
         """
-        form = obj['form']
+        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
         # We currently don't support searching combined with the 'order' sort.
         if 'playlist_order' in obj:
             # This is a HACK for backwards-compatibility.

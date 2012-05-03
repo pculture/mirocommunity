@@ -26,36 +26,32 @@ from localtv.search.forms import SortFilterForm
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 
 
-class SortFilterMixin(FormMixin):
+class SortFilterMixin(object):
     """
-    This mixin provides functionality for pulling sorting and filtering
-    choices from GET data, and overriding filters via url kwargs.
+    This mixin defines a standard way of handling sorting and filtering on a
+    class, with optional enforced sorts and filters.
 
     """
-    #: The name of a filter which will be provided as part of the url arguments
-    #: rather than as a GET parameter.
-    url_filter = None
+    #: If provided, the name of a filter which will be enforced and can't be
+    #: overridden.
+    filter_name = None
 
-    #: The kwarg expected from the urlpattern for this view if
-    #: :attr:`url_filter` is not ``None``. Default: 'pk'.
-    url_filter_kwarg = 'pk'
+    #: If provided, the name of a sort which will be enforced and can't be
+    #: overridden.
+    sort = None
 
     form_class = SortFilterForm
 
-    def _request_form_data(self, request, **kwargs):
-        data = request.GET.dict()
-        if self.url_filter is not None:
-            data[self.url_filter] = [kwargs[self.url_filter_kwarg]]
-        # If the sort is provided in the kwargs, enforce it.
-        if 'sort' in kwargs:
-            data['sort'] = kwargs['sort']
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = base_data or {}
+        if self.filter_name is not None:
+            data[self.filter_name] = [filter_value]
+        if self.sort is not None:
+            data['sort'] = self.sort
         return data
 
-    def get_form_kwargs(self):
-        return {
-            'initial': self.get_initial(),
-            'data': self._request_form_data(self.request, **self.kwargs)
-        }
+    def get_form(self, base_data=None, filter_value=None):
+        return self.form_class(self.get_form_data(base_data, filter_value))
 
 
 class SortFilterView(ListView, SortFilterMixin):
@@ -67,22 +63,41 @@ class SortFilterView(ListView, SortFilterMixin):
     form_class = SortFilterForm
     context_object_name = 'videos'
 
+    #: The kwarg expected from the urlpattern for this view if
+    #: :attr:`filter_name` is not ``None``. Default: 'pk'.
+    filter_kwarg = 'pk'
+
     def get_queryset(self):
         """
         Returns the results of :attr:`form_class`\ 's ``get_queryset()``
         method.
 
         """
-        form = self.form = self.get_form(self.get_form_class())
+        form = self.form = self.get_form(self.request.GET.dict(),
+                                         self.kwargs.get(self.filter_kwarg))
 
         if form.is_valid():
             return form.get_queryset()
         else:
-            if self.url_filter in form.errors:
+            return form.invalid_query()
+
+    def get_object(self):
+        if self.filter_name is not None:
+            field = self.form_class.base_fields[self.filter_name]
+            model = field.model
+            try:
+                key = field.to_field_name or 'pk'
+                obj = model.objects.get(**{
+                                        key: self.kwargs[self.filter_kwarg]})
+            except (ValueError, model.DoesNotExist):
                 raise Http404
-            return form.no_query_found()
+            else:
+                return obj
+        return None
 
     def get_context_data(self, **kwargs):
         context = super(SortFilterView, self).get_context_data(**kwargs)
         context['form'] = self.form
+        if self.filter_name is not None:
+            context[self.filter_name] = self.get_object()
         return context
