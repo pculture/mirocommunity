@@ -1,36 +1,46 @@
-$(function(){
-	var close_dropdown = function (dropdown_target, dropdown_parent) {
-			var $this = $(this),
-				dropdown_parent = $this.parent();
-				dropdown_target = dropdown_parent.children('[data-dropdown-target]');
-			dropdown_target.hide();
-			dropdown_parent.removeClass('open');
-			$this.attr('data-dropdown-open', 'false');
-		},
-		open_dropdown = function (dropdown_target, dropdown_parent) {
-			var $this = $(this),
-				dropdown_parent = $this.parent();
-				dropdown_target = dropdown_parent.children('[data-dropdown-target]');
-			dropdown_target.show();
-			dropdown_parent.addClass('open');
-			$this.attr('data-dropdown-open', 'true');
-		},
-		toggle_dropdown = function (e) {
-			var $this = $(this);
-			if($this.attr('data-dropdown-open')==='true'){
-				// if the dropdown menu is already open, close it
-				close_dropdown.call(this);
-			}else{
-				// if the dropdown menu is closed, open it
-				close_dropdowns(); // close other dropdowns
-				open_dropdown.call(this);
+/* ========================================================================
+ * This dropdown javascript does require that the dropdown target be nested
+ * inside of the dropdown element, and be styled based on the presence or
+ * absence of the 'open' tag on the dropdown element. E.g.,
+ *
+ *     .dropdown{
+ *         display:none;
+ *     }
+ *     .dropdown.open{
+ *         display:block;
+ *     }
+ *
+ * ======================================================================== */
+
+;(function($){
+	
+	var Dropdown = function (element) {
+		this.element = element;
+		this.open = false;
+	};
+	
+	Dropdown.prototype = {
+		hide: function () {
+				this.open = false;
+				this.element.removeClass('open');
+			},
+		show: function () {
+				this.open = true;
+				this.element.addClass('open');
+			},
+		toggle: function () {
+				if (this.open) return this.close();
+				this.open();
 			}
-			e.preventDefault();
-			e.stopPropagation();
-		},
-		close_dropdowns = function (e){
-			$('[data-dropdown-open="true"]').click();
-		};
-	$(document.body).click(close_dropdowns);
-	$('[data-dropdown] > a').on('click', toggle_dropdown);
-})
+	};
+	
+	$.fn.dropdown = function (option) {
+		return this.each(function () {
+			var $this = $(this),
+				data = $this.data('dropdown');
+			if (!data) $this.data('dropdown', new Dropdown($this));
+			if (typeof option == 'string') data[option]();
+		});
+	};
+	
+}(jQuery));

@@ -64,4 +64,13 @@
 		});
 	}
 	
+	// Dropdowns
+	$('.nav-item-dropdown').dropdown()
+	$('body').on('mouseover.localtv.dropdown', '.nav-item-dropdown', function (e) {
+		$(this).dropdown('show')
+	});
+	$('body').on('mouseout.localtv.dropdown', '.nav-item-dropdown', function (e) {
+		$(this).dropdown('hide')
+	});
+	
 });

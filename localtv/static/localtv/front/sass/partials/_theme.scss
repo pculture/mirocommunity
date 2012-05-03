@@ -140,6 +140,10 @@ body{
 .nav-item-dropdown > a::after{
 	border-top-color:$navigation-text-color;
 }
+.nav-item-dropdown.open > a{
+	border-color: darken($navigation-background-color, 20%);
+	background:$navigation-background-color;
+}
 
 .dropdown-list, .dropdown-box{
 	border-color:darken($navigation-background-color, 20%);
