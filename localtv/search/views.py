@@ -67,35 +67,22 @@ class SortFilterView(ListView, SortFilterMixin):
     form_class = SortFilterForm
     context_object_name = 'videos'
 
-    def _get_query(self, request):
-        """Fetches the query for the current request."""
-        return request.GET.get('q', "")
-
     def get_queryset(self):
         """
-        Returns a list based on the results of a haystack search.
+        Returns the results of :attr:`form_class`\ 's ``get_queryset()``
+        method.
 
         """
-        self.form = self.get_form(self.get_form_class())
-        self.form.is_valid()
-        if self.url_filter is not None:
-            try:
-                self.form.cleaned_data[self.url_filter][0]
-            except IndexError:
+        form = self.form = self.get_form(self.get_form_class())
+
+        if form.is_valid():
+            return form.get_queryset()
+        else:
+            if self.url_filter in form.errors:
                 raise Http404
-        return self.form.get_queryset()
+            return form.no_query_found()
 
     def get_context_data(self, **kwargs):
-        """
-        In addition to the inherited get_context_data methods, populates a
-        ``sort_links`` variable in the template context, which contains the
-        querystring for the next sort if that option is chosen.
-
-        For example, if the sort is by descending popularity, choosing the
-        ``date`` option will sort by descending date, while choosing
-        ``popular`` would switch to sorting by ascending popularity.
-
-        """
         context = super(SortFilterView, self).get_context_data(**kwargs)
         context['form'] = self.form
         return context

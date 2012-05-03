@@ -16,7 +16,12 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.http import Http404
+
+from localtv.listing.views import CompatibleListingView
 from localtv.models import Video
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterView
 from localtv.tests.base import BaseTestCase
 from localtv.views import VideoView
 
@@ -58,3 +63,74 @@ class VideoViewTestCase(BaseTestCase):
         self.assertEqual(context['category'].pk, category.pk)
         self.assertEqual(list(context['popular_videos']),
                         [video1, video2, video3])
+
+
+class CompatibleListingViewTestCase(BaseTestCase):
+    def test_paginate_by(self):
+        """
+        Compatible listing views support the 'count' parameter to modify
+        pagination.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/', {'count': 1})
+        self.assertEqual(view.get_paginate_by(None), 1)
+
+    def test_query_param(self):
+        """
+        Compatible listing views support 'query' as an alterative to 'q'
+        iff 'q' is not also supplied.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/', {'query': 'foo'})
+        view.kwargs = {}
+        form_kwargs = view.get_form_kwargs()
+        self.assertEqual(form_kwargs['data'].get('q'), 'foo')
+
+        view.request = self.factory.get('/', {'query': 'foo', 'q': 'bar'})
+        view.kwargs = {}
+        form_kwargs = view.get_form_kwargs()
+        self.assertEqual(form_kwargs['data'].get('q'), 'bar')
+
+    def test_queryset(self):
+        """
+        Compatible listing views must return normalized querysets.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/')
+        view.kwargs = {}
+        self.assertTrue(isinstance(view.get_queryset(), NormalizedVideoList))
+
+    def test_get_context_data(self):
+        """
+        Compatible listing views should include 'query', 'video_list', and
+        (if relevant) the current filter object in the context data.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/')
+        view.kwargs = {}
+        context = view.get_context_data(object_list=view.get_queryset())
+        self.assertTrue('query' in context)
+        self.assertTrue('video_list' in context)
+        for f in context['form'].filter_fields():
+            self.assertFalse(f.name in context)
+
+        category = self.create_category()
+        view.request = self.factory.get('/')
+        view.kwargs = {'slug': category.slug}
+        view.url_filter = 'category'
+        view.url_filter_kwarg = 'slug'
+        context = view.get_context_data(object_list=view.get_queryset())
+        self.assertEqual(context['category'], category)
+
+
+class SortFilterViewTestCase(BaseTestCase):
+    def test_queryset(self):
+        view = SortFilterView()
+        view.request = self.factory.get('/')
+        view.kwargs = {'pk': 1}
+        view.url_filter = 'author'
+        self.assertRaises(Http404, view.get_queryset)

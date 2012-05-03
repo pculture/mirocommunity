@@ -162,7 +162,7 @@ class SortFilterForm(SmartSearchForm):
         Returns a list of fields corresponding to filters.
 
         """
-        return [self[name] for name, field in self.fields
+        return [self[name] for name, field in self.fields.iteritems()
                 if isinstance(field, FilterField)]
 
     def clean(self):

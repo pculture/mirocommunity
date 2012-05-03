@@ -162,7 +162,7 @@ class BaseTestCase(TestCase):
         return video
 
     @classmethod
-    def create_category(cls, site_id=1, **kwargs):
+    def create_category(cls, name='Category', slug=None, site_id=1, **kwargs):
         """
         Factory method for creating categories. Supplies the following
         default:
@@ -174,9 +174,10 @@ class BaseTestCase(TestCase):
         :meth:`Category.objects.create`.
 
         """
-        if 'slug' not in kwargs:
-            kwargs['slug'] = slugify(kwargs.get('name', ''))
-        return models.Category.objects.create(site_id=site_id, **kwargs)
+        if slug is None:
+            slug = slugify(name)
+        return models.Category.objects.create(name=name, slug=slug,
+                                              site_id=site_id, **kwargs)
 
     @classmethod
     def create_user(cls, **kwargs):

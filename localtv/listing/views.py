@@ -56,11 +56,13 @@ class CompatibleListingView(SortFilterView):
             paginate_by = self.paginate_by
         return paginate_by
 
-    def _get_query(self, request):
-        """Fetches the query for the current request."""
-        # Support old-style templates that used "query".
-        key = 'q' if 'q' in request.GET else 'query'
-        return request.GET.get(key, "")
+    def _request_form_data(self, request, **kwargs):
+        """Supports the old-style "query" GET parameter."""
+        data = super(CompatibleListingView, self)._request_form_data(request,
+                                                                     **kwargs)
+        if 'q' not in data:
+            data['q'] = data.get('query', '')
+        return data
 
     def get_queryset(self):
         """Wraps the normal queryset in a :class:`.NormalizedVideoList`."""
@@ -82,12 +84,12 @@ class CompatibleListingView(SortFilterView):
         form = context['form']
         context['query'] = form.cleaned_data['q']
         context['video_list'] = context['videos']
-        if self.url_filter is not None:
-            try:
-                context[self.url_filter] = form.cleaned_data[
-                                                        self.url_filter][0]
-            except IndexError:
-                raise Http404
+
+        url_filter = self.url_filter
+        if url_filter is not None:
+            # SortFilterView would have raised a 404 in get_queryset() if
+            # anything were wrong with the url filter.
+            context[url_filter] = form.cleaned_data[url_filter][0]
         return context
 
 
