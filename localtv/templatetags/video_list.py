@@ -18,7 +18,6 @@
 from django import template
 
 from localtv.models import Video
-from localtv.search.forms import SortFilterForm
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterMixin
 

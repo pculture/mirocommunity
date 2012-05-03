@@ -18,7 +18,6 @@
 from django.conf import settings
 from django.http import Http404
 from django.views.generic import ListView
-from django.views.generic.edit import FormMixin
 
 from localtv.search.forms import SortFilterForm
 

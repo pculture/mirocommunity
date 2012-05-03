@@ -28,7 +28,7 @@ from django.views.generic import TemplateView, DetailView
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
 from localtv.search.forms import SortFilterForm
-from localtv.search.utils import NormalizedVideoList, _exact_q
+from localtv.search.utils import NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
 

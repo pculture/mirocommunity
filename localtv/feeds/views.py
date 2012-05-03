@@ -22,7 +22,7 @@ from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404, QueryDict
+from django.http import HttpResponse, Http404
 from django.utils.encoding import iri_to_uri, force_unicode
 from django.utils.translation import ugettext as _
 from django.utils.tzinfo import FixedOffset

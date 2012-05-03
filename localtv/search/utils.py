@@ -17,19 +17,13 @@
 
 import operator
 
-from django import forms
-from django.contrib.sites.models import Site
-from django.db.models.fields import FieldDoesNotExist
-from django.db.models.query import Q, QuerySet
-from django.template.defaultfilters import capfirst
+from django.db.models.query import Q
 from django.utils.translation import ugettext_lazy as _
 from haystack import connections
 from haystack.backends import SQ
 from haystack.query import SearchQuerySet
-from tagging.models import Tag, TaggedItem
-from tagging.utils import get_tag_list
 
-from localtv.models import Video, SiteSettings
+from localtv.models import SiteSettings
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 
