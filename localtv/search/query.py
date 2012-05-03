@@ -19,7 +19,6 @@ import operator
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from haystack import connections
 from haystack.query import SearchQuerySet, SQ
 
 from tagging.models import Tag

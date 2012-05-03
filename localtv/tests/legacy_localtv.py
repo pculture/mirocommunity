@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import datetime
-import logging
 import os.path
 import shutil
 import tempfile
@@ -50,8 +48,7 @@ import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
 from localtv.models import (Watch, Category, SiteSettings, Video,
-                            Feed, OriginalVideo, SavedSearch, FeedImport,
-                            Source)
+                            Feed, OriginalVideo, SavedSearch)
 from localtv import utils
 import localtv.feeds.views
 from localtv.tasks import haystack_batch_update
