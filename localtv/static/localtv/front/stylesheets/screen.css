@@ -263,8 +263,13 @@ ol > li { list-style-type: decimal; }
 .pod-actions a:hover, .page-actions a:hover { border: 0; }
 
 /* Loosely based on https://github.com/twitter/bootstrap/blob/master/less/popovers.less */
-.popover { position: absolute; border: 1px solid; background: #FFF; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; z-index: 1337; top: 0; left: 0; margin-left: 10px; -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); }
-.popover .arrow { position: absolute; top: 50%; left: -9px; margin-top: -4px; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 0; border-right: 8px solid black; }
+.popover { position: absolute; border: 1px solid; background: #FFF; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; z-index: 1337; top: 0; left: 0; -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); -o-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); }
+
+.popover.right, .popover.precontent-details, .popover.video-large-details { margin-left: 10px; }
+.popover.right .arrow, .popover.precontent-details .arrow, .popover.video-large-details .arrow { position: absolute; top: 50%; left: -9px; }
+
+.popover.left { margin-left: -10px; }
+.popover.left .arrow { position: absolute; top: 50%; right: -9px; }
 
 .popover-inner { width: 280px; overflow: hidden; position: relative; }
 
@@ -453,6 +458,10 @@ body { background: #cccccc; color: #444444; }
 /* popover */
 .popover { border-color: #cccccc; background: white; }
 .popover .arrow { border-right-color: #cccccc; }
+
+.popover.left .arrow { margin-top: -4px; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 8px solid #cccccc; border-right: 0; }
+
+.popover.right .arrow, .popover.precontent-details .arrow, .popover.video-large-details .arrow { margin-top: -4px; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 0; border-right: 8px solid #cccccc; }
 
 /* forms */
 input, textarea { border-color: #cccccc; background: white; }

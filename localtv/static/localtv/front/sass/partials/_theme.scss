@@ -173,6 +173,12 @@ body{
 		border-right-color:darken($main-background-color, 20%);
 	}
 }
+.popover.left .arrow{
+	@include arrow("right", 8px, darken($main-background-color, 20%));
+}
+.popover.right .arrow{
+	@include arrow("left", 8px, darken($main-background-color, 20%));
+}
 
 /* forms */
 
