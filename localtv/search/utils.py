@@ -66,7 +66,6 @@ def _in_q(queryset, field, values):
 
 
 def _q_for_queryset(queryset, field, values):
-    q_class = SQ if isinstance(queryset, SearchQuerySet) else Q
     if len(values) == 1:
         return _exact_q(queryset, field, values[0])
     else:

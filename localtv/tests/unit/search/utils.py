@@ -20,7 +20,6 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from haystack import connections
 from haystack.query import SearchQuerySet
 
 from localtv.models import Video, SiteSettings, Category, Watch

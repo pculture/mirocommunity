@@ -24,7 +24,6 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
-from haystack.query import SearchQuerySet
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
