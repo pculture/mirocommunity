@@ -84,7 +84,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						<g:plusone size="medium"></g:plusone>
 					</li>
 					<li class="pinterest-social">
-						<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+						<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
 					</li>
 					<li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
 					{% if current_video.file_url %}
@@ -162,4 +162,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
 	  })();
 	</script>
+	{# Pinterest #}
+	<script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
 {% endblock content %}

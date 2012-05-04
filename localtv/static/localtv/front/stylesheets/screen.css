@@ -336,7 +336,7 @@ ol > li { list-style-type: decimal; }
 .social-link-list > li:first-child { border-left: 0; }
 .social-link-list > .facebook-social { width: 90px; }
 .social-link-list > .gplus-social { width: 80px; }
-.social-link-list > .pinterest-social { width: 65px; }
+.social-link-list > .pinterest-social { width: 90px; }
 .social-link-list a:hover { border: 0; }
 .social-link-list .button, .social-link-list .button-wide, .social-link-list button, .social-link-list .pagetabs a, .pagetabs .social-link-list a, .social-link-list .pagetabs .ellipse span, .pagetabs .ellipse .social-link-list span { font-size: 11px; line-height: 18px; }
 .social-link-list .button:hover, .social-link-list .button-wide:hover, .social-link-list button:hover, .social-link-list .pagetabs a:hover, .pagetabs .social-link-list a:hover, .social-link-list .pagetabs .ellipse span:hover, .pagetabs .ellipse .social-link-list span:hover { border: 1px solid; }
