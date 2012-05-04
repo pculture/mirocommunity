@@ -201,8 +201,9 @@ class SmartSearchQuerySet(SearchQuerySet):
                     sq = ~sq
             elif isinstance(token, (list, tuple)):
                 # or block
-                or_sq_list = [self._tokens_to_sq([or_token])
-                              for or_token in token]
+                or_sq_list = filter(None,
+                                    (self._tokens_to_sq([or_token])
+                                     for or_token in token))
                 if not or_sq_list:
                     continue
                 sq = reduce(operator.or_, or_sq_list)
