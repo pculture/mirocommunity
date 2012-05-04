@@ -76,6 +76,14 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(len(data['items']), 2)
         self.assertEqual(data['items'][0]['title'], bar_video.name)
 
+        # Backwards-compatibility check.
+        response = client.get('/feeds/json/search/foo', {'sort': 'latest'})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['title'], u'example.com: Search: foo')
+        self.assertEqual(len(data['items']), 2)
+        self.assertEqual(data['items'][0]['title'], bar_video.name)
+
     def test_playlist_feed(self):
         user = User.objects.create(username='user')
         playlist = Playlist.objects.create(name='Test Playlist',

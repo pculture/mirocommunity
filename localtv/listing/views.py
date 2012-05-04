@@ -60,6 +60,8 @@ class CompatibleListingView(SortFilterView):
                                                                 filter_value)
         if 'q' not in data:
             data['q'] = data.get('query', '')
+        if data.get('sort') == 'latest':
+            data['sort'] = 'newest'
         return data
 
     def get_queryset(self):

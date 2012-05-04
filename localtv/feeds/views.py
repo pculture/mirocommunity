@@ -111,6 +111,13 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
         return obj
 
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(BaseVideosFeed, self).get_form_data(base_data,
+                                                         filter_value)
+        if data.get('sort') == 'latest':
+            data['sort'] = 'newest'
+        return data
+
     def _actual_items(self, obj):
         raise NotImplementedError
 

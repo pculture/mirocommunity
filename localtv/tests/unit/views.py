@@ -76,10 +76,11 @@ class CompatibleListingViewTestCase(BaseTestCase):
         view.request = self.factory.get('/', {'count': 1})
         self.assertEqual(view.get_paginate_by(None), 1)
 
-    def test_query_param(self):
+    def test_get_form_data(self):
         """
         Compatible listing views support 'query' as an alterative to 'q'
-        iff 'q' is not also supplied.
+        iff 'q' is not also supplied, and allow 'latest' as an alias for
+        'newest'.
 
         """
         view = CompatibleListingView()
@@ -88,6 +89,9 @@ class CompatibleListingViewTestCase(BaseTestCase):
 
         data = view.get_form_data({'query': 'foo', 'q': 'bar'})
         self.assertEqual(data.get('q'), 'bar')
+
+        data = view.get_form_data({'sort': 'latest'})
+        self.assertEqual(data.get('sort'), 'newest')
 
     def test_queryset(self):
         """
