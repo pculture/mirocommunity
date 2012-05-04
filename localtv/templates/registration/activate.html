@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,16 +18,15 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-
 {% load i18n %}
 
 {% block title %}{{ block.super }} - {% trans "Activation Failed" %}{% endblock %}
 
-{% block body_id %}activation_failed_page{% endblock %}
-
 {% block content %}
-  <div id="main">
-    Invalid activation key.
-  </div>
-
+	<header class="page-header">
+		<h1 class="page-title">{% trans "Activation Failed" %}</h1>
+	</header>
+	<div class="page-content content-box">
+		<div class="message error">{% trans "Invalid activation key." %}</div>
+	</div>
 {% endblock %}

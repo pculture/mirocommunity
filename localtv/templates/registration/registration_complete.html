@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,29 +19,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load i18n uploadtemplate_tags %}
+{% load i18n %}
 
-{% block title %}{{ block.super }} - {% trans "About" %}{% endblock %}
-
-{% block body_id %}about_page{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Registration Completed" %}{% endblock %}
 
 {% block content %}
-  <div id="main">
-  
-  <img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% get_static_url 'localtv/images/logo.gif' bundled %}{% endif %}" />
-    <h2 class="page_title">About {{ site_settings.site.name }}</h2>
-    {% autoescape off %}
-      {{ site_settings.about_html }}
-    {% endautoescape %}
-<br />
-    <h2>{% trans "About Miro Community" %}</h2>
-    <p>
-      {% blocktrans %}
-      <a href="http://www.mirocommunity.org">Miro Community</a> helps
-      communities gather their videos into one place. It's a project of the <a
-      href="http://pculture.org">Participatory Culture Foundation</a>.
-      {% endblocktrans %}
-    </p>
-  </div>
-
+	<header class="page-header">
+		<h1 class="page-title">{% trans "Registration Completed" %}</h1>
+	</header>
+	<div class="page-content content-box">
+		<div class="message info">{% blocktrans with name=site_settings.site.name %}Thank you for registering at {{ name }}. Please check your email for account activation instructions.{% endblocktrans %}</div>
+	</div>
 {% endblock %}
