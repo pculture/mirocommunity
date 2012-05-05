@@ -1,7 +1,6 @@
-{% comment %}
 # Miro Community - Easiest way to make a video website
 #
-# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 #
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -10,13 +9,11 @@
 #
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-{% endcomment %}
-{% load static staticfiles %}
-{% get_static_prefix as STATIC_URL %}
-<script src="{% if STATIC_URL|slice:":7" != "http://" and STATIC_URL|slice:":8" != "https://" %}http://{{ sitelocation.site.domain }}{% endif %}{% static "localtv/js/widget.js" %}"></script>
-<script type="text/javascript">new MiroCommunity.Widget(JSON).render();</script>
+# along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
+
+from localtv.tests.unit.search.query import *
+from localtv.tests.unit.search.utils import *

@@ -23,15 +23,6 @@ import os
 import os.path
 import logging
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
-
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
@@ -202,6 +193,9 @@ class SortHeaders:
 
     def __iter__(self):
         return iter(self.headers())
+
+    def __len__(self):
+        return len(self.header_defs)
 
     def _query_string(self, sort):
         """

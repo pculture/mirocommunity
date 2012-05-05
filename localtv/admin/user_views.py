@@ -18,7 +18,7 @@
 from django.db.models import Count, Q
 from django.conf import settings
 from django.contrib.auth.models import User, UNUSABLE_PASSWORD
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
@@ -37,7 +37,8 @@ def _filter_just_humans():
 
 @require_site_admin
 @csrf_protect
-def users(request):
+def users(request, formset_class=forms.AuthorFormSet,
+          form_class=forms.AuthorForm):
     headers = SortHeaders(request, (
             ('Username', 'username'),
             ('Email', None),
@@ -57,18 +58,18 @@ def users(request):
     except ValueError:
         return HttpResponseBadRequest('Not a page number')
     except EmptyPage:
-        page = user_paginator.page(video_paginator.num_pages)
+        page = user_paginator.page(user_paginator.num_pages)
 
-    formset = forms.AuthorFormSet(queryset=page.object_list)
-    add_user_form = forms.AuthorForm()
+    formset = formset_class(queryset=page.object_list)
+    add_user_form = form_class()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
-            add_user_form = forms.AuthorForm(request.POST, request.FILES)
+            add_user_form = form_class(request.POST, request.FILES)
             if add_user_form.is_valid():
                 add_user_form.save()
                 return HttpResponseRedirect(request.path)
         else:
-            formset = forms.AuthorFormSet(request.POST, request.FILES,
+            formset = formset_class(request.POST, request.FILES,
                                           queryset=User.objects.all())
             if formset.is_valid():
                 formset.save()

@@ -22,7 +22,11 @@
 	$('.video-details').shrinkydink();
 	
 	// add popovers to the video thumbs
-	$('.video-grid').popover({selector: '.video-grid-item'});
+	$('.video-grid').popover({selector: '.video-grid-item', placement: function (element) {
+		var position = this.getPosition();
+		// distance from edge of hover element + width of hover element + width of popover
+		return (position.left + position.width + 300 > $(window).width()) ? 'left' : 'right';
+	}});
 	
 	// Infinite Scroll
 	// Only triggered if a `body.video-list-page` exists and we're on the first page
@@ -63,5 +67,14 @@
 			itemSelector: '.media-item'
 		});
 	}
+	
+	// Dropdowns
+	$('.nav-item-dropdown').dropdown()
+	$('body').on('mouseover.localtv.dropdown', '.nav-item-dropdown', function (e) {
+		$(this).dropdown('show')
+	});
+	$('body').on('mouseout.localtv.dropdown', '.nav-item-dropdown', function (e) {
+		$(this).dropdown('hide')
+	});
 	
 });

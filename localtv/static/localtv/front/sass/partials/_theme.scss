@@ -96,6 +96,22 @@ body{
 	border-color: darken($button-background-color, 50%);
 }
 
+.precontent a.watch-video-button{
+	color:#CCC;
+	@include background(linear-gradient(#444, #333));
+	text-shadow:0 -1px 0 #000;
+	border-color:#000;
+	@include box-shadow(0 1px 0 0 rgba(255,255,255,.15) inset, 0 1px 0 0 rgba(255,255,255,.15));
+	&:hover{
+		border-color:#000;
+		@include background(linear-gradient(#484848, #393939));
+	}
+	&:active{
+		@include background(linear-gradient(#333, #444));
+		@include box-shadow(0 2px 8px 0 rgba(0,0,0,.5) inset, 0 1px 0 0 rgba(255,255,255,.15));
+	}
+}
+
 /* carousel */
 
 .carousel-pager{
@@ -123,6 +139,10 @@ body{
 
 .nav-item-dropdown > a::after{
 	border-top-color:$navigation-text-color;
+}
+.nav-item-dropdown.open > a{
+	border-color: darken($navigation-background-color, 20%);
+	background:$navigation-background-color;
 }
 
 .dropdown-list, .dropdown-box{
@@ -152,6 +172,12 @@ body{
 	.arrow{
 		border-right-color:darken($main-background-color, 20%);
 	}
+}
+.popover.left .arrow{
+	@include arrow("right", 8px, darken($main-background-color, 20%));
+}
+.popover.right .arrow{
+	@include arrow("left", 8px, darken($main-background-color, 20%));
 }
 
 /* forms */

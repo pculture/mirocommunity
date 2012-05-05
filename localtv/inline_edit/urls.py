@@ -18,7 +18,6 @@
 from django.conf.urls.defaults import patterns
 
 from localtv import models
-from localtv.playlists.models import Playlist
 
 urlpatterns = patterns(
     'localtv.inline_edit',

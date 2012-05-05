@@ -208,6 +208,7 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             kwargs['website_url'] = iri_to_uri(item.website_url)
         if item.has_thumbnail:
             site = Site.objects.get_current()
+            image = None
             if item.thumbnail_url:
                 thumbnail_url = iri_to_uri(item.thumbnail_url)
             else:
@@ -224,6 +225,27 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
                         thumbnail_url = 'http://%s%s' % (site.domain,
                                                          thumbnail_url)
             kwargs['thumbnail'] = thumbnail_url
+            if thumbnail_url and self.feed_type is JSONGenerator:
+                # Version 2 of the MC widgets expect a 'thumbnails_resized'
+                # argument which includes thumbnails of these sizes for the
+                # various sizes of widget.  These are only here for backwards
+                # compatibility with those widgets.
+                thumbnails_resized = kwargs['thumbnails_resized'] = []
+                if image is None:
+                    image = Image.objects.for_storage_path(
+                        item.thumbnail_path)
+                for size in ((222, 169), # large widget
+                             (140, 110), # medium widget
+                             (88, 68)):  # small widget
+                    adjusted = AdjustedImage.objects.adjust(image, *size)
+                    thumbnail_url = adjusted.adjusted.url
+                    if not (thumbnail_url.startswith('http://') or
+                            thumbnail_url.startswith('https://')):
+                        thumbnail_url = 'http://%s%s' % (site.domain,
+                                                         thumbnail_url)
+                    thumbnails_resized.append({'width': size[0],
+                                               'height': size[1],
+                                               'url': thumbnail_url})
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs

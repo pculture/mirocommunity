@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
-from django.utils.functional import curry
 
 from localtv.search.forms import VideoSearchForm
 from localtv.search.utils import SortFilterMixin, NormalizedVideoList
@@ -76,7 +75,6 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         qs = self._search("")
         qs = self._sort(qs, self.sort)
         if self.search_filter in self.filters:
-            f = self.filters[self.search_filter]
             values = [self.item.resolve(context)]
             if values[0] is not None:
                 cleaned_filters = self._clean_filter_values({

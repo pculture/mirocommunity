@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.views.decorators.vary import vary_on_headers
 from django.views.generic import TemplateView, DetailView
 
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.utils import SortFilterMixin, NormalizedVideoList
+from localtv.search.utils import (SortFilterMixin, NormalizedVideoList,
+                                  _exact_q)
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -101,7 +100,7 @@ class VideoView(SortFilterMixin, DetailView):
         })
 
         site_settings = SiteSettings.objects.get_current()
-        popular_videos = self._sort(self._search(''), '-popular')
+        popular_videos = self._search('')
 
         try:
             category_obj = self.object.categories.all()[0]
@@ -133,9 +132,11 @@ class VideoView(SortFilterMixin, DetailView):
                                 pass
 
             context['category'] = category_obj
-            popular_videos = popular_videos.filter(
-                                            categories__exact=category_obj.pk)
+            popular_videos = popular_videos.filter(_exact_q(popular_videos,
+                                                            'categories',
+                                                            category_obj.pk))
 
+        popular_videos = self._sort(popular_videos, '-popular')
         context['popular_videos'] = NormalizedVideoList(popular_videos)
 
         if site_settings.playlists_enabled:
@@ -195,8 +196,6 @@ def share_email(request, content_type_pk, object_id):
 def newsletter(request):
     newsletter = NewsletterSettings.objects.get_current()
     if newsletter.status == NewsletterSettings.DISABLED:
-        raise Http404
-    elif not newsletter.site_settings.get_tier().permit_newsletter():
         raise Http404
 
     return HttpResponse(newsletter.as_html(

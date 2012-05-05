@@ -2,18 +2,35 @@
 	@extend .unstyled-list;
 	@include clearfix;
 	border-bottom:1px solid;
+	@include padded(.5);
 	& > li{
 		float:left;
 		display: block;
-		height:20px;
-		line-height:19px;
 		width:90px;
-		@include padded(.25);
 		&:first-child{
 			border-left:0;
 		}
+		position:relative;
+		top:4px;
+		width:100px;
+		min-height:5px;
+	}
+	& > .facebook-social{
+		width:90px;
+	}
+	& > .gplus-social{
+		width:80px;
+	}
+	& > .pinterest-social{
+		width:90px;
 	}
 	a:hover{
 		border:0;
+	}
+	.button{
+		@include small;
+	}
+	.button:hover{
+		border:1px solid;
 	}
 }
