@@ -18,7 +18,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
@@ -28,12 +28,12 @@ from localtv.models import SiteSettings, WidgetSettings, NewsletterSettings
 
 @require_site_admin
 @csrf_protect
-def edit_settings(request):
+def edit_settings(request, form_class=forms.EditSettingsForm):
     site_settings = SiteSettings.objects.get_current()
-    form = forms.EditSettingsForm(instance=site_settings)
+    form = form_class(instance=site_settings)
 
     if request.method == 'POST':
-        form = forms.EditSettingsForm(request.POST, request.FILES,
+        form = form_class(request.POST, request.FILES,
                                       instance=site_settings)
         if form.is_valid():
             site_settings = form.save()
@@ -84,8 +84,6 @@ def widget_settings(request):
 @csrf_protect
 def newsletter_settings(request):
     newsletter = NewsletterSettings.objects.get_current()
-    if not newsletter.site_settings.get_tier().permit_newsletter():
-        raise Http404
 
     form = forms.NewsletterSettingsForm(instance=newsletter)
 

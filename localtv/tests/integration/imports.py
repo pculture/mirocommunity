@@ -23,7 +23,7 @@ from localtv.models import Video, Feed
 
 from localtv.tests import BaseTestCase
 
-class FeedImportIntegrationTestCase(BaseTestCase):
+class AdminFeedImportIntegrationTestCase(BaseTestCase):
 
     urls = 'localtv.urls'
 

@@ -35,7 +35,7 @@ def localtv(request):
         if request.user_is_admin():
             display_submit_button = True
 
-    if getattr(settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False):
+    if ENABLE_CHANGE_STAMPS:
         try:
             cache_invalidator = os.stat(
                 os.path.join(settings.MEDIA_ROOT,

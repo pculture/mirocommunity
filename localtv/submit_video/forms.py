@@ -18,7 +18,6 @@
 import urlparse
 
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.conf import settings
@@ -28,7 +27,7 @@ import vidscraper
 from vidscraper.errors import CantIdentifyUrl
 
 from localtv.exceptions import CannotOpenImageUrl
-from localtv.models import Video, SiteSettings
+from localtv.models import Video
 from localtv.templatetags.filters import sanitize
 
 
@@ -147,10 +146,7 @@ class SubmitVideoFormBase(forms.ModelForm):
         instance = super(SubmitVideoFormBase, self).save(commit=False)
 
         if self.request.user_is_admin():
-            site_settings = SiteSettings.objects.get_current()
-            if (not site_settings.enforce_tiers() or
-                site_settings.get_tier().remaining_videos() >= 1):
-                instance.status = Video.ACTIVE
+            instance.status = Video.ACTIVE
 
         if 'website_url' in self.fields:
             # Then this was a form which required a website_url - i.e. a direct

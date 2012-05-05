@@ -19,10 +19,11 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
+from localtv.api.v1 import api as api_v1
 from localtv.listing.views import VideoSearchView, SiteListView, \
                         CategoryVideoSearchView
 from localtv.models import Category
-from localtv.views import IndexView
+from localtv.views import IndexView, VideoView
 
 # "Base" patterns
 urlpatterns = patterns(
@@ -30,9 +31,11 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
-    url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
-                    name='localtv_view_video'),
-    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'))
+    url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
+        VideoView.as_view(),
+        name='localtv_view_video'),
+    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
+    url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
 category_videos = CategoryVideoSearchView.as_view(
@@ -82,6 +85,7 @@ urlpatterns += patterns(
     url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
