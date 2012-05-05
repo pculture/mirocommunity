@@ -1,0 +1,18 @@
+@import "compass/css3/box-shadow",
+		"compass/css3/images",
+		"compass/css3/transition",
+		"compass/css3/border-radius";
+
+.pagetabs{
+	@extend .unstyled-list;
+	@include clearfix;
+	@include margin-trailer;
+	a, .ellipse span{
+		@extend .button;
+		float:left;
+		margin-left:3px;
+	}
+	.selected > a{
+		@extend .button-selected;
+	}
+}

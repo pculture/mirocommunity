@@ -1,0 +1,39 @@
+@import "compass/css3/border-radius",
+		"compass/css3/box-shadow";
+
+.tile-box{
+	@extend .unstyled-list;
+	@include border-radius(5px);
+	@include box-shadow(0 0 0 1px #FFF inset, 0 1px 6px 0 rgba(0,0,0,.25) inset);
+	height: 6 * $base-line-height;
+	background:#EEE;
+	overflow:hidden;
+	border:1px solid #CCC;
+	padding:3px;
+}
+
+.tile{
+	width:25%;
+	overflow:hidden;
+	float:left;
+	height: 3 * $base-line-height;
+	& > img{
+		display:block;
+	}
+	&:first-child{
+		@include border-radius(5px 0 0 0);
+		overflow:hidden;
+	}
+	&:nth-child(4){
+		@include border-radius(0 5px 0 0);
+		overflow:hidden;
+	}
+	&:nth-child(5){
+		@include border-radius(0 0 0 5px);
+		overflow:hidden;
+	}
+	&:nth-child(8){
+		@include border-radius(0 0 5px 0);
+		overflow:hidden;
+	}
+}

@@ -1,6 +1,7 @@
- {% extends "localtv/submit_video/second.html" %}
+{% extends "localtv/submit_video/second.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,43 +20,48 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load i18n uploadtemplate_tags filters %}
+
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
-{% block form %}
-    {% if user_is_admin %}
-    {% if not video.name or not video.description %}
-    <tr>
-      <td class="warning">Warning: not all information was received from the video service.  You may need to add the information manually once the video is added.</td>
-    </tr>
-    {% endif %}
-    {% endif %}
-    <tr>
-      <td>
-        <a href="{{ video.website_url }}" class="thumbnail">
-          {% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="222" height="163" />{% else %}<img src="{% get_static_url "localtv/images/default.jpg" %}" />{% endif %}
-        </a>
-        <div class="scraped_details">
-          {% if video.name %}
-          <h2><a href="{{ video.website_url }}" title="{{ video.name }}">{{ video.name }}</a></h2>
-          {% else %}
-          <h2><a href="{{ video.website_url }}">{% trans "(no title)" %}</a></h2>
-          {% endif %}
-          <span class="credits">
-            {% if video.video_service_user %}
-            <span class="posted_by">
-              By <a href="{{ video.video_service_url }}">{{ video.video_service_user }}</a>
-            </span>
-            {% endif %}
-            {% if video.when_published %}
-            <span class="posted_at">Published {{ video.when_published|simpletimesince }} ago</span>
-            {% endif %}
-          </span>
-          {% if form.initial.tags %}
-          <div class="tags">
-            Tags: {{ form.initial.tags }}
-          </div>
-          {% endif %}
-          <div class="description">{{ video.description }}</div>
-        </div>
-      </td>
-    </tr>
+
+{% block inner_form %}
+	{% if user_is_admin %}
+		{% if not video.name or not video.description %}
+			<div class="message warning">Warning: not all information was received from the video service.  You may need to add the information manually once the video is added.</div>
+		{% endif %}
+	{% endif %}
+	<div class="row-nested">
+		<figure class="col-one-quarter">
+			<a href="{{ video.website_url }}" class="thumbnail">
+				{% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="210" />{% else %}<img src="{% get_static_url "localtv/images/default.jpg" %}" />{% endif %}
+			</a>
+		</figure>{# /.col-two-quarters #}
+		<div class="col-three-quarters">
+			{% if video.name %}
+				<h2><a href="{{ video.website_url }}" title="{{ video.name }}">{{ video.name }}</a></h2>
+			{% else %}
+				<h2><a href="{{ video.website_url }}">{% trans "(no title)" %}</a></h2>
+			{% endif %}
+			
+			<div class="scraped-details">
+				<span class="credits">
+					{% if video.video_service_user %}
+						<span class="posted_by">
+				 			By <a href="{{ video.video_service_url }}">{{ video.video_service_user }}</a>
+						</span>
+					{% endif %}
+					{% if video.when_published %}
+						<span class="posted_at">Published {{ video.when_published|simpletimesince }} ago</span>
+					{% endif %}
+				</span>
+				{% if form.initial.tags %}
+					<div class="tags">
+						Tags: {{ form.initial.tags }}
+					</div>
+				{% endif %}
+				<div class="description">
+					{{ video.description }}
+				</div>
+			</div>{# /.scraped-details #}
+		</div>{# /.col-three-quarters #}
+	</div>{# /.row-nested #}
 {% endblock %}

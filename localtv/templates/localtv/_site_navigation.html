@@ -1,0 +1,62 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load url from future %}
+
+{% load i18n %}
+
+<ul class="navigation-list">
+	<li class="nav-item nav-item-dropdown">
+		<a href="#">{% trans "Browse" %}</a>
+		<div class="dropdown-box browse-box">
+			<section class="browse-box-section">
+				<h1><a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a></h1>
+				<ul>
+					<li>
+						<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
+					</li>
+					<li>
+						<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
+					</li>
+					<li>
+						<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
+					</li>
+				</ul>
+			</section>
+			{% if categories %}
+			<section class="browse-box-section">
+				<h1><a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a></h1>
+				<ul>
+					{% for category in categories %}
+						<li>
+							<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</section>
+			{% endif %}
+		</div>
+	</li>
+	<li class="nav-item nav-submit">
+		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
+	</li>
+	<li class="nav-item nav-about">
+		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
+	</li>
+</ul>

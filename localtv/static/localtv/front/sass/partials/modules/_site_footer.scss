@@ -1,0 +1,26 @@
+#footer > .container{
+	@extend .padded;
+	@include clearfix;
+}
+.miro-footer{
+	@extend .col-one-half;
+	& > p:last-child{
+		margin:0;
+	}
+}
+.footer-nav{
+	@extend .col-one-half;
+	ul{
+		@extend .unstyled-list;
+	}
+	li{
+		float:left;
+	}
+	a{
+		display:block;
+		padding:0 $gutter-width/2;
+		&:hover{
+			border:0;
+		}
+	}
+}

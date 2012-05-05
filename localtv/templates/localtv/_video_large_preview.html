@@ -1,0 +1,23 @@
+{% load daguerre i18n %}
+
+<article class="video-large">
+	<div class="video-large-preview col-two-thirds">
+		{% with video.thumbnail_path as thumbnail %}
+			{% if thumbnail.width > 640 and thumbnail.height > 400 %}
+				{% adjust thumbnail width=640 height=400 adjustment="fill" as image %}
+				<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
+			{% else %}
+				<a href="{{ video.get_absolute_url }}"><img src="{{ MEDIA_URL }}{{ video.thumbnail_path }}" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}" /></a>
+			{% endif %}
+		{% endwith %}
+	</div>
+	<div class="video-large-details content-box col-one-third">
+		<header>
+			<h1><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h1>
+		</header>
+		<div class="video-large-description">
+			{{ video.description|safe|truncatewords:40 }}
+		</div>
+		<p><a href="{{ video.get_absolute_url }}" class="watch-video-button">{% trans "Watch Video" %}</a></p>
+	</div>
+</article>

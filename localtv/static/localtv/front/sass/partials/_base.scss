@@ -1,0 +1,35 @@
+a{
+	text-decoration:none;
+}
+a:hover{
+	border-bottom:1px solid #CCC;
+}
+
+body{
+	@include normal;
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl{
+	@include margin-trailer;
+}
+
+h1{
+	@include xx-large;
+}
+h2{
+	@include x-large;
+}
+h3{
+	@include large;
+}
+h4{
+	@include normal;
+}
+h5{
+	@include normal;
+}
+h6{
+	@include normal;
+	color:#CCC;
+}

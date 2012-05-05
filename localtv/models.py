@@ -46,6 +46,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.files.images import ImageFile
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
