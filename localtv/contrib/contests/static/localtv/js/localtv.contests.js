@@ -14,11 +14,11 @@
 			// Wipe the widget's current text.
 			this.element.html('')
 			// Create voting buttons.
-			this.upvoteElement = $('<button class="upvote" value="1">Vote Up (<span class="count"></span>)</button>').appendTo(this.element);
-			this.upvoteCountElement = this.upvoteElement.find('.count').eq(0);
+			this.upvoteElement = $('<button class="upvote" value="1"><span class="vote-text">Vote Up</span> <span class="vote-count"></span></button>').appendTo(this.element);
+			this.upvoteCountElement = this.upvoteElement.find('.vote-count').eq(0);
 			if (this.data('downvotes') === 1){
-				this.downvoteElement = $('<button class="downvote" value="-1">Vote Down (<span class="count"></span>)</button>').appendTo(this.element);
-				this.downvoteCountElement = this.downvoteElement.find('.count').eq(0);
+				this.downvoteElement = $('<button class="downvote" value="-1"><span class="vote-text">Vote Down</span> <span class="vote-count"></span></button>').appendTo(this.element);
+				this.downvoteCountElement = this.downvoteElement.find('.vote-count').eq(0);
 			}
 			// Bind the click event.
 			this.bindClick();
@@ -92,6 +92,9 @@
 			// When the request completes, it triggers `this.requestState`.
 			var this_ = this,
 				request_uri, request_options = {};
+			
+			// If the user is not logged in, short-circuit and send them to the login page
+			if (typeof this.data('user-detail-uri') === "undefined") return window.location = this.data('login-uri');
 			
 			if (vote === 0) {
 				// Short-circuit if the vote matches the current state.

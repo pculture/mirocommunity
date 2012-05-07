@@ -1,0 +1,42 @@
+{% load i18n %}
+{% load url from future %}
+
+<section class="pod video-contest" data-contestvideo="{{ contestvideo.pk }}" data-user="{{ request.user.pk }}" data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}">
+	<header class="pod-header">
+		{% if contestvideos.count > 1 %}
+			<h1>{% trans "Contests" %}</h1>
+		{% else %}
+			{% url 'contests_contest_detail' contestvideos.0.contest.pk contest.slug as contest_url %}
+			<h1>{% trans "Contest" %}: <a href="{{ contest_url }}">{{ contestvideos.0.contest }}</a></h1>
+		{% endif %}
+	</header>
+	<div class="pod-content">
+		{% for contestvideo in contestvideos %}
+			<div class="contest-summary">
+				{% with contest=contestvideo.contest %}
+					{% url 'contests_contest_detail' contest.pk contest.slug as contest_url %}
+					{% if contestvideos.count > 1 %}
+						<h3><a href="{{ url }}">{{ contest }}</a></h3>
+					{% endif %}
+					{% url "api_dispatch_detail" api_name="v1" resource_name="contestvideo" pk=contestvideo.pk as contestvideo_detail_uri %}
+					{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contestvote_list_uri %}
+					{% url "api_dispatch_detail" api_name="v1" resource_name="user" pk=user.pk as user_detail_uri %}
+					<div class="video-contest-vote-widget"
+						data-contestvideo-detail-uri="{{ contestvideo_detail_uri }}"
+						data-contestvote-list-uri="{{ contestvote_list_uri }}"
+						{% if user.is_authenticated %}
+							data-user-detail-uri="{{ user_detail_uri }}"
+							data-user="{{ user.pk }}"
+						{% else %}
+							data-login-uri="{{ settings.LOGIN_URL }}?next={{ request.path }}"
+						{% endif %}
+						data-contestvideo="{{ contestvideo.pk }}"
+						data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}"
+						>
+						<div class="message warning">You must have javascript enabled to vote in a contest.</div>
+					</div>
+				{% endwith %}
+			</div>
+		{% endfor %}
+	</div>{# /.pod-content #}
+</section>{# /.pod.video-contest #}

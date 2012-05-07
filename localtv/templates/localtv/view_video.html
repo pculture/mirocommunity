@@ -26,11 +26,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
-{% block scripts %}
+{% block styles %}
 	{{ block.super }}
-	<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	{% if current_video.contestvideo_set %}
+		<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
+	{% endif %}
 {% endblock %}
 
+{% block scripts %}
+	{{ block.super }}
+	{% if current_video.contestvideo_set %}
+		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	{% endif %}
+{% endblock %}
 {% block head %}
 	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}
@@ -132,45 +140,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="col-one-quarter right-sidebar">
 			{% with contestvideos=current_video.contestvideo_set.all %}
 				{% if contestvideos %}
-				{% for contestvideo in contestvideos %}
-					{% with contest=contestvideo.contest %}
-					<section class="pod video-contest" data-contestvideo="{{ contestvideo.pk }}" data-user="{{ request.user.pk }}" data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}">
-						<header class="pod-header">
-							<h1>{{ contest.name }}</h1>
-						</header>
-						<div class="pod-content">
-							<p>
-								{% url 'contests_contest_detail' contest.pk contest.slug as contest_url %}
-								{% blocktrans with video=current_video.name contest=contest.name url=contest_url %}
-									{{ video }} is competing in <a href="{{ url }}">{{ contest }}</a>.
-								{% endblocktrans %}
-							</p>
-							{% if user.is_authenticated %}
-								{% url "api_dispatch_detail" api_name="v1" resource_name="contestvideo" pk=contestvideo.pk as contestvideo_detail_uri %}
-								{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contestvote_list_uri %}
-								{% url "api_dispatch_detail" api_name="v1" resource_name="user" pk=user.pk as user_detail_uri %}
-								<div class="video-contest-vote-widget"
-									data-contestvideo-detail-uri="{{ contestvideo_detail_uri }}"
-									data-contestvote-list-uri="{{ contestvote_list_uri }}"
-									data-user-detail-uri="{{ user_detail_uri }}"
-									data-user="{{ user.pk }}"
-									data-contestvideo="{{ contestvideo.pk }}"
-									data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}"
-									>
-									<div class="message warning">You must have javascript enabled to vote in a contest.</div>
-								</div>
-							{% else %}
-								<div class="video-contest-vote-widget-fake">
-									<a href="{{ settings.LOGIN_URL }}?next={{ request.path }}" class="button">{% trans "Vote Up" %}</a>
-									{% if contest.allow_downvotes %}
-										<a href="{{ settings.LOGIN_URL }}?next={{ request.path }}" class="button">{% trans "Vote Down" %}</a>
-									{% endif %}
-								</div>
-							{% endif %}
-						</div>{# /.pod-content #}
-					</section>{# /.pod.video-contest #}
-					{% endwith %}
-				{% endfor %}
+					{% include "contests/_sidebar_contests.html" %}
 				{% endif %}
 			{% endwith %}
 			<section class="pod video-suggested-videos">
