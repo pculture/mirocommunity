@@ -14,8 +14,12 @@
 			// Wipe the widget's current text.
 			this.element.html('')
 			// Create voting buttons.
-			this.upvoteElement = $('<button class="upvote" value="1">Vote Up</button>').appendTo(this.element);
-			if (this.data('downvotes') === 1) this.downvoteElement = $('<button class="downvote" value="-1">Vote Down</button>').appendTo(this.element);
+			this.upvoteElement = $('<button class="upvote" value="1">Vote Up (<span class="count"></span>)</button>').appendTo(this.element);
+			this.upvoteCountElement = this.upvoteElement.find('.count').eq(0);
+			if (this.data('downvotes') === 1){
+				this.downvoteElement = $('<button class="downvote" value="-1">Vote Down (<span class="count"></span>)</button>').appendTo(this.element);
+				this.downvoteCountElement = this.downvoteElement.find('.count').eq(0);
+			}
 			// Bind the click event.
 			this.bindClick();
 			// Request the initial state of the votes.
@@ -35,27 +39,35 @@
 			return this.element.data(arg);
 		},
 		requestState: function () {
-			// Triggers an AJAX request for the state of this user's votes on the contest.
+			// Triggers an AJAX request for the state of this user's votes on the contest
+			// and the state of *all* votes on the contest.
 			// Request completion triggers `this.receiveState`.
-			var this_ = this;
+			var this_ = this,
+				user_contest_vote_data = {'user': this.data('user'), 'contestvideo': this.data('contestvideo')},
+				all_contest_vote_data = {'contestvideo': this.data('contestvideo')};
+				
 			this.startLoading();
-			$.getJSON(this.data('contestvote-list-uri'),
-				{
-					'user': this.data('user'),
-					'contestvideo': this.data('contestvideo'),
-				},
-				function(data){
-					this_.receiveState(data['objects'][0]);
-				}
-			);
+			$.getJSON(this.data('contestvote-list-uri'), all_contest_vote_data, function (a){
+				this_.receiveState(a);
+			})
 		},
-		receiveState: function (data) {
-			// Receives a contestvote object and updates the state of the buttons to reflect it.
+		receiveState: function(contest_vote_data) {
+			// Receives contest vote data, parses it out into the user vote, upvotes, and downvotes, then triggers the appropriate functions for displaying the data.
+			var this_ = this,
+				// find the current user's vote
+				user_contest_vote = $.grep(contest_vote_data['objects'], function (item, index) { return (item['user'] === this_.data('user-detail-uri')); })[0],
+				// find upvotes and downvotes
+				upvotes = $.grep(contest_vote_data['objects'], function (item, index) { return (item['vote'] === 1); }),
+				downvotes = $.grep(contest_vote_data['objects'], function (item, index) { return (item['vote'] === -1); });
+			this.receiveUserVote(user_contest_vote);
+			this.receiveVotes(upvotes, downvotes);
 			this.endLoading();
+		},
+		receiveUserVote: function (data) {
+			// Receives a contestvote object and updates the state of the buttons to reflect it.
 			// Cache the current vote value.
 			if (data === "") data = undefined; // Empty strings... can't live with them, can't live without them.
 			this.voteData = data;
-			console.log(this.voteData);
 			// Clear the current state of buttons, regardless.
 			this.element.find('.button-selected').removeClass('button-selected');
 			// If the vote is undefined, stop here.
@@ -70,9 +82,14 @@
 					break;
 			}
 		},
+		receiveVotes: function (upvotes, downvotes) {
+			// Updates the counts on the HTML elements.
+			this.upvoteCountElement.html(upvotes.length);
+			if (this.data('downvotes') === 1) this.downvoteCountElement.html(downvotes.length);
+		},
 		sendVote: function (vote) {
 			// Sends an AJAX request to delete, create, or update a contestvote.
-			// When the request completes, it triggers `this.receiveState`.
+			// When the request completes, it triggers `this.requestState`.
 			var this_ = this,
 				request_uri, request_options = {};
 			
@@ -99,7 +116,7 @@
 				});
 			request_options.contentType = "application/json";
 			request_options.processData = false;
-			request_options.success = function (data) { this_.receiveState(data) };
+			request_options.success = function (data) { this_.requestState() };
 			// Send the request.
 			this.startLoading();
 			$.ajax(request_uri, request_options);
