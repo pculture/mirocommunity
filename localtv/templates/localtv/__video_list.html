@@ -1,0 +1,40 @@
+{% extends "localtv/__base.html" %}
+
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block body_classes %}{{ block.super }} video-list-page{% endblock %}
+
+{% block content %}
+	<header class="page-header">
+		<h1>{% block page_title %}Video List{% endblock %}</h1>
+		<div class="page-actions">
+			<ul class="action-list">
+				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>{% endblock %}</li>
+			</ul>
+		</div>
+	</header>
+	
+	<div class="page-content">
+		<div class="content-box">
+			{% include "localtv/_video_grid_list.html" %}
+		</div>
+	</div>
+	
+{% endblock %}

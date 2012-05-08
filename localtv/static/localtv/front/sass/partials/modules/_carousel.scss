@@ -1,0 +1,29 @@
+@import "compass/css3/border-radius",
+		"compass/utilities/general/clearfix";
+
+.carousel-wrapper{
+	position:relative;
+}
+
+.carousel-pager{
+	position:absolute;
+	bottom:0;
+	right:0;
+	@include margin-trailer(.5);
+	z-index:1337;
+	@extend .padded-half;
+	@include clearfix;
+	@include border-radius(5px);
+	& > a{
+		height:8px;
+		width:8px;
+		float:left;
+		margin-left:5px;
+		text-indent:-9999px;
+		border:1px solid;
+		@include border-radius(5px);
+	}
+	& > a:first-child{
+		margin-left:0;
+	}
+}

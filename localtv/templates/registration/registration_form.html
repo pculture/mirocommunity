@@ -1,6 +1,7 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,54 +19,26 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block title %}Register{% endblock %}
-{% block head %}
-<style type="text/css">
-.login{
-padding: 20px;
-}
+{% load i18n %}
 
-.login h1{
-margin: 0;
-padding: 0;
-font-size: 16px;
-clear: both;
-line-height: 1.3em;
-}
+{% block title %}{% trans "Register" %}{% endblock %}
 
+{% block styles %}
+{{ block.super }}
+{% endblock %}
 
-.login form p{
-clear: both;
-padding: 20px;
-}
-
-#about_page #main p{
-padding-bottom: 10px;
-}
-
-
-body{
-font-family: Arial, Helvetica, sans-serif;
-}
-
-#cancel_button {
-    display: none;
-}
-
-label, label + input {
-    clear: left;
-}
-</style>
-{% endblock head %}
 {% block content %}
-<div class="login">
-<h1>Register for a New Account</h1>
-  <form action="{% url registration_register %}" method="POST">{% csrf_token %}
-    {{ form.as_p }}
-  <input type="submit" value="Register">
-</form>
-</div>
- {% if request.is_ajax %}
- <input id="cancel_button" value="Cancel" type="submit" onclick="tb_remove();" />
- {% endif %}
+	<header class="page-header">
+		<h1 class="page-title">{% trans "Register for a New Account" %}</h1>
+	</header>
+	<div class="page-content content-box">
+		<form action="{% url registration_register %}" method="POST">{% csrf_token %}
+			{% include "localtv/_form_inner.html" %}
+			<div class="control-group">
+				<div class="controls">
+					<button>{% trans "Register" %}</button>
+				</div>
+			</div>
+		</form>
+	</div>
 {% endblock %}

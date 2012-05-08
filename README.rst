@@ -21,6 +21,10 @@ Project
 :code:         https://github.com/pculture/mirocommunity
 :mailing list: http://groups.google.com/group/miro-community-development
 :irc:          `#miro-hackers on irc.freenode.net <irc://irc.freenode.net/miro-hackers`
+:build status: |build-image|
+
+.. |build-image| image:: https://secure.travis-ci.org/pculture/mirocommunity.png?branch=develop
+                 :target: http://travis-ci.org/pculture/mirocommunity
 
 
 Running tests

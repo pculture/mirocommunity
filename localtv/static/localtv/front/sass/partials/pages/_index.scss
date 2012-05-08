@@ -1,0 +1,21 @@
+.basic .popular > .pod-content,
+.basic .popular > .pod-footer,
+.cyclops .popular > .pod-content,
+.cyclops .popular > .pod-footer,
+.basic .new > .pod-content,
+.basic .new > .pod-footer{
+	@extend .right-sidebar;
+}
+
+.watch-video-button{
+	@include box-sizing(border-box);
+	border:1px solid;
+	padding:$base-line-height/4 $base-line-height/2;
+	@include border-radius(4px);
+}
+.watch-video-button::after{
+	@extend .button-dark;
+	content:"▶";
+	display:inline-block;
+	margin-left:.5em;
+}

@@ -1,6 +1,6 @@
-{% extends "localtv/video_listing.html" %}
+{% extends "localtv/__video_list.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -21,20 +21,20 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
-{% block page_title %}Search Results{% endblock %}
-
 {% block title %}{{ block.super }} - {% trans "Search" %}{% endblock %}
+
+{% block body_classes %}{{ block.super }} search-results{% endblock %}
+
+{% block page_title %}{% blocktrans with query=query %}Search Results for {{ query }}{% endblocktrans %}{% endblock %}
 
 {% block rss_link %}{% if query %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block rss_url %}{% url localtv_feeds_search query %}{% if request.GET.sort == 'latest' %}?sort=latest{% endif %}{% endblock %}
 
-{% block body_id %}video_listing_search{% endblock body_id %}
-
 {% block content %}
-  {% if not video_list %}
-  <h2>Sorry, we could not find any videos matching that query.</h2>
-  {% else %}
-  {{ block.super }}
-  {% endif %}
+	{% if not video_list %}
+		<h2>{% trans "Sorry, we could not find any videos matching that query." %}</h2>
+	{% else %}
+		{{ block.super }}
+	{% endif %}
 {% endblock %}

@@ -1,0 +1,41 @@
+/* Loosely based on https://github.com/twitter/bootstrap/blob/master/less/popovers.less */
+
+.popover{
+	@extend .padded-half;
+	position:absolute;
+	border:1px solid;
+	background:#FFF;
+	@include border-radius(5px);
+	z-index:1337;
+	top:0;
+	left:0;
+	@include box-shadow(0 1px 3px 0 rgba(0,0,0,.15));
+}
+
+.popover.right{
+	margin-left:10px;
+	.arrow{
+		position:absolute;
+		top:50%;
+		left:-$gutter-width/4 + 1px;
+	}
+}
+
+.popover.left{
+	margin-left:-10px;
+	.arrow{
+		position:absolute;
+		top:50%;
+		right:-$gutter-width/4 + 1px;
+	}
+}
+
+.popover-inner{
+	width:280px;
+	overflow:hidden;
+	position:relative;
+}
+
+.popover h3, .popover :last-child{
+	margin:0;
+}

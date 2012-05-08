@@ -1,0 +1,38 @@
+.social-link-list{
+	@extend .unstyled-list;
+	@include clearfix;
+	border-bottom:1px solid;
+	padding:$base-line-height/2 $gutter-width/2;
+	& > li{
+		float:left;
+		display: block;
+		&:first-child{
+			border-left:0;
+		}
+		position:relative;
+		top:4px;
+		width:120px;
+		min-height:5px;
+	}
+	& > .facebook-social{
+		width:110px;
+	}
+	& > .gplus-social{
+		width:100px;
+	}
+	& > .pinterest-social{
+		width:110px;
+	}
+	& > .email-social{
+		width:100px;
+	}
+	a:hover{
+		border:0;
+	}
+	.button{
+		@include small;
+	}
+	.button:hover{
+		border:1px solid;
+	}
+}

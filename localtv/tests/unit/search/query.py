@@ -311,6 +311,10 @@ class AutoQueryTestCase(BaseTestCase):
                     self.blender_user_videos[0:2])
         self.assertQueryResults("{user:blender rocket}", expected)
 
+        # bz19083. Nonexistant keyword target in an or shouldn't freak out.
+        expected = self.rocket_videos + self.rocket_user_videos
+        self.assertQueryResults("{user:quandry rocket}", expected)
+
     def test_search_or_and(self):
         """
         Mixing OR and AND should work as expected.

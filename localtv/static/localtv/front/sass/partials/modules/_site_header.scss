@@ -1,0 +1,78 @@
+@import "compass/utilities/general/clearfix";
+
+#header{
+	@include pie-clearfix;
+	background:#FFF;
+	@include padding-trailer(.5);
+	@include padding-leader(.5);
+}
+
+#header > .container{
+	position:relative;
+}
+
+#SiteLogo{
+	float:left;
+	img{
+		display:block;
+	}
+}
+
+
+#SiteTitle, #SiteTagline{
+	margin:0;
+	padding-left: $gutter-width/2;
+}
+
+
+#SiteTitle{
+	font-weight:bold;
+}
+
+.site-title-small, #SiteTagline{
+	@include large;
+}
+.site-title-large{
+	@include xx-large;
+	line-height:54px;
+}
+
+
+#SiteTagline{
+	font-weight:400;
+}
+
+#search{
+	#search_field{
+		width:80%;
+	}
+	.btn-right{
+		width:20%;
+	}
+	@media screen and (max-width: 740px){
+		position:absolute;
+		@include padded(.5);
+		top:0;
+		right:0;
+		left:0;
+		background:#EEE;
+		width:auto;
+		border-bottom:1px solid #CCC;
+	}
+}
+
+.logo-link:hover{
+	border:0;
+}
+
+@media screen and (max-width: 960px){
+	#header > .container{
+		padding:0 $gutter-width/4;
+	}
+}
+@media screen and (max-width: 740px){
+	#header > .container{
+		position:static;
+		margin-top:$base-line-height * 2.5;
+	}
+}
