@@ -99,10 +99,7 @@ class TagFilterField(ModelFilterField):
     def __init__(self, field_lookups=('tags',), cache_choices=False,
                  required=False, widget=None, label=_('Tags'), initial=None,
                  help_text=None, to_field_name='name', *args, **kwargs):
-        self.model = Tag
-        queryset = Tag.objects.usage_for_queryset(Video.objects.filter(
-                                                    site=settings.SITE_ID,
-                                                    status=Video.ACTIVE))
+        queryset = Tag.objects.all()
         super(TagFilterField, self).__init__(queryset, field_lookups,
                                              cache_choices, required, widget,
                                              label, initial, help_text,
@@ -143,7 +140,7 @@ class SortFilterForm(SmartSearchForm):
                              required=False,
                              initial='newest')
 
-    tag = TagFilterField(label=_('Tags'), field_lookups=('tags',))
+    tag = TagFilterField()
     category = ModelFilterField(Category.objects.filter(
                                                     site=settings.SITE_ID),
                                 to_field_name='slug',
