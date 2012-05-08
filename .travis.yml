@@ -3,12 +3,16 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - MC_TEST_USE_SOUTH= MC_PAYPAL_REAL=
+  - MC_TEST_USE_SOUTH= MC_PAYPAL_REAL= MC_TEST_USE_ES=
   - MC_TEST_USE_SOUTH=yes
   - MC_PAYPAL_REAL=yes
+  - MC_TEST_USE_ES=yes
+before_install:
+  - test x$MC_TEST_USE_ES == xyes && sudo service elasticsearch start && sleep 3 || true
 install:
   - pip install -q -e . --use-mirrors
   - pip install -q --use-mirrors -r example_mc_project/requirements.txt
   - test x$MC_TEST_USE_SOUTH == xyes && pip install -q south || true
+  - test x$MC_TEST_USE_ES == xyes && pip install -q 'git+git://github.com/toastdriven/pyelasticsearch.git' || true
 script:
   - django-admin.py test localtv --settings=example_mc_project.settings
