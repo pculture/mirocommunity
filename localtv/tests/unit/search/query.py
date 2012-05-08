@@ -110,15 +110,17 @@ class AutoQueryTestCase(BaseTestCase):
         cls._disable_index_updates()
         cls.blender_videos = (
             cls.create_video(name='Blender'),
-            cls.create_video(description='Foo bar a blender.'),
-            cls.create_video(description='<h1>Foo</h1> <p>bar <span class="ro'
-                                          'cket">a blender</span></p>'),
-            cls.create_video(tags='blender'),
-            cls.create_video(
+            cls.create_video(name='b2', description='Foo bar a blender.'),
+            cls.create_video(name='b3',
+                             description='<h1>Foo</h1> <p>bar <span class="ro'
+                             'cket">a blender</span></p>'),
+            cls.create_video(name='b4', tags='blender'),
+            cls.create_video(name='b5',
                           categories=[cls.create_category(name='Blender',
                                                            slug='tender')]),
-            cls.create_video(video_service_user='blender'),
-            cls.create_video(feed=cls.create_feed('feed1', name='blender')),
+            cls.create_video(name='b6', video_service_user='blender'),
+            cls.create_video(name='b7',
+                             feed=cls.create_feed('feed1', name='blender')),
         )
         cls.blender_users = (
             cls.create_user(username='blender'),
@@ -128,21 +130,23 @@ class AutoQueryTestCase(BaseTestCase):
         cls.blender_user_videos = ()
         for user in cls.blender_users:
             cls.blender_user_videos += (
-                cls.create_video(user=user),
-                cls.create_video(authors=[user])
+                cls.create_video(name='b8u%s' % user.username, user=user),
+                cls.create_video(name='b9a%s' % user.username, authors=[user])
             )
 
         cls.rocket_videos = (
             cls.create_video(name='Rocket'),
-            cls.create_video(description='Foo bar a rocket.'),
-            cls.create_video(description='<h1>Foo</h1> <p>bar <span class="bl'
-                                          'ender">a rocket</span></p>'),
-            cls.create_video(tags='rocket'),
-            cls.create_video(
-                          categories=[cls.create_category(name='Rocket',
-                                                           slug='pocket')]),
-            cls.create_video(video_service_user='rocket'),
-            cls.create_video(feed=cls.create_feed('feed2', name='rocket')),
+            cls.create_video(name='r2', description='Foo bar a rocket.'),
+            cls.create_video(name='r3',
+                             description='<h1>Foo</h1> <p>bar <span class="bl'
+                             'ender">a rocket</span></p>'),
+            cls.create_video(name='r4', tags='rocket'),
+            cls.create_video(name='r5',
+                             categories=[cls.create_category(name='Rocket',
+                                                             slug='pocket')]),
+            cls.create_video(name='r6', video_service_user='rocket'),
+            cls.create_video(name='r7',
+                             feed=cls.create_feed('feed2', name='rocket')),
         )
         cls.rocket_users = (
             cls.create_user(username='rocket'),
@@ -152,12 +156,12 @@ class AutoQueryTestCase(BaseTestCase):
         cls.rocket_user_videos = ()
         for user in cls.rocket_users:
             cls.rocket_user_videos += (
-                cls.create_video(user=user),
-                cls.create_video(authors=[user])
+                cls.create_video(name='r8u%s' % user.username, user=user),
+                cls.create_video(name='r9a%s' % user.username, authors=[user])
             )
 
         cls.search_videos = (
-            cls.create_video(search=cls.create_search("rogue")),
+            cls.create_video(name='s1', search=cls.create_search("rogue")),
         )
         cls.playlist = cls.create_playlist(cls.blender_users[0])
         cls.playlist.add_video(cls.blender_videos[0])
@@ -188,11 +192,11 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         results = SmartSearchQuerySet().auto_query(query)
-        results = dict((unicode(r.pk), r) for r in results)
-        expected = dict((unicode(v.pk), v) for v in expected)
+        results = dict((unicode(r.pk), r.object.name) for r in results)
+        expected = dict((unicode(v.pk), v.name) for v in expected)
 
-        result_pks = set(results)
-        expected_pks = set(expected)
+        result_pks = set(results.items())
+        expected_pks = set(expected.items())
         self.assertEqual(result_pks, expected_pks)
 
     def test_search(self):
