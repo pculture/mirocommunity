@@ -177,7 +177,7 @@ form { margin-bottom: 18px; }
 @media screen and (max-width:740px) { .grid-item { width: 50%; } }
 .replaced, .search-icon { text-indent: -9999px; display: block; }
 
-.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1335404649'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
+.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1336437711'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
 
 ul, ol { padding-left: 1.5em; }
 
@@ -193,7 +193,7 @@ ol > li { list-style-type: decimal; }
 
 .media-item { float: left; margin-left: 40px; margin-bottom: 18px; }
 
-.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1335404649') center center no-repeat; }
+.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1336437711') center center no-repeat; }
 
 .media-grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
@@ -331,12 +331,13 @@ ol > li { list-style-type: decimal; }
 
 @media screen and (max-width: 960px) { #header > .container { padding: 0 10px; } }
 @media screen and (max-width: 740px) { #header > .container { position: static; margin-top: 45px; } }
-.social-link-list { overflow: hidden; *zoom: 1; border-bottom: 1px solid; padding-bottom: 9px; padding-top: 9px; padding-left: 10px; padding-right: 10px; }
-.social-link-list > li { float: left; display: block; width: 90px; position: relative; top: 4px; width: 100px; min-height: 5px; }
+.social-link-list { overflow: hidden; *zoom: 1; border-bottom: 1px solid; padding: 9px 20px; }
+.social-link-list > li { float: left; display: block; position: relative; top: 4px; width: 120px; min-height: 5px; }
 .social-link-list > li:first-child { border-left: 0; }
-.social-link-list > .facebook-social { width: 90px; }
-.social-link-list > .gplus-social { width: 80px; }
-.social-link-list > .pinterest-social { width: 90px; }
+.social-link-list > .facebook-social { width: 110px; }
+.social-link-list > .gplus-social { width: 100px; }
+.social-link-list > .pinterest-social { width: 110px; }
+.social-link-list > .email-social { width: 100px; }
 .social-link-list a:hover { border: 0; }
 .social-link-list .button, .social-link-list .button-wide, .social-link-list button, .social-link-list .pagetabs a, .pagetabs .social-link-list a, .social-link-list .pagetabs .ellipse span, .pagetabs .ellipse .social-link-list span { font-size: 11px; line-height: 18px; }
 .social-link-list .button:hover, .social-link-list .button-wide:hover, .social-link-list button:hover, .social-link-list .pagetabs a:hover, .pagetabs .social-link-list a:hover, .social-link-list .pagetabs .ellipse span:hover, .pagetabs .ellipse .social-link-list span:hover { border: 1px solid; }
@@ -486,7 +487,7 @@ input:focus, textarea:focus { border-color: #344f6d; -moz-box-shadow: 0 0 6px 0 
 .message.warning { background-color: #fffcc5; border-color: #cfcc8f; text: #2c2a00; }
 
 /* precontent */
-.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1335404649'); }
+.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1336437711'); }
 
 .precontent a { color: #66ccff; }
 .precontent a:hover { border-color: #666; }
