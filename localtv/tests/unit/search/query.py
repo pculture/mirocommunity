@@ -18,6 +18,7 @@
 from localtv.search.query import SmartSearchQuerySet
 from localtv.tests.base import BaseTestCase
 
+from haystack import connections
 
 class TokenizeTestCase(BaseTestCase):
     """
@@ -228,6 +229,10 @@ class AutoQueryTestCase(BaseTestCase):
         Search should exclude strings, phrases, and keywords preceded by a '-'
 
         """
+        if ('WhooshEngine' in
+            connections['default'].options['ENGINE']):
+            self.skipTest('Whoosh has bad handling of exclude queries')
+
         expected = (self.all_videos - set(self.blender_videos) -
                     set(self.blender_user_videos))
         self.assertQueryResults('-blender', expected)
@@ -324,8 +329,7 @@ class AutoQueryTestCase(BaseTestCase):
         Mixing OR and AND should work as expected.
 
         """
-        expected = (self.blender_videos[:1] + self.blender_videos[3:] +
-                    self.rocket_videos[:1] + self.rocket_videos[3:] +
-                    self.blender_user_videos + self.rocket_user_videos)
-        self.assertQueryResults('{rocket blender} -foo', expected)
-        self.assertQueryResults('-foo {rocket blender}', expected)
+        expected = self.blender_videos[1:3] + self.rocket_videos[1:3]
+
+        self.assertQueryResults('{rocket blender} foo', expected)
+        self.assertQueryResults('foo {rocket blender}', expected)
