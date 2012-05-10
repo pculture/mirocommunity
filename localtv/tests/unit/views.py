@@ -16,7 +16,12 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.http import Http404
+
+from localtv.listing.views import CompatibleListingView
 from localtv.models import Video
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterView
 from localtv.tests.base import BaseTestCase
 from localtv.views import VideoView
 
@@ -58,3 +63,84 @@ class VideoViewTestCase(BaseTestCase):
         self.assertEqual(context['category'].pk, category.pk)
         self.assertEqual(list(context['popular_videos']),
                         [video1, video2, video3])
+
+
+class CompatibleListingViewTestCase(BaseTestCase):
+    def test_paginate_by(self):
+        """
+        Compatible listing views support the 'count' parameter to modify
+        pagination.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/', {'count': 1})
+        self.assertEqual(view.get_paginate_by(None), 1)
+
+    def test_get_form_data(self):
+        """
+        Compatible listing views support 'query' as an alterative to 'q'
+        iff 'q' is not also supplied, and allow 'latest' as an alias for
+        'newest'.
+
+        """
+        view = CompatibleListingView()
+        data = view.get_form_data({'query': 'foo'})
+        self.assertEqual(data.get('q'), 'foo')
+
+        data = view.get_form_data({'query': 'foo', 'q': 'bar'})
+        self.assertEqual(data.get('q'), 'bar')
+
+        data = view.get_form_data({'sort': 'latest'})
+        self.assertEqual(data.get('sort'), 'newest')
+
+    def test_queryset(self):
+        """
+        Compatible listing views must return normalized querysets.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/')
+        view.kwargs = {}
+        self.assertTrue(isinstance(view.get_queryset(), NormalizedVideoList))
+
+    def test_get_context_data(self):
+        """
+        Compatible listing views should include 'query' and 'video_list'.
+
+        """
+        view = CompatibleListingView()
+        view.request = self.factory.get('/')
+        view.kwargs = {}
+        context = view.get_context_data(object_list=view.get_queryset())
+        self.assertTrue('query' in context)
+        self.assertTrue('video_list' in context)
+        for f in context['form'].filter_fields():
+            self.assertFalse(f.name in context)
+
+
+class SortFilterViewTestCase(BaseTestCase):
+    def test_get_object(self):
+        view = SortFilterView()
+        view.request = self.factory.get('/')
+        view.kwargs = {'pk': 1}
+        view.filter_name = 'author'
+        self.assertRaises(Http404, view.get_object)
+        view.kwargs = {'pk': 'foo'}
+        self.assertRaises(Http404, view.get_object)
+
+    def test_get_context_data(self):
+        """
+        The SortFilterView should provide 'videos', 'form', and, if relevant,
+        the current enforced filter object.
+
+        """
+        view = SortFilterView()
+        category = self.create_category()
+        view.request = self.factory.get('/')
+        view.kwargs = {'slug': category.slug}
+        view.filter_name = 'category'
+        view.filter_kwarg = 'slug'
+        context = view.get_context_data(object_list=view.get_queryset())
+        self.assertEqual(context['category'], category)
+        self.assertTrue('videos' in context)
+        self.assertTrue('form' in context)

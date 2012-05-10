@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from hashlib import sha1
-import urllib
 
 from daguerre.models import AdjustedImage, Image
 from django.contrib.sites.models import Site
@@ -30,7 +29,8 @@ from django.utils.tzinfo import FixedOffset
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video
-from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterMixin
 from localtv.templatetags.filters import simpletimesince
 
 
@@ -38,10 +38,12 @@ FLASH_ENCLOSURE_STATIC_LENGTH = 1
 
 LOCALTV_FEED_LENGTH = 30
 
-class BaseVideosFeed(FeedView, SortFilterViewMixin):
+class BaseVideosFeed(FeedView, SortFilterMixin):
     title_template = "localtv/feed/title.html"
     description_template = "localtv/feed/description.html"
     feed_type = ThumbnailFeedGenerator
+    view_name = None
+    filter_kwarg = 'pk'
 
     def __init__(self, json=False):
         if json:
@@ -71,6 +73,9 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
             repr(args),
             repr(kwargs),
         )
+        # Vary on search/sort/filter parameters, as well.
+        vary += tuple(request.GET.get(name)
+                      for name in self.form_class.base_fields)
         cache_key = self._get_cache_key(request, vary)
 
         response = cache.get(cache_key)
@@ -90,18 +95,28 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         and are thus unsuitable for storage.
 
         """
-        obj = {'request': request}
-        filter_form = self._get_filter_form(request)
-        filters = self._get_filters(filter_form, **kwargs)
-        obj['cleaned_filters'] = self._clean_filter_values(filters)
-        if self.url_filter in self.filters:
+        obj = {
+            'request': request
+        }
+
+        if self.filter_name is not None:
+            field = self.form_class.base_fields[self.filter_name]
+            model = field.queryset.model
             try:
-                obj['obj'] = obj['cleaned_filters'][self.url_filter][0]
-            except IndexError:
-                # Then this is a URL for a page that shouldn't exist.
+                key = field.to_field_name or 'pk'
+                obj['obj'] = model.objects.get(**{
+                                            key: kwargs[self.filter_kwarg]})
+            except (ValueError, model.DoesNotExist):
                 raise Http404
 
         return obj
+
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(BaseVideosFeed, self).get_form_data(base_data,
+                                                         filter_value)
+        if data.get('sort') == 'latest':
+            data['sort'] = 'newest'
+        return data
 
     def _actual_items(self, obj):
         raise NotImplementedError
@@ -116,6 +131,18 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         feed.opensearch_data = self._get_opensearch_data(obj)
         return feed
 
+    def _base_link(self, obj):
+        if self.view_name is not None:
+            return reverse(self.view_name)
+        elif 'obj' in obj:
+            return obj['obj'].get_absolute_url()
+        else:
+            raise NotImplementedError
+
+    def link(self, obj):
+        return u"?".join((self._base_link(obj),
+                          obj['request'].GET.urlencode()))
+
     def items(self, obj):
         """
         Handles a list or queryset of items fetched with :meth:`_actual_items`
@@ -128,16 +155,20 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        qs = self._search(self._get_query(obj['request']))
-        qs = self._sort(qs, self._get_sort(obj['request']))
-        qs = self._filter(qs, obj['cleaned_filters'])
-        videos = NormalizedVideoList(qs)
+        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
+        if form.is_valid():
+            qs = form.get_queryset()
+        else:
+            qs = form.invalid_query()
+        items = NormalizedVideoList(qs)
+        return self._opensearch_items(items, obj)
 
+    def _opensearch_items(self, items, obj):
         opensearch = self._get_opensearch_data(obj)
         start = opensearch['startindex']
         end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(videos)
-        return videos[start:end]
+        opensearch['totalresults'] = len(items)
+        return items[start:end]
 
     def _get_opensearch_data(self, obj):
         """
@@ -272,10 +303,8 @@ class BaseVideosFeed(FeedView, SortFilterViewMixin):
 
 
 class NewVideosFeed(BaseVideosFeed):
-    default_sort = '-date'
-
-    def link(self):
-        return reverse('localtv_list_new')
+    view_name = 'localtv_list_new'
+    sort = 'newest'
 
     def title(self):
         return u"%s: %s" % (
@@ -283,10 +312,8 @@ class NewVideosFeed(BaseVideosFeed):
 
 
 class FeaturedVideosFeed(BaseVideosFeed):
-    default_sort = '-featured'
-
-    def link(self):
-        return reverse('localtv_list_featured')
+    view_name = 'localtv_list_featured'
+    sort = 'featured'
 
     def title(self):
         return u"%s: %s" % (
@@ -294,10 +321,8 @@ class FeaturedVideosFeed(BaseVideosFeed):
 
 
 class PopularVideosFeed(BaseVideosFeed):
-    default_sort = '-popular'
-
-    def link(self):
-        return reverse('localtv_list_popular')
+    view_name = 'localtv_list_popular'
+    sort = 'popular'
 
     def title(self):
         return u"%s: %s" % (
@@ -305,12 +330,8 @@ class PopularVideosFeed(BaseVideosFeed):
 
 
 class CategoryVideosFeed(BaseVideosFeed):
-    url_filter = 'category'
-    url_filter_kwarg = 'slug'
-    default_sort = '-date'
-
-    def link(self, obj):
-        return obj['obj'].get_absolute_url()
+    filter_name = 'category'
+    filter_kwarg = 'slug'
 
     def title(self, obj):
         return u"%s: %s" % (
@@ -319,10 +340,9 @@ class CategoryVideosFeed(BaseVideosFeed):
         )
 
 class AuthorVideosFeed(BaseVideosFeed):
-    url_filter = 'author'
-    default_sort = '-date'
+    filter_name = 'author'
 
-    def link(self, obj):
+    def _base_link(self, obj):
         return reverse('localtv_author', args=[obj['obj'].pk])
 
     def title(self, obj):
@@ -343,10 +363,9 @@ class FeedVideosFeed(BaseVideosFeed):
     #
     # To avoid end-users getting confused, the URL does not say "feed"
     # twice, but talks about video sources.
-    url_filter = 'feed'
-    default_sort = '-date'
+    filter_name = 'feed'
 
-    def link(self, obj):
+    def _base_link(self, obj):
         return reverse('localtv_list_feed', args=[obj['obj'].pk])
 
     def title(self, obj):
@@ -356,11 +375,10 @@ class FeedVideosFeed(BaseVideosFeed):
 
 
 class TagVideosFeed(BaseVideosFeed):
-    url_filter = 'tag'
-    url_filter_kwarg = 'name'
-    default_sort = '-date'
+    filter_name = 'tag'
+    filter_kwarg = 'name'
 
-    def link(self, obj):
+    def _base_link(self, obj):
         return reverse('localtv_list_tag', args=[obj['obj'].name])
 
     def title(self, obj):
@@ -369,28 +387,17 @@ class TagVideosFeed(BaseVideosFeed):
 
 
 class SearchVideosFeed(BaseVideosFeed):
+    view_name = 'localtv_search'
 
-    def _get_cache_key(self, request, vary):
-        key = super(SearchVideosFeed, self)._get_cache_key(request, vary)
-        if request.GET.get('sort', None) == 'latest':
-            return '%s:latest' % key
-        return key
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(SearchVideosFeed, self).get_form_data(base_data)
+        data['q'] = filter_value
+        return data
 
     def get_object(self, request, query):
-        obj = BaseVideosFeed.get_object(self, request, query)
+        obj = BaseVideosFeed.get_object(self, request, query=query)
         obj['obj'] = query
         return obj
-
-    def _get_query(self, request):
-        # HACK to pull the query out of the path
-        return request.path.rsplit('/', 1)[1]
-
-    def link(self, obj):
-        args = {'q': obj['obj'].encode('utf-8')}
-        sort = obj['request'].GET.get('sort', None)
-        if sort == 'latest':
-            args['sort'] = 'latest'
-        return u"?".join((reverse('localtv_search'), urllib.urlencode(args)))
 
     def title(self, obj):
         return u"%s: %s" % (
@@ -399,16 +406,23 @@ class SearchVideosFeed(BaseVideosFeed):
 
 
 class PlaylistVideosFeed(BaseVideosFeed):
-    url_filter = 'playlist'
+    filter_name = 'playlist'
 
-    def _get_cache_key(self, request, vary):
-        key = super(PlaylistVideosFeed, self)._get_cache_key(request, vary)
-        if request.GET.get('sort', None) == 'order':
-            return '%s:order' % key
-        return key
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(PlaylistVideosFeed, self).get_form_data(base_data,
+                                                             filter_value)
+        if data.get('sort') in ('order', '-order'):
+            # This HACK helps us sort by playlist order.
+            data.pop('sort')
+        return data
 
-    def link(self, obj):
-        return obj['obj'].get_absolute_url()
+    def get_object(self, request, *args, **kwargs):
+        obj = super(PlaylistVideosFeed, self).get_object(request, *args,
+                                                         **kwargs)
+        if request.GET.get('sort') in ('order', '-order'):
+            # This HACK helps us sort by playlist order.
+            obj['playlist_order'] = request.GET['sort']
+        return obj
 
     def items(self, obj):
         """
@@ -416,20 +430,18 @@ class PlaylistVideosFeed(BaseVideosFeed):
         :meth:`items`.
 
         """
-        sort = self._get_sort(obj['request'])
-        if sort == 'order':
-            # TODO: This probably breaks if a video is in multiple playlists.
-            # Check.
-            videos = obj['obj'].video_set.order_by('-playlistitem___order')
+        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
+        # We currently don't support searching combined with the 'order' sort.
+        if 'playlist_order' in obj:
+            # This is a HACK for backwards-compatibility.
+            order_by = '{0}playlistitem___order'.format(
+                               '' if obj['playlist_order'][0] == '-' else '-')
+            queryset = obj['obj'].items.order_by(order_by)
         else:
-            # default is to sort by ascending order
-            videos = obj['obj'].video_set.all()
-        opensearch = self._get_opensearch_data(obj)
-        start= opensearch['startindex']
-        end = start + opensearch['itemsperpage']
-        opensearch['totalresults'] = len(videos)
-        videos = videos[start:end]
-        return videos
+            queryset = form._search()
+            queryset = form._sort(queryset)
+        queryset = NormalizedVideoList(form._filter(queryset))
+        return self._opensearch_items(queryset, obj)
 
     def title(self, obj):
         return u"%s: %s" % (

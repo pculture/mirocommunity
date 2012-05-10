@@ -27,8 +27,8 @@ from django.views.generic import TemplateView, DetailView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.utils import (SortFilterMixin, NormalizedVideoList,
-                                  _exact_q)
+from localtv.search.forms import SortFilterForm
+from localtv.search.utils import NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
@@ -36,13 +36,15 @@ from localtv.playlists.models import Playlist, PlaylistItem
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class IndexView(SortFilterMixin, TemplateView):
+class IndexView(TemplateView):
     template_name = 'localtv/index.html'
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
-        popular_videos = self._sort(self._search(''), '-popular')
+        form = SortFilterForm({'sort': 'popular'})
+        form.full_clean()
+        popular_videos = form.get_queryset()
         new_videos = Video.objects.get_latest_videos()
 
         site_settings_videos = Video.objects.get_site_settings_videos()
@@ -68,7 +70,7 @@ def about(request):
         {}, context_instance=RequestContext(request))
 
 
-class VideoView(SortFilterMixin, DetailView):
+class VideoView(DetailView):
     pk_url_kwarg = 'video_id'
     context_object_name = 'current_video'
     template_name = 'localtv/view_video.html'
@@ -101,7 +103,8 @@ class VideoView(SortFilterMixin, DetailView):
         })
 
         site_settings = SiteSettings.objects.get_current()
-        popular_videos = self._search('')
+        # Data for generating popular videos list.
+        popular_form_data = {'sort': 'popular'}
 
         try:
             category_obj = self.object.categories.all()[0]
@@ -133,11 +136,11 @@ class VideoView(SortFilterMixin, DetailView):
                                 pass
 
             context['category'] = category_obj
-            popular_videos = popular_videos.filter(_exact_q(popular_videos,
-                                                            'categories',
-                                                            category_obj.pk))
+            popular_form_data['category'] = [category_obj]
 
-        popular_videos = self._sort(popular_videos, '-popular')
+        form = SortFilterForm(popular_form_data)
+        form.full_clean()
+        popular_videos = form.get_queryset()
         context['popular_videos'] = NormalizedVideoList(popular_videos)
 
         if self.object.voting_enabled():

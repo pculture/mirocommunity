@@ -17,34 +17,30 @@
 
 import datetime
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.http import Http404
 from django.views.generic import ListView
-from django.conf import settings
 from haystack.query import SearchQuerySet
 from voting.models import Vote
 
 import localtv.settings
 from localtv.models import Video
-from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterView
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 
-VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
 MAX_VOTES_PER_CATEGORY = getattr(settings, 'MAX_VOTES_PER_CATEGORY', 3)
 
 
-class VideoSearchView(ListView, SortFilterViewMixin):
+class CompatibleListingView(SortFilterView):
     """
-    Generic view for videos; implements pagination, filtering and searching.
+    This is the backwards-compatible version of the :class:`SortFilterView`,
+    which provides some extra context, normalizes the search results as
+    :class:`.Video` instances, and provides some querystring handling.
 
     """
-    paginate_by = VIDEOS_PER_PAGE
-    form_class = VideoSearchForm
-    context_object_name = 'video_list'
-
     #: Period of time within which the video was approved.
     approved_since = None
 
@@ -59,24 +55,18 @@ class VideoSearchView(ListView, SortFilterViewMixin):
             paginate_by = self.paginate_by
         return paginate_by
 
-    def _get_query(self, request):
-        """Fetches the query for the current request."""
-        # Support old-style templates that used "query". Remove in 2.0.
-        key = 'q' if 'q' in request.GET else 'query'
-        return request.GET.get(key, "")
+    def get_form_data(self, base_data=None, filter_value=None):
+        data = super(CompatibleListingView, self).get_form_data(base_data,
+                                                                filter_value)
+        if 'q' not in data:
+            data['q'] = data.get('query', '')
+        if data.get('sort') == 'latest':
+            data['sort'] = 'newest'
+        return data
 
     def get_queryset(self):
-        """
-        Returns a list based on the results of a haystack search.
-
-        """
-        qs = self._search(self._get_query(self.request))
-        qs = self._sort(qs, self._get_sort(self.request))
-
-        self.filter_form = self._get_filter_form(self.request)
-        filters = self._get_filters(self.filter_form, **self.kwargs)
-        self._cleaned_filters = self._clean_filter_values(filters)
-        qs = self._filter(qs, self._cleaned_filters)
+        """Wraps the normal queryset in a :class:`.NormalizedVideoList`."""
+        qs = super(CompatibleListingView, self).get_queryset()
 
         if self.approved_since is not None:
             if isinstance(qs, SearchQuerySet):
@@ -89,49 +79,11 @@ class VideoSearchView(ListView, SortFilterViewMixin):
         return NormalizedVideoList(qs)
 
     def get_context_data(self, **kwargs):
-        """
-        In addition to the inherited get_context_data methods, populates a
-        ``sort_links`` variable in the template context, which contains the
-        querystring for the next sort if that option is chosen.
-
-        For example, if the sort is by descending popularity, choosing the
-        ``date`` option will sort by descending date, while choosing
-        ``popular`` would switch to sorting by ascending popularity.
-
-        """
-        context = ListView.get_context_data(self, **kwargs)
-        form = self._make_search_form(self._get_query(self.request))
-        context['form'] = form
-        form.is_valid()
+        context = super(CompatibleListingView, self).get_context_data(
+                                                                     **kwargs)
+        form = context['form']
         context['query'] = form.cleaned_data['q']
-
-        sort, desc = self._process_sort(self._get_sort(self.request))
-        sort_links = {}
-
-        for s in self.sorts:
-            querydict = self.request.GET.copy()
-            querydict.pop('sort', None)
-            querydict.pop('page', None)
-            if s == sort:
-                # Reverse the current ordering if the sort is active.
-                querydict['sort'] = ''.join(('' if desc else '-', s))
-            else:
-                # Default to descending.
-                querydict['sort'] = ''.join(('-', s))
-            sort_links[s] = ''.join(('?', querydict.urlencode()))
-        context['sort_links'] = sort_links
-
-        context['filters'] = self._cleaned_filters
-        context['filter_form'] = self.filter_form
-        if self.url_filter in self._cleaned_filters:
-            try:
-                context[self.url_filter] = (
-                    self._cleaned_filters[self.url_filter][0])
-            except IndexError:
-                # Then there are no items matching the url_filter - so we're
-                # on a page that shouldn't exist.
-                raise Http404
-
+        context['video_list'] = context['videos']
         return context
 
 
@@ -145,14 +97,14 @@ class SiteListView(ListView):
                                 site=Site.objects.get_current())
 
 
-class CategoryVideoSearchView(VideoSearchView):
+class CategoryVideoSearchView(CompatibleListingView):
     """
     Adds support for voting on categories. Essentially, all this means is that
     a ``user_can_vote`` variable is added to the context.
 
     """
     def get_context_data(self, **kwargs):
-        context = VideoSearchView.get_context_data(self, **kwargs)
+        context = CompatibleListingView.get_context_data(self, **kwargs)
         category = context['category']
 
         user_can_vote = False
