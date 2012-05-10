@@ -3,9 +3,8 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - MC_TEST_USE_SOUTH= MC_PAYPAL_REAL= MC_TEST_USE_ES=
+  - MC_TEST_USE_SOUTH= MC_TEST_USE_ES=
   - MC_TEST_USE_SOUTH=yes
-  - MC_PAYPAL_REAL=yes
   - MC_TEST_USE_ES=yes
 before_install:
   - test x$MC_TEST_USE_ES == xyes && sudo service elasticsearch start && sleep 3 || true
