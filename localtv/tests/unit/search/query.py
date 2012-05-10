@@ -331,7 +331,10 @@ class AutoQueryTestCase(BaseTestCase):
         Mixing OR and AND should work as expected.
 
         """
-        expected = self.blender_videos[1:3] + self.rocket_videos[1:3]
+        expected = (self.create_video(name="EXTRA blender"),
+                    self.create_video(name="EXTRA rocket"))
 
-        self.assertQueryResults('{rocket blender} foo', expected)
-        self.assertQueryResults('foo {rocket blender}', expected)
+        self._rebuild_index()
+
+        self.assertQueryResults('{rocket blender} extra', expected)
+        self.assertQueryResults('extra {rocket blender}', expected)
