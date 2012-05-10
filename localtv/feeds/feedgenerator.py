@@ -90,11 +90,8 @@ class JSONGenerator(feedgenerator.SyndicationFeed):
             json_item['categories'] = item['categories']
         if 'thumbnail' in item:
             json_item['thumbnail'] = item['thumbnail']
-            json_item['thumbnails_resized'] = resized = []
-            for size, url in item['thumbnails_resized'].items():
-                resized.append({'width': size[0],
-                                'height': size[1],
-                                'url': url})
+        if 'thumbnails_resized' in item:
+            json_item['thumbnails_resized'] = item['thumbnails_resized']
         if 'website_url' in item:
             json_item['website_url'] = item['website_url']
         if 'embed_code' in item:

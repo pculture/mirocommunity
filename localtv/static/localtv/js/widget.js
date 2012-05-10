@@ -202,7 +202,7 @@ if (typeof MiroCommunity === 'undefined') {
                 var count = this.opts.count ? this.opts.count : 4;
                 var li = null;
                 var widget_size = this.opts.size;
-                flat_bg = MiroCommunity.createElement('img', {src: 'http://' + this.opts.domain + '/images/widget/flat_' + widget_size + '.png',
+                flat_bg = MiroCommunity.createElement('img', {src: 'http://' + this.opts.domain + '/static/localtv/images/widget/flat_' + widget_size + '.png',
                                                               className: 'mc-flat-bg'});
                 separator = MiroCommunity.createElement('div', {className: 'mc-separator'});
                 for (var i=0; i < json.items.length && i < count; i++) {

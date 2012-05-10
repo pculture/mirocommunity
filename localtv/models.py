@@ -23,19 +23,19 @@ import re
 import urllib
 import urllib2
 import mimetypes
-import base64
 import os
 import logging
 import sys
 import traceback
 
 try:
-    from PIL import Image
+    from PIL import Image as PILImage
 except ImportError:
-    import Image
+    import Image as PILImage
 import time
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
+from daguerre.models import Image
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -46,6 +46,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.files.images import ImageFile
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
@@ -69,22 +70,12 @@ from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
 from localtv.signals import post_video_from_vidscraper, submit_finished
-import localtv.tiers
 
 def delete_if_exists(path):
     if default_storage.exists(path):
         default_storage.delete(path)
 
 EMPTY = object()
-
-THUMB_SIZES = [ # for backwards, compatibility; it's now a class variable
-    (534, 430), # behind a video
-    (375, 295), # featured on frontpage
-    (140, 110),
-    (364, 271), # main thumb
-    (222, 169), # medium thumb
-    (88, 68),   # small thumb
-    ]
 
 FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
 FORCE_HEIGHT_PADDING = 2
@@ -131,60 +122,35 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb, resize=True):
+    def save_thumbnail_from_file(self, content_thumb):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
         """
         try:
-            pil_image = Image.open(content_thumb)
+            pil_image = PILImage.open(content_thumb)
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
         # save an unresized version, overwriting if necessary
-        delete_if_exists(
-            self.get_original_thumb_storage_path())
+        delete_if_exists(self.thumbnail_path)
 
         self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(
-            self.get_original_thumb_storage_path(),
-            content_thumb)
+        default_storage.save(self.thumbnail_path, content_thumb)
 
         if hasattr(content_thumb, 'temporary_file_path'):
             # might have gotten moved by Django's storage system, so it might
             # be invalid now.  to make sure we've got a valid file, we reopen
             # under the new path
             content_thumb.close()
-            content_thumb = default_storage.open(
-                self.get_original_thumb_storage_path())
-            pil_image = Image.open(content_thumb)
+            content_thumb = default_storage.open(self.thumbnail_path)
+            pil_image = PILImage.open(content_thumb)
 
-        if resize:
-            # save any resized versions
-            self.resize_thumbnail(pil_image)
         self.has_thumbnail = True
         self.save()
 
-    def resize_thumbnail(self, thumb, resized_images=None):
-        """
-        Creates resized versions of the video's thumbnail image
-        """
-        if not thumb:
-            thumb = Image.open(
-                default_storage.open(self.get_original_thumb_storage_path()))
-        if resized_images is None:
-            resized_images = utils.resize_image_returning_list_of_strings(
-                thumb, self.THUMB_SIZES)
-        for ( (width, height), data) in resized_images:
-            # write file, deleting old thumb if it exists
-            cf_image = ContentFile(data)
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(width, height))
-            default_storage.save(
-                self.get_resized_thumb_storage_path(width, height),
-                cf_image)
-
-    def get_original_thumb_storage_path(self):
+    @property
+    def thumbnail_path(self):
         """
         Return the path for the original thumbnail, relative to the default
         file storage system.
@@ -193,26 +159,20 @@ class Thumbnailable(models.Model):
             self._meta.object_name.lower(),
             self.id, self.thumbnail_extension)
 
-    def get_resized_thumb_storage_path(self, width, height):
-        """
-        Return the path for the a thumbnail of a resized width and height,
-        relative to the default file storage system.
-        """
-        return 'localtv/%s_thumbs/%s/%sx%s.png' % (
-            self._meta.object_name.lower(),
-            self.id, width, height)
-
-    def delete_thumbnails(self):
+    def delete_thumbnail(self):
         self.has_thumbnail = False
-        delete_if_exists(self.get_original_thumb_storage_path())
-        for size in self.THUMB_SIZES:
-            delete_if_exists(
-                self.get_resized_thumb_storage_path(*size[:2]))
+        delete_if_exists(self.thumbnail_path)
         self.thumbnail_extension = ''
+        try:
+            image = Image.objects.for_storage_path(self.thumbnail_path)
+        except Image.DoesNotExist:
+            pass
+        else:
+            image.delete()
         self.save()
 
     def delete(self, *args, **kwargs):
-        self.delete_thumbnails()
+        self.delete_thumbnail()
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
@@ -269,67 +229,6 @@ class SingletonManager(models.Manager):
         return singleton
 
 
-class TierInfo(models.Model):
-    payment_due_date = models.DateTimeField(null=True, blank=True)
-    free_trial_available = models.BooleanField(default=True)
-    free_trial_started_on = models.DateTimeField(null=True, blank=True)
-    in_free_trial = models.BooleanField(default=False)
-    payment_secret = models.CharField(max_length=255, default='',blank=True) # This is part of payment URLs.
-    current_paypal_profile_id = models.CharField(max_length=255, default='',blank=True) # NOTE: When using this, fill it if it seems blank.
-    video_allotment_warning_sent = models.BooleanField(default=False)
-    free_trial_warning_sent = models.BooleanField(default=False)
-    already_sent_welcome_email = models.BooleanField(default=False)
-    inactive_site_warning_sent = models.BooleanField(default=False)
-    user_has_successfully_performed_a_paypal_transaction = models.BooleanField(default=False)
-    already_sent_tiers_compliance_email = models.BooleanField(default=False)
-    fully_confirmed_tier_name = models.CharField(max_length=255, default='', blank=True)
-    should_send_welcome_email_on_paypal_event = models.BooleanField(default=False)
-    waiting_on_payment_until = models.DateTimeField(null=True, blank=True)
-    site_settings = models.OneToOneField('SiteSettings', db_column='sitelocation_id')
-    objects = SingletonManager()
-
-    def get_payment_secret(self):
-        '''The secret had better be non-empty. So we make it non-empty right here.'''
-        if self.payment_secret:
-            return self.payment_secret
-        # Guess we had better fill it.
-        self.payment_secret = base64.b64encode(os.urandom(16))
-        self.save()
-        return self.payment_secret
-
-    def site_is_subsidized(self):
-        return (self.current_paypal_profile_id == 'subsidized')
-
-    def set_to_subsidized(self):
-        if self.current_paypal_profile_id:
-            raise AssertionError, (
-                "Bailing out: " +
-                "the site already has a payment profile configured: %s" %
-                                   self.current_paypal_profile_id)
-        self.current_paypal_profile_id = 'subsidized'
-
-    def time_until_free_trial_expires(self, now = None):
-        if not self.in_free_trial:
-            return None
-        if not self.payment_due_date:
-            return None
-
-        if now is None:
-            now = datetime.datetime.utcnow()
-        return (self.payment_due_date - now)
-
-    def use_zendesk(self):
-        '''If the site is configured to, we can send notifications of
-        tiers-related changes to ZenDesk, the customer support ticketing
-        system used by PCF.
-
-        A non-PCF deployment of localtv would not want to set the
-        LOCALTV_USE_ZENDESK setting. Then this method will return False,
-        and the parts of the tiers system that check it will avoid
-        making calls out to ZenDesk.'''
-        return lsettings.USE_ZENDESK
-
-
 class SiteSettings(Thumbnailable):
     """
     An extension to the django.contrib.sites site model, providing
@@ -357,7 +256,6 @@ class SiteSettings(Thumbnailable):
        actually can though)
      - submission_requires_login: whether or not users need to log in to submit
        videos.
-     - tier_name: A short string representing the class of site. This relates to paid extras.
     """
     DISABLED = 0
     ACTIVE = 1
@@ -382,8 +280,6 @@ class SiteSettings(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
     playlists_enabled = models.IntegerField(default=1)
-    tier_name = models.CharField(max_length=255, default='basic', blank=False,
-                                 choices=localtv.tiers.CHOICES)
     hide_get_started = models.BooleanField(default=False)
 
     # ordering options
@@ -404,49 +300,11 @@ class SiteSettings(Thumbnailable):
 
     objects = SiteSettingsManager()
 
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        (130, 110, FORCE_HEIGHT_PADDING) # Facebook
-        ]
-
     class Meta:
         db_table = 'localtv_sitelocation'
 
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
-
-    def add_queued_mail(self, data):
-        if not hasattr(self, '_queued_mail'):
-            self._queued_mail = []
-        self._queued_mail.append(data)
-
-    def get_queued_mail_destructively(self):
-        ret = getattr(self, '_queued_mail', [])
-        self._queued_mail = []
-        return ret
-
-    @staticmethod
-    def enforce_tiers(override_setting=None, using='default'):
-        '''If the admin has set LOCALTV_DISABLE_TIERS_ENFORCEMENT to a True value,
-        then this function returns False. Otherwise, it returns True.'''
-        if override_setting is None:
-            disabled = lsettings.DISABLE_TIERS_ENFORCEMENT
-        else:
-            disabled = override_setting
-
-        if disabled:
-            # Well, hmm. If the site admin participated in a PayPal transaction, then we
-            # actually will enforce the tiers.
-            #
-            # Go figure.
-            tierdata = TierInfo.objects.db_manager(using).get_current()
-            if tierdata.user_has_successfully_performed_a_paypal_transaction:
-                return True # enforce it.
-
-        # Generally, we just negate the "disabled" boolean.
-        return not disabled
 
     def user_is_admin(self, user):
         """
@@ -464,33 +322,9 @@ class SiteSettings(Thumbnailable):
         SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
         return models.Model.save(self, *args, **kwargs)
 
-    def get_tier(self):
-        return localtv.tiers.Tier(self.tier_name, self)
-
-    def get_fully_confirmed_tier(self):
-        # If we are in a transitional state, then we would have stored
-        # the last fully confirmed tier name in an unusual column.
-        tierdata = TierInfo.objects.get_current()
-        if tierdata.fully_confirmed_tier_name:
-            return localtv.tiers.Tier(tierdata.fully_confirmed_tier_name)
-        return None
-
-    def get_css_for_display_if_permitted(self):
-        '''This function checks the site tier, and if permitted, returns the
-        custom CSS the admin has set.
-
-        If that is not permitted, it returns the empty unicode string.'''
-        if (not self.enforce_tiers() or
-            self.get_tier().permit_custom_css()):
-            # Sweet.
-            return self.css
-        else:
-            # Silenced.
-            return u''
-
     def should_show_dashboard(self):
         '''On /admin/, most sites will see a dashboard that gives them
-        information at a glance about the site, including its tier status.
+        information at a glance about the site.
 
         Some sites want to disable that, which they can do by setting the
         LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
@@ -500,17 +334,6 @@ class SiteSettings(Thumbnailable):
         will be an empty page with a META REFRESH that points to
         /admin/approve_reject/.'''
         return lsettings.SHOW_ADMIN_DASHBOARD
-
-    def should_show_account_level(self):
-        '''On /admin/upgrade/, most sites will see an info page that
-        shows how to change their account level (AKA site tier).
-
-        Some sites want to disable that, which they can do by setting the
-        LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL variable to False.
-
-        This simply removes the link from the sidebar; if you visit the
-        /admin/upgrade/ page, it renders as usual.'''
-        return lsettings.SHOW_ADMIN_ACCOUNT_LEVEL
 
 
 class NewsletterSettings(models.Model):
@@ -643,12 +466,6 @@ class WidgetSettings(Thumbnailable):
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
 
-    THUMB_SIZES = [
-        (88, 68, False),
-        (140, 110, False),
-        (222, 169, False),
-        ]
-
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
         use_title = True
@@ -705,8 +522,6 @@ class Source(Thumbnailable):
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
-
-    THUMB_SIZES = THUMB_SIZES
 
     class Meta:
         abstract = True
@@ -806,7 +621,6 @@ class Feed(Source):
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
-    avoid_frontpage = models.BooleanField(default=False)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
@@ -860,13 +674,13 @@ class Feed(Source):
                                      with_exception=True, using=using)
             return
 
-        super(Feed, self).update(video_iter, source_import=feed_import,
-                                 using=using, **kwargs)
-
         self.etag = getattr(video_iter, 'etag', None) or ''
         self.last_updated = (getattr(video_iter, 'last_modified', None) or
                                  datetime.datetime.now())
         self.save()
+
+        super(Feed, self).update(video_iter, source_import=feed_import,
+                                 using=using, **kwargs)
 
     def source_type(self):
         return self.calculated_source_type
@@ -1536,8 +1350,12 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.filter(watch__timestamp__gt=since).annotate(
-                           watch_count=models.Count('watch'))
+        return self.extra(
+            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
+WHERE localtv_video.id = localtv_watch.video_id AND
+localtv_watch.timestamp > %s"""},
+            select_params = (since,)
+        )
 
 
 class VideoManager(models.Manager):
@@ -1594,10 +1412,8 @@ class VideoManager(models.Manager):
         current site_settings.
 
         """
-        return self.get_latest_videos(site_settings).with_watch_count().order_by(
-            '-watch_count',
-            '-best_date'
-        )
+        from localtv.search.utils import PopularSort
+        return PopularSort().sort(self.get_latest_videos(site_settings))
 
     def get_category_videos(self, category, site_settings=None):
         """
@@ -1749,8 +1565,6 @@ class Video(Thumbnailable, VideoBase):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
-    THUMB_SIZES = THUMB_SIZES
-
     class Meta:
         ordering = ['-when_submitted']
         get_latest_by = 'when_modified'
@@ -1797,8 +1611,9 @@ class Video(Thumbnailable, VideoBase):
             q_filter |= models.Q(file_url=self.file_url)
         if self.guid:
             q_filter |= models.Q(guid=self.guid)
-        qs = Video.objects.using(self._state.db).filter(site_id=self.site_id
-                       ).exclude(status=Video.REJECTED).filter(q_filter)
+        qs = Video.objects.using(self._state.db).filter(
+            site=self.site_id,
+            status=Video.REJECTED).filter(q_filter)
         qs.delete()
 
     @models.permalink
@@ -1866,9 +1681,9 @@ class Video(Thumbnailable, VideoBase):
 
         if instance.description:
             soup = BeautifulSoup(video.description)
-            for tag in soup.findAll(
+            for tag in soup.find_all(
                 'div', {'class': "miro-community-description"}):
-                instance.description = tag.renderContents()
+                instance.description = unicode(tag)
                 break
             instance.description = sanitize(instance.description,
                                             extra_filters=['img'])
@@ -2311,14 +2126,6 @@ def delete_comments(sender, instance, **kwargs):
                                ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
-
-### register pre-save handler for Tiers and payment due dates
-models.signals.pre_save.connect(localtv.tiers.pre_save_set_payment_due_date,
-                                sender=SiteSettings)
-models.signals.pre_save.connect(localtv.tiers.pre_save_adjust_resource_usage,
-                                sender=SiteSettings)
-models.signals.post_save.connect(localtv.tiers.post_save_send_queued_mail,
-                                 sender=SiteSettings)
 
 def create_original_video(sender, instance=None, created=False, **kwargs):
     if not created:

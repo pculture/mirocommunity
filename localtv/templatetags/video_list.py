@@ -16,16 +16,16 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
-from django.utils.functional import curry
 
-from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import SortFilterMixin, NormalizedVideoList
+from localtv.models import Video
+from localtv.search.utils import NormalizedVideoList
+from localtv.search.views import SortFilterMixin
 
 
 register = template.Library()
 
 
-class BaseVideoListNode(template.Node, SortFilterMixin):
+class BaseVideoListNode(SortFilterMixin, template.Node):
     """
     Base helper class (abstract) for handling the get_video_list_* template
     tags.  Based heavily on the template tags for django.contrib.comments.
@@ -36,13 +36,6 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         {% get_video_list_for_FOO <foo_instance> as <varname> %}
 
     """
-    form_class = VideoSearchForm
-    takes_argument = False # if True, takes an argument (tag/category/user
-                           # lists)
-
-    sort = None
-    search_filter = None
-    field_name = None
 
     @classmethod
     def handle_token(cls, parser, token):
@@ -50,18 +43,18 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         bits = token.split_contents()
         tag_name = bits[0]
         bits = bits[1:]
-        argument_count = int(cls.takes_argument) + 2
+        argument_count = int(cls.filter_name is not None) + 2
         if len(bits) != argument_count:
             raise template.TemplateSyntaxError(
                 "%r tag requires %i arguments" % (tag_name, argument_count))
         item = None
-        if cls.takes_argument:
+        if argument_count == 3:
             item = parser.compile_filter(bits[0])
             bits = bits[1:]
         if bits[0] != 'as':
             raise template.TemplateSyntaxError(
                     "%s argument in %r tag must be 'as'" % (
-                        "Third" if cls.takes_argument else "Second", tag_name))
+                        "Third" if argument_count == 3 else "Second", tag_name))
         return cls(item=item, as_varname=bits[1])
 
     def __init__(self, item=None, as_varname=None):
@@ -73,23 +66,15 @@ class BaseVideoListNode(template.Node, SortFilterMixin):
         return ''
 
     def get_video_list(self, context):
-        qs = self._search("")
-        qs = self._sort(qs, self.sort)
-        if self.search_filter in self.filters:
-            f = self.filters[self.search_filter]
-            values = [self.item.resolve(context)]
-            if values[0] is not None:
-                cleaned_filters = self._clean_filter_values({
-                    self.search_filter: values
-                })
-                try:
-                    cleaned_filters[self.search_filter][0]
-                except IndexError:
-                    # Then this isn't a valid filter - slug for a missing
-                    # category, say. Return an empty qs.
-                    qs = qs.none()
-                else:
-                    qs = self._filter(qs, cleaned_filters)
+        if self.filter_name is None:
+            filter_value = None
+        else:
+            filter_value = self.item.resolve(context)
+        form = self.get_form(filter_value=filter_value)
+        if form.is_valid():
+            qs = form.get_queryset()
+        else:
+            qs = Video.objects.none()
         return NormalizedVideoList(qs)
 
 
@@ -98,7 +83,7 @@ class NewVideoListNode(BaseVideoListNode):
     Insert a list of new videos into the context.
 
     """
-    sort = '-date'
+    pass
 
 
 class PopularVideoListNode(BaseVideoListNode):
@@ -106,7 +91,7 @@ class PopularVideoListNode(BaseVideoListNode):
     Insert a list of popular videos into the context.
 
     """
-    sort = '-popular'
+    sort = 'popular'
 
 
 class FeaturedVideoListNode(BaseVideoListNode):
@@ -114,7 +99,7 @@ class FeaturedVideoListNode(BaseVideoListNode):
     Insert a list of featured videos into the context.
 
     """
-    sort = '-featured'
+    sort = 'featured'
 
 
 class CategoryVideoListNode(BaseVideoListNode):
@@ -122,10 +107,7 @@ class CategoryVideoListNode(BaseVideoListNode):
     Insert a list of videos for the given category into the context.
 
     """
-    takes_argument = True
-    search_filter = 'category'
-    field_name = 'slug'
-    sort = '-date'
+    filter_name = 'category'
 
 
 class TagVideoListNode(BaseVideoListNode):
@@ -133,9 +115,7 @@ class TagVideoListNode(BaseVideoListNode):
     Insert a list of videos for the given tag into the context.
 
     """
-    takes_argument = True
-    search_filter = 'tag'
-    field_name = 'name'
+    filter_name = 'tag'
 
 
 class UserVideoListNode(BaseVideoListNode):
@@ -143,9 +123,7 @@ class UserVideoListNode(BaseVideoListNode):
     Insert a list of videos for the given user into the context.
 
     """
-    takes_argument = True
-    search_filter = 'author'
-    field_name = 'username'
+    filter_name = 'author'
 
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)

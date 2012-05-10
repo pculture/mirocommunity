@@ -23,7 +23,7 @@ from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from localtv.feeds.views import BaseVideosFeed, LOCALTV_FEED_LENGTH
+from localtv.feeds.views import BaseVideosFeed
 from localtv.models import Video
 
 def generate_secret():
@@ -46,9 +46,9 @@ class UnapprovedVideosFeed(BaseVideosFeed):
 
     def title(self):
         return "%s: %s" % (
-            self.site_settings.site.name, _('Videos Awaiting Moderation'))
+            Site.objects.get_current().name, _('Videos Awaiting Moderation'))
 
-    def _actual_items(self):
+    def items(self):
         return Video.objects.filter(
             status=Video.UNAPPROVED,
             site=Site.objects.get_current()

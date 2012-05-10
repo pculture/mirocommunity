@@ -20,12 +20,11 @@ Creates the default SiteSettings object.
 """
 import datetime
 
-from django.db.models import signals
 from django.contrib.auth.models import User
 
-from localtv import models as localtv_app
 
 TWO_MONTHS = datetime.timedelta(days=62)
+
 
 def site_too_old():
     if User.objects.order_by('-last_login').values_list(
@@ -33,4 +32,3 @@ def site_too_old():
         return True
     else:
         return False
-

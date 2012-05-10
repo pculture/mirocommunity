@@ -1,0 +1,47 @@
+.precontent{
+	@include clearfix;
+	@include box-shadow(0 1px 0 0 #FFF);
+}
+
+.precontent-header{
+	@extend .padded-half;
+	h1, h2{
+		display:inline;
+		margin:0;
+	}
+	h1{
+		@include large;
+	}
+	h2{
+		@include normal;
+		font-weight:normal;
+	}
+	.title{
+		margin-right:$gutter-width/4;
+	}
+	a{
+		border:none;
+	}
+}
+
+.precontent-content{
+	margin:0 -100px; // Hides the edges of the shadow off the side of the window.
+	@include box-shadow(0 -2px 64px rgba(0,0,0,.5) inset);
+	@include clearfix;
+	
+	@media screen and (max-width: 740px){
+		margin:0; // That causes trouble in single column mode.
+	}
+}
+
+.precontent-details{
+	@extend .col-one-third;
+	@extend .right;
+	@extend .padded;
+	color:#EEE;
+	text-shadow:0 -1px 0 #000;
+	h1 > a{
+		color:#FFF;
+		border:none;
+	}
+}

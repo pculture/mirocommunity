@@ -122,7 +122,7 @@ class ProfileViewTestCase(BaseTestCase):
         c.login(username='user', password='password')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/user_profile/edit.html')
         self.assertTrue('form' in response.context[0])
 

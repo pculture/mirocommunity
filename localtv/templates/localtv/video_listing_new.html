@@ -1,6 +1,6 @@
-{% extends "localtv/video_listing.html" %}
+{% extends "localtv/__video_list.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -21,10 +21,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
-{% block page_title %}New Videos{% endblock %}
-
-{% block rss_url %}{% url localtv_feeds_new %}{% endblock %}
-
 {% block title %}{{ block.super }} - {% trans "New Videos" %}{% endblock %}
 
-{% block body_id %}video_listing_new{% endblock body_id %}
+{% block body_classes %}{{ block.super }} new-videos{% endblock %}
+
+{% block page_title %}{% trans "New Videos" %}{% endblock %}
+
+{% block rss_url %}{% url localtv_feeds_new %}{% endblock %}

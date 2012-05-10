@@ -15,15 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import datetime
-import logging
 import os.path
 import shutil
 import tempfile
 from urllib import quote_plus, urlencode
-
-import mock
 
 import feedparser
 import vidscraper
@@ -36,7 +32,6 @@ CommentForm = get_form()
 
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.sites.models import Site
-from django.core.files.base import File
 from django.core.files import storage
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -52,22 +47,17 @@ import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
-from localtv.models import (Watch, Category, SiteSettings, Video, TierInfo,
-                            Feed, OriginalVideo, SavedSearch, FeedImport,
-                            Source)
+from localtv.models import (Watch, Category, SiteSettings, Video,
+                            Feed, OriginalVideo, SavedSearch)
 from localtv import utils
 import localtv.feeds.views
+from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
 from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
-NAME_TO_COST = localtv.tiers.Tier.NAME_TO_COST()
-PLUS_COST = NAME_TO_COST['plus']
-PREMIUM_COST = NAME_TO_COST['premium']
-MAX_COST = NAME_TO_COST['max']
-
 
 class FakeRequestFactory(RequestFactory):
     """Constructs requests with any necessary attributes set."""
@@ -81,7 +71,6 @@ class FakeRequestFactory(RequestFactory):
 
 class BaseTestCase(TestCase):
     fixtures = ['site', 'users']
-    target_tier_name = 'max'
 
     def run(self, *args, **kwargs):
         # hack to prevent the test runner from treating abstract classes as
@@ -95,14 +84,8 @@ class BaseTestCase(TestCase):
         TestCase.setUp(self)
         self.old_site_id = settings.SITE_ID
         settings.SITE_ID = 1
-        self.old_DISABLE = localtv.settings.DISABLE_TIERS_ENFORCEMENT
-        localtv.settings.DISABLE_TIERS_ENFORCEMENT = False
         SiteSettings.objects.clear_cache()
         self.site_settings = SiteSettings.objects.get_current()
-        self.tier_info = TierInfo.objects.get_current()
-
-        self._switch_into_tier()
-        self._rebuild_index()
 
         self.old_MEDIA_ROOT = settings.MEDIA_ROOT
         self.tmpdir = tempfile.mkdtemp()
@@ -117,17 +100,28 @@ class BaseTestCase(TestCase):
         mail.outbox = [] # reset any email at the start of the suite
         self.factory = FakeRequestFactory()
 
-    def _switch_into_tier(self):
-        # By default, tests run on an 'max' account.
-        if self.site_settings.tier_name != self.target_tier_name:
-            self.site_settings.tier_name = self.target_tier_name
-            self.site_settings.save()
+    def _fixture_setup(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_setup()
+        index._setup_save()
+        index._setup_delete()
+        self._rebuild_index()
+
+    def _fixture_teardown(self):
+        index = connections['default'].get_unified_index().get_index(Video)
+        index._teardown_save()
+        index._teardown_delete()
+        super(BaseTestCase, self)._fixture_teardown()
+        index._setup_save()
+        index._setup_delete()
+        self._clear_index()
 
     def tearDown(self):
         TestCase.tearDown(self)
         settings.SITE_ID = self.old_site_id
         settings.MEDIA_ROOT = self.old_MEDIA_ROOT
-        localtv.settings.DISABLE_TIERS_ENFORCEMENT = self.old_DISABLE
         settings.CACHES = self.old_CACHES
         Profile.__dict__['logo'].field.storage = \
             storage.default_storage
@@ -189,7 +183,9 @@ class BaseTestCase(TestCase):
         """Updates the search index."""
         backend = connections['default'].get_backend()
         index = connections['default'].get_unified_index().get_index(Video)
-        backend.update(index, index.index_queryset())
+        qs = index.index_queryset()
+        if qs:
+            backend.update(index, qs)
         
     def _rebuild_index(self):
         """Clears and then updates the search index."""
@@ -201,423 +197,9 @@ class BaseTestCase(TestCase):
 # Feed tests
 # -----------------------------------------------------------------------------
 
-class FeedImportTestCase(BaseTestCase):
+class FeedModelTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds']
-
-    def setUp(self):
-        BaseTestCase.setUp(self)
-        self._parsed_feed = list(self._parse_feed('feed.rss'))
-
-    def _parse_feed(self, filename, force_url=False):
-        """
-        Returns a :class:`vidscraper.suites.base.Feed` for the feed stored as
-        <filename> in our testdata.  If `force_url` is True, we'll load the URL
-        from the feed and use that to get a suite.
-        """
-        path = self._data_file(filename)
-        if force_url:
-            fp = feedparser.parse(path)
-            vidscraper_feed = vidscraper.auto_feed(fp.feed.link)
-            vidscraper_feed.get_first_url = lambda: path
-        else:
-            vidscraper_feed = vidscraper.auto_feed(path)
-        return vidscraper_feed
-
-    def _update_with_video_iter(self, video_iter, feed):
-        feed_import = FeedImport.objects.create(source=feed,
-                                                auto_approve=feed.auto_approve)
-        Source.update(feed, video_iter, feed_import)
-
-
-    def test_update_approved_feed(self):
-        feed = Feed.objects.get(pk=1)
-        feed.status = Feed.INACTIVE
-        feed.save()
-        self._update_with_video_iter(self._parsed_feed, feed)
-        feed = Feed.objects.get(pk=1)
-        self.assertEqual(feed.status, Feed.ACTIVE)
-
-    def test_auto_approve_True(self):
-        """
-        If Feed.auto_approve is True, the imported videos should be marked as
-        active.
-        """
-        feed = Feed.objects.get(pk=1)
-        feed.auto_approve = True
-        self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEqual(Video.objects.count(), 5)
-        self.assertEqual(Video.objects.filter(
-                status=Video.ACTIVE).count(), 5)
-
-    @mock.patch('localtv.tiers.Tier.videos_limit', lambda *args: 4)
-    def test_auto_approve_True_when_user_past_video_limit(self):
-        """
-        If FeedImport.auto_approve is True, but approving the videos in the feed
-        would put the site past the video limit, the imported videos should be
-        marked as unapproved.
-
-        """
-        feed = Feed.objects.get(pk=1)
-        feed.auto_approve = True
-        self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEqual(Video.objects.count(), 5)
-        self.assertEqual(Video.objects.filter(
-                status=Video.ACTIVE).count(), 4)
-        self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 1)
-
-    def test_auto_approve_False(self):
-        """
-        If Feed.auto_approve is False, the imported videos should be marked as
-        unapproved.
-        """
-        feed = Feed.objects.get(pk=1)
-        feed.auto_approve = False
-        self._update_with_video_iter(self._parsed_feed, feed)
-        self.assertEqual(Video.objects.count(), 5)
-        self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 5)
-
-    def test_entries_inserted_in_feed_order(self):
-        """
-        When adding entries from a feed, they should be sortable so that the
-        first item in the feed is the first item returned.
-        """
-        feed = Feed.objects.get(pk=1)
-        self._update_with_video_iter(self._parsed_feed, feed)
-        parsed_guids = [entry.guid for entry in self._parsed_feed]
-        db_guids = Video.objects.in_feed_order().values_list('guid',
-                                                             flat=True)
-        self.assertEqual(list(parsed_guids), list(db_guids))
-
-    def test_ignore_duplicate_guid(self):
-        """
-        If an item with a certain GUID is in a feed twice, but not in the
-        database at all, it should only be imported once.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_duplicate_guid.rss')
-        self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(source=feed).latest()
-        self.assertEqual(feed_import.videos_skipped, 1)
-        self.assertEqual(feed_import.videos_imported, 1)
-        self.assertEqual(Video.objects.count(), 1)
-
-    def test_ignore_duplicate_link(self):
-        """
-        If an item with a certain link is in a feed twice, but not in the
-        database at all, it should only be imported once.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_duplicate_link.rss')
-        self._update_with_video_iter(video_iter, feed)
-        feed_import = FeedImport.objects.filter(source=feed).latest()
-        self.assertEqual(feed_import.videos_skipped, 1)
-        self.assertEqual(feed_import.videos_imported, 1)
-        self.assertEqual(Video.objects.count(), 1)
-
-    def test_entries_include_feed_data(self):
-        """
-        Videos imported from feeds should pull the following from the RSS feed:
-        * GUID
-        * name
-        * description (sanitized)
-        * website URL
-        * publish date
-        * file URL
-        * file length
-        * file MIME type
-        * thumbnail
-        * tags
-        """
-        feed = Feed.objects.get(pk=1)
-        self._update_with_video_iter(self._parsed_feed, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid, u'23C59362-FC55-11DC-AF3F-9C4011C4A055')
-        self.assertEqual(video.name, u'Dave Glassco Supports Miro')
-        self.assertEqual(video.description,
-                          '>\n\n<br />\n\nDave is a great advocate and '
-                          'supporter of Miro.')
-        self.assertEqual(video.website_url, 'http://blip.tv/file/779122')
-        self.assertEqual(video.file_url,
-                          'http://blip.tv/file/get/'
-                          'Miropcf-DaveGlasscoSupportsMiro942.mp4')
-        self.assertEqual(video.file_url_length, 16018279)
-        self.assertEqual(video.file_url_mimetype, 'video/mp4')
-        self.assertTrue(video.has_thumbnail)
-        self.assertEqual(video.thumbnail_url,
-                          'http://a.images.blip.tv/'
-                          'Miropcf-DaveGlasscoSupportsMiro959.jpg')
-        self.assertEqual(video.when_published,
-                          datetime.datetime(2008, 3, 27, 23, 25, 51))
-        self.assertEqual(video.video_service(), 'blip.tv')
-        category = ['Default Category']
-        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
-            category = [category[0].lower()]
-        self.assertEqual([tag.name for tag in video.tags.all()],
-                          category)
-
-    def test_entries_link_optional(self):
-        """
-        A link in the feed to the original source should be optional.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_without_link.rss')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
-
-    def test_entries_enclosure_type_optional(self):
-        """
-        An enclosure without a MIME type, but with a file URL extension we
-        think is media, should be imported.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_without_mime_type.rss')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid, u'D9E50330-F6E1-11DD-A117-BB8AB007511B')
-
-    def test_entries_vimeo(self):
-        """
-        Vimeo RSS feeds should include the correct data.
-        """
-        feed = Feed.objects.get(pk=1)
-        feed.auto_authors = []
-        video_iter = vidscraper.auto_feed('http://vimeo.com/user1751935/videos/')
-        video_iter.get_url_response = lambda u: json.load(file(
-                self._data_file('vimeo.json')))
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid, u'tag:vimeo,2009-12-04:clip7981161')
-        self.assertEqual(video.name, u'Tishana - Pro-Choicers on Stupak')
-        self.assertEqual(video.description, '\
-Tishana from SPARK Reproductive Justice talking about the right to choose \
-after the National Day of Action Rally to Stop Stupak-Pitts, 12.2.2009')
-        self.assertEqual(video.website_url, 'http://vimeo.com/7981161')
-        self.assertTrue('vimeo.com' in video.embed_code)
-        self.assertTrue('<iframe ' in video.embed_code or
-                        '<object ' in video.embed_code)
-        self.assertEqual(video.file_url, '')
-        self.assertTrue(video.has_thumbnail)
-        self.assertTrue(video.thumbnail_url.endswith('.jpg'),
-                        video.thumbnail_url)
-        self.assertEqual(video.when_published,
-                          datetime.datetime(2009, 12, 4, 8, 23, 47))
-        self.assertEqual(video.video_service(), 'Vimeo')
-        category = ['Pro-Choice', 'Stupak-Pitts']
-        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
-            category = [cat.lower() for cat in category]
-        self.assertEqual([tag.name for tag in video.tags.all()],
-                          category)
-
-        # no automatic author, so it should be the user from the site
-        self.assertEqual(list(video.authors.values_list('username')),
-                          [('Latoya Peterson',)])
-        self.assertEqual(video.authors.get().get_profile().website,
-                          'http://vimeo.com/user1751935')
-
-    def test_entries_youtube(self):
-        """
-        Youtube RSS feeds should include the correct data.
-        """
-        feed = Feed.objects.get(pk=1)
-        user = User.objects.get(pk=1)
-        feed.auto_authors = [user]
-        feed.save()
-        video_iter = self._parse_feed('youtube.rss', force_url=True)
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid,
-                          u'http://gdata.youtube.com/feeds/api/videos/BBwtzeZdoHQ')
-        self.assertEqual(video.name,
-                          'Dr. Janice Key Answers Questions about Preventing '
-                          'Teen Pregnancy')
-        self.assertEqual(video.description, "\
-Dr. Janice Key, Professor of Adolescent Medicine at the Medical \
-University South Carolina, answers questions about teen pregnancy prevention.")
-        self.assertEqual(video.website_url,
-                          'http://www.youtube.com/watch?v=BBwtzeZdoHQ')
-        self.assertTrue('/BBwtzeZdoHQ' in video.embed_code)
-        self.assertEqual(video.file_url, '')
-        self.assertTrue(video.has_thumbnail)
-        self.assertTrue('BBwtzeZdoHQ' in video.thumbnail_url)
-        self.assertEqual(video.when_published,
-                          datetime.datetime(2010, 1, 18, 19, 41, 21))
-        self.assertEqual(video.video_service(), 'YouTube')
-        category = ['Nonprofit']
-        if getattr(settings, 'FORCE_LOWERCASE_TAGS', False):
-            category = [cat.lower() for cat in category]
-        self.assertEqual([tag.name for tag in video.tags.all()],
-                          category)
-
-        # auto author should be assigned
-        self.assertEqual(list(video.authors.all()),
-                          [user])
-
-    def test_entries_atom(self):
-        """
-        Atom feeds should be handled correctly,
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed.atom')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.order_by('id')[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid, u'http://www.example.org/entries/1')
-        self.assertEqual(video.name, u'Atom 1.0')
-        self.assertEqual(video.when_published, datetime.datetime(2005, 7, 15,
-                                                                  12, 0, 0))
-        self.assertEqual(video.file_url,
-                          u'http://www.example.org/myvideo.ogg')
-        self.assertEqual(video.file_url_length, 1234)
-        self.assertEqual(video.file_url_mimetype, u'application/ogg')
-        self.assertEqual(video.website_url,
-                          u'http://www.example.org/entries/1')
-        self.assertEqual(video.description, u"""<h1>Show Notes</h1>
-<ul>
-<li>00:01:00 -- Introduction</li>
-<li>00:15:00 -- Talking about Atom 1.0</li>
-<li>00:30:00 -- Wrapping up</li>
-</ul>""")
-
-    def test_entries_atom_from_mc(self):
-        """
-        Atom feeds generated by Miro Community should be handled as if the item
-        was imported from the original feed.
-        """
-        self.maxDiff = None
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_from_mc.atom')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.order_by('id')[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.guid,
-                          u'http://www.onnetworks.com/5843 at '
-                          'http://www.onnetworks.com')
-        self.assertEqual(video.name, u'"The Dancer & Kenaudra"')
-        self.assertEqual(video.when_published,
-                          datetime.datetime(2009, 1, 13, 6, 0))
-        self.assertEqual(video.file_url,
-                          u'http://podcast.onnetworks.com/videos/'
-                          'sgatp_0108_kenaudra_480x270.mp4?feed=video'
-                          '&key=6100&target=itunes')
-        self.assertEqual(video.file_url_length, 1)
-        self.assertEqual(video.file_url_mimetype, u'video/mp4')
-        self.assertEqual(video.website_url,
-                          u'http://www.onnetworks.com/videos/'
-                          'smart-girls-at-the-party/the-dancer-kenaudra')
-        self.assertEqual(video.description,
-                          u'Kenaudra displays her many talents including a '
-                          'new dance called Praise Dancing.<br />'
-                          '<a href="http://www.onnetworks.com/videos/'
-                          'smart-girls-at-the-party/the-dancer-kenaudra"></a>')
-        self.assertEqual(video.embed_code,
-                          u'<object width="425" height="271">'
-                          '<embed id="ONPlayerEmbed" width="425" height="271" '
-                          'allowfullscreen="true" flashvars="configFileName='
-                          'http://www.onnetworks.com/embed_player/videos/'
-                          'smart-girls-at-the-party/the-dancer-kenaudra?'
-                          'target=site" scale="aspect" '
-                          'allowscriptaccess="always" allownetworking="all" '
-                          'quality="high" bgcolor="#ffffff" name="ONPlayer" '
-                          'style="" src="http://www.onnetworks.com/swfs/'
-                          'ONPlayerEmbed.swf/product_id=sgatp_0108_kenaudra/'
-                          'cspid=4b2678259ccf1f2b" '
-                          'type="application/x-shockwave-flash"></embed>'
-                          '</object>')
-
-    def test_entries_atom_with_link_via(self):
-        """
-        Atom feeds with <link rel="via"> should use the via URL as the website
-        URL.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_link_via.atom')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.website_url,
-                          u'http://www.example.org/entries/1')
-
-    def test_entries_atom_with_media(self):
-        """
-        Atom feeds that use Yahoo!'s Media RSS specification should also have
-        their content imported,
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_media.atom')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.file_url,
-                          u'http://www.example.org/myvideo.ogg')
-        self.assertEqual(video.file_url_mimetype, u'application/ogg')
-        self.assertEqual(video.thumbnail_url,
-                          'http://www.example.org/myvideo.jpg')
-
-    def test_entries_atom_with_media_player(self):
-        """
-        Atom feeds that use Yahoo!'s Media RSS specification to include an
-        embeddable player (with <media:player> should have that code included,
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_media_player.atom')
-        self._update_with_video_iter(video_iter, feed)
-        video = Video.objects.in_feed_order().reverse()[0]
-        self.assertEqual(video.feed, feed)
-        self.assertEqual(video.embed_code,
-                          '<embed src="http://www.example.org/?a=b&c=d">')
-
-    def test_entries_atom_with_invalid_media(self):
-        """
-        Atom feeds that incorrectly use Yahoo!'s Media RSS specification (and
-        don't specify a video another way) should be ignored.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_invalid_media.atom')
-        self._update_with_video_iter(video_iter, feed)
-        self.assertEqual(feed.video_set.count(), 0)
-
-    def test_entries_atom_with_long_item(self):
-        """
-        Feeds with long file URLs (>200 characters) should have them shortened
-        so they fit in the database.
-        """
-        if not getattr(settings, 'BITLY_LOGIN', None):
-            logging.warn(
-                'skipping FeedImportTestCase.test_entries_atom_with_long_item:'
-                ' cannot shorten URLs without BITLY_LOGIN')
-            return
-        feed = Feed.objects.get(pk=1)
-        video_iter = self._parse_feed('feed_with_long_item.atom')
-        self._update_with_video_iter(video_iter, feed)
-        self.assertEqual(feed.video_set.count(), 1)
-
-
-    def test_entries_multiple_imports(self):
-        """
-        Importing a feed multiple times shouldn't overwrite the existing
-        videos.
-        """
-        feed = Feed.objects.get(pk=1)
-        video_iter = list(self._parse_feed('feed_with_media_player.atom'))
-        self._update_with_video_iter(video_iter, feed)
-        self.assertEqual(feed.video_set.count(), 1)
-        self.assertEqual(feed.imports.latest().videos_imported, 1)
-        v = feed.video_set.get()
-        # didn't get any updates
-        self._update_with_video_iter(video_iter, feed)
-        self.assertEqual(feed.video_set.count(), 1)
-        self.assertEqual(feed.imports.latest().videos_imported, 0)
-        v2 = feed.video_set.get()
-        self.assertEqual(v.pk, v2.pk)
 
     def test_video_service(self):
         """
@@ -657,15 +239,16 @@ class ViewTestCase(BaseTestCase):
         should include 10 featured videos, 10 popular videos, 10 new views, and
         the base categories (those without parents).
         """
-        for watched in Watch.objects.all():
-            watched.timestamp = datetime.datetime.now() # so that they're
-                                                        # recent
-            watched.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        # Rebuild index to work around https://bitbucket.org/mchaput/whoosh/issue/237
+        #haystack_batch_update.apply(args=(Video._meta.app_label,
+        #                                  Video._meta.module_name))
+        self._rebuild_index()
 
         c = Client()
         response = c.get(reverse('localtv_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/index.html')
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
@@ -675,23 +258,6 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_settings)))
         self.assertEqual(list(response.context['comments']), [])
-
-    def test_index_feeds_avoid_frontpage(self):
-        """
-        Feeds with 'avoid_frontpage' set to True shouldn't be displayed in any
-        of the video categories.
-        """
-        c = Client()
-        response = c.get(reverse('localtv_index'))
-        new_videos_count = len(response.context['new_videos'])
-
-        Feed.objects.all().update(avoid_frontpage=True)
-
-        response = c.get(reverse('localtv_index'))
-        self.assertStatusCodeEquals(response, 200)
-
-        self.assertNotEquals(len(response.context['new_videos']),
-                             new_videos_count)
 
     def test_index_recent_comments_skips_rejected_videos(self):
         """
@@ -731,7 +297,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_about'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/about.html')
 
     def test_view_video(self):
@@ -744,6 +310,7 @@ class ViewTestCase(BaseTestCase):
             watched.timestamp = datetime.datetime.now() # so that they're
                                                         # recent
             watched.save()
+        self._rebuild_index()
 
         video = Video.objects.get(pk=20)
 
@@ -753,9 +320,7 @@ class ViewTestCase(BaseTestCase):
         self.assertTrue('localtv/view_video.html' in [
                 template.name for template in response.templates])
         self.assertEqual(response.context['current_video'], video)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings)))
+        self.assertTrue('popular_videos' in response.context)
 
     def test_view_video_admins_see_rejected(self):
         """
@@ -782,8 +347,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_view_video',
                                  args=[20, 'wrong-slug']))
-        # 301 is a permanent redirect
-        self.assertStatusCodeEquals(response, 301)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
@@ -791,7 +355,7 @@ class ViewTestCase(BaseTestCase):
 
         response = c.get(reverse('localtv_view_video',
                                  args=[20, '']))
-        self.assertStatusCodeEquals(response, 301)
+        self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
@@ -799,9 +363,8 @@ class ViewTestCase(BaseTestCase):
 
     def test_view_video_category(self):
         """
-        If the video has categories, the view_video view should include a
-        category in the template and those videos should be shown in place of
-        the regular popular videos.
+        Mostly just checks that we're in the right place. Some additional
+        checks were removed since they weren't checking in a repeatable manner.
         """
         video = Video.objects.get(pk=20)
         video.categories = [2]
@@ -811,15 +374,11 @@ class ViewTestCase(BaseTestCase):
         response = c.get(video.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 2)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings).filter(categories__pk=2)))
 
     def test_view_video_category_referer(self):
         """
         If the view_video referrer was a category page, that category should be
-        included in the template and those videos should be shown in place of
-        the regular popular videos.
+        the one included in the template.
         """
         video = Video.objects.get(pk=20)
         video.categories = [1, 2]
@@ -834,9 +393,6 @@ class ViewTestCase(BaseTestCase):
                         args=['miro'])))
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.context['category'].pk, 1)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(
-                    self.site_settings).filter(categories__pk=1)))
 
     def assertSearchResults(self, response, expected_sqs,
                             expected_object_count, expected_page_num):
@@ -865,7 +421,7 @@ class ViewTestCase(BaseTestCase):
                          {'q': 'blender'}) # lots of Blender videos in the test
                                            # data
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response, 
                                  SearchQuerySet().models(models.Video).filter(
@@ -880,7 +436,7 @@ class ViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_search'),
                          {'q': '"making of elephants"'})
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
         self.assertSearchResults(response,
                                  SearchQuerySet().models(models.Video).filter(
@@ -895,7 +451,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_search'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_search.html')
 
     def test_video_search_pagination(self):
@@ -1066,7 +622,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_category_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/categories.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(list(response.context['page_obj'].object_list),
@@ -1085,7 +641,7 @@ class ViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(category.get_absolute_url())
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
         videos = list(models.Video.objects.with_best_date().filter(
@@ -1103,7 +659,7 @@ class ViewTestCase(BaseTestCase):
         """
         c = Client()
         response = c.get(reverse('localtv_author_index'))
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author_list.html')
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(list(response.context['authors']),
@@ -1126,7 +682,7 @@ class ViewTestCase(BaseTestCase):
             ).distinct().order_by('-best_date')
         )
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/author.html')
         self.assertEqual(response.context['author'], author)
         self.assertEqual(len(videos), 2)
@@ -1150,7 +706,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_index'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/browse.html')
 
     def test_latest_videos(self):
@@ -1162,7 +718,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_new'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_new.html')
         self.assertEqual(response.context['paginator'].num_pages, 2)
         self.assertEqual(len(response.context['page_obj'].object_list), 15)
@@ -1176,22 +732,21 @@ class ListingViewTestCase(BaseTestCase):
         'localtv/video_listing_popular.html' template and include the
         popular videos.
         """
-        for w in Watch.objects.all():
-            w.timestamp = datetime.datetime.now()
-            w.save()
+        Watch.objects.update(timestamp=datetime.datetime.now())
+        haystack_batch_update.apply(args=(Video._meta.app_label,
+                                          Video._meta.module_name))
 
         c = Client()
         response = c.get(reverse('localtv_list_popular'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
-        self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.get_popular_videos(
-                                 self.site_settings).filter(
-                                     watch__timestamp__gte=datetime.datetime.min
-                                 ).distinct()))
+        results = response.context['page_obj'].object_list
+        expected = Video.objects.get_popular_videos(self.site_settings)
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
         """
@@ -1202,7 +757,7 @@ class ListingViewTestCase(BaseTestCase):
         c = Client()
         response = c.get(reverse('localtv_list_featured'))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 2)
@@ -1222,9 +777,9 @@ class ListingViewTestCase(BaseTestCase):
 
         c = Client()
         response = c.get(reverse('localtv_list_tag',
-                         args=['tag1']))
+                         kwargs={'name': 'tag1'}))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_tag.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
@@ -1243,7 +798,7 @@ class ListingViewTestCase(BaseTestCase):
         response = c.get(reverse('localtv_list_feed',
                                  args=[feed.pk]))
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_feed.html')
         self.assertEqual(response.context['paginator'].num_pages, 1)
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
@@ -1258,7 +813,7 @@ class ListingViewTestCase(BaseTestCase):
 
 class CommentModerationTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -1539,7 +1094,7 @@ class CommentModerationTestCase(BaseTestCase):
 
 class VideoModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_when(self):
         """
@@ -1655,23 +1210,6 @@ class VideoModelTestCase(BaseTestCase):
         v.save_thumbnail()
         self.assertFalse(v.has_thumbnail)
 
-    def test_thumbnail_deleted(self):
-        """
-        If a Video has a thumbnail, deleting the Video should remove the
-        thumbnail.
-        """
-        v = Video.objects.get(pk=11)
-        v.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
-
-        paths = [v.get_original_thumb_storage_path()]
-        for size in Video.THUMB_SIZES:
-            paths.append(v.get_resized_thumb_storage_path(*size))
-
-        v.delete()
-        for path in paths:
-            self.assertFalse(storage.default_storage.exists(path),
-                             '%s was not deleted' % path)
-
     def test_original_video_created(self):
         """
         When an Video object is a created, an OriginalVideo object should also
@@ -1707,59 +1245,12 @@ class VideoModelTestCase(BaseTestCase):
                           lambda: v.original)
 
 # -----------------------------------------------------------------------------
-# Site tier tests
-# -----------------------------------------------------------------------------
-class SiteTierTests(BaseTestCase):
-    def test_basic_account(self):
-        # Create a SiteSettings whose site_tier is set to 'basic'
-        self.site_settings.tier_name = 'basic'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(0, tier.dollar_cost())
-        self.assertEqual(500, tier.videos_limit())
-        self.assertEqual(1, tier.admins_limit())
-        self.assertFalse(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_plus_account(self):
-        # Create a SiteSettings whose site_tier is set to 'plus'
-        self.site_settings.tier_name = 'plus'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(PLUS_COST, tier.dollar_cost())
-        self.assertEqual(1000, tier.videos_limit())
-        self.assertEqual(5, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_premium_account(self):
-        # Create a SiteSettings whose site_tier is set to 'premium'
-        self.site_settings.tier_name = 'premium'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(PREMIUM_COST, tier.dollar_cost())
-        self.assertEqual(5000, tier.videos_limit())
-        self.assertEqual(None, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertFalse(tier.permit_custom_template())
-
-    def test_max_account(self):
-        self.site_settings.tier_name = 'max'
-        self.site_settings.save()
-        tier = self.site_settings.get_tier()
-        self.assertEqual(MAX_COST, tier.dollar_cost())
-        self.assertEqual(25000, tier.videos_limit())
-        self.assertEqual(None, tier.admins_limit())
-        self.assertTrue(tier.permit_custom_css())
-        self.assertTrue(tier.permit_custom_template())
-
-# -----------------------------------------------------------------------------
 # Watch model tests
 # -----------------------------------------------------------------------------
 
 class WatchModelTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
 
     def test_add(self):
         """
@@ -2221,60 +1712,9 @@ class TestWmodeFilter(BaseTestCase):
         self.assertEqual(output,
                          localtv.templatetags.filters.wmode_transparent(input))
                 
-class SiteSettingsEnablesRestrictionsAfterPayment(BaseTestCase):
-    def test_unit(self):
-        self.assertFalse(SiteSettings.enforce_tiers(override_setting=True))
-        tier_info = TierInfo.objects.get_current()
-        tier_info.user_has_successfully_performed_a_paypal_transaction = True
-        tier_info.save()
-        self.assertTrue(SiteSettings.enforce_tiers(override_setting=True))
-
-class TierMethodsTests(BaseTestCase):
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=False))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
-    def test_can_add_more_videos(self):
-        # This is true because enforcement is off.
-        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=0))
-    def test_can_add_more_videos_returns_false(self):
-        # This is False because the number of videos remaining is zero.
-        self.assertFalse(localtv.tiers.Tier.get().can_add_more_videos())
-
-    @mock.patch('localtv.models.SiteSettings.enforce_tiers', mock.Mock(return_value=True))
-    @mock.patch('localtv.tiers.Tier.remaining_videos', mock.Mock(return_value=1))
-    def test_can_add_video_lets_you_add_final_video(self):
-        # This is False because the number of videos remaining is zero.
-        self.assertTrue(localtv.tiers.Tier.get().can_add_more_videos())
-
-    def test_time_until_free_trial_expires_none_when_not_in_free_trial(self):
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = False
-        ti.save()
-        self.assertEqual(None, ti.time_until_free_trial_expires())
-
-    def test_time_until_free_trial_expires_none_when_no_payment_due(self):
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = True
-        ti.payment_due_date = None # Note that this is a kind of insane state.
-        ti.save()
-        self.assertEqual(None, ti.time_until_free_trial_expires())
-
-    def test_time_until_free_trial_expires(self):
-        now = datetime.datetime(2011, 5, 24, 23, 44, 30)
-        a_bit_in_the_future = now + datetime.timedelta(hours=5)
-        ti = TierInfo.objects.get_current()
-        ti.in_free_trial = True
-        ti.payment_due_date = a_bit_in_the_future
-        ti.save()
-        self.assertEqual(datetime.timedelta(hours=5),
-                         ti.time_until_free_trial_expires(now=now))
-
 class LegacyFeedViewTestCase(BaseTestCase):
 
-    fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+    fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
     def test_feed_views_respect_count_when_set(self):
         fake_request = self.factory.get('?count=10')
@@ -2336,7 +1776,7 @@ if localtv.settings.voting_enabled():
 
     class VotingTestCase(BaseTestCase):
 
-        fixtures = BaseTestCase.fixtures + ['videos', 'categories', 'feeds']
+        fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
 
         def setUp(self):
             BaseTestCase.setUp(self)

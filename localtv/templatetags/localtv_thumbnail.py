@@ -17,62 +17,69 @@
 
 from django import template
 from django.conf import settings
-from django.core.files.storage import default_storage
-from django.contrib.sites.models import Site
+
+from daguerre.models import Image
+from daguerre.utils import AdjustmentInfoDict
+from daguerre.utils.adjustments import get_adjustment_class
+
 
 register = template.Library()
 
-class ThumbnailNode(template.Node):
-    def __init__(self, video, size, as_varname=None, absolute=False):
-        self.video = video
-        self.size = size
-        self.as_varname = as_varname
-        self.absolute = absolute
 
+class ThumbnailNode(template.Node):
+    """
+    Essentially an implementation of daguerre's ImageResizeNode with a
+    different interface, to maintain backwards compatibility with old
+    localtv_thumbnail template tags.
+    
+    """
+    
+    def __init__(self, video, size, as_varname=None, absolute=False):
+        self.asvar = as_varname
+        self.absolute = absolute # ???
+        self.video = video
+        self.width, self.height = size
+    
     def render(self, context):
         video = self.video.resolve(context)
-        thumbnail_url = self.get_thumbnail_url(video, context)
-        if self.as_varname is not None:
-            context[self.as_varname] = thumbnail_url
-            return ''
-        else:
-            return thumbnail_url
 
-    def get_thumbnail_url(self, video, context):
-        if getattr(video, '_livesearch', False):
-            return video.thumbnail_url
-
-        thumbnail = None
+        storage_path = None
 
         if video.has_thumbnail:
-            thumbnail = video
-        elif video.feed and video.feed.has_thumbnail:
-            thumbnail = video.feed
-        elif video.search and video.search.has_thumbnail:
-            thumbnail = video.search
+            storage_path = video.thumbnail_path
+        elif video.feed_id and video.feed.has_thumbnail:
+            storage_path = video.feed.thumbnail_path
+        elif video.search_id and video.search.has_thumbnail:
+            storage_path = video.search.thumbnail_path
 
-        if not thumbnail:
-            return settings.STATIC_URL + 'localtv/images/default_vid.gif'
-
-        url = default_storage.url(
-            thumbnail.get_resized_thumb_storage_path(*self.size))
-
-        if thumbnail._meta.get_latest_by:
-            key = hex(hash(getattr(thumbnail,
-                                   thumbnail._meta.get_latest_by)))[-8:]
-            url = '%s?%s' % (url, key)
-        if not self.absolute or url.startswith(('http://', 'https://')):
-            # full URL, return it
-            return url
+        if storage_path is None:
+            image = None
         else:
-            # add the domain
-            if 'request' in context:
-                request = context['request']
-                scheme = 'https' if request.is_secure() else 'http'
-            else:
-                scheme = 'http'
-            domain = Site.objects.get_current().domain
-            return '%s://%s%s' % (scheme, domain, url)
+            try:
+                image = Image.objects.for_storage_path(storage_path)
+            except Image.DoesNotExist:
+                image = None
+
+        if image is None:
+            url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
+            if self.asvar is not None:
+                context[self.asvar] = AdjustmentInfoDict({
+                    'width': self.width,
+                    'height': self.height,
+                    'url': url
+                })
+                return ''
+            return url
+
+        adjustment_class = get_adjustment_class('fill')
+        adjustment = adjustment_class.from_image(image, width=self.width, height=self.height)
+        
+        if self.asvar is not None:
+            context[self.asvar] = adjustment.info_dict()
+            return ''
+        return adjustment.url
+
+
 @register.tag('get_thumbnail_url')
 def get_thumbnail_url(parser, token):
     tokens = token.split_contents()
@@ -105,4 +112,3 @@ def get_thumbnail_url(parser, token):
     else:
         return ThumbnailNode(video, (width, height),
                              absolute=absolute)
-

@@ -17,8 +17,13 @@
 
 # Example settings for a Miro Community project
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
+USE_ES = bool(os.environ.get('MC_TEST_USE_ES', False))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -55,6 +60,8 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # BROKER_USER = 'celery'
 # BROKER_PASSWORD = 'testing'
 # BROKER_VHOST = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -108,6 +115,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -116,7 +124,7 @@ SECRET_KEY = 'example_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'uploadtemplate.loader.load_template_source',
+    'uploadtemplate.loader.Loader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 # 'django.template.loaders.eggs.Loader',
@@ -142,7 +150,6 @@ UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
-UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteSettings.objects.get_current().get_tier().enforce_permit_custom_template()
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -178,9 +185,15 @@ INSTALLED_APPS = (
     'notification',
     'socialauth',
     'openid_consumer',
-    'paypal.standard.ipn',
-    'voting'
+    'voting',
+    'daguerre',
+    'compressor'
 )
+
+if USE_SOUTH:
+    if 'south' not in INSTALLED_APPS:
+        INSTALLED_APPS = INSTALLED_APPS + ('south',)
+    SOUTH_TESTS_MIGRATE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
@@ -260,12 +273,21 @@ ACCOUNT_ACTIVATION_DAYS = 7
 FORCE_LOWERCASE_TAGS = True
 
 # haystack search
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-    }
-}
+if USE_ES:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://localhost:9200/',
+            'INDEX_NAME': 'mirocommunity'
+            }
+        }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+            }
+        }
 
 # Facebook options
 FACEBOOK_APP_ID = None
@@ -277,9 +299,3 @@ FACEBOOK_CONNECT_DOMAIN = None
 # Twitter options
 TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
-
-# For debugging
-PAYPAL_TEST = bool(os.environ.get('MC_PAYPAL_REAL', False))
-LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
-LOCALTV_SKIP_PAYPAL = True
-PAYPAL_RECEIVER_EMAIL = ''
