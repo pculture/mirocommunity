@@ -1,0 +1,16 @@
+{% load generate_embed %}
+{% if current_video.website_url|has_embed_generator %}
+  {% generate_embed current_video.website_url width=534 height=430 autoplay=0 %}
+{% elif current_video.embed_code %}
+  {{ current_video.embed_code|wmode_transparent }}
+{% else %}
+  {% get_thumbnail_url current_video 534 430 as video_thumbnail %}
+  {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
+  {% if current_video.file_url_mimetype|is_ogg_media %}
+  <p class="help">
+    {% blocktrans %}
+    This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
+    {% endblocktrans %}
+  </p>
+  {% endif %}
+{% endif %}
