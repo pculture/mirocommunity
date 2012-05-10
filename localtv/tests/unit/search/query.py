@@ -228,6 +228,8 @@ class AutoQueryTestCase(BaseTestCase):
         """
         Search should exclude strings, phrases, and keywords preceded by a '-'
 
+        We skip this test on Whoosh because it has a bug w.r.t exclusion:
+        https://bitbucket.org/mchaput/whoosh/issue/254
         """
         if ('WhooshEngine' in
             connections['default'].options['ENGINE']):
