@@ -1,4 +1,4 @@
-{% load generate_embed %}
+{% load generate_embed filters localtv_thumbnail video i18n %}
 {% if current_video.website_url|has_embed_generator %}
   {% generate_embed current_video.website_url width=534 height=430 autoplay=0 %}
 {% elif current_video.embed_code %}
