@@ -430,6 +430,15 @@ class BulkEditVideoForm(EditVideoForm):
         self.fields['authors'].queryset = cache_for_form_optimization[
             'authors_qs']
 
+    def _post_clean(self):
+        if not self.instance.pk:
+            # don't run the instance validation checks on the extra form field.
+            # This also doesn't set the values on the instance, but since we
+            # get the values directly from `cleaned_data` in bulk_edit_views.py
+            # it doesn't matter.
+            return
+        return super(BulkEditVideoForm, self)._post_clean()
+
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
             raise forms.ValidationError('This field is required.')
@@ -461,8 +470,72 @@ class BulkEditVideoForm(EditVideoForm):
             index._enqueue_update(instance)
         return instance
 
+
+class BulkEditVideoFormSet(BaseModelFormSet):
+
+    def save_new_objects(self, commit):
+        return []
+
+    def clean(self):
+        BaseModelFormSet.clean(self)
+
+        if any(self.errors):
+            # don't bother doing anything if the form isn't valid
+            return
+
+        for form in list(self.deleted_forms):
+            form.cleaned_data[DELETION_FIELD_NAME] = False
+            form.instance.status = models.Video.REJECTED
+            form.instance.save()
+        bulk_edits = self.extra_forms[0].cleaned_data
+        for key in list(bulk_edits.keys()): # get the list because we'll be
+                                            # changing the dictionary
+            if not bulk_edits[key]:
+                del bulk_edits[key]
+        bulk_action = self.data.get('bulk_action', '')
+        if bulk_action:
+            bulk_edits['action'] = bulk_action
+        if bulk_edits:
+            for form in self.initial_forms:
+                if not form.cleaned_data['BULK']:
+                    continue
+                for key, value in bulk_edits.items():
+                    if key == 'action': # do something to the video
+                        method = getattr(self, 'action_%s' % value)
+                        method(form)
+                    elif key == 'tags':
+                        form.cleaned_data[key] = value
+                    elif key == 'categories':
+                        # categories append, not replace
+                        form.cleaned_data[key] = (
+                            list(form.cleaned_data[key]) +
+                            list(value))
+                    elif key == 'authors':
+                        form.cleaned_data[key] = value
+                    else:
+                        setattr(form.instance, key, value)
+
+        self.can_delete = False
+
+    def action_delete(self, form):
+        form.instance.status = models.Video.REJECTED
+
+    def action_approve(self, form):
+        form.instance.status = models.Video.ACTIVE
+
+    def action_unapprove(self, form):
+        form.instance.status = models.Video.UNAPPROVED
+
+    def action_feature(self, form):
+        form.instance.status = models.Video.ACTIVE
+        form.instance.last_featured = datetime.datetime.now()
+
+    def action_unfeature(self, form):
+        form.instance.last_featured = None
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
+                                    formset=BulkEditVideoFormSet,
                                     can_delete=True,
                                     extra=1)
 
