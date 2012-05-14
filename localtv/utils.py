@@ -19,6 +19,7 @@ import hashlib
 import re
 import string
 import urllib
+import urllib2
 import types
 import os
 import os.path
@@ -129,7 +130,7 @@ def get_vidscraper_video(url):
         # try and scrape the url
         try:
             vidscraper_video = vidscraper.auto_scrape(url)
-        except vidscraper.errors.Error:
+        except (vidscraper.errors.Error, urllib2.URLError):
             vidscraper_video = None
 
         cache.add(cache_key, vidscraper_video)
