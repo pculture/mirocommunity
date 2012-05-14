@@ -362,9 +362,10 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     tags = TagField(required=False,
                     widget=forms.Textarea)
-    categories = BulkChecklistField(models.Category.objects,
+    categories = BulkChecklistField(models.Category.objects.filter(
+                                    site=settings.SITE_ID),
                                     required=False)
-    authors = BulkChecklistField(User.objects,
+    authors = BulkChecklistField(User.objects.order_by('username'),
                                  required=False)
     skip_authors = forms.BooleanField(required=False,
                                       initial=True,
@@ -380,23 +381,6 @@ class BulkEditVideoForm(EditVideoForm):
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
-
-    _categories_queryset = None
-    _authors_queryset = None
-
-    def fill_cache(self, cache_for_form_optimization):
-        if cache_for_form_optimization is None:
-            cache_for_form_optimization = {}
-
-        # Great. Fill the cache.
-        if 'categories_qs' not in cache:
-            cache_for_form_optimization['categories_qs'] = utils.MockQueryset(
-                models.Category.objects.filter(site=Site.objects.get_current()))
-        if 'authors_qs' not in cache_for_form_optimization:
-            cache_for_form_optimization['authors_qs'] = utils.MockQueryset(
-                User.objects.order_by('username'))
-
-        return cache_for_form_optimization
 
     def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
         # The cache_for_form_optimization is an object that is
@@ -417,14 +401,6 @@ class BulkEditVideoForm(EditVideoForm):
         # (django.forms.models.model_to_dict) only collects fields and
         # relations, and not descriptors like Video.tags
         self.initial['tags'] = utils.edit_string_for_tags(self.instance.tags)
-
-        # cache the querysets so that we don't hit the DB for each form
-        cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
-
-        self.fields['categories'].queryset = cache_for_form_optimization[
-            'categories_qs']
-        self.fields['authors'].queryset = cache_for_form_optimization[
-            'authors_qs']
 
     def _post_clean(self):
         if not self.instance.pk:
@@ -468,9 +444,29 @@ class BulkEditVideoForm(EditVideoForm):
 
 
 class BulkEditVideoFormSet(BaseModelFormSet):
-
     def save_new_objects(self, commit):
         return []
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        # We use MockQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'categories': utils.MockQueryset(
+                                  BulkEditVideoForm.base_fields[
+                                      'categories'].queryset.all()),
+                'authors': utils.MockQueryset(
+                                  BulkEditVideoForm.base_fields[
+                                      'authors'].queryset.all()),
+            }
+        form = super(BulkEditVideoFormSet, self)._construct_form(i, **kwargs)
+        form.fields['categories'].queryset = self._qs_cache['categories']
+        form.fields['authors'].queryset = self._qs_cache['authors']
+        return form
 
     def clean(self):
         BaseModelFormSet.clean(self)
