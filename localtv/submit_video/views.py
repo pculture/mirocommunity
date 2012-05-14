@@ -258,13 +258,16 @@ def embedrequest_submit_video(request):
         return HttpResponseRedirect(reverse('localtv_submit_thanks',
                                                 args=[existing[0].id]))
 
-    vidscraper_video = utils.get_vidscraper_video(request.REQUEST['url']) or {}
+    vidscraper_video = utils.get_vidscraper_video(url)
     initial = {
-        'url': url,
-        'name': vidscraper_video.title or '',
-        'description': vidscraper_video.description or '',
-        'thumbnail': vidscraper_video.thumbnail_url or '',
-        }
+        'url': url
+    }
+    if vidscraper_video is not None:
+        initial.update({
+            'name': vidscraper_video.title or '',
+            'description': vidscraper_video.description or '',
+            'thumbnail': vidscraper_video.thumbnail_url or '',
+        })
     if request.method == "GET":
         embed_form = forms.EmbedSubmitVideoForm(initial=initial)
 
