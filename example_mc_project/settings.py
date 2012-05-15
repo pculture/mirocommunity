@@ -175,6 +175,7 @@ INSTALLED_APPS = (
     'voting',
     'daguerre',
     'compressor'
+    'mptt',
 )
 
 if USE_SOUTH:

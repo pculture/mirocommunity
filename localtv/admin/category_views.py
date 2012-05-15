@@ -30,14 +30,14 @@ from localtv.admin import forms
 @csrf_protect
 def categories(request):
     site_settings = SiteSettings.objects.get_current()
-    categories = MockQueryset(Category.in_order(site_settings.site))
+    categories = Category.objects.filter(site=site_settings.site)
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
         {'label': 'Description'},
         {'label': 'Slug'},
-         {'label': 'Videos'}
-        ]
+        {'label': 'Videos'}
+    ]
     add_category_form = forms.CategoryForm()
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):

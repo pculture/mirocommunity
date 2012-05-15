@@ -56,8 +56,8 @@ def localtv(request):
         # Backwards-compatible for custom themes.
         'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
-        'categories':  Category.objects.filter(site=site_settings.site,
-                                                      parent=None),
+        'categories':  Category.objects._mptt_filter(site=site_settings.site,
+                                                     parent__isnull=True),
         'cache_invalidator': cache_invalidator,
 
         'display_submit_button': display_submit_button,

@@ -54,7 +54,7 @@ urlpatterns += patterns(
                     ), name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
                         template_name='localtv/categories.html',
-                        queryset=Category.objects.filter(parent=None),
+                        queryset=Category.objects.filter(level=0),
                         paginate_by=15
                     ), name='localtv_category_index'),
     url(r'^category/(?P<slug>[-\w]+)/$', category_videos,
