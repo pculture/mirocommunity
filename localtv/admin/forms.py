@@ -811,19 +811,16 @@ class CategoryForm(forms.ModelForm):
     if localtv.settings.voting_enabled():
         contest_mode = forms.BooleanField(label='Turn on Contest',
                                           required=False)
+    parent = forms.models.ModelChoiceField(
+                                    queryset=models.Category.objects.filter(
+                                            site=settings.SITE_ID))
+
     class Meta:
         model = models.Category
         if localtv.settings.voting_enabled():
             exclude = ['site']
         else:
             exclude = ['site', 'contest_mode']
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-
-        self.site = Site.objects.get_current()
-        self.fields['parent'].queryset = models.Category.objects.filter(
-            site=self.site)
 
     def clean_contest_mode(self):
         val = self.cleaned_data.get('contest_mode')
@@ -840,6 +837,22 @@ class CategoryForm(forms.ModelForm):
             self._update_errors(e.message_dict)
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        # We use MockQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'parent': utils.MockQueryset(
+                              CategoryForm.base_fields[
+                                  'parent'].queryset.all()),
+            }
+        form = super(BaseCategoryFormSet, self)._construct_form(i, **kwargs)
+        form.fields['parent'].queryset = self._qs_cache['parent']
+        return form
 
     def clean(self):
         BaseModelFormSet.clean(self)
