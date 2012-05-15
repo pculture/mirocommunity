@@ -46,8 +46,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% if page_obj.paginator.count %}
 
- 
-
 	{% block helpful %}<div class="helpful rounded">
         Videos here require moderator approval before appearing on the site.
         <div>
@@ -87,9 +85,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endblock leftpane %}
         <div id="admin_rightpane">
           {% block rightpane %}
-            {% if current_video %}
-              {% include "localtv/admin/video_preview.html" %}
-            {% endif %}
           {% endblock rightpane %}
           <br class="clear" />
         </div>

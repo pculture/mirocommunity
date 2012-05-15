@@ -100,9 +100,9 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         """
         A GET request to the approve/reject view should render the
         'localtv/admin/approve_reject_table.html' template.  The
-        context should include 'current_video' (the first Video object),
-        'page_obj' (a Django Page object), and 'video_list' (a list of the
-        Video objects on the current page).
+        context should not include 'current_video','page_obj' (a Django Page
+        object), and 'video_list' (a list of the Video objects on the current
+        page).
         """
         c = Client()
         c.login(username='admin', password='admin')
