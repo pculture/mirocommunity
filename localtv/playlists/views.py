@@ -24,7 +24,6 @@ from django.http import (Http404, HttpResponseRedirect,
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
-from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from localtv.models import Video, SiteSettings
@@ -154,22 +153,22 @@ def index(request):
 class PlaylistView(ListView):
     allow_empty = True
     context_object_name = 'videos'
-    
+
     def get_paginate_by(self, queryset):
         return 15 if 'count' not in self.kwargs else self.kwargs['count']
-    
+
     def get_queryset(self):
         return self.playlist.video_set
-    
+
     def get_context_data(self, *args, **kwargs):
         context = super(PlaylistView, self).get_context_data(*args, **kwargs)
         context.update({'playlist': self.playlist,
                         'video_url_extra': '?playlist=%i' % self.playlist.pk})
         return context
-    
+
     def get_template_names(self):
         return ('localtv/playlists/view.html', 'localtv/video_listing_playlist.html')
-    
+
     def dispatch(self, request, *args, **kwargs):
         self.playlist = get_object_or_404(Playlist, pk=args[0])
         if self.playlist.status != Playlist.PUBLIC:
@@ -177,7 +176,7 @@ class PlaylistView(ListView):
                     request.user != self.playlist.user:
                 raise Http404
         if request.path != self.playlist.get_absolute_url():
-            return HttpResponseRedirect(self.playlist.get_absolute_url())
+            return HttpResponsePermanentRedirect(self.playlist.get_absolute_url())
         return super(PlaylistView, self).dispatch(request, *args, **kwargs)
 
 
