@@ -1,0 +1,69 @@
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load i18n uploadtemplate_tags %}
+{% if request.user.is_authenticated %}
+      <p class="posting-as">Posting as {{ request.user.username }}</p>
+{% endif %}
+  {% for field in form %}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% else %}
+    {% ifequal field.name "captcha" %}
+    {% if not user_is_admin %}
+    {{ field.errors }}
+    <input type="hidden" name="recaptcha_ip_field" value="{{ request.META.REMOTE_ADDR }}" />
+    {% if not request.is_ajax %}
+    {{ field }}
+    {% else %}
+    <div id="recaptcha_ajax_field"></div>
+    {% endif %}
+    {% endif %}
+    {% else %}
+    {% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "url" %}
+      <p
+        {% if field.errors %} class="error"{% endif %}
+        {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
+        {% if field.errors %}{{ field.errors }}{% endif %}
+        {% ifnotequal field.name "comment" %}{{ field.label_tag }} {% endifnotequal %}{{ field }}
+      </p>
+    {% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
+    {% endifequal %}
+    {% endif %}
+  {% endfor %}
+  {% if request.user.is_authenticated %}
+  <input type="hidden" name="name" value="{{ request.user.username }}" />
+  <input type="hidden" name="email" value="{{ request.user.email }}" />
+  <input type="hidden" name="url" value="{{ request.user.get_profile.website }}" />
+  {% else %}
+  <p{% if form.name.errors %} class="error"{% endif %}>
+    {{ form.name.errors }}
+    {{ form.name.label_tag }} {{ form.name }}
+  </p>
+  <p{% if form.email.errors %} class="error"{% endif %}>
+    {{ form.email.errors }}
+    {{ form.email.label_tag }} {{ form.email }}
+  </p>
+  {% endif %}
+  {% if not sitelocation.screen_all_comments or user_is_admin %}
+  <input type="hidden" name="next" value="{{ form.target_object.get_absolute_url }}" />
+  {% endif %}
+  <p class="submit">
+    <input name="submit" class="submit-post floatright" alt="Post" type="image" src="{% get_static_url 'localtv/images/post.png' bundled %}" />
+  </p>

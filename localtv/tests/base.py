@@ -18,7 +18,9 @@
 import os
 from datetime import datetime, timedelta
 from socket import getaddrinfo
+from urllib import quote_plus, urlencode
 
+from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sites.models import Site
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -29,7 +31,7 @@ from django.test.testcases import (TestCase, _deferredSkip,
                                    disable_transaction_methods,
                                    restore_transaction_methods,
                                    connections_support_transactions)
-from django.test.client import RequestFactory
+from django.test.client import Client, RequestFactory
 from haystack import connections
 from tagging.models import Tag
 
@@ -270,6 +272,34 @@ class BaseTestCase(TestCase):
                 os.path.dirname(__file__),
                 'testdata',
                 filename))
+
+    def assertRequiresAuthentication(self, url, *args,
+                                     **kwargs):
+        """
+        Assert that the given URL requires the user to be authenticated.
+
+        If additional arguments are passed, they are passed to the Client.get
+        method
+
+        If keyword arguments are present, they're passed to Client.login before
+        the URL is accessed.
+
+        @param url_or_reverse: the URL to access
+        """
+        c = Client()
+
+        if kwargs:
+            c.login(**kwargs)
+
+        response = c.get(url, *args)
+        if args and args[0]:
+            url = '%s?%s' % (url, urlencode(args[0]))
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response['Location'],
+                          'http://%s%s?next=%s' %
+                          ('testserver',
+                           settings.LOGIN_URL,
+                           quote_plus(url, safe='/')))
 
     def assertStatusCodeEquals(self, response, status_code):
         """

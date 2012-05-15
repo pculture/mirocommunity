@@ -15,34 +15,37 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import shutil
+import tempfile
+
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core import mail
 from django.test.client import Client
 
-from localtv.tests.legacy_localtv import BaseTestCase
-from localtv.models import Video
+from localtv.tests.base import BaseTestCase
+from localtv.models import SiteSettings
 
 from localtv.playlists.models import Playlist, PlaylistItem
 
 from notification import models as notification
 
-
 class PlaylistBaseTestCase(BaseTestCase):
 
     def setUp(self):
         BaseTestCase.setUp(self)
-        self.user = User.objects.get(username='user')
+        self.user = self.create_user(username='user')
         self.list = Playlist.objects.create(
-            site=self.site_settings.site,
+            site_id=settings.SITE_ID,
             user=self.user,
             name='Test List',
             slug='test-list',
             description="This is a list for testing")
 
-        self.video_set = [Video.objects.create(
-                site=self.site_settings.site,
-                name='Test Video %i' % i) for i in range(5)]
+        self.video_set = [self.create_video() for i in range(3)]
 
         for index, video in enumerate(self.video_set[::-1]): # reverse order
             PlaylistItem.objects.create(
@@ -76,9 +79,7 @@ class PlaylistModelTestCase(PlaylistBaseTestCase):
         """
         Playlist.add_video() should add a video to the end of the playlist.
         """
-        v = Video.objects.create(
-            site=self.site_settings.site,
-            name='Added video')
+        v = self.create_video()
         self.list.add_video(v)
         self.assertEqual(list(self.list.video_set.all())[-1],
                           v)
@@ -116,7 +117,10 @@ class PlaylistModelTestCase(PlaylistBaseTestCase):
 
 class PlaylistViewTestCase(PlaylistBaseTestCase):
 
-    fixtures = PlaylistBaseTestCase.fixtures + ['feeds', 'videos']
+    def setUp(self):
+        PlaylistBaseTestCase.setUp(self)
+        self.user.set_password('password')
+        self.user.save()
 
     def test_index(self):
         """
@@ -151,7 +155,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
 
         playlist = Playlist.objects.order_by('-pk')[0]
         self.assertEqual(playlist.name, data['name'])
@@ -163,9 +167,9 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
     def test_add_with_video_success(self):
         """
         A POST to the index view with a video (as from a video page) should
-        create a new playlist with the given name, and add that vide to it.
+        create a new playlist with the given name, and add that video to it.
         """
-        video = Video.objects.filter(status=1)[0]
+        video = self.create_video()
         url = reverse('localtv_playlist_index')
         data = {'name': 'New Playlist',
                 'video': video.pk}
@@ -176,7 +180,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
 
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_settings.site.domain,
+                'testserver',
                 video.get_absolute_url(), playlist.pk))
 
         self.assertEqual(playlist.name, data['name'])
@@ -226,7 +230,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         A POST to the index with a video, but an error (say a duplicate name),
         should result in an error.
         """
-        video = Video.objects.filter(status=1)[0]
+        video = self.create_video()
         count = Playlist.objects.count()
         data = {'name': self.list.name,
                 'video': video.pk}
@@ -257,119 +261,10 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 'form-0-DELETE': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
+                'testserver',
                 reverse('localtv_playlist_index')))
         self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
                           pk=self.list.pk)
-
-    def test_bulk_delete(self):
-        """
-        A POST to the index with the formset data and some playlists marked
-        with the bulk option and the 'delete action should delete those
-        playlists.
-        """
-        url = reverse('localtv_playlist_index')
-        c = Client()
-        c.login(username='user', password='password')
-        response = c.post(url, {
-                'form-INITIAL_FORMS': 1,
-                'form-TOTAL_FORMS': 1,
-                'form-0-id': self.list.pk,
-                'form-0-BULK': 'yes',
-                'bulk_action': 'delete'})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_playlist_index')))
-        self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
-                          pk=self.list.pk)
-
-    def test_bulk_public(self):
-        """
-        A POST to the index with the formset data and some playlists marked
-        with the bulk option and the 'public' action should mark those videos
-        as waiting for moderation.
-        """
-        notice_type = notification.NoticeType.objects.get(
-            label='admin_new_playlist')
-        setting = notification.get_notification_setting(
-            User.objects.get(username='admin'),
-            notice_type,
-            "1")
-        setting.send = True
-        setting.save()
-        url = reverse('localtv_playlist_index')
-        c = Client()
-        c.login(username='user', password='password')
-        response = c.post(url, {
-                'form-INITIAL_FORMS': 1,
-                'form-TOTAL_FORMS': 1,
-                'form-0-id': self.list.pk,
-                'form-0-BULK': 'yes',
-                'bulk_action': 'public'})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_playlist_index')))
-        playlist = Playlist.objects.get(pk=self.list.pk)
-        self.assertEqual(playlist.status, Playlist.WAITING_FOR_MODERATION)
-        self.assertEqual(len(mail.outbox), 1)
-
-    def test_bulk_public_admin(self):
-        """
-        A POST to the index with the formset data and some playlists marked
-        with the bulk option and the 'public' action should mark those videos
-        as public if the user is an admin.
-        """
-        notice_type = notification.NoticeType.objects.get(
-            label='admin_new_playlist')
-        setting = notification.get_notification_setting(
-            User.objects.get(username='admin'),
-            notice_type,
-            "1")
-        setting.send = True
-        setting.save()
-        url = reverse('localtv_playlist_index') + '?show=all'
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.post(url, {
-                'form-INITIAL_FORMS': 1,
-                'form-TOTAL_FORMS': 1,
-                'form-0-id': self.list.pk,
-                'form-0-BULK': 'yes',
-                'bulk_action': 'public'})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_playlist_index')))
-        playlist = Playlist.objects.get(pk=self.list.pk)
-        self.assertEqual(playlist.status, Playlist.PUBLIC)
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_bulk_private(self):
-        """
-        A POST to the index with the formset data and some playlists marked
-        with the bulk option and the 'private' action should mark those videos
-        as private.
-        """
-        self.list.status = Playlist.PUBLIC
-        self.list.save()
-
-        url = reverse('localtv_playlist_index')
-        c = Client()
-        c.login(username='user', password='password')
-        response = c.post(url, {
-                'form-INITIAL_FORMS': 1,
-                'form-TOTAL_FORMS': 1,
-                'form-0-id': self.list.pk,
-                'form-0-BULK': 'yes',
-                'bulk_action': 'private'})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_playlist_index')))
-        playlist = Playlist.objects.get(pk=self.list.pk)
-        self.assertEqual(playlist.status, Playlist.PRIVATE)
 
     def test_add_video(self):
         """
@@ -377,7 +272,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         the playlist if the user is authorized.  If not, they should be asked
         to log in..
         """
-        video = Video.objects.filter(status=1)[0]
+        video = self.create_video()
         url = reverse('localtv_playlist_add_video', args=(video.pk,))
         self.assertRequiresAuthentication(url)
 
@@ -387,7 +282,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                           HTTP_REFERER=video.get_absolute_url())
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_settings.site.domain,
+                'testserver',
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
@@ -397,7 +292,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         Even if we were in a playlist before, adding a video to a playlist
         should redirect to the page with the added playlist open.
         """
-        video = Video.objects.filter(status=1)[0]
+        video = self.create_video()
         url = reverse('localtv_playlist_add_video', args=(video.pk,))
         self.assertRequiresAuthentication(url)
 
@@ -408,7 +303,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                           video.get_absolute_url())
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_settings.site.domain,
+                'testserver',
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
@@ -417,7 +312,11 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         """
         Admins should be able to add videos to arbitrary playlists.
         """
-        video = Video.objects.filter(status=1)[0]
+        admin = self.create_user(username='admin', is_superuser=True)
+        admin.set_password('admin')
+        admin.save()
+
+        video = self.create_video()
         url = reverse('localtv_playlist_add_video', args=(video.pk,))
 
         c = Client()
@@ -425,15 +324,15 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {'playlist': self.list.pk})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?playlist=%i' % (
-                self.site_settings.site.domain,
+                'testserver',
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
 
     def test_view(self):
         """
-        The view view should render the 'localtv/playlists/view.html' template
-        and include the playlist in the context.
+        The view view should render the 'localtv/video_listing_playlist.html'
+        template and include the playlist in the context.
         """
         self.list.status = Playlist.PUBLIC
         self.list.save()
@@ -444,8 +343,37 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.get(url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
-                          'localtv/playlists/view.html')
+                         'localtv/video_listing_playlist.html')
         self.assertEqual(response.context['playlist'], self.list)
+
+    def test_view_old_template(self):
+        """
+        The playlist view should also check the old template path
+        "localtv/playlists/view.html" for a template to render.
+        """
+        template_dir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(template_dir, "localtv", "playlists"))
+        with file(os.path.join(template_dir, "localtv", "playlists", "view.html"),
+                  'w') as f:
+            f.write("Playlist Template")
+
+        try:
+            self.list.status = Playlist.PUBLIC
+            self.list.save()
+
+            with self.settings(TEMPLATE_DIRS=settings.TEMPLATE_DIRS + (
+                    template_dir,)):
+
+                url = reverse('localtv_playlist_view', args=(
+                        self.list.pk, self.list.slug))
+                c = Client()
+                response = c.get(url)
+            self.assertStatusCodeEquals(response, 200)
+            self.assertEqual(response.templates[0].name,
+                             'localtv/playlists/view.html')
+            self.assertEqual(response.context['playlist'], self.list)
+        finally:
+            shutil.rmtree(template_dir)
 
     def test_view_redirect(self):
         """
@@ -460,7 +388,7 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             response = c.get(url)
             self.assertStatusCodeEquals(response, 301) # permanent redirect
             self.assertEqual(response['Location'], 'http://%s%s' % (
-                    self.site_settings.site.domain,
+                    'testserver',
                     self.list.get_absolute_url()))
 
     def test_view_404(self):
@@ -492,6 +420,29 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         self.assertEqual(len(response.context['formset'].forms),
                           self.list.video_set.count())
 
+
+    def test_bulk_delete(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'delete action should delete those
+        playlists.
+        """
+        url = reverse('localtv_playlist_index')
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'delete'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response['Location'], 'http://%s%s' % (
+                'testserver',
+                reverse('localtv_playlist_index')))
+        self.assertRaises(Playlist.DoesNotExist, Playlist.objects.get,
+                          pk=self.list.pk)
+
     def test_edit_POST_success(self):
         """
         If we make a successful POST request to the edit view, it should update
@@ -503,16 +454,16 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             'playlistitem_set-TOTAL_FORMS': len(self.video_set),
             }
         for index, video in enumerate(self.video_set):
-            data['playlistitem_set-%i-playlist' % (4-index)] = self.list.pk
-            data['playlistitem_set-%i-id' % (4-index)] = \
+            data['playlistitem_set-%i-playlist' % (2-index)] = self.list.pk
+            data['playlistitem_set-%i-id' % (2-index)] = \
                 self.list._item_for(video).pk
-            data['playlistitem_set-%i-ORDER' % (4-index)] = index
+            data['playlistitem_set-%i-ORDER' % (2-index)] = index
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           self.video_set)
@@ -523,8 +474,8 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         one that changed should take precedence.
         """
          # flip the last two
-        video_set = self.video_set[:3] + [self.video_set[4],
-                                          self.video_set[3]]
+        video_set = self.video_set[:1] + [self.video_set[2],
+                                          self.video_set[1]]
         url = reverse('localtv_playlist_edit', args=(self.list.pk,))
         data = {
             'playlistitem_set-INITIAL_FORMS': len(self.video_set),
@@ -535,14 +486,14 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             data['playlistitem_set-%i-id' % index] = \
                 self.list._item_for(video).pk
             data['playlistitem_set-%i-ORDER' % index] = index + 1  # 1-indexed
-        data['playlistitem_set-4-ORDER'] = 4 # 3 and 4 both have 4 as their
+        data['playlistitem_set-2-ORDER'] = 2 # 3 and 4 both have 4 as their
                                              # order
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           video_set)
@@ -553,8 +504,8 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         one that changed should take precedence.
         """
          # flip the last two
-        video_set = self.video_set[:3] + [self.video_set[4],
-                                          self.video_set[3]]
+        video_set = self.video_set[:1] + [self.video_set[2],
+                                          self.video_set[1]]
         url = reverse('localtv_playlist_edit', args=(self.list.pk,))
         data = {
             'playlistitem_set-INITIAL_FORMS': len(self.video_set),
@@ -565,14 +516,14 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             data['playlistitem_set-%i-id' % index] = \
                 self.list._item_for(video).pk
             data['playlistitem_set-%i-ORDER' % index] = index + 1  # 1-indexed
-        data['playlistitem_set-3-ORDER'] = 5 # 3 and 4 both have 5 as their
+        data['playlistitem_set-1-ORDER'] = 3 # 2 and 3 both have 2 as their
                                              # order
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
                           video_set)
@@ -588,20 +539,20 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             'playlistitem_set-TOTAL_FORMS': len(self.video_set),
             }
         for index, video in enumerate(self.video_set):
-            data['playlistitem_set-%i-playlist' % (4-index)] = self.list.pk
-            data['playlistitem_set-%i-id' % (4-index)] = \
+            data['playlistitem_set-%i-playlist' % (2-index)] = self.list.pk
+            data['playlistitem_set-%i-id' % (2-index)] = \
                 self.list._item_for(video).pk
-            data['playlistitem_set-%i-ORDER' % (4-index)] = 4 - index
-        data['playlistitem_set-2-DELETE'] = 'yes' # delete the middle object
+            data['playlistitem_set-%i-ORDER' % (2-index)] = 2 - index
+        data['playlistitem_set-1-DELETE'] = 'yes' # delete the middle object
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
-                          self.video_set[:2:-1] + self.video_set[1::-1])
+                         [self.video_set[2], self.video_set[0]])
 
     def test_edit_POST_bulk_delete(self):
         """
@@ -614,27 +565,35 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
             'playlistitem_set-TOTAL_FORMS': len(self.video_set),
             }
         for index, video in enumerate(self.video_set):
-            data['playlistitem_set-%i-playlist' % (4-index)] = self.list.pk
-            data['playlistitem_set-%i-id' % (4-index)] = \
+            data['playlistitem_set-%i-playlist' % (2-index)] = self.list.pk
+            data['playlistitem_set-%i-id' % (2-index)] = \
                 self.list._item_for(video).pk
-            data['playlistitem_set-%i-ORDER' % (4-index)] = 4 - index
-        data['playlistitem_set-2-BULK'] = 'yes' # delete the middle object
+            data['playlistitem_set-%i-ORDER' % (2-index)] = 2 - index
+        data['playlistitem_set-1-BULK'] = 'yes' # delete the middle object
         data['bulk_action'] = 'delete'
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, data)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain, url))
+                'testserver', url))
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(list(playlist.video_set.all()),
-                          self.video_set[:2:-1] + self.video_set[1::-1])
+                          [self.video_set[2], self.video_set[0]])
 
-    def test_public(self):
-        """
-        The localtv_playlist_public view should set the playlist's status to
-        Playlist.WAITING_FOR_MODERATION and send a notification e-mail.
-        """
+
+class PlaylistModerationTestCase(BaseTestCase):
+
+    def setUp(self):
+        admin = self.create_user(username='admin', email='admin@example.com',
+                                 is_superuser=True)
+        admin.set_password('admin')
+        admin.save()
+
+        self.user = self.create_user(username='user')
+        self.user.set_password('password')
+        self.user.save()
+
         notice_type = notification.NoticeType.objects.get(
             label='admin_new_playlist')
         setting = notification.get_notification_setting(
@@ -644,13 +603,25 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         setting.send = True
         setting.save()
 
+        self.list = Playlist.objects.create(
+            site_id=settings.SITE_ID,
+            user=self.user,
+            name='Test List',
+            slug='test-list',
+            description="This is a list for testing")
+
+    def test_public(self):
+        """
+        The localtv_playlist_public view should set the playlist's status to
+        Playlist.WAITING_FOR_MODERATION and send a notification e-mail.
+        """
         url = reverse('localtv_playlist_public', args=(self.list.pk,))
         c = Client()
         c.login(username='user', password='password')
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
+                'testserver',
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
@@ -674,11 +645,11 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
 
         url = reverse('localtv_playlist_public', args=(self.list.pk,))
         c = Client()
-        c.login(username='superuser', password='superuser')
+        c.login(username='admin', password='admin')
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s?show=all' % (
-                self.site_settings.site.domain,
+                'testserver',
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
@@ -699,18 +670,93 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         response = c.post(url, {})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
+                'testserver',
                 reverse('localtv_playlist_index')))
 
         playlist = Playlist.objects.get(pk=self.list.pk)
         self.assertEqual(playlist.status, Playlist.PRIVATE)
 
+    def test_bulk_public(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'public' action should mark those videos
+        as waiting for moderation.
+        """
+        url = reverse('localtv_playlist_index')
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'public'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response['Location'], 'http://%s%s' % (
+                'testserver',
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEqual(playlist.status, Playlist.WAITING_FOR_MODERATION)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_bulk_public_admin(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'public' action should mark those videos
+        as public if the user is an admin.
+        """
+        url = reverse('localtv_playlist_index') + '?show=all'
+        c = Client()
+        c.login(username='admin', password='admin')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'public'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response['Location'], 'http://%s%s' % (
+                'testserver',
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEqual(playlist.status, Playlist.PUBLIC)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_bulk_private(self):
+        """
+        A POST to the index with the formset data and some playlists marked
+        with the bulk option and the 'private' action should mark those videos
+        as private.
+        """
+        self.list.status = Playlist.PUBLIC
+        self.list.save()
+
+        url = reverse('localtv_playlist_index')
+        c = Client()
+        c.login(username='user', password='password')
+        response = c.post(url, {
+                'form-INITIAL_FORMS': 1,
+                'form-TOTAL_FORMS': 1,
+                'form-0-id': self.list.pk,
+                'form-0-BULK': 'yes',
+                'bulk_action': 'private'})
+        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response['Location'], 'http://%s%s' % (
+                'testserver',
+                reverse('localtv_playlist_index')))
+        playlist = Playlist.objects.get(pk=self.list.pk)
+        self.assertEqual(playlist.status, Playlist.PRIVATE)
+
+
+class PlaylistsDisabledTestCase(BaseTestCase):
+
     def test_disabled(self):
         """
         If playlists are disabled, every playlist view should return a 404.
         """
-        self.site_settings.playlists_enabled = False
-        self.site_settings.save()
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.playlists_enabled = False
+        site_settings.save()
 
         c = Client()
         for view, args in (('localtv_playlist_index', ()),
