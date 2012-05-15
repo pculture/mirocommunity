@@ -25,7 +25,6 @@ from django.http import Http404
 from django.views.generic import ListView
 from django.conf import settings
 from haystack.query import SearchQuerySet
-from voting.models import Vote
 
 import localtv.settings
 from localtv.models import Video, Category
@@ -162,6 +161,7 @@ class CategoryVideoSearchView(VideoSearchView):
         if (localtv.settings.voting_enabled() and 
                     category.contest_mode and
                     self.request.user.is_authenticated()):
+            from voting.models import Vote
             # TODO: Benchmark this against a version where the pk queryset is
             # evaluated here instead of becoming a subquery.
             pks = category.approved_set.filter(

@@ -22,6 +22,7 @@ from django.views.generic import ListView
 from localtv.listing.views import VideoSearchView, SiteListView, \
                         CategoryVideoSearchView
 from localtv.models import Category
+from localtv import settings
 from localtv.views import IndexView
 
 # "Base" patterns
@@ -91,11 +92,8 @@ urlpatterns += patterns(
     url(r'^share/', include('email_share.urls')),
     url(r'^playlists/', include('localtv.playlists.urls')))
 
-try:
+if settings.voting_enabled():
     import voting
-except ImportError:
-    pass # ignore voting
-else:
     urlpatterns += patterns(
         'localtv.views',
         (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
