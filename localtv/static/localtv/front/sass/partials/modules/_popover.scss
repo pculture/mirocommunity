@@ -39,3 +39,20 @@
 .popover h3, .popover :last-child{
 	margin:0;
 }
+
+.popover-normal-text{
+	@include box-sizing(border-box);
+	max-height:$base-line-height*6;
+	overflow:hidden;
+	padding-bottom:$base-line-height;
+	position:relative;
+	&::after{
+		content:"";
+		position:absolute;
+		bottom:0;
+		left:0;
+		right:0;
+		height:$base-line-height;
+		@include background(linear-gradient(top, rgba(255,255,255,0) 0, rgba(255,255,255,1) 75%, rgba(255,255,255,1) 100%));
+	}
+}

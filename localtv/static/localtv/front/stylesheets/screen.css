@@ -177,7 +177,7 @@ form { margin-bottom: 18px; }
 @media screen and (max-width:740px) { .grid-item { width: 50%; } }
 .replaced, .search-icon { text-indent: -9999px; display: block; }
 
-.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1336437711'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
+.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1336440929'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
 
 ul, ol { padding-left: 1.5em; }
 
@@ -193,7 +193,7 @@ ol > li { list-style-type: decimal; }
 
 .media-item { float: left; margin-left: 40px; margin-bottom: 18px; }
 
-.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1336437711') center center no-repeat; }
+.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1336440929') center center no-repeat; }
 
 .media-grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
@@ -274,6 +274,9 @@ ol > li { list-style-type: decimal; }
 .popover-inner { width: 280px; overflow: hidden; position: relative; }
 
 .popover h3, .popover :last-child { margin: 0; }
+
+.popover-normal-text { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box; max-height: 108px; overflow: hidden; padding-bottom: 18px; position: relative; }
+.popover-normal-text::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 18px; background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(75%, #ffffff), color-stop(100%, #ffffff)); background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%); background: -moz-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%); background: -o-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%); background: -ms-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%); background: linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%); }
 
 .precontent { overflow: hidden; *zoom: 1; -moz-box-shadow: 0 1px 0 0 white; -webkit-box-shadow: 0 1px 0 0 white; -o-box-shadow: 0 1px 0 0 white; box-shadow: 0 1px 0 0 white; }
 
@@ -487,7 +490,7 @@ input:focus, textarea:focus { border-color: #344f6d; -moz-box-shadow: 0 0 6px 0 
 .message.warning { background-color: #fffcc5; border-color: #cfcc8f; text: #2c2a00; }
 
 /* precontent */
-.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1336437711'); }
+.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1336440929'); }
 
 .precontent a { color: #66ccff; }
 .precontent a:hover { border-color: #666; }
