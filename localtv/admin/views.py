@@ -17,37 +17,41 @@
 
 import datetime
 
+from django.conf import settings
 from django.contrib import comments
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.generic import TemplateView
 
 from localtv.decorators import require_site_admin
 from localtv.models import Video, SiteSettings
 
-@require_site_admin
-def index(request):
-    """
-    Simple index page for the admin site.
-    """
-    site_settings = SiteSettings.objects.get_current()
-    total_count = Video.objects.filter(
-        status=Video.ACTIVE,
-        site=site_settings.site).count()
-    videos_this_week_count = Video.objects.filter(
-        status=Video.ACTIVE,
-        when_approved__gt=(datetime.datetime.utcnow() - datetime.timedelta(days=7))
-        ).count()
-    return render_to_response(
-        'localtv/admin/index.html',
-        {'total_count': total_count,
-         'unreviewed_count': Video.objects.filter(
-                status=Video.UNAPPROVED,
-                site=site_settings.site).count(),
-         'videos_this_week_count': videos_this_week_count,
-         'comment_count': comments.get_model().objects.filter(
-                is_public=False, is_removed=False).count()},
-        context_instance=RequestContext(request))
+
+class IndexView(TemplateView):
+    template_name = 'localtv/admin/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        site_videos = Video.objects.filter(site=settings.SITE_ID)
+        active_site_videos = site_videos.filter(status=Video.ACTIVE)
+        week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+        context.update({
+            'total_count': active_site_videos.count(),
+            'videos_this_week_count': active_site_videos.filter(
+                             when_approved__gt=week_ago).count(),
+            'unreviewed_count': site_videos.filter(status=Video.UNAPPROVED
+                                          ).count(),
+            'comment_count': comments.get_model().objects.filter(
+                                                              is_public=False,
+                                                              is_removed=False
+                                                        ).count()
+        })
+        return context
+
+
+index = require_site_admin(IndexView.as_view())
+
 
 @require_site_admin
 def hide_get_started(request):

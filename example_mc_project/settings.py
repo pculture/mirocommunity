@@ -23,6 +23,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
+USE_ES = bool(os.environ.get('MC_TEST_USE_ES', False))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -101,6 +102,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -171,7 +173,8 @@ INSTALLED_APPS = (
     'socialauth',
     'openid_consumer',
     'voting',
-    'daguerre'
+    'daguerre',
+    'compressor'
 )
 
 if USE_SOUTH:
@@ -257,12 +260,21 @@ ACCOUNT_ACTIVATION_DAYS = 7
 FORCE_LOWERCASE_TAGS = True
 
 # haystack search
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-    }
-}
+if USE_ES:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://localhost:9200/',
+            'INDEX_NAME': 'mirocommunity'
+            }
+        }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+            }
+        }
 
 # Facebook options
 FACEBOOK_APP_ID = None

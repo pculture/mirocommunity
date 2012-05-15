@@ -20,32 +20,40 @@ from django.conf.urls.defaults import patterns, url, include
 from localtv.feeds import views
 
 
-def make_patterns(suffix, name, feed_class):
+def feed_urls(pattern, feed_class, kwargs=None, name=None):
     return patterns('',
-        url(r'^%s$' % suffix, feed_class(), name=name),
-        url(r'^json/%s$' % suffix, feed_class(json=True), name="%s_json" % name)
+        url(r'^{0}/?$'.format(pattern), feed_class(), kwargs, name),
+        url(r'^json/{0}/?$'.format(pattern), feed_class(json=True), kwargs,
+            "{0}_json".format(name))
     )
 
 
 urlpatterns = patterns('',
-    url(r'', include(make_patterns(r'new', 'localtv_feeds_new',
-                                    views.NewVideosFeed))),
-    url(r'', include(make_patterns(r'featured', 'localtv_feeds_featured',
-                                    views.FeaturedVideosFeed))),
-    url(r'', include(make_patterns(r'popular', 'localtv_feeds_popular',
-                                    views.PopularVideosFeed))),
-    url(r'', include(make_patterns(r'category/(?P<slug>[\w-]+)',
-                                    'localtv_feeds_category',
-                                    views.CategoryVideosFeed))),
-    url(r'', include(make_patterns(r'author/(?P<pk>\d+)', 'localtv_feeds_author',
-                                    views.AuthorVideosFeed))),
-    url(r'', include(make_patterns(r'videos-imported-from/(?P<pk>\d+)',
-                                    'localtv_feeds_feed',
-                                    views.FeedVideosFeed))),
-    url(r'', include(make_patterns(r'tag/(?P<name>.+)', 'localtv_feeds_tag',
-                                    views.TagVideosFeed))),
-    url(r'', include(make_patterns(r'search/(.+)', 'localtv_feeds_search',
-                                    views.SearchVideosFeed))),
-    url(r'', include(make_patterns(r'playlist/(?P<pk>\d+)', 'localtv_feeds_playlist',
-                                    views.PlaylistVideosFeed))),
+    url(r'', include(feed_urls(r'new',
+                               views.NewVideosFeed,
+                               name='localtv_feeds_new'))),
+    url(r'', include(feed_urls(r'featured',
+                               views.FeaturedVideosFeed,
+                               name='localtv_feeds_featured'))),
+    url(r'', include(feed_urls(r'popular',
+                               views.PopularVideosFeed,
+                               name='localtv_feeds_popular'))),
+    url(r'', include(feed_urls(r'category/(?P<slug>[\w-]+)',
+                               views.CategoryVideosFeed,
+                               name='localtv_feeds_category'))),
+    url(r'', include(feed_urls(r'author/(?P<pk>\d+)',
+                               views.AuthorVideosFeed,
+                               name='localtv_feeds_author'))),
+    url(r'', include(feed_urls(r'videos-imported-from/(?P<pk>\d+)',
+                               views.FeedVideosFeed,
+                               name='localtv_feeds_feed'))),
+    url(r'', include(feed_urls(r'tag/(?P<name>.+)',
+                               views.TagVideosFeed,
+                               name='localtv_feeds_tag'))),
+    url(r'', include(feed_urls(r'search/(.+)',
+                               views.SearchVideosFeed,
+                               name='localtv_feeds_search'))),
+    url(r'', include(feed_urls(r'playlist/(?P<pk>\d+)',
+                               views.PlaylistVideosFeed,
+                               name='localtv_feeds_playlist'))),
 )

@@ -1396,8 +1396,7 @@ class VideoManager(models.Manager):
 
         """
         from localtv.search.utils import PopularSort
-        return PopularSort().sort(self.get_latest_videos(site_settings),
-                                  descending=True)
+        return PopularSort().sort(self.get_latest_videos(site_settings))
 
     def get_category_videos(self, category, site_settings=None):
         """

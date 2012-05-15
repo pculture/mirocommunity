@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load video i18n comments filters uploadtemplate_tags editable_widget localtv_thumbnail cache video_list email_share_tags daguerre %}
+{% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre %}
 {% load url from future %}
 
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
@@ -64,19 +64,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>
 		<div class="precontent-content">
 			<div class="container video-player">
-				{% if current_video.embed_code %}
-					{{ current_video.embed_code|wmode_transparent }}
-				{% else %}
-					{% get_thumbnail_url current_video 534 430 as video_thumbnail %}
-					{% video current_video.file_url mime_type=current_video.file_url_mimetype width=534 height=430 autoplay=0 poster=video_thumbnail %}
-					{% if current_video.file_url_mimetype|is_ogg_media %}
-						<p class="help">
-							{% blocktrans %}
-								This video displays best with a browser that supports the HTML5 &lt;video&gt; tag &mdash; if you're having trouble viewing it, try the <a href="http://www.mozilla.com/firefox/">Firefox</a> browser.
-							{% endblocktrans %}
-						</p>
-					{% endif %}
-				{% endif %}
+                          {% include "localtv/_video_embed.html" %}
 			</div>{# /.container #}
 		</div>{# /.precontent-content #}
 	</section>{# /.video-stage #}

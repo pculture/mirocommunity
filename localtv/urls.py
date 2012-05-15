@@ -20,8 +20,9 @@ from django.contrib.auth.models import User
 from django.views.generic import ListView
 
 from localtv.api.v1 import api as api_v1
-from localtv.listing.views import VideoSearchView, SiteListView
+from localtv.listing.views import CompatibleListingView, SiteListView
 from localtv.models import Category
+from localtv.search.views import SortFilterView
 from localtv.views import IndexView, VideoView
 
 # "Base" patterns
@@ -30,6 +31,9 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
+    url(r'^videos/$',
+         SortFilterView.as_view(template_name='localtv/videos.html'),
+         name='localtv_browse'),
     url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
         VideoView.as_view(),
         name='localtv_view_video'),
@@ -39,15 +43,14 @@ urlpatterns = patterns(
 # Listing patterns
 # This has to be importable for now because of a hack in the view_video view
 # which imports this view to check whether the referer was a category page.
-category_videos = VideoSearchView.as_view(
+category_videos = CompatibleListingView.as_view(
     template_name='localtv/category.html',
-    url_filter='category',
-    url_filter_kwarg='slug',
-    default_sort='-date'
+    filter_name='category',
+    filter_kwarg='slug'
 )
 urlpatterns += patterns(
     'localtv.listing.views',
-    url(r'^search/$', VideoSearchView.as_view(
+    url(r'^search/$', CompatibleListingView.as_view(
                         template_name='localtv/video_listing_search.html',
                     ), name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
@@ -62,10 +65,9 @@ urlpatterns += patterns(
                         model=User,
                         context_object_name='authors'
                     ), name='localtv_author_index'),
-    url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
+    url(r'^author/(?P<pk>\d+)/$', CompatibleListingView.as_view(
                         template_name='localtv/author.html',
-                        url_filter='author',
-                        default_sort='-date'
+                        filter_name='author'
                     ), name='localtv_author'))
 
 # Comments patterns

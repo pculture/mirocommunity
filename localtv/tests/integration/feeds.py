@@ -58,21 +58,30 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], u'example.com: Search: foo bar')
-        self.assertEqual(1, len(data['items']))
+        self.assertEqual(len(data['items']), 1)
         self.assertEqual(data['items'][0]['title'], bar_video.name)
 
-        response = client.get('/feeds/json/search/foo') # best match
+        # Default sort should be best match.
+        response = client.get('/feeds/json/search/foo')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], u'example.com: Search: foo')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
+        response = client.get('/feeds/json/search/foo', {'sort': 'newest'})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['title'], u'example.com: Search: foo')
+        self.assertEqual(len(data['items']), 2)
+        self.assertEqual(data['items'][0]['title'], bar_video.name)
+
+        # Backwards-compatibility check.
         response = client.get('/feeds/json/search/foo', {'sort': 'latest'})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], u'example.com: Search: foo')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         self.assertEqual(data['items'][0]['title'], bar_video.name)
 
     def test_playlist_feed(self):

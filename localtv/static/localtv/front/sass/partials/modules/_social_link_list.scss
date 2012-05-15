@@ -2,27 +2,29 @@
 	@extend .unstyled-list;
 	@include clearfix;
 	border-bottom:1px solid;
-	@include padded(.5);
+	padding:$base-line-height/2 $gutter-width/2;
 	& > li{
 		float:left;
 		display: block;
-		width:90px;
 		&:first-child{
 			border-left:0;
 		}
 		position:relative;
 		top:4px;
-		width:100px;
+		width:120px;
 		min-height:5px;
 	}
 	& > .facebook-social{
-		width:90px;
+		width:110px;
 	}
 	& > .gplus-social{
-		width:80px;
+		width:100px;
 	}
 	& > .pinterest-social{
-		width:90px;
+		width:110px;
+	}
+	& > .email-social{
+		width:100px;
 	}
 	a:hover{
 		border:0;
