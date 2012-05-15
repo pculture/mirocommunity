@@ -54,8 +54,8 @@ def localtv(request):
         'mc_version': '1.2',
         'sitelocation': sitelocation,
         'user_is_admin': request.user_is_admin(),
-        'categories':  Category.objects.filter(site=sitelocation.site,
-                                                      parent=None),
+        'categories':  Category.objects._mptt_filter(site=sitelocation.site,
+                                                     level=0),
         'cache_invalidator': cache_invalidator,
 
         'display_submit_button': display_submit_button,

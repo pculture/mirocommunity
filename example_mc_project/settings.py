@@ -166,6 +166,7 @@ INSTALLED_APPS = (
     'openid_consumer',
     'paypal.standard.ipn',
     'voting'
+    'mptt',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
