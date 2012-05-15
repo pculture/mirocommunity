@@ -117,9 +117,18 @@ class BaseTestCase(TestCase):
         models.SiteSettings.objects.clear_cache()
 
     @classmethod
+    def reload_from_db(self, *objects):
+        def r(o):
+            return o.__class__.objects.get(pk=o.pk)
+        if len(objects) == 1:
+            return r(objects[0])
+        else:
+            return [r(o) for o in objects]
+
+    @classmethod
     def create_video(cls, name='Test.', status=models.Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
-                     update_index=True, **kwargs):
+                     update_index=True, load_from_db=False, **kwargs):
         """
         Factory method for creating videos. Supplies the following defaults:
 
@@ -159,6 +168,7 @@ class BaseTestCase(TestCase):
             index = connections['default'].get_unified_index().get_index(
                 models.Video)
             index._enqueue_update(video)
+
         return video
 
     @classmethod

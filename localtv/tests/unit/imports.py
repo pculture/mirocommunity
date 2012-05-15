@@ -158,7 +158,8 @@ class FeedImportUnitTestCase(BaseTestCase):
                 file_url='http://example.com/file_url',
                 file_url_length=1000,
                 file_url_mimetype='video/mimetype',
-                publish_datetime=datetime.datetime.now(),
+                publish_datetime=datetime.datetime.now().replace(
+                    microsecond=0),
                 tags=['tag1', 'tag2']
                 ),
             ]

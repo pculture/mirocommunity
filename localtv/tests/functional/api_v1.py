@@ -78,6 +78,7 @@ class ApiV1TestCase(BaseTestCase):
         }
         feed = self.create_feed(has_thumbnail=True, thumbnail_extension='png',
                                 **expected_data)
+        feed  = self.reload_from_db(feed)
         expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
                                                      feed.thumbnail_path)
         url = '/api/v1/feed/1/'
@@ -99,6 +100,7 @@ class ApiV1TestCase(BaseTestCase):
         search = self.create_search(has_thumbnail=True,
                                     thumbnail_extension='png',
                                     **expected_data)
+        search = self.reload_from_db(search)
         expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
                                                      search.thumbnail_path)
         url = '/api/v1/search/1/'
@@ -121,7 +123,9 @@ class ApiV1TestCase(BaseTestCase):
         video = self.create_video(has_thumbnail=True,
                                   thumbnail_extension='png',
                                   update_index=False,
+                                  load_from_db=True,
                                   **expected_data)
+        video = self.reload_from_db(video)
         expected_data.update({
             'thumbnail': '{0}{1}'.format(settings.MEDIA_URL,
                                                      video.thumbnail_path),
