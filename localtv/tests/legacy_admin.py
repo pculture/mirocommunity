@@ -100,21 +100,17 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         """
         A GET request to the approve/reject view should render the
         'localtv/admin/approve_reject_table.html' template.  The
-        context should not include 'current_video','page_obj' (a Django Page
-        object), and 'video_list' (a list of the Video objects on the current
-        page).
+        context should include 'page_obj' (a Django Page object) and
+        'video_list' (a list of the Video objects on the current page).
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/approve_reject_table.html')
-        self.assertIsInstance(response.context['current_video'],
-                              Video)
         self.assertIsInstance(response.context['page_obj'],
                               Page)
         video_list = response.context['video_list']
-        self.assertEqual(video_list[0], response.context['current_video'])
         self.assertEqual(len(video_list), 10)
 
     def test_GET_with_page(self):
