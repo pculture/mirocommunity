@@ -23,14 +23,18 @@
 
 {% block body_classes %}{{ block.super }} playlist-videos{% endblock %}
 
-{% block page_title %}{% trans "Playlist" %}: {{ playlist.name }}{% if playlist.status != 2 %} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans 'private' %}</a>)</span>{% endif %}{% endblock %}
-
 {% block rss_url %}{% url localtv_feeds_playlist playlist.pk %}{% endblock %}
 
 {% block content %}
-	{% if playlist.description %}
-		<div class="playlist-description">
-			{{ playlist.description|sanitize }}
-		</div>
-	{% endif %}
+	<header class="page-header">
+		<h1 class="page-title">{% trans "Playlist" %}: {{ playlist.name }}{% if playlist.status != 2 %} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans 'private' %}</a>)</span>{% endif %}</h1>
+	</header>
+	<div class="page-content content-box">
+		{% if playlist.description %}
+			<div class="playlist-description">
+				{{ playlist.description|sanitize }}
+			</div>
+			{% include "localtv/_video_grid_list.html" %}
+		{% endif %}
+	</div>
 {% endblock %}

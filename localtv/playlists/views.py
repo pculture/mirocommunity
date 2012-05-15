@@ -24,7 +24,8 @@ from django.http import (Http404, HttpResponseRedirect,
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
-from django.views.generic.list_detail import object_list
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView
 
 from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
@@ -149,27 +150,38 @@ def index(request):
                                'formset': formset},
                               context_instance=RequestContext(request))
 
-@playlist_enabled
-def view(request, pk, slug=None, count=15):
-    """
-    Displays the videos of a given playlist.
-    """
-    playlist = get_object_or_404(Playlist,
-                                 pk=pk)
-    if playlist.status != Playlist.PUBLIC:
-        if not request.user_is_admin() and \
-                request.user != playlist.user:
-            raise Http404
-    if request.path != playlist.get_absolute_url():
-        return HttpResponsePermanentRedirect(playlist.get_absolute_url())
-    return object_list(
-        request=request, queryset=playlist.video_set,
-        paginate_by=count,
-        template_name='localtv/playlists/view.html',
-        allow_empty=True,
-        template_object_name='video',
-        extra_context={'playlist': playlist,
-                       'video_url_extra': '?playlist=%i' % playlist.pk})
+
+class PlaylistView(ListView):
+    allow_empty = True
+    context_object_name = 'videos'
+    
+    def get_paginate_by(self, queryset):
+        return 15 if 'count' not in self.kwargs else self.kwargs['count']
+    
+    def get_queryset(self):
+        return self.playlist.video_set
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(PlaylistView, self).get_context_data(*args, **kwargs)
+        context.update({'playlist': self.playlist,
+                        'video_url_extra': '?playlist=%i' % self.playlist.pk})
+        return context
+    
+    def get_template_names(self):
+        return ('localtv/playlists/view.html', 'localtv/video_listing_playlist.html')
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.playlist = get_object_or_404(Playlist, pk=args[0])
+        if self.playlist.status != Playlist.PUBLIC:
+            if not request.user_is_admin() and \
+                    request.user != self.playlist.user:
+                raise Http404
+        if request.path != self.playlist.get_absolute_url():
+            return HttpResponseRedirect(self.playlist.get_absolute_url())
+        return super(PlaylistView, self).dispatch(request, *args, **kwargs)
+
+
+view = playlist_enabled(PlaylistView.as_view())
 
 
 @playlist_enabled
