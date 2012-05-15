@@ -29,7 +29,6 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
