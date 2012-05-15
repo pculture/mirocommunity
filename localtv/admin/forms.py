@@ -167,7 +167,8 @@ class SourceChoiceField(forms.TypedChoiceField):
 
 class SourceForm(forms.ModelForm):
     auto_categories = BulkChecklistField(required=False,
-                                    queryset=models.Category.objects)
+                                    queryset=models.Category.objects.filter(
+                                                site=settings.SITE_ID))
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
@@ -184,12 +185,6 @@ class SourceForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if 'auto_approve' in self.initial:
             self.initial['auto_approve'] = bool(self.initial['auto_approve'])
-        site = Site.objects.get_current()
-        self.fields['auto_categories'].queryset = \
-            self.fields['auto_categories'].queryset.filter(
-            site=site)
-        self.fields['auto_authors'].queryset = \
-            self.fields['auto_authors'].queryset.order_by('username')
 
         if self.instance.pk is not None:
             if isinstance(self.instance, models.Feed):
@@ -254,11 +249,26 @@ class SourceForm(forms.ModelForm):
 class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def _construct_form(self, i, **kwargs):
+        # We use MockQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'categories': utils.MockQueryset(
+                                  BulkEditVideoForm.base_fields[
+                                      'categories'].queryset.all()),
+                'authors': utils.MockQueryset(
+                                  BulkEditVideoForm.base_fields[
+                                      'authors'].queryset.all()),
+            }
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
+        # TODO: Stop doing something weird.
         if i < self.initial_form_count() and not kwargs.get('instance'):
             kwargs['instance'] = self.get_queryset()[i]
-        return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form.fields['auto_categories'].queryset = self._qs_cache['categories']
+        form.fields['auto_authors'].queryset = self._qs_cache['authors']
+        return form
 
     def save_new_objects(self, commit=True):
         """
