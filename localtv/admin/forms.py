@@ -18,12 +18,11 @@
 import datetime
 import re
 import os.path
-import feedparser
 import urlparse
 
 import django.template.defaultfilters
 from django import forms
-from django.forms.formsets import BaseFormSet
+from django.forms.formsets import BaseFormSet, DELETION_FIELD_NAME
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
     construct_instance
 from django.contrib.auth.models import User
@@ -31,7 +30,6 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
