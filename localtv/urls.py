@@ -19,12 +19,14 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
+from localtv import settings
 from localtv.api.v1 import api as api_v1
 from localtv.listing.views import (CompatibleListingView,
                                    SiteListView, CategoryVideoSearchView)
 from localtv.models import Category
 from localtv.search.views import SortFilterView
 from localtv.views import IndexView, VideoView
+
 
 # "Base" patterns
 urlpatterns = patterns(
@@ -97,11 +99,8 @@ urlpatterns += patterns(
     url(r'^share/', include('email_share.urls')),
     url(r'^playlists/', include('localtv.playlists.urls')))
 
-try:
+if settings.voting_enabled():
     import voting
-except ImportError:
-    pass # ignore voting
-else:
     urlpatterns += patterns(
         'localtv.views',
         (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
