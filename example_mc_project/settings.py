@@ -174,7 +174,7 @@ INSTALLED_APPS = (
     'openid_consumer',
     'voting',
     'daguerre',
-    'compressor'
+    'compressor',
     'mptt',
 )
 
