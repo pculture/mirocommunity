@@ -298,7 +298,7 @@ class Tier(object):
             return DEFAULT
         # We have a SiteLocation, right?
         try:
-            sl = localtv.models.SiteLocation.objects.using(using).get(
+            sl = localtv.models.SiteLocation.objects.db_manager(using).get(
                 site=site_id)
         except localtv.models.SiteLocation.DoesNotExist:
             if log_warnings:
