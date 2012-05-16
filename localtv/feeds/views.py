@@ -435,7 +435,7 @@ class PlaylistVideosFeed(BaseVideosFeed):
         if 'playlist_order' in obj:
             # This is a HACK for backwards-compatibility.
             order_by = '{0}playlistitem___order'.format(
-                               '' if obj['playlist_order'][0] == '-' else '-')
+                               '-' if obj['playlist_order'][0] == '-' else '')
             queryset = obj['obj'].items.order_by(order_by)
         else:
             queryset = form._search()
