@@ -100,21 +100,17 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
         """
         A GET request to the approve/reject view should render the
         'localtv/admin/approve_reject_table.html' template.  The
-        context should include 'current_video' (the first Video object),
-        'page_obj' (a Django Page object), and 'video_list' (a list of the
-        Video objects on the current page).
+        context should include 'page_obj' (a Django Page object) and
+        'video_list' (a list of the Video objects on the current page).
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/approve_reject_table.html')
-        self.assertIsInstance(response.context['current_video'],
-                              Video)
         self.assertIsInstance(response.context['page_obj'],
                               Page)
         video_list = response.context['video_list']
-        self.assertEqual(video_list[0], response.context['current_video'])
         self.assertEqual(len(video_list), 10)
 
     def test_GET_with_page(self):
@@ -2120,9 +2116,10 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_delete(self):
         """
-        A POST to the users view with a POST['submit'] of 'Save' and a
-        successful formset should update the users data.  If form-*-DELETE is
-        present, that user should be removed, unless that user is a superuser.
+        A POST to the categories view with a POST['submit'] of 'Save' and a
+        successful formset should update the categories data, including
+        deleting instances.
+
         """
         c = Client()
         c.login(username="admin", password="admin")

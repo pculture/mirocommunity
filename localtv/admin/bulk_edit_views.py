@@ -36,9 +36,7 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
         template_data = {}
         form_prefix = request.GET['just_the_author_field']
         video = get_object_or_404(Video, pk=int(request.GET['video_id']))
-        cache_for_form_optimization = {}
-        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix,
-                                       cache_for_form_optimization=cache_for_form_optimization)
+        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
         template_data['form'] = form
         template = 'localtv/admin/bulk_edit_author_widget.html'
         return render_to_response(template,
@@ -144,7 +142,6 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': Category.objects.filter(
-                site=site_settings.site),
-                               'users': User.objects.order_by('username')},
+                               'categories': formset._qs_cache['categories'],
+                               'users': formset._qs_cache['authors']},
                               context_instance=RequestContext(request))

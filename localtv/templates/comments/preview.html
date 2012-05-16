@@ -1,0 +1,39 @@
+{% extends "localtv/base.html" %}
+{% comment %}
+Copyright 2009 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Preview your comment" %}{% endblock %}
+
+{% block content %}
+  {% load comments %}
+  <form action="{% comment_form_target %}" method="post" id="comment_form">{% csrf_token %}
+    {% if form.errors %}
+    <h2 class="errorlist">{% blocktrans count form.errors|length as counter %}Please correct the error below{% plural %}Please correct the errors below{% endblocktrans %}</h2>
+    {% else %}
+    <h2 class="page_title">{% trans "Preview your comment" %}</h2>
+      <blockquote>{{ comment|linebreaks }}</blockquote>
+      <p>
+      {% trans "and" %} <input type="submit" name="submit" class="submit-post" value="{% trans "Post your comment" %}" id="submit" /> {% trans "or make changes" %}:
+      </p>
+    {% endif %}
+    {% include "comments/form_base.html" %}
+  </form>
+{% endblock %}

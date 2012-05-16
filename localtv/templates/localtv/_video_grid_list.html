@@ -12,8 +12,12 @@
 			<ul class="media-grid video-grid">
 		{% endif %}
 		<li class="media-item video-grid-item" data-content="
-			{{ video.description|truncatewords_html:30 }}
 			{% filter force_escape %}
+				{% if video.description %}
+					<div class="popover-normal-text">
+						{{ video.description|safe }}
+					</div>
+				{% endif %}
 				{% with video as instance %}
 					<p class="byline">by {% include "localtv/inline_edit/video_authors.html" %}</p>
 				{% endwith %}
