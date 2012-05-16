@@ -16,14 +16,10 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.conf.urls.defaults import url, include
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from tastypie import fields
-from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
-from tastypie.http import HttpGone, HttpMultipleChoices
 from tastypie.resources import ModelResource
 
 from localtv.api.v1 import api, UserResource, VideoResource

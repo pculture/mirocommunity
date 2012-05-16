@@ -18,12 +18,10 @@
 import datetime
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.views.generic import ListView
 from haystack.query import SearchQuerySet
 
-from localtv.models import Video
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterView
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER

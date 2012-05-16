@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import Category, Video, SiteSettings
+from localtv.models import Category, SiteSettings
 from localtv.admin import forms
 
 
