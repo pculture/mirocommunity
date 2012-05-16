@@ -34,4 +34,5 @@ requests==0.10.8
 vidscraper==0.5.1
 django-tastypie==0.9.11
 django_compressor==1.1.2
+django-appconf==0.5
 django-mptt==0.5.2
