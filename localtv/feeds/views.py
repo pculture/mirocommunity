@@ -381,10 +381,10 @@ class PlaylistVideosFeed(BaseVideosFeed):
     url_filter = 'playlist'
 
     def _get_cache_key(self, request, vary):
-        key = super(PlaylistVideosFeed, self)._get_cache_key(request, vary)
-        if request.GET.get('sort', None) == 'order':
-            return '%s:order' % key
-        return key
+        sort = self._get_sort(request)
+        if sort in ('order', '-order'):
+            vary = vary + (sort,)
+        return super(PlaylistVideosFeed, self)._get_cache_key(request, vary)
 
     def link(self, obj):
         return obj['obj'].get_absolute_url()
@@ -396,12 +396,12 @@ class PlaylistVideosFeed(BaseVideosFeed):
 
         """
         sort = self._get_sort(obj['request'])
-        if sort == 'order':
-            # TODO: This probably breaks if a video is in multiple playlists.
-            # Check.
+        if sort == '-order':
+            # Not sure if anyone actually uses the reverse order; supported
+            # for backwards-compat (and it sorta makes sense.)
             videos = obj['obj'].video_set.order_by('-playlistitem___order')
         else:
-            # default is to sort by ascending order
+            # Default is to sort by ascending order.
             videos = obj['obj'].video_set.all()
         opensearch = self._get_opensearch_data(obj)
         start= opensearch['startindex']

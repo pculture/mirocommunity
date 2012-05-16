@@ -91,7 +91,16 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         # first in the order, first in the feed
         self.assertEqual(data['items'][0]['title'], self.test_video.name)
 
+        client = Client()
         response = client.get('/feeds/json/playlist/1?sort=order')
+        self.assertEqual(response.status_code, 200, response)
+        data = json.loads(response.content)
+        self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
+        self.assertEqual(2, len(data['items']))
+        # first in the order, first in the feed
+        self.assertEqual(data['items'][0]['title'], self.test_video.name)
+
+        response = client.get('/feeds/json/playlist/1?sort=-order')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
