@@ -25,6 +25,7 @@ from localtv.decorators import require_site_admin
 from localtv.models import Category, Video, SiteLocation
 from localtv.admin import forms
 
+
 @require_site_admin
 @csrf_protect
 def categories(request):
@@ -38,6 +39,7 @@ def categories(request):
         {'label': 'Videos'}
     ]
     add_category_form = forms.CategoryForm()
+    add_category_form.fields['parent'].queryset = formset._qs_cache['parent']
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
             category = Category(site=sitelocation.site)
