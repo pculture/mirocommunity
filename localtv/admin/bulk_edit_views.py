@@ -142,7 +142,6 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': Category.objects.filter(
-                site=site_settings.site),
-                               'users': User.objects.order_by('username')},
+                               'categories': formset._qs_cache['categories'],
+                               'users': formset._qs_cache['authors']},
                               context_instance=RequestContext(request))

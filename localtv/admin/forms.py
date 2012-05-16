@@ -130,11 +130,11 @@ class SourceChoiceField(forms.TypedChoiceField):
     widget = SourceWidget
     name = 'id'
 
-    def __init__(self, **kwargs):
+    def __init__(self, feeds, searches, **kwargs):
         feed_choices = [('feed-%s' % feed.pk, feed) for feed in
-                         models.Feed.objects.all()]
+                         feeds]
         search_choices = [('savedsearch-%s' % search.pk, search) for search in
-                          models.SavedSearch.objects.all()]
+                          searches]
         choices = feed_choices + search_choices
         initial = kwargs.pop('initial', None)
         if initial:
@@ -256,6 +256,8 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
                 'authors': SourceForm.base_fields[
                                   'auto_authors'].queryset._clone(
                                       utils.SharedQuerySet),
+                'feeds': utils.SharedQuerySet(models.Feed),
+                'searches': utils.SharedQuerySet(models.SavedSearch),
             }
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
@@ -343,8 +345,11 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
             initial = self.queryset[index]
         else:
             initial = None
-        self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
-                                              initial=initial)
+        self._pk_field = form.fields['id'] = SourceChoiceField(
+                                          required=False,
+                                          initial=initial,
+                                          feeds=self._qs_cache['feeds'],
+                                          searches=self._qs_cache['searches'])
         if initial:
             form.fields['BULK'] = forms.BooleanField(required=False)
         BaseFormSet.add_fields(self, form, index)
