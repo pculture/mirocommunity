@@ -100,7 +100,6 @@ urlpatterns += patterns(
     url(r'^playlists/', include('localtv.playlists.urls')))
 
 if settings.voting_enabled():
-    import voting
     urlpatterns += patterns(
         'localtv.views',
         (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',

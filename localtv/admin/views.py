@@ -19,8 +19,6 @@ import datetime
 
 from django.conf import settings
 from django.contrib import comments
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.generic import TemplateView
 
