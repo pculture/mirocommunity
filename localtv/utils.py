@@ -28,6 +28,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
+from django.db.models.query import QuerySet
 from django.utils.encoding import force_unicode
 import tagging
 import vidscraper
@@ -224,6 +225,17 @@ class SortHeaders:
         return '%s%s' % (
             self.desc and '-' or '',
             self.ordering)
+
+
+class SharedQuerySet(QuerySet):
+    """
+    A QuerySet subclass which returns itself when cloned with :meth:`all`.
+    This is designed to be used to generate choices for forms in formsets to
+    spare queries, and is probably not suitable for more complex situations.
+
+    """
+    def all(self, *args, **kwargs):
+        return self
 
 
 class MockQueryset(object):

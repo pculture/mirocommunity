@@ -246,16 +246,16 @@ class SourceForm(forms.ModelForm):
 class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def _construct_form(self, i, **kwargs):
-        # We use MockQuerySet so that the form fields don't make fresh
+        # We use SharedQuerySet so that the form fields don't make fresh
         # querysets when they generate their choices.
         if not hasattr(self, '_qs_cache'):
             self._qs_cache = {
-                'categories': utils.MockQueryset(
-                                  BulkEditVideoForm.base_fields[
-                                      'categories'].queryset.all()),
-                'authors': utils.MockQueryset(
-                                  BulkEditVideoForm.base_fields[
-                                      'authors'].queryset.all()),
+                'categories': SourceForm.base_fields[
+                                  'auto_categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': SourceForm.base_fields[
+                                  'auto_authors'].queryset._clone(
+                                      utils.SharedQuerySet),
             }
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
@@ -461,16 +461,16 @@ class BulkEditVideoFormSet(BaseModelFormSet):
         Use the same queryset for related objects on each form.
 
         """
-        # We use MockQuerySet so that the form fields don't make fresh
+        # We use SharedQuerySet so that the form fields don't make fresh
         # querysets when they generate their choices.
         if not hasattr(self, '_qs_cache'):
             self._qs_cache = {
-                'categories': utils.MockQueryset(
-                                  BulkEditVideoForm.base_fields[
-                                      'categories'].queryset.all()),
-                'authors': utils.MockQueryset(
-                                  BulkEditVideoForm.base_fields[
-                                      'authors'].queryset.all()),
+                'categories': BulkEditVideoForm.base_fields[
+                                  'categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': BulkEditVideoForm.base_fields[
+                                  'authors'].queryset._clone(
+                                      utils.SharedQuerySet),
             }
         form = super(BulkEditVideoFormSet, self)._construct_form(i, **kwargs)
         form.fields['categories'].queryset = self._qs_cache['categories']
@@ -811,7 +811,7 @@ class CategoryForm(forms.ModelForm):
     if localtv.settings.voting_enabled():
         contest_mode = forms.BooleanField(label='Turn on Contest',
                                           required=False)
-    parent = forms.models.ModelChoiceField(
+    parent = forms.models.ModelChoiceField(required=False,
                                     queryset=models.Category.objects.filter(
                                             site=settings.SITE_ID))
 
@@ -842,13 +842,12 @@ class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
         Use the same queryset for related objects on each form.
 
         """
-        # We use MockQuerySet so that the form fields don't make fresh
+        # We use SharedQuerySet so that the form fields don't make fresh
         # querysets when they generate their choices.
         if not hasattr(self, '_qs_cache'):
             self._qs_cache = {
-                'parent': utils.MockQueryset(
-                              CategoryForm.base_fields[
-                                  'parent'].queryset.all()),
+                'parent': CategoryForm.base_fields['parent'].queryset._clone(
+                                utils.SharedQuerySet),
             }
         form = super(BaseCategoryFormSet, self)._construct_form(i, **kwargs)
         form.fields['parent'].queryset = self._qs_cache['parent']

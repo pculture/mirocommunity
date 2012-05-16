@@ -2116,9 +2116,10 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_POST_delete(self):
         """
-        A POST to the users view with a POST['submit'] of 'Save' and a
-        successful formset should update the users data.  If form-*-DELETE is
-        present, that user should be removed, unless that user is a superuser.
+        A POST to the categories view with a POST['submit'] of 'Save' and a
+        successful formset should update the categories data, including
+        deleting instances.
+
         """
         c = Client()
         c.login(username="admin", password="admin")
