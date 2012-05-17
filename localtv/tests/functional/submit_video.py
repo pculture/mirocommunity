@@ -54,12 +54,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
 
         """
         response = self.client.get(self.url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
@@ -71,12 +71,12 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         """
         self.client.login(username='admin', password='admin')
         response = self.client.get(self.url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.template_name)
         self.assertFalse('video' in response.context[0])
 
         response = self.client.get(self.url_with_video)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.template_name)
         self.assertTrue('video' in response.context[0])
         self.assertEqual(response.context['video'], self.video)
@@ -185,14 +185,14 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
         """
         response = self.client.get(self.url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
         self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
         response = self.client.get(self.url, {'q': 'hello', 'next': '/blink/'})
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertTrue('form' in response.context[0])
         self.assertIsInstance(response.context['form'], forms.SubmitURLForm)

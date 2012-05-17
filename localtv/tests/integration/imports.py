@@ -42,7 +42,7 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         in the context which has the number of videos in the feed.
         """
         response = self.client.get(self.url, {'feed_url': self.feed_url})
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['video_count'], 6)
         form = response.context['form']
         instance = form.instance
@@ -63,7 +63,7 @@ media enclosures. All contents of this feed are for example only.""")
         """
         response = self.client.get(self.url, {'feed_url':
                                                   'foo://example.invalid/'})
-        self.assertStatusCodeEquals(response, 400)
+        self.assertEqual(response.status_code, 400)
         self.assertEquals(response.content, '* Enter a valid URL.')
 
     def test_POST(self):
@@ -73,7 +73,7 @@ media enclosures. All contents of this feed are for example only.""")
         """
         response = self.client.post('%s?feed_url=%s' % (self.url,
                                                         self.feed_url))
-        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response.status_code, 302)
         self.assertEquals(response['Location'], 'http://%s%s' % (
                 self.site_settings.site.domain,
                 reverse('localtv_admin_manage_page')))
@@ -101,7 +101,7 @@ media enclosures. All contents of this feed are for example only.""")
         response = self.client.post('%s?feed_url=%s' % (self.url,
                                                         self.feed_url),
                                     {'auto_approve': 'yes'})
-        self.assertStatusCodeEquals(response, 302)
+        self.assertEqual(response.status_code, 302)
         self.assertEquals(response['Location'], 'http://%s%s' % (
                 self.site_settings.site.domain,
                 reverse('localtv_admin_manage_page')))
