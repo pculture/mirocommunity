@@ -159,9 +159,8 @@ def manage_sources(request):
             'headers': headers,
             'search_string': search_string,
             'source_filter': source_filter,
-            'categories': Category.objects.filter(
-                site=SiteSettings.objects.get_current().site),
-            'users': User.objects.order_by('username'),
+            'categories': formset._qs_cache['categories'],
+            'users': formset._qs_cache['authors'],
             'successful': 'successful' in request.GET,
             'formset': formset},
                               context_instance=RequestContext(request))

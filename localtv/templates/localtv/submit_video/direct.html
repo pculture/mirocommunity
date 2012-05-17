@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% block form_action %}{% url localtv_submit_directlink_video %}{% endblock %}
-{% block form %}
+{% block inner_form %}
 	<p>
 		{{ form.name.errors }}
 		{{ form.name.label_tag }}

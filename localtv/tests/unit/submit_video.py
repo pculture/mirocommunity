@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import mock
 import datetime
+import urllib2
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -229,6 +231,31 @@ class SubmitURLViewTestCase(BaseTestCase):
         self.assertEqual(view.request.session[view.get_session_key()],
                          {'video': video, 'url': video_url})
         self.assertEqual(view.success_url, expected_success_url)
+
+    @mock.patch('vidscraper.auto_scrape',
+                mock.Mock(side_effect=urllib2.URLError('foo')))
+    def test_form_valid__vidscraper_urlerror(self):
+        """
+        If ``vidscraper.auto_scrape()`` raises a URLError, we should not have a
+        video_cache and the user should be redirected to the embedrequest page.
+        """
+        view = SubmitURLView()
+        video_url = 'http://google.com/'
+        url = "%s?url=%s" % (reverse('localtv_submit_video'),
+                             video_url)
+        view.request = self.factory.get(url)
+        expected_success_url = "%s?%s" % (
+                                reverse('localtv_submit_embedrequest_video'),
+                                view.request.GET.urlencode())
+        form = view.get_form(view.get_form_class())
+
+        self.assertTrue(form.is_valid())
+
+        view.form_valid(form)
+        self.assertEqual(view.request.session[view.get_session_key()],
+                         {'video': None, 'url': video_url})
+        self.assertEqual(view.success_url, expected_success_url)
+
 
     def test_get_context_data(self):
         """

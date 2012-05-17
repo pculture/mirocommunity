@@ -187,7 +187,8 @@ INSTALLED_APPS = (
     'openid_consumer',
     'voting',
     'daguerre',
-    'compressor'
+    'compressor',
+    'mptt',
 )
 
 if USE_SOUTH:
@@ -246,8 +247,8 @@ AUTHENTICATION_BACKENDS = (
 AUTH_PROFILE_MODULE = 'user_profile.Profile'
 COMMENTS_APP = 'localtv.comments'
 
-FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
-FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
+FLOWPLAYER_SWF_URL = STATIC_URL + 'localtv/swf/flowplayer-3.2.5.swf'
+FLOWPLAYER_JS_URL = STATIC_URL + 'localtv/js/extern/flowplayer-3.2.4.min.js'
 
 CACHE_BACKEND = 'locmem://'
 

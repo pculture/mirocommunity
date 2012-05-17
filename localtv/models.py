@@ -23,6 +23,7 @@ import re
 import urllib
 import urllib2
 import mimetypes
+import operator
 import os
 import logging
 import sys
@@ -47,7 +48,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.files.images import ImageFile
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
@@ -61,6 +61,7 @@ from django.utils.translation import ugettext_lazy as _
 import bitly
 import vidscraper
 from haystack import connections
+from mptt.models import MPTTModel
 
 from notification import models as notification
 import tagging
@@ -715,7 +716,7 @@ models.signals.pre_save.connect(pre_save_set_calculated_source_type,
                                 sender=Feed)
 
 
-class Category(models.Model):
+class Category(MPTTModel):
     """
     A category for videos to be contained in.
 
@@ -764,8 +765,10 @@ class Category(models.Model):
                                         null=True,
                                         default=None)
 
+    class MPTTMeta:
+        order_insertion_by = ['name']
+
     class Meta:
-        ordering = ['name']
         unique_together = (
             ('slug', 'site'),
             ('name', 'site'))
@@ -773,37 +776,18 @@ class Category(models.Model):
     def __unicode__(self):
         return self.name
 
-    def depth(self):
-        """
-        Returns the number of parents this category has.  Used for indentation.
-        """
-        depth = 0
-        parent = self.parent
-        while parent is not None:
-            depth += 1
-            parent = parent.parent
-        return depth
-
     def dashes(self):
-        return mark_safe('&mdash;' * self.depth())
+        """
+        Returns a string of em dashes equal to the :class:`Category`\ 's
+        level. This is used to indent the category name in the admin
+        templates.
+
+        """
+        return mark_safe('&mdash;' * self.level)
 
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_category', [self.slug])
-
-    @classmethod
-    def in_order(klass, site_settings, initial=None):
-        objects = []
-        def accumulate(categories):
-            for category in categories:
-                objects.append(category)
-                children = category.child_set.all()
-                if children:
-                    accumulate(children)
-        if initial is None:
-            initial = klass.objects.filter(site=site_settings, parent=None)
-        accumulate(initial)
-        return objects
 
     def approved_set(self):
         """
@@ -811,9 +795,16 @@ class Category(models.Model):
         by decreasing best date.
         
         """
-        categories = [self] + self.in_order(self.site, self.child_set.all())
-        return Video.objects.filter(status=Video.ACTIVE,
-                                    categories__in=categories).distinct()
+        opts = self._mptt_meta
+
+        lookups = {
+            'status': Video.ACTIVE,
+            'categories__left__gte': getattr(self, opts.left_attr),
+            'categories__left__lte': getattr(self, opts.right_attr),
+            'categories__tree_id': getattr(self, opts.tree_id_attr)
+        }
+        lookups = self._tree_manager._translate_lookups(**lookups)
+        return Video.objects.filter(**lookups).distinct()
     approved_set = property(approved_set)
 
     def unique_error_message(self, model_class, unique_check):
@@ -1118,6 +1109,12 @@ class OriginalVideo(VideoBase):
                     video.website_url, fields=fields)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
+            except urllib2.URLError:
+                # some kind of error Vidscraper couldn't handle; log it and
+                # move on.
+                logging.warning('exception while checking %r',
+                                video.website_url, exc_info=True)
+                return {}
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
@@ -1908,17 +1905,24 @@ class Video(Thumbnailable, VideoBase):
     @property
     def all_categories(self):
         """
-        Returns a set of all the categories to which this video belongs.  We
-        use a depth-first search, ignoring duplicates.
+        Returns a set of all the categories to which this video belongs.
+
         """
-        categories = set()
-        for category in self.categories.all():
-            categories.add(category)
-            parent = category.parent
-            while parent:
-                categories.add(parent)
-                parent = parent.parent
-        return categories
+        categories = self.categories.all()
+        if not categories:
+            return categories
+        q_list = []
+        opts = Category._mptt_meta
+        for category in categories:
+            l = {
+                'left__lte': getattr(category, opts.left_attr),
+                'right__gte': getattr(category, opts.right_attr),
+                'tree_id': getattr(category, opts.tree_id_attr)
+            }
+            l = Category._tree_manager._translate_lookups(**l)
+            q_list.append(models.Q(**l))
+        q = reduce(operator.or_, q_list)
+        return Category.objects.filter(q)
 
     def voting_enabled(self):
         if not lsettings.voting_enabled():

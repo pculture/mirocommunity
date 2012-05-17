@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
@@ -24,7 +23,7 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import Video, Category, SiteSettings
+from localtv.models import Video, SiteSettings
 from localtv.admin import forms
 from localtv.utils import SortHeaders
 
@@ -36,9 +35,7 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
         template_data = {}
         form_prefix = request.GET['just_the_author_field']
         video = get_object_or_404(Video, pk=int(request.GET['video_id']))
-        cache_for_form_optimization = {}
-        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix,
-                                       cache_for_form_optimization=cache_for_form_optimization)
+        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
         template_data['form'] = form
         template = 'localtv/admin/bulk_edit_author_widget.html'
         return render_to_response(template,
@@ -144,7 +141,6 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': Category.objects.filter(
-                site=site_settings.site),
-                               'users': User.objects.order_by('username')},
+                               'categories': formset._qs_cache['categories'],
+                               'users': formset._qs_cache['authors']},
                               context_instance=RequestContext(request))

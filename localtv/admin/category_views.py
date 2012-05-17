@@ -23,22 +23,23 @@ from django.views.decorators.csrf import csrf_protect
 import localtv.settings
 from localtv.decorators import require_site_admin
 from localtv.models import Category, Video, SiteSettings
-from localtv.utils import MockQueryset
 from localtv.admin import forms
+
 
 @require_site_admin
 @csrf_protect
 def categories(request):
     site_settings = SiteSettings.objects.get_current()
-    categories = MockQueryset(Category.in_order(site_settings.site))
+    categories = Category.objects.filter(site=site_settings.site)
     formset = forms.CategoryFormSet(queryset=categories)
     headers = [
         {'label': 'Category'},
         {'label': 'Description'},
         {'label': 'Slug'},
-         {'label': 'Videos'}
-        ]
+        {'label': 'Videos'}
+    ]
     add_category_form = forms.CategoryForm()
+    add_category_form.fields['parent'].queryset = formset._qs_cache['parent']
     if request.method == 'POST':
         if not request.POST.get('form-TOTAL_FORMS'):
             category = Category(site=site_settings.site)

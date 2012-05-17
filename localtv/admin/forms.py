@@ -29,7 +29,6 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
@@ -131,11 +130,11 @@ class SourceChoiceField(forms.TypedChoiceField):
     widget = SourceWidget
     name = 'id'
 
-    def __init__(self, **kwargs):
+    def __init__(self, feeds, searches, **kwargs):
         feed_choices = [('feed-%s' % feed.pk, feed) for feed in
-                         models.Feed.objects.all()]
+                         feeds]
         search_choices = [('savedsearch-%s' % search.pk, search) for search in
-                          models.SavedSearch.objects.all()]
+                          searches]
         choices = feed_choices + search_choices
         initial = kwargs.pop('initial', None)
         if initial:
@@ -166,7 +165,8 @@ class SourceChoiceField(forms.TypedChoiceField):
 
 class SourceForm(forms.ModelForm):
     auto_categories = BulkChecklistField(required=False,
-                                    queryset=models.Category.objects)
+                                    queryset=models.Category.objects.filter(
+                                                site=settings.SITE_ID))
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
@@ -182,12 +182,6 @@ class SourceForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if 'auto_approve' in self.initial:
             self.initial['auto_approve'] = bool(self.initial['auto_approve'])
-        site = Site.objects.get_current()
-        self.fields['auto_categories'].queryset = \
-            self.fields['auto_categories'].queryset.filter(
-            site=site)
-        self.fields['auto_authors'].queryset = \
-            self.fields['auto_authors'].queryset.order_by('username')
 
         if self.instance.pk is not None:
             if isinstance(self.instance, models.Feed):
@@ -252,11 +246,28 @@ class SourceForm(forms.ModelForm):
 class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
 
     def _construct_form(self, i, **kwargs):
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'categories': SourceForm.base_fields[
+                                  'auto_categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': SourceForm.base_fields[
+                                  'auto_authors'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'feeds': utils.SharedQuerySet(models.Feed),
+                'searches': utils.SharedQuerySet(models.SavedSearch),
+            }
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
+        # TODO: Stop doing something weird.
         if i < self.initial_form_count() and not kwargs.get('instance'):
             kwargs['instance'] = self.get_queryset()[i]
-        return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form.fields['auto_categories'].queryset = self._qs_cache['categories']
+        form.fields['auto_authors'].queryset = self._qs_cache['authors']
+        return form
 
     def save_new_objects(self, commit=True):
         """
@@ -334,8 +345,11 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
             initial = self.queryset[index]
         else:
             initial = None
-        self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
-                                              initial=initial)
+        self._pk_field = form.fields['id'] = SourceChoiceField(
+                                          required=False,
+                                          initial=initial,
+                                          feeds=self._qs_cache['feeds'],
+                                          searches=self._qs_cache['searches'])
         if initial:
             form.fields['BULK'] = forms.BooleanField(required=False)
         BaseFormSet.add_fields(self, form, index)
@@ -362,9 +376,10 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     tags = TagField(required=False,
                     widget=forms.Textarea)
-    categories = BulkChecklistField(models.Category.objects,
+    categories = BulkChecklistField(models.Category.objects.filter(
+                                    site=settings.SITE_ID),
                                     required=False)
-    authors = BulkChecklistField(User.objects,
+    authors = BulkChecklistField(User.objects.order_by('username'),
                                  required=False)
     skip_authors = forms.BooleanField(required=False,
                                       initial=True,
@@ -380,23 +395,6 @@ class BulkEditVideoForm(EditVideoForm):
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
-
-    _categories_queryset = None
-    _authors_queryset = None
-
-    def fill_cache(self, cache_for_form_optimization):
-        if cache_for_form_optimization is None:
-            cache_for_form_optimization = {}
-
-        # Great. Fill the cache.
-        if 'categories_qs' not in cache:
-            cache_for_form_optimization['categories_qs'] = utils.MockQueryset(
-                models.Category.objects.filter(site=Site.objects.get_current()))
-        if 'authors_qs' not in cache_for_form_optimization:
-            cache_for_form_optimization['authors_qs'] = utils.MockQueryset(
-                User.objects.order_by('username'))
-
-        return cache_for_form_optimization
 
     def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
         # The cache_for_form_optimization is an object that is
@@ -417,14 +415,6 @@ class BulkEditVideoForm(EditVideoForm):
         # (django.forms.models.model_to_dict) only collects fields and
         # relations, and not descriptors like Video.tags
         self.initial['tags'] = utils.edit_string_for_tags(self.instance.tags)
-
-        # cache the querysets so that we don't hit the DB for each form
-        cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
-
-        self.fields['categories'].queryset = cache_for_form_optimization[
-            'categories_qs']
-        self.fields['authors'].queryset = cache_for_form_optimization[
-            'authors_qs']
 
     def _post_clean(self):
         if not self.instance.pk:
@@ -468,9 +458,29 @@ class BulkEditVideoForm(EditVideoForm):
 
 
 class BulkEditVideoFormSet(BaseModelFormSet):
-
     def save_new_objects(self, commit):
         return []
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'categories': BulkEditVideoForm.base_fields[
+                                  'categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': BulkEditVideoForm.base_fields[
+                                  'authors'].queryset._clone(
+                                      utils.SharedQuerySet),
+            }
+        form = super(BulkEditVideoFormSet, self)._construct_form(i, **kwargs)
+        form.fields['categories'].queryset = self._qs_cache['categories']
+        form.fields['authors'].queryset = self._qs_cache['authors']
+        return form
 
     def clean(self):
         BaseModelFormSet.clean(self)
@@ -806,19 +816,16 @@ class CategoryForm(forms.ModelForm):
     if localtv.settings.voting_enabled():
         contest_mode = forms.BooleanField(label='Turn on Contest',
                                           required=False)
+    parent = forms.models.ModelChoiceField(required=False,
+                                    queryset=models.Category.objects.filter(
+                                            site=settings.SITE_ID))
+
     class Meta:
         model = models.Category
         if localtv.settings.voting_enabled():
             exclude = ['site']
         else:
             exclude = ['site', 'contest_mode']
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-
-        self.site = Site.objects.get_current()
-        self.fields['parent'].queryset = models.Category.objects.filter(
-            site=self.site)
 
     def clean_contest_mode(self):
         val = self.cleaned_data.get('contest_mode')
@@ -835,6 +842,21 @@ class CategoryForm(forms.ModelForm):
             self._update_errors(e.message_dict)
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_qs_cache'):
+            self._qs_cache = {
+                'parent': CategoryForm.base_fields['parent'].queryset._clone(
+                                utils.SharedQuerySet),
+            }
+        form = super(BaseCategoryFormSet, self)._construct_form(i, **kwargs)
+        form.fields['parent'].queryset = self._qs_cache['parent']
+        return form
 
     def clean(self):
         BaseModelFormSet.clean(self)
