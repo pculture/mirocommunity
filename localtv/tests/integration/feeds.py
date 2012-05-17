@@ -98,7 +98,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200, response)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         # first in the order, first in the feed
         self.assertEqual(data['items'][0]['title'], self.test_video.name)
 
@@ -107,7 +107,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200, response)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         # first in the order, first in the feed
         self.assertEqual(data['items'][0]['title'], self.test_video.name)
 
@@ -115,7 +115,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         # yesterday video last in the order, should appear first
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
