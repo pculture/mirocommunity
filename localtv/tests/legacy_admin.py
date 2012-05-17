@@ -1233,7 +1233,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         user = User.objects.create_user('mphtower', 'mph@tower.com',
                                         'password')
         Profile.objects.create(user=user,
-                                      website='http://www.mphtower.com/')
+                               website='http://www.mphtower.com/')
 
         url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
                "?alt=rss&v=2&orderby=published")
@@ -1260,11 +1260,11 @@ class FeedAdministrationTestCase(BaseTestCase):
         It should also require the user to be an administrator.
         """
         feed = Feed.objects.create(site=self.site_settings.site,
-                                          name='name',
-                                          feed_url='feed_url',
-                                          auto_approve=False,
-                                          last_updated=datetime.datetime.now(),
-                                          status=Feed.ACTIVE)
+                                   name='name',
+                                   feed_url='feed_url',
+                                   auto_approve=False,
+                                   last_updated=datetime.datetime.now(),
+                                   status=Feed.ACTIVE)
         url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
         self.assertRequiresAuthentication(url)
         self.assertRequiresAuthentication(url,
@@ -1286,11 +1286,11 @@ class FeedAdministrationTestCase(BaseTestCase):
         redirect back to the referrer.
         """
         feed = Feed.objects.create(site=self.site_settings.site,
-                                          name='name',
-                                          feed_url='feed_url',
-                                          auto_approve=True,
-                                          last_updated=datetime.datetime.now(),
-                                          status=Feed.ACTIVE)
+                                   name='name',
+                                   feed_url='feed_url',
+                                   auto_approve=True,
+                                   last_updated=datetime.datetime.now(),
+                                   status=Feed.ACTIVE)
         url = reverse('localtv_admin_feed_auto_approve', args=(feed.pk,))
 
         c = Client()
