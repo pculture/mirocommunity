@@ -72,3 +72,25 @@ class VideoIndexUnitTestCase(BaseTestCase):
 
         """
         self._test_delete_cascade(self.create_site(), 'site')
+
+    def test_related_update__playlistitem(self):
+        """
+        Adding a video to a playlist and removing it from the playlist should
+        each update the index.
+
+        """
+        self._clear_index()
+        video = self.create_video()
+        # For completeness, check beforehand.
+        r = SearchQuerySet()[0]
+        self.assertEqual(r.playlists, [])
+
+        user = self.create_user(username='user')
+        playlist = self.create_playlist(user)
+        playlist.add_video(video)
+        r = SearchQuerySet()[0]
+        self.assertEqual(r.playlists, [playlist.pk])
+
+        playlist.playlistitem_set.get().delete()
+        r = SearchQuerySet()[0]
+        self.assertEqual(r.playlists, [])
