@@ -3,21 +3,14 @@
 
 <section class="pod video-contest" data-contestvideo="{{ contestvideo.pk }}" data-user="{{ request.user.pk }}" data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}">
 	<header class="pod-header">
-		{% if contestvideos.count > 1 %}
-			<h1>{% trans "Contests" %}</h1>
-		{% else %}
-			{% url 'contests_contest_detail' contestvideos.0.contest.pk contest.slug as contest_url %}
-			<h1>{% trans "Contest" %}: <a href="{{ contest_url }}">{{ contestvideos.0.contest }}</a></h1>
-		{% endif %}
+		<h1>{% blocktrans with name=current_video.name %}Vote on {{ name }}{% endblocktrans %}</h1>
 	</header>
 	<div class="pod-content">
 		{% for contestvideo in contestvideos %}
 			<div class="contest-summary">
 				{% with contest=contestvideo.contest %}
 					{% url 'contests_contest_detail' contest.pk contest.slug as contest_url %}
-					{% if contestvideos.count > 1 %}
-						<h3><a href="{{ url }}">{{ contest }}</a></h3>
-					{% endif %}
+					<p>{% blocktrans with contest_url=contest_url contest=contest %}Part of <a href="{{ contest_url }}">{{ contest }}</a>{% endblocktrans %}</p>
 					{% url "api_dispatch_detail" api_name="v1" resource_name="contestvideo" pk=contestvideo.pk as contestvideo_detail_uri %}
 					{% url "api_dispatch_list" api_name="v1" resource_name="contestvote" as contestvote_list_uri %}
 					{% url "api_dispatch_detail" api_name="v1" resource_name="user" pk=user.pk as user_detail_uri %}
