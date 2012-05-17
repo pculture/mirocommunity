@@ -20,7 +20,6 @@ import datetime
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 from vidscraper.suites import Video as VidscraperVideo
-from django.conf import settings
 
 from localtv.models import Source, Feed, FeedImport, Video
 from localtv.tasks import haystack_update, haystack_remove
@@ -259,9 +258,6 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
         Feeds with long file URLs (>200 characters) should have them shortened
         so they fit in the database.
         """
-        if not getattr(settings, 'BITLY_LOGIN', None):
-            self.skipTest('cannot shorten URLs without BITLY_LOGIN')
-            return
         feed = self.create_feed('http://google.com')
         feed_import = FeedImport.objects.create(source=feed)
         video_iter = [
