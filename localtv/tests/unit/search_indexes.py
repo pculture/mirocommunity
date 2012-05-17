@@ -89,7 +89,7 @@ class VideoIndexUnitTestCase(BaseTestCase):
         playlist = self.create_playlist(user)
         playlist.add_video(video)
         r = SearchQuerySet()[0]
-        self.assertEqual(r.playlists, [playlist.pk])
+        self.assertEqual([int(pk) for pk in r.playlists], [playlist.pk])
 
         playlist.playlistitem_set.get().delete()
         r = SearchQuerySet()[0]
