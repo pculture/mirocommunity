@@ -165,7 +165,7 @@ INSTALLED_APPS = (
     'socialauth',
     'openid_consumer',
     'paypal.standard.ipn',
-    'voting'
+    'voting',
     'mptt',
 )
 
