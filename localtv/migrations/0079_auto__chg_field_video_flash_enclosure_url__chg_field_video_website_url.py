@@ -22,13 +22,13 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
 
         # Changing field 'Video.flash_enclosure_url'
-        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('localtv.migrations.old_fields.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'flash_enclosure_url', self.gf('django.db.models.fields.URLField')(max_length=200))
 
         # Changing field 'Video.website_url'
-        db.alter_column('localtv_video', 'website_url', self.gf('localtv.migrations.old_fields.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'website_url', self.gf('django.db.models.fields.URLField')(max_length=200))
 
         # Changing field 'Video.file_url'
-        db.alter_column('localtv_video', 'file_url', self.gf('localtv.migrations.old_fields.BitLyWrappingURLField')(max_length=200))
+        db.alter_column('localtv_video', 'file_url', self.gf('django.db.models.fields.URLField')(max_length=200))
 
     models = {
         'auth.group': {
