@@ -255,8 +255,8 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
 
     def test_entries_atom_with_long_item(self):
         """
-        Feeds with long file URLs (>200 characters) should have them shortened
-        so they fit in the database.
+        Feeds with long file URLs (>200 characters) should be loaded into the
+        database normally.
         """
         feed = self.create_feed('http://google.com')
         feed_import = FeedImport.objects.create(source=feed)
@@ -267,7 +267,9 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
                 file_url='http://example.com/' + 'f.ogg' * 200)
             ]
         Source.update(feed, video_iter, feed_import, using='default')
-        self.assertEqual(Video.objects.count(), 1)
+        v = Video.objects.get()
+        self.assertEqual(v.website_url, video_iter[0].link)
+        self.assertEqual(v.file_url, video_iter[0].file_url)
 
     def test_index_updates(self):
         """Test that index updates are only run at the end of an update."""
