@@ -246,10 +246,6 @@ VIMEO_API_SECRET = None
 # UStream key
 USTREAM_API_KEY = None
 
-# bit.ly keys
-BITLY_LOGIN = None
-BITLY_API_KEY = None
-
 # recaptcha keys
 RECAPTCHA_PUBLIC_KEY = None
 RECAPTCHA_PRIVATE_KEY = None
