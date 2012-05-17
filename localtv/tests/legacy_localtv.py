@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import mock
 import datetime
 import os.path
 import shutil
 import tempfile
 from urllib import quote_plus, urlencode
+import urllib2
 
 import feedparser
 import vidscraper
@@ -1692,6 +1694,22 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
              })
         changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
         self.assertFalse(changes)
+
+    @mock.patch('vidscraper.auto_scrape',
+                mock.Mock(side_effect=urllib2.URLError('foo')))
+    def test_vidscraper_urlerror(self):
+        """
+        If ``vidscraper.auto_scrape()`` raises a URLError, we should say that
+        nothing has changed.
+        """
+        self.original.name = 'Different Name'
+        self.original.thumbnail_url = \
+            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png'
+        self.original.tags = 'foo bar'
+        self.original.save()
+
+        self.assertFalse(self.original.changed_fields())
+
 
 class TestWmodeFilter(BaseTestCase):
     def test_add_transparent_wmode_to_object(self):

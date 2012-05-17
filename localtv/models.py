@@ -1108,6 +1108,12 @@ class OriginalVideo(VideoBase):
                     video.website_url, fields=fields)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
+            except urllib2.URLError:
+                # some kind of error Vidscraper couldn't handle; log it and
+                # move on.
+                logging.warning('exception while checking %r',
+                                video.website_url, exc_info=True)
+                return {}
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
