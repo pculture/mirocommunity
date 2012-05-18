@@ -96,7 +96,7 @@ h6 { font-size: 13px; line-height: 18px; color: #CCC; }
 
 #main { overflow: hidden; *zoom: 1; }
 
-.button, .button-wide, button, .pagetabs a, .pagetabs .ellipse span { border: 1px solid; text-align: center; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box; line-height: 18px; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; margin: 0; padding: 4.5px 9px; height: 29px; }
+.button, .button-wide, button, .pagetabs a, .pagetabs .ellipse span { border: 1px solid; text-align: center; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box; line-height: 18px; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px; -ms-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; margin: 0; padding: 4.5px 9px; height: 29px; display: inline-block; overflow: hidden; }
 
 .button-wide { display: block; line-height: 36px; height: 47px; }
 
