@@ -18,13 +18,14 @@
 from django.conf import settings
 
 from tastypie import fields
-from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
+from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 
 from localtv.api.v1 import api, UserResource, VideoResource
+from localtv.contrib.contests.authorization import UserAuthorization
 from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
-
 
 class ContestResource(ModelResource):
     votes = fields.ToManyField(
@@ -50,29 +51,24 @@ class ContestVoteResource(ModelResource):
     user = fields.ToOneField(UserResource, 'user')
     vote = fields.IntegerField('vote')
 
+    def obj_create(self, bundle, request=None, **kwargs):
+        if hasattr(request, 'user') and request.user.is_authenticated():
+            kwargs['user'] = request.user
+        else:
+            raise ImmediateHttpResponse(response=HttpUnauthorized())
+        return super(ContestVoteResource, self).obj_create(bundle,
+                                                           request=request,
+                                                           **kwargs)
+
     class Meta:
         queryset = ContestVote.objects.filter(
                                  contestvideo__contest__site=settings.SITE_ID)
-        authorization = Authorization()
+        authorization = UserAuthorization()
         filtering = {
             'user': ALL_WITH_RELATIONS,
             'contestvideo': ALL_WITH_RELATIONS
         }
         always_return_data = True
-        # authentication = BasicAuthentication()
-
-    #def get_object_list(self, request):
-    #    qs = super(ContestVoteResource, self).get_object_list(request)
-    #    if hasattr(request, 'user') and request.user.is_authenticated():
-    #        qs = qs.filter(user=request.user)
-    #    return qs
-
-    #def obj_create(self, bundle, request=None, **kwargs):
-    #    if hasattr(request, 'user') and request.user.is_authenticated():
-    #        kwargs['user'] = request.user
-    #    return super(ContestVoteResource, self).obj_create(bundle,
-    #                                                       request=request,
-    #                                                       **kwargs)
 
 
 api.register(ContestResource())
