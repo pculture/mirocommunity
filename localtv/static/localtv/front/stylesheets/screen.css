@@ -334,15 +334,15 @@ ol > li { list-style-type: decimal; }
 
 @media screen and (max-width: 960px) { #header > .container { padding: 0 10px; } }
 @media screen and (max-width: 740px) { #header > .container { position: static; margin-top: 45px; } }
-.social-link-list { overflow: hidden; *zoom: 1; border-bottom: 1px solid; padding: 9px 20px; }
-.social-link-list > li { float: left; display: block; position: relative; top: 4px; width: 120px; min-height: 5px; }
+.social-link-list { overflow: hidden; *zoom: 1; border-bottom: 1px solid; padding: 0 20px; }
+.social-link-list > li { float: left; display: block; position: relative; top: 4px; width: 120px; min-height: 5px; margin: 9px 0; height: 24px; }
 .social-link-list > li:first-child { border-left: 0; }
 .social-link-list > .facebook-social { width: 110px; }
 .social-link-list > .gplus-social { width: 100px; }
 .social-link-list > .pinterest-social { width: 110px; }
 .social-link-list > .email-social { width: 100px; }
 .social-link-list a:hover { border: 0; }
-.social-link-list .button, .social-link-list .button-wide, .social-link-list button, .social-link-list .pagetabs a, .pagetabs .social-link-list a, .social-link-list .pagetabs .ellipse span, .pagetabs .ellipse .social-link-list span { font-size: 11px; line-height: 18px; }
+.social-link-list .button, .social-link-list .button-wide, .social-link-list button, .social-link-list .pagetabs a, .pagetabs .social-link-list a, .social-link-list .pagetabs .ellipse span, .pagetabs .ellipse .social-link-list span { font-size: 11px; line-height: 18px; height: 22px; line-height: 20px; padding: 0 6px; }
 .social-link-list .button:hover, .social-link-list .button-wide:hover, .social-link-list button:hover, .social-link-list .pagetabs a:hover, .pagetabs .social-link-list a:hover, .social-link-list .pagetabs .ellipse span:hover, .pagetabs .ellipse .social-link-list span:hover { border: 1px solid; }
 
 .js .tab-pane { display: none; }
