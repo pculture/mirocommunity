@@ -24,6 +24,7 @@ from uploadtemplate import views, models
 index = require_site_admin(views.index)
 delete = require_site_admin(views.delete)
 download = require_site_admin(views.download)
+unset_default = require_site_admin(views.unset_default)
 set_default = require_site_admin(views.set_default)
 
 def filter_admin_files(sender, file_paths=None, **kwargs):

@@ -110,6 +110,8 @@ urlpatterns += patterns(
     (r'^themes/$', 'index', {}, 'uploadtemplate-index'),
     (r'^themes/delete/(\d+)$', 'delete', {}, 'uploadtemplate-delete'),
     (r'^themes/download/(\d+)$', 'download', {}, 'uploadtemplate-download'),
+    (r'^themes/unset_default$', 'unset_default', {},
+     'uploadtemplate-unset_default'),
     (r'^themes/set_default/(\d+)$', 'set_default', {},
      'uploadtemplate-set_default'))
 

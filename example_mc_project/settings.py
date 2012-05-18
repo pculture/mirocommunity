@@ -174,7 +174,7 @@ INSTALLED_APPS = (
     'openid_consumer',
     'voting',
     'daguerre',
-    'compressor'
+    'compressor',
     'mptt',
 )
 
@@ -234,8 +234,8 @@ AUTHENTICATION_BACKENDS = (
 AUTH_PROFILE_MODULE = 'user_profile.Profile'
 COMMENTS_APP = 'localtv.comments'
 
-FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
-FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
+FLOWPLAYER_SWF_URL = STATIC_URL + 'localtv/swf/flowplayer-3.2.5.swf'
+FLOWPLAYER_JS_URL = STATIC_URL + 'localtv/js/extern/flowplayer-3.2.4.min.js'
 
 CACHE_BACKEND = 'locmem://'
 
@@ -245,10 +245,6 @@ VIMEO_API_SECRET = None
 
 # UStream key
 USTREAM_API_KEY = None
-
-# bit.ly keys
-BITLY_LOGIN = None
-BITLY_API_KEY = None
 
 # recaptcha keys
 RECAPTCHA_PUBLIC_KEY = None

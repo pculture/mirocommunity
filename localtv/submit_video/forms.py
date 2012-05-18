@@ -16,6 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import urlparse
+import urllib2
 
 from django import forms
 from django.contrib.sites.models import Site
@@ -73,7 +74,7 @@ class SubmitURLForm(forms.Form):
                 'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
                 'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
             })
-        except CantIdentifyUrl:
+        except (CantIdentifyUrl, urllib2.URLError):
             pass
         else:
             if self.video_cache.link is not None and url != self.video_cache.link:

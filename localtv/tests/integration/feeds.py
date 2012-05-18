@@ -98,20 +98,29 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200, response)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         # first in the order, first in the feed
         self.assertEqual(data['items'][0]['title'], self.test_video.name)
 
+        client = Client()
         response = client.get('/feeds/json/playlist/1?sort=order')
+        self.assertEqual(response.status_code, 200, response)
+        data = json.loads(response.content)
+        self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
+        self.assertEqual(len(data['items']), 2)
+        # first in the order, first in the feed
+        self.assertEqual(data['items'][0]['title'], self.test_video.name)
+
+        response = client.get('/feeds/json/playlist/1?sort=-order')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['title'], 'example.com: Playlist: Test Playlist')
-        self.assertEqual(2, len(data['items']))
+        self.assertEqual(len(data['items']), 2)
         # yesterday video last in the order, should appear first
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
         response = client.get('/feeds/json/playlist/2')
-        self.assertStatusCodeEquals(response, 404)
+        self.assertEqual(response.status_code, 404)
 
 
 class AdminFeedViewIntegrationTestCase(BaseTestCase):
@@ -132,7 +141,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         url = reverse('localtv_admin_feed_unapproved',
                       args=[feeds.generate_secret()])
         response = self.client.get(url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
             status=Video.UNAPPROVED,
@@ -145,7 +154,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         url = reverse('localtv_admin_feed_unapproved_user',
                       args=[feeds.generate_secret()])
         response = self.client.get(url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
             status=Video.UNAPPROVED, feed=None, search=None,
