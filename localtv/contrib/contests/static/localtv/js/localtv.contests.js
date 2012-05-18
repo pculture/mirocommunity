@@ -47,18 +47,19 @@
 				all_contest_vote_data = {'contestvideo': this.data('contestvideo')};
 				
 			this.startLoading();
-			$.getJSON(this.data('contestvote-list-uri'), all_contest_vote_data, function (a){
-				this_.receiveState(a);
-			})
+			$.when(
+				$.getJSON(this.data('contestvote-list-uri'), all_contest_vote_data),
+				$.getJSON(this.data('contestvideo-detail-uri'), all_contest_vote_data)
+			).then(function (user_vote_data, contest_video_data) { this_.receiveState(user_vote_data, contest_video_data); });
 		},
-		receiveState: function(contest_vote_data) {
+		receiveState: function(user_vote_data, contest_video_data) {
 			// Receives contest vote data, parses it out into the user vote, upvotes, and downvotes, then triggers the appropriate functions for displaying the data.
 			var this_ = this,
 				// find the current user's vote
-				user_contest_vote = $.grep(contest_vote_data['objects'], function (item, index) { return (item['user'] === this_.data('user-detail-uri')); })[0],
+				user_contest_vote = user_vote_data[0]['objects'][0] ? user_vote_data[0]['objects'][0] : undefined,
 				// find upvotes and downvotes
-				upvotes = $.grep(contest_vote_data['objects'], function (item, index) { return (item['vote'] === 1); }),
-				downvotes = $.grep(contest_vote_data['objects'], function (item, index) { return (item['vote'] === -1); });
+				upvotes = contest_video_data[0]['upvotes'],
+				downvotes = contest_video_data[0]['downvotes'];
 			this.receiveUserVote(user_contest_vote);
 			this.receiveVotes(upvotes, downvotes);
 			this.endLoading();
@@ -83,9 +84,10 @@
 			}
 		},
 		receiveVotes: function (upvotes, downvotes) {
+			// Expects upvotes, dowvotes as integers.
 			// Updates the counts on the HTML elements.
-			this.upvoteCountElement.html(upvotes.length);
-			if (this.data('downvotes') === 1) this.downvoteCountElement.html(downvotes.length);
+			this.upvoteCountElement.html(upvotes);
+			if (this.data('downvotes') === 1) this.downvoteCountElement.html(downvotes);
 		},
 		sendVote: function (vote) {
 			// Sends an AJAX request to delete, create, or update a contestvote.

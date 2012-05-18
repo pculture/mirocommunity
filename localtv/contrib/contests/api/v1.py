@@ -41,6 +41,14 @@ class ContestVideoResource(ModelResource):
     contest = fields.ToOneField(ContestResource, 'contest')
     video = fields.ToOneField(VideoResource, 'video')
     added = fields.DateTimeField('added')
+    upvotes = fields.IntegerField()
+    downvotes = fields.IntegerField()
+    
+    def dehydrate_upvotes(self, bundle):
+        return bundle.obj.contestvote_set.filter(vote=ContestVote.UP).count()
+    
+    def dehydrate_downvotes(self, bundle):
+        return bundle.obj.contestvote_set.filter(vote=ContestVote.DOWN).count()
 
     class Meta:
         queryset = ContestVideo.objects.filter(contest__site=settings.SITE_ID)
