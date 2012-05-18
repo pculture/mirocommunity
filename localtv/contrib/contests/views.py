@@ -18,6 +18,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db.models import Count
+from django.http import HttpResponseRedirect
 from django.views.generic import (DetailView, CreateView, UpdateView,
                                   ListView, DeleteView)
 
@@ -38,6 +39,14 @@ class ContestQuerySetMixin(object):
 class ContestDetailView(ContestQuerySetMixin, DetailView):
     context_object_name = 'contest'
     template_name = 'contests/detail.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        absolute_url = self.object.get_absolute_url()
+        if request.path != absolute_url:
+            return HttpResponseRedirect(absolute_url)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super(ContestDetailView, self).get_context_data(**kwargs)

@@ -17,8 +17,10 @@
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
 from localtv.models import Video
@@ -72,6 +74,11 @@ class Contest(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+    def get_absolute_url(self):
+        return reverse('contests_contest_detail',
+                       kwargs={'pk': self.pk,
+                               'slug': slugify(self.name)})
 
 
 class ContestVideo(models.Model):
