@@ -27,7 +27,7 @@ from django.views.generic import TemplateView, DetailView
 
 import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.forms import SortFilterForm
+from localtv.search.forms import SearchForm
 from localtv.search.utils import NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
@@ -42,9 +42,8 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
-        form = SortFilterForm({'sort': 'popular'})
-        form.full_clean()
-        popular_videos = form.get_queryset()
+        form = SearchForm({'sort': 'popular'})
+        popular_videos = form.search()
         new_videos = Video.objects.get_latest_videos()
 
         site_settings_videos = Video.objects.get_site_settings_videos()
@@ -138,9 +137,8 @@ class VideoView(DetailView):
             context['category'] = category_obj
             popular_form_data['category'] = [category_obj]
 
-        form = SortFilterForm(popular_form_data)
-        form.full_clean()
-        popular_videos = form.get_queryset()
+        form = SearchForm(popular_form_data)
+        popular_videos = form.search()
         context['popular_videos'] = NormalizedVideoList(popular_videos)
 
         if self.object.voting_enabled():

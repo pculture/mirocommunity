@@ -24,7 +24,6 @@ from haystack.backends import SQ
 from haystack.query import SearchQuerySet
 
 from localtv.models import SiteSettings
-from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 
 EMPTY = object()
@@ -108,85 +107,54 @@ class Sort(object):
     :class:`SearchQuerySet` and the methods which make that sort work.
 
     :param descending: Whether the sort should be descending (default) or not.
+    :param verbose_name: A human-readable name for this sort.
+    :param field_lookup: The field lookup which will be used in the sort
+                         query.
 
     """
-    #: The field which will be used in the sort query.
-    field = None
-
-    #: A value for which this field will be considered empty and excluded from
-    #: the sorted query.
-    #:
-    #: .. note:: ``None`` will be handled as an ``__isnull`` query, which will
-    #:           not be correctly handled by :mod:`haystack`.
-    empty_value = EMPTY
-
-    #: A human-readable name for this sort.
-    verbose_name = _('Sort')
-
-    def __init__(self, descending=True):
+    def __init__(self, verbose_name, field_lookup, descending=True):
+        self.verbose_name = verbose_name
         self.descending = descending
-
-    def get_field(self, queryset):
-        """
-        Returns the field which will be sorted on. By default, returns the value
-        of :attr:`field`.
-
-        """
-        return self.field
-
-    def get_empty_value(self, queryset):
-        """
-        Returns the value for which the queryset's sort field will be considered
-        "empty" and excluded from the sorted field. By default, returns
-        :attr:`empty_value`.
-
-        """
-        return self.empty_value
+        self.field_lookup = field_lookup
 
     def sort(self, queryset):
         """
-        Runs the entire sort process; excludes instances which have an empty
-        sort field, and does the actual ordering.
+        Does the actual ordering.
 
         """
-        queryset = self.exclude_empty(queryset)
-        field = self.get_field(queryset)
-        return self.order_by(queryset,
-                             ''.join(('-' if self.descending else '', field)))
+        return queryset.order_by(self.get_order_by(queryset))
 
-    def exclude_empty(self, queryset):
+    def get_field_lookup(self, queryset):
         """
-        Excludes instances which have an "empty" value in the sort field.
+        Returns the field which will be sorted on. By default, returns the value
+        of :attr:`field_lookup`.
 
         """
-        empty_value = self.get_empty_value(queryset)
-        if empty_value is not EMPTY:
-            field = self.get_field(queryset)
-            q = _q_for_queryset(queryset, field, (empty_value,))
-            queryset = queryset.filter(~q)
-        return queryset
+        return self.field_lookup
 
-    def order_by(self, queryset, order_by):
+    def get_order_by(self, queryset):
         """Performs the actual ordering for the :class:`Sort`."""
-        return queryset.order_by(order_by)
+        return ''.join(('-' if self.descending else '',
+                        self.get_field_lookup(queryset)))
 
 
 class DummySort(Sort):
     """Looks like a sort, but does nothing."""
-    def __init__(self, verbose_name, *args, **kwargs):
+    def __init__(self, verbose_name):
         self.verbose_name = verbose_name
-        super(DummySort, self).__init__(*args, **kwargs)
 
     def sort(self, queryset):
         return queryset
 
 
 class BestDateSort(Sort):
-    @property
-    def verbose_name(self):
-        return _('Newest') if self.descending else _('Oldest')
+    def __init__(self, verbose_name=None, descending=True):
+        if verbose_name is None:
+            verbose_name = _('Newest') if descending else _('Oldest')
+        super(BestDateSort, self).__init__(verbose_name, None,
+                                           descending)
 
-    def get_field(self, queryset):
+    def get_field_lookup(self, queryset):
         if (isinstance(queryset, SearchQuerySet) and
             SiteSettings.objects.get_current().use_original_date):
             return 'best_date_with_published'
@@ -199,39 +167,15 @@ class BestDateSort(Sort):
         return super(BestDateSort, self).sort(queryset)
 
 
-class NullableDateSort(Sort):
-    def get_empty_value(self, queryset):
-        if isinstance(queryset, SearchQuerySet):
-            return DATETIME_NULL_PLACEHOLDER
-        return None
-
-
-class FeaturedSort(NullableDateSort):
-    verbose_name = _('Recently featured')
-    field = 'last_featured'
-
-
-class ApprovedSort(NullableDateSort):
-    verbose_name = _('Recently approved')
-    field = 'when_approved'
-
-
 class PopularSort(Sort):
-    field = 'watch_count'
-    empty_value = 0
+    def __init__(self, verbose_name=_('Popular'), descending=True):
+        super(PopularSort, self).__init__(verbose_name, 'watch_count',
+                                          descending)
 
     def sort(self, queryset):
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_watch_count()
         return super(PopularSort, self).sort(queryset)
-
-    def exclude_empty(self, queryset):
-        if not isinstance(queryset, SearchQuerySet):
-            field = self.get_field(queryset)
-            empty_value = self.get_empty_value(queryset)
-            return queryset.extra(where=["%s<>%%s" % field],
-                                  params=[empty_value])
-        return super(PopularSort, self).exclude_empty(queryset)
 
     def order_by(self, queryset, order_by):
         if not isinstance(queryset, SearchQuerySet):

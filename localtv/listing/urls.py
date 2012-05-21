@@ -42,7 +42,9 @@ urlpatterns = patterns(
     url(r'^featured/$', CompatibleListingView.as_view(
                     template_name='localtv/video_listing_featured.html',
                     sort='featured',
-                ), name='localtv_list_featured'),
+                    filter_name='featured',
+                    filter_kwarg='value',
+                ), {'value': True}, name='localtv_list_featured'),
     url(r'^tag/(?P<name>.+)/$', CompatibleListingView.as_view(
                     template_name='localtv/video_listing_tag.html',
                     filter_name='tag',

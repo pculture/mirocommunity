@@ -255,8 +255,9 @@ class ViewTestCase(BaseTestCase):
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
                           featured)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(self.site_settings)))
+        popular = list(response.context['popular_videos'].queryset)
+        self.assertEqual(popular, sorted(popular, reverse=True,
+                                         key=lambda v: v.watch_count))
         self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_settings)))
         self.assertEqual(list(response.context['comments']), [])
@@ -732,7 +733,7 @@ class ListingViewTestCase(BaseTestCase):
         """
         The popular_videos view should render the
         'localtv/video_listing_popular.html' template and include the
-        popular videos.
+        all the videos, sorted by popularity.
         """
         Watch.objects.update(timestamp=datetime.datetime.now())
         haystack_batch_update.apply(args=(Video._meta.app_label,
@@ -743,11 +744,13 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        results = response.context['page_obj'].object_list
-        expected = Video.objects.get_popular_videos(self.site_settings)
+        self.assertEqual(response.context['paginator'].count, 23)
 
-        self.assertEqual(len(results), 2)
+        results = response.context['page_obj'].object_list
+        watch_qs = Watch.objects.filter(
+               timestamp__gte=datetime.datetime.now() - datetime.timedelta(7))
+        expected = sorted(results, reverse=True,
+                          key=lambda v: watch_qs.filter(video=v).count())
         self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
@@ -761,8 +764,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
+        self.assertEqual(response.context['paginator'].count, 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.filter(status=Video.ACTIVE,
                                last_featured__isnull=False)))

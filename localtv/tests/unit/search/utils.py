@@ -158,50 +158,14 @@ class FeaturedSortUnitTestCase(BaseTestCase):
         self.video3 = self.create_video(name=date3.strftime(f),
                                         last_featured=date3)
         self.video4 = self.create_video(name='None', last_featured=None)
-        self.sort = utils.FeaturedSort()
+        self.sort = utils.Sort('Featured', 'last_featured')
 
     def test_sort(self):
         """
-        Checks that the sorted queryset is actually correctly sorted, and that
-        videos without a last_featured date are excluded.
+        Checks that the sorted queryset is actually correctly sorted.
 
         """
-        all_videos = [self.video1, self.video2, self.video3]
-        expected = sorted(all_videos, key=lambda v: v.last_featured,
-                          reverse=True)
-
-        results = list(self.sort.sort(Video.objects.all()))
-        self.assertEqual(results, expected)
-        results = [r.object for r in self.sort.sort(SearchQuerySet())]
-        self.assertEqual(results, expected)
-
-
-class ApprovedSortUnitTestCase(BaseTestCase):
-    def setUp(self):
-        BaseTestCase.setUp(self)
-        self._clear_index()
-        date1 = datetime.now() - timedelta(7)
-        date2 = datetime.now()
-        date3 = datetime.now() - timedelta(3)
-        f = "%Y/%m/%d"
-        self.video1 = self.create_video(name=date1.strftime(f),
-                                        when_approved=date1)
-        self.video2 = self.create_video(name=date2.strftime(f),
-                                        when_approved=date2)
-        self.video3 = self.create_video(name=date3.strftime(f),
-                                        when_approved=date3)
-        self.video4 = self.create_video(name='None', when_approved=None)
-        self.sort = utils.ApprovedSort()
-
-    def test_sort(self):
-        """
-        Checks that the sorted queryset is actually correctly sorted, and that
-        videos without a when_approved date are excluded.
-
-        """
-        all_videos = [self.video1, self.video2, self.video3]
-        expected = sorted(all_videos, key=lambda v: v.when_approved,
-                          reverse=True)
+        expected = [self.video2, self.video3, self.video1, self.video4]
 
         results = list(self.sort.sort(Video.objects.all()))
         self.assertEqual(results, expected)
@@ -224,11 +188,11 @@ class PopularSortUnitTestCase(BaseTestCase):
 
     def test_sort(self):
         """
-        Checks that the sorted queryset is actually sorted by watch count, and
-        that videos with no watches are excluded.
+        Checks that the sorted queryset is actually sorted by watch count.
 
         """
-        all_videos = [self.video1, self.video2, self.video3, self.video4]
+        all_videos = [self.video0, self.video1, self.video2, self.video3,
+                      self.video4]
         watch_qs = Watch.objects.filter(
             timestamp__gte=datetime.now() - timedelta(7))
         expected = sorted(all_videos, reverse=True,
@@ -245,8 +209,8 @@ class ModelFilterFieldUnitTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self._clear_index()
         Site.objects.create(name='example.com', domain='example.com')
-        self.user_field = forms.SortFilterForm.base_fields['author']
-        self.category_field = forms.SortFilterForm.base_fields['category']
+        self.user_field = forms.SearchForm.base_fields['author']
+        self.category_field = forms.SearchForm.base_fields['category']
         self.user1 = self.create_user(username='user1')
         self.user2 = self.create_user(username='user2')
         self.category1 = self.create_category(name='category1')
@@ -359,7 +323,7 @@ class TagFilterFieldUnitTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self._clear_index()
-        self.field = forms.SortFilterForm.base_fields['tag']
+        self.field = forms.SearchForm.base_fields['tag']
         self.site2 = Site.objects.create(name='example.com', domain='example.com')
         self.tag1 = self.create_tag(name='tag1')
         self.tag2 = self.create_tag(name='tag2')

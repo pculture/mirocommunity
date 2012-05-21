@@ -17,7 +17,6 @@
 
 from django import template
 
-from localtv.models import Video
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterMixin
 
@@ -71,11 +70,7 @@ class BaseVideoListNode(SortFilterMixin, template.Node):
         else:
             filter_value = self.item.resolve(context)
         form = self.get_form(filter_value=filter_value)
-        if form.is_valid():
-            qs = form.get_queryset()
-        else:
-            qs = Video.objects.none()
-        return NormalizedVideoList(qs)
+        return NormalizedVideoList(form.search())
 
 
 class NewVideoListNode(BaseVideoListNode):
