@@ -123,7 +123,6 @@ class ApiV1TestCase(BaseTestCase):
         video = self.create_video(has_thumbnail=True,
                                   thumbnail_extension='png',
                                   update_index=False,
-                                  load_from_db=True,
                                   **expected_data)
         video = self.reload_from_db(video)
         expected_data.update({

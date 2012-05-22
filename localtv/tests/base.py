@@ -131,7 +131,7 @@ class BaseTestCase(TestCase):
     @classmethod
     def create_video(cls, name='Test.', status=models.Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
-                     update_index=True, load_from_db=False, **kwargs):
+                     update_index=True, **kwargs):
         """
         Factory method for creating videos. Supplies the following defaults:
 
