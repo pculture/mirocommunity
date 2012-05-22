@@ -76,6 +76,12 @@ class NormalizedVideoList(object):
         self.is_haystack = isinstance(queryset, SearchQuerySet)
         if self.is_haystack:
             queryset = queryset.load_all()
+            if 'WhooshEngine' in connections[queryset.query._using
+                                             ].options['ENGINE']:
+                # Workaround for django-haystack #574.
+                # https://github.com/toastdriven/django-haystack/issues/574
+                list(queryset)
+
         self.queryset = queryset
 
     def __getitem__(self, k):
