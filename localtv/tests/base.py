@@ -162,6 +162,7 @@ class BaseTestCase(TestCase):
             index = connections['default'].get_unified_index().get_index(
                 models.Video)
             index._enqueue_update(video)
+
         return video
 
     @classmethod

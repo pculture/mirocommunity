@@ -22,6 +22,7 @@ from django.core.files import File
 
 from localtv.tests.base import BaseTestCase
 
+from localtv.models import Feed, SavedSearch, Video
 
 class ApiV1TestCase(BaseTestCase):
     """
@@ -80,6 +81,9 @@ class ApiV1TestCase(BaseTestCase):
         feed = self.create_feed(
             thumbnail_file=File(file(self._data_file('logo.png'))),
             **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        feed = Feed.objects.get(pk=feed.pk)
         expected_data['thumbnail'] = feed.thumbnail_file.url
         url = '/api/v1/feed/1/'
         expected_data['resource_uri'] = url
@@ -100,6 +104,9 @@ class ApiV1TestCase(BaseTestCase):
         search = self.create_search(
             thumbnail_file=File(file(self._data_file('logo.png'))),
             **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        search = SavedSearch.objects.get(pk=search.pk)
         expected_data['thumbnail'] = search.thumbnail_file.url
         url = '/api/v1/search/1/'
         expected_data['resource_uri'] = url
@@ -122,6 +129,9 @@ class ApiV1TestCase(BaseTestCase):
             thumbnail_file=File(file(self._data_file('logo.png'))),
             update_index=False,
             **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        video = Video.objects.get(pk=video.pk)
         expected_data.update({
             'thumbnail': video.thumbnail_file.url,
             'tags': [],
