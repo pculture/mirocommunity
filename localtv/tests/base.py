@@ -120,15 +120,6 @@ class BaseTestCase(TestCase):
         models.SiteSettings.objects.clear_cache()
 
     @classmethod
-    def reload_from_db(self, *objects):
-        def r(o):
-            return o.__class__.objects.get(pk=o.pk)
-        if len(objects) == 1:
-            return r(objects[0])
-        else:
-            return [r(o) for o in objects]
-
-    @classmethod
     def create_video(cls, name='Test.', status=models.Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
                      update_index=True, **kwargs):
