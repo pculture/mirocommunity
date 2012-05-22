@@ -28,8 +28,8 @@ class Migration:
     def forwards(self, orm):
         "Write your forwards migration here"
 
-        site = Site.objects.get(pk=settings.SITE_ID)
-        widgetsettings = WidgetSettings.objects.create(
+        site = orm['sites.Site'].objects.get(pk=settings.SITE_ID)
+        widgetsettings = orm['localtv.WidgetSettings'].objects.create(
             site=site,
             title='Watch Videos on %s' % site.name)
         if orm['localtv.SiteLocation'].objects.all():
