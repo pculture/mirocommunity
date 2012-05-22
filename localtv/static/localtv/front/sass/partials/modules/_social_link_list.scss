@@ -2,7 +2,7 @@
 	@extend .unstyled-list;
 	@include clearfix;
 	border-bottom:1px solid;
-	padding:$base-line-height/2 $gutter-width/2;
+	padding:0 $gutter-width/2;
 	& > li{
 		float:left;
 		display: block;
@@ -13,6 +13,8 @@
 		top:4px;
 		width:120px;
 		min-height:5px;
+		margin:$base-line-height/2 0;
+		height:24px;
 	}
 	& > .facebook-social{
 		width:110px;
@@ -31,6 +33,9 @@
 	}
 	.button{
 		@include small;
+		height:22px;
+		line-height:20px;
+		padding:0 6px;
 	}
 	.button:hover{
 		border:1px solid;

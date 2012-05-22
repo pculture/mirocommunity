@@ -22,6 +22,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre %}
 {% load url from future %}
 
+{% block meta %}
+	<meta content="{{ site_settings.site.name }}" property="og:site_name">
+	<meta content="{{ request.build_absolute_uri }}" property="og:url">
+	<meta content="{{ current_video.name }}" property="og:title">
+	<meta content="{% if current_video.description %}{{ current_video.description|escape }}{% else %}{% blocktrans with name=site_settings.site.name %}Video from {{ name }}.{% endblocktrans %}{% endif %}" property="og:description">
+	<meta content="video" property="og:type">
+	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
+{% endblock %}
+
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
