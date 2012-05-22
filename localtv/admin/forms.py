@@ -641,10 +641,6 @@ class EditSettingsForm(forms.ModelForm):
 
     def save(self):
         sl = forms.ModelForm.save(self)
-        if sl.logo:
-            sl.logo.open()
-            cf = ContentFile(sl.logo.read())
-            sl.thumbnail = cf
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteSettings.objects.clear_cache()

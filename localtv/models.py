@@ -1777,7 +1777,7 @@ class Video(Thumbnailable, VideoBase):
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             try:
-                self.thumbnail = content_thumb
+                self.thumbnail_file = content_thumb
             except Exception:
                 logging.exception("Error while getting " + repr(self.thumbnail_url))
             else:
