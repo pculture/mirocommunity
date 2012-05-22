@@ -19,8 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
 from django.db.models import Count
-from django.http import (Http404, HttpResponseRedirect,
-                         HttpResponsePermanentRedirect)
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
@@ -176,7 +175,7 @@ class PlaylistView(ListView):
                     request.user != self.playlist.user:
                 raise Http404
         if request.path != self.playlist.get_absolute_url():
-            return HttpResponsePermanentRedirect(self.playlist.get_absolute_url())
+            return HttpResponseRedirect(self.playlist.get_absolute_url())
         return super(PlaylistView, self).dispatch(request, *args, **kwargs)
 
 
