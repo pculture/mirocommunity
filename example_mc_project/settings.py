@@ -185,7 +185,6 @@ INSTALLED_APPS = (
     'notification',
     'socialauth',
     'openid_consumer',
-    'voting',
     'daguerre',
     'compressor',
     'mptt',
