@@ -224,16 +224,3 @@ class PopularSort(Sort):
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_watch_count()
         return super(PopularSort, self).sort(queryset)
-
-    def exclude_empty(self, queryset):
-        if not isinstance(queryset, SearchQuerySet):
-            field = self.get_field(queryset)
-            empty_value = self.get_empty_value(queryset)
-            return queryset.extra(where=["%s<>%%s" % field],
-                                  params=[empty_value])
-        return super(PopularSort, self).exclude_empty(queryset)
-
-    def order_by(self, queryset, order_by):
-        if not isinstance(queryset, SearchQuerySet):
-            return queryset.extra(order_by=[order_by])
-        return super(PopularSort, self).order_by(queryset, order_by)

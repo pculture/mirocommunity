@@ -31,12 +31,25 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'example_mc_project.sl3',
-    }
-}
+import os
+if not os.environ.get('MC_TEST_MYSQL', False):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': 'example_mc_project.sl3',
+            'TEST_CHARSET': 'utf8'
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'miro_community_example',
+            'USER': 'root',
+            'HOST': '',
+            'TEST_CHARSET': 'utf8'
+            }
+        }
 
 # Comment these lines out to use a celery server.
 CELERY_ALWAYS_EAGER = True
