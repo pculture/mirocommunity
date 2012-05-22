@@ -21,7 +21,7 @@ from django.conf import settings
 
 from localtv.tests.base import BaseTestCase
 
-from localtv.models import Feed, Search, Video
+from localtv.models import Feed, SavedSearch, Video
 
 class ApiV1TestCase(BaseTestCase):
     """
@@ -105,7 +105,7 @@ class ApiV1TestCase(BaseTestCase):
                                     **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
-        search = Search.objects.get(pk=search.pk)
+        search = SavedSearch.objects.get(pk=search.pk)
         expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
                                                      search.thumbnail_path)
         url = '/api/v1/search/1/'
