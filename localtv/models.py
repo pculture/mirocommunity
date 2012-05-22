@@ -100,12 +100,24 @@ class Thumbnailable(models.Model):
         abstract = True
 
     @property
+    def _thumbnail_file(self):
+        return getattr(self, self.thumbnail_attribute)
+
+    @property
     def has_thumbnail(self):
-        return bool(getattr(self, self.thumbnail_attribute))
+        return bool(self._thumbnail_file)
 
     @property
     def thumbnail_path(self):
-        return getattr(self, self.thumbnail_attribute).path
+        thumb_file = self._thumbnail_file
+        if thumb_file:
+            return thumb_file
+        else:
+            # this looks weird, but it's what the old code would have returned;
+            # there's no extension because that would have been blank.
+            return "localtv/%s_thumbs/%d/orig." % (
+                self._meta.object_name.lower(),
+                self.id)
 
     def delete_thumbnail(self, save=True):
         thumb_file = getattr(self, self.thumbnail_attribute)
