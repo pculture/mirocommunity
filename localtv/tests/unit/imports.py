@@ -157,6 +157,9 @@ class FeedImportUnitTestCase(BaseTestCase):
                 file_url='http://example.com/file_url',
                 file_url_length=1000,
                 file_url_mimetype='video/mimetype',
+                # MySQL doesn't store the microseconds (and we don't much care
+                # about them), so don't bother inserting them.  This makes the
+                # assertion below about the published date equality True.
                 publish_datetime=datetime.datetime.now().replace(
                     microsecond=0),
                 tags=['tag1', 'tag2']
