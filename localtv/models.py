@@ -475,9 +475,14 @@ class WidgetSettings(Thumbnailable):
 
 
 def source_upload_path(instance, name):
-    return 'localtv/%s_thumbs/%s' % (
-        instance._meta.object_name.lower(),
-        name)
+    base_path = 'localtv/%s_thumbs' % instance._meta.object_name.lower()
+    path = '%s/%s' % (base_path, os.path.basename(name))
+    if len(path) < 100:
+        return path
+    else:
+        # path is too long, so just use a hash of the name
+        name, ext = os.path.splitext(name)
+        return '%s/%d%s' % (base_path, hash(name), ext)
 
 
 class Source(Thumbnailable):
