@@ -129,14 +129,18 @@ class Migration(SchemaMigration):
             'vote': ('django.db.models.fields.SmallIntegerField', [], {})
         },
         'localtv.category': {
-            'Meta': {'ordering': "['name']", 'unique_together': "(('slug', 'site'), ('name', 'site'))", 'object_name': 'Category'},
+            'Meta': {'unique_together': "(('slug', 'site'), ('name', 'site'))", 'object_name': 'Category'},
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'level': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
+            'lft': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
             'logo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'child_set'", 'null': 'True', 'to': "orm['localtv.Category']"}),
+            'rght': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'}),
+            'tree_id': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'})
         },
         'localtv.feed': {
             'Meta': {'unique_together': "(('feed_url', 'site'),)", 'object_name': 'Feed'},
@@ -182,10 +186,10 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'embed_code': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'feed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Feed']", 'null': 'True', 'blank': 'True'}),
-            'file_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'file_url': ('django.db.models.fields.URLField', [], {'max_length': '2048', 'blank': 'True'}),
             'file_url_length': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'file_url_mimetype': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'flash_enclosure_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'flash_enclosure_url': ('django.db.models.fields.URLField', [], {'max_length': '2048', 'blank': 'True'}),
             'guid': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -200,7 +204,7 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'video_service_user': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
-            'website_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'website_url': ('django.db.models.fields.URLField', [], {'max_length': '2048', 'blank': 'True'}),
             'when_approved': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'when_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'when_published': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
