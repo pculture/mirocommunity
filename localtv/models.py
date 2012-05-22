@@ -58,7 +58,6 @@ import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-import bitly
 import vidscraper
 from haystack import connections
 from mptt.models import MPTTModel
@@ -88,30 +87,6 @@ VIDEO_SERVICE_REGEXES = (
     ('blip.tv', r'http://(.+\.)?blip\.tv/'),
     ('Vimeo', r'http://(www\.)?vimeo\.com/'),
     ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
-
-
-class BitLyWrappingURLField(models.URLField):
-
-    def clean(self, value, video):
-        if getattr(settings, 'BITLY_LOGIN', None):
-            # Workaround for some cases
-            if value is None:
-                value = ''
-            if len(value) > self.max_length: # too long
-                api = bitly.Api(login=settings.BITLY_LOGIN,
-                                apikey=settings.BITLY_API_KEY)
-                try:
-                    value = unicode(api.shorten(value))
-                except bitly.BitlyError:
-                    pass
-        return super(BitLyWrappingURLField, self).clean(value, video)
-
-try:
-    from south.modelsinspector import add_introspection_rules
-except ImportError:
-    pass
-else:
-    add_introspection_rules([], ["^localtv\.models\.BitLyWrappingURLField"])
 
 
 class Thumbnailable(models.Model):
@@ -1552,7 +1527,8 @@ class Video(Thumbnailable, VideoBase):
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
-    file_url = BitLyWrappingURLField(verify_exists=False, blank=True)
+    file_url = models.URLField(verify_exists=False, blank=True,
+                               max_length=2048)
     file_url_length = models.IntegerField(null=True, blank=True)
     file_url_mimetype = models.CharField(max_length=60, blank=True)
     when_modified = models.DateTimeField(auto_now=True,
@@ -1564,12 +1540,14 @@ class Video(Thumbnailable, VideoBase):
     last_featured = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = BitLyWrappingURLField(verbose_name='Original Video Page URL (optional)',
-                                        verify_exists=False,
-                                        blank=True)
+    website_url = models.URLField(
+        verbose_name='Original Video Page URL (optional)',
+        max_length=2048,
+        verify_exists=False,
+        blank=True)
     embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)
-    flash_enclosure_url = BitLyWrappingURLField(verify_exists=False,
-                                                blank=True)
+    flash_enclosure_url = models.URLField(verify_exists=False, max_length=2048,
+                                          blank=True)
     guid = models.CharField(max_length=250, blank=True)
     user = models.ForeignKey('auth.User', null=True, blank=True)
     search = models.ForeignKey(SavedSearch, null=True, blank=True)

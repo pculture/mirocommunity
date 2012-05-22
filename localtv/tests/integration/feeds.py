@@ -120,7 +120,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(data['items'][0]['title'], self.yesterday_video.name)
 
         response = client.get('/feeds/json/playlist/2')
-        self.assertStatusCodeEquals(response, 404)
+        self.assertEqual(response.status_code, 404)
 
 
 class AdminFeedViewIntegrationTestCase(BaseTestCase):
@@ -141,7 +141,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         url = reverse('localtv_admin_feed_unapproved',
                       args=[feeds.generate_secret()])
         response = self.client.get(url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
             status=Video.UNAPPROVED,
@@ -154,7 +154,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         url = reverse('localtv_admin_feed_unapproved_user',
                       args=[feeds.generate_secret()])
         response = self.client.get(url)
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
             status=Video.UNAPPROVED, feed=None, search=None,

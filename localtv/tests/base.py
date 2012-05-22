@@ -18,7 +18,7 @@
 import os
 from datetime import datetime, timedelta
 from socket import getaddrinfo
-from urllib import quote_plus, urlencode
+import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
@@ -26,6 +26,7 @@ from django.contrib.sites.models import Site
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.management import call_command
 from django.db import transaction
+from django.http import QueryDict
 from django.template.defaultfilters import slugify
 from django.test.testcases import (TestCase, _deferredSkip,
                                    disable_transaction_methods,
@@ -192,13 +193,18 @@ class BaseTestCase(TestCase):
                                               site_id=site_id, **kwargs)
 
     @classmethod
-    def create_user(cls, **kwargs):
+    def create_user(cls, username='user', password=None, **kwargs):
         """
-        Factory method for creating users. All arguments are passed directly
-        to :meth:`User.objects.create`.
+        Factory method for creating users. A default is provided for the
+        username; if a password is provided, it will be assigned to the user
+        with the set_password method.
 
         """
-        return User.objects.create(**kwargs)
+        user = User(username=username, **kwargs)
+        if password is not None:
+            user.set_password(password)
+        user.save()
+        return user
 
     @classmethod
     def create_tag(cls, **kwargs):
@@ -273,43 +279,36 @@ class BaseTestCase(TestCase):
                 'testdata',
                 filename))
 
-    def assertRequiresAuthentication(self, url, *args,
-                                     **kwargs):
+    def assertRequiresAuthentication(self, url, username=None, password=None,
+                                     data=None):
         """
         Assert that the given URL requires the user to be authenticated.
 
-        If additional arguments are passed, they are passed to the Client.get
-        method
+        Since we can't check this directly, we actually check whether
+        accessing the view (with credentials, if given) redirects to the login
+        view (determined by the LOGIN_URL setting).
 
-        If keyword arguments are present, they're passed to Client.login before
-        the URL is accessed.
+        :param url: The url to access.
+        :param username: A username to use for login.
+        :param password: A password to use for login.
 
-        @param url_or_reverse: the URL to access
+        Any additional arguments will be passed to the test client's get()
+        method.
+
         """
         c = Client()
 
-        if kwargs:
-            c.login(**kwargs)
+        if username is not None and password is not None:
+            c.login(username=username, password=password)
 
-        response = c.get(url, *args)
-        if args and args[0]:
-            url = '%s?%s' % (url, urlencode(args[0]))
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'],
-                          'http://%s%s?next=%s' %
-                          ('testserver',
-                           settings.LOGIN_URL,
-                           quote_plus(url, safe='/')))
-
-    def assertStatusCodeEquals(self, response, status_code):
-        """
-        Assert that the response has the given status code.  If not, give a
-        useful error mesage.
-        """
-        self.assertEqual(response.status_code, status_code,
-                          'Status Code: %i != %i\nData: %s' % (
-                response.status_code, status_code,
-                response.content or response.get('Location', '')))
+        response = c.get(url, data or {})
+        self.assertEqual(response.status_code, 302)
+        parsed_url = urlparse.urlsplit(response['Location'])
+        self.assertEqual(parsed_url.path, settings.LOGIN_URL)
+        qd = QueryDict(parsed_url.query)
+        parsed_next = urlparse.urlsplit(qd['next'])
+        self.assertEqual(parsed_next.path, url)
+        self.assertEqual(QueryDict(parsed_next.query).dict(), data or {})
 
     def assertDictEqual(self, data, expected_data, msg=None):
         errors = []

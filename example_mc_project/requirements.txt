@@ -1,7 +1,6 @@
 git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs
 git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share
 git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_uploadtemplate
-git+http://git.participatoryculture.org/python-bitly@master#egg=python_bitly
 git+git://github.com/pculture/mirocommunity.git@develop#egg=mirocommunity
 git+git://github.com/pculture/djvideo.git@master#egg=djvideo
 git+git://github.com/paulswartz/Django-Socialauth.git@master#egg=django-socialauth
