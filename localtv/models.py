@@ -105,7 +105,7 @@ class Thumbnailable(models.Model):
 
     @property
     def thumbnail_path(self):
-        return getattr(self, self.thumbnail_path).path
+        return getattr(self, self.thumbnail_attribute).path
 
     def delete_thumbnail(self, save=True):
         thumb_file = getattr(self, self.thumbnail_attribute)
