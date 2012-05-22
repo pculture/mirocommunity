@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<meta content="{{ current_video.name }}" property="og:title">
 	<meta content="{% if current_video.description %}{{ current_video.description|escape }}{% else %}{% blocktrans with name=site_settings.site.name %}Video from {{ name }}.{% endblocktrans %}{% endif %}" property="og:description">
 	<meta content="video" property="og:type">
-	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
+	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_file adjustment="fit" width=600 %}" property="og:image">
 {% endblock %}
 
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
