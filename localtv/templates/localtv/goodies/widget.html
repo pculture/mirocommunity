@@ -57,7 +57,7 @@ function update_widget() {
     widget_bg = $("input[name=bg]").val();
     widget_border = $("input[name=border]").val();
     widget_text = $("input[name=text]").val()
-    {% if site_settings.site.widgetsettings.has_thumbnail %}
+    {% if site_settings.site.widgetsettings.logo %}
     if (widget_size == 'small') {
         widget_logo = '{% get_thumbnail_url site_settings.site.widgetsettings 88 68 %}';
     } else if (widget_size == 'medium') {

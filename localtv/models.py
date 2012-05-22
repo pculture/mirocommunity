@@ -90,65 +90,39 @@ VIDEO_SERVICE_REGEXES = (
 
 class Thumbnailable(models.Model):
     """
-    A type of Model that has thumbnails generated for it.
+    A type of Model that has thumbnails generated for it.  Now that we're using
+    Daguerre for thumbnails, this is just for backwards compatibility.
     """
-    has_thumbnail = models.BooleanField(default=False)
-    thumbnail_extension = models.CharField(max_length=8, blank=True)
+    # we set this to "logo" for SiteSettings, 'icon' for  WidgetSettings
+    thumbnail_attribute = 'thumbnail_file'
 
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb):
-        """
-        Takes an image file-like object and stores it as the thumbnail for this
-        video item.
-        """
-        try:
-            pil_image = PILImage.open(content_thumb)
-        except IOError:
-            raise CannotOpenImageUrl('An image could not be loaded')
-
-        # save an unresized version, overwriting if necessary
-        delete_if_exists(self.thumbnail_path)
-
-        self.thumbnail_extension = pil_image.format.lower()
-        default_storage.save(self.thumbnail_path, content_thumb)
-
-        if hasattr(content_thumb, 'temporary_file_path'):
-            # might have gotten moved by Django's storage system, so it might
-            # be invalid now.  to make sure we've got a valid file, we reopen
-            # under the new path
-            content_thumb.close()
-            content_thumb = default_storage.open(self.thumbnail_path)
-            pil_image = PILImage.open(content_thumb)
-
-        self.has_thumbnail = True
-        self.save()
+    @property
+    def has_thumbnail(self):
+        return bool(getattr(self, self.thumbnail_attribute))
 
     @property
     def thumbnail_path(self):
-        """
-        Return the path for the original thumbnail, relative to the default
-        file storage system.
-        """
-        return 'localtv/%s_thumbs/%s/orig.%s' % (
-            self._meta.object_name.lower(),
-            self.id, self.thumbnail_extension)
+        return getattr(self, self.thumbnail_path).path
 
-    def delete_thumbnail(self):
-        self.has_thumbnail = False
-        delete_if_exists(self.thumbnail_path)
-        self.thumbnail_extension = ''
-        try:
-            image = Image.objects.for_storage_path(self.thumbnail_path)
-        except Image.DoesNotExist:
-            pass
-        else:
-            image.delete()
-        self.save()
+    def delete_thumbnail(self, save=True):
+        thumb_file = getattr(self, self.thumbnail_attribute)
+        if thumb_file:
+            path = thumb_file.path
+            thumb_file.delete(save=save)
+            try:
+                image = Image.objects.for_storage_path(path)
+            except Image.DoesNotExist:
+                pass
+            else:
+                image.delete()
+        elif save:
+            self.save()
 
     def delete(self, *args, **kwargs):
-        self.delete_thumbnail()
+        self.delete_thumbnail(save=False)
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
@@ -233,6 +207,9 @@ class SiteSettings(Thumbnailable):
      - submission_requires_login: whether or not users need to log in to submit
        videos.
     """
+
+    thumbnail_attribute = 'logo'
+
     DISABLED = 0
     ACTIVE = 1
 
@@ -422,6 +399,8 @@ class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
     """
+    thumbnail_attribute = 'icon'
+
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
@@ -599,6 +578,8 @@ class Feed(Source):
     etag = models.CharField(max_length=250, blank=True)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
+    thumbnail_file = models.ImageField(upload_to='localtv/feed_thumbs',
+                                       blank=True)
 
     class Meta:
         unique_together = (
@@ -812,6 +793,8 @@ class SavedSearch(Source):
     """
     query_string = models.TextField()
     when_created = models.DateTimeField(auto_now_add=True)
+    thumbnail_file = models.ImageField(upload_to='localtv/savedsearch_thumbs',
+                                       blank=True)
 
     def __unicode__(self):
         return self.query_string
@@ -1473,11 +1456,7 @@ class Video(Thumbnailable, VideoBase):
        give out when they don't actually want their enclosures to
        point to video files.
      - guid: data used to identify this video
-     - has_thumbnail: whether or not this video has a thumbnail
      - thumbnail_url: url to the thumbnail, if such a thing exists
-     - thumbnail_extension: extension of the *internal* thumbnail, saved on the
-       server (usually paired with the id, so we can determine "1123.jpg" or
-       "1186.png"
      - user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
      - video_service_user: if not blank, the username of the user on the video
@@ -1500,6 +1479,8 @@ class Video(Thumbnailable, VideoBase):
     )
 
     site = models.ForeignKey(Site)
+    thumbnail_file = models.ImageField(upload_to='localtv/video_thumbs',
+                                       blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
@@ -1764,15 +1745,13 @@ class Video(Thumbnailable, VideoBase):
         except httplib.InvalidURL:
             # if the URL isn't valid, erase it and move on
             self.thumbnail_url = ''
-            self.has_thumbnail = False
-            self.save()
+            self.delete_thumbnail()
             return
 
         if remote_file.getcode() != 200:
             logging.info('code %i when getting %r, ignoring',
                          remote_file.getcode(), self.thumbnail_url)
-            self.has_thumbnail = False
-            self.save()
+            self.delete_thumbnail()
             return
 
         try:
@@ -1781,9 +1760,11 @@ class Video(Thumbnailable, VideoBase):
             raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
         else:
             try:
-                self.save_thumbnail_from_file(content_thumb)
+                self.thumbnail = content_thumb
             except Exception:
                 logging.exception("Error while getting " + repr(self.thumbnail_url))
+            else:
+                self.save()
 
     def submitter(self):
         """

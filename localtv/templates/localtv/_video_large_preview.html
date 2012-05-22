@@ -2,12 +2,12 @@
 
 <article class="video-large">
 	<div class="video-large-preview col-two-thirds">
-		{% with video.thumbnail_path as thumbnail %}
+		{% with video.thumbnail_file as thumbnail %}
 			{% if thumbnail.width > 640 and thumbnail.height > 400 %}
 				{% adjust thumbnail width=640 height=400 adjustment="fill" as image %}
 				<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
-			{% else %}
-				<a href="{{ video.get_absolute_url }}"><img src="{{ MEDIA_URL }}{{ video.thumbnail_path }}" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}" /></a>
+			{% elif thumbnail %}
+				<a href="{{ video.get_absolute_url }}"><img src="{{ thumbnail.url }}" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}" /></a>
 			{% endif %}
 		{% endwith %}
 	</div>

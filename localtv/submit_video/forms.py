@@ -95,6 +95,9 @@ class SubmitVideoFormBase(forms.ModelForm):
                               label='E-mail (required)',
                               required=True)
 
+    class Meta:
+        exclude = ['status', 'site']
+
     def __init__(self, request, url, *args, **kwargs):
         self.request = request
         super(SubmitVideoFormBase, self).__init__(*args, **kwargs)
@@ -118,6 +121,10 @@ class SubmitVideoFormBase(forms.ModelForm):
             # prefer thumbnail_url.
             if not cleaned_data.get('thumbnail_url'):
                 cleaned_data['thumbnail_url'] = thumbnail_url
+
+        if cleaned_data.get('thumbnail_file'):
+            # if there's a thumbnail file, ignore the URL
+            cleaned_data.pop('thumbnail_url', None)
 
         return cleaned_data
 
@@ -165,7 +172,7 @@ class SubmitVideoFormBase(forms.ModelForm):
                 instance.save_m2m()
 
             # TODO: Should be delayed as a task
-            if instance.thumbnail_url and not instance.has_thumbnail:
+            if instance.thumbnail_url and not instance.thumbnail_file:
                 try:
                     instance.save_thumbnail()
                 except CannotOpenImageUrl:
@@ -185,21 +192,6 @@ class ThumbnailSubmitVideoForm(SubmitVideoFormBase):
     thumbnail_file = forms.ImageField(required=False,
                                       label="Thumbnail File (optional)")
 
-    def save(self, commit=True):
-        instance = super(ThumbnailSubmitVideoForm, self).save(commit=False)
-        old_m2m = self.save_m2m
-        def save_m2m():
-            if self.cleaned_data.get('thumbnail_file', None):
-                instance.thumbnail_url = ''
-                instance.save_thumbnail_from_file(
-                    self.cleaned_data['thumbnail_file'])
-            old_m2m()
-        if commit:
-            instance.save()
-            save_m2m()
-        else:
-            self.save_m2m = save_m2m
-        return instance
 
 class ScrapedSubmitVideoForm(SubmitVideoFormBase):
     pass

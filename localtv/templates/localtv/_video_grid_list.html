@@ -25,7 +25,7 @@
 		">
 			<figure class="thumb">
 				<a href="{{ video.get_absolute_url }}">
-					{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
+					{% adjust video.thumbnail_file width=200 height=144 adjustment="fill" as image %}
 					<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
 				</a>
 			</figure>

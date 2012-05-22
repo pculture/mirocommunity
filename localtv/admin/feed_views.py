@@ -127,7 +127,7 @@ def add_feed(request):
                     pass
                 else:
                     try:
-                        feed.save_thumbnail_from_file(thumbnail_file)
+                        feed.thumbnail_file = thumbnail_file
                     except CannotOpenImageUrl:
                         # couldn't parse the thumbnail. Not sure why this
                         # raises CannotOpenImageUrl, tbh.

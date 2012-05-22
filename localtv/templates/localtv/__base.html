@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<meta name="viewport" content="width=device-width,initial-scale=1">
 	{% endblock meta %}
 	
-	{% if site_settings.has_thumbnail %}<link rel="image_src" href="{{ MEDIA_URL }}{{ site_settings.thumbnail_path }}" />{% endif %}
+	{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
 	
 	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
 	
@@ -77,7 +77,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endblock %}
 	
 	{% block head %}
-		{% if site_settings.has_thumbnail %}<link rel="image_src" href="{{ MEDIA_URL }}{{ site_settings.thumbnail_path }}" />{% endif %}
+		{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
 	{% endblock %}
 	
 </head>

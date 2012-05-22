@@ -68,21 +68,17 @@ class BulkFormSetMixin(object):
 class EditVideoForm(forms.ModelForm):
     """
     """
-    thumbnail = forms.ImageField(required=False)
     class Meta:
         model = models.Video
-        fields = ('thumbnail', 'thumbnail_url', )
+        fields = ('thumbnail_file', 'thumbnail_url', )
 
     def save(self, commit=True):
-        if 'thumbnail' in self.cleaned_data:
-            thumbnail = self.cleaned_data.pop('thumbnail')
-            if thumbnail:
-                self.instance.thumbnail_url = ''
-                del self.cleaned_data['thumbnail_url']
-                # since we're no longer using
-                # that URL for a thumbnail
-                self.instance.save_thumbnail_from_file(thumbnail)
-        if 'thumbnail_url' in self.cleaned_data:
+        if self.cleaned_data.get('thumbnail'):
+            self.instance.thumbnail_url = ''
+            del self.cleaned_data['thumbnail_url']
+            # since we're no longer using
+            # that URL for a thumbnail
+        elif 'thumbnail_url' in self.cleaned_data:
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if (thumbnail_url and not
                 models.Video.objects.get(id=self.instance.id).thumbnail_url == thumbnail_url):
@@ -90,7 +86,7 @@ class EditVideoForm(forms.ModelForm):
                 try:
                     self.instance.save_thumbnail()
                 except models.CannotOpenImageUrl:
-                    pass # wwe'll get it in a later update
+                    pass # we'll get it in a later update
         return forms.ModelForm.save(self, commit=commit)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
@@ -170,13 +166,12 @@ class SourceForm(forms.ModelForm):
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
-    thumbnail = forms.ImageField(required=False)
     delete_thumbnail = forms.BooleanField(required=False)
 
     class Meta:
         model = models.Source
         fields = ('auto_approve', 'auto_categories', 'auto_authors',
-                  'thumbnail', 'delete_thumbnail')
+                  'thumbnail_file', 'delete_thumbnail')
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -207,11 +202,8 @@ class SourceForm(forms.ModelForm):
             self._meta.model = type(self.instance)
 
     def save(self, *args, **kwargs):
-        if self.cleaned_data.get('thumbnail'):
-            self.instance.save_thumbnail_from_file(
-                self.cleaned_data['thumbnail'])
         if self.cleaned_data.get('delete_thumbnail'):
-            self.instance.delete_thumbnail()
+            self.instance.delete_thumbnail(save=False)
 
         # if the categories or authors changed, update unchanged videos to the
         # new values
@@ -400,7 +392,7 @@ class BulkEditVideoForm(EditVideoForm):
 
     class Meta:
         model = models.Video
-        fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
+        fields = ('name', 'description', 'thumbnail_file', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
 
@@ -652,7 +644,7 @@ class EditSettingsForm(forms.ModelForm):
         if sl.logo:
             sl.logo.open()
             cf = ContentFile(sl.logo.read())
-            sl.save_thumbnail_from_file(cf)
+            sl.thumbnail = cf
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteSettings.objects.clear_cache()
@@ -662,15 +654,7 @@ class WidgetSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.WidgetSettings
-        exclude = ['site', 'has_thumbnail', 'thumbnail_extension']
-
-    def save(self):
-        ws = forms.ModelForm.save(self)
-        if ws.icon:
-            ws.icon.open()
-            cf = ContentFile(ws.icon.read())
-            ws.save_thumbnail_from_file(cf)
-        return ws
+        exclude = ['site']
 
 class VideoAsUrlWidget(forms.TextInput):
     def render(self, name, value, attrs=None):

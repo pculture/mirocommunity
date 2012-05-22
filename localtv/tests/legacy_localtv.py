@@ -1204,13 +1204,12 @@ class VideoModelTestCase(BaseTestCase):
     def test_thumbnail_404(self):
         """
         If a Video has a thumbnail that returns a 404, no error should be
-        raised, and `has_thumbnail` should be set to False.
+        raised, and `thumbnail_file` should be False.
         """
         v = Video.objects.get(pk=11)
         v.thumbnail_url = 'http://pculture.org/doesnotexist'
-        v.has_thumbnail = True
         v.save_thumbnail()
-        self.assertFalse(v.has_thumbnail)
+        self.assertFalse(v.thumbnail_file)
 
     def test_original_video_created(self):
         """

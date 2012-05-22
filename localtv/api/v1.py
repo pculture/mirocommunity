@@ -29,12 +29,10 @@ class ThumbnailableResource(ModelResource):
     thumbnail = fields.CharField(null=True, readonly=True)
 
     def dehydrate_thumbnail(self, bundle):
-        if not bundle.obj.has_thumbnail:
+        if not bundle.obj.thumbnail_file:
             thumbnail = None
         else:
-            thumbnail = '{media_url}{path}'.format(
-                                     media_url=settings.MEDIA_URL,
-                                     path=bundle.obj.thumbnail_path)
+            thumbnail = bundle.obj.thumbnail_file.url
         return thumbnail
 
 

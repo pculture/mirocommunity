@@ -542,12 +542,16 @@ class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
 
         """
         request = self.factory.get('/')
-        form = self.form_class(request, 'http://google.com')
-        form.cleaned_data = {
-            'thumbnail_file': File(file(self._data_file('logo.png'))),
-            'thumbnail_url': 'http://google.com'
-        }
+        form = self.form_class(
+            request, 'http://google.com',
+            data={
+                'url': 'http://google.com',
+                'name': 'Test Name',
+                'embed_code': 'Test Embed',
+                'thumbnail_url': 'http://google.com'},
+            files={'thumbnail_file': File(file(self._data_file('logo.png')))})
+
+        self.assertTrue(form.is_valid(), form.errors)
         video = form.save()
-        self.assertTrue(video.has_thumbnail)
+        self.assertTrue(video.thumbnail_file)
         self.assertEqual(video.thumbnail_url, '')
-        self.assertEqual(video.thumbnail_extension, 'png')
