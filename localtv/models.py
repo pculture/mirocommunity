@@ -461,6 +461,12 @@ class WidgetSettings(Thumbnailable):
         return prefix % suffix
 
 
+def source_upload_path(instance, name):
+    return 'localtv/%s_thumbs/%s' % (
+        instance._meta.object_name.lower(),
+        name)
+
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
@@ -468,6 +474,9 @@ class Source(Thumbnailable):
     """
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
+    thumbnail_file = models.ImageField(upload_to=source_upload_path,
+                                       blank=True)
+
     auto_approve = models.BooleanField(default=False)
     auto_update = models.BooleanField(default=True,
                                       help_text=_("If selected, new videos will"
@@ -578,8 +587,6 @@ class Feed(Source):
     etag = models.CharField(max_length=250, blank=True)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
-    thumbnail_file = models.ImageField(upload_to='localtv/feed_thumbs',
-                                       blank=True)
 
     class Meta:
         unique_together = (
@@ -793,8 +800,6 @@ class SavedSearch(Source):
     """
     query_string = models.TextField()
     when_created = models.DateTimeField(auto_now_add=True)
-    thumbnail_file = models.ImageField(upload_to='localtv/savedsearch_thumbs',
-                                       blank=True)
 
     def __unicode__(self):
         return self.query_string
