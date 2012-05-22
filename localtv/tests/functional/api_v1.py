@@ -21,6 +21,7 @@ from django.conf import settings
 
 from localtv.tests.base import BaseTestCase
 
+from localtv.models import Feed, SavedSearch, Video
 
 class ApiV1TestCase(BaseTestCase):
     """
@@ -78,6 +79,9 @@ class ApiV1TestCase(BaseTestCase):
         }
         feed = self.create_feed(has_thumbnail=True, thumbnail_extension='png',
                                 **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        feed  = Feed.objects.get(pk=feed.pk)
         expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
                                                      feed.thumbnail_path)
         url = '/api/v1/feed/1/'
@@ -99,6 +103,9 @@ class ApiV1TestCase(BaseTestCase):
         search = self.create_search(has_thumbnail=True,
                                     thumbnail_extension='png',
                                     **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        search = SavedSearch.objects.get(pk=search.pk)
         expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
                                                      search.thumbnail_path)
         url = '/api/v1/search/1/'
@@ -122,6 +129,9 @@ class ApiV1TestCase(BaseTestCase):
                                   thumbnail_extension='png',
                                   update_index=False,
                                   **expected_data)
+        # get the data from the database; this makes sure the datetimes are the
+        # same when we're using MySQL.
+        video = Video.objects.get(pk=video.pk)
         expected_data.update({
             'thumbnail': '{0}{1}'.format(settings.MEDIA_URL,
                                                      video.thumbnail_path),

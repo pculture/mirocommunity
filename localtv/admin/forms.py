@@ -243,12 +243,17 @@ class SourceForm(forms.ModelForm):
 
 
 class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
+    @property
+    def _qs_cache(self):
+        """
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
 
-    def _construct_form(self, i, **kwargs):
+        """
         # We use SharedQuerySet so that the form fields don't make fresh
         # querysets when they generate their choices.
-        if not hasattr(self, '_qs_cache'):
-            self._qs_cache = {
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
                 'categories': SourceForm.base_fields[
                                   'auto_categories'].queryset._clone(
                                       utils.SharedQuerySet),
@@ -258,6 +263,9 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
                 'feeds': utils.SharedQuerySet(models.Feed),
                 'searches': utils.SharedQuerySet(models.SavedSearch),
             }
+        return self._real_qs_cache
+
+    def _construct_form(self, i, **kwargs):
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
         # TODO: Stop doing something weird.
@@ -460,15 +468,17 @@ class BulkEditVideoFormSet(BaseModelFormSet):
     def save_new_objects(self, commit):
         return []
 
-    def _construct_form(self, i, **kwargs):
+    @property
+    def _qs_cache(self):
         """
-        Use the same queryset for related objects on each form.
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
 
         """
         # We use SharedQuerySet so that the form fields don't make fresh
         # querysets when they generate their choices.
-        if not hasattr(self, '_qs_cache'):
-            self._qs_cache = {
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
                 'categories': BulkEditVideoForm.base_fields[
                                   'categories'].queryset._clone(
                                       utils.SharedQuerySet),
@@ -476,6 +486,13 @@ class BulkEditVideoFormSet(BaseModelFormSet):
                                   'authors'].queryset._clone(
                                       utils.SharedQuerySet),
             }
+        return self._real_qs_cache
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
         form = super(BulkEditVideoFormSet, self)._construct_form(i, **kwargs)
         form.fields['categories'].queryset = self._qs_cache['categories']
         form.fields['authors'].queryset = self._qs_cache['authors']
@@ -829,18 +846,27 @@ class CategoryForm(forms.ModelForm):
             self._update_errors(e.message_dict)
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
+    @property
+    def _qs_cache(self):
+        """
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
+                'parent': CategoryForm.base_fields['parent'].queryset._clone(
+                                utils.SharedQuerySet),
+            }
+        return self._real_qs_cache
+
     def _construct_form(self, i, **kwargs):
         """
         Use the same queryset for related objects on each form.
 
         """
-        # We use SharedQuerySet so that the form fields don't make fresh
-        # querysets when they generate their choices.
-        if not hasattr(self, '_qs_cache'):
-            self._qs_cache = {
-                'parent': CategoryForm.base_fields['parent'].queryset._clone(
-                                utils.SharedQuerySet),
-            }
         form = super(BaseCategoryFormSet, self)._construct_form(i, **kwargs)
         form.fields['parent'].queryset = self._qs_cache['parent']
         return form

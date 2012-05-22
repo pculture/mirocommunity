@@ -38,6 +38,7 @@ from bs4 import BeautifulSoup
 
 from daguerre.models import Image
 from django.db import models
+from django.db.models.sql.aggregates import Aggregate
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
@@ -1285,6 +1286,34 @@ class OriginalVideo(VideoBase):
         self.save()
 
 
+class WatchCount(models.Aggregate):
+    def __init__(self, since):
+        models.Aggregate.__init__(self, "watch", since=since)
+
+    def add_to_query(self, query, alias, col, source, is_summary):
+        aggregate = WatchCountAggregateSQL(col, source=source,
+                                           is_summary=is_summary,
+                                           **self.extra)
+        query.aggregates[alias] = aggregate
+
+
+class WatchCountAggregateSQL(Aggregate):
+    is_ordinal = True
+    sql_template = ('(SELECT COUNT(*) FROM %s WHERE '
+                    '%s.%s = %s.%s AND %s.%s > "%s")')
+
+    def as_sql(self, qn, connection):
+        localtv_watch = qn("localtv_watch")
+        localtv_video = qn("localtv_video")
+        id_ = qn("id")
+        video_id = qn("video_id")
+        timestamp = qn("timestamp")
+        return self.sql_template % (
+            localtv_watch, localtv_watch, video_id, localtv_video, id_,
+            localtv_watch, timestamp,
+            connection.ops.value_to_db_datetime(self.extra['since']))
+
+
 class VideoQuerySet(models.query.QuerySet):
 
     def with_best_date(self, use_original_date=True):
@@ -1304,12 +1333,7 @@ localtv_video.when_submitted)""" % published})
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.extra(
-            select={'watch_count': """SELECT COUNT(*) FROM localtv_watch
-WHERE localtv_video.id = localtv_watch.video_id AND
-localtv_watch.timestamp > %s"""},
-            select_params = (since,)
-        )
+        return self.annotate(watch_count=WatchCount(since))
 
 
 class VideoManager(models.Manager):
