@@ -28,16 +28,19 @@ class DateTimeFilterFieldTestCase(BaseTestCase):
     def setUp(self):
         self.field = DateTimeFilterField(field_lookups=('last_featured',),
                                          label='')
-        self.video1 = self.create_video(name='video1',
-                            last_featured=datetime.now() - timedelta(1))
+        # We create the video which was never featured first because of whoosh
+        # bug #263.
+        # https://bitbucket.org/mchaput/whoosh/issue/263
+        self.video1 = self.create_video(name='video1')
         self.video2 = self.create_video(name='video2',
-                            last_featured=datetime.now())
+                            last_featured=datetime.now() - timedelta(1))
         self.video3 = self.create_video(name='video3',
+                            last_featured=datetime.now())
+        self.video4 = self.create_video(name='video4',
                             last_featured=datetime.now() - timedelta(2))
-        self.video4 = self.create_video(name='video4')
 
     def test_filter__on(self):
-        expected = set((self.video1.pk, self.video2.pk, self.video3.pk))
+        expected = set((self.video2.pk, self.video3.pk, self.video4.pk))
 
         results = set(v.pk
                     for v in self.field.filter(Video.objects.all(), True))
@@ -48,8 +51,8 @@ class DateTimeFilterFieldTestCase(BaseTestCase):
         self.assertEqual(results, expected)
 
     def test_filter__off(self):
-        expected = set((self.video1.pk, self.video2.pk, self.video3.pk,
-                        self.video4.pk))
+        expected = set((self.video2.pk, self.video3.pk, self.video4.pk,
+                        self.video1.pk))
 
         results = set(v.pk
                     for v in self.field.filter(Video.objects.all(), False))
