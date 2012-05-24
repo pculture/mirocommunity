@@ -1886,9 +1886,19 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         A GET request to the categories view should render the
         'localtv/admin/categories.html' template and include a formset
         for the categories and an add_category_form.
+
+        bz19143. This should also be true if there are no categories.
         """
         c = Client()
         c.login(username='admin', password='admin')
+        response = c.get(self.url)
+        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.templates[0].name,
+                          'localtv/admin/categories.html')
+        self.assertTrue('formset' in response.context[0])
+        self.assertTrue('add_category_form' in response.context[0])
+
+        Category.objects.all().delete()
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,

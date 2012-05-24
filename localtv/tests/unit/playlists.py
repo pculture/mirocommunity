@@ -15,21 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import shutil
-import tempfile
-
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core import mail
 from django.test.client import Client
+from django.http import Http404
 
 from localtv.tests.base import BaseTestCase
 from localtv.models import SiteSettings
 
 from localtv.playlists.models import Playlist, PlaylistItem
+from localtv.playlists import views
 
 from notification import models as notification
 
@@ -111,6 +109,78 @@ class PlaylistModelTestCase(PlaylistBaseTestCase):
         self.assertEqual([self.list.previous_video(video)
                            for video in self.video_set],
                           prevs)
+
+
+class PlaylistViewClassTestCase(PlaylistBaseTestCase):
+    def setUp(self):
+        PlaylistBaseTestCase.setUp(self)
+        self.request = self.factory.get(self.list.get_absolute_url(),
+                                        user=self.user)
+        self.view = views.PlaylistView()
+        self.view.dispatch(self.request, self.list.pk)
+
+    def test_get_paginate_by(self):
+        self.assertEqual(self.view.get_paginate_by(self.request), 15)
+        self.view.dispatch(self.request, self.list.pk, count=30)
+        self.assertEqual(self.view.get_paginate_by(self.request), 30)
+
+    def test_get_queryset(self):
+        self.assertEqual(list(self.view.get_queryset()),
+                         list(self.list.video_set))
+
+    def test_get_context_data(self):
+        context = self.view.get_context_data(object_list=self.list.video_set)
+        self.assertEqual(context['playlist'], self.list)
+        self.assertEqual(context['video_url_extra'],
+                         '?playlist=%i' % self.list.pk)
+
+    def test_get_template_names(self):
+        """
+        PlaylistView checks both the old path 'localtv/playlists/view.html' as
+        well as the new 'localtv/video_listing_playlist.html'.
+        """
+        self.assertEqual(self.view.get_template_names(),
+                         ('localtv/playlists/view.html',
+                          'localtv/video_listing_playlist.html'))
+
+    def test_404_if_private(self):
+        """
+        If the playlist is private, and the user isn't an admin or the user who
+        owns the playlist, the view should raise Http404.
+        """
+        # owner
+        request = self.factory.get(self.list.get_absolute_url(),
+                                   user=self.user)
+        self.assertEqual(self.view.dispatch(request, self.list.pk).status_code,
+                         200)
+
+        # anonymous
+        request = self.factory.get(self.list.get_absolute_url())
+        self.assertRaises(Http404, self.view.dispatch, request, self.list.pk)
+
+        # another user
+        other_user = self.create_user("other_user")
+        request = self.factory.get(self.list.get_absolute_url(),
+                                   user=other_user)
+        self.assertRaises(Http404, self.view.dispatch, request, self.list.pk)
+
+        # admin
+        admin = self.create_user("admin", is_superuser=True)
+        request = self.factory.get(self.list.get_absolute_url(),
+                                   user=admin)
+        self.assertEqual(self.view.dispatch(request, self.list.pk).status_code,
+                         200)
+
+    def test_redirect(self):
+        """
+        If the user goes to the wrong URL for a playlist, they should be
+        non-permanently redirected to the correct location.
+        """
+        request = self.factory.get('/',
+                                   user=self.user)
+        response = self.view.dispatch(request, self.list.pk)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], self.list.get_absolute_url())
 
 
 class PlaylistViewTestCase(PlaylistBaseTestCase):
@@ -304,8 +374,8 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
         """
         Admins should be able to add videos to arbitrary playlists.
         """
-        admin = self.create_user(username='admin', is_superuser=True,
-                                 password='admin')
+        self.create_user(username='admin', is_superuser=True,
+                         password='admin')
 
         video = self.create_video()
         url = reverse('localtv_playlist_add_video', args=(video.pk,))
@@ -319,78 +389,6 @@ class PlaylistViewTestCase(PlaylistBaseTestCase):
                 video.get_absolute_url(), self.list.pk))
 
         self.assertEqual(list(self.list.video_set.all())[-1], video)
-
-    def test_view(self):
-        """
-        The view view should render the 'localtv/video_listing_playlist.html'
-        template and include the playlist in the context.
-        """
-        self.list.status = Playlist.PUBLIC
-        self.list.save()
-
-        url = reverse('localtv_playlist_view', args=(
-                self.list.pk, self.list.slug))
-        c = Client()
-        response = c.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.templates[0].name,
-                         'localtv/video_listing_playlist.html')
-        self.assertEqual(response.context['playlist'], self.list)
-
-    def test_view_old_template(self):
-        """
-        The playlist view should also check the old template path
-        "localtv/playlists/view.html" for a template to render.
-        """
-        template_dir = tempfile.mkdtemp()
-        os.makedirs(os.path.join(template_dir, "localtv", "playlists"))
-        with file(os.path.join(template_dir, "localtv", "playlists", "view.html"),
-                  'w') as f:
-            f.write("Playlist Template")
-
-        try:
-            self.list.status = Playlist.PUBLIC
-            self.list.save()
-
-            with self.settings(TEMPLATE_DIRS=settings.TEMPLATE_DIRS + (
-                    template_dir,)):
-
-                url = reverse('localtv_playlist_view', args=(
-                        self.list.pk, self.list.slug))
-                c = Client()
-                response = c.get(url)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.templates[0].name,
-                             'localtv/playlists/view.html')
-            self.assertEqual(response.context['playlist'], self.list)
-        finally:
-            shutil.rmtree(template_dir)
-
-    def test_view_redirect(self):
-        """
-        If the URL isn't the full path (ID + slug), redirect to the canonical
-        URL.
-        """
-        c = Client()
-        c.login(username='user', password='password')
-        for url in (reverse('localtv_playlist_view', args=(self.list.pk,)),
-                    reverse('localtv_playlist_view', args=(self.list.pk,
-                                                           'fake-slug'))):
-            response = c.get(url)
-            self.assertEqual(response.status_code, 301) # permanent redirect
-            self.assertEqual(response['Location'], 'http://%s%s' % (
-                    'testserver',
-                    self.list.get_absolute_url()))
-
-    def test_view_404(self):
-        """
-        If the playlist isn't public, the page should return a 404.
-        """
-        url = reverse('localtv_playlist_view', args=(
-                self.list.pk, self.list.slug))
-        c = Client()
-        response = c.get(url, follow=True)
-        self.assertEqual(response.status_code, 404)
 
     def test_edit(self):
         """

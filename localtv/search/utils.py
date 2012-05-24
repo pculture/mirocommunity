@@ -182,8 +182,3 @@ class PopularSort(Sort):
         if not isinstance(queryset, SearchQuerySet):
             queryset = queryset.with_watch_count()
         return super(PopularSort, self).sort(queryset)
-
-    def order_by(self, queryset, order_by):
-        if not isinstance(queryset, SearchQuerySet):
-            return queryset.extra(order_by=[order_by])
-        return super(PopularSort, self).order_by(queryset, order_by)
