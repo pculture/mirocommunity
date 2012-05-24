@@ -27,7 +27,7 @@ class ContestAdminForm(forms.ModelForm):
     detail_columns = forms.MultipleChoiceField(
                                         choices=Contest.DETAIL_COLUMN_CHOICES,
                                         widget=forms.CheckboxSelectMultiple)
-    videos = forms.ModelMultipleChoiceField(
+    videos = forms.ModelMultipleChoiceField(required=False,
                             queryset=Video.objects.filter(status=Video.ACTIVE,
                                                           site=settings.SITE_ID))
 
