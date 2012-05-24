@@ -77,6 +77,7 @@ form{
 	}
 	& > .controls > input{
 		@include large;
+		height: $base-line-height * 2 + 2px;
 	}
 }
 .x-large{
@@ -85,6 +86,7 @@ form{
 	}
 	& > .controls > input{
 		@include x-large;
+		height: $base-line-height * 2 + 2px;
 	}
 }
 
