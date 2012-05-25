@@ -84,6 +84,7 @@ class Contest(models.Model):
 class ContestVideo(models.Model):
     contest = models.ForeignKey(Contest)
     video = models.ForeignKey(Video)
+    added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('contest', 'video')
