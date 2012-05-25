@@ -204,6 +204,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     "localtv.context_processors.localtv",
+    "localtv.context_processors.browse_modules",
 )
 
 # For debugging, don't redirect mistyped urls
