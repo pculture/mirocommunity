@@ -135,11 +135,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</div>{# /.col-three-quarters #}
 		<aside class="col-one-quarter right-sidebar">
-			{% with contestvideos=current_video.contestvideo_set.all %}
-				{% if contestvideos %}
-					{% include "contests/_sidebar_contests.html" %}
-				{% endif %}
-			{% endwith %}
 			{% for module in sidebar_modules %}
 				{% include module %}
 			{% endfor %}

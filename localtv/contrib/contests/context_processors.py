@@ -15,12 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-# Trigger some adjustments to core registries.
-from localtv import context_processors
-from localtv.contrib.contests.api import v1
-from localtv.views import VideoView
+from django.conf import settings
+
+from localtv.contrib.contests.models import Contest
 
 
-context_processors.BROWSE_NAVIGATION_MODULES.append(
-									'localtv/_modules/browse/contests.html')
-VideoView.sidebar_modules.insert(0, 'localtv/_modules/contests.html')
+def contests(request):
+	return {'contests': Contest.objects.filter(site=settings.SITE_ID)}

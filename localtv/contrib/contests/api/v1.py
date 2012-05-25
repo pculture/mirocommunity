@@ -27,6 +27,7 @@ from localtv.api.v1 import api, UserResource, VideoResource
 from localtv.contrib.contests.authorization import UserAuthorization
 from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
 
+
 class ContestResource(ModelResource):
     votes = fields.ToManyField(
                 'localtv.contrib.contests.api.v1.ContestVoteResource',
