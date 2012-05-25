@@ -29,7 +29,8 @@ from localtv.listing.views import SiteListView
 
 urlpatterns = patterns('localtv.contrib.voting.views',
     url(r'^contests/$',
-        SiteListView.as_view(model=Contest),
+        SiteListView.as_view(model=Contest,
+                             template_name='contests/list.html'),
         name='contests_contest_list'),
     url(r'^contests/(?P<pk>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
     	ContestDetailView.as_view(),
