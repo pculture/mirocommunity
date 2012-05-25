@@ -76,6 +76,9 @@ class VideoView(DetailView):
     template_name = 'localtv/view_video.html'
     model = Video
 
+    # Modules to display in the right sidebar on the video page.
+    sidebar_modules = ['localtv/_modules/suggested_videos.html']
+
     def get_queryset(self):
         qs = super(VideoView, self).get_queryset()
         if not self.request.user_is_admin():
@@ -94,9 +97,13 @@ class VideoView(DetailView):
         Watch.add(request, self.object)
         return self.render_to_response(context)
 
+    def get_sidebar_modules(self):
+        return self.sidebar_modules
+
     def get_context_data(self, **kwargs):
         context = super(VideoView, self).get_context_data(**kwargs)
         context.update({
+            'sidebar_modules': self.get_sidebar_modules(),
             # set edit_video_form to True if the user is an admin for
             # backwards-compatibility
             'edit_video_form': self.request.user_is_admin(),

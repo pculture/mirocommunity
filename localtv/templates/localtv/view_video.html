@@ -121,23 +121,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
 			</div>
 		</div>{# /.col-three-quarters #}
-		<div class="col-one-quarter right-sidebar">
-			<section class="pod video-suggested-videos">
-				<header class="pod-header">
-					<h1>{% trans "More Videos" %}</h1>
-				</header>
-				<div class="pod-content">
-					{# TODO: calculate a suggested videos list #}
-					{% with popular_videos|slice:"4" as video_list %}
-						{% include "localtv/_video_grid_list.html" %}
-					{% endwith %}
-				</div>
-				<div class="pod-footer">
-					<ul class="pod-footer-actions">
-						<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
-					</ul>
-				</div>
-			</section>{# /.pod.video-suggested-videos #}
+		<aside class="col-one-quarter right-sidebar">
+			{% for module in sidebar_modules %}
+				{% include module %}
+			{% endfor %}
 		</aside>{# /.col-one-quarter.right #}
 	</div>
 	{# Facebook #}
