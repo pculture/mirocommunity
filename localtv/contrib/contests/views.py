@@ -23,8 +23,8 @@ from django.views.generic import (DetailView, CreateView, UpdateView,
                                   ListView, DeleteView)
 
 from localtv.contrib.contests.forms import ContestAdminForm
-from localtv.contrib.contests.models import Contest
-from localtv.models import Video
+from localtv.contrib.contests.models import Contest, ContestVote
+from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
 
 
@@ -52,15 +52,41 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
         context = super(ContestDetailView, self).get_context_data(**kwargs)
         base_qs = Video.objects.filter(contestvideo__contest=self.object)
         if Contest.NEW in self.object.detail_columns:
-            context['new_videos'] = base_qs.order_by('-contestvideo__added')
+            site_settings = SiteSettings.objects.get_current()
+            context['new_videos'] = base_qs.with_best_date(
+                                               site_settings.use_original_date
+                                            ).order_by('-best_date')
 
         if Contest.RANDOM in self.object.detail_columns:
             context['random_videos'] = base_qs.order_by('?')
 
         if Contest.TOP in self.object.detail_columns:
-            context['top_videos'] = base_qs.annotate(
-                                  vote_count=Count('contestvideo__contestvote')
-                                   ).order_by('-vote_count')
+            if not self.object.allow_downvotes:
+                top_videos = base_qs.annotate(
+                                rank=Count('contestvideo__contestvote')
+                            ).order_by('-rank')
+            else:
+                # Ideally we'd do this sorting in the db; for now, we hope
+                # that the contests don't have enough videos for this to be
+                # a ridiculous waste of time.
+                # Also ideally, we would not use such a naive computation of
+                # rank.
+                # http://evanmiller.org/how-not-to-sort-by-average-rating.html
+                upvotes = dict(
+                    base_qs.filter(
+                        contestvideo__contestvote__vote=ContestVote.UP
+                    ).annotate(rank=Count('contestvideo__contestvote')
+                    ).values_list('id', 'rank'))
+                downvotes = dict(
+                    base_qs.filter(
+                        contestvideo__contestvote__vote=ContestVote.DOWN
+                    ).annotate(rank=Count('contestvideo__contestvote')
+                    ).values_list('id', 'rank'))
+                top_videos = list(base_qs.all())
+                for v in top_videos:
+                    v.rank = upvotes.get(v.pk, 0) - downvotes.get(v.pk, 0)
+                top_videos.sort(key=lambda v: v.rank, reverse=True)
+            context['top_videos'] = top_videos
 
         return context
 
