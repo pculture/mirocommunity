@@ -54,6 +54,15 @@ class SubmitURLView(FormView):
     session_key = "localtv_submit_video_info"
     template_name = "localtv/submit_video/submit.html"
 
+    #: The url which this view will redirect to if the url can be scraped.
+    scraped_url = None
+
+    #: The url which this view will redirect to if the url is a video file.
+    direct_url = None
+
+    #: The url which this view will redirect to if the url isn't recognized.
+    embed_url = None
+
     def get(self, request, *args, **kwargs):
         return FormView.post(self, request, *args, **kwargs)
 
@@ -82,11 +91,11 @@ class SubmitURLView(FormView):
 
         if video is not None and (video.embed_code or
                 (video.file_url and not video.file_url_expires)):
-            success_url = reverse('localtv_submit_scraped_video')
+            success_url = self.scraped_url
         elif is_video_url(url):
-            success_url = reverse('localtv_submit_directlink_video')
+            success_url = self.direct_url
         else:
-            success_url = reverse('localtv_submit_embedrequest_video')
+            success_url = self.embed_url
 
         self.success_url = "%s?%s" % (success_url, self.request.GET.urlencode())
 
@@ -113,23 +122,31 @@ class SubmitURLView(FormView):
 
 class SubmitVideoView(CreateView):
     session_key = "localtv_submit_video_info"
+    #: The url name for the success url.
+    thanks_url_name = None
+    #: The url for the base submit view. Requests that don't have the proper
+    #: session information will be redirected there.
+    submit_video_url = None
+
+    #: A list or tuple of fields to include in the form.
+    form_fields = None
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         session_key = self.get_session_key()
         if (session_key not in request.session or
             not request.session[session_key].get('url', None)):
-            return HttpResponseRedirect(reverse('localtv_submit_video'))
+            return HttpResponseRedirect(self.submit_video_url)
         return super(SubmitVideoView, self).dispatch(request, *args, **kwargs)
 
     def get_session_key(self):
         return self.session_key
 
     def get_success_url(self):
-        return reverse('localtv_submit_thanks', args=[self.object.pk])
+        return reverse(self.thanks_url_name, args=[self.object.pk])
 
     def get_form_class(self):
-        fields = self.get_form_fields()
+        fields = self.form_fields
         session_key = self.get_session_key()
         try:
             session_dict = self.request.session[session_key]
@@ -151,10 +168,9 @@ class SubmitVideoView(CreateView):
         return initial
 
     def get_object(self):
+        if self.video is not None:
+            return Video.from_vidscraper_video(self.video, commit=False)
         return Video()
-
-    def get_form_fields(self):
-        return ['tags', 'contact', 'notes']
 
     def get_form_kwargs(self):
         kwargs = super(SubmitVideoView, self).get_form_kwargs()
@@ -196,32 +212,6 @@ class SubmitVideoView(CreateView):
             'user_url': self.object.video_service_url,
         }
         return context
-
-
-class ScrapedSubmitVideoView(SubmitVideoView):
-    form_class = forms.ScrapedSubmitVideoForm
-    template_name = 'localtv/submit_video/scraped.html'
-
-    def get_object(self):
-        return Video.from_vidscraper_video(self.video, commit=False)
-
-
-class EmbedSubmitVideoView(SubmitVideoView):
-    form_class = forms.EmbedSubmitVideoForm
-    template_name = 'localtv/submit_video/embed.html'
-
-    def get_form_fields(self):
-        return super(EmbedSubmitVideoView, self).get_form_fields() + [
-            'name', 'description', 'thumbnail_url', 'embed_code']
-
-
-class DirectLinkSubmitVideoView(SubmitVideoView):
-    form_class = forms.DirectLinkSubmitVideoForm
-    template_name = 'localtv/submit_video/direct.html'
-
-    def get_form_fields(self):
-        return super(DirectLinkSubmitVideoView, self).get_form_fields() + [
-            'name', 'description', 'thumbnail_url', 'website_url']
 
 
 def submit_thanks(request, video_id=None):
