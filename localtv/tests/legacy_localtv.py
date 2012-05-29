@@ -53,6 +53,7 @@ from localtv.models import (Watch, Category, SiteSettings, Video,
                             Feed, OriginalVideo, SavedSearch)
 from localtv import utils
 import localtv.feeds.views
+from localtv.search.utils import NormalizedVideoList
 from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
@@ -255,8 +256,12 @@ class ViewTestCase(BaseTestCase):
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
                           featured)
-        popular = list(response.context['popular_videos'].queryset)
-        self.assertEqual(popular, sorted(popular, reverse=True,
+        popular = response.context['popular_videos']
+        self.assertIsInstance(popular, NormalizedVideoList)
+        self.assertEqual(len(popular),
+                         Video.objects.filter(status=Video.ACTIVE).count())
+        popular_list = list(popular.queryset)
+        self.assertEqual(popular_list, sorted(popular_list, reverse=True,
                                          key=lambda v: v.watch_count))
         self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_settings)))

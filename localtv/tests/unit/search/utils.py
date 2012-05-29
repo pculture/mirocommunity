@@ -162,7 +162,9 @@ class FeaturedSortUnitTestCase(BaseTestCase):
 
     def test_sort(self):
         """
-        Checks that the sorted queryset is actually correctly sorted.
+        Checks that the sorted queryset is actually sorted by the last date
+        the videos were featured, with the never-featured videos coming in
+        last.
 
         """
         expected = [self.video2, self.video3, self.video1, self.video4]

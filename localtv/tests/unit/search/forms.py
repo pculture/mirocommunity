@@ -32,6 +32,11 @@ class DateTimeFilterFieldTestCase(BaseTestCase):
         # bug #263.
         # https://bitbucket.org/mchaput/whoosh/issue/263
         self.video1 = self.create_video(name='video1')
+        # Backwards-compatibility check: also exclude max datetimes.
+        self.video0 = self.create_video(name='video0',
+                            last_featured=datetime.max)
+        self.video0.last_featured = None
+        self.video0.save(update_index=False)
         self.video2 = self.create_video(name='video2',
                             last_featured=datetime.now() - timedelta(1))
         self.video3 = self.create_video(name='video3',
@@ -52,7 +57,7 @@ class DateTimeFilterFieldTestCase(BaseTestCase):
 
     def test_filter__off(self):
         expected = set((self.video2.pk, self.video3.pk, self.video4.pk,
-                        self.video1.pk))
+                        self.video1.pk, self.video0.pk))
 
         results = set(v.pk
                     for v in self.field.filter(Video.objects.all(), False))

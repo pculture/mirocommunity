@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import logging
 import operator
 import sys
@@ -72,10 +73,13 @@ class DateTimeFilterField(FilterMixin, forms.BooleanField):
             return queryset
         if isinstance(queryset, SearchQuerySet):
             # See the note in search_indexes on placeholder values.
-            value = DATETIME_NULL_PLACEHOLDER
+            # Backwards-compat until 2.0: Also exclude max datetimes
+            # with this filter.
+            values = [DATETIME_NULL_PLACEHOLDER,
+                      datetime.datetime.max]
         else:
-            value = None
-        return queryset.exclude(self._make_qs(queryset, [value]))
+            values = [None]
+        return queryset.exclude(self._make_qs(queryset, values))
 
 
 class ModelFilterField(FilterMixin, forms.ModelMultipleChoiceField):
