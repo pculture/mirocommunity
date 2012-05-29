@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from haystack.query import SearchQuerySet
 
 from localtv.models import Video
-from localtv.search.forms import DateTimeFilterField
+from localtv.search.forms import DateTimeFilterField, SearchForm
 from localtv.tests.base import BaseTestCase
 
 
@@ -66,3 +66,16 @@ class DateTimeFilterFieldTestCase(BaseTestCase):
         results = set(int(r.pk)
                     for r in self.field.filter(SearchQuerySet(), False))
         self.assertEqual(results, expected)
+
+
+class SearchFormTestCase(BaseTestCase):
+    def test_invalid_sort(self):
+        """
+        An invalid sort should be replaced during cleaning with the default
+        sort, rather than causing the entire form to become invalid.
+
+        """
+        form = SearchForm({'sort': 'asdf', 'q': 'q'})
+        self.assertFalse('asdf' in form.fields['sort'].choices)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['sort'], form.fields['sort'].initial)

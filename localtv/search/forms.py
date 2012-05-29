@@ -41,6 +41,18 @@ from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
 
+class DefaultChoiceField(forms.ChoiceField):
+    """
+    This subclass returns a default value if the supplied value is invalid.
+
+    """
+    def clean(self, value):
+        try:
+            return super(DefaultChoiceField, self).clean(value)
+        except ValidationError:
+            return self.initial
+
+
 class FilterMixin(object):
     widget = forms.CheckboxSelectMultiple
 
@@ -147,11 +159,10 @@ class SearchForm(HaystackForm):
         ('featured', Sort(_('Recently featured'), 'last_featured')),
         ('relevant', DummySort(_('Relevance')))
     ))
-    sort = forms.ChoiceField(choices=tuple((k, s.verbose_name)
-                                           for k, s in sorts.iteritems()),
-                             widget=forms.RadioSelect,
-                             required=False,
-                             initial='relevant')
+    sort = DefaultChoiceField(choices=tuple((k, s.verbose_name)
+                                            for k, s in sorts.iteritems()),
+                              widget=forms.RadioSelect,
+                              initial='relevant')
 
     tag = TagFilterField()
     category = ModelFilterField(
@@ -217,12 +228,6 @@ class SearchForm(HaystackForm):
         """
         return [self[name] for name, field in self.fields.iteritems()
                 if isinstance(field, FilterMixin)]
-
-    def clean_sort(self):
-        sort = self.cleaned_data['sort']
-        if not sort in self.sorts:
-            return self.initial.get('sort', self.fields['sort'].initial)
-        return sort
 
     def clean(self):
         cleaned_data = self.cleaned_data
