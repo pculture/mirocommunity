@@ -21,7 +21,7 @@ from localtv.decorators import require_site_admin
 
 from uploadtemplate import views, models
 
-index = require_site_admin(views.index)
+index = require_site_admin(views.AdminView.as_view())
 delete = require_site_admin(views.delete)
 download = require_site_admin(views.download)
 unset_default = require_site_admin(views.unset_default)
