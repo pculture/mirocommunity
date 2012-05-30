@@ -31,6 +31,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
 {% endblock %}
 
+{% block scripts %}
+	{{ block.super }}
+	<script type="text/javascript" src="http://s3.www.universalsubtitles.org/js/unisubs-widgetizer.js"></script>
+{% endblock %}
+
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
