@@ -160,7 +160,9 @@ class SiteRelatedManager(models.Manager):
     will be created.
 
     """
-    _cache = {}
+    def __init__(self):
+        super(SiteRelatedManager, self).__init__()
+        self._cache = {}
 
     def get_cached(self, site, using):
         # Make sure we're dealing with a primary key.
