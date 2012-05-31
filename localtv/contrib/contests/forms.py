@@ -55,7 +55,8 @@ class ContestAdminForm(forms.ModelForm):
         if self.instance.site_id is None:
             self.instance.site = Site.objects.get_current()
 
-        self.instance.detail_columns = self.cleaned_data['detail_columns']
+        if 'detail_columns' in self.cleaned_data:
+            self.instance.detail_columns = self.cleaned_data['detail_columns']
 
     def save(self, commit=True):
         instance = super(ContestAdminForm, self).save(commit)
