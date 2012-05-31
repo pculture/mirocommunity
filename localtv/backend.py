@@ -34,9 +34,7 @@ class SiteAdminBackend(ModelBackend):
         if user_obj.is_superuser:
             return True
 
-        from django.contrib.sites.models import Site
-        site = Site.objects.get_current()
-        site_settings = SiteSettings.objects.get(site=site)
+        site_settings = SiteSettings.objects.get_current()
         return site_settings.user_is_admin(user_obj)
 
     has_module_perms = has_perm
