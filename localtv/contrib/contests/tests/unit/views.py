@@ -19,7 +19,8 @@ import datetime
 
 from localtv.contrib.contests.tests.base import BaseTestCase
 from localtv.contrib.contests.models import Contest
-from localtv.contrib.contests.views import ContestDetailView
+from localtv.contrib.contests.views import (ContestDetailView,
+                                            ContestListingView)
 
 
 class ContestDetailViewUnit(BaseTestCase):
@@ -30,11 +31,11 @@ class ContestDetailViewUnit(BaseTestCase):
         now = datetime.datetime.now()
         second = datetime.timedelta(seconds=1)
         video1 = self.create_video(name='video1',
-                                           when_approved=now - second * 2)
+                                   when_approved=now - second * 2)
         video2 = self.create_video(name='video2',
-                                           when_approved=now - second)
+                                   when_approved=now - second)
         video3 = self.create_video(name='video3',
-                                           when_approved=now)
+                                   when_approved=now)
         self.create_contestvideo(contest, video1)
         self.create_contestvideo(contest, video2)
         self.create_contestvideo(contest, video3)
@@ -71,7 +72,7 @@ class ContestDetailViewUnit(BaseTestCase):
                     for i in xrange(10)]
         self.assertTrue(any([random != list(c['random_videos'])
                              for c in contexts]))
-
+        
     def test_context_data__top(self):
         self.skipTest('vote ordering is broken ATM')
         contest = self.create_contest(detail_columns=Contest.TOP,
@@ -104,3 +105,33 @@ class ContestDetailViewUnit(BaseTestCase):
         self.assertEqual(list(context_data['top_videos']),
                          [video1, video2, video3])
 
+
+class ContestListingViewUnit(BaseTestCase):
+
+    def test_get_queryset(self):
+        contest = self.create_contest()
+        now = datetime.datetime.now()
+        second = datetime.timedelta(seconds=1)
+        video1 = self.create_video(name='video1',
+                                           when_approved=now - second * 2)
+        video2 = self.create_video(name='video2',
+                                           when_approved=now - second)
+        video3 = self.create_video(name='video3',
+                                           when_approved=now)
+        self.create_contestvideo(contest, video1)
+        self.create_contestvideo(contest, video2)
+        self.create_contestvideo(contest, video3)
+
+        view = ContestListingView()
+        view.object = contest
+
+        self.assertEqual(list(view.get_queryset()),
+                         [video3, video2, video1])
+
+    def test_get(self):
+        contest = self.create_contest()
+        view = ContestListingView()
+        self.assertTrue(view.dispatch(self.factory.get('/'),
+                                      pk=contest.pk,
+                                      slug=contest.slug))
+        self.assertEqual(view.object, contest)

@@ -69,5 +69,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			{% endif %}
 		</div>{# /.row-flexible.contest-videos #}
+                <div class="padded">
+                  <a class="button-wide continue" href="{% url contests_contest_listing pk=contest.pk slug=contest.slug %}">See All Videos</a>
+                </div>
 	</div>{# /.page-content #}
 {% endblock %}

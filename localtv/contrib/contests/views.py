@@ -18,12 +18,13 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db.models import Count
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.views.generic import (DetailView, CreateView, UpdateView,
                                   ListView, DeleteView)
 
 from localtv.contrib.contests.forms import ContestAdminForm
 from localtv.contrib.contests.models import Contest, ContestVote
+from localtv.search.views import VIDEOS_PER_PAGE
 from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
 
@@ -93,6 +94,28 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
             context['top_videos'] = top_videos
 
         return context
+
+class ContestListingView(ListView):
+    model = Video
+    paginate_by = VIDEOS_PER_PAGE
+    template_name = 'contests/video_listing.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            contest = Contest.objects.get(
+                pk=kwargs['pk'],
+                site_id=settings.SITE_ID)
+        except Contest.DoesNotExist:
+            raise Http404
+
+        self.object = contest
+        return super(ContestListingView, self).get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Video.objects.filter(
+            contestvideo__contest=self.object,
+            site_id=settings.SITE_ID).with_best_date().order_by(
+            '-best_date')
 
 
 class ContestAdminListView(ContestQuerySetMixin, ListView):

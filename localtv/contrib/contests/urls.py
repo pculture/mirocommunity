@@ -19,6 +19,7 @@ from django.conf.urls.defaults import patterns, url
 
 from localtv.contrib.contests.models import Contest
 from localtv.contrib.contests.views import (ContestDetailView,
+                                            ContestListingView,
                                             ContestAdminListView,
                                             ContestAdminCreateView,
                                             ContestAdminUpdateView,
@@ -42,6 +43,9 @@ urlpatterns = patterns('localtv.contrib.voting.views',
     url(r'^contests/(?P<pk>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
     	ContestDetailView.as_view(),
         name='contests_contest_detail'),
+    url(r'^contests/(?P<pk>[0-9]+)(?:/(?P<slug>[\w-]+))?/videos/?$',
+    	ContestListingView.as_view(),
+        name='contests_contest_listing'),
     url(r'^admin/contests/?$',
         require_site_admin(ContestAdminListView.as_view()),
     	name='localtv_admin_contests'),
