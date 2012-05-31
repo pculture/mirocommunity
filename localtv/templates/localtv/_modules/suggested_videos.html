@@ -17,23 +17,27 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load url from future %}
+{% comment %}
+Expects that popular videos are in the current context; renders a small
+module displaying them.
+{% endcomment %}
 
 {% load i18n %}
+{% load url from future %}
 
-<ul class="navigation-list">
-	<li class="nav-item nav-item-dropdown">
-		<a href="#">{% trans "Browse" %}</a>
-		<div class="dropdown-box browse-box">
-			{% for module in browse_modules %}
-				{% include module %}
-			{% endfor %}
-		</div>
-	</li>
-	<li class="nav-item nav-submit">
-		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
-	</li>
-	<li class="nav-item nav-about">
-		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
-	</li>
-</ul>
+<section class="pod video-suggested-videos">
+	<header class="pod-header">
+		<h1>{% trans "More Videos" %}</h1>
+	</header>
+	<div class="pod-content">
+		{# TODO: calculate a suggested videos list #}
+		{% with popular_videos|slice:"4" as video_list %}
+			{% include "localtv/_video_grid_list.html" %}
+		{% endwith %}
+	</div>
+	<div class="pod-footer">
+		<ul class="pod-footer-actions">
+			<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
+		</ul>
+	</div>
+</section>{# /.pod.video-suggested-videos #}

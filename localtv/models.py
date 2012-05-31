@@ -153,46 +153,61 @@ class Thumbnailable(models.Model):
         super(Thumbnailable, self).delete(*args, **kwargs)
 
 
-SITE_LOCATION_CACHE = {}
+class SiteRelatedManager(models.Manager):
+    """
+    Returns an object related to a site. That object will be cached heavily
+    according to the site id and database. If the object does not exist, it
+    will be created.
 
+    """
+    def __init__(self):
+        super(SiteRelatedManager, self).__init__()
+        self._cache = {}
 
-class SiteSettingsManager(models.Manager):
+    def get_cached(self, site, using):
+        # Make sure we're dealing with a primary key.
+        if isinstance(site, Site):
+            site = site.pk
+        site_pk = int(site)
+        if (using, site_pk) not in self._cache:
+            try:
+                instance = self.select_related().get(site=site_pk)
+            except self.model.DoesNotExist:
+                try:
+                    site = Site.objects.using(using).get(pk=site_pk)
+                except Site.DoesNotExist:
+                    raise self.model.DoesNotExist
+                instance = self._new_entry(site, using)
+            self._cache[(using, site_pk)] = instance
+
+        return self._cache[(using, site_pk)]
+
+    def _new_entry(self, site, using):
+        """Creates and returns a new entry for the cache."""
+        return self.db_manager(using).create(site=site)
+
     def get_current(self):
-        sid = settings.SITE_ID
-        db = self._db if self._db is not None else 'default'
-        try:
-            # Dig it out of the cache.
-            current_site_settings = SITE_LOCATION_CACHE[(db, sid)]
-        except KeyError:
-            # Not in the cache? Time to put it in the cache.
-            try:
-                # If it is in the DB, get it.
-                current_site_settings = self.select_related().get(site__pk=sid)
-            except SiteSettings.DoesNotExist:
-                # Otherwise, create it.
-                current_site_settings = self.create(
-                    site=Site.objects.db_manager(db).get_current())
+        """
+        Shortcut for getting the currently-active instance from the cache.
 
-            SITE_LOCATION_CACHE[(db, sid)] = current_site_settings
-        return current_site_settings
-
-    def get(self, **kwargs):
-        if 'site' in kwargs:
-            site = kwargs['site']
-            if not isinstance(site, (int, long, basestring)):
-                site = site.id
-            site = int(site)
-            try:
-                return SITE_LOCATION_CACHE[(self._db, site)]
-            except KeyError:
-                pass
-        site_settings = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[(self._db, site_settings.site_id)] = site_settings
-        return site_settings
+        """
+        site = settings.SITE_ID
+        using = self._db if self._db is not None else 'default'
+        return self.get_cached(site, using)
 
     def clear_cache(self):
-        global SITE_LOCATION_CACHE
-        SITE_LOCATION_CACHE = {}
+        self._cache = {}
+
+    def _post_save(self, sender, instance, created, raw, using, **kwargs):
+        self._cache[(using, instance.pk)] = instance
+
+    def contribute_to_class(self, model, name):
+        # In addition to the normal contributions, we also attach a post-save
+        # listener to cache newly-saved instances immediately. This is
+        # post-save to make sure that we don't cache anything invalid.
+        super(SiteRelatedManager, self).contribute_to_class(model, name)
+        if not model._meta.abstract:
+            models.signals.post_save.connect(self._post_save, sender=model)
 
 
 class SingletonManager(models.Manager):
@@ -275,7 +290,7 @@ class SiteSettings(Thumbnailable):
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
 
-    objects = SiteSettingsManager()
+    objects = SiteRelatedManager()
 
     class Meta:
         db_table = 'localtv_sitelocation'
@@ -294,10 +309,6 @@ class SiteSettings(Thumbnailable):
             return True
 
         return self.admins.filter(pk=user.pk).exists()
-
-    def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
-        return models.Model.save(self, *args, **kwargs)
 
     def should_show_dashboard(self):
         '''On /admin/, most sites will see a dashboard that gives them
@@ -1215,8 +1226,9 @@ class OriginalVideo(VideoBase):
                 self.video.site.name, self.video.name)
             message = t.render(c)
             send_notice('admin_video_updated', subject, message,
-                        site_settings=SiteSettings.objects.get(
-                    site=self.video.site))
+                        site_settings=SiteSettings.objects.get_cached(
+                                            site=self.video.site,
+                                            using=self._state.db))
             # Update the OriginalVideo to show that we sent this notification
             # out.
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETED
@@ -1292,8 +1304,9 @@ class OriginalVideo(VideoBase):
             self.video.site.name, self.video.name)
         message = t.render(c)
         send_notice('admin_video_updated', subject, message,
-                    site_settings=SiteSettings.objects.get(
-                site=self.video.site))
+                    site_settings=SiteSettings.objects.get_cached(
+                                        site=self.video.site,
+                                        using=self._state.db))
 
         # And update the self instance to reflect the changes.
         for field in changed_fields:
@@ -1456,7 +1469,8 @@ class VideoManager(models.Manager):
         in when originally imported.
         """
         if site_settings is None and feed:
-            site_settings = SiteSettings.objects.get(site=feed.site)
+            site_settings = SiteSettings.objects.get_cached(site=feed.site,
+                                                         using=feed._state.db)
         if site_settings:
             qs = self.get_latest_videos(site_settings)
         else:
@@ -1873,9 +1887,9 @@ class Video(Thumbnailable, VideoBase):
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-
-        if self.when_published and \
-                SiteSettings.objects.get(site=self.site_id).use_original_date:
+        site_settings = SiteSettings.objects.get_cached(site=self.site_id,
+                                                        using=self._state.db)
+        if self.when_published and site_settings.use_original_date:
             return 'published'
         else:
             return 'posted'
@@ -1963,7 +1977,8 @@ class Watch(models.Model):
 class VideoModerator(CommentModerator):
 
     def allow(self, comment, video, request):
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         if site_settings.comments_required_login:
             return request.user and request.user.is_authenticated()
         else:
@@ -1974,7 +1989,8 @@ class VideoModerator(CommentModerator):
         # dependency
         from localtv.utils import send_notice
 
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         t = loader.get_template('comments/comment_notification_email.txt')
         c = Context({ 'comment': comment,
                       'content_object': video,
@@ -2026,7 +2042,8 @@ class VideoModerator(CommentModerator):
                              [previous_comment.user.email]).send(fail_silently=True)
 
     def moderate(self, comment, video, request):
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         if site_settings.screen_all_comments:
             if not getattr(request, 'user'):
                 return True
@@ -2054,7 +2071,8 @@ tagging.models.Tag.__unicode__ = tag_unicode
 
 
 def send_new_video_email(sender, **kwargs):
-    site_settings = SiteSettings.objects.get(site=sender.site)
+    site_settings = SiteSettings.objects.get_cached(site=sender.site_id,
+                                                   using=sender._state.db)
     if sender.status == Video.ACTIVE:
         # don't send the e-mail for videos that are already active
         return

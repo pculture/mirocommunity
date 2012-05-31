@@ -17,23 +17,16 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load url from future %}
-
-{% load i18n %}
-
-<ul class="navigation-list">
-	<li class="nav-item nav-item-dropdown">
-		<a href="#">{% trans "Browse" %}</a>
-		<div class="dropdown-box browse-box">
-			{% for module in browse_modules %}
-				{% include module %}
-			{% endfor %}
-		</div>
-	</li>
-	<li class="nav-item nav-submit">
-		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
-	</li>
-	<li class="nav-item nav-about">
-		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
-	</li>
-</ul>
+{% load i18n %}{% load url from future %}
+{% if categories %}
+<section class="browse-box-section">
+	<h1><a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a></h1>
+	<ul>
+		{% for category in categories %}
+			<li>
+				<a href="{{ category.get_absolute_url }}">{{ category }}</a>
+			</li>
+		{% endfor %}
+	</ul>
+</section>
+{% endif %}

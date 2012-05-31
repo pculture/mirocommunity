@@ -270,6 +270,17 @@ class BaseTestCase(TestCase):
                 'testdata',
                 filename))
 
+    def assertRedirects(self, response, target_path, netloc='testserver'):
+        """
+        Asserts that the given response represents a redirect to the target
+        path at the given ``netloc``. By default, ``netloc`` will be
+        'testserver', which corresponds to test-local urls.
+        """
+        self.assertEqual(response.status_code, 302)
+        parsed_url = urlparse.urlsplit(response['Location'])
+        self.assertEqual(parsed_url.netloc, netloc)
+        self.assertEqual(parsed_url.path, target_path)
+
     def assertRequiresAuthentication(self, url, username=None, password=None,
                                      data=None):
         """
@@ -293,9 +304,8 @@ class BaseTestCase(TestCase):
             c.login(username=username, password=password)
 
         response = c.get(url, data or {})
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, settings.LOGIN_URL)
         parsed_url = urlparse.urlsplit(response['Location'])
-        self.assertEqual(parsed_url.path, settings.LOGIN_URL)
         qd = QueryDict(parsed_url.query)
         parsed_next = urlparse.urlsplit(qd['next'])
         self.assertEqual(parsed_next.path, url)
