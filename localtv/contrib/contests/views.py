@@ -23,7 +23,9 @@ from django.views.generic import (DetailView, CreateView, UpdateView,
                                   ListView, DeleteView)
 
 from localtv.contrib.contests.forms import ContestAdminForm
-from localtv.contrib.contests.models import Contest, ContestVote
+from localtv.contrib.contests.models import (Contest,
+                                             UpVotesAggregate,
+                                             AllVotesAggregate)
 from localtv.search.views import VIDEOS_PER_PAGE
 from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
@@ -63,35 +65,15 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
 
         if Contest.TOP in self.object.detail_columns:
             if not self.object.allow_downvotes:
-                # XXX This counts all votes, regardless of whether they're
-                # upvote or downvotes.
                 top_videos = base_qs.annotate(
-                                rank=Count('contestvideo__contestvote')
-                            ).order_by('-rank')
+                    rank=UpVotesAggregate())
             else:
-                # Ideally we'd do this sorting in the db; for now, we hope
-                # that the contests don't have enough videos for this to be
-                # a ridiculous waste of time.
-                # Also ideally, we would not use such a naive computation of
-                # rank.
+                # Ideally, we would not use such a naive computation of rank.
                 # http://evanmiller.org/how-not-to-sort-by-average-rating.html
-                upvotes = dict(
-                    base_qs.filter(
-                        contestvideo__contestvote__vote=ContestVote.UP
-                    ).annotate(rank=Count('contestvideo__contestvote')
-                    ).values_list('id', 'rank'))
-                downvotes = dict(
-                    base_qs.filter(
-                        contestvideo__contestvote__vote=ContestVote.DOWN
-                    ).annotate(rank=Count('contestvideo__contestvote')
-                    ).values_list('id', 'rank'))
-                # XXX Actually looking at these lists, the values only bear a
-                # passing resemblance to what they're supposed to be counting.
-                top_videos = list(base_qs.all())
-                for v in top_videos:
-                    v.rank = upvotes.get(v.pk, 0) - downvotes.get(v.pk, 0)
-                top_videos.sort(key=lambda v: v.rank, reverse=True)
-            context['top_videos'] = top_videos
+                top_videos = base_qs.annotate(
+                    rank=AllVotesAggregate())
+
+            context['top_videos'] = top_videos.order_by('-rank')
 
         return context
 

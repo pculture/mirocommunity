@@ -74,15 +74,14 @@ class ContestDetailViewUnit(BaseTestCase):
                              for c in contexts]))
         
     def test_context_data__top(self):
-        self.skipTest('vote ordering is broken ATM')
         contest = self.create_contest(detail_columns=Contest.TOP,
                                       allow_downvotes=False)
         video1 = self.create_video(name='video1')
         video2 = self.create_video(name='video2')
         video3 = self.create_video(name='video3')
         cv1 = self.create_contestvideo(contest, video1, upvotes=5)
-        cv2 = self.create_contestvideo(contest, video2, upvotes=10)
-        cv3 = self.create_contestvideo(contest, video3, upvotes=3)
+        self.create_contestvideo(contest, video2, upvotes=10)
+        self.create_contestvideo(contest, video3, upvotes=3)
 
         view = ContestDetailView()
         view.object = contest
@@ -93,8 +92,10 @@ class ContestDetailViewUnit(BaseTestCase):
         self.assertTrue('random_videos' not in context_data)
         self.assertTrue('new_videos' not in context_data)
 
-        # Downvotes should be ignored if they're disallowed.
-        self.create_votes(cv2, 6, are_up=False)
+        # Downvotes should be ignored if they're disallowed.  By adding 6 down
+        # votes to the video with 5 votes, if the down votes are counted at all
+        # that video will be in the wrong place.
+        self.create_votes(cv1, 6, are_up=False)
         context_data = view.get_context_data(object=contest)
         self.assertEqual(list(context_data['top_videos']),
                          [video2, video1, video3])
@@ -103,7 +104,7 @@ class ContestDetailViewUnit(BaseTestCase):
         contest.allow_downvotes = True
         context_data = view.get_context_data(object=contest)
         self.assertEqual(list(context_data['top_videos']),
-                         [video1, video2, video3])
+                         [video2, video3, video1])
 
 
 class ContestListingViewUnit(BaseTestCase):

@@ -20,6 +20,7 @@ from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.sql.aggregates import Aggregate
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -114,3 +115,90 @@ class ContestVote(models.Model):
 
     class Meta:
         unique_together = ('contestvideo', 'user')
+
+
+class UpVotesAggregate(models.Aggregate):
+    def __init__(self):
+        models.Aggregate.__init__(self, "contestvideo")
+
+    def add_to_query(self, query, alias, col, source, is_summary):
+        aggregate = UpVotesAggregateSQL(col, source=source,
+                                        is_summary=is_summary,
+                                        **self.extra)
+        query.aggregates[alias] = aggregate
+
+
+class UpVotesAggregateSQL(Aggregate):
+    is_ordinal = True
+    sql_template = ('(SELECT COUNT(*) FROM %s INNER JOIN %s ON (%s.%s == %s.%s) WHERE %s.%s = %s.%s AND %s.%s == %s)')
+
+    def as_sql(self, qn, connection):
+        contests_vote = qn("contests_contestvote")
+        contests_video = qn("contests_contestvideo")
+        localtv_video = qn("localtv_video")
+        id_ = qn("id")
+        video_id = qn("video_id")
+        contestvideo_id = qn("contestvideo_id")
+        vote = qn("vote")
+        return self.sql_template % (
+            # FROM
+            contests_vote,
+            # INNER JOIN
+            contests_video,
+            # ON
+            contests_vote, contestvideo_id,
+            # ==
+            contests_video, id_,
+            # WHERE
+            contests_video, video_id,
+            # ==
+            localtv_video, id_,
+            # AND
+            contests_vote, vote,
+            # ==
+            1)
+
+
+class AllVotesAggregate(models.Aggregate):
+    def __init__(self):
+        models.Aggregate.__init__(self, "contestvideo")
+
+    def add_to_query(self, query, alias, col, source, is_summary):
+        aggregate = AllVotesAggregateSQL(col, source=source,
+                                        is_summary=is_summary,
+                                        **self.extra)
+        query.aggregates[alias] = aggregate
+
+
+class AllVotesAggregateSQL(Aggregate):
+    is_ordinal = True
+    sql_template = ('(SELECT SUM(%s) FROM %s INNER JOIN %s ON (%s.%s == %s.%s) WHERE %s.%s = %s.%s)')
+
+    def as_sql(self, qn, connection):
+        contests_vote = qn("contests_contestvote")
+        contests_video = qn("contests_contestvideo")
+        localtv_video = qn("localtv_video")
+        id_ = qn("id")
+        video_id = qn("video_id")
+        contestvideo_id = qn("contestvideo_id")
+        vote = qn("vote")
+        return self.sql_template % (
+            # SUM
+            vote,
+            # FROM
+            contests_vote,
+            # INNER JOIN
+            contests_video,
+            # ON
+            contests_vote, contestvideo_id,
+            # ==
+            contests_video, id_,
+            # WHERE
+            contests_video, video_id,
+            # ==
+            localtv_video, id_)
+
+
+
+
+
