@@ -35,7 +35,7 @@ from localtv.submit_video.utils import is_video_url
 from localtv.utils import get_or_create_tags
 
 
-def _has_submit_permissions(request):
+def _has_submit_permissions(request, *args, **kwargs):
     site_settings = SiteSettings.objects.get_current()
     if not site_settings.submission_requires_login:
         return True
@@ -214,13 +214,18 @@ class SubmitVideoView(CreateView):
         return context
 
 
-def submit_thanks(request, video_id=None):
+def submit_thanks(request, video_id=None, template_name=None,
+                  extra_context=None):
+    if template_name is None:
+        template_name = 'localtv/submit_video/thanks.html'
     if request.user_is_admin() and video_id:
         context = {
             'video': Video.objects.get(pk=video_id)
             }
     else:
         context = {}
+    if extra_context is not None:
+        context.update(extra_context)
     return render_to_response(
-        'localtv/submit_video/thanks.html', context,
+        template_name, context,
         context_instance=RequestContext(request))

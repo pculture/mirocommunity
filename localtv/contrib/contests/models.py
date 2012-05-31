@@ -72,13 +72,22 @@ class Contest(models.Model):
     #: Whether the actual vote counts should be displayed by the videos.
     display_vote_counts = models.BooleanField(default=False)
 
+    @property
+    def slug(self):
+        return slugify(self.name)
+
     def __unicode__(self):
         return unicode(self.name)
 
     def get_absolute_url(self):
         return reverse('contests_contest_detail',
                        kwargs={'pk': self.pk,
-                               'slug': slugify(self.name)})
+                               'slug': self.slug})
+
+    def get_listing_url(self):
+        return reverse('contests_contest_listing',
+                       kwargs={'pk': self.pk,
+                               'slug': self.slug})
 
 
 class ContestVideo(models.Model):
