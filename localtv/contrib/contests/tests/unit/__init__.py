@@ -16,3 +16,4 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from localtv.contrib.contests.tests.unit.views import *
+from localtv.contrib.contests.tests.unit.forms import *
