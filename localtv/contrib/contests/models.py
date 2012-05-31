@@ -172,7 +172,7 @@ class AllVotesAggregate(models.Aggregate):
 
 class AllVotesAggregateSQL(Aggregate):
     is_ordinal = True
-    sql_template = ('(SELECT SUM(%s) FROM %s INNER JOIN %s ON (%s.%s == %s.%s) WHERE %s.%s = %s.%s)')
+    sql_template = ('(SELECT SUM(%s) FROM %s INNER JOIN %s ON (%s.%s = %s.%s) WHERE %s.%s = %s.%s)')
 
     def as_sql(self, qn, connection):
         contests_vote = qn("contests_contestvote")
