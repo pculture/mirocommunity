@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from localtv.contrib.contests.tests.base import BaseTestCase
 from localtv.contrib.contests.models import Contest
 from localtv.contrib.contests.views import ContestDetailView
@@ -23,9 +25,16 @@ from localtv.contrib.contests.views import ContestDetailView
 class ContestDetailViewUnit(BaseTestCase):
 	def test_context_data__new(self):
 		contest = self.create_contest(detail_columns=Contest.NEW)
-		video1 = self.create_video(name='video1')
-		video2 = self.create_video(name='video2')
-		video3 = self.create_video(name='video3')
+                # MySQL times are only accurate to one second, so make sure the
+                # times are different by a whole second.
+                now = datetime.datetime.now()
+                second = datetime.timedelta(seconds=1)
+		video1 = self.create_video(name='video1',
+                                           when_approved=now - second * 2)
+		video2 = self.create_video(name='video2',
+                                           when_approved=now - second)
+		video3 = self.create_video(name='video3',
+                                           when_approved=now)
 		self.create_contestvideo(contest, video1)
 		self.create_contestvideo(contest, video2)
 		self.create_contestvideo(contest, video3)
