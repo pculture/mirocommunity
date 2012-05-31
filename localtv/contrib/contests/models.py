@@ -130,7 +130,7 @@ class UpVotesAggregate(models.Aggregate):
 
 class UpVotesAggregateSQL(Aggregate):
     is_ordinal = True
-    sql_template = ('(SELECT COUNT(*) FROM %s INNER JOIN %s ON (%s.%s == %s.%s) WHERE %s.%s = %s.%s AND %s.%s == %s)')
+    sql_template = ('(SELECT COUNT(*) FROM %s INNER JOIN %s ON (%s.%s = %s.%s) WHERE %s.%s = %s.%s AND %s.%s = %s)')
 
     def as_sql(self, qn, connection):
         contests_vote = qn("contests_contestvote")
