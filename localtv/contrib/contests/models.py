@@ -197,8 +197,3 @@ class AllVotesAggregateSQL(Aggregate):
             contests_video, video_id,
             # ==
             localtv_video, id_)
-
-
-
-
-
