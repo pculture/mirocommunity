@@ -62,6 +62,8 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
 
         if Contest.TOP in self.object.detail_columns:
             if not self.object.allow_downvotes:
+                # XXX This counts all votes, regardless of whether they're
+                # upvote or downvotes.
                 top_videos = base_qs.annotate(
                                 rank=Count('contestvideo__contestvote')
                             ).order_by('-rank')
@@ -82,6 +84,8 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
                         contestvideo__contestvote__vote=ContestVote.DOWN
                     ).annotate(rank=Count('contestvideo__contestvote')
                     ).values_list('id', 'rank'))
+                # XXX Actually looking at these lists, the values only bear a
+                # passing resemblance to what they're supposed to be counting.
                 top_videos = list(base_qs.all())
                 for v in top_videos:
                     v.rank = upvotes.get(v.pk, 0) - downvotes.get(v.pk, 0)
