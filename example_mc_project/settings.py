@@ -165,6 +165,7 @@ INSTALLED_APPS = (
     'django.contrib.comments',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
+    'django.contrib.markup',
     # Uncomment to use south migrations
     # 'south',
     'djpagetabs',
