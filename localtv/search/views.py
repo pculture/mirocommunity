@@ -19,7 +19,7 @@ from django.conf import settings
 from django.http import Http404
 from django.views.generic import ListView
 
-from localtv.search.forms import SortFilterForm
+from localtv.search.forms import SearchForm, ModelFilterField
 
 
 VIDEOS_PER_PAGE = getattr(settings, 'VIDEOS_PER_PAGE', 15)
@@ -39,12 +39,12 @@ class SortFilterMixin(object):
     #: overridden.
     sort = None
 
-    form_class = SortFilterForm
+    form_class = SearchForm
 
     def get_form_data(self, base_data=None, filter_value=None):
         data = base_data or {}
         if self.filter_name is not None:
-            data[self.filter_name] = [filter_value]
+            data[self.filter_name] = filter_value
         if self.sort is not None:
             data['sort'] = self.sort
         return data
@@ -59,7 +59,7 @@ class SortFilterView(ListView, SortFilterMixin):
 
     """
     paginate_by = VIDEOS_PER_PAGE
-    form_class = SortFilterForm
+    form_class = SearchForm
     context_object_name = 'videos'
 
     #: The kwarg expected from the urlpattern for this view if
@@ -72,31 +72,40 @@ class SortFilterView(ListView, SortFilterMixin):
         method.
 
         """
-        form = self.form = self.get_form(self.request.GET.dict(),
-                                         self.kwargs.get(self.filter_kwarg))
-
-        if form.is_valid():
-            return form.get_queryset()
+        if self.filter_name is None:
+            filter_value = None
         else:
-            return form.invalid_query()
+            field = self.form_class.base_fields[self.filter_name]
+            filter_value = self.kwargs.get(self.filter_kwarg)
+            # ModelFilterFields expect a list.
+            if isinstance(field, ModelFilterField):
+                filter_value = [filter_value]
+        form = self.form = self.get_form(self.request.GET.dict(),
+                                         filter_value)
+        return form.search()
 
     def get_object(self):
         if self.filter_name is not None:
             field = self.form_class.base_fields[self.filter_name]
-            model = field.model
-            try:
-                key = field.to_field_name or 'pk'
-                obj = model.objects.get(**{
-                                        key: self.kwargs[self.filter_kwarg]})
-            except (ValueError, model.DoesNotExist):
-                raise Http404
-            else:
-                return obj
+            if isinstance(field, ModelFilterField):
+                model = field.model
+                try:
+                    key = field.to_field_name or 'pk'
+                    obj = model.objects.get(**{
+                                            key: self.kwargs[self.filter_kwarg]})
+                except (ValueError, model.DoesNotExist):
+                    raise Http404
+                else:
+                    return obj
         return None
 
     def get_context_data(self, **kwargs):
         context = super(SortFilterView, self).get_context_data(**kwargs)
         context['form'] = self.form
-        if self.filter_name is not None:
+        if (self.filter_name is not None and
+            isinstance(self.form_class.base_fields.get(self.filter_name),
+                       ModelFilterField)):
+            # If there is a model instance that's being filtered on, put it
+            # into the context.
             context[self.filter_name] = self.get_object()
         return context

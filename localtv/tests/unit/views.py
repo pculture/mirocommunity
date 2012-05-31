@@ -62,7 +62,7 @@ class VideoViewTestCase(BaseTestCase):
         context = view.get_context_data(object=video1)
         self.assertEqual(context['category'].pk, category.pk)
         self.assertEqual(list(context['popular_videos']),
-                        [video1, video2, video3])
+                        [video1, video2, video3, video5])
 
 
 class CompatibleListingViewTestCase(BaseTestCase):
@@ -144,3 +144,24 @@ class SortFilterViewTestCase(BaseTestCase):
         self.assertEqual(context['category'], category)
         self.assertTrue('videos' in context)
         self.assertTrue('form' in context)
+
+    def test_invalid_sort(self):
+        """
+        If an invalid sort is selected, an empty queryset should be returned.
+
+        """
+        view = SortFilterView()
+        view.request = self.factory.get('/', {'sort': 'unheard_of'})
+        queryset = view.get_queryset()
+        self.assertEqual(len(queryset), 0)
+
+    def test_invalid_filter_value(self):
+        """
+        If an invalid filter value is provided, an empty queryset should be
+        returned.
+
+        """
+        view = SortFilterView()
+        view.request = self.factory.get('/', {'category': '1'})
+        queryset = view.get_queryset()
+        self.assertEqual(len(queryset), 0)
