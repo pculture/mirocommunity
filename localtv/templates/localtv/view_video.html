@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre %}
+{% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre compress %}
 {% load url from future %}
 
 {% block meta %}
@@ -34,6 +34,27 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block scripts %}
 	{{ block.super }}
 	<script type="text/javascript" src="http://s3.www.universalsubtitles.org/js/unisubs-widgetizer.js"></script>
+	{% comment %}
+	The following bit of javascript creates space for the unisubs widget and
+	is necessary for as long as the unisubs widgetizer adds a widget which is
+	not kept in the flow of the document. It would be nice to get rid of
+	someday, though.
+	{% endcomment %}
+	<script type="text/javascript">
+		$(function(){
+			if (!('addEventListener' in window)) return;
+			var addHeightOnce = function () {
+				if(!window.UnisubsWidgetizerLoaded) return;
+				var $videoPlayers = $(".video-player"),
+					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
+					subtitleWidgetHeight = 47;
+				$videoPlayers.css({marginBottom: currentPlayerMarginBottom + subtitleWidgetHeight});
+				window.removeEventListener("DOMSubtreeModified", addHeightOnce);
+			}
+			if(window.UnisubsWidgetizerLoaded) return addHeightOnce();
+			window.addEventListener("DOMSubtreeModified", addHeightOnce);
+		});
+	</script>
 {% endblock %}
 
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
