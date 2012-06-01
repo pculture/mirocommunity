@@ -57,11 +57,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			window.addEventListener("DOMSubtreeModified", addHeightOnce);
 		}());
 	</script>
+	{% if current_video.contestvideo_set %}
+		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	{% endif %}
 {% endblock %}
-
-{% block body_classes %}{{ block.super }} video-detail{% endblock %}
-
-{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block styles %}
 	{{ block.super }}
@@ -70,12 +69,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 {% endblock %}
 
-{% block scripts %}
-	{{ block.super }}
-	{% if current_video.contestvideo_set %}
-		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
-	{% endif %}
-{% endblock %}
+{% block body_classes %}{{ block.super }} video-detail{% endblock %}
+
+{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
+
 {% block head %}
 	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}
