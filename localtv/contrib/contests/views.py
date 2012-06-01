@@ -95,6 +95,7 @@ class ContestListingView(ListView):
 
     def get_queryset(self):
         return Video.objects.filter(
+            status=Video.ACTIVE,
             contestvideo__contest=self.object,
             site_id=settings.SITE_ID).with_best_date().order_by(
             '-best_date')

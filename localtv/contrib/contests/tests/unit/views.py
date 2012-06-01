@@ -21,6 +21,7 @@ from localtv.contrib.contests.tests.base import BaseTestCase
 from localtv.contrib.contests.models import Contest
 from localtv.contrib.contests.views import (ContestDetailView,
                                             ContestListingView)
+from localtv.models import Video
 
 
 class ContestDetailViewUnit(BaseTestCase):
@@ -114,14 +115,18 @@ class ContestListingViewUnit(BaseTestCase):
         now = datetime.datetime.now()
         second = datetime.timedelta(seconds=1)
         video1 = self.create_video(name='video1',
-                                           when_approved=now - second * 2)
+                                   when_approved=now - second * 2)
         video2 = self.create_video(name='video2',
-                                           when_approved=now - second)
+                                   when_approved=now - second)
         video3 = self.create_video(name='video3',
-                                           when_approved=now)
+                                   when_approved=now)
+        video4 = self.create_video(name='video4',
+                                   when_approved=now + second,
+                                   status=Video.UNAPPROVED)
         self.create_contestvideo(contest, video1)
         self.create_contestvideo(contest, video2)
         self.create_contestvideo(contest, video3)
+        self.create_contestvideo(contest, video4)
 
         view = ContestListingView()
         view.object = contest
