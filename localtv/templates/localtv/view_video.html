@@ -63,6 +63,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
+{% block styles %}
+	{{ block.super }}
+	{% if current_video.contestvideo_set %}
+		<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
+	{% endif %}
+{% endblock %}
+
+{% block scripts %}
+	{{ block.super }}
+	{% if current_video.contestvideo_set %}
+		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	{% endif %}
+{% endblock %}
 {% block head %}
 	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}

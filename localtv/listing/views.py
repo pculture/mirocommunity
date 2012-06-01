@@ -18,13 +18,10 @@
 import datetime
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.views.generic import ListView
 from haystack.query import SearchQuerySet
 
-import localtv.settings
-from localtv.models import Video
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterView
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
@@ -94,33 +91,3 @@ class SiteListView(ListView):
     def get_queryset(self):
         return super(SiteListView, self).get_queryset().filter(
                                 site=Site.objects.get_current())
-
-
-class CategoryVideoSearchView(CompatibleListingView):
-    """
-    Adds support for voting on categories. Essentially, all this means is that
-    a ``user_can_vote`` variable is added to the context.
-
-    """
-    def get_context_data(self, **kwargs):
-        context = CompatibleListingView.get_context_data(self, **kwargs)
-        category = context['category']
-
-        user_can_vote = False
-        if (localtv.settings.voting_enabled() and 
-                    category.contest_mode and
-                    self.request.user.is_authenticated()):
-            from voting.models import Vote
-            # TODO: Benchmark this against a version where the pk queryset is
-            # evaluated here instead of becoming a subquery.
-            pks = category.approved_set.filter(
-                site=Site.objects.get_current()).values_list('id', flat=True)
-            user_can_vote = True
-            votes = Vote.objects.filter(
-                    content_type=ContentType.objects.get_for_model(Video),
-                    object_id__in=pks,
-                    user=self.request.user).count()
-            if votes >= MAX_VOTES_PER_CATEGORY:
-                user_can_vote = False
-        context['user_can_vote'] = user_can_vote
-        return context

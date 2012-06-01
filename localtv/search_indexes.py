@@ -32,9 +32,11 @@ from localtv.tasks import haystack_update, haystack_remove
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 #: We use a placeholder value because support for filtering on null values is
-#: lacking. We use ``datetime.max`` rather than ``datetime.min`` because whoosh
-#: doesn't support datetime values before 1900.
-DATETIME_NULL_PLACEHOLDER = datetime.max
+#: lacking. We use January 1st, 1900 because Whoosh doesn't support datetime
+#: values earlier than that, but we want to keep the videos with no value
+#: sorted last. This should be fine since we're not dealing with youtube
+#: videos uploaded in 1899.
+DATETIME_NULL_PLACEHOLDER = datetime(1900, 1, 1)
 
 
 class QueuedSearchIndex(indexes.SearchIndex):

@@ -26,6 +26,7 @@ urlpatterns = (
            document_root=settings.UPLOADTEMPLATE_MEDIA_ROOT) +
     patterns('',
         url(r'^thumbs/', include('daguerre.urls')),
+        url(r'^', include('localtv.contrib.contests.urls')),
         url(r'^', include('localtv.urls')),
     )
 )

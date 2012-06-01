@@ -21,13 +21,12 @@ from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
 
-import localtv.settings
 from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
-from localtv.search.forms import SortFilterForm
+from localtv.search.forms import SearchForm
 from localtv.search.utils import NormalizedVideoList
 
 from localtv.playlists.models import Playlist, PlaylistItem
@@ -42,9 +41,8 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         featured_videos = Video.objects.get_featured_videos()
-        form = SortFilterForm({'sort': 'popular'})
-        form.full_clean()
-        popular_videos = form.get_queryset()
+        form = SearchForm({'sort': 'popular'})
+        popular_videos = form.search()
         new_videos = Video.objects.get_latest_videos()
 
         site_settings_videos = Video.objects.get_site_settings_videos()
@@ -145,31 +143,9 @@ class VideoView(DetailView):
             context['category'] = category_obj
             popular_form_data['category'] = [category_obj]
 
-        form = SortFilterForm(popular_form_data)
-        form.full_clean()
-        popular_videos = form.get_queryset()
+        form = SearchForm(popular_form_data)
+        popular_videos = form.search()
         context['popular_videos'] = NormalizedVideoList(popular_videos)
-
-        if self.object.voting_enabled():
-            import voting
-            user_can_vote = True
-            if self.request.user.is_authenticated():
-                max_votes = self.object.categories.filter(
-                       contest_mode__isnull=False
-                   ).count() * MAX_VOTES_PER_CATEGORY
-                votes = voting.models.Vote.objects.filter(
-                    content_type=ContentType.objects.get_for_model(Video),
-                    user=self.request.user).count()
-                if votes >= max_votes:
-                    user_can_vote = False
-            context['user_can_vote'] = user_can_vote
-            if user_can_vote:
-                if 'category' in context and context['category'].contest_mode:
-                    context['contest_category'] = context['category']
-                else:
-                    context['contest_category'] = (
-                        self.object.categories.filter(
-                        contest_mode__isnull=False)[0])
 
         if site_settings.playlists_enabled:
             # showing playlists
@@ -211,6 +187,7 @@ class VideoView(DetailView):
                                                            playlist=playlist))
                         except PlaylistItem.DoesNotExist:
                             pass
+
         return context
 
 
@@ -222,25 +199,6 @@ def share_email(request, content_type_pk, object_id):
                               'site_settings': site_settings},
                              form_class = forms.ShareMultipleEmailForm
                              )
-
-
-def video_vote(request, object_id, direction, **kwargs):
-    if not localtv.settings.voting_enabled():
-        raise Http404
-    import voting.views
-    if request.user.is_authenticated() and direction != 'clear':
-        video = get_object_or_404(Video, pk=object_id)
-        max_votes = video.categories.filter(
-            contest_mode__isnull=False).count() * MAX_VOTES_PER_CATEGORY
-        votes = voting.models.Vote.objects.filter(
-            content_type=ContentType.objects.get_for_model(Video),
-            user=request.user).count()
-        if votes >= max_votes:
-            return HttpResponseRedirect(video.get_absolute_url())
-    return voting.views.vote_on_object(request, Video,
-                                       direction=direction,
-                                       object_id=object_id,
-                                       **kwargs)
 
 
 def newsletter(request):

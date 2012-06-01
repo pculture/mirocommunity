@@ -44,7 +44,6 @@ from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -746,11 +745,6 @@ class Category(MPTTModel):
         verbose_name='Category Parent',
         help_text=_("Categories, unlike tags, can have a hierarchy."))
 
-    # only relevant is voting is enabled for the site
-    contest_mode = models.DateTimeField('Turn on Contest',
-                                        null=True,
-                                        default=None)
-
     class MPTTMeta:
         order_insertion_by = ['name']
 
@@ -796,18 +790,6 @@ class Category(MPTTModel):
     def unique_error_message(self, model_class, unique_check):
         return 'Category with this %s already exists.' % (
             unique_check[0],)
-
-    def has_votes(self):
-        """
-        Returns True if this category has videos with votes.
-        """
-        if not lsettings.voting_enabled():
-            return False
-        import voting
-        return voting.models.Vote.objects.filter(
-            content_type=ContentType.objects.get_for_model(Video),
-            object_id__in=self.approved_set.values_list('id',
-                                                        flat=True)).exists()
 
 
 class SavedSearch(Source):
@@ -1915,11 +1897,6 @@ class Video(Thumbnailable, VideoBase):
             q_list.append(models.Q(**l))
         q = reduce(operator.or_, q_list)
         return Category.objects.filter(q)
-
-    def voting_enabled(self):
-        if not lsettings.voting_enabled():
-            return False
-        return self.categories.filter(contest_mode__isnull=False).exists()
 
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):

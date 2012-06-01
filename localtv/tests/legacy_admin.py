@@ -1033,7 +1033,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 class FeedAdministrationTestCase(BaseTestCase):
 
     url = reverse_lazy('localtv_admin_feed_add')
-    feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
+    feed_url = "http://qa.pculture.org/feeds_test/feed7.rss"
 
     def test_GET(self):
         """

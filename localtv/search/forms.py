@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import logging
 import operator
 import sys
@@ -26,7 +27,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django.utils.datastructures import SortedDict
-from haystack.forms import SearchForm
+from haystack.forms import SearchForm as HaystackForm
 from haystack.query import SearchQuerySet
 from tagging.models import Tag, TaggedItem
 from tagging.utils import get_tag_list
@@ -34,32 +35,35 @@ from tagging.utils import get_tag_list
 from localtv.models import Video, Category, Feed
 from localtv.playlists.models import Playlist
 from localtv.search.query import SmartSearchQuerySet
-from localtv.search.utils import (BestDateSort, FeaturedSort, ApprovedSort,
-                                  PopularSort, DummySort, _q_for_queryset)
+from localtv.search.utils import (BestDateSort, PopularSort, DummySort, Sort,
+                                  _q_for_queryset)
+from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 from localtv.settings import USE_HAYSTACK
 
 
-class SmartSearchForm(SearchForm):
-    def __init__(self, *args, **kwargs):
-        sqs = kwargs.get('searchqueryset', None)
-        if sqs is None:
-            kwargs['searchqueryset'] = SmartSearchQuerySet()
-        super(SmartSearchForm, self).__init__(*args, **kwargs)
+class DefaultChoiceField(forms.ChoiceField):
+    """
+    This subclass returns a default value if the supplied value is invalid.
 
-    def no_query_found(self):
-        return self.searchqueryset.all()
-
-    def invalid_query(self):
-        return self.searchqueryset.none()
+    """
+    def clean(self, value):
+        try:
+            return super(DefaultChoiceField, self).clean(value)
+        except ValidationError:
+            return self.initial
 
 
-class FilterField(forms.ModelMultipleChoiceField):
+class FilterMixin(object):
     widget = forms.CheckboxSelectMultiple
 
-    def __init__(self, queryset, cache_choices=False, required=False, *args,
-                 **kwargs):
-        super(FilterField, self).__init__(queryset, cache_choices, required,
-                                          *args, **kwargs)
+    def __init__(self, field_lookups, *args, **kwargs):
+        self.field_lookups = field_lookups
+        super(FilterMixin, self).__init__(*args, **kwargs)
+
+    def _make_qs(self, queryset, values):
+        qs = [_q_for_queryset(queryset, lookup, values)
+              for lookup in self.field_lookups]
+        return reduce(operator.or_, qs)
 
     def filter(self, queryset, values):
         """
@@ -67,22 +71,39 @@ class FilterField(forms.ModelMultipleChoiceField):
         :attr:`field`.
 
         """
-        pks = [instance.pk for instance in values]
-        qs = [_q_for_queryset(queryset, lookup, pks)
-              for lookup in self.field_lookups]
-        return queryset.filter(reduce(operator.or_, qs))
+        return queryset.filter(self._make_qs(queryset, values))
 
 
-class ModelFilterField(FilterField):
+class DateTimeFilterField(FilterMixin, forms.BooleanField):
+    """
+    If active, filters out videos that do not have a value for the given
+    datetime field lookups.
+
+    """
+    def filter(self, queryset, value):
+        if not value:
+            return queryset
+        if isinstance(queryset, SearchQuerySet):
+            # See the note in search_indexes on placeholder values.
+            # Backwards-compat until 2.0: Also exclude max datetimes
+            # with this filter.
+            values = [DATETIME_NULL_PLACEHOLDER,
+                      datetime.datetime.max]
+        else:
+            values = [None]
+        return queryset.exclude(self._make_qs(queryset, values))
+
+
+class ModelFilterField(FilterMixin, forms.ModelMultipleChoiceField):
     def __init__(self, queryset, field_lookups=None, cache_choices=False,
                  required=False, widget=None, label=None, *args, **kwargs):
-        self.field_lookups = field_lookups
         if label is None:
             label = queryset.model._meta.verbose_name_plural
         if hasattr(queryset, 'model'):
             self.model = queryset.model
-        super(ModelFilterField, self).__init__(queryset, cache_choices,
-                                               required, widget, label, *args,
+        super(ModelFilterField, self).__init__(field_lookups, queryset,
+                                               cache_choices, required,
+                                               widget, label, *args,
                                                **kwargs)
 
     def clean(self, value):
@@ -93,6 +114,10 @@ class ModelFilterField(FilterField):
             key = self.to_field_name or 'pk'
             value = [getattr(o, key) for o in value]
         return super(ModelFilterField, self).clean(value)
+
+    def filter(self, queryset, values):
+        pks = [instance.pk for instance in values]
+        return super(ModelFilterField, self).filter(queryset, pks)
 
 
 class TagFilterField(ModelFilterField):
@@ -121,49 +146,80 @@ class TagFilterField(ModelFilterField):
         return super(TagFilterField, self).filter(queryset, values)
 
 
-class SortFilterForm(SmartSearchForm):
+class SearchForm(HaystackForm):
     """
-    Handles searching, filtering, and sorting for video queries.
+    Form which provides the basic searching, filtering and sorting options
+    for videos.
 
     """
     sorts = SortedDict((
         ('newest', BestDateSort()),
         ('oldest', BestDateSort(descending=False)),
-        ('featured', FeaturedSort()),
-        ('popular', PopularSort()),
-        ('approved', ApprovedSort()),
-        ('relevant', DummySort(_('Relevant')))
+        ('popular', PopularSort(_('Popularity'))),
+        ('featured', Sort(_('Recently featured'), 'last_featured')),
+        ('relevant', DummySort(_('Relevance')))
     ))
-    sort = forms.ChoiceField(choices=tuple((k, s.verbose_name)
-                                           for k, s in sorts.iteritems()),
-                             widget=forms.RadioSelect,
-                             required=False,
-                             initial='newest')
+    sort = DefaultChoiceField(choices=tuple((k, s.verbose_name)
+                                            for k, s in sorts.iteritems()),
+                              widget=forms.RadioSelect,
+                              initial='relevant')
 
     tag = TagFilterField()
-    category = ModelFilterField(Category.objects.filter(
-                                                    site=settings.SITE_ID),
-                                to_field_name='slug',
-                                field_lookups=('categories',))
-    author = ModelFilterField(User.objects.all(), field_lookups=('authors',
-                                                                 'user'),
-                              label=_('Authors'))
-    playlist = ModelFilterField(Playlist.objects.filter(
-                                                    site=settings.SITE_ID),
-                                field_lookups=('playlists',))
-    feed = ModelFilterField(Feed.objects.filter(site=settings.SITE_ID),
+    category = ModelFilterField(
+                            Category.objects.filter(site=settings.SITE_ID),
+                            to_field_name='slug',
+                            field_lookups=('categories',))
+    author = ModelFilterField(
+                            User.objects.all(),
+                            field_lookups=('authors', 'user'),
+                            label=_('Authors'))
+    playlist = ModelFilterField(
+                            Playlist.objects.filter(site=settings.SITE_ID),
+                            field_lookups=('playlists',))
+    feed = ModelFilterField(Feed.objects.filter(
+                            site=settings.SITE_ID),
                             field_lookups=('feed',))
+    featured = DateTimeFilterField(
+                            required=False,
+                            field_lookups=('last_featured',),
+                            label=_('Featured videos'))
 
-    def __init__(self, *args, **kwargs):
+    def get_queryset(self, use_haystack=USE_HAYSTACK):
+        """Return the base queryset for this form."""
+        if use_haystack:
+            qs = SmartSearchQuerySet().models(Video)
+        else:
+            qs = Video.objects.filter(status=Video.ACTIVE)
+
+        return qs.filter(site=settings.SITE_ID)
+
+    def search(self):
+        if not self.is_valid():
+            return self.invalid_query()
+
+        queryset = self._search()
+        queryset = self._filter(queryset)
+        queryset = self._sort(queryset)
+
+        if isinstance(queryset, SearchQuerySet) and self.load_all:
+            queryset = queryset.load_all()
+
+        return queryset
+
+    def no_query_found(self):
         """
-        Limits the searchqueryset to return only videos associated with the
-        current site.
+        Returns the queryset for the case where no query string was provided.
 
         """
-        super(SortFilterForm, self).__init__(*args, **kwargs)
-        self.searchqueryset = self.searchqueryset.filter(
-                                                        site=settings.SITE_ID)
-        self.fields['tag'] = TagFilterField()
+        return self.get_queryset()
+
+    def invalid_query(self):
+        """
+        Returns the queryset for the case where the filters are invalid, or if
+        an error occurs connecting to the database.
+
+        """
+        return self.get_queryset().none()
 
     def filter_fields(self):
         """
@@ -171,63 +227,59 @@ class SortFilterForm(SmartSearchForm):
 
         """
         return [self[name] for name, field in self.fields.iteritems()
-                if isinstance(field, FilterField)]
+                if isinstance(field, FilterMixin)]
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        # If there is a search, and no explicit sort was selected, sort by
-        # relevance.
-        if cleaned_data.get('q') and not cleaned_data.get('sort'):
-            cleaned_data['sort'] = 'relevant'
-        # If there's no search, but relevant is selected for sorting, use the
-        # default sort instead.
-        if (not cleaned_data.get('q') and
-            cleaned_data.get('sort') == 'relevant'):
-            cleaned_data.pop('sort')
+        # 'featured' sort implies the 'featured' filter.
+        if cleaned_data.get('sort') == 'featured':
+            cleaned_data['featured'] = True
+
+        # If there is no search, use 'newest' in place of 'relevant'.
+        if not cleaned_data.get('q') and cleaned_data.get('sort') == 'relevant':
+            cleaned_data['sort'] = 'newest'
         return cleaned_data
 
     def _search(self):
         """
-        Returns a queryset or searchqueryset for the given query, depending
-        on the LOCALTV_USE_HAYSTACK setting.
+        Handles the basic logic for this form's search process.
 
         """
-        if USE_HAYSTACK:
-            qs = super(SortFilterForm, self).search()
-        else:
-            # We can't actually fake a search with the database, so even if
-            # USE_HAYSTACK is false, if a search was executed, we try to
-            # run a haystack search, then query the database using the pks
-            # from the search results. If the database search errors out or
-            # returns no results, then an empty queryset will be returned.
-            if self.cleaned_data['q']:
-                try:
-                    results = list(super(SortFilterForm, self).search())
-                except Exception, e:
-                    logging.error('Haystack search failed with %s',
-                                  e.__class__.__name__,
-                                  exc_info=sys.exc_info())
-                    results = []
+        if not self.cleaned_data['q']:
+            return self.no_query_found()
 
-                if results:
-                    # We add ordering by pk to preserve the "relevance" sort of
-                    # the search. If any other sort is applied, it will override
-                    # this.
-                    pks = [int(r.pk) for r in results]
-                    order = ['-localtv_video.id = %i' % pk for pk in pks]
-                    qs = Video.objects.filter(pk__in=pks
-                                     ).extra(order_by=order)
-                else:
-                    qs = Video.objects.none()
+        # If a query was made, we always try to use haystack, since the
+        # database wouldn't give useful results in this case.
+        try:
+            results = self.get_queryset(use_haystack=True
+                         ).auto_query(self.cleaned_data['q'])
+        except Exception, e:
+            logging.error('Haystack search failed with %s',
+                          e.__class__.__name__,
+                          exc_info=sys.exc_info())
+            return self.invalid_query()
+
+        if USE_HAYSTACK:
+            queryset = results
+        else:
+            results = list(results)
+            if not results:
+                queryset = Video.objects.none()
             else:
-                qs = Video.objects.filter(status=Video.ACTIVE,
-                                          site=settings.SITE_ID)
-        return qs
+                # We add ordering by pk to preserve the "relevance" sort
+                # of the search. If another sort (such as "newest") is
+                # applied later, it will override this.
+                pks = [int(r.pk) for r in results]
+                order = ['-localtv_video.id = %i' % pk for pk in pks]
+                queryset = self.get_queryset().filter(pk__in=pks
+                                             ).extra(order_by=order)
+
+        return queryset
 
     def _filter(self, queryset):
         """Runs each FilterField's filter method on the given queryset."""
         for name, field in self.fields.iteritems():
-            if isinstance(field, FilterField) and hasattr(self, 'cleaned_data'):
+            if isinstance(field, FilterMixin) and hasattr(self, 'cleaned_data'):
                 values = self.cleaned_data[name]
                 if values:
                     queryset = field.filter(queryset, values)
@@ -235,17 +287,5 @@ class SortFilterForm(SmartSearchForm):
 
     def _sort(self, queryset):
         """Runs the cleaned sort on the given queryset."""
-        try:
-            sort = self.sorts[self.cleaned_data['sort']]
-        except KeyError:
-            sort = self.sorts[self.fields['sort'].initial]
+        sort = self.sorts[self.cleaned_data['sort']]
         return sort.sort(queryset)
-
-    def get_queryset(self):
-        """
-        Searches, filters, and sorts based on the form's cleaned_data.
-
-        """
-        queryset = self._search()
-        queryset = self._filter(queryset)
-        return self._sort(queryset)

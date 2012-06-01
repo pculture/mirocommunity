@@ -118,6 +118,16 @@ $max-width-threshold: 960px !default;
 	}
 }
 
+// Flexible Grids of Varying Column Lengths
+.row-flexible{
+	display:table-row;
+	& > .col{
+		display:table-cell;
+		width:auto;
+		float:none;
+	}
+}
+
 
 // Flexible column widths for when viewport is smaller than 960
 @media screen and (max-width: 960px){

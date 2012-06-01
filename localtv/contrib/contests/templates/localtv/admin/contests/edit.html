@@ -1,5 +1,4 @@
 {% extends "localtv/admin/base.html" %}
-{% load voting_tags %}
 {% comment %}
 # Miro Community - Easiest way to make a video website
 #
@@ -19,30 +18,28 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block title %}{{ block.super }} - Admin - Votes for videos in {{ category }}{% endblock %}
-{% block body_class %}category_admin{% endblock body_class %}
-{% block content %}
-{% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-<h2>Votes for videos in {{ category }}</h2>
-<div id="labels">
-  <form>{# the CSS expects a form #}
-  <table class="rounded">
-    <thead>
-      <tr>
-        <th>Video</th>
-        <th>Votes</th>
-      </tr>
-    </thead>
-    {% for entry in sorted_scores %}
-    <tr>
-      {% with entry.0 as video %}{% with entry.1 as score %}
-      <td><a href="{{ video.get_absolute_url }}">{{ video }}</a></td>
-      <td>{{ score.score }}</td>
-      {% endwith %}{% endwith %}
-    </tr>
-    {% endfor %}
-  </table>
-  </form>
-</div>
+{% block title %}{{ block.super }} - Admin - Contest{% endblock %}
+{% block extrahead %}<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/admin/css/contest.css" />{% endblock %}
 
+{% block body_class %}admin contests{% endblock %}
+
+{% block content %}
+  <form action='{{ request.path }}' method='post'>{% csrf_token %}
+    <button type="submit" class="approve_button"><span>{% if contest.pk %}Save changes{% else %}Add contest{% endif %}</span></button>
+    <h2>Video contest</h2>
+    <div class="input_field">
+      <ul>
+        {% for field in form %}
+        <li>
+            {{ field.label_tag }}
+            {{ field.errors }}
+            {{ field }}
+            {% if field.help_text %}
+            <span class="form_help">{{ field.help_text }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </form>
 {% endblock %}

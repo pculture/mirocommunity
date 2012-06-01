@@ -45,7 +45,6 @@ from django.test.client import Client, RequestFactory
 from haystack import connections
 from haystack.query import SearchQuerySet
 
-import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
@@ -53,6 +52,7 @@ from localtv.models import (Watch, Category, SiteSettings, Video,
                             Feed, OriginalVideo, SavedSearch)
 from localtv import utils
 import localtv.feeds.views
+from localtv.search.utils import NormalizedVideoList
 from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
@@ -255,8 +255,13 @@ class ViewTestCase(BaseTestCase):
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
                           featured)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(self.site_settings)))
+        popular = response.context['popular_videos']
+        self.assertIsInstance(popular, NormalizedVideoList)
+        self.assertEqual(len(popular),
+                         Video.objects.filter(status=Video.ACTIVE).count())
+        popular_list = list(popular.queryset)
+        self.assertEqual(popular_list, sorted(popular_list, reverse=True,
+                                         key=lambda v: v.watch_count))
         self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_settings)))
         self.assertEqual(list(response.context['comments']), [])
@@ -732,7 +737,7 @@ class ListingViewTestCase(BaseTestCase):
         """
         The popular_videos view should render the
         'localtv/video_listing_popular.html' template and include the
-        popular videos.
+        all the videos, sorted by popularity.
         """
         Watch.objects.update(timestamp=datetime.datetime.now())
         haystack_batch_update.apply(args=(Video._meta.app_label,
@@ -743,11 +748,13 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        results = response.context['page_obj'].object_list
-        expected = Video.objects.get_popular_videos(self.site_settings)
+        self.assertEqual(response.context['paginator'].count, 23)
 
-        self.assertEqual(len(results), 2)
+        results = response.context['page_obj'].object_list
+        watch_qs = Watch.objects.filter(
+               timestamp__gte=datetime.datetime.now() - datetime.timedelta(7))
+        expected = sorted(results, reverse=True,
+                          key=lambda v: watch_qs.filter(video=v).count())
         self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
@@ -761,8 +768,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
+        self.assertEqual(response.context['paginator'].count, 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.filter(status=Video.ACTIVE,
                                last_featured__isnull=False)))
@@ -1788,195 +1794,3 @@ class LegacyFeedViewTestCase(BaseTestCase):
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']
         self.assertEqual(1, len(items_from_second_GET))
-
-if localtv.settings.voting_enabled():
-    from voting.models import Vote
-
-    class VotingTestCase(BaseTestCase):
-
-        fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
-
-        def setUp(self):
-            BaseTestCase.setUp(self)
-            self.video = Video.objects.get(pk=20)
-            self.category = Category.objects.get(slug='miro')
-            self.category.contest_mode = datetime.datetime.now()
-            self.category.save()
-            self.video.categories.add(self.category)
-
-        def test_voting_view_add(self):
-            """
-            A POST request to the localtv_video_vote should add a vote for that
-            video ID.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            response = c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertStatusCodeEquals(response, 302)
-            self.assertEqual(response['Location'],
-                             'http://testserver%s' % (
-                    self.video.get_absolute_url()))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-            vote = Vote.objects.get()
-            self.assertEqual(vote.object, self.video)
-            self.assertEqual(vote.user.username, 'user')
-            self.assertEqual(vote.vote, 1)
-
-        def test_voting_view_add_twice(self):
-            """
-            Adding a vote multiple times doesn't create multiple votes.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-
-        def test_voting_view_clear(self):
-            """
-            Clearing a vote removes it from the database.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-            c.post(reverse('localtv_video_vote',
-                           args=(self.video.pk,
-                                 'clear')))
-            self.assertEqual(
-                Vote.objects.count(),
-                0)
-
-        def test_voting_view_too_many_votes(self):
-            """
-            You should only be able to vote for 3 videos in a category.
-            """
-            videos = []
-            for v in Video.objects.all()[:4]:
-                v.categories.add(self.category)
-                videos.append(v)
-
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in videos:
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            self.assertEqual(
-                Vote.objects.count(),
-                3)
-
-            self.assertEqual(
-                set(
-                    Vote.objects.values_list(
-                        'object_id', flat=True)),
-                set([v.pk for v in videos[:3]]))
-
-        def test_voting_view_clear_with_too_many(self):
-            """
-            Even if the user has voted the maximum number of times, a clear
-            should still succeed.
-            """
-            videos = []
-            for v in Video.objects.all()[:3]:
-                v.categories.add(self.category)
-                videos.append(v)
-
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in videos:
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            self.assertEqual(
-                Vote.objects.count(),
-                3)
-
-            c.post(reverse('localtv_video_vote',
-                           args=(video.pk,
-                                 'clear')))
-            self.assertEqual(
-                Vote.objects.count(),
-                2)
-
-        def test_voting_view_requires_authentication(self):
-            """
-            The user must be logged in in order to vote.
-            """
-            self.assertRequiresAuthentication(reverse('localtv_video_vote',
-                                                      args=(self.video.pk,
-                                                            'up')))
-
-        def test_voting_view_voting_disabled(self):
-            """
-            If voting is not enabled for a category on the video, voting should
-            have no effect.
-            """
-            self.video.categories.clear()
-            c = Client()
-            c.login(username='user', password='password')
-            response = c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertStatusCodeEquals(response, 302)
-            self.assertEqual(response['Location'],
-                             'http://testserver%s' % (
-                    self.video.get_absolute_url()))
-            self.assertEqual(
-                Vote.objects.count(),
-                0)
-
-        def test_video_model_voting_enabled(self):
-            """
-            Video.voting_enabled() should be True if it has a voting-enabled
-            category, else False.
-            """
-            self.assertTrue(self.video.voting_enabled())
-            self.assertFalse(Video.objects.get(pk=1).voting_enabled())
-
-        def test_video_view_user_can_vote_True(self):
-            """
-            The view_video view should have a 'user_can_vote' variable which is
-            True if the user has not used all their votes.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-
-            response = c.get(self.video.get_absolute_url())
-            self.assertTrue(response.context['user_can_vote'])
-
-        def test_video_view_user_can_vote_False(self):
-            """
-            If the user has used all of their votes, 'user_can_vote' should be
-            False.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in Video.objects.all()[:3]:
-                video.categories.add(self.category)
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            response = c.get(self.video.get_absolute_url())
-            self.assertFalse(response.context['user_can_vote'])
-
