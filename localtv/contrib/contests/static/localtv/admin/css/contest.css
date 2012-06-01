@@ -1,0 +1,19 @@
+body#admin.contests ul#new_admin_nav li#admin_contests a{
+  background: #0077bb;
+  background: #e3e3e3;
+  background: -webkit-gradient(linear, left top, left bottom, from(#E3E3E3), to(#cecece));
+  background: -moz-linear-gradient(top,  #E3E3E3,  #cecece) no-repeat;
+  -moz-box-shadow: inset 0 -1px 0 #e1e1e1;
+  -webkit-box-shadow: inset 0 1px 0 #FFF, 0 1px 0 #FFF;
+  color: #444;
+  border-bottom: 1px #b8b8b8 solid;
+  border-top: 1px #b8b8b8 solid;
+  text-shadow: 0 1px 0 #FFF;
+  opacity: 1.0;
+  position: relative;
+  z-index: 999;
+}
+
+#admin.contests .approve_button {
+    float: right;
+}

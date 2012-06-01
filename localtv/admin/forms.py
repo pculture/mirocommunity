@@ -38,7 +38,6 @@ from haystack import connections
 
 from tagging.forms import TagField
 
-import localtv.settings
 from localtv import models
 from localtv import utils
 from localtv.user_profile import forms as user_profile_forms
@@ -556,6 +555,7 @@ class BulkEditVideoFormSet(BaseModelFormSet):
     def action_unfeature(self, form):
         form.instance.last_featured = None
 
+
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
                                     formset=BulkEditVideoFormSet,
@@ -830,26 +830,13 @@ class NewsletterSettingsForm(forms.ModelForm):
         return instance
 
 class CategoryForm(forms.ModelForm):
-    if localtv.settings.voting_enabled():
-        contest_mode = forms.BooleanField(label='Turn on Contest',
-                                          required=False)
     parent = forms.models.ModelChoiceField(required=False,
                                     queryset=models.Category.objects.filter(
                                             site=settings.SITE_ID))
 
     class Meta:
         model = models.Category
-        if localtv.settings.voting_enabled():
-            exclude = ['site']
-        else:
-            exclude = ['site', 'contest_mode']
-
-    def clean_contest_mode(self):
-        val = self.cleaned_data.get('contest_mode')
-        if val:
-            return datetime.datetime.now()
-        else:
-            return None
+        exclude = ['site']
 
     def _post_clean(self):
         forms.ModelForm._post_clean(self)

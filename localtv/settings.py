@@ -25,15 +25,7 @@ ENABLE_ORIGINAL_VIDEO = not getattr(settings,
                                     'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY',
                                     None)
 ENABLE_CHANGE_STAMPS = getattr(settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
-VOTING_ENABLED = 'voting' in settings.INSTALLED_APPS
 SHOW_ADMIN_DASHBOARD = getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 SHOW_ADMIN_ACCOUNT_LEVEL = getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL',
                                    True)
 USE_HAYSTACK = getattr(settings, 'LOCALTV_USE_HAYSTACK', True)
-
-
-def voting_enabled():
-    """
-    Returns a bool() indicating whether voting should be enabled on this site.
-    """
-    return VOTING_ENABLED

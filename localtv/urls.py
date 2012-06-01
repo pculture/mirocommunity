@@ -19,10 +19,8 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
-from localtv import settings
 from localtv.api.v1 import api as api_v1
-from localtv.listing.views import (CompatibleListingView,
-                                   SiteListView, CategoryVideoSearchView)
+from localtv.listing.views import CompatibleListingView, SiteListView
 from localtv.models import Category
 from localtv.search.views import SortFilterView
 from localtv.views import IndexView, VideoView
@@ -44,7 +42,9 @@ urlpatterns = patterns(
     url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
-category_videos = CategoryVideoSearchView.as_view(
+# This has to be importable for now because of a hack in the view_video view
+# which imports this view to check whether the referer was a category page.
+category_videos = CompatibleListingView.as_view(
     template_name='localtv/category.html',
     filter_name='category',
     filter_kwarg='slug'
@@ -98,13 +98,3 @@ urlpatterns += patterns(
     url(r'^goodies/', include('localtv.goodies.urls')),
     url(r'^share/', include('email_share.urls')),
     url(r'^playlists/', include('localtv.playlists.urls')))
-
-if settings.voting_enabled():
-    urlpatterns += patterns(
-        'localtv.views',
-        (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
-         'video_vote', dict(
-                template_object_name='video',
-                template_name='localtv/video_vote_confirm.html',
-                allow_xmlhttprequest=False),
-         'localtv_video_vote'))

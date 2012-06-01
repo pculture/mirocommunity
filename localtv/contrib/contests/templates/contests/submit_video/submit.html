@@ -1,0 +1,3 @@
+{% extends "localtv/submit_video/submit.html" %}
+
+{% block form_action %}{% url localtv_contests_submit_video pk=contest.pk slug=contest.slug %}{% endblock %}
