@@ -19,7 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre %}
+{% load i18n comments filters uploadtemplate_tags editable_widget cache video_list email_share_tags daguerre compress %}
 {% load url from future %}
 
 {% block meta %}
@@ -31,9 +31,36 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
 {% endblock %}
 
-{% block body_classes %}{{ block.super }} video-detail{% endblock %}
-
-{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
+{% block scripts %}
+	{{ block.super }}
+	<script type="text/javascript" src="http://s3.www.universalsubtitles.org/js/unisubs-widgetizer.js"></script>
+	{% comment %}
+	The following bit of javascript creates space for the unisubs widget and
+	is necessary for as long as the unisubs widgetizer adds a widget which is
+	not kept in the flow of the document. It would be nice to get rid of
+	someday, though.
+	{% endcomment %}
+	<script type="text/javascript">
+		(function(){
+			if (!('addEventListener' in window)) return;
+			var heightAdded = false,
+				addHeightOnce = function () {
+				if(!window.UnisubsWidgetizerLoaded || heightAdded) return;
+				heightAdded = true;
+				var $videoPlayers = $(".video-player"),
+					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
+					subtitleWidgetHeight = 47;
+				$videoPlayers.css({marginBottom: currentPlayerMarginBottom + subtitleWidgetHeight});
+				window.removeEventListener("DOMSubtreeModified", addHeightOnce);
+			}
+			if(window.UnisubsWidgetizerLoaded) return addHeightOnce();
+			window.addEventListener("DOMSubtreeModified", addHeightOnce);
+		}());
+	</script>
+	{% if current_video.contestvideo_set %}
+		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	{% endif %}
+{% endblock %}
 
 {% block styles %}
 	{{ block.super }}
@@ -42,12 +69,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 {% endblock %}
 
-{% block scripts %}
-	{{ block.super }}
-	{% if current_video.contestvideo_set %}
-		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
-	{% endif %}
-{% endblock %}
+{% block body_classes %}{{ block.super }} video-detail{% endblock %}
+
+{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
+
 {% block head %}
 	{{ block.super }}
 	{% include "localtv/_video_meta.html" %}
