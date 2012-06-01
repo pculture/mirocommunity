@@ -41,10 +41,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	someday, though.
 	{% endcomment %}
 	<script type="text/javascript">
-		$(function(){
+		(function(){
 			if (!('addEventListener' in window)) return;
-			var addHeightOnce = function () {
-				if(!window.UnisubsWidgetizerLoaded) return;
+			var heightAdded = false,
+				addHeightOnce = function () {
+				if(!window.UnisubsWidgetizerLoaded || heightAdded) return;
+				heightAdded = true;
 				var $videoPlayers = $(".video-player"),
 					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
 					subtitleWidgetHeight = 47;
@@ -53,7 +55,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			}
 			if(window.UnisubsWidgetizerLoaded) return addHeightOnce();
 			window.addEventListener("DOMSubtreeModified", addHeightOnce);
-		});
+		}());
 	</script>
 {% endblock %}
 
