@@ -30,9 +30,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			{% endfor %}
 		</div>
 	</li>
-	<li class="nav-item nav-submit">
-		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
-	</li>
+	{% if site_settings.display_submit_button %}
+		<li class="nav-item nav-submit">
+			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
+		</li>
+	{% endif %}
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
