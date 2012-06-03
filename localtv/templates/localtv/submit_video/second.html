@@ -29,5 +29,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% if not user_is_admin %}
 		{% with field=form.notes %}{% include "localtv/_form_field.html" %}{% endwith %}
 	{% endif %}
-	{{ form.construction_hint }}
 {% endblock %}
