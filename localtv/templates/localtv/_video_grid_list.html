@@ -19,7 +19,7 @@
 					</div>
 				{% endif %}
 				{% with video as instance %}
-					<p class="byline">by {% include "localtv/inline_edit/video_authors.html" %}</p>
+					<p class="byline">{% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}</p>
 				{% endwith %}
 			{% endfilter %}
 		">
