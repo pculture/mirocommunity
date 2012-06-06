@@ -1,0 +1,16 @@
+{% load daguerre %}
+
+<figure class="thumb">
+	<a href="{{ video.get_absolute_url }}">
+		{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
+		<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
+	</a>
+</figure>
+<header class="video-header">
+	<h1 class="video-title"><a href="{{ video.get_absolute_url }}" class="title-link">{{ video.name }}</a></h1>
+</headeR>
+<div class="video-details">
+	{% with video as instance %}
+		<a  href="{{ video.get_absolute_url }}" class="timestamp-link">{% include "localtv/_when_published.html" %}</a>
+	{% endwith %}
+</div>

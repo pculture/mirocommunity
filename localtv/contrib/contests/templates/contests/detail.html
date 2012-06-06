@@ -19,8 +19,18 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load markup i18n %}
+{% load markup i18n uploadtemplate_tags %}
 {% load url from future %}
+
+{% block scripts %}
+	{{ block.super }}
+	<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+{% endblock %}
+
+{% block styles %}
+	{{ block.super }}
+	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
+{% endblock %}
 
 {% block content %}
 	<header class="page-header">
@@ -41,7 +51,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with new_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
@@ -54,7 +64,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with random_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
@@ -67,7 +77,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with top_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
