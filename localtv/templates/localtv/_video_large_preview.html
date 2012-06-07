@@ -2,7 +2,7 @@
 
 <article class="video-large">
 	<div class="video-large-preview col-two-thirds">
-		{% adjust video.thumbnail_path width=640 height=400 adjustment="fill" as image %}
+		{% adjust video.thumbnail_path width=640 height=360 adjustment="crop" as image %}
 		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
 	</div>
 	<div class="video-large-details content-box col-one-third">
