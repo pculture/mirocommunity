@@ -87,8 +87,7 @@ class SubmitURLForm(forms.Form):
 
 class SubmitVideoFormBase(forms.ModelForm):
     tags = TagField(required=False, label="Tags (optional)",
-                    help_text=("You can also <span class='url'>optionally add "
-                               "tags</span> for the video (below)."))
+                    help_text=("You may optionally add tags for the video."))
 
     if getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', False):
         contact = Video._meta.get_field('contact').formfield(
