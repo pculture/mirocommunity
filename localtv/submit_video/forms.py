@@ -74,7 +74,7 @@ def get_extended_init_callable_for_class_name(class_name):
     return silly_function
 
 class SubmitVideoForm(forms.Form):
-    url = forms.URLField(verify_exists=True)
+    url = forms.URLField(verify_exists=False)
 
     def __init__(self, *args, **kwargs):
         # By convention, when you call this form's constructor, you
