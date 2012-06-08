@@ -3,7 +3,11 @@
 <figure class="thumb">
 	<a href="{{ video.get_absolute_url }}">
 		{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
-		<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
+		{% if image %}
+			<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
+		{% else %}
+			<div class="video-thumb-placeholder"></div>
+		{% endif %}
 	</a>
 </figure>
 <header class="video-header">
