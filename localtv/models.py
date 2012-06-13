@@ -232,9 +232,6 @@ class SiteSettings(Thumbnailable):
 
     objects = SiteRelatedManager()
 
-    class Meta:
-        db_table = 'localtv_sitelocation'
-
     def __unicode__(self):
         return '%s (%s)' % (self.site.name, self.site.domain)
 
@@ -278,7 +275,7 @@ class NewsletterSettings(models.Model):
         (LATEST, _("5 latest videos")),
         (CUSTOM, _("Custom selection")),
     )
-    site_settings = models.OneToOneField(SiteSettings, db_column='sitelocation_id')
+    site_settings = models.OneToOneField(SiteSettings)
     status = models.IntegerField(
         choices=STATUS_CHOICES, default=DISABLED,
         help_text='What videos should get sent out in the newsletter?')
