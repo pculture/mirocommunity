@@ -32,6 +32,27 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
 {% endblock %}
 
+{% block pre_content %}
+	{% if top_videos %}
+		<div class="precontent">
+			<div class="precontent-header">
+				<div class="container">
+					<h1>{{ contest.name }}</h1>
+				</div>{# /.container #}
+			</div>{# /.precontent-header #}
+			<div class="precontent-content">
+				<div class="container">
+					<div class="padded">
+							{% with top_videos|slice:"8" as video_list %}
+								{% include "contests/_contest_list.html" %}
+							{% endwith %}
+					</div>{# /.padded #}
+				</div>{# /.container #}
+			</div>{# /.precontent-content #}
+		</div>{# /.precontent #}
+	{% endif %}{# endif top_videos #}
+{% endblock %}
+
 {% block content %}
 	<header class="page-header">
 		<h1>{{ contest.name }}</h1>
@@ -64,19 +85,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with random_videos|slice:"10" as video_list %}
-							{% include "contests/_contest_list.html" %}
-						{% endwith %}
-					</div>
-				</div>
-			{% endif %}
-		
-			{% if top_videos %}
-				<div class="pod col">
-					<header class="pod-header">
-						<h1>{% trans "Top Videos" %}</h1>
-					</header>
-					<div class="pod-content">
-						{% with top_videos|slice:"10" as video_list %}
 							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
