@@ -42,8 +42,26 @@
 				img: null,
 				// override a lot of the default behavior
 				finished: function (opts) {
+					var $this = $(this);
 					window.location.hash = "#!?page=" + opts.state.currPage;
 					$('#infscr-loading').remove();
+					if ($this.data('infscr_first_load') !== 'done'){
+						// if this is the first load:
+						// * unbind the infinite scroll event
+						// * create a next page button
+						$this.data('infscr_first_load', 'done');
+						$this.infinitescroll('pause');
+						var next_page_button =$('<a href="#" class="button button-wide">Load More Videos</a>');
+						$this.data('infscr_next_button', next_page_button);
+						next_page_button.click(function (e) {
+							$(this).hide();
+							$this.infinitescroll('resume');
+							e.preventDefault();
+						});
+						$this.after(next_page_button);
+					} else {
+						$this.data('infscr_next_button').show();
+					}
 				},
 				start: function (opts) {
 					opts.loading.msg = $("<li class=\"media-item loading\" id=\"infscr-loading\">Loading&hellip;</li>")
@@ -60,13 +78,14 @@
 					var $infscrLoading = $('#infscr-loading');
 					$infscrLoading.after("<li class=\"media-item done\" id=\"infscr-done\">End of Videos</li>");
 					$infscrLoading.remove();
+					$this.data('infscr_next_button').remove();
 				}
 			},
 			navSelector: '.pagetabs',
 			nextSelector: '.pagetabs > .selected + li > a',
 			itemSelector: '.media-item'
 		});
-	}
+	};
 	
 	// Dropdowns
 	$('.nav-item-dropdown').dropdown()
