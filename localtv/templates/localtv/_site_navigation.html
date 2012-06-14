@@ -22,14 +22,20 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 
 <ul class="navigation-list">
-	<li class="nav-item nav-item-dropdown">
-		<a href="#">{% trans "Browse" %}</a>
-		<div class="dropdown-box browse-box">
-			{% for module in browse_modules %}
-				{% include module %}
-			{% endfor %}
-		</div>
-	</li>
+	{% if browse_modules %}
+		<li class="nav-item nav-item-dropdown">
+			<a href="#">{% trans "Browse" %}</a>
+			<div class="dropdown-box browse-box">
+				{% for module in browse_modules %}
+					{% include module %}
+				{% endfor %}
+			</div>
+		</li>
+	{% else %}
+		<li class="nav-item">
+			<a href="{% url 'localtv_list_new' %}">{% trans "All Videos" %}</a>
+		</li>
+	{% endif %}
 	{% if site_settings.display_submit_button %}
 		<li class="nav-item nav-submit">
 			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
