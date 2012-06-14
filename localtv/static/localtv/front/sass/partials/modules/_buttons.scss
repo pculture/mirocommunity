@@ -22,3 +22,7 @@
 	line-height:2 * $base-line-height;
 	height: 2 * $base-line-height + $base-line-height * .5 + 2px;;
 }
+
+.button-dark{
+	@extend .button;
+}

@@ -96,17 +96,21 @@ body{
 	border-color: darken($button-background-color, 50%);
 }
 
-.precontent a.watch-video-button{
+.button-dark{
 	color:#CCC;
 	@include background(linear-gradient(#444, #333));
 	text-shadow:0 -1px 0 #000;
 	border-color:#000;
 	@include box-shadow(0 1px 0 0 rgba(255,255,255,.15) inset, 0 1px 0 0 rgba(255,255,255,.15));
 	&:hover{
+		color:#CCC;
 		border-color:#000;
 		@include background(linear-gradient(#484848, #393939));
+		@include box-shadow(0 1px 0 0 rgba(255,255,255,.15) inset, 0 1px 0 0 rgba(255,255,255,.15));
 	}
 	&:active{
+		color:#CCC;
+		border-color:#000;
 		@include background(linear-gradient(#333, #444));
 		@include box-shadow(0 2px 8px 0 rgba(0,0,0,.5) inset, 0 1px 0 0 rgba(255,255,255,.15));
 	}
@@ -126,6 +130,16 @@ body{
 		border-color:#FFF;
 		background-color:#FFF;
 	}
+}
+
+/* media grid */
+
+.media-item-badge{
+	border-color:#FFF;
+	background-color:#F00;
+	color:#FFF;
+	@include background(linear-gradient(top, #F77 0%, #F33 50%, #c00 50%, #f00 100%));
+	@include box-shadow(1px 0 4px 0 rgba(0,0,0,.5));
 }
 
 /* navigation */
@@ -257,9 +271,6 @@ input, textarea{
 
 .precontent a{
 	color:$precontent-link-color;
-	&:hover{
-		border-color:#666;
-	}
 }
 
 .precontent-header{
