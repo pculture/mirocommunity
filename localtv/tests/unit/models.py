@@ -113,7 +113,7 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         self.assertEqual(widget_settings.site, site)
         self.assertEqual(widget_settings._state.db, 'default')
 
-    def test_logo(self):
+    def test_icon(self):
         """
         Creating a WidgetSettings should copy the logo from the SiteSettings
         object.
@@ -127,11 +127,11 @@ class WidgetSettingsModelTestCase(BaseTestCase):
 
         widget_settings = WidgetSettings.objects.get_current()
 
-        widget_settings.logo.open()
+        widget_settings.icon.open()
         site_settings.logo.open()
-        widget_logo = widget_settings.logo.read()
+        widget_icon = widget_settings.icon.read()
         site_settings_logo = site_settings.logo.read()
-        self.assertEqual(len(widget_logo),
+        self.assertEqual(len(widget_icon),
                          len(site_settings_logo))
-        self.assertEqual(widget_logo, site_settings_logo)
+        self.assertEqual(widget_icon, site_settings_logo)
 
