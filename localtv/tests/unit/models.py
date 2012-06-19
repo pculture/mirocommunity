@@ -21,7 +21,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import connections
 
-from localtv.models import SiteSettings, SiteRelatedManager
+from localtv.models import SiteSettings, SiteRelatedManager, WidgetSettings
 from localtv.tests.base import BaseTestCase
 
 
@@ -96,3 +96,28 @@ class SiteRelatedManagerTestCase(BaseTestCase):
 		self.assertTrue(site_settings2 is site_settings3)
 		self.assertEqual(site_settings.site, site)
 		self.assertEqual(site_settings._state.db, 'default')
+
+
+class WidgetSettingsModelTestCase(BaseTestCase):
+    def test__get_current(self):
+        """
+        get_current should return a cached instance related to the current
+        site.
+        """
+        site = Site.objects.get_current()
+
+        with self.assertNumQueries(3):
+            widget_settings = WidgetSettings.objects.get_current()
+
+        widget_settings.objects.clear_cache()
+
+        with self.assertNumQueries(1):
+            widget_settings2 = WidgetSettings.objects.get_current()
+
+        with self.assertNumQueries(0):
+            widget_settings3 = WidgetSettings.objects.get_current()
+
+        self.assertEqual(widget_settings, widget_settings2)
+        self.assertTrue(widget_settings2 is widget_settings3)
+        self.assertEqual(widget_settings.site, site)
+        self.assertEqual(widget_settings._state.db, 'default')
