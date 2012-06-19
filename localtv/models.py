@@ -367,6 +367,23 @@ class NewsletterSettings(models.Model):
                                 context)
 
 
+class WidgetSettingsManager(SiteRelatedManager):
+    def _new_entry(self, site, using):
+        singleton = super(WidgetSettingsManager, self)._new_entry(site, using)
+        try:
+            site_settings = SiteSettings._default_manager.db_manager(
+                using).get(site=site)
+        except SiteSettings.DoesNotExist:
+            pass
+        else:
+            if site_settings.logo:
+                site_settings.logo.open()
+                singleton.icon = site_settings.logo
+                cf = ContentFile(site_settings.logo.read())
+                singleton.save_thumbnail_from_file(cf)
+        return singleton
+
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -390,6 +407,8 @@ class WidgetSettings(Thumbnailable):
 
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
+
+    objects = WidgetSettingsManager()
 
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.

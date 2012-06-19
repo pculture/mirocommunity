@@ -52,17 +52,11 @@ def edit_settings(request, form_class=forms.EditSettingsForm):
 @require_site_admin
 @csrf_protect
 def widget_settings(request):
-    site_settings = SiteSettings.objects.get_current()
-    form = forms.WidgetSettingsForm(
-        instance=site_settings.site.widgetsettings,
-        initial={'title': 
-                 WidgetSettings.objects.get().get_title_or_reasonable_default()})
-
     if request.method == 'POST':
         form = forms.WidgetSettingsForm(
             request.POST,
             request.FILES,
-            instance=site_settings.site.widgetsettings)
+            instance=WidgetSettings.objects.get_current())
         if form.is_valid():
             widgetsettings = form.save()
             if request.POST.get('delete_icon'):
@@ -74,6 +68,13 @@ def widget_settings(request):
                     widgetsettings.css.delete()
             return HttpResponseRedirect(
                 reverse('localtv_admin_widget_settings'))
+    else:
+        form = forms.WidgetSettingsForm(
+            instance=WidgetSettings.objects.get_current(),
+            initial={
+                'title':
+                WidgetSettings.objects.get().get_title_or_reasonable_default()})
+
     return render_to_response(
         'localtv/admin/widget_settings.html',
         {'form': form},
