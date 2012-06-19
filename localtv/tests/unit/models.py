@@ -106,18 +106,13 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         """
         site = Site.objects.get_current()
 
-        with self.assertNumQueries(3):
+        # creates the object
+        with self.assertNumQueries(5):
             widget_settings = WidgetSettings.objects.get_current()
-
-        widget_settings.objects.clear_cache()
 
         with self.assertNumQueries(1):
             widget_settings2 = WidgetSettings.objects.get_current()
 
-        with self.assertNumQueries(0):
-            widget_settings3 = WidgetSettings.objects.get_current()
-
         self.assertEqual(widget_settings, widget_settings2)
-        self.assertTrue(widget_settings2 is widget_settings3)
         self.assertEqual(widget_settings.site, site)
         self.assertEqual(widget_settings._state.db, 'default')

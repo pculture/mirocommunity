@@ -154,8 +154,12 @@ class SingletonManager(models.Manager):
     def get_current(self):
         current_site_settings = SiteSettings._default_manager.db_manager(
             self.db).get_current()
-        singleton, created = self.get_or_create(
-            site_settings = current_site_settings)
+        if 'site_settings' in self.model.__dict__:
+            singleton, created = self.get_or_create(
+                site_settings = current_site_settings)
+        else:
+            singleton, created = self.get_or_create(
+                site_id = current_site_settings.site_id)
         if created:
             logging.debug("Created %s." % self.model)
         return singleton
@@ -371,6 +375,7 @@ class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
     """
+    # XXX this should be converted to SiteSettings in 2.0
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
@@ -390,6 +395,8 @@ class WidgetSettings(Thumbnailable):
 
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
+
+    objects = SingletonManager()
 
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
