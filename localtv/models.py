@@ -388,7 +388,6 @@ class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
     """
-    # XXX this should be converted to SiteSettings in 2.0
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
