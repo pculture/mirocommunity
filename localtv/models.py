@@ -154,12 +154,8 @@ class SingletonManager(models.Manager):
     def get_current(self):
         current_site_settings = SiteSettings._default_manager.db_manager(
             self.db).get_current()
-        if 'site_settings' in self.model.__dict__:
-            singleton, created = self.get_or_create(
-                site_settings = current_site_settings)
-        else:
-            singleton, created = self.get_or_create(
-                site_id = current_site_settings.site_id)
+        singleton, created = self.get_or_create(
+            site_settings = current_site_settings)
         if created:
             logging.debug("Created %s." % self.model)
         return singleton
@@ -371,6 +367,22 @@ class NewsletterSettings(models.Model):
                                 context)
 
 
+class WidgetSettingsManager(models.Manager):
+    def get_current(self):
+        current_site_settings = SiteSettings._default_manager.db_manager(
+            self.db).get_current()
+        singleton, created = self.get_or_create(
+            site = current_site_settings.site)
+        if created:
+            logging.debug("Created %s." % self.model)
+            if current_site_settings.logo:
+                current_site_settings.logo.open()
+                cf = ContentFile(current_site_settings.logo.read())
+                singleton.logo = cf
+                singleton.save_thumbnail_from_file(cf)
+        return singleton
+
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -396,7 +408,7 @@ class WidgetSettings(Thumbnailable):
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
 
-    objects = SingletonManager()
+    objects = WidgetSettingsManager()
 
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.

@@ -20,6 +20,7 @@ from __future__ import with_statement
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import connections
+from django.core.files.base import File
 
 from localtv.models import SiteSettings, SiteRelatedManager, WidgetSettings
 from localtv.tests.base import BaseTestCase
@@ -99,20 +100,38 @@ class SiteRelatedManagerTestCase(BaseTestCase):
 
 
 class WidgetSettingsModelTestCase(BaseTestCase):
+
     def test__get_current(self):
         """
-        get_current should return a cached instance related to the current
+        get_current should return an instance related to the current
         site.
         """
-        site = Site.objects.get_current()
+        site = Site.objects.get()
 
-        # creates the object
-        with self.assertNumQueries(5):
-            widget_settings = WidgetSettings.objects.get_current()
+        widget_settings = WidgetSettings.objects.get_current()
 
-        with self.assertNumQueries(1):
-            widget_settings2 = WidgetSettings.objects.get_current()
-
-        self.assertEqual(widget_settings, widget_settings2)
         self.assertEqual(widget_settings.site, site)
         self.assertEqual(widget_settings._state.db, 'default')
+
+    def test_logo(self):
+        """
+        Creating a WidgetSettings should copy the logo from the SiteSettings
+        object.
+        """
+        WidgetSettings.objects.all().delete()
+
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.logo = File(
+            file(self._data_file('logo.png')))
+        site_settings.save()
+
+        widget_settings = WidgetSettings.objects.get_current()
+
+        widget_settings.logo.open()
+        site_settings.logo.open()
+        widget_logo = widget_settings.logo.read()
+        site_settings_logo = site_settings.logo.read()
+        self.assertEqual(len(widget_logo),
+                         len(site_settings_logo))
+        self.assertEqual(widget_logo, site_settings_logo)
+
