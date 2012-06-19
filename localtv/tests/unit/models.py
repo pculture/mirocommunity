@@ -119,6 +119,7 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         object.
         """
         WidgetSettings.objects.all().delete()
+        WidgetSettings.objects.clear_cache()
 
         site_settings = SiteSettings.objects.get_current()
         site_settings.logo = File(
@@ -134,4 +135,5 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         self.assertEqual(len(widget_icon),
                          len(site_settings_logo))
         self.assertEqual(widget_icon, site_settings_logo)
+        self.assertTrue(widget_settings.has_thumbnail)
 

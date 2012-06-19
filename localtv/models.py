@@ -367,18 +367,19 @@ class NewsletterSettings(models.Model):
                                 context)
 
 
-class WidgetSettingsManager(models.Manager):
-    def get_current(self):
-        current_site_settings = SiteSettings._default_manager.db_manager(
-            self.db).get_current()
-        singleton, created = self.get_or_create(
-            site = current_site_settings.site)
-        if created:
-            logging.debug("Created %s." % self.model)
-            if current_site_settings.logo:
-                current_site_settings.logo.open()
-                cf = ContentFile(current_site_settings.logo.read())
-                singleton.logo = cf
+class WidgetSettingsManager(SiteRelatedManager):
+    def _new_entry(self, site, using):
+        singleton = super(WidgetSettingsManager, self)._new_entry(site, using)
+        try:
+            site_settings = SiteSettings._default_manager.db_manager(
+                using).get(site=site)
+        except SiteSettings.DoesNotExist:
+            pass
+        else:
+            if site_settings.logo:
+                site_settings.logo.open()
+                singleton.icon = site_settings.logo
+                cf = ContentFile(site_settings.logo.read())
                 singleton.save_thumbnail_from_file(cf)
         return singleton
 
