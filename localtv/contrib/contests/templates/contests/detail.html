@@ -19,11 +19,25 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load markup i18n %}
+{% load markup i18n uploadtemplate_tags %}
+{% load url from future %}
+
+{% block scripts %}
+	{{ block.super }}
+	<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+{% endblock %}
+
+{% block styles %}
+	{{ block.super }}
+	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
+{% endblock %}
 
 {% block content %}
 	<header class="page-header">
 		<h1>{{ contest.name }}</h1>
+		<ul class="page-actions">
+			<li><a href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">Submit a Video</a></li>
+		</ul>
 	</header>
 	<div class="page-content">
 		<div class="contest-description content-box">
@@ -37,7 +51,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with new_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
@@ -50,7 +64,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with random_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
@@ -63,14 +77,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</header>
 					<div class="pod-content">
 						{% with top_videos|slice:"10" as video_list %}
-							{% include "localtv/_video_grid_list.html" %}
+							{% include "contests/_contest_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
 			{% endif %}
 		</div>{# /.row-flexible.contest-videos #}
                 <div class="padded">
-                  <a class="button-wide continue" href="{% url contests_contest_listing pk=contest.pk slug=contest.slug %}">See All Videos</a>
+                  <a class="button-wide continue" href="{% url 'contests_contest_listing' pk=contest.pk slug=contest.slug %}">See All Videos</a>
                 </div>
 	</div>{# /.page-content #}
 {% endblock %}

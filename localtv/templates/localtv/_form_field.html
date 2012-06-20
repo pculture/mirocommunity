@@ -1,5 +1,5 @@
 <div class="control-group control-group-{{ field.name }}{% if field.errors %} error{% endif %}">
-	<label for="id_url">{{ field.label }}</label>
+	{{ field.label_tag }}
 	<div class="controls">
 		{{ field }}
 		{% if field.help_text or field.errors %}

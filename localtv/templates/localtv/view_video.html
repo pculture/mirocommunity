@@ -45,7 +45,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			if (!('addEventListener' in window)) return;
 			var heightAdded = false,
 				addHeightOnce = function () {
-				if(!window.UnisubsWidgetizerLoaded || heightAdded) return;
+				if(!window.UnisubsWidgetizerLoaded || heightAdded || $('.unisubs-videoTab').size() == 0) return;
 				heightAdded = true;
 				var $videoPlayers = $(".video-player"),
 					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
@@ -53,7 +53,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				$videoPlayers.css({marginBottom: currentPlayerMarginBottom + subtitleWidgetHeight});
 				window.removeEventListener("DOMSubtreeModified", addHeightOnce);
 			}
-			if(window.UnisubsWidgetizerLoaded) return addHeightOnce();
+			if(window.UnisubsWidgetizerLoaded && $('.unisubs-videoTab').size() > 0) return addHeightOnce();
 			window.addEventListener("DOMSubtreeModified", addHeightOnce);
 		}());
 	</script>
@@ -91,7 +91,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</h1>
 				<h2 class="colophon">
 					{% with current_video as instance %}
-						{% include "localtv/_when_published.html" %} by {% include "localtv/inline_edit/video_authors.html" %}
+						{% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}
 					{% endwith %}
 				</h2>
 			</div>
