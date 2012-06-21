@@ -188,8 +188,8 @@ ul > li { list-style-type: disc; }
 
 ol > li { list-style-type: decimal; }
 
-.unstyled-list, .errorlist, .grid-list, .media-grid, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box, .details-list { margin: 0; padding: 0; }
-.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li, .details-list > li { list-style-type: none; }
+.unstyled-list, .errorlist, .grid-list, .media-grid, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box, .details-list { margin: 0; padding: 0; }
+.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li, .details-list > li { list-style-type: none; }
 
 .media-grid { *zoom: 1; margin-left: -40px; }
 .media-grid:after { content: ""; display: table; clear: both; }
@@ -262,9 +262,9 @@ ol > li { list-style-type: decimal; }
 
 .pod-header > h1, .page-header > h1 { display: inline; font-size: 16px; line-height: 27px; }
 
-.pod-actions, .page-actions { padding: 13.5px; position: absolute; top: 0; right: 0; }
-.pod-actions li, .page-actions li { list-style-type: none; float: left; margin-left: 10px; }
-.pod-actions a, .page-actions a { display: block; padding: 3px 0; margin-top: -3px; }
+.pod-actions, .page-actions { display: inline-block; }
+.pod-actions li, .page-actions li { display: inline-block; list-style-type: none; margin-left: 8px; }
+.pod-actions a, .page-actions a { display: inline-block; padding: 3px 0; margin-top: -3px; }
 .pod-actions a:hover, .page-actions a:hover { border: 0; }
 
 /* Loosely based on https://github.com/twitter/bootstrap/blob/master/less/popovers.less */
@@ -421,6 +421,24 @@ ol > li { list-style-type: decimal; }
 .video-grid-item > .video-header > h1 { margin-bottom: 0; }
 
 .timestamp-link, .byline { font-size: 11px; line-height: 18px; margin-bottom: 0; }
+
+.icon-32-sprite, .icon-32-miro, .icon-32-rss, .icon-32 { background: url('/static/localtv/front/images/icon-32-s81446525c0.png') no-repeat; }
+
+.icon-16-sprite, .icon-16-miro, .icon-16-rss, .icon-16 { background: url('/static/localtv/front/images/icon-16-sa5e1b6bd67.png') no-repeat; }
+
+.icon-32-miro { background-position: 0 -32px; }
+
+.icon-32-rss { background-position: 0 0; }
+
+.icon-16-miro { background-position: 0 -16px; }
+
+.icon-16-rss { background-position: 0 0; }
+
+.icon-base, .icon-16, .icon-32 { display: inline-block; vertical-align: top; line-height: 0; text-indent: -9999px; }
+
+.icon-16 { width: 16px; height: 16px; }
+
+.icon-32 { width: 32px; height: 32px; }
 
 /* base theme styles */
 a { color: #344f6d; }

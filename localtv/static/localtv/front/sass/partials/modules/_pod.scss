@@ -14,17 +14,15 @@
 }
 
 .pod-actions {
-	padding:$base-line-height * .75;
-	position:absolute;
-	top:0;
-	right:0;
+	@extend .unstyled-list;
+	display:inline-block;
 	li{
+		display:inline-block;
 		list-style-type:none;
-		float:left;
-		margin-left: $gutter-width / 4;
+		margin-left:$gutter-width/5;
 	}
 	a{
-		display:block;
+		display:inline-block;
 		padding:3px 0;
 		margin-top:-3px;
 	}
