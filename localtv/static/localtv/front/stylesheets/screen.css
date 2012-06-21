@@ -188,8 +188,8 @@ ul > li { list-style-type: disc; }
 
 ol > li { list-style-type: decimal; }
 
-.unstyled-list, .errorlist, .grid-list, .media-grid, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-actions, .page-actions, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box, .details-list { margin: 0; padding: 0; }
-.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li, .details-list > li { list-style-type: none; }
+.unstyled-list, .errorlist, .grid-list, .media-grid, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-actions, .page-actions, .action-list, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box, .details-list { margin: 0; padding: 0; }
+.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .action-list > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li, .details-list > li { list-style-type: none; }
 
 .media-grid { *zoom: 1; margin-left: -40px; }
 .media-grid:after { content: ""; display: table; clear: both; }
@@ -262,10 +262,10 @@ ol > li { list-style-type: decimal; }
 
 .pod-header > h1, .page-header > h1 { display: inline; font-size: 16px; line-height: 27px; }
 
-.pod-actions, .page-actions { display: inline-block; }
-.pod-actions li, .page-actions li { display: inline-block; list-style-type: none; margin-left: 8px; }
-.pod-actions a, .page-actions a { display: inline-block; padding: 3px 0; margin-top: -3px; }
-.pod-actions a:hover, .page-actions a:hover { border: 0; }
+.pod-actions, .page-actions, .action-list { display: inline-block; }
+.pod-actions li, .page-actions li, .action-list li { display: inline-block; list-style-type: none; margin-left: 8px; }
+.pod-actions a, .page-actions a, .action-list a { display: inline-block; padding: 3px 0; margin-top: -3px; }
+.pod-actions a:hover, .page-actions a:hover, .action-list a:hover { border: 0; }
 
 /* Loosely based on https://github.com/twitter/bootstrap/blob/master/less/popovers.less */
 .popover { position: absolute; border: 1px solid; background: #FFF; -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; z-index: 1337; top: 0; left: 0; -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15); }
@@ -505,8 +505,8 @@ input:focus, textarea:focus { border-color: #344f6d; -webkit-box-shadow: 0 0 6px
 .pod-header, .page-header { background-color: #eeeeee; background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eeeeee), color-stop(100%, #e1e1e1)); background-image: -webkit-linear-gradient(#eeeeee, #e1e1e1); background-image: -moz-linear-gradient(#eeeeee, #e1e1e1); background-image: -o-linear-gradient(#eeeeee, #e1e1e1); background-image: -ms-linear-gradient(#eeeeee, #e1e1e1); background-image: linear-gradient(#eeeeee, #e1e1e1); border-bottom-color: #d4d4d4; border-top-color: #e1e1e1; color: #222222; }
 .pod-header a, .page-header a { color: #222222; }
 
-.pod-actions a, .page-actions a { color: #555555; }
-.pod-actions a:hover, .page-actions a:hover { color: #222222; }
+.pod-actions a, .page-actions a, .action-list a { color: #555555; }
+.pod-actions a:hover, .page-actions a:hover, .action-list a:hover { color: #222222; }
 
 /* messages */
 .message { background-color: #eeeeee; border-color: #bbbbbb; text: #222222; }

@@ -19,6 +19,8 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load i18n %}
+
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
 {% block content %}
@@ -26,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<h1>{% block page_title %}Video List{% endblock %}</h1>
 		<div class="page-actions">
 			<ul class="action-list">
-				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>{% endblock %}</li>
+				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a>{% endblock %}</li>
 			</ul>
 		</div>
 	</header>
