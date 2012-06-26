@@ -61,10 +61,42 @@ class ContestVoteResource(ModelResource):
     vote = fields.IntegerField('vote')
 
     def obj_create(self, bundle, request=None, **kwargs):
+        """
+        Creates a contest-vote object after ensuring that the user is set to
+        the currently logged-in user, that the vote they are registering is
+        allowed, and that they have not exceeded their vote count.
+        
+        """
+        
+        # Verify authenticated user.
         if hasattr(request, 'user') and request.user.is_authenticated():
             kwargs['user'] = request.user
         else:
-            raise ImmediateHttpResponse(response=HttpUnauthorized())
+            raise ImmediateHttpResponse(response=HttpUnauthorized('User not authenticated.'))
+        
+        # Extract relevant data.
+        contestvideo = ContestVideoResource().get_via_uri(bundle.data['contestvideo'])
+        contest = contestvideo.contest
+        video = contestvideo.video
+        vote_value = int(bundle.data['vote'])
+        
+        # Check vote is permissible.
+        permissible_votes = (1, -1) if contest.allow_downvotes else (1,)
+        if vote_value not in permissible_votes:
+            raise ImmediateHttpResponse(
+                    response=HttpUnauthorized('Vote value %d not permitted.' %
+                    vote_value))
+        
+        # Check vote counts.
+        if contest.votes_per_user is not None:
+            user_vote_count = ContestVote.objects.filter(
+                                                contestvideo__contest=contest,
+                                                user=request.user).count()
+            if user_vote_count + 1 > contest.votes_per_user:
+                raise ImmediateHttpResponse(
+                        response=HttpUnauthorized('Maximum votes exceeded.'))
+    
+        # Since everything checks out, go ahead and create the vote.
         return super(ContestVoteResource, self).obj_create(bundle,
                                                            request=request,
                                                            **kwargs)
