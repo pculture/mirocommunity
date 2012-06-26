@@ -122,9 +122,16 @@
 			request_options.contentType = "application/json";
 			request_options.processData = false;
 			request_options.success = function (data) { this_.requestState() };
+			request_options.error = function (data, error_type) { this_.handleError(data, error_type) };
 			// Send the request.
 			this.startLoading();
 			$.ajax(request_uri, request_options);
+		},
+		handleError: function (data, error_type) {
+			var error_message = $.parseJSON(data.responseText).error_message;
+			// TODO: Display this with a custom modal javascript, so we can style it with CSS.
+			alert(error_message);
+			this.endLoading();
 		},
 		clickHandler: function (event, button) {
 			var $button = $(button);
