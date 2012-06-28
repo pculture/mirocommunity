@@ -38,8 +38,8 @@ from haystack import connections
 
 from tagging.forms import TagField
 
-from localtv import models
-from localtv import utils
+from localtv import models, utils
+from localtv.settings import API_KEYS
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
@@ -1094,7 +1094,7 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
         try:
-            scraped_feed = auto_feed(url)
+            scraped_feed = auto_feed(url, api_keys=API_KEYS)
             url = scraped_feed.url
         except CantIdentifyUrl:
             raise forms.ValidationError('It does not appear that %s is an '

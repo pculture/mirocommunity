@@ -20,6 +20,7 @@ from django.core.management.base import NoArgsCommand
 import vidscraper
 
 from localtv.management import site_too_old
+from localtv.settings import API_KEYS
 from localtv import models
 
 class Command(NoArgsCommand):
@@ -32,7 +33,7 @@ class Command(NoArgsCommand):
         for v in models.Video.objects.filter(when_published__isnull=True):
             try:
                 video = vidscraper.auto_scrape(v.website_url, fields=[
-                        'publish_datetime'])
+                        'publish_datetime'], api_keys=API_KEYS)
             except:
                 pass
             else:
