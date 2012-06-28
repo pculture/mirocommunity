@@ -50,6 +50,8 @@ except (ImportError, AttributeError): # AttributeError if S3 isn't configured
     except (ImportError, AttributeError):
         S3Storage = None
 
+from localtv.settings import API_KEYS
+
 
 def get_tag(tag_text, using='default'):
     while True:
@@ -126,7 +128,7 @@ def get_vidscraper_video(url):
     if not vidscraper_video:
         # try and scrape the url
         try:
-            vidscraper_video = vidscraper.auto_scrape(url)
+            vidscraper_video = vidscraper.auto_scrape(url, api_keys=API_KEYS)
         except vidscraper.errors.Error:
             vidscraper_video = None
 

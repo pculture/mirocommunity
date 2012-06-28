@@ -40,9 +40,8 @@ from django.utils.safestring import mark_safe
 from tagging.forms import TagField
 
 import localtv.settings
-from localtv import models
-from localtv import utils
 import localtv.tiers
+from localtv import models, utils
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
@@ -1065,7 +1064,7 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
         try:
-            scraped_feed = auto_feed(url)
+            scraped_feed = auto_feed(url, api_keys=localtv.settings.API_KEYS)
             url = scraped_feed.url
         except CantIdentifyUrl:
             raise forms.ValidationError('It does not appear that %s is an '
