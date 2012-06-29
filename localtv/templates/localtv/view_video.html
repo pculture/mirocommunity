@@ -35,17 +35,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endwith %}
 
 	{% if current_video.file_url %}
-		<meta property="og:video" href="{{ current_video.file_url }}">
-		<meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
+		<meta property="og:video:url" href="{{ current_video.file_url }}">
+		{% if current_video.file_url_mimetype %}
+			<meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
+		{% endif %}
 	{% endif %}
 
 	<meta property="og:site_name" content="{{ site_settings.site.name }}">
 	<meta property="og:url" content="{{ request.build_absolute_uri }}">
-	<meta property="og:type" content="video">
+	<meta property="og:type" content="video.other">
 
 	{# not DRY, but we can't store this. #}
-	<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}">
-	<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}" />
+	{% if current_video.has_thumbnail %}
+		<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}">
+		<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}" />
+	{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -110,7 +114,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>
 		<div class="precontent-content">
 			<div class="container video-player">
-                          {% include "localtv/_video_embed.html" %}
+						  {% include "localtv/_video_embed.html" %}
 			</div>{# /.container #}
 		</div>{# /.precontent-content #}
 	</section>{# /.video-stage #}
@@ -191,9 +195,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{# Google+ #}
 	<script type="text/javascript">
 	  (function() {
-	    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-	    po.src = 'https://apis.google.com/js/plusone.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
 	  })();
 	</script>
 	{# Pinterest #}
