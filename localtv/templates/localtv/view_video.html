@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endwith %}
 
 	{% if current_video.file_url %}
-		<meta property="og:video:url" href="{{ current_video.file_url }}">
+		<meta property="og:video:url" content="{{ current_video.file_url }}">
 		{% if current_video.file_url_mimetype %}
 			<meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
 		{% endif %}
