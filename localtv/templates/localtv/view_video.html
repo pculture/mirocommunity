@@ -23,12 +23,29 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load url from future %}
 
 {% block meta %}
-	<meta content="{{ site_settings.site.name }}" property="og:site_name">
-	<meta content="{{ request.build_absolute_uri }}" property="og:url">
-	<meta content="{{ current_video.name }}" property="og:title">
-	<meta content="{% if current_video.description %}{{ current_video.description|escape }}{% else %}{% blocktrans with name=site_settings.site.name %}Video from {{ name }}.{% endblocktrans %}{% endif %}" property="og:description">
-	<meta content="video" property="og:type">
-	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
+	{% with title=current_video.name %}
+		<meta name="title" content="{{ title }}">
+		<meta property="og:title" content="{{ title }}">
+	{% endwith %}
+	{% with default_description="Video from "|add:site_settings.site.name %}
+		{% with description=current_video.description|striptags|default:default_description %}
+			<meta name="description" content="{{ description }}" />
+			<meta property="og:description" content="{{ description }}">
+		{% endwith %}
+	{% endwith %}
+
+	{% if current_video.file_url %}
+		<meta property="og:video" href="{{ current_video.file_url }}">
+		<meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
+	{% endif %}
+
+	<meta property="og:site_name" content="{{ site_settings.site.name }}">
+	<meta property="og:url" content="{{ request.build_absolute_uri }}">
+	<meta property="og:type" content="video">
+
+	{# not DRY, but we can't store this. #}
+	<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}">
+	<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}" />
 {% endblock %}
 
 {% block scripts %}
@@ -72,11 +89,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
-
-{% block head %}
-	{{ block.super }}
-	{% include "localtv/_video_meta.html" %}
-{% endblock %}
 
 {% block pre_content %}
 	<section class="video-full precontent">
