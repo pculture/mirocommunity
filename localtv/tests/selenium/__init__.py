@@ -1,6 +1,6 @@
 # Miro Community - Easiest way to make a video website
 #
-# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 #
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -9,17 +9,14 @@
 #
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from localtv.tests.legacy_localtv import *
-from localtv.tests.legacy_admin import *
-from localtv.tests.legacy_user_profile import *
-
-from localtv.tests.integration import *
-from localtv.tests.functional import *
-from localtv.tests.unit import *
-from localtv.tests.selenium import *
+from localtv.tests.selenium.submit_video import *
+from localtv.tests.selenium.video_search import *
+from localtv.tests.selenium.submit_feeds import *
+from localtv.tests.selenium.user_auth import *
+from localtv.tests.selenium.listing_pages import *
