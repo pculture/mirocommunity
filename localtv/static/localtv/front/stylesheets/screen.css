@@ -200,7 +200,7 @@ ol > li { list-style-type: decimal; }
 
 .media-grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
-.media-item-badge { height: 20px; min-width: 20px; padding: 10px; text-align: center; line-height: 20px; font-size: 20px; position: absolute; top: -9px; left: -9px; -webkit-border-radius: 43px; -moz-border-radius: 43px; -ms-border-radius: 43px; -o-border-radius: 43px; border-radius: 43px; border: 3px solid; }
+.media-item-badge { height: 20px; min-width: 20px; padding: 10px; text-align: center; line-height: 20px; font-size: 20px; position: absolute; top: -9px; left: -9px; -webkit-border-radius: 43px; -moz-border-radius: 43px; -ms-border-radius: 43px; -o-border-radius: 43px; border-radius: 43px; }
 
 .message { border: 1px solid; -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; margin-bottom: 18px; }
 .message > :last-child { margin-bottom: 0; }
@@ -369,7 +369,7 @@ ol > li { list-style-type: decimal; }
 .thumb > a > img { display: block; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
 .thumb > a::after { content: " "; display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; border: 3px solid black; }
 
-.video-thumb-placeholder { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; width: 200px; height: 144px; /* Image from: Piero borgo, from The Noun Project (http://thenounproject.com/noun/television/#icon-No2650) */ background: #333333 url('/static/localtv/front/images/nounproject_2650_television_white.png?1339634757') center center no-repeat; }
+.video-thumb-placeholder { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; width: 200px; height: 144px; /* Image from: Piero borgo, from The Noun Project (http://thenounproject.com/noun/television/#icon-No2650) */ background: #333333 url('/static/localtv/front/images/nounproject_2650_television_white.png?1341461756') center center no-repeat; }
 
 .tile-box { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; height: 108px; background: #EEE; overflow: hidden; border: 1px solid #CCC; padding: 3px; }
 
@@ -467,7 +467,7 @@ body { background: #cccccc; color: #444444; }
 .carousel-pager > .activeSlide { border-color: #FFF; background-color: #FFF; }
 
 /* media grid */
-.media-item-badge { border-color: #FFF; background-color: #F00; color: #FFF; background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ff7777), color-stop(50%, #ff3333), color-stop(50%, #cc0000), color-stop(100%, #ff0000)); background: -webkit-linear-gradient(top, #ff7777 0%, #ff3333 50%, #cc0000 50%, #ff0000 100%); background: -moz-linear-gradient(top, #ff7777 0%, #ff3333 50%, #cc0000 50%, #ff0000 100%); background: -o-linear-gradient(top, #ff7777 0%, #ff3333 50%, #cc0000 50%, #ff0000 100%); background: -ms-linear-gradient(top, #ff7777 0%, #ff3333 50%, #cc0000 50%, #ff0000 100%); background: linear-gradient(top, #ff7777 0%, #ff3333 50%, #cc0000 50%, #ff0000 100%); -webkit-box-shadow: 1px 0 4px 0 rgba(0, 0, 0, 0.5); -moz-box-shadow: 1px 0 4px 0 rgba(0, 0, 0, 0.5); box-shadow: 1px 0 4px 0 rgba(0, 0, 0, 0.5); }
+.media-item-badge { border-color: #FFF; background-color: #F00; color: #FFF; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35); background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ee6666), color-stop(50%, #dd3333), color-stop(50%, #cc0000), color-stop(100%, #ff3333)); background: -webkit-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: -moz-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: -o-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: -ms-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); -webkit-box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; }
 
 /* navigation */
 .nav-item a { color: #444444; }
