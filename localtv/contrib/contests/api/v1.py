@@ -32,9 +32,21 @@ from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
 class ContestResource(ModelResource):
     videos = fields.ToManyField(VideoResource, 'videos')
 
+    def dehydrate_votes_per_user(self, bundle):
+        """
+        Return `None` if `votes_per_user` is `None`.
+        Return the value, otherwise.
+        
+        """
+        if bundle.obj.votes_per_user is None:
+            return None
+        return bundle.obj.votes_per_user
+
     class Meta:
         queryset = Contest.objects.filter(site=settings.SITE_ID)
-        fields = ['name', 'description', 'submissions_open', 'voting_open', 'display_vote_counts', 'votes_per_user', 'allow_downvotes', 'videos',]
+        fields = ['name', 'description', 'submissions_open', 'voting_open',
+                  'display_vote_counts', 'votes_per_user', 'allow_downvotes',
+                  'videos',]
 
 
 class ContestVideoResource(ModelResource):

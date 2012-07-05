@@ -28,11 +28,11 @@
 		bindClick: function () {
 			var this_ = this;
 			// Bind the click event.
-			this.element.on('click.localtv.contest', 'button', function (event) { this_.clickHandler(event, this); })
+			this.element.on('click.localtv.contest', 'button[disabled!="disabled"]', function (event) { this_.clickHandler(event, this); })
 		},
 		unbindClick: function () {
 			// Unbind the click event.
-			this.element.off('click.localtv.contest', 'button');
+			this.element.off('click.localtv.contest', 'button[disabled!="disabled"]');
 		},
 		data: function (arg) {
 			// Shortcut to the element's data.
@@ -48,19 +48,35 @@
 				
 			this.startLoading();
 			$.when(
-				$.getJSON(this.data('contestvote-list-uri'), all_contest_vote_data),
+				// Details on *all* the user's votes.
+				$.getJSON(this.data('contestvote-list-uri')),
+				// Details on this particular contest.
 				$.getJSON(this.data('contestvideo-detail-uri'), all_contest_vote_data)
 			).then(function (user_vote_data, contest_video_data) { this_.receiveState(user_vote_data, contest_video_data); });
 		},
 		receiveState: function(user_vote_data, contest_video_data) {
 			// Receives contest vote data, parses it out into the user vote, upvotes, and downvotes, then triggers the appropriate functions for displaying the data.
 			var this_ = this,
-				// find the current user's vote
-				user_contest_vote = user_vote_data[0]['objects'][0] ? user_vote_data[0]['objects'][0] : undefined,
-				// find upvotes and downvotes
+				// Extract all the user votes for this contest. Necessary for enforcing contest vote limits.
+				user_contest_votes = user_vote_data[0]['objects'],
+				// Find the current user's vote for the current video.
+				user_contest_video_vote = $.grep(user_contest_votes, function (el, i) { return el['contestvideo'] == this_.data('contestvideo-detail-uri')})[0] || undefined,
+				// Extract the contest.
+				contest = contest_video_data[0]['contest'],
+				// Extract upvote and downvote counts.
 				upvotes = contest_video_data[0]['upvotes'],
 				downvotes = contest_video_data[0]['downvotes'];
-			this.receiveUserVote(user_contest_vote);
+			
+			// Check if voting is allowed.
+			// TODO: add a check for if the user has exceeded their vote count.
+			if (contest['voting_open'] !== true) {
+				this.element.find('button').attr({disabled: 'disabled'});
+				this.element.prepend('<div class="message info">Voting is closed on this contest.</div>')
+			} else {
+				this.element.find('button').attr({disabled: false});
+				this.element.find('.message').remove();
+			}
+			this.receiveUserVote(user_contest_video_vote);
 			this.receiveVotes(upvotes, downvotes);
 			this.endLoading();
 		},
@@ -144,11 +160,9 @@
 			return false;
 		},
 		startLoading: function () {
-			this.element.find('button').attr({disabled:"disabled"});
 			this.unbindClick();
 		},
 		endLoading: function () {
-			this.element.find('button').attr({disabled:false})
 			this.bindClick();
 		}
 	}
