@@ -9,6 +9,10 @@ env:
   - MC_TEST_MYSQL=yes
 before_install:
   - test x$MC_TEST_USE_ES == xyes && sudo service elasticsearch start && sleep 3 || true
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  - "export DISPLAY=:99.0" 
+  
 install:
   - pip install -q -e . --use-mirrors
   - pip install -q --use-mirrors -r example_mc_project/requirements.txt
@@ -21,6 +25,3 @@ before_script:
 script:
   - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
   - django-admin.py test contests --settings=example_mc_project.settings --verbosity=2
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
