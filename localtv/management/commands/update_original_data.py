@@ -32,7 +32,7 @@ class Command(NoArgsCommand):
             video__status=Video.REJECTED):
             try:
                 original.update()
-            except vidscraper.errors.CantIdentifyUrl, e:
+            except vidscraper.errors.CantIdentifyUrl:
                 pass # It is okay if we cannot update a remote video. No need to be noisy.
             except Exception:
                 traceback.print_exc()

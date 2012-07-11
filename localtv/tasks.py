@@ -416,7 +416,6 @@ def haystack_remove(app_label, model_name, pks, using='default'):
     Removes the haystack records for any instances with the given pks.
 
     """
-    model_class = get_model(app_label, model_name)
     backend = connections[using].get_backend()
 
     def callback():
@@ -436,7 +435,6 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     """
     model_class = get_model(app_label, model_name)
-    backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
 
     pk_qs = index.index_queryset().using(using)

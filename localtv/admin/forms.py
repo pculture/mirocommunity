@@ -18,7 +18,6 @@
 import datetime
 import re
 import os.path
-import feedparser
 import urlparse
 
 import django.template.defaultfilters

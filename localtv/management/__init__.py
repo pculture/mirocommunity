@@ -15,17 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Creates the default SiteLocation object.
-"""
+
 import datetime
 
-from django.db.models import signals
 from django.contrib.auth.models import User
 
-from localtv import models as localtv_app
 
 TWO_MONTHS = datetime.timedelta(days=62)
+
 
 def site_too_old():
     if User.objects.order_by('-last_login').values_list(

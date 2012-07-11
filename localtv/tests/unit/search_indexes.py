@@ -18,7 +18,7 @@
 from haystack import connections
 from haystack.query import SearchQuerySet
 
-from localtv.models import Video, Feed
+from localtv.models import Video
 from localtv.tests.base import BaseTestCase
 
 

@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
-import re
 import string
 import urllib
 import types
@@ -39,7 +38,6 @@ from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
 from django.utils.encoding import force_unicode
-from django.core.files.base import ContentFile
 import tagging
 import vidscraper
 from notification import models as notification

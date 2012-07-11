@@ -14,13 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import traceback
-
-from django.core.files.storage import default_storage
 from django.core.management.base import NoArgsCommand
-from django.db.models import Q
 
 import localtv.models
+
 
 class Command(NoArgsCommand):
 

@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from localtv.management import site_too_old
+
 
 class Command(NoArgsCommand):
 
