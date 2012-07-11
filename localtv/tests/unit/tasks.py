@@ -19,11 +19,36 @@ from datetime import datetime, timedelta
 
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
+import mock
 
 from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
-                           haystack_batch_update)
+                           haystack_batch_update, video_from_vidscraper_video)
 from localtv.tests.base import BaseTestCase
+
+
+class VideoFromVidscraperTestCase(BaseTestCase):
+    def test_m2m_errors(self):
+        """
+        If video.save_m2m raises an exception during import, the video should
+        be deleted and the error reraised.
+
+        """
+        class FakeException(Exception):
+            pass
+        video = mock.MagicMock(save_m2m=mock.MagicMock(
+                                                   side_effect=FakeException))
+        kwargs = {'from_vidscraper_video.return_value': video}
+        vidscraper_video = mock.MagicMock(link=None, guid=None, user=None)
+
+        with mock.patch('localtv.tasks.get_model'):
+            with mock.patch('localtv.tasks.Video', **kwargs):
+                with self.assertRaises(FakeException):
+                    video_from_vidscraper_video.apply(args=(vidscraper_video, 1))
+
+        video.save.assert_called_once_with(update_index=False)
+        video.save_m2m.assert_called_once_with()
+        video.delete.assert_called_once_with()
 
 
 class HaystackUpdateUnitTestCase(BaseTestCase):

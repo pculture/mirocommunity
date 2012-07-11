@@ -26,6 +26,8 @@ from django.contrib.auth.models import User
 from haystack import connections
 from haystack.query import SearchQuerySet
 
+from localtv.exceptions import InvalidVideo
+
 
 class DummyException(Exception):
     """
@@ -336,10 +338,21 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                             authors=authors,
                                             categories=categories,
                                             site_pk=site_pk,
+                                            commit=False,
                                             update_index=False)
-        logging.debug('Made video %i: %r', video.pk, video.name)
-        if video.thumbnail_url:
-            video_save_thumbnail.delay(video.pk, using=using)
+        # This is replaced in 1.9 by better model validation.
+        if not (video.embed_code or video.file_url):
+            raise InvalidVideo
+        video.save(update_index=False)
+        try:
+            video.save_m2m()
+        except Exception:
+            video.delete()
+            raise
+        else:
+            logging.debug('Made video %i: %r', video.pk, video.name)
+            if video.thumbnail_url:
+                video_save_thumbnail.delay(video.pk, using=using)
     except Exception:
         source_import.handle_error(('Unknown error during import of %r'
                                     % vidscraper_video.url),
