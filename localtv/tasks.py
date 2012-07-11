@@ -297,7 +297,10 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                            is_skip=True, using=using)
                 return
 
-        categories = Category.objects.using(using).filter(pk__in=category_pks)
+        if category_pks:
+            categories = Category.objects.using(using).filter(pk__in=category_pks)
+        else:
+            categories = None
 
         if author_pks:
             authors = User.objects.using(using).filter(pk__in=author_pks)
@@ -320,7 +323,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                        website=vidscraper_video.user_url or '')
                 authors = [author]
             else:
-                authors = []
+                authors = None
 
         # Since we check above whether the vidscraper_video is valid, we don't
         # catch InvalidVideo here, since it would be unexpected. We don't
