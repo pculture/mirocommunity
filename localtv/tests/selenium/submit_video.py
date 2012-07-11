@@ -36,7 +36,15 @@ class SubmitVideoSeleniumTestCase(WebdriverTestCase):
                         'description': 'Brian Bradley sings his original song Stop Looking',
                         'source': 'clowntownhonkhonk',
                         },
- 
+                    'youtube duplicate': {
+                        'url': 'http://www.youtube.com/watch?v=WqJineyEszo',
+                        'form': 'duplicate',
+                        'title': 'X Factor Audition - Stop Looking At My Mom',
+                        'search': 'stop looking at my mom rap', #term that returns a unique result
+                        'tags': ['competition', 'mom', 'music', 'rap'],
+                        'description': 'Brian Bradley sings his original song Stop Looking',
+                        'source': 'clowntownhonkhonk',
+                        }, 
                     'vimeo': {
                          'url': 'http://vimeo.com/42231616/',
                          'form': 'scraped',
@@ -90,6 +98,7 @@ class SubmitVideoSeleniumTestCase(WebdriverTestCase):
         WebdriverTestCase.setUp(self)
         pg = user_nav.NavPage(pcfwebqa)
         pg.login(self.admin_user, self.admin_pass)
+        self.video_pg = video_page.VideoPage(pcfwebqa)
         
         
 
@@ -97,42 +106,37 @@ class SubmitVideoSeleniumTestCase(WebdriverTestCase):
         submit_pg = submit_page.SubmitPage(pcfwebqa)
         kwargs = self.test_videos[testcase]
         video_page_url = submit_pg.submit_a_valid_video(**kwargs)
-        video_pg = video_page.VideoPage(pcfwebqa)
-        video_pg.open_page(video_page_url)
-        video_metadata = video_pg.check_video_details(**kwargs)
+        self.video_pg.open_page(video_page_url)
+        video_metadata = self.video_pg.check_video_details(**kwargs)
         for results in video_metadata:
             assert_false(results)
 
-    def test_submit_youtube_video(self):
+    def test_submit__youtube_video(self):
         testcase = 'youtube'
         self.verify_video_submit(testcase)
 
-    def test_submit_vimeo_video(self):
+    def test_submit__vimeo_video(self):
         testcase = 'vimeo'
         self.verify_video_submit(testcase)
 
-    def test_submit_blip_video(self):
+    def test_submit__blip_video(self):
         testcase = 'blip'
         self.verify_video_submit(testcase)
 
-    def test_submit_amara_video_with_embed(self):
+    def test_submit__amara_video_with_embed(self):
         testcase = 'amara embed code'
         self.verify_video_submit(testcase)
-        self.verify_amara_widget()
+        self.video_pg.verify_amara_widget()
 
-    def test_submit_amara_video_direct(self):
+    def test_submit__amara_video_direct(self):
         testcase = 'amara direct detect'
         self.verify_video_submit(testcase)
-        self.verify_amara_widget()
+        self.video_pg.verify_amara_widget()
 
 
-    def test_submit_duplicate_youtube_video(self):
-        testcase = 'youtube'
-        self.verify_video_submit(testcase)
-        self.test_videos[testcase + 'duplicate'] = self.test_videos[testcase]
-        self.test_videos[testcase + 'duplicate']['form'] = 'duplicate'
-        self.verify_video_submit(testcase + 'duplicate')
-        self.test_videos.pop(testcase + 'duplicate')
+    def test_submit__duplicate_youtube_video(self):
+        self.verify_video_submit('youtube')
+        self.verify_video_submit('youtube duplicate')
               
 
               
