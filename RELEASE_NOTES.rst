@@ -1,3 +1,11 @@
+Miro Community 1.8.3 Release Notes
+==================================
+
+* Brought test cases and example project dependencies up to date.
+* Corrected some missing imports.
+* Added a catch for errors while saving video m2m relationships during
+  source imports.
+
 Miro Community 1.8.2 Release Notes
 ==================================
 
