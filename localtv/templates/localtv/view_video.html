@@ -23,40 +23,37 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load url from future %}
 
 {% block meta %}
-	<meta content="{{ site_settings.site.name }}" property="og:site_name">
-	<meta content="{{ request.build_absolute_uri }}" property="og:url">
-	<meta content="{{ current_video.name }}" property="og:title">
-	<meta content="{% if current_video.description %}{{ current_video.description|escape }}{% else %}{% blocktrans with name=site_settings.site.name %}Video from {{ name }}.{% endblocktrans %}{% endif %}" property="og:description">
-	<meta content="video" property="og:type">
-	<meta content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}" property="og:image">
+	{% with title=current_video.name %}
+		<meta name="title" content="{{ title }}">
+		<meta property="og:title" content="{{ title }}">
+	{% endwith %}
+	{% with default_description="Video from "|add:site_settings.site.name %}
+		{% with description=current_video.description|striptags|default:default_description %}
+			<meta name="description" content="{{ description }}" />
+			<meta property="og:description" content="{{ description }}">
+		{% endwith %}
+	{% endwith %}
+
+	{% if current_video.file_url %}
+		<meta property="og:video:url" content="{{ current_video.file_url }}">
+		{% if current_video.file_url_mimetype %}
+			<meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
+		{% endif %}
+	{% endif %}
+
+	<meta property="og:site_name" content="{{ site_settings.site.name }}">
+	<meta property="og:url" content="{{ request.build_absolute_uri }}">
+	<meta property="og:type" content="video.other">
+
+	{# not DRY, but we can't store this. #}
+	{% if current_video.has_thumbnail %}
+		<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}">
+		<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}" />
+	{% endif %}
 {% endblock %}
 
 {% block scripts %}
 	{{ block.super }}
-	<script type="text/javascript" src="http://s3.www.universalsubtitles.org/js/unisubs-widgetizer.js"></script>
-	{% comment %}
-	The following bit of javascript creates space for the unisubs widget and
-	is necessary for as long as the unisubs widgetizer adds a widget which is
-	not kept in the flow of the document. It would be nice to get rid of
-	someday, though.
-	{% endcomment %}
-	<script type="text/javascript">
-		(function(){
-			if (!('addEventListener' in window)) return;
-			var heightAdded = false,
-				addHeightOnce = function () {
-				if(!window.UnisubsWidgetizerLoaded || heightAdded || $('.unisubs-videoTab').size() == 0) return;
-				heightAdded = true;
-				var $videoPlayers = $(".video-player"),
-					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
-					subtitleWidgetHeight = 47;
-				$videoPlayers.css({marginBottom: currentPlayerMarginBottom + subtitleWidgetHeight});
-				window.removeEventListener("DOMSubtreeModified", addHeightOnce);
-			}
-			if(window.UnisubsWidgetizerLoaded && $('.unisubs-videoTab').size() > 0) return addHeightOnce();
-			window.addEventListener("DOMSubtreeModified", addHeightOnce);
-		}());
-	</script>
 	{% if current_video.contestvideo_set %}
 		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
 	{% endif %}
@@ -72,11 +69,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_classes %}{{ block.super }} video-detail{% endblock %}
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
-
-{% block head %}
-	{{ block.super }}
-	{% include "localtv/_video_meta.html" %}
-{% endblock %}
 
 {% block pre_content %}
 	<section class="video-full precontent">
@@ -98,7 +90,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>
 		<div class="precontent-content">
 			<div class="container video-player">
-                          {% include "localtv/_video_embed.html" %}
+				<div class="video-embedded-widget">
+					{% include "localtv/_video_embed.html" %}
+				</div>
 			</div>{# /.container #}
 		</div>{# /.precontent-content #}
 	</section>{# /.video-stage #}
@@ -179,9 +173,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{# Google+ #}
 	<script type="text/javascript">
 	  (function() {
-	    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-	    po.src = 'https://apis.google.com/js/plusone.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
 	  })();
 	</script>
 	{# Pinterest #}

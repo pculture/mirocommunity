@@ -32,59 +32,93 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
 {% endblock %}
 
+{% block pre_content %}
+	{% if top_videos %}
+		<div class="precontent">
+			<div class="precontent-header">
+				<div class="container">
+					<h1>{{ contest.name }}</h1>
+				</div>{# /.container #}
+			</div>{# /.precontent-header #}
+			<div class="precontent-content">
+				<div class="container">
+					<div class="padded">
+							{% with top_videos|slice:"8" as video_list %}
+								{% include "contests/_contest_ranked_list.html" %}
+							{% endwith %}
+							<a class="button button-dark button-wide" href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">{% blocktrans with name=contest.name %}Submit a video to <span class="name">{{ name }}</span>{% endblocktrans %}</a>
+					</div>{# /.padded #}
+				</div>{# /.container #}
+			</div>{# /.precontent-content #}
+		</div>{# /.precontent #}
+	{% endif %}{# endif top_videos #}
+{% endblock %}
+
 {% block content %}
-	<header class="page-header">
-		<h1>{{ contest.name }}</h1>
-		<ul class="page-actions">
-			<li><a href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">Submit a Video</a></li>
-		</ul>
-	</header>
 	<div class="page-content">
+		{% if not top_videos %}
+			<header class="page-header">
+				<h1>{{ contest.name }}</h1>
+				<ul class="page-actions">
+					<li><a href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">Submit a Video</a></li>
+				</ul>
+			</header>
+		{% endif %}
 		<div class="contest-description content-box">
 			{{ contest.description|markdown }}
 		</div>
-		<div class="contest-videos row-flexible">
-			{% if new_videos %}
-				<div class="pod col">
+		{% if new_videos and random_videos %}
+			<div class="contest-videos row">
+				<div class="pod col-one-half">
 					<header class="pod-header">
 						<h1>{% trans "New Videos" %}</h1>
 					</header>
 					<div class="pod-content">
 						{% with new_videos|slice:"10" as video_list %}
-							{% include "contests/_contest_list.html" %}
+							{% include "localtv/_video_grid_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
-			{% endif %}
-		
-			{% if random_videos %}
-				<div class="pod col">
+				<div class="pod col-one-half right-sidebar">
 					<header class="pod-header">
 						<h1>{% trans "Random Videos" %}</h1>
 					</header>
 					<div class="pod-content">
 						{% with random_videos|slice:"10" as video_list %}
-							{% include "contests/_contest_list.html" %}
+							{% include "localtv/_video_grid_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
-			{% endif %}
-		
-			{% if top_videos %}
-				<div class="pod col">
+			</div>{# /.row-flexible.contest-videos #}
+		{% else %}
+			{% if new_videos %}
+				<div class="pod">
 					<header class="pod-header">
-						<h1>{% trans "Top Videos" %}</h1>
+						<h1>{% trans "New Videos" %}</h1>
 					</header>
 					<div class="pod-content">
-						{% with top_videos|slice:"10" as video_list %}
-							{% include "contests/_contest_list.html" %}
+						{% with new_videos|slice:"10" as video_list %}
+							{% include "localtv/_video_grid_list.html" %}
 						{% endwith %}
 					</div>
 				</div>
 			{% endif %}
-		</div>{# /.row-flexible.contest-videos #}
-                <div class="padded">
-                  <a class="button-wide continue" href="{% url 'contests_contest_listing' pk=contest.pk slug=contest.slug %}">See All Videos</a>
-                </div>
+			{% if contest_videos %}
+				<div class="pod">
+					<header class="pod-header">
+						<h1>{% trans "Random Videos" %}</h1>
+					</header>
+					<div class="pod-content">
+						{% with random_videos|slice:"10" as video_list %}
+							{% include "localtv/_video_grid_list.html" %}
+						{% endwith %}
+					</div>
+				</div>
+			{% endif %}
+		{% endif %}
+		
+		<div class="padded">
+			<a class="button-wide continue" href="{% url 'contests_contest_listing' pk=contest.pk slug=contest.slug %}">See All Videos</a>
+		</div>
 	</div>{# /.page-content #}
 {% endblock %}

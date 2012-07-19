@@ -367,6 +367,23 @@ class NewsletterSettings(models.Model):
                                 context)
 
 
+class WidgetSettingsManager(SiteRelatedManager):
+    def _new_entry(self, site, using):
+        singleton = super(WidgetSettingsManager, self)._new_entry(site, using)
+        try:
+            site_settings = SiteSettings._default_manager.db_manager(
+                using).get(site=site)
+        except SiteSettings.DoesNotExist:
+            pass
+        else:
+            if site_settings.logo:
+                site_settings.logo.open()
+                singleton.icon = site_settings.logo
+                cf = ContentFile(site_settings.logo.read())
+                singleton.save_thumbnail_from_file(cf)
+        return singleton
+
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -390,6 +407,8 @@ class WidgetSettings(Thumbnailable):
 
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
+
+    objects = WidgetSettingsManager()
 
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
@@ -581,11 +600,7 @@ class Feed(Source):
         video_iter = vidscraper.auto_feed(
             self.feed_url,
             crawl=(getattr(self, 'status', True) == 0),
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            api_keys=lsettings.API_KEYS,
         )
 
         try:
@@ -770,11 +785,7 @@ class SavedSearch(Source):
         searches = vidscraper.auto_search(
             self.query_string,
             crawl=True,
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            api_keys=lsettings.API_KEYS,
         )
 
         video_iters = []
@@ -1012,7 +1023,9 @@ class OriginalVideo(VideoBase):
         else:
             try:
                 vidscraper_video = vidscraper.auto_scrape(
-                    video.website_url, fields=fields)
+                                                video.website_url,
+                                                fields=fields,
+                                                api_keys=lsettings.API_KEYS)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
             except urllib2.URLError:

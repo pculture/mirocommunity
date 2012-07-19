@@ -44,13 +44,11 @@
 				finished: function (opts) {
 					var $this = $(this);
 					window.location.hash = "#!?page=" + opts.state.currPage;
-					$('#infscr-loading').remove();
+					$('#infscr-loading').remove(); // hide the spinner
+					$this.infinitescroll('pause'); // prevent from loading the next page
 					if ($this.data('infscr_first_load') !== 'done'){
-						// if this is the first load:
-						// * unbind the infinite scroll event
-						// * create a next page button
+						// if this is the first load, create a next page button
 						$this.data('infscr_first_load', 'done');
-						$this.infinitescroll('pause');
 						var next_page_button =$('<a href="#" class="button button-wide">Load More Videos</a>');
 						$this.data('infscr_next_button', next_page_button);
 						next_page_button.click(function (e) {

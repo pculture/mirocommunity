@@ -18,10 +18,11 @@
 from django.conf import settings
 
 from tastypie import fields
+from tastypie import http
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
+from tastypie.utils.mime import build_content_type
 
 from localtv.api.v1 import api, UserResource, VideoResource
 from localtv.contrib.contests.authorization import UserAuthorization
@@ -29,27 +30,43 @@ from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
 
 
 class ContestResource(ModelResource):
-    votes = fields.ToManyField(
-                'localtv.contrib.contests.api.v1.ContestVoteResource',
-                'votes')
     videos = fields.ToManyField(VideoResource, 'videos')
+
+    def dehydrate_votes_per_user(self, bundle):
+        """
+        Return `None` if `votes_per_user` is `None`.
+        Return the value, otherwise.
+        
+        """
+        if bundle.obj.votes_per_user is None:
+            return None
+        return bundle.obj.votes_per_user
 
     class Meta:
         queryset = Contest.objects.filter(site=settings.SITE_ID)
+        fields = ['name', 'description', 'submissions_open', 'voting_open',
+                  'display_vote_counts', 'votes_per_user', 'allow_downvotes',
+                  'videos',]
 
 
 class ContestVideoResource(ModelResource):
-    contest = fields.ToOneField(ContestResource, 'contest')
+    contest = fields.ToOneField(ContestResource, 'contest', full=True)
     video = fields.ToOneField(VideoResource, 'video')
     added = fields.DateTimeField('added')
     upvotes = fields.IntegerField()
     downvotes = fields.IntegerField()
-    
+
     def dehydrate_upvotes(self, bundle):
-        return bundle.obj.contestvote_set.filter(vote=ContestVote.UP).count()
-    
+        if bundle.obj.contest.display_vote_counts:
+            return bundle.obj.contestvote_set.filter(vote=ContestVote.UP).count()
+        else:
+            return None
+
     def dehydrate_downvotes(self, bundle):
-        return bundle.obj.contestvote_set.filter(vote=ContestVote.DOWN).count()
+        if bundle.obj.contest.display_vote_counts:
+            return bundle.obj.contestvote_set.filter(vote=ContestVote.DOWN).count()
+        else:
+            return None
 
     class Meta:
         queryset = ContestVideo.objects.filter(contest__site=settings.SITE_ID)
@@ -60,11 +77,62 @@ class ContestVoteResource(ModelResource):
     user = fields.ToOneField(UserResource, 'user')
     vote = fields.IntegerField('vote')
 
+    def _handle_error(self, request, error_message, response_class=http.HttpForbidden):
+        data = {
+            "error_message": error_message,
+        }
+        desired_format = self.determine_format(request)
+        serialized = self.serialize(request, data, desired_format)
+        response = response_class(content=serialized,
+                            content_type=build_content_type(desired_format))
+        raise ImmediateHttpResponse(response)
+
     def obj_create(self, bundle, request=None, **kwargs):
+        """
+        Creates a contest-vote object after ensuring:
+        1. the contest has voting open,
+        2. user is set to the currently logged-in user,
+        3. the vote they are registering is permitted, and
+        4. that they have not exceeded their vote count.
+        
+        TODO: these also (except #4) need to be checked when editing a vote.
+
+        """
+
+        # Extract relevant data.
+        contestvideo = ContestVideoResource().get_via_uri(bundle.data['contestvideo'])
+        contest = contestvideo.contest
+        video = contestvideo.video
+        vote_value = int(bundle.data['vote'])
+
+        # Verify that voting is open on the contest.
+        if not contest.voting_open:
+            self._handle_error(request, 'Voting is not open on %s' % contest)
+
+        # Verify authenticated user.
         if hasattr(request, 'user') and request.user.is_authenticated():
             kwargs['user'] = request.user
         else:
-            raise ImmediateHttpResponse(response=HttpUnauthorized())
+            self._handle_error(request,
+                               'User must be logged-in to vote.')
+
+        # Check vote is permissible.
+        permissible_votes = (1, -1) if contest.allow_downvotes else (1,)
+        if vote_value not in permissible_votes:
+            self._handle_error(request,
+                               'Vote value %d not permitted.' % vote_value)
+
+        # Check vote counts.
+        if contest.votes_per_user is not None:
+            user_vote_count = ContestVote.objects.filter(
+                                                contestvideo__contest=contest,
+                                                user=request.user).count()
+            if user_vote_count + 1 > contest.votes_per_user:
+                self._handle_error(request,
+                                   'Users may only vote %d times in %s.' %
+                                   (contest.votes_per_user, contest.name))
+
+        # Since everything checks out, go ahead and create the vote.
         return super(ContestVoteResource, self).obj_create(bundle,
                                                            request=request,
                                                            **kwargs)

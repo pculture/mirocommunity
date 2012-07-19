@@ -10,6 +10,7 @@
 	float:left;
 	margin-left:$gutter-width;
 	@include margin-trailer;
+	position:relative;
 }
 
 .media-grid > #infscr-loading{
@@ -27,4 +28,17 @@
 	@include xx-large;
 	font-weight:bold;
 	@include margin-leader;
+}
+
+.media-item-badge{
+	height:20px;
+	min-width:20px;
+	padding:10px;
+	text-align:center;
+	line-height:20px;
+	font-size:20px;
+	position:absolute;
+	top:-9px;
+	left:-9px;
+	@include border-radius(43px);
 }

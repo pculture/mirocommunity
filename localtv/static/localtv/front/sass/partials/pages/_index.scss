@@ -8,13 +8,10 @@
 }
 
 .watch-video-button{
-	@include box-sizing(border-box);
-	border:1px solid;
-	padding:$base-line-height/4 $base-line-height/2;
-	@include border-radius(4px);
-}
-.watch-video-button::after{
 	@extend .button-dark;
+}
+
+.watch-video-button::after{
 	content:"▶";
 	display:inline-block;
 	margin-left:.5em;

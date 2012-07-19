@@ -29,6 +29,7 @@ from vidscraper.errors import CantIdentifyUrl
 
 from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video
+from localtv.settings import API_KEYS
 from localtv.templatetags.filters import sanitize
 
 
@@ -69,11 +70,7 @@ class SubmitURLForm(forms.Form):
         self._validate_unique(url=url)
         self.video_cache = None
         try:
-            self.video_cache = vidscraper.auto_scrape(url, api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            })
+            self.video_cache = vidscraper.auto_scrape(url, api_keys=API_KEYS)
         except (CantIdentifyUrl, urllib2.URLError):
             pass
         else:
