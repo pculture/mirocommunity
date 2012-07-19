@@ -36,6 +36,7 @@ from notification import models as notification
 
 from localtv.settings import API_KEYS
 
+
 def get_tag(tag_text, using='default'):
     while True:
         try:
