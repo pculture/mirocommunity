@@ -54,30 +54,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block scripts %}
 	{{ block.super }}
-	<script type="text/javascript" src="http://s3.www.universalsubtitles.org/js/unisubs-widgetizer.js"></script>
-	{% comment %}
-	The following bit of javascript creates space for the unisubs widget and
-	is necessary for as long as the unisubs widgetizer adds a widget which is
-	not kept in the flow of the document. It would be nice to get rid of
-	someday, though.
-	{% endcomment %}
-	<script type="text/javascript">
-		(function(){
-			if (!('addEventListener' in window)) return;
-			var heightAdded = false,
-				addHeightOnce = function () {
-				if(!window.UnisubsWidgetizerLoaded || heightAdded || $('.unisubs-videoTab').size() == 0) return;
-				heightAdded = true;
-				var $videoPlayers = $(".video-player"),
-					currentPlayerMarginBottom = parseInt($videoPlayers.css('margin-bottom')),
-					subtitleWidgetHeight = 47;
-				$videoPlayers.css({marginBottom: currentPlayerMarginBottom + subtitleWidgetHeight});
-				window.removeEventListener("DOMSubtreeModified", addHeightOnce);
-			}
-			if(window.UnisubsWidgetizerLoaded && $('.unisubs-videoTab').size() > 0) return addHeightOnce();
-			window.addEventListener("DOMSubtreeModified", addHeightOnce);
-		}());
-	</script>
 	{% if current_video.contestvideo_set %}
 		<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
 	{% endif %}
@@ -114,7 +90,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>
 		<div class="precontent-content">
 			<div class="container video-player">
-						  {% include "localtv/_video_embed.html" %}
+				<div class="video-embedded-widget">
+					{% include "localtv/_video_embed.html" %}
+				</div>
 			</div>{# /.container #}
 		</div>{# /.precontent-content #}
 	</section>{# /.video-stage #}

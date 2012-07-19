@@ -169,7 +169,6 @@ INSTALLED_APPS = (
     # Uncomment to use south migrations
     # 'south',
     'djpagetabs',
-    'djvideo',
     'localtv',
     'localtv.admin',
     'localtv.comments',
@@ -178,6 +177,7 @@ INSTALLED_APPS = (
     'localtv.user_profile',
     'localtv.playlists',
     'localtv.contrib.contests',
+    'djvideo',
     'registration',
     'tagging',
     'uploadtemplate',

@@ -1,7 +1,10 @@
 @import "compass/css3/box-shadow";
 
 .video-player{
-	& > p, & > div, & > span, & > embed, & > object, & > video, & > iframe{
+	& > .video-embedded-widget{
+		width:800px;
+	}
+	& > p, & > div, & > span, & > .video-embedded-widget{
 		display:block;
 		margin-left:auto;
 		margin-right:auto;
