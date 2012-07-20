@@ -106,8 +106,13 @@ class Thumbnailable(models.Model):
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
-        # save an unresized version, overwriting if necessary
-        delete_if_exists(self.thumbnail_path)
+        # Delete previous thumbnail (and resized thumbnails) before saving
+        # the new one. This is necessary only because we're currently
+        # overwriting the same storage path over and over. In the future, we
+        # are switching to ImageFields for thumbnail storage, which will
+        # render this entire system obsolete. See bz18318.
+        if self.has_thumbnail:
+            self.delete_thumbnail()
 
         self.thumbnail_extension = pil_image.format.lower()
         default_storage.save(self.thumbnail_path, content_thumb)
@@ -136,13 +141,13 @@ class Thumbnailable(models.Model):
     def delete_thumbnail(self):
         self.has_thumbnail = False
         delete_if_exists(self.thumbnail_path)
-        self.thumbnail_extension = ''
         try:
             image = Image.objects.for_storage_path(self.thumbnail_path)
         except Image.DoesNotExist:
             pass
         else:
             image.delete()
+        self.thumbnail_extension = ''
         self.save()
 
     def delete(self, *args, **kwargs):
