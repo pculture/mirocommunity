@@ -1,12 +1,54 @@
-{% comment %}
-Copyright (c) 2009 Participatory Culture Foundation
-See LICENSE for details.
-{% endcomment %}
-{% load i18n %}
+{% extends "localtv/__base.html" %}
 
-<form id="share_form" action="{{ request.path }}" method="POST">{% csrf_token %}
-  <ul>
-  {{ form.as_ul }}
-  </ul>
-  <input type="submit" value="Share!" />
-</form>
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load i18n daguerre %}
+
+{% block title %}Share “{{ content_object.name }}” - {{ block.super }}{% endblock %}
+
+{% block content %}
+	<header class="page-header">
+		<h1 class="page-title">Share “{{ content_object.name }}”</h1>
+	</header>
+	<div class="row">
+		<div class="col-one-half">
+			<div class="content-box">
+				<form id="share_form" action="{{ request.path }}" method="POST">
+					{% csrf_token %}
+					{% include "localtv/_form_inner.html" %}
+					<footer class="form-actions">
+						<button>Share</button>
+					</footer>
+				</form>{# /#share_form #}
+			</div>{# /.content-box #}
+		</div>{# /.col-one-half #}
+		
+		{% adjust content_object.thumbnail_path adjustment="fit" width=440 as image %}
+		{% if image %}
+			<div class="col-one-half">
+				<div class="content-box">
+					<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
+					<h1>{{ content_object.name }}</h1>
+					{{ content_object.description|safe }}
+				</div>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
