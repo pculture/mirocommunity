@@ -7,19 +7,17 @@
 {% endif %}
 
 <div class="video-list-wrapper">
-	{% for video in video_list %}
-		{% if forloop.first %}
-			<ul class="media-grid video-grid">
-		{% endif %}
-		{% include "localtv/_video_grid_item.html" %}
-		{% if forloop.last %}
-			</ul>
-		{% endif %}
-	{% empty %}
+	{% if video_list %}
+		<ul class="media-grid video-grid">
+			{% for video in video_list %}
+				{% include "localtv/_video_grid_item.html" %}
+			{% endfor %}
+		</ul>
+	{% else %}
 		<div class="message warning">
 			<p>{% trans "No videos have been added yet." %}</p>
 		</div>
-	{% endfor %}
+	{% endif %}
 </div>
 
 {% if page_obj.has_other_pages %}
