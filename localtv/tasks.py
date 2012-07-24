@@ -26,6 +26,8 @@ from django.contrib.auth.models import User
 from haystack import connections
 from haystack.query import SearchQuerySet
 
+from localtv.exceptions import InvalidVideo
+
 
 class DummyException(Exception):
     """
@@ -297,7 +299,10 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                            is_skip=True, using=using)
                 return
 
-        categories = Category.objects.using(using).filter(pk__in=category_pks)
+        if category_pks:
+            categories = Category.objects.using(using).filter(pk__in=category_pks)
+        else:
+            categories = None
 
         if author_pks:
             authors = User.objects.using(using).filter(pk__in=author_pks)
@@ -320,7 +325,7 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                        website=vidscraper_video.user_url or '')
                 authors = [author]
             else:
-                authors = []
+                authors = None
 
         # Since we check above whether the vidscraper_video is valid, we don't
         # catch InvalidVideo here, since it would be unexpected. We don't
@@ -333,10 +338,21 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                             authors=authors,
                                             categories=categories,
                                             site_pk=site_pk,
+                                            commit=False,
                                             update_index=False)
-        logging.debug('Made video %i: %r', video.pk, video.name)
-        if video.thumbnail_url:
-            video_save_thumbnail.delay(video.pk, using=using)
+        # This is replaced in 1.9 by better model validation.
+        if not (video.embed_code or video.file_url):
+            raise InvalidVideo
+        video.save(update_index=False)
+        try:
+            video.save_m2m()
+        except Exception:
+            video.delete()
+            raise
+        else:
+            logging.debug('Made video %i: %r', video.pk, video.name)
+            if video.thumbnail_url:
+                video_save_thumbnail.delay(video.pk, using=using)
     except Exception:
         source_import.handle_error(('Unknown error during import of %r'
                                     % vidscraper_video.url),
@@ -416,7 +432,6 @@ def haystack_remove(app_label, model_name, pks, using='default'):
     Removes the haystack records for any instances with the given pks.
 
     """
-    model_class = get_model(app_label, model_name)
     backend = connections[using].get_backend()
 
     def callback():
@@ -436,7 +451,6 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     """
     model_class = get_model(app_label, model_name)
-    backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
 
     pk_qs = index.index_queryset().using(using)

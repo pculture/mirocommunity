@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
-import re
 import string
 import urllib
 import types
@@ -39,7 +38,6 @@ from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
 from django.utils.encoding import force_unicode
-from django.core.files.base import ContentFile
 import tagging
 import vidscraper
 from notification import models as notification
@@ -51,6 +49,8 @@ except (ImportError, AttributeError): # AttributeError if S3 isn't configured
         from storages.backends.s3 import S3Storage
     except (ImportError, AttributeError):
         S3Storage = None
+
+from localtv.settings import API_KEYS
 
 
 def get_tag(tag_text, using='default'):
@@ -128,7 +128,7 @@ def get_vidscraper_video(url):
     if not vidscraper_video:
         # try and scrape the url
         try:
-            vidscraper_video = vidscraper.auto_scrape(url)
+            vidscraper_video = vidscraper.auto_scrape(url, api_keys=API_KEYS)
         except vidscraper.errors.Error:
             vidscraper_video = None
 

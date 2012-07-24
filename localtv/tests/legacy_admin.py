@@ -1080,7 +1080,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 class FeedAdministrationTestCase(BaseTestCase):
 
     url = reverse('localtv_admin_feed_add')
-    feed_url = "http://participatoryculture.org/feeds_test/feed7.rss"
+    feed_url = "http://qa.pculture.org/feeds_test/feed7.rss"
 
     def test_GET(self):
         """
@@ -1267,8 +1267,9 @@ class FeedAdministrationTestCase(BaseTestCase):
 
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.email, '')
-        self.assertEqual(user.get_profile().website,
-                          'http://www.youtube.com/user/mphtower/videos')
+        self.assertTrue(user.get_profile().website) # YouTube changes this
+                                                    # periodically, so just
+                                                    # check that it's there
         self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 

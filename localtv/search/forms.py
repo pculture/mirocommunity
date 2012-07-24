@@ -16,8 +16,6 @@
 
 from django import forms
 from django.contrib.sites.models import Site
-from django.db.models.fields import FieldDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from haystack.forms import SearchForm
 
 from localtv.models import Video

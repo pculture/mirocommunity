@@ -19,8 +19,6 @@ import datetime
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator, Page
 from django.http import Http404
 from django.views.generic import ListView
 from django.conf import settings
@@ -28,10 +26,9 @@ from haystack.query import SearchQuerySet
 from voting.models import Vote
 
 import localtv.settings
-from localtv.models import Video, Category
+from localtv.models import Video
 from localtv.search.forms import VideoSearchForm
-from localtv.search.utils import (SortFilterViewMixin, NormalizedVideoList,
-                                  ApprovedSort)
+from localtv.search.utils import SortFilterViewMixin, NormalizedVideoList
 from localtv.search_indexes import DATETIME_NULL_PLACEHOLDER
 
 

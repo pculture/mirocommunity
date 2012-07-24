@@ -842,11 +842,7 @@ class Feed(Source):
         video_iter = vidscraper.auto_feed(
             self.feed_url,
             crawl=(getattr(self, 'status', True) == 0),
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            api_keys=lsettings.API_KEYS,
         )
 
         try:
@@ -1067,11 +1063,7 @@ class SavedSearch(Source):
         searches = vidscraper.auto_search(
             self.query_string,
             crawl=True,
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            api_keys=lsettings.API_KEYS,
         )
 
         video_iters = []
@@ -1307,7 +1299,9 @@ class OriginalVideo(VideoBase):
         else:
             try:
                 vidscraper_video = vidscraper.auto_scrape(
-                    video.website_url, fields=fields)
+                                                video.website_url,
+                                                fields=fields,
+                                                api_keys=lsettings.API_KEYS)
             except vidscraper.errors.VideoDeleted:
                 remote_video_was_deleted = True
 

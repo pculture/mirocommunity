@@ -15,7 +15,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import urllib
-import logging
 
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -24,7 +23,6 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models import signals
 from django.template import Context, loader
-from django.utils.safestring import mark_safe
 
 from socialauth.models import TwitterUserProfile, FacebookUserProfile
 

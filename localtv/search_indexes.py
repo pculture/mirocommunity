@@ -19,11 +19,11 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.db.models import Count, signals
+from django.db.models import signals
 from haystack import indexes
 from haystack.query import SearchQuerySet
 
-from localtv.models import Video, Watch, Feed, SavedSearch
+from localtv.models import Video, Feed, SavedSearch
 from localtv.playlists.models import PlaylistItem
 from localtv.tasks import haystack_update, haystack_remove
 

@@ -21,8 +21,7 @@ from django.conf.urls.defaults import patterns, url
 from django.views.generic.base import TemplateView
 
 from localtv.listing.views import VideoSearchView
-from localtv.models import Video
-from localtv.search.query import SmartSearchQuerySet
+
 
 urlpatterns = patterns(
     'localtv.listing.views',

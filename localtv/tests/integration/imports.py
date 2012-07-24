@@ -30,7 +30,7 @@ class FeedImportIntegrationTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self.url = reverse('localtv_admin_feed_add')
-        self.feed_url = 'http://participatoryculture.org/feeds_test/feed1.rss'
+        self.feed_url = 'http://qa.pculture.org/feeds_test/feed1.rss'
         self.client.login(username='admin', password='admin')
 
     def test_GET(self):

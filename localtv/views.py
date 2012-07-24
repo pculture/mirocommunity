@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 from django.contrib import comments
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site

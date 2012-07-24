@@ -26,6 +26,7 @@ from vidscraper import auto_search
 from vidscraper.utils.search import intersperse_results
 
 from localtv.models import Video
+from localtv.settings import API_KEYS
 
 from vidscraper.errors import Error as VidscraperError
 
@@ -48,12 +49,6 @@ class LiveSearchForm(forms.Form):
             hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
                         ).hexdigest())
 
-    def get_search_api_keys(self):
-        return {
-            'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-            'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-        }
-
     def get_results(self):
         cache_key = self._get_cache_key()
         results = cache.get(cache_key)
@@ -61,7 +56,7 @@ class LiveSearchForm(forms.Form):
             finish_by = time.time() + 20
             search_results = auto_search(self.cleaned_data['q'],
                                   order_by=self.cleaned_data['order_by'],
-                                  api_keys=self.get_search_api_keys())
+                                  api_keys=API_KEYS)
             results = []
             for vidscraper_video in intersperse_results(search_results, 40):
                 try:
