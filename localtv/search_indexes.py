@@ -18,10 +18,12 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db.models import signals
 from haystack import indexes
 from haystack.query import SearchQuerySet
+from tagging.models import Tag
 
 from localtv.models import Video, Feed, SavedSearch
 from localtv.playlists.models import PlaylistItem
@@ -190,7 +192,13 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return [int(rel.pk) for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        return self._prepare_rel_field(video, 'tags')
+        # We manually run this process to be sure that the tags are fetched
+        # from the correct database (not just "default").
+        using = video._state.db
+        ct = ContentType.objects.db_manager(using).get_for_model(video)
+        tags = Tag.objects.using(using).filter(items__content_type__pk=ct.pk,
+                                               items__object_id=video.pk)
+        return [int(tag.pk) for tag in tags]
 
     def prepare_categories(self, video):
         return [int(rel.pk) for rel in video.all_categories]
