@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db.models import signals
+from django.template import loader
 from haystack import indexes
 from haystack.query import SearchQuerySet
 from tagging.models import Tag
@@ -162,6 +163,25 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
                       Video._meta.module_name,
                       pks, haystack_remove,
                       using=instance._state.db)
+
+    def prepare(self, obj):
+        """
+        Disable uploadtemplate loader - it always uses the default database.
+        This is a trailing necessity of the CELERY_USING hack.
+
+        """
+        if 'uploadtemplate.loader.Loader' in settings.TEMPLATE_LOADERS:
+            old_template_loaders = settings.TEMPLATE_LOADERS
+            loader.template_source_loaders = None
+            settings.TEMPLATE_LOADERS = tuple(loader
+                                     for loader in settings.TEMPLATE_LOADERS
+                                     if loader != 'uploadtemplate.loader.Loader')
+            super(VideoIndex, self).prepare(obj)
+            loader.template_source_loaders = None
+            settings.TEMPLATE_LOADERS = old_template_loaders
+        else:
+            super(VideoIndex, self).prepare(obj)
+        return self.prepared_data
 
     def get_model(self):
         return Video
