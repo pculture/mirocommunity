@@ -394,10 +394,8 @@ def video_save_thumbnail(video_pk, using='default'):
             raise
         video_save_thumbnail.retry()
 
-    # Get a new copy of the video in case it changed while the thumb
-    # was being fetched.
-    video = Video.objects.using(using).get(pk=video_pk)
     video.save_thumbnail_from_file(content_thumb)
+    Video.objects.using(using).filter(pk=video_pk).update(has_thumbnail=True)
 
 
 def _haystack_database_retry(task, callback):

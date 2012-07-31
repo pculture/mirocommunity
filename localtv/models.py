@@ -163,8 +163,6 @@ class Thumbnailable(models.Model):
         if resize:
             # save any resized versions
             self.resize_thumbnail(pil_image)
-        self.has_thumbnail = True
-        self.save()
 
     def resize_thumbnail(self, thumb, resized_images=None):
         """

@@ -202,13 +202,17 @@ class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
         old_m2m = self.save_m2m
         def save_m2m():
             if self.cleaned_data['thumbnail_file']:
-                self.instance.thumbnail_url = ''
-                self.instance.save_thumbnail_from_file(
+                video.thumbnail_url = ''
+                video.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail_file'])
+                video.has_thumbnail = True
+                video.save()
             elif self.cleaned_data['thumbnail']:
-                self.instance.thumbnail_url = self.data['thumbnail']
-                self.instance.save_thumbnail_from_file(
+                video.thumbnail_url = self.data['thumbnail']
+                video.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail'])
+                video.has_thumbnail = True
+                video.save()
             old_m2m()
         if commit:
             video.save()
