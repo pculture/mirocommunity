@@ -130,34 +130,31 @@ def mark_import_pending(import_app_label, import_model, import_pk,
 
     # Otherwise the first stage is complete. Check whether they can take all the
     # videos.
-    active_set = None
-    unapproved_set = source_import.get_videos(using).filter(
-        status=Video.PENDING)
     if source_import.auto_approve:
-        if not SiteLocation.enforce_tiers(using=using):
-            active_set = unapproved_set
-            unapproved_set = None
-        else:
+        active_set = source_import.get_videos(using).filter(
+            status=Video.PENDING)
+        # Only limit activated videos if tiers are enforced.
+        if SiteLocation.enforce_tiers(using=using):
             remaining_videos = (Tier.get(using=using).videos_limit()
                                 - Video.objects.using(using
                                     ).filter(status=Video.ACTIVE
                                     ).count())
-            if remaining_videos > source_import.videos_imported:
-                active_set = unapproved_set
-                unapproved_set = None
+            if remaining_videos >= source_import.videos_imported:
+                # Don't limit activated videos - enough space.
+                pass
             elif remaining_videos > 0:
-                unapproved_set = unapproved_set.order_by('when_submitted')
-                # only approve `remaining_videos` videos
-                when_submitted = unapproved_set[
-                    remaining_videos].when_submitted
-                active_set = unapproved_set.filter(
-                    when_submitted__lt=when_submitted)
-                unapproved_set = unapproved_set.filter(
-                    when_submitted__gte=when_submitted)
-    if unapproved_set is not None:
-        unapproved_set.update(status=Video.UNAPPROVED)
-    if active_set is not None:
+                # Only approve the earliest-"submitted" videos.
+                last_video = active_set.order_by('when_submitted')[
+                                                            remaining_videos]
+                active_set = active_set.filter(
+                                when_submitted__lt=last_video.when_submitted)
+            else:
+                # Don't bother trying to update.
+                active_set = active_set.none()
         active_set.update(status=Video.ACTIVE)
+
+    source_import.get_videos(using).filter(status=Video.PENDING).update(
+        status=Video.UNAPPROVED)
 
     source_import.status = import_class.PENDING
     source_import.save()
