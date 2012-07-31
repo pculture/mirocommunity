@@ -15,14 +15,17 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import httplib
 import logging
 import random
+import urllib
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from haystack import connections
 from haystack.query import SearchQuerySet
 
@@ -45,10 +48,10 @@ except ImportError:
 
 
 from localtv import utils
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
 from localtv.settings import USE_HAYSTACK
 from localtv.tiers import Tier
+from localtv.utils import quote_unicode_url
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -360,22 +363,41 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
 @task(ignore_result=True)
 def video_save_thumbnail(video_pk, using='default'):
     try:
-        v = Video.objects.using(using).get(pk=video_pk)
+        video = Video.objects.using(using).get(pk=video_pk)
     except Video.DoesNotExist:
         logging.warn(
             'video_save_thumbnail(%s, using=%r) could not find video',
             video_pk, using)
         return
+
+    if not video.thumbnail_url:
+        return
+
+    thumbnail_url = quote_unicode_url(video.thumbnail_url)
+
     try:
-        v.save_thumbnail()
-    except CannotOpenImageUrl:
-        try:
-            return video_save_thumbnail.retry()
-        except MaxRetriesExceededError:
-            logging.warn(
-                'video_save_thumbnail(%s, using=%r) exceeded max retries',
-                video_pk, using
-            )
+        thumbnail = urllib.urlopen(thumbnail_url)
+    except httplib.InvalidURL:
+        # This is always fast, so we don't need to worry as much about
+        # race conditions. If the URL isn't valid, just erase it.
+        video.thumbnail_url = ''
+        video.has_thumbnail = False
+        video.save()
+        return
+
+    try:
+        content_thumb = ContentFile(thumbnail.read())
+    except IOError:
+        # Could be a temporary disruption - try again later if this was
+        # a task. Otherwise reraise.
+        if video_save_thumbnail.request.called_directly:
+            raise
+        video_save_thumbnail.retry()
+
+    # Get a new copy of the video in case it changed while the thumb
+    # was being fetched.
+    video = Video.objects.using(using).get(pk=video_pk)
+    video.save_thumbnail_from_file(content_thumb)
 
 
 def _haystack_database_retry(task, callback):

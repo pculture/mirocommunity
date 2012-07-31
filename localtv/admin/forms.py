@@ -42,6 +42,7 @@ from tagging.forms import TagField
 import localtv.settings
 import localtv.tiers
 from localtv import models, utils
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
@@ -88,10 +89,8 @@ class EditVideoForm(forms.ModelForm):
             if (thumbnail_url and not
                 models.Video.objects.get(id=self.instance.id).thumbnail_url == thumbnail_url):
                 self.instance.thumbnail_url = thumbnail_url
-                try:
-                    self.instance.save_thumbnail()
-                except models.CannotOpenImageUrl:
-                    pass # wwe'll get it in a later update
+                video_save_thumbnail.delay(self.instance.pk,
+                                           using=CELERY_USING)
         return forms.ModelForm.save(self, *args, **kwargs)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):

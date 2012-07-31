@@ -22,6 +22,7 @@ from django.db.models import Q
 
 from localtv.management import site_too_old
 from localtv import models
+from localtv.tasks import video_save_thumbnail
 
 class Command(NoArgsCommand):
 
@@ -40,7 +41,7 @@ class Command(NoArgsCommand):
                     print 'saving', v, '(%i)' % v.pk
                 try:
                     # resave the thumbnail
-                    v.save_thumbnail()
+                    video_save_thumbnail.apply(args=(v.pk,))
                 except Exception:
                     traceback.print_exc()
 

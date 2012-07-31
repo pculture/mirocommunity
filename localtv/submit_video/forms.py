@@ -32,6 +32,7 @@ from tagging.forms import TagField
 from localtv import models
 from localtv.utils import (quote_unicode_url, get_profile_model,
                           get_or_create_tags)
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.templatetags.filters import sanitize
 
 class ImageURLField(forms.URLField):
@@ -164,10 +165,7 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
                 video.when_approved = video.when_submitted
                 video.save()
             if video.thumbnail_url and not video.has_thumbnail:
-                try:
-                    video.save_thumbnail()
-                except models.CannotOpenImageUrl:
-                    pass # we'll get it later
+                video_save_thumbnail.delay(video.pk, using=CELERY_USING)
             if self.cleaned_data.get('tags'):
                 video.tags = self.cleaned_data['tags']
             old_m2m()
