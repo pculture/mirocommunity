@@ -411,7 +411,7 @@ class SiteLocation(Thumbnailable):
         ]
 
     def __unicode__(self):
-        return '%s (%s)' % (self.site.name, self.site.domain)
+        return u'%s (%s)' % (self.site.name, self.site.domain)
 
     def add_queued_mail(self, data):
         if not hasattr(self, '_queued_mail'):
