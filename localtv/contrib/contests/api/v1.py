@@ -93,9 +93,8 @@ class ContestVoteResource(ModelResource):
         1. the contest has voting open,
         2. user is set to the currently logged-in user,
         3. the vote they are registering is permitted, and
-        4. that they have not exceeded their vote count.
         
-        TODO: these also (except #4) need to be checked when editing a vote.
+        TODO: these also need to be checked when editing or deleting a vote.
 
         """
 
@@ -121,16 +120,6 @@ class ContestVoteResource(ModelResource):
         if vote_value not in permissible_votes:
             self._handle_error(request,
                                'Vote value %d not permitted.' % vote_value)
-
-        # Check vote counts.
-        if contest.votes_per_user is not None:
-            user_vote_count = ContestVote.objects.filter(
-                                                contestvideo__contest=contest,
-                                                user=request.user).count()
-            if user_vote_count + 1 > contest.votes_per_user:
-                self._handle_error(request,
-                                   'Users may only vote %d times in %s.' %
-                                   (contest.votes_per_user, contest.name))
 
         # Since everything checks out, go ahead and create the vote.
         return super(ContestVoteResource, self).obj_create(bundle,
