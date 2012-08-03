@@ -87,44 +87,68 @@ class ContestVoteResource(ModelResource):
                             content_type=build_content_type(desired_format))
         raise ImmediateHttpResponse(response)
 
-    def obj_create(self, bundle, request=None, **kwargs):
+    def _verify_vote(self, contestvideo, bundle=None, request=None):
+
         """
         Creates a contest-vote object after ensuring:
         1. the contest has voting open,
-        2. user is set to the currently logged-in user,
-        3. the vote they are registering is permitted, and
+        2. user is currently logged in,
+        3. the vote they are registering is permitted.
         
-        TODO: these also need to be checked when editing or deleting a vote.
+        If all checks out, it returns true. Otherwise it raises an HTTP
+        error immediately.
 
         """
 
         # Extract relevant data.
-        contestvideo = ContestVideoResource().get_via_uri(bundle.data['contestvideo'])
         contest = contestvideo.contest
         video = contestvideo.video
-        vote_value = int(bundle.data['vote'])
+        vote_value = int(bundle.data['vote']) if bundle else None
+
+        # Verify authenticated user.
+        if not request.user.is_authenticated():
+            return self._handle_error(request,
+                                      'User must be logged-in to vote.')
 
         # Verify that voting is open on the contest.
         if not contest.voting_open:
-            self._handle_error(request, 'Voting is not open on %s' % contest)
+            return self._handle_error(request,
+                                      'Voting is not open on %s' % contest)
 
-        # Verify authenticated user.
-        if hasattr(request, 'user') and request.user.is_authenticated():
-            kwargs['user'] = request.user
-        else:
-            self._handle_error(request,
-                               'User must be logged-in to vote.')
-
-        # Check vote is permissible.
+        # Check vote is permissible, if there's a bundle.
         permissible_votes = (1, -1) if contest.allow_downvotes else (1,)
-        if vote_value not in permissible_votes:
-            self._handle_error(request,
-                               'Vote value %d not permitted.' % vote_value)
+        if vote_value is not None and vote_value not in permissible_votes:
+            return self._handle_error(request,
+                                'Vote value %d not permitted.' % vote_value)
 
-        # Since everything checks out, go ahead and create the vote.
-        return super(ContestVoteResource, self).obj_create(bundle,
-                                                           request=request,
-                                                           **kwargs)
+        return True
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        contestvideo = ContestVideoResource().get_via_uri(bundle.data['contestvideo'])
+        if self._verify_vote(contestvideo, bundle=bundle, request=request):
+            # Ensure that the bundle user is the current user.
+            bundle.data['user'] = UserResource().get_resource_uri(request.user)
+            return super(ContestVoteResource, self).obj_create(bundle,
+                                                              request=request,
+                                                              **kwargs)
+
+    def obj_update(self, bundle, request=None, **kwargs):
+        contestvideo = ContestVideoResource().get_via_uri(bundle.data['contestvideo'])
+        if self._verify_vote(contestvideo, bundle=bundle, request=request):
+            # Ensure that the bundle user is the current user.
+            bundle.data['user'] = UserResource().get_resource_uri(request.user)
+            return super(ContestVoteResource, self).obj_update(bundle,
+                                                              request=request,
+                                                              **kwargs)
+
+    def obj_delete(self, request=None, **kwargs):
+        contestvote = ContestVote.objects.get(pk=kwargs['pk'])
+        contestvideo = contestvote.contestvideo
+        # Ensure that the current user owns this vote.
+        if contestvote.user == request.user and \
+           self._verify_vote(contestvideo, request=request):
+            return super(ContestVoteResource, self).obj_delete(request,
+                                                               **kwargs)
 
     class Meta:
         queryset = ContestVote.objects.filter(
