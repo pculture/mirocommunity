@@ -17,10 +17,8 @@
 
 import datetime
 import email.utils
-import httplib
 import itertools
 import re
-import urllib
 import urllib2
 import mimetypes
 import base64
@@ -165,8 +163,6 @@ class Thumbnailable(models.Model):
         if resize:
             # save any resized versions
             self.resize_thumbnail(pil_image)
-        self.has_thumbnail = True
-        self.save()
 
     def resize_thumbnail(self, thumb, resized_images=None):
         """
@@ -415,7 +411,7 @@ class SiteLocation(Thumbnailable):
         ]
 
     def __unicode__(self):
-        return '%s (%s)' % (self.site.name, self.site.domain)
+        return u'%s (%s)' % (self.site.name, self.site.domain)
 
     def add_queued_mail(self, data):
         if not hasattr(self, '_queued_mail'):
@@ -1468,7 +1464,10 @@ class OriginalVideo(VideoBase):
                     if field == 'thumbnail_url':
                         self.thumbnail_url = self.video.thumbnail_url = value
                     changed_model = True
-                    self.video.save_thumbnail()
+                    from localtv.tasks import (video_save_thumbnail,
+                                               CELERY_USING)
+                    video_save_thumbnail.delay(self.video.pk,
+                                               using=CELERY_USING)
             elif getattr(self, field) == getattr(self.video, field):
                 value = changed_fields.pop(field)
                 setattr(self, field, value)
@@ -1915,30 +1914,6 @@ class Video(Thumbnailable, VideoBase):
                 guess = mimetypes.guess_type(self.file_url)
                 if guess[0] is not None:
                     self.file_url_mimetype = guess[0]
-
-    def save_thumbnail(self):
-        """
-        Automatically run the entire file saving process... provided we have a
-        thumbnail_url, that is.
-        """
-        if not self.thumbnail_url:
-            return
-
-        try:
-            content_thumb = ContentFile(urllib.urlopen(
-                    utils.quote_unicode_url(self.thumbnail_url)).read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
-        except httplib.InvalidURL:
-            # if the URL isn't valid, erase it and move on
-            self.thumbnail_url = ''
-            self.has_thumbnail = False
-            self.save()
-        else:
-            try:
-                self.save_thumbnail_from_file(content_thumb)
-            except Exception:
-                logging.exception("Error while getting " + repr(self.thumbnail_url))
 
     def submitter(self):
         """

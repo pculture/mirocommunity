@@ -15,14 +15,17 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import httplib
 import logging
 import random
+import urllib
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from haystack import connections
 from haystack.query import SearchQuerySet
 
@@ -45,10 +48,10 @@ except ImportError:
 
 
 from localtv import utils
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
 from localtv.settings import USE_HAYSTACK
 from localtv.tiers import Tier
+from localtv.utils import quote_unicode_url
 
 
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
@@ -130,34 +133,31 @@ def mark_import_pending(import_app_label, import_model, import_pk,
 
     # Otherwise the first stage is complete. Check whether they can take all the
     # videos.
-    active_set = None
-    unapproved_set = source_import.get_videos(using).filter(
-        status=Video.PENDING)
     if source_import.auto_approve:
-        if not SiteLocation.enforce_tiers(using=using):
-            active_set = unapproved_set
-            unapproved_set = None
-        else:
+        active_set = source_import.get_videos(using).filter(
+            status=Video.PENDING)
+        # Only limit activated videos if tiers are enforced.
+        if SiteLocation.enforce_tiers(using=using):
             remaining_videos = (Tier.get(using=using).videos_limit()
                                 - Video.objects.using(using
                                     ).filter(status=Video.ACTIVE
                                     ).count())
-            if remaining_videos > source_import.videos_imported:
-                active_set = unapproved_set
-                unapproved_set = None
+            if remaining_videos >= source_import.videos_imported:
+                # Don't limit activated videos - enough space.
+                pass
             elif remaining_videos > 0:
-                unapproved_set = unapproved_set.order_by('when_submitted')
-                # only approve `remaining_videos` videos
-                when_submitted = unapproved_set[
-                    remaining_videos].when_submitted
-                active_set = unapproved_set.filter(
-                    when_submitted__lt=when_submitted)
-                unapproved_set = unapproved_set.filter(
-                    when_submitted__gte=when_submitted)
-    if unapproved_set is not None:
-        unapproved_set.update(status=Video.UNAPPROVED)
-    if active_set is not None:
+                # Only approve the earliest-"submitted" videos.
+                last_video = active_set.order_by('when_submitted')[
+                                                            remaining_videos]
+                active_set = active_set.filter(
+                                when_submitted__lt=last_video.when_submitted)
+            else:
+                # Don't bother trying to update.
+                active_set = active_set.none()
         active_set.update(status=Video.ACTIVE)
+
+    source_import.get_videos(using).filter(status=Video.PENDING).update(
+        status=Video.UNAPPROVED)
 
     source_import.status = import_class.PENDING
     source_import.save()
@@ -363,22 +363,39 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
 @task(ignore_result=True)
 def video_save_thumbnail(video_pk, using='default'):
     try:
-        v = Video.objects.using(using).get(pk=video_pk)
+        video = Video.objects.using(using).get(pk=video_pk)
     except Video.DoesNotExist:
         logging.warn(
             'video_save_thumbnail(%s, using=%r) could not find video',
             video_pk, using)
         return
+
+    if not video.thumbnail_url:
+        return
+
+    thumbnail_url = quote_unicode_url(video.thumbnail_url)
+
     try:
-        v.save_thumbnail()
-    except CannotOpenImageUrl:
-        try:
-            return video_save_thumbnail.retry()
-        except MaxRetriesExceededError:
-            logging.warn(
-                'video_save_thumbnail(%s, using=%r) exceeded max retries',
-                video_pk, using
-            )
+        thumbnail = urllib.urlopen(thumbnail_url)
+    except httplib.InvalidURL:
+        # This is always fast, so we don't need to worry as much about
+        # race conditions. If the URL isn't valid, just erase it.
+        video.thumbnail_url = ''
+        video.has_thumbnail = False
+        video.save()
+        return
+
+    try:
+        content_thumb = ContentFile(thumbnail.read())
+    except IOError:
+        # Could be a temporary disruption - try again later if this was
+        # a task. Otherwise reraise.
+        if video_save_thumbnail.request.called_directly:
+            raise
+        video_save_thumbnail.retry()
+
+    video.save_thumbnail_from_file(content_thumb)
+    Video.objects.using(using).filter(pk=video_pk).update(has_thumbnail=True)
 
 
 def _haystack_database_retry(task, callback):

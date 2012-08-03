@@ -32,6 +32,7 @@ from tagging.forms import TagField
 from localtv import models
 from localtv.utils import (quote_unicode_url, get_profile_model,
                           get_or_create_tags)
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.templatetags.filters import sanitize
 
 class ImageURLField(forms.URLField):
@@ -164,10 +165,7 @@ class SecondStepSubmitVideoForm(forms.ModelForm):
                 video.when_approved = video.when_submitted
                 video.save()
             if video.thumbnail_url and not video.has_thumbnail:
-                try:
-                    video.save_thumbnail()
-                except models.CannotOpenImageUrl:
-                    pass # we'll get it later
+                video_save_thumbnail.delay(video.pk, using=CELERY_USING)
             if self.cleaned_data.get('tags'):
                 video.tags = self.cleaned_data['tags']
             old_m2m()
@@ -204,13 +202,17 @@ class NeedsDataSubmitVideoForm(SecondStepSubmitVideoForm):
         old_m2m = self.save_m2m
         def save_m2m():
             if self.cleaned_data['thumbnail_file']:
-                self.instance.thumbnail_url = ''
-                self.instance.save_thumbnail_from_file(
+                video.thumbnail_url = ''
+                video.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail_file'])
+                video.has_thumbnail = True
+                video.save()
             elif self.cleaned_data['thumbnail']:
-                self.instance.thumbnail_url = self.data['thumbnail']
-                self.instance.save_thumbnail_from_file(
+                video.thumbnail_url = self.data['thumbnail']
+                video.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail'])
+                video.has_thumbnail = True
+                video.save()
             old_m2m()
         if commit:
             video.save()

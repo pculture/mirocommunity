@@ -42,6 +42,7 @@ from tagging.forms import TagField
 import localtv.settings
 import localtv.tiers
 from localtv import models, utils
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper.errors import CantIdentifyUrl
@@ -83,15 +84,14 @@ class EditVideoForm(forms.ModelForm):
                 # since we're no longer using
                 # that URL for a thumbnail
                 self.instance.save_thumbnail_from_file(thumbnail)
+                self.instance.has_thumbnail = True
         if 'thumbnail_url' in self.cleaned_data:
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if (thumbnail_url and not
                 models.Video.objects.get(id=self.instance.id).thumbnail_url == thumbnail_url):
                 self.instance.thumbnail_url = thumbnail_url
-                try:
-                    self.instance.save_thumbnail()
-                except models.CannotOpenImageUrl:
-                    pass # wwe'll get it in a later update
+                video_save_thumbnail.delay(self.instance.pk,
+                                           using=CELERY_USING)
         return forms.ModelForm.save(self, *args, **kwargs)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
@@ -217,6 +217,7 @@ class SourceForm(forms.ModelForm):
         if self.cleaned_data.get('thumbnail'):
             self.instance.save_thumbnail_from_file(
                 self.cleaned_data['thumbnail'])
+            self.instance.has_thumbnail = True
         if self.cleaned_data.get('delete_thumbnail'):
             self.instance.delete_thumbnails()
 
@@ -581,6 +582,8 @@ class EditSettingsForm(forms.ModelForm):
             sl.logo.open()
             cf = ContentFile(sl.logo.read())
             sl.save_thumbnail_from_file(cf)
+            sl.has_thumbnail = True
+            sl.save()
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteLocation.objects.clear_cache()
@@ -598,6 +601,8 @@ class WidgetSettingsForm(forms.ModelForm):
             ws.icon.open()
             cf = ContentFile(ws.icon.read())
             ws.save_thumbnail_from_file(cf)
+            ws.has_thumbnail = True
+            ws.save()
         return ws
 
 class VideoAsUrlWidget(forms.TextInput):

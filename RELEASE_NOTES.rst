@@ -1,3 +1,11 @@
+Miro Community 1.8.4 Release Notes
+==================================
+
+* Corrected database referencing during source imports.
+* Eliminated a thumbnail vs. source import race condition which was
+  re-marking videos as pending.
+
+
 Miro Community 1.8.3 Release Notes
 ==================================
 

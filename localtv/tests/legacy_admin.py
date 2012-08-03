@@ -2272,7 +2272,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
                 POST_data[form.add_prefix(name)] = data
         return POST_data
 
-    @mock.patch('localtv.models.Video.save_thumbnail')
+    @mock.patch('localtv.tasks.video_save_thumbnail.run')
     def test_save_thumbnail_false(self, mock_save_thumbnail):
         vid = Video.objects.exclude(thumbnail_url='')[0]
         import localtv.admin.forms
@@ -2282,7 +2282,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
         form.save()
         self.assertFalse(mock_save_thumbnail.called)
 
-    @mock.patch('localtv.models.Video.save_thumbnail')
+    @mock.patch('localtv.tasks.video_save_thumbnail.run')
     def test_save_thumbnail_true(self, mock_save_thumbnail):
         vid = Video.objects.exclude(thumbnail_url='')[0]
         import localtv.admin.forms
