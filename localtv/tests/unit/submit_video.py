@@ -282,7 +282,8 @@ class SubmitVideoViewTestCase(BaseTestCase):
         # This differs from the functional testing in that it tests the view
         # directly. The inputs given can only result in a 302 response or a 200
         # response, depending on whether there is correct session data or not.
-        view = SubmitVideoView(form_class=forms.SubmitVideoFormBase)
+        view = SubmitVideoView(form_class=forms.SubmitVideoFormBase,
+                               submit_video_url='http://google.com/')
         request = self.factory.get('/')
         response = view.dispatch(request)
         self.assertEqual(response.status_code, 302)
