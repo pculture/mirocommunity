@@ -17,10 +17,8 @@
 
 import datetime
 import email.utils
-import httplib
 import itertools
 import re
-import urllib
 import urllib2
 import mimetypes
 import operator
@@ -124,9 +122,6 @@ class Thumbnailable(models.Model):
             content_thumb.close()
             content_thumb = default_storage.open(self.thumbnail_path)
             pil_image = PILImage.open(content_thumb)
-
-        self.has_thumbnail = True
-        self.save()
 
     @property
     def thumbnail_path(self):
@@ -238,7 +233,7 @@ class SiteSettings(Thumbnailable):
     objects = SiteRelatedManager()
 
     def __unicode__(self):
-        return '%s (%s)' % (self.site.name, self.site.domain)
+        return u'%s (%s)' % (self.site.name, self.site.domain)
 
     def user_is_admin(self, user):
         """
@@ -374,7 +369,7 @@ class NewsletterSettings(models.Model):
 
 class WidgetSettingsManager(SiteRelatedManager):
     def _new_entry(self, site, using):
-        singleton = super(WidgetSettingsManager, self)._new_entry(site, using)
+        ws = super(WidgetSettingsManager, self)._new_entry(site, using)
         try:
             site_settings = SiteSettings._default_manager.db_manager(
                 using).get(site=site)
@@ -383,10 +378,12 @@ class WidgetSettingsManager(SiteRelatedManager):
         else:
             if site_settings.logo:
                 site_settings.logo.open()
-                singleton.icon = site_settings.logo
+                ws.icon = site_settings.logo
                 cf = ContentFile(site_settings.logo.read())
-                singleton.save_thumbnail_from_file(cf)
-        return singleton
+                ws.save_thumbnail_from_file(cf)
+                ws.has_thumbnail = True
+                ws.save()
+        return ws
 
 
 class WidgetSettings(Thumbnailable):
@@ -1204,7 +1201,10 @@ class OriginalVideo(VideoBase):
                     if field == 'thumbnail_url':
                         self.thumbnail_url = self.video.thumbnail_url = value
                     changed_model = True
-                    self.video.save_thumbnail()
+                    from localtv.tasks import (video_save_thumbnail,
+                                               CELERY_USING)
+                    video_save_thumbnail.delay(self.video.pk,
+                                               using=CELERY_USING)
             elif getattr(self, field) == getattr(self.video, field):
                 value = changed_fields.pop(field)
                 setattr(self, field, value)
@@ -1560,41 +1560,6 @@ class Video(Thumbnailable, VideoBase):
                 guess = mimetypes.guess_type(self.file_url)
                 if guess[0] is not None:
                     self.file_url_mimetype = guess[0]
-
-    def save_thumbnail(self):
-        """
-        Automatically run the entire file saving process... provided we have a
-        thumbnail_url, that is.
-        """
-        if not self.thumbnail_url:
-            return
-
-        try:
-            remote_file = urllib.urlopen(utils.quote_unicode_url(
-                    self.thumbnail_url))
-        except httplib.InvalidURL:
-            # if the URL isn't valid, erase it and move on
-            self.thumbnail_url = ''
-            self.has_thumbnail = False
-            self.save()
-            return
-
-        if remote_file.getcode() != 200:
-            logging.info('code %i when getting %r, ignoring',
-                         remote_file.getcode(), self.thumbnail_url)
-            self.has_thumbnail = False
-            self.save()
-            return
-
-        try:
-            content_thumb = ContentFile(remote_file.read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
-        else:
-            try:
-                self.save_thumbnail_from_file(content_thumb)
-            except Exception:
-                logging.exception("Error while getting " + repr(self.thumbnail_url))
 
     def submitter(self):
         """

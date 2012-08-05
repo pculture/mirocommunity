@@ -27,9 +27,9 @@ from tagging.forms import TagField
 import vidscraper
 from vidscraper.errors import CantIdentifyUrl
 
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video
 from localtv.settings import API_KEYS
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.templatetags.filters import sanitize
 
 
@@ -160,12 +160,9 @@ class SubmitVideoFormBase(forms.ModelForm):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
 
-            # TODO: Should be delayed as a task
             if instance.thumbnail_url and not instance.has_thumbnail:
-                try:
-                    instance.save_thumbnail()
-                except CannotOpenImageUrl:
-                    pass # we'll get it later
+                video_save_thumbnail.delay(instance.pk, using=CELERY_USING)
+
             if self.cleaned_data.get('tags'):
                 instance.tags = self.cleaned_data['tags']
             old_m2m()
@@ -189,6 +186,8 @@ class ThumbnailSubmitVideoForm(SubmitVideoFormBase):
                 instance.thumbnail_url = ''
                 instance.save_thumbnail_from_file(
                     self.cleaned_data['thumbnail_file'])
+                instance.has_thumbnail = True
+                instance.save()
             old_m2m()
         if commit:
             instance.save()
