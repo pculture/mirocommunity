@@ -182,7 +182,7 @@ form { margin-bottom: 18px; }
 @media screen and (max-width:740px) { .grid-item { width: 50%; } }
 .replaced, .search-icon { text-indent: -9999px; display: block; }
 
-.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1342660115'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
+.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1343954396'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
 
 ul, ol { padding-left: 1.5em; }
 
@@ -198,7 +198,7 @@ ol > li { list-style-type: decimal; }
 
 .media-item { float: left; margin-left: 40px; margin-bottom: 18px; position: relative; }
 
-.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1342660115') center center no-repeat; }
+.media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1343954396') center center no-repeat; }
 
 .media-grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
@@ -245,7 +245,7 @@ ol > li { list-style-type: decimal; }
 
 .browse-box-section > ul { overflow: hidden; *zoom: 1; }
 
-.browse-box-section > ul > li { width: 33%; float: left; }
+.browse-box-section > ul > li { min-width: 33%; float: left; }
 
 .open > a, .open > a:hover { position: relative; z-index: 1339; border-width: 1px; border-style: solid; border-bottom: 0; padding-bottom: 1px; margin-bottom: -1px; margin-right: -1px; padding-top: 3px; margin-top: -4px; -webkit-border-radius: 4px 4px 0 0; -moz-border-radius: 4px 4px 0 0; -ms-border-radius: 4px 4px 0 0; -o-border-radius: 4px 4px 0 0; border-radius: 4px 4px 0 0; }
 .open > .dropdown-list, .open > .dropdown-box { display: block; }
@@ -371,7 +371,7 @@ ol > li { list-style-type: decimal; }
 .thumb > a > img { display: block; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
 .thumb > a::after { content: " "; display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; border: 3px solid black; }
 
-.video-thumb-placeholder { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; width: 200px; height: 144px; /* Image from: Piero borgo, from The Noun Project (http://thenounproject.com/noun/television/#icon-No2650) */ background: #333333 url('/static/localtv/front/images/nounproject_2650_television_white.png?1342660115') center center no-repeat; }
+.video-thumb-placeholder { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; width: 200px; height: 144px; /* Image from: Piero borgo, from The Noun Project (http://thenounproject.com/noun/television/#icon-No2650) */ background: #333333 url('/static/localtv/front/images/nounproject_2650_television_white.png?1343954396') center center no-repeat; }
 
 .tile-box { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; height: 108px; background: #EEE; overflow: hidden; border: 1px solid #CCC; padding: 3px; }
 
@@ -519,7 +519,7 @@ input:focus, textarea:focus { border-color: #344f6d; -webkit-box-shadow: 0 0 6px
 .message.warning { background-color: #fffcc5; border-color: #cfcc8f; text: #2c2a00; }
 
 /* precontent */
-.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1342660115'); }
+.precontent { /* http://subtlepatterns.com/?p=1024 */ background: #343639 url('/static/localtv/front/images/classy_fabric.png?1343954396'); }
 
 .precontent a { color: #66ccff; }
 
