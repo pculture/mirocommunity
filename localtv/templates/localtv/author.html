@@ -1,6 +1,5 @@
 {% extends "localtv/__base.html" %}
-{% load comments %}
-{% load author_comment %}
+{% load comments daguerre author_comment %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -40,7 +39,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="row">
 			<aside class="author-info col-one-quarter content-box">
 				{% if author.get_profile.logo %}
-					<img src="{{ author.get_profile.logo.url }}">
+					{% adjust author.get_profile.logo.path adjustment="fit" width=200 height=400 as profile_image %}
+					<a href="{{ author.get_profile.logo.url }}"><img src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" /></a>
 				{% endif %}
 				<ul class="author-detail-list">
 					{% if author.get_profile.location %}<li class="author-location">{{ author.get_profile.location }}</li>{% endif %}
