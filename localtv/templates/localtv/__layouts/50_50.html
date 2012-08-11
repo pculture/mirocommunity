@@ -1,4 +1,5 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
+
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -18,21 +19,23 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load url from future %}
+{% block content %}
 
-{% block title %}{{ block.super }} - Users{% endblock %}
+	{% block precontent %}{% endblock %}
 
-{% block body_classes %}{{ block.super }} author-list-page{% endblock %}
-
-{% block main %}
-	<header class="page-header">
-		<h1 class="page-title">Authors</h1>
-	</header>
-	<div id="author_list" class="content-box page-content">
-		<ul>
-			{% for author in authors %}
-				<li><a href="{% url 'localtv_author' author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
-			{% endfor %}
-		</ul>
+	<div class="container">
+		{% block top %}{% endblock %}
+		<div class="row">
+			<div class="col-one-half">
+				{% block main %}{% endblock %}
+			</div>
+			<div class="col-one-half">
+				{% block side %}{% endblock %}
+			</div>
+		</div>
+		{% block bottom %}{% endblock %}
 	</div>
+
+	{% block postcontent %}{% endblock %}
+
 {% endblock %}

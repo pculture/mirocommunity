@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/75_25.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -70,7 +70,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
-{% block pre_content %}
+{% block precontent %}
 	<section class="video-full precontent">
 		<header class="video-detail-header precontent-header">
 			<div class="container">
@@ -98,67 +98,71 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</section>{# /.video-stage #}
 {% endblock %}
 
-{% block content %}
-	<div class="row">
-		<div class="col-three-quarters">
-			<div class="social-media-share">
-				<ul class="social-link-list">
-					<li class="facebook-social">
-						<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
-					</li>
-					<li class="twitter-social">
-						<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
-					</li>
-					<li class="gplus-social">
-						<g:plusone size="medium"></g:plusone>
-					</li>
-					<li class="pinterest-social">
-						<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
-					</li>
-					<li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
-					{% if current_video.file_url %}
-						<li class="file-social"><a class="button" href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
-					{% endif %}
-				</ul>
-			</div>
-			<div class="content-box">
-				<section class="video-details">
-					{{ current_video.description|safe }}
-					<div class="extra-details">
-						{% if current_video.categories.count > 0 %}
-							<div class="video-full-categories compact">
-								{% with current_video as instance %}
-									{% include "localtv/inline_edit/video_categories.html" %}
-								{% endwith %}
-							</div>{# /.video-full-categories #}
-						{% endif %}
-						{% if current_video.tags %}
-							<div class="video-full-tags compact">
-								{% with current_video as instance %}
-									{% include "localtv/inline_edit/video_tags.html" %}
-								{% endwith %}
-							</div>{# /.video-full-tags #}
-						{% endif %}
-						{% if user_is_admin %}
-							{% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
-							{% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
-							{% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
-							{% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
-							{% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
-						{% endif %}
-					</div>
-				</section>{# /.video-details #}
-			</div>
-			<div class="content-box">
-				<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
-			</div>
-		</div>{# /.col-three-quarters #}
-		<aside class="col-one-quarter right-sidebar">
-			{% for module in sidebar_modules %}
-				{% include module %}
-			{% endfor %}
-		</aside>{# /.col-one-quarter.right #}
+
+{% block main %}
+	<div class="social-media-share">
+		<ul class="social-link-list">
+			<li class="facebook-social">
+				<div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
+			</li>
+			<li class="twitter-social">
+				<a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+			</li>
+			<li class="gplus-social">
+				<g:plusone size="medium"></g:plusone>
+			</li>
+			<li class="pinterest-social">
+				<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+			</li>
+			<li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
+			{% if current_video.file_url %}
+				<li class="file-social"><a class="button" href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
+			{% endif %}
+		</ul>
 	</div>
+
+	<div class="content-box">
+		<section class="video-details">
+			{{ current_video.description|safe }}
+			<div class="extra-details">
+				{% if current_video.categories.count > 0 %}
+					<div class="video-full-categories compact">
+						{% with current_video as instance %}
+							{% include "localtv/inline_edit/video_categories.html" %}
+						{% endwith %}
+					</div>{# /.video-full-categories #}
+				{% endif %}
+				{% if current_video.tags %}
+					<div class="video-full-tags compact">
+						{% with current_video as instance %}
+							{% include "localtv/inline_edit/video_tags.html" %}
+						{% endwith %}
+					</div>{# /.video-full-tags #}
+				{% endif %}
+				{% if user_is_admin %}
+					{% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
+					{% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
+					{% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
+					{% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
+					{% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
+				{% endif %}
+			</div>
+		</section>{# /.video-details #}
+	</div>
+	<div class="content-box">
+		<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
+	</div>
+{% endblock %}
+
+{% block side %}
+	<div class="right-sidebar">
+		{% for module in sidebar_modules %}
+			{% include module %}
+		{% endfor %}
+	</div>
+{% endblock %}
+
+{% block bottom %}
 	{# Facebook #}
 	<div id="fb-root"></div>
 	<script>(function(d, s, id) {
@@ -180,4 +184,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</script>
 	{# Pinterest #}
 	<script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
-{% endblock content %}
+{% endblock %}
