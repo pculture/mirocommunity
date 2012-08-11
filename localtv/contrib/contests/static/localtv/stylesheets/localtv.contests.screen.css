@@ -2,9 +2,9 @@
 .upvote, .downvote { height: auto; font-size: 20px; line-height: 24px; font-weight: bold; }
 .upvote > .vote-text, .downvote > .vote-text { display: inline-block; width: 24px; height: 24px; text-indent: -9999px; background-position: center center; background-repeat: no-repeat; }
 
-.upvote > .vote-text { background-image: url('../images/glyphicons_343_thumbs_up.png?1334238848'); }
+.upvote > .vote-text { background-image: url('../images/glyphicons_343_thumbs_up.png?1343954396'); }
 
-.downvote > .vote-text { background-image: url('../images/glyphicons_344_thumbs_down.png?1334238848'); }
+.downvote > .vote-text { background-image: url('../images/glyphicons_344_thumbs_down.png?1343954396'); }
 
 .upvote { width: 100%; }
 

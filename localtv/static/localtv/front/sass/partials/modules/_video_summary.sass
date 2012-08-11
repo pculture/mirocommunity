@@ -1,0 +1,26 @@
+@import compass/css3/border-radius
+@import compass/css3/transition
+@import compass/css3/box-shadow
+
+$thumb-width: 140px
+
+.video-summary
+	+pie-clearfix
+	+margin-trailer
+	padding-left: $thumb-width + $gutter-width / 2
+
+.video-summary > .thumb
+	width: $thumb-width
+	margin-left: -$thumb-width - 2px - $gutter-width / 2
+	float: left
+
+.video-title
+	+normal
+	+margin-trailer(0.5)
+
+.video-summary .details
+	color: #999
+	+margin-leader(0.5)
+
+.details-list
+	@extend .unstyled-list

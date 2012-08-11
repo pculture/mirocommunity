@@ -1,0 +1,15 @@
+.video-grid-item
+	width: 200px
+	+margin-trailer(2)
+	height: 210px
+
+.video-grid-item > .video-header
+	max-height: $base-line-height * 2
+	overflow: hidden
+	& > h1
+		margin-bottom: 0
+
+.timestamp-link, .byline
+	+small
+	@extend .quiet
+	margin-bottom: 0

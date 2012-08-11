@@ -1,0 +1,39 @@
+@import compass/utilities/general/clearfix
+
+.media-grid
+	@extend .unstyled-list
+	+pie-clearfix
+	margin-left: -$gutter-width
+
+.media-item
+	float: left
+	margin-left: $gutter-width
+	+margin-trailer
+	position: relative
+
+.media-grid > #infscr-loading
+	float: none
+	clear: both
+	text-indent: -9999px
+	height: 66px
+	background: transparent image-url("ajax-loader.gif") center center no-repeat
+
+.media-grid > #infscr-done
+	float: none
+	clear: both
+	height: 66px
+	+xx-large
+	font-weight: bold
+	+margin-leader
+
+.media-item-badge
+	height: 20px
+	min-width: 20px
+	padding: 10px
+	text-align: center
+	line-height: 20px
+	font-size: 20px
+	position: absolute
+	top: -9px
+	left: -9px
+	+border-radius(43px)

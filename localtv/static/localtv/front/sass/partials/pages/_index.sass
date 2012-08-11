@@ -1,0 +1,15 @@
+.basic .popular > .pod-content,
+.basic .popular > .pod-footer,
+.cyclops .popular > .pod-content,
+.cyclops .popular > .pod-footer,
+.basic .new > .pod-content,
+.basic .new > .pod-footer
+	@extend .right-sidebar
+
+.watch-video-button
+	@extend .button-dark
+
+.watch-video-button::after
+	content: "▶"
+	display: inline-block
+	margin-left: .5em

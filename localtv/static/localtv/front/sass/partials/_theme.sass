@@ -1,0 +1,318 @@
+@import compass/utilities/color/contrast
+
+$color1: #eeeeee !default
+$color2: #344f6d !default
+
+$main-background-color: white !default
+$main-text-color: #444444 !default
+$main-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25) !default
+
+$body-background-color: #cccccc !default
+
+$button-text-color: #666666 !default
+$button-hover-text-color: #444444 !default
+$button-down-text-color: #444444 !default
+$button-background-color: #f5f5f5 !default
+
+$navigation-background-color: white !default
+$navigation-text-color: #444444 !default
+
+$pod-header-background-color: $color1 !default
+$pod-header-text-color: contrast-color($color1, darken($color1, 80%), lighten($color1, 80%), 50%) !default
+
+$input-border-color: #cccccc !default
+$input-background-color: white !default
+
+$message-default-color: #eeeeee !default
+$message-info-color: #c4dffc !default
+$message-warning-color: #fffcc5 !default
+$message-error-color: #f6c2c2 !default
+$message-success-color: #cdfbc3 !default
+
+$precontent-background-color: #343639 !default
+$precontent-header-background: black !default
+$precontent-header-text-color: white !default
+$precontent-header-link-color: #5c86a0 !default
+$precontent-header-link-hover-color: #4e9eda !default
+$precontent-quiet-color: #999999 !default
+$precontent-link-color: #66ccff !default
+
+$sidebar-background-color: #f5f5f5 !default
+
+$site-blurb-background-color: #222222 !default
+$site-blurb-text-color: #dddddd !default
+
+$site-title-color: black !default
+
+$footer-background: #222222 !default
+$footer-text-color: #aaaaaa !default
+$footer-link-color: #5c86a0 !default
+$footer-link-hover-color: #4e9eda !default
+
+$quiet-color: #999999
+
+@import compass/css3/images
+@import compass/css3/box-shadow
+
+/* base theme styles
+a
+	color: $color2
+
+a:hover
+	color: darken($color2, 15%)
+
+body
+	background: $body-background-color
+	color: $main-text-color
+
+/* main container
+
+#main > .container
+	background: $main-background-color
+	+box-shadow($main-box-shadow)
+
+/* buttons
+
+.button
+	color: $button-text-color
+	text-shadow: 0 1px 0 #FFF
+	border-color: darken($button-background-color, 15%)
+	+background(linear-gradient($button-background-color, darken($button-background-color, 10%)))
+	+box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset)
+	&:hover
+		color: $button-hover-text-color
+		+background(linear-gradient(darken($button-background-color, 7%), darken($button-background-color, 10%)))
+		+box-shadow(0 1px 0 0 lighten($button-background-color, 5%) inset)
+
+.button:active, .button-active, .button-selected
+	color: $button-down-text-color
+	+background(linear-gradient(darken($button-background-color, 15%), darken($button-background-color, 25%)))
+	+box-shadow(0 3px 8px 0 rgba(0, 0, 0, 0.35) inset)
+	border-color: darken($button-background-color, 50%)
+
+.button-dark
+	color: #CCC
+	+background(linear-gradient(#444444, #333333))
+	text-shadow: 0 -1px 0 black
+	border-color: #000
+	+box-shadow(0 1px 0 0 rgba(255, 255, 255, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.15))
+	&:hover
+		color: #CCC
+		border-color: #000
+		+background(linear-gradient(#484848, #393939))
+		+box-shadow(0 1px 0 0 rgba(255, 255, 255, 0.15) inset, 0 1px 0 0 rgba(255, 255, 255, 0.15))
+	&:active
+		color: #CCC
+		border-color: #000
+		+background(linear-gradient(#333333, #444444))
+		+box-shadow(0 2px 8px 0 rgba(0, 0, 0, 0.5) inset, 0 1px 0 0 rgba(255, 255, 255, 0.15))
+
+/* carousel
+
+.carousel-pager
+	background: #000
+	& > a
+		border-color: #FFF
+	& > a:hover
+		border-color: #FFF
+	& > .activeSlide
+		border-color: #FFF
+		background-color: #FFF
+
+/* media grid
+
+.media-item-badge
+	border-color: #FFF
+	background-color: #F00
+	color: #FFF
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35)
+	+background(linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%))
+	+box-shadow(2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset)
+
+/* navigation
+
+.nav-item a
+	color: $navigation-text-color
+
+.nav-item
+	border-color: lighten($navigation-text-color, 60%)
+
+.nav-item-dropdown > a::after
+	border-top-color: $navigation-text-color
+
+.nav-item-dropdown.open > a
+	border-color: darken($navigation-background-color, 20%)
+	background: $navigation-background-color
+
+.dropdown-list, .dropdown-box
+	border-color: darken($navigation-background-color, 20%)
+	background: $navigation-background-color
+	&::before
+		border-bottom-color: darken($navigation-background-color, 20%)
+
+.dropdown-list > li > a
+	color: $navigation-text-color
+	&:hover
+		background: darken($navigation-background-color, 5%)
+		color: darken($navigation-text-color, 5%)
+	&:active
+		background: darken($navigation-background-color, 10%)
+
+/* popover
+
+.popover
+	border-color: darken($main-background-color, 20%)
+	background: $main-background-color
+	.arrow
+		border-right-color: darken($main-background-color, 20%)
+
+.popover.left .arrow
+	+arrow("right", 8px, darken($main-background-color, 20%))
+
+.popover.right .arrow
+	+arrow("left", 8px, darken($main-background-color, 20%))
+
+/* forms
+
+input, textarea
+	border-color: $input-border-color
+	background: $input-background-color
+	&:focus
+		border-color: $color2
+		+box-shadow(0 0 6px 0 transparentize($color2, 0.65), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset)
+
+/* pagetabs
+
+.pagetabs .ellipse span
+	color: lighten($button-text-color, 20%)
+	border-color: lighten($button-text-color, 50%)
+	&:hover, &:active
+		color: lighten($button-text-color, 20%)
+		border-color: lighten($button-text-color, 50%)
+		+background(linear-gradient($button-background-color, darken($button-background-color, 10%)))
+		+box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset)
+
+/* pod
+
+.pod-header
+	background-color: $pod-header-background-color
+	+background-image(linear-gradient($pod-header-background-color, darken($pod-header-background-color, 5%)))
+	border-bottom-color: darken($pod-header-background-color, 10%)
+	border-top-color: darken($pod-header-background-color, 5%)
+	color: $pod-header-text-color
+	a
+		color: $pod-header-text-color
+
+.pod-actions
+	a
+		color: contrast-color($pod-header-background-color, darken($pod-header-background-color, 60%), lighten($pod-header-background-color, 60%))
+	a:hover
+		color: contrast-color($pod-header-background-color, darken($pod-header-background-color, 80%), lighten($pod-header-background-color, 80%))
+
+/* messages
+
+=message($color)
+	background-color: $color
+	border-color: darken(desaturate($color, 60%), 20%)
+	text: darken($color, 80%)
+
+.message
+	+message($message-default-color)
+	&.error
+		+message($message-error-color)
+	&.success
+		+message($message-success-color)
+	&.info
+		+message($message-info-color)
+	&.warning
+		+message($message-warning-color)
+
+/* precontent
+
+.precontent
+	/* http://subtlepatterns.com/?p=1024
+	background: #343639 image-url("classy_fabric.png")
+
+.precontent a
+	color: $precontent-link-color
+
+.precontent-header
+	background: $precontent-header-background
+	color: $precontent-header-text-color
+	a
+		color: $precontent-header-link-color
+	a:hover
+		color: $precontent-header-link-hover-color
+
+.colophon
+	color: $precontent-quiet-color
+
+/* site-blurb
+
+.site-blurb
+	background-color: $site-blurb-background-color
+	color: $site-blurb-text-color
+
+/* site-title
+
+#SiteTitle
+	color: $site-title-color
+	& > a
+		color: inherit
+
+/* social-link-list
+.social-link-list
+	background: darken($main-background-color, 3%)
+	border-color: darken($main-background-color, 10%)
+	& > li
+		border-color: darken($main-background-color, 10%)
+
+/* tabs
+
+.tabs
+	border-color: darken($main-background-color, 20%)
+
+.tabs > .active > a
+	background: $main-background-color
+	color: $main-text-color
+
+.tabs > li > a
+	color: darken($main-background-color, 40%)
+	background: darken($main-background-color, 5%)
+	border-color: darken($main-background-color, 20%)
+
+/* shrinkydink
+
+.shrinkydink-handle
+	border-color: $quiet-color
+	&:hover
+		border-color: darken($quiet-color, 20%)
+
+.shrinkydink-handle-inner
+	background-color: $main-background-color
+	color: darken($quiet-color, 20%)
+	.shrinkydink-handle:hover > &
+		color: darken($quiet-color, 40%)
+
+/* sidebar
+@media screen and (min-width: 740px)
+	.right-sidebar
+		background-color: $sidebar-background-color
+		+background(linear-gradient(left, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%))
+	.left-sidebar
+		background-color: $sidebar-background-color
+		+background(linear-gradient(right, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%))
+
+/* footer
+#footer
+	background: $footer-background
+	color: $footer-text-color
+	a
+		color: $footer-link-color
+	a:hover
+		color: $footer-link-hover-color
+
+/* quiet
+
+.quiet
+	color: $quiet-color
