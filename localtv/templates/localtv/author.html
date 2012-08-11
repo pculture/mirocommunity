@@ -37,7 +37,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block side %}
-	<div class="content-box">
+	<div class="padded">
 		{% if author.get_profile.logo %}
 			{% adjust author.get_profile.logo.path adjustment="fit" width=200 height=400 as profile_image %}
 			<a href="{{ author.get_profile.logo.url }}"><img src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" /></a>
@@ -85,7 +85,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block main %}
-	<div class="content-box">
+	<div class="padded">
 		{% include "localtv/_video_grid_list.html" %}
 	</div>
 {% endblock %}

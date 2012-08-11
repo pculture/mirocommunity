@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}Thanks for submitting a video - {{ block.super }}{% endblock %}
 
 {% block main %}
-	<div class="content-box">
+	<div class="padded">
 		{% if video %}
 			<div class="message success">Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.</div>
 		{% else %}

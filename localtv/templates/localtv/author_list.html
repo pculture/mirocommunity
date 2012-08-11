@@ -28,7 +28,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<header class="page-header">
 		<h1 class="page-title">Authors</h1>
 	</header>
-	<div id="author_list" class="content-box page-content">
+	<div id="author_list" class="padded page-content">
 		<ul>
 			{% for author in authors %}
 				<li><a href="{% url 'localtv_author' author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>

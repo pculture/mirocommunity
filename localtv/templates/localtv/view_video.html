@@ -121,7 +121,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</ul>
 	</div>
 
-	<div class="content-box">
+	<div class="padded">
 		<section class="video-details">
 			{{ current_video.description|safe }}
 			<div class="extra-details">
@@ -149,7 +149,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</section>{# /.video-details #}
 	</div>
-	<div class="content-box">
+	<div class="padded">
 		<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
 	</div>
 {% endblock %}

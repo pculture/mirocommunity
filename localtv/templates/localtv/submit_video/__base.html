@@ -27,7 +27,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<header class="page-header">
 		<h1 class="page-title">{% trans "Submit a Video" %}</h1>
 	</header>
-	<div class="page-content content-box">
+	<div class="page-content padded">
 		{% block pre_form %}{% endblock %}
 		<form action="{% block form_action %}{% endblock %}" method="{% block form_method %}post{% endblock %}">
 			{% csrf_token %}

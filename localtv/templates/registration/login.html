@@ -42,7 +42,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="LoginForm" class="tab-pane active">
 				<div class="row">
 					<div class="col-one-half">
-						<div class="content-box">
+						<div class="padded">
 							<h1>Login</h1>
 							<form action="{{ settings.LOGIN_URL }}" method="POST">
 								{% csrf_token %}
@@ -59,7 +59,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						</div>
 					</div>{# /.col-one-hal #}
 					<div class="col-one-half">
-						<div class="content-box">
+						<div class="padded">
 							<h1>Sign Up</h1>
 							<form action="/accounts/register/" method="POST">
 								{% csrf_token %}
@@ -101,7 +101,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>{# /.row #}
 			</div>{# /#LoginForm #}
 			<div id="FacebookForm" class="tab-pane">
-				<div class="content-box">
+				<div class="padded">
 					<h1>Login with Facebook</h1>
 					<a href="{% url socialauth_facebook_login %}?next={{ next }}">
 						<img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Facebook" />
@@ -109,7 +109,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			</div>{# /#FacebookForm #}
 			<div id="TwitterForm" class="tab-pane">
-				<div class="content-box">
+				<div class="padded">
 					<h1>Login with Twitter</h1>
 					<a href="{% url socialauth_twitter_login %}?next={{ next }}">
 						<img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" />
@@ -117,7 +117,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			</div>{# /#TwitterForm #}
 			<div id="OpenIDForm" class="tab-pane">
-				<div class="content-box">
+				<div class="padded">
 					<h1>Login with OpenID</h1>
 					<form action="{% url socialauth_openid_login %}" method="post">
 						{% csrf_token %}
@@ -140,7 +140,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			</div>{# /#OpenIDForm #}
 			<div id="GoogleForm" class="tab-pane">
-				<div class="content-box">
+				<div class="padded">
 					<h1>Login with Google Account</h1>
 					<form action="{% url socialauth_google_login %}" method="post">{% csrf_token %}
 					<p><input type="submit" value="Sign in" class="button" /></p>
@@ -148,5 +148,5 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			</div>{# /#GoogleForm #}
 		</div>{# /.tab-content #}
-	</div>{# /.page-content.content-box #}
+	</div>{# /.page-content.padded #}
 {% endblock %}

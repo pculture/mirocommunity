@@ -29,7 +29,7 @@
 	<header class="page-header">
 		<h1 class="page-title">{% trans "Playlist" %}: {{ playlist.name }}{% if playlist.status != 2 %} <span class="private">(<a href="{% url localtv_playlist_index %}">{% trans 'private' %}</a>)</span>{% endif %}</h1>
 	</header>
-	<div class="page-content content-box">
+	<div class="page-content padded">
 		{% if playlist.description %}
 			<div class="playlist-description">
 				{{ playlist.description|sanitize }}

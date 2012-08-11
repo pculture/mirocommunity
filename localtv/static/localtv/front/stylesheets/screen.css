@@ -27,7 +27,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 .padded-half, .carousel-pager, .message, .dropdown-box, .popover, .precontent-header, .tabs > li > a, .video-player p { padding-bottom: 9px; padding-top: 9px; padding-left: 10px; padding-right: 10px; }
 
-.padded, .card, .card-link, .content-box, .grid-item, .pod-content, .pod-footer, .precontent-details, .video-large-details, .site-blurb, #footer > .container { padding-bottom: 18px; padding-top: 18px; padding-left: 20px; padding-right: 20px; }
+.padded, .card, .card-link, .grid-item, .pod-content, .pod-footer, .precontent-details, .video-large-details, .site-blurb, #footer > .container { padding-bottom: 18px; padding-top: 18px; padding-left: 20px; padding-right: 20px; }
 
 .unpadded-half { margin-bottom: -9px; margin-top: -9px; margin-left: -10px; margin-right: -10px; }
 
