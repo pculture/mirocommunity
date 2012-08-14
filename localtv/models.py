@@ -493,27 +493,31 @@ class Source(Thumbnailable):
 
         total_videos = 0
 
-        for vidscraper_video in video_iter:
-            total_videos += 1
-            try:
-                video_from_vidscraper_video.delay(
-                    vidscraper_video,
-                    site_pk=self.site_id,
-                    import_app_label=import_opts.app_label,
-                    import_model=import_opts.module_name,
-                    import_pk=source_import.pk,
-                    status=Video.PENDING,
-                    author_pks=author_pks,
-                    category_pks=category_pks,
-                    clear_rejected=clear_rejected,
-                    using=using)
-            except:
-                source_import.handle_error(
-                    'Import task creation failed for %r' % (
-                        vidscraper_video.url,),
-                    is_skip=True,
-                    with_exception=True,
-                    using=using)
+        try:
+            for vidscraper_video in video_iter:
+                total_videos += 1
+                try:
+                    video_from_vidscraper_video.delay(
+                        vidscraper_video,
+                        site_pk=self.site_id,
+                        import_app_label=import_opts.app_label,
+                        import_model=import_opts.module_name,
+                        import_pk=source_import.pk,
+                        status=Video.PENDING,
+                        author_pks=author_pks,
+                        category_pks=category_pks,
+                        clear_rejected=clear_rejected,
+                        using=using)
+                except Exception:
+                    source_import.handle_error(
+                        'Import task creation failed for %r' % (
+                            vidscraper_video.url,),
+                        is_skip=True,
+                        with_exception=True,
+                        using=using)
+        except Exception:
+            source_import.fail(with_exception=True, using=using)
+            return
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
@@ -608,12 +612,8 @@ class Feed(Source):
         try:
             video_iter.load()
         except Exception:
-            feed_import.last_activity = datetime.datetime.now()
-            feed_import.status = FeedImport.FAILED
-            feed_import.save()
-            feed_import.handle_error(u'Skipping import of %s: error loading the'
-                                     u' feed' % self,
-                                     with_exception=True, using=using)
+            feed_import.fail("Data loading failed for {source}",
+                             with_exception=True, using=using)
             return
 
         self.etag = getattr(video_iter, 'etag', None) or ''
@@ -807,10 +807,8 @@ class SavedSearch(Source):
                                             using=using, **kwargs)
         else:
             # Mark the import as failed if none of the searches could load.
-            search_import.status = SearchImport.FAILED
-            search_import.last_activity = datetime.datetime.now()
-            search_import.save()
-            logging.debug('All searches failed for %s' % self)
+            search_import.fail("All searches failed for {source}",
+                               with_exception=False, using=using)
 
     def source_type(self):
         return u'Search'
@@ -948,6 +946,19 @@ class SourceImport(models.Model):
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
+
+    def fail(self, message="Import failed for {source}", with_exception=False,
+             using='default'):
+        """
+        Mark an import as failed, along with some post-fail cleanup.
+
+        """
+        self.status = self.FAILED
+        self.last_activity = datetime.datetime.now()
+        self.save()
+        self.handle_error(message.format(source=self.source),
+                          with_exception=with_exception, using=using)
+        self.get_videos(using).delete()
 
 
 class FeedImport(SourceImport):
