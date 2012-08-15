@@ -91,31 +91,27 @@ class SeleniumTestCaseUserAuth(WebdriverTestCase):
 
         """
                
-        self.fail("""Activation link is not sent out with account creation email. 
-                      see bug #19314 http://bugzilla.pculture.org/show_bug.cgi?id=19314""")
-        self.fail("""Account inactive message is not shown at login after creating account
-                   and not activating it. see bug #19313 http://bugzilla.pculture.org/show_bug.cgi?id=19313""")
         kwargs = {'user': 'testuser'+str(time.time()),
                       'passw': 'test.pass',
                       'email': 'pculture.qa@gmail.com',
                       'kind': 'signup',
                       }
         self.nav_pg.login(**kwargs)
-        msg = str(mail.outbox[0].message())
+        #The second email sent has the activation link 
+        msg = str(mail.outbox[1].message())
         lines = msg.split('\n')
         for line in lines:
             if "accounts/activate" in line:
-                activation_url = line.replace('example.com/', pcfwebqa.base_url)
+                activation_url = line.replace('http://example.com/', pcfwebqa.base_url)
                 print activation_url
-                return activation_url
-                #FIXME if the url is example.com - have to change it to return activation_url 
+                break
         else:
             self.fail("Did not locate the activation url in the email message")
 
-#        kwargs['kind'] = 'site'
+        kwargs['kind'] = 'site'
 #        kwargs['success'] = 'account inactive'
 #        self.nav_pg.login(**kwargs)
-        self.nav_pg.open_page(self._activation_url())
+        self.nav_pg.open_page(activation_url)
         kwargs['success'] = True
         self.assertTrue(self.nav_pg.login(**kwargs), 'Login failed with new user account')
 
