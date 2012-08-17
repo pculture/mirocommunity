@@ -1,15 +1,38 @@
 @import compass/utilities/general/clearfix
+@import compass/css3/box-sizing
+	
+.media-grid-4 > li
+	width: 25%
+	&:nth-child(4n)
+		float: right
 
-.media-grid
+.media-grid-3 > li
+	width: 33%
+	&:nth-child(3n)
+		float: right
+
+.media-grid-2 > li
+	width: 50%
+	&:nth-child(even)
+		float: right
+
+.media-grid-1 > li
+	width: 100%
+
+.media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4
 	@extend .unstyled-list
 	+pie-clearfix
 	margin-left: -$gutter-width
-
-.media-item
-	float: left
-	margin-left: $gutter-width
-	+margin-trailer
-	position: relative
+	& > li
+		float: left
+		padding-left: $gutter-width
+		+box-sizing(border-box)
+		@media screen and (max-width: 740px) and (min-width: 400px)
+			width: 50%
+			float: left
+		@media screen and (max-width: 400px)
+			width: 100%
+			float: none
 
 .media-grid > #infscr-loading
 	float: none

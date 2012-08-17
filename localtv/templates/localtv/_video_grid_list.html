@@ -8,7 +8,7 @@
 
 <div class="video-list-wrapper">
 	{% if video_list %}
-		<ul class="media-grid video-grid">
+		<ul class="media-grid-{{ columns }} video-grid">
 			{% for video in video_list %}
 				{% include "localtv/_video_grid_item.html" %}
 			{% endfor %}

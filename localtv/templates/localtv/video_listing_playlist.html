@@ -34,7 +34,7 @@
 			<div class="playlist-description">
 				{{ playlist.description|sanitize }}
 			</div>
-			{% include "localtv/_video_grid_list.html" %}
+			{% include "localtv/_video_grid_list.html" with columns=4 %}
 		{% endif %}
 	</div>
 {% endblock %}

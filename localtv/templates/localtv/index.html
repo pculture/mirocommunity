@@ -65,9 +65,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>{# /.pod-header #}
 		<div class="pod-content">
 			{% if new_videos %}
-				{% with new_videos|slice:"12" as video_list %}
-					{% include "localtv/_video_grid_list.html" %}
-				{% endwith %}
+				{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"12" columns=3 %}
 			{% else %}
 				<div class="message warning">
 					<p>{% trans "No videos have been added yet." %}</p>
@@ -95,9 +93,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</header>{# /.pod-header #}
 			<div class="pod-content">
 				{% if popular_videos %}
-					{% with popular_videos|slice:"4" as video_list %}
-						{% include "localtv/_video_grid_list.html" %}
-					{% endwith %}
+					{% include "localtv/_video_grid_list.html" with video_list=popular_videos|slice:"4" columns=1 %}
 				{% else %}
 					<div class="message warning">
 						<p>{% trans "No videos have been added yet." %}</p>
