@@ -1,20 +1,17 @@
-{% load daguerre %}
+{% load daguerre static %}
 
-<figure class="thumb">
-	<a href="{{ video.get_absolute_url }}">
-		{% adjust video.thumbnail_path width=200 height=144 adjustment="fill" as image %}
+<a href="{{ video.get_absolute_url }}">
+	<span  class="video-thumb-wrapper">
+		{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" as image %}
 		{% if image %}
-			<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
+			<img src="{{ image }}" />
 		{% else %}
-			<div class="video-thumb-placeholder"></div>
+			<img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
 		{% endif %}
-	</a>
-</figure>
-<header class="video-header">
-	<h1 class="video-title"><a href="{{ video.get_absolute_url }}" class="title-link">{{ video.name }}</a></h1>
-</header>
-<div class="video-details">
-	{% with video as instance %}
-		<a  href="{{ video.get_absolute_url }}" class="timestamp-link">{% include "localtv/_when_published.html" %}</a>
-	{% endwith %}
+	</span>
+</a>
+	
+<div class="video-summary-details">
+	<h3><a href="{{ video.get_absolute_url }}" class="title-link">{{ video.name }}</a></h3>
+	<a href="{{ video.get_absolute_url }}" class="timestamp-link quiet">{% include "localtv/_when_published.html" with instance=video %}</a>
 </div>

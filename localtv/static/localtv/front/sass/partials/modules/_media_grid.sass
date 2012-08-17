@@ -5,19 +5,26 @@
 	width: 25%
 	&:nth-child(4n)
 		float: right
+	&:nth-child(4n+1)
+		clear: left
 
 .media-grid-3 > li
 	width: 33%
 	&:nth-child(3n)
 		float: right
+	&:nth-child(3n+1)
+		clear: left
 
 .media-grid-2 > li
 	width: 50%
 	&:nth-child(even)
 		float: right
+	&:nth-child(odd)
+		clear: left
 
 .media-grid-1 > li
 	width: 100%
+	float: none
 
 .media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4
 	@extend .unstyled-list

@@ -83,7 +83,7 @@ a:hover { border-bottom: 1px solid #cccccc; }
 
 body { font-size: 13px; line-height: 18px; font-family: "Helvetica Neue", Arial, Helvetica, sans-serif; }
 
-h1, h2, h3, h4, h5, h6, p, ul, ol, dl { margin-bottom: 18px; }
+h1, h2, p, ul, ol, dl { margin-bottom: 18px; }
 
 h1 { font-size: 30px; line-height: 36px; }
 
@@ -190,25 +190,28 @@ ul > li { list-style-type: disc; }
 
 ol > li { list-style-type: decimal; }
 
-.unstyled-list, .errorlist, .grid-list, .media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-actions, .page-actions, .action-list, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box, .details-list { margin: 0; padding: 0; }
-.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .action-list > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li, .details-list > li { list-style-type: none; }
+.unstyled-list, .errorlist, .grid-list, .media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4, .navigation-list, .dropdown-list, .browse-box-section > ul, .pagetabs, .pod-actions, .page-actions, .action-list, .pod-footer-actions, .footer-nav ul, .social-link-list, .tabs, .tile-box { margin: 0; padding: 0; }
+.unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .action-list > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li { list-style-type: none; }
 
 .media-grid-4 > li { width: 25%; }
 .media-grid-4 > li:nth-child(4n) { float: right; }
+.media-grid-4 > li:nth-child(4n+1) { clear: left; }
 
 .media-grid-3 > li { width: 33%; }
 .media-grid-3 > li:nth-child(3n) { float: right; }
+.media-grid-3 > li:nth-child(3n+1) { clear: left; }
 
 .media-grid-2 > li { width: 50%; }
 .media-grid-2 > li:nth-child(even) { float: right; }
+.media-grid-2 > li:nth-child(odd) { clear: left; }
 
-.media-grid-1 > li { width: 100%; }
+.media-grid-1 > li { width: 100%; float: none; }
 
 .media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4 { *zoom: 1; margin-left: -40px; }
 .media-grid-1:after, .media-grid-2:after, .media-grid-3:after, .media-grid-4:after { content: ""; display: table; clear: both; }
 .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { float: left; padding-left: 40px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
-@media screen and (max-width: 740px) and (min-width: 500px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 50%; float: left; } }
-@media screen and (max-width: 500px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 100%; float: none; } }
+@media screen and (max-width: 740px) and (min-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 50%; float: left; } }
+@media screen and (max-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 100%; float: none; } }
 
 .media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1343954396') center center no-repeat; }
 
@@ -373,13 +376,8 @@ ol > li { list-style-type: decimal; }
 .tabs > li > a { border: 1px solid; border-bottom: 0; -webkit-border-radius: 5px 5px 0 0; -moz-border-radius: 5px 5px 0 0; -ms-border-radius: 5px 5px 0 0; -o-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0; margin-left: 20px; text-align: center; display: block; }
 @media screen and (max-width: 740px) { .tabs > li > a { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; border: 1px solid; margin-left: 0; margin-bottom: 9px; } }
 
-.thumb { margin-bottom: 9px; position: relative; background: black; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
-.thumb > a { display: block; position: relative; overflow: hidden; -webkit-transition: all 0.25s linear; -moz-transition: all 0.25s linear; -o-transition: all 0.25s linear; transition: all 0.25s linear; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; border-bottom: 0; }
-.thumb > a:hover { -webkit-box-shadow: 0 0 8px 0 black; -moz-box-shadow: 0 0 8px 0 black; box-shadow: 0 0 8px 0 black; }
-.thumb > a > img { display: block; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
-.thumb > a::after { content: " "; display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; border: 3px solid black; }
-
-.video-thumb-placeholder { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; width: 200px; height: 144px; /* Image from: Piero borgo, from The Noun Project (http://thenounproject.com/noun/television/#icon-No2650) */ background: #333333 url('/static/localtv/front/images/nounproject_2650_television_white.png?1343954396') center center no-repeat; }
+.video-thumb-wrapper { display: block; border: 3px solid black; background: black; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
+.video-thumb-wrapper > img { width: 100%; display: block; }
 
 .tile-box { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; height: 108px; background: #eeeeee; overflow: hidden; border: 1px solid #cccccc; padding: 3px; }
 
@@ -415,23 +413,11 @@ ol > li { list-style-type: decimal; }
 
 .video-large-description { margin-bottom: 18px; max-height: 90px; overflow: hidden; }
 
-.video-summary { *zoom: 1; margin-bottom: 18px; padding-left: 160px; }
-.video-summary:after { content: ""; display: table; clear: both; }
+.video-summary-details { height: 90px; }
 
-.video-summary > .thumb { width: 140px; margin-left: -162px; float: left; }
-
-.video-title { font-size: 13px; line-height: 18px; margin-bottom: 9px; }
-
-.video-summary .details { color: #999999; margin-top: 9px; }
+.timestamp-link { font-size: 11px; line-height: 18px; }
 
 .watch-video-button::after { content: "▶"; display: inline-block; margin-left: 0.5em; }
-
-.video-grid-item { width: 200px; margin-bottom: 36px; height: 210px; }
-
-.video-grid-item > .video-header { max-height: 36px; overflow: hidden; }
-.video-grid-item > .video-header > h1 { margin-bottom: 0; }
-
-.timestamp-link, .byline { font-size: 11px; line-height: 18px; margin-bottom: 0; }
 
 .icon-32-sprite, .icon-32-miro, .icon-32-rss, .icon-32 { background: url('/static/localtv/front/images/icon-32-s81446525c0.png') no-repeat; }
 
@@ -571,4 +557,4 @@ input:focus, textarea:focus { border-color: #344f6d; -webkit-box-shadow: 0 0 6px
 #footer a:hover { color: #4e9eda; }
 
 /* quiet */
-.quiet, .timestamp-link, .byline { color: #999999; }
+.quiet { color: #999999; }
