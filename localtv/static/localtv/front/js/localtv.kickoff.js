@@ -21,8 +21,11 @@
 	// shrinkydink all .video-details classes
 	$('.video-details').shrinkydink();
 	
-	// add popovers to the video thumbs
-	$('.video-grid').popover({selector: '.video-grid-item', placement: function (element) {
+	// add popovers to things
+	// the placement function calculates the placement of the popover,
+	// defaulting to right and switching to left if the popover is too close
+	// to the edge.
+	$('body').popover({selector: '.popover-trigger', placement: function (element) {
 		var position = this.getPosition();
 		// distance from edge of hover element + width of hover element + width of popover
 		return (position.left + position.width + 300 > $(window).width()) ? 'left' : 'right';

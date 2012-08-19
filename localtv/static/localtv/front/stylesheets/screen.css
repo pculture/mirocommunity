@@ -212,6 +212,8 @@ ol > li { list-style-type: decimal; }
 .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { float: left; padding-left: 40px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 @media screen and (max-width: 740px) and (min-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 50%; float: left; } }
 @media screen and (max-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 100%; float: none; } }
+.media-grid-1 > li > a, .media-grid-2 > li > a, .media-grid-3 > li > a, .media-grid-4 > li > a { display: block; }
+.media-grid-1 > li > a:hover, .media-grid-2 > li > a:hover, .media-grid-3 > li > a:hover, .media-grid-4 > li > a:hover { border: 0; }
 
 .media-grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1345166379') center center no-repeat; }
 

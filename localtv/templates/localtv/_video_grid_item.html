@@ -1,14 +1,3 @@
-<li class="media-item video-grid-item" data-content="
-	{% filter force_escape %}
-		{% if video.description %}
-			<div class="popover-normal-text">
-				{{ video.description|safe }}
-			</div>
-		{% endif %}
-		{% with video as instance %}
-			<p class="byline">{% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}</p>
-		{% endwith %}
-	{% endfilter %}
-">
+<li class="media-item video-grid-item">
 	{% include "localtv/_video_grid_item_inner.html" %}
 </li>
