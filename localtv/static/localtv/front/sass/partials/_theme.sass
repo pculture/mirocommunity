@@ -9,10 +9,10 @@ $main-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25) !default
 
 $body-background-color: #cccccc !default
 
-$button-text-color: #666666 !default
-$button-hover-text-color: #444444 !default
-$button-down-text-color: #444444 !default
-$button-background-color: #DDD !default
+$button-text-color: #444 !default
+$button-hover-text-color: #222 !default
+$button-down-text-color: #000 !default
+$button-background-color: #BBB !default
 
 $navigation-background-color: white !default
 $navigation-text-color: #444444 !default
@@ -76,19 +76,21 @@ body
 .button
 	color: $button-text-color
 	text-shadow: 0 1px 0 #FFF
-	border-color: darken($button-background-color, 15%)
-	+background(linear-gradient($button-background-color, darken($button-background-color, 10%)))
-	+box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset)
+	border-color: darken($button-background-color, 10%)
+	+background(linear-gradient(lighten($button-background-color, 15%), $button-background-color))
+	+box-shadow(0 0 4px 1px rgba(255,255,255,.15) inset, 0 1px 0 0 lighten($button-background-color, 20%) inset, 0 1px 3px 0 rgba(0,0,0,.15))
 	&:hover
 		color: $button-hover-text-color
-		+background(linear-gradient(darken($button-background-color, 7%), darken($button-background-color, 10%)))
-		+box-shadow(0 1px 0 0 lighten($button-background-color, 5%) inset)
+		+background(linear-gradient(lighten($button-background-color, 5%), darken($button-background-color, 10%)))
+		+box-shadow(0 0 4px 1px rgba(255,255,255,.15) inset, 0 1px 0 0 lighten($button-background-color, 15%) inset, 0 1px 3px 0 rgba(0,0,0,.15))
+		border-color: darken($button-background-color, 20%)
 
 .button:active, .button-active, .button-selected
 	color: $button-down-text-color
 	+background(linear-gradient(darken($button-background-color, 15%), darken($button-background-color, 25%)))
 	+box-shadow(0 3px 8px 0 rgba(0, 0, 0, 0.35) inset)
-	border-color: darken($button-background-color, 50%)
+	border-color: darken($button-background-color, 35%)
+	text-shadow: 0 1px 0 rgba(255,255,255,.35)
 
 .button-dark
 	color: #CCC
