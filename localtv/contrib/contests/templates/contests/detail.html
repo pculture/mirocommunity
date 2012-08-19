@@ -1,4 +1,4 @@
-{% extends 'localtv/__base.html' %}
+{% extends 'localtv/__layouts/100.html' %}
 
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
@@ -32,7 +32,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
 {% endblock %}
 
-{% block pre_content %}
+{% block precontent %}
 	{% if top_videos %}
 		<div class="precontent">
 			<div class="precontent-header">
@@ -54,63 +54,61 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}{# endif top_videos #}
 {% endblock %}
 
-{% block content %}
-	<div class="page-content">
-		{% if not top_videos %}
-			<header class="page-header">
-				<h1>{{ contest.name }}</h1>
-				<ul class="page-actions">
-					<li><a href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">Submit a Video</a></li>
-				</ul>
-			</header>
+{% block main %}
+	{% if not top_videos %}
+		<header class="page-header">
+			<h1>{{ contest.name }}</h1>
+			<ul class="page-actions">
+				<li><a href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">Submit a Video</a></li>
+			</ul>
+		</header>
+	{% endif %}
+	<div class="contest-description padded">
+		{{ contest.description|markdown }}
+	</div>
+	{% if new_videos and random_videos %}
+		<div class="contest-videos row">
+			<div class="pod col-one-half">
+				<header class="pod-header">
+					<h1>{% trans "New Videos" %}</h1>
+				</header>
+				<div class="pod-content">
+					{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=2 %}
+				</div>
+			</div>
+			<div class="pod col-one-half right-sidebar">
+				<header class="pod-header">
+					<h1>{% trans "Random Videos" %}</h1>
+				</header>
+				<div class="pod-content">
+					{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=2 %}
+				</div>
+			</div>
+		</div>{# /.row-flexible.contest-videos #}
+	{% else %}
+		{% if new_videos %}
+			<div class="pod">
+				<header class="pod-header">
+					<h1>{% trans "New Videos" %}</h1>
+				</header>
+				<div class="pod-content">
+					{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=4 %}
+				</div>
+			</div>
 		{% endif %}
-		<div class="contest-description padded">
-			{{ contest.description|markdown }}
-		</div>
-		{% if new_videos and random_videos %}
-			<div class="contest-videos row">
-				<div class="pod col-one-half">
-					<header class="pod-header">
-						<h1>{% trans "New Videos" %}</h1>
-					</header>
-					<div class="pod-content">
-						{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=2 %}
-					</div>
+		{% if contest_videos %}
+			<div class="pod">
+				<header class="pod-header">
+					<h1>{% trans "Random Videos" %}</h1>
+				</header>
+				<div class="pod-content">
+					{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=4 %}
 				</div>
-				<div class="pod col-one-half right-sidebar">
-					<header class="pod-header">
-						<h1>{% trans "Random Videos" %}</h1>
-					</header>
-					<div class="pod-content">
-						{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=2 %}
-					</div>
-				</div>
-			</div>{# /.row-flexible.contest-videos #}
-		{% else %}
-			{% if new_videos %}
-				<div class="pod">
-					<header class="pod-header">
-						<h1>{% trans "New Videos" %}</h1>
-					</header>
-					<div class="pod-content">
-						{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=4 %}
-					</div>
-				</div>
-			{% endif %}
-			{% if contest_videos %}
-				<div class="pod">
-					<header class="pod-header">
-						<h1>{% trans "Random Videos" %}</h1>
-					</header>
-					<div class="pod-content">
-						{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=4 %}
-					</div>
-				</div>
-			{% endif %}
+			</div>
 		{% endif %}
-		
-		<div class="padded">
-			<a class="button-wide continue" href="{% url 'contests_contest_listing' pk=contest.pk slug=contest.slug %}">See All Videos</a>
-		</div>
-	</div>{# /.page-content #}
+	{% endif %}
+	
+	<div class="padded">
+		<a class="button-wide continue" href="{% url 'contests_contest_listing' pk=contest.pk slug=contest.slug %}">See All Videos</a>
+	</div>
 {% endblock %}
