@@ -12,7 +12,7 @@ $body-background-color: #cccccc !default
 $button-text-color: #666666 !default
 $button-hover-text-color: #444444 !default
 $button-down-text-color: #444444 !default
-$button-background-color: #f5f5f5 !default
+$button-background-color: #DDD !default
 
 $navigation-background-color: white !default
 $navigation-text-color: #444444 !default
@@ -54,7 +54,7 @@ $quiet-color: #999999
 @import compass/css3/images
 @import compass/css3/box-shadow
 
-/* base theme styles
+// base theme styles
 a
 	color: $color2
 
@@ -65,13 +65,13 @@ body
 	background: $body-background-color
 	color: $main-text-color
 
-/* main container
+// main container
 
 #main > .container
 	background: $main-background-color
 	+box-shadow($main-box-shadow)
 
-/* buttons
+// buttons
 
 .button
 	color: $button-text-color
@@ -107,7 +107,7 @@ body
 		+background(linear-gradient(#333333, #444444))
 		+box-shadow(0 2px 8px 0 rgba(0, 0, 0, 0.5) inset, 0 1px 0 0 rgba(255, 255, 255, 0.15))
 
-/* carousel
+// carousel
 
 .carousel-pager
 	background: #000
@@ -119,7 +119,7 @@ body
 		border-color: #FFF
 		background-color: #FFF
 
-/* media grid
+// media grid
 
 .media-item-badge
 	border-color: #FFF
@@ -129,7 +129,7 @@ body
 	+background(linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%))
 	+box-shadow(2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset)
 
-/* navigation
+// navigation
 
 .nav-item a
 	color: $navigation-text-color
@@ -158,7 +158,7 @@ body
 	&:active
 		background: darken($navigation-background-color, 10%)
 
-/* popover
+// popover
 
 .popover
 	border-color: darken($main-background-color, 20%)
@@ -172,7 +172,7 @@ body
 .popover.right .arrow
 	+arrow("left", 8px, darken($main-background-color, 20%))
 
-/* forms
+// forms
 
 input, textarea
 	border-color: $input-border-color
@@ -181,7 +181,7 @@ input, textarea
 		border-color: $color2
 		+box-shadow(0 0 6px 0 transparentize($color2, 0.65), 1px 1px 3px 0 rgba(0, 0, 0, 0.15) inset)
 
-/* pagetabs
+// pagetabs
 
 .pagetabs .ellipse span
 	color: lighten($button-text-color, 20%)
@@ -192,7 +192,7 @@ input, textarea
 		+background(linear-gradient($button-background-color, darken($button-background-color, 10%)))
 		+box-shadow(0 1px 0 0 lighten($button-background-color, 30%) inset)
 
-/* pod
+// pod
 
 .pod-header
 	background-color: $pod-header-background-color
@@ -209,7 +209,7 @@ input, textarea
 	a:hover
 		color: contrast-color($pod-header-background-color, darken($pod-header-background-color, 80%), lighten($pod-header-background-color, 80%))
 
-/* messages
+// messages
 
 =message($color)
 	background-color: $color
@@ -227,10 +227,10 @@ input, textarea
 	&.warning
 		+message($message-warning-color)
 
-/* precontent
+// precontent
 
 .precontent
-	/* http://subtlepatterns.com/?p=1024
+	// http://subtlepatterns.com/?p=1024
 	background: #343639 image-url("classy_fabric.png")
 
 .precontent a
@@ -247,27 +247,27 @@ input, textarea
 .colophon
 	color: $precontent-quiet-color
 
-/* site-blurb
+// site-blurb
 
 .site-blurb
 	background-color: $site-blurb-background-color
 	color: $site-blurb-text-color
 
-/* site-title
+// site-title
 
 #SiteTitle
 	color: $site-title-color
 	& > a
 		color: inherit
 
-/* social-link-list
+// social-link-list
 .social-link-list
 	background: darken($main-background-color, 3%)
 	border-color: darken($main-background-color, 10%)
 	& > li
 		border-color: darken($main-background-color, 10%)
 
-/* tabs
+// tabs
 
 .tabs
 	border-color: darken($main-background-color, 20%)
@@ -281,7 +281,7 @@ input, textarea
 	background: darken($main-background-color, 5%)
 	border-color: darken($main-background-color, 20%)
 
-/* shrinkydink
+// shrinkydink
 
 .shrinkydink-handle
 	border-color: $quiet-color
@@ -294,7 +294,7 @@ input, textarea
 	.shrinkydink-handle:hover > &
 		color: darken($quiet-color, 40%)
 
-/* sidebar
+// sidebar
 @media screen and (min-width: 740px)
 	.right-sidebar
 		background-color: $sidebar-background-color
@@ -303,7 +303,7 @@ input, textarea
 		background-color: $sidebar-background-color
 		+background(linear-gradient(right, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%))
 
-/* footer
+// footer
 #footer
 	background: $footer-background
 	color: $footer-text-color
@@ -312,7 +312,7 @@ input, textarea
 	a:hover
 		color: $footer-link-hover-color
 
-/* quiet
+// quiet
 
 .quiet
 	color: $quiet-color
