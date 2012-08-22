@@ -23,6 +23,21 @@
 		+border-radius(5px)
 	& > a:first-child
 		margin-left: 0
+	@media screen and (max-width: $medium-viewport-max)
+		right: $base-line-height/2
+	@media screen and (max-width: $small-viewport-max)
+		margin: 0
+		bottom: 0
+		left: 0
+		right: 0
+		text-align: center
+		+border-radius(0)
+		& > a
+			display: inline-block
+			float: none
+			+border-radius(10px)
+			height: 18px
+			width: 18px
 
 .video-large, .preview-large a
 	height: 360px
@@ -77,6 +92,8 @@
 	@extend .precontent-details
 
 .video-large-details > header > h1
+	max-height: $base-line-height * 6
+	overflow: hidden
 	@media screen and (max-width: $small-viewport-max)
 		position: absolute
 		top: 0
@@ -85,8 +102,6 @@
 		height: $base-line-height * 3
 		line-height: $base-line-height * 3
 		padding: 0 $gutter-width/2
-		overflow: hidden
-		background-color: #000
 		background: rgba(0,0,0,.75)
 
 .video-large-description

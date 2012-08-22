@@ -116,6 +116,9 @@ h6 { font-size: 13px; line-height: 18px; color: #cccccc; }
 .carousel-pager { position: absolute; bottom: 0; right: 0; margin-bottom: 9px; z-index: 1337; overflow: hidden; *zoom: 1; -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; }
 .carousel-pager > a { height: 8px; width: 8px; float: left; margin-left: 5px; text-indent: -9999px; border: 1px solid; -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; }
 .carousel-pager > a:first-child { margin-left: 0; }
+@media screen and (max-width: 960px) { .carousel-pager { right: 9px; } }
+@media screen and (max-width: 740px) { .carousel-pager { margin: 0; bottom: 0; left: 0; right: 0; text-align: center; -webkit-border-radius: 0; -moz-border-radius: 0; -ms-border-radius: 0; -o-border-radius: 0; border-radius: 0; }
+  .carousel-pager > a { display: inline-block; float: none; -webkit-border-radius: 10px; -moz-border-radius: 10px; -ms-border-radius: 10px; -o-border-radius: 10px; border-radius: 10px; height: 18px; width: 18px; } }
 
 .video-large, .preview-large a { height: 360px; }
 
@@ -125,7 +128,8 @@ h6 { font-size: 13px; line-height: 18px; color: #cccccc; }
 
 .video-large-preview img { margin: 0 auto; vertical-align: middle; max-width: 100%; }
 
-@media screen and (max-width: 740px) { .video-large-details > header > h1 { position: absolute; top: 0; left: 0; right: 0; height: 54px; line-height: 54px; padding: 0 20px; overflow: hidden; background-color: black; background: rgba(0, 0, 0, 0.75); } }
+.video-large-details > header > h1 { max-height: 108px; overflow: hidden; }
+@media screen and (max-width: 740px) { .video-large-details > header > h1 { position: absolute; top: 0; left: 0; right: 0; height: 54px; line-height: 54px; padding: 0 20px; background: rgba(0, 0, 0, 0.75); } }
 
 .video-large-description { margin-bottom: 18px; max-height: 90px; overflow: hidden; }
 
@@ -465,6 +469,7 @@ body { background: #cccccc; color: #444444; }
 .carousel-pager > a { border-color: white; }
 .carousel-pager > a:hover { border-color: white; }
 .carousel-pager > .activeSlide { border-color: white; background-color: white; }
+@media screen and (max-width: 740px) { .carousel-pager { background: rgba(0, 0, 0, 0.75); } }
 
 .media-item-badge { border-color: white; background-color: red; color: white; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35); background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ee6666), color-stop(50%, #dd3333), color-stop(50%, #cc0000), color-stop(100%, #ff3333)); background: -webkit-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: -moz-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: -o-linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); background: linear-gradient(top, #ee6666 0%, #dd3333 50%, #cc0000 50%, #ff3333 100%); -webkit-box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.35) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.25) inset; }
 
