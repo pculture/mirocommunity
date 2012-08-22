@@ -28,7 +28,7 @@ register = template.Library()
 
 class ThumbnailNode(template.Node):
     """
-    Essentially an implementation of daguerre's ImageResizeNode with a
+    Essentially an implementation of daguerre's AdjustmentNode with a
     different interface, to maintain backwards compatibility with old
     localtv_thumbnail template tags.
     
