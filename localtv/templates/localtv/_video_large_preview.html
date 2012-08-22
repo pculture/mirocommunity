@@ -14,7 +14,7 @@
 			{% adjust video.thumbnail_path width=640 height=360 adjustment="fit" as image %}
 		{% endif %}
 		
-		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
+		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" /></a>
 	</div>
 	<div class="video-large-details padded col-one-third">
 		<header>
