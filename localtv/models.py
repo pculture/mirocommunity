@@ -17,10 +17,8 @@
 
 import datetime
 import email.utils
-import httplib
 import itertools
 import re
-import urllib
 import urllib2
 import mimetypes
 import operator
@@ -106,8 +104,13 @@ class Thumbnailable(models.Model):
         except IOError:
             raise CannotOpenImageUrl('An image could not be loaded')
 
-        # save an unresized version, overwriting if necessary
-        delete_if_exists(self.thumbnail_path)
+        # Delete previous thumbnail (and resized thumbnails) before saving
+        # the new one. This is necessary only because we're currently
+        # overwriting the same storage path over and over. In the future, we
+        # are switching to ImageFields for thumbnail storage, which will
+        # render this entire system obsolete. See bz18318.
+        if self.has_thumbnail:
+            self.delete_thumbnail()
 
         self.thumbnail_extension = pil_image.format.lower()
         default_storage.save(self.thumbnail_path, content_thumb)
@@ -119,9 +122,6 @@ class Thumbnailable(models.Model):
             content_thumb.close()
             content_thumb = default_storage.open(self.thumbnail_path)
             pil_image = PILImage.open(content_thumb)
-
-        self.has_thumbnail = True
-        self.save()
 
     @property
     def thumbnail_path(self):
@@ -136,13 +136,13 @@ class Thumbnailable(models.Model):
     def delete_thumbnail(self):
         self.has_thumbnail = False
         delete_if_exists(self.thumbnail_path)
-        self.thumbnail_extension = ''
         try:
             image = Image.objects.for_storage_path(self.thumbnail_path)
         except Image.DoesNotExist:
             pass
         else:
             image.delete()
+        self.thumbnail_extension = ''
         self.save()
 
     def delete(self, *args, **kwargs):
@@ -233,7 +233,7 @@ class SiteSettings(Thumbnailable):
     objects = SiteRelatedManager()
 
     def __unicode__(self):
-        return '%s (%s)' % (self.site.name, self.site.domain)
+        return u'%s (%s)' % (self.site.name, self.site.domain)
 
     def user_is_admin(self, user):
         """
@@ -369,7 +369,7 @@ class NewsletterSettings(models.Model):
 
 class WidgetSettingsManager(SiteRelatedManager):
     def _new_entry(self, site, using):
-        singleton = super(WidgetSettingsManager, self)._new_entry(site, using)
+        ws = super(WidgetSettingsManager, self)._new_entry(site, using)
         try:
             site_settings = SiteSettings._default_manager.db_manager(
                 using).get(site=site)
@@ -378,10 +378,12 @@ class WidgetSettingsManager(SiteRelatedManager):
         else:
             if site_settings.logo:
                 site_settings.logo.open()
-                singleton.icon = site_settings.logo
+                ws.icon = site_settings.logo
                 cf = ContentFile(site_settings.logo.read())
-                singleton.save_thumbnail_from_file(cf)
-        return singleton
+                ws.save_thumbnail_from_file(cf)
+                ws.has_thumbnail = True
+                ws.save()
+        return ws
 
 
 class WidgetSettings(Thumbnailable):
@@ -491,27 +493,31 @@ class Source(Thumbnailable):
 
         total_videos = 0
 
-        for vidscraper_video in video_iter:
-            total_videos += 1
-            try:
-                video_from_vidscraper_video.delay(
-                    vidscraper_video,
-                    site_pk=self.site_id,
-                    import_app_label=import_opts.app_label,
-                    import_model=import_opts.module_name,
-                    import_pk=source_import.pk,
-                    status=Video.PENDING,
-                    author_pks=author_pks,
-                    category_pks=category_pks,
-                    clear_rejected=clear_rejected,
-                    using=using)
-            except:
-                source_import.handle_error(
-                    'Import task creation failed for %r' % (
-                        vidscraper_video.url,),
-                    is_skip=True,
-                    with_exception=True,
-                    using=using)
+        try:
+            for vidscraper_video in video_iter:
+                total_videos += 1
+                try:
+                    video_from_vidscraper_video.delay(
+                        vidscraper_video,
+                        site_pk=self.site_id,
+                        import_app_label=import_opts.app_label,
+                        import_model=import_opts.module_name,
+                        import_pk=source_import.pk,
+                        status=Video.PENDING,
+                        author_pks=author_pks,
+                        category_pks=category_pks,
+                        clear_rejected=clear_rejected,
+                        using=using)
+                except Exception:
+                    source_import.handle_error(
+                        'Import task creation failed for %r' % (
+                            vidscraper_video.url,),
+                        is_skip=True,
+                        with_exception=True,
+                        using=using)
+        except Exception:
+            source_import.fail(with_exception=True, using=using)
+            return
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
@@ -606,12 +612,8 @@ class Feed(Source):
         try:
             video_iter.load()
         except Exception:
-            feed_import.last_activity = datetime.datetime.now()
-            feed_import.status = FeedImport.FAILED
-            feed_import.save()
-            feed_import.handle_error(u'Skipping import of %s: error loading the'
-                                     u' feed' % self,
-                                     with_exception=True, using=using)
+            feed_import.fail("Data loading failed for {source}",
+                             with_exception=True, using=using)
             return
 
         self.etag = getattr(video_iter, 'etag', None) or ''
@@ -805,10 +807,8 @@ class SavedSearch(Source):
                                             using=using, **kwargs)
         else:
             # Mark the import as failed if none of the searches could load.
-            search_import.status = SearchImport.FAILED
-            search_import.last_activity = datetime.datetime.now()
-            search_import.save()
-            logging.debug('All searches failed for %s' % self)
+            search_import.fail("All searches failed for {source}",
+                               with_exception=False, using=using)
 
     def source_type(self):
         return u'Search'
@@ -946,6 +946,19 @@ class SourceImport(models.Model):
                     **self.get_index_creation_kwargs(video, vidscraper_video))
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
+
+    def fail(self, message="Import failed for {source}", with_exception=False,
+             using='default'):
+        """
+        Mark an import as failed, along with some post-fail cleanup.
+
+        """
+        self.status = self.FAILED
+        self.last_activity = datetime.datetime.now()
+        self.save()
+        self.handle_error(message.format(source=self.source),
+                          with_exception=with_exception, using=using)
+        self.get_videos(using).delete()
 
 
 class FeedImport(SourceImport):
@@ -1199,7 +1212,10 @@ class OriginalVideo(VideoBase):
                     if field == 'thumbnail_url':
                         self.thumbnail_url = self.video.thumbnail_url = value
                     changed_model = True
-                    self.video.save_thumbnail()
+                    from localtv.tasks import (video_save_thumbnail,
+                                               CELERY_USING)
+                    video_save_thumbnail.delay(self.video.pk,
+                                               using=CELERY_USING)
             elif getattr(self, field) == getattr(self.video, field):
                 value = changed_fields.pop(field)
                 setattr(self, field, value)
@@ -1555,41 +1571,6 @@ class Video(Thumbnailable, VideoBase):
                 guess = mimetypes.guess_type(self.file_url)
                 if guess[0] is not None:
                     self.file_url_mimetype = guess[0]
-
-    def save_thumbnail(self):
-        """
-        Automatically run the entire file saving process... provided we have a
-        thumbnail_url, that is.
-        """
-        if not self.thumbnail_url:
-            return
-
-        try:
-            remote_file = urllib.urlopen(utils.quote_unicode_url(
-                    self.thumbnail_url))
-        except httplib.InvalidURL:
-            # if the URL isn't valid, erase it and move on
-            self.thumbnail_url = ''
-            self.has_thumbnail = False
-            self.save()
-            return
-
-        if remote_file.getcode() != 200:
-            logging.info('code %i when getting %r, ignoring',
-                         remote_file.getcode(), self.thumbnail_url)
-            self.has_thumbnail = False
-            self.save()
-            return
-
-        try:
-            content_thumb = ContentFile(remote_file.read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
-        else:
-            try:
-                self.save_thumbnail_from_file(content_thumb)
-            except Exception:
-                logging.exception("Error while getting " + repr(self.thumbnail_url))
 
     def submitter(self):
         """

@@ -16,13 +16,13 @@
 		
 		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
 	</div>
-	<div class="video-large-details content-box col-one-third">
+	<div class="video-large-details padded col-one-third">
 		<header>
 			<h1><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h1>
 		</header>
 		<div class="video-large-description">
 			{{ video.description|safe|truncatewords:40 }}
 		</div>
-		<p><a href="{{ video.get_absolute_url }}" class="watch-video-button">{% trans "Watch Video" %}</a></p>
+		<p><a href="{{ video.get_absolute_url }}" class="button-dark watch-video-button">{% trans "Watch Video" %}</a></p>
 	</div>
 </article>

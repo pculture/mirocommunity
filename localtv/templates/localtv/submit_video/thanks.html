@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
@@ -21,8 +21,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}Thanks for submitting a video - {{ block.super }}{% endblock %}
 
-{% block content %}
-	<div class="content-box">
+{% block main %}
+	<div class="padded">
 		{% if video %}
 			<div class="message success">Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.</div>
 		{% else %}

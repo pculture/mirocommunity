@@ -23,6 +23,7 @@ import urllib2
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
+from django.forms.models import construct_instance
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
@@ -112,8 +113,7 @@ def add_feed(request):
                 for key, value in defaults.items():
                     setattr(feed, key, value)
 
-            for key, value in form.cleaned_data.items():
-                setattr(feed, key, value)
+            construct_instance(form, form.instance)
 
             thumbnail_url = scraped_feed.thumbnail_url
 
@@ -132,6 +132,8 @@ def add_feed(request):
                         # couldn't parse the thumbnail. Not sure why this
                         # raises CannotOpenImageUrl, tbh.
                         pass
+                    else:
+                        feed.has_thumbnail = True
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],

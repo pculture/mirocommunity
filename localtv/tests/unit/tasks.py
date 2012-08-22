@@ -17,13 +17,15 @@
 
 from datetime import datetime, timedelta
 
+from celery.exceptions import MaxRetriesExceededError
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 import mock
 
 from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
-                           haystack_batch_update, video_from_vidscraper_video)
+                           haystack_batch_update, video_from_vidscraper_video,
+                           video_save_thumbnail)
 from localtv.tests.base import BaseTestCase
 
 
@@ -247,3 +249,29 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                           Video._meta.module_name),
                                     kwargs={'remove': expected})
         self.assertEqual(self.remove, expected)
+
+
+class VideoSaveThumbnailTestCase(BaseTestCase):
+    def test_thumbnail_not_200(self):
+        """
+        If a video's thumbnail url returns a non-200 status code, the task
+        should be retried.
+
+        """
+        thumbnail_url = 'http://pculture.org/not'
+        video = self.create_video(update_index=False, has_thumbnail=True,
+                                  thumbnail_url=thumbnail_url)
+
+        class MockException(Exception):
+            pass
+
+        with mock.patch('localtv.tasks.urllib.urlopen') as urlopen:
+            with mock.patch.object(video_save_thumbnail, 'retry',
+                                   side_effect=MockException):
+                self.assertRaises(MockException,
+                                  video_save_thumbnail.apply,
+                                  args=(video.pk,))
+                urlopen.assert_called_once_with(thumbnail_url)
+        new_video = Video.objects.get(pk=video.pk)
+        self.assertEqual(new_video.has_thumbnail, video.has_thumbnail)
+        self.assertEqual(new_video.thumbnail_url, video.thumbnail_url)

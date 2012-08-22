@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 
+from daguerre.models import Image, AdjustedImage
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import connections
@@ -137,3 +138,18 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         self.assertEqual(widget_icon, site_settings_logo)
         self.assertTrue(widget_settings.has_thumbnail)
 
+
+class ThumbnailableTestCase(BaseTestCase):
+	def save_thumbnail__deletes(self):
+		"""
+		Saving a new thumbnail should delete all cached thumbnail resizes.
+
+		"""
+		video = self.create_video()
+		video.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+		image1 = Image.objects.for_storage_path(video.thumbnail_path)
+		AdjustedImage.objects.adjust(image1, width=image1.width / 2)
+		self.assertTrue(image1.adjustedimage_set.all())
+		video.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+		image2 = Image.objects.for_storage_path(video.thumbnail_path)
+		self.assertFalse(image2.adjustedimage_set.all())

@@ -1207,17 +1207,6 @@ class VideoModelTestCase(BaseTestCase):
         for i in xrange(len(results) - 1):
             self.assertTrue(results[i].when() >= results[i+1].when())
 
-    def test_thumbnail_404(self):
-        """
-        If a Video has a thumbnail that returns a 404, no error should be
-        raised, and `has_thumbnail` should be set to False.
-        """
-        v = Video.objects.get(pk=11)
-        v.thumbnail_url = 'http://pculture.org/doesnotexist'
-        v.has_thumbnail = True
-        v.save_thumbnail()
-        self.assertFalse(v.has_thumbnail)
-
     def test_original_video_created(self):
         """
         When an Video object is a created, an OriginalVideo object should also

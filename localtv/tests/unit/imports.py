@@ -21,13 +21,48 @@ from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 from vidscraper.suites import Video as VidscraperVideo
 
-from localtv.models import Source, Feed, FeedImport, Video
+from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
+                            FeedImportError)
 from localtv.tasks import haystack_update, haystack_remove
 from localtv.tests.base import BaseTestCase
 
 
-class FeedImportUnitTestCase(BaseTestCase):
+class SourceImportUnitTestCase(BaseTestCase):
+    def test_iter_exception(self):
+        """
+        bz19448. If an exception is raised while iterating over vidscraper
+        results, the import should be marked as failed, and any videos already
+        associated with the import should be deleted.
 
+        """
+        def iterator():
+            raise KeyError
+            yield 1
+        video_iter = iterator()
+        with self.assertRaises(KeyError):
+            video_iter.next()
+        video_iter = iterator()
+        feed = self.create_feed('http://google.com/')
+        video = self.create_video(feed=feed, status=Video.PENDING,
+                                  update_index=False)
+        feed_import = FeedImport.objects.create(auto_approve=True,
+                                                source=feed)
+        FeedImportIndex.objects.create(source_import=feed_import,
+                                       video=video)
+        self.assertEqual(list(feed_import.get_videos()), [video])
+        self.assertEqual(list(feed.video_set.all()), [video])
+        self.assertEqual(feed_import.errors.count(), 0)
+        # If this is working correctly, this next line should not raise
+        # a KeyError.
+        Source.update(feed, video_iter, feed_import)
+        new_feed_import = FeedImport.objects.get(pk=feed_import.pk)
+        self.assertEqual(new_feed_import.status, FeedImport.FAILED)
+        with self.assertRaises(Video.DoesNotExist):
+            Video.objects.get(pk=video.pk)
+        self.assertEqual(feed_import.errors.count(), 1)
+
+
+class FeedImportUnitTestCase(BaseTestCase):
     def create_vidscraper_video(self, url='http://youtube.com/watch/?v=fake',
                                 loaded=True, embed_code='hi', title='Test',
                                 **field_data):

@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
@@ -23,7 +23,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
-{% block content %}
+{% block main %}
+
 	<header class="page-header">
 		<h1>{% block page_title %}Video List{% endblock %}</h1>
 		<div class="page-actions">
@@ -32,10 +33,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</ul>
 		</div>
 	</header>
-	
+
 	<div class="page-content">
-		<div class="content-box">
-			{% include "localtv/_video_grid_list.html" %}
+		<div class="padded">
+			{% include "localtv/_video_grid_list.html" with columns=4 %}
 		</div>
 	</div>
 	

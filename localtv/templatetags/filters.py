@@ -19,15 +19,18 @@ import datetime
 import re
 
 from bs4 import BeautifulSoup, Comment
+from django.contrib.contenttypes.models import ContentType
 from django.template import Library
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 import lxml.html
+from tagging.models import Tag
 
 
 register = Library()
 
 
+@register.filter
 def simpletimesince(value, arg=None):
     """Formats a date as the time since that date (i.e. "4 days, 6 hours")."""
     from django.utils.timesince import timesince
@@ -41,6 +44,7 @@ def simpletimesince(value, arg=None):
         return u''
 
 
+@register.filter
 def sanitize(value, extra_filters=None):
     """
     Sanitize the given HTML.
@@ -104,6 +108,7 @@ def sanitize(value, extra_filters=None):
     return mark_safe(unicode(soup))
 
 
+@register.filter
 def wmode_transparent(value):
     doc = lxml.html.fromstring('<div>' + value + '</div>')
     # Find any object tag
@@ -128,6 +133,19 @@ def wmode_transparent(value):
     return mark_safe(wrapped_in_a_div)
 
 
-register.filter(simpletimesince)
-register.filter(sanitize)
-register.filter(wmode_transparent)
+@register.filter
+def same_db_tags(video):
+    """
+    Given a video, renders a string containing that video's tags, guaranteed
+    to be from the same database as the original. This is part of the
+    CELERY_USING hack and will be eliminated without warning.
+
+    """
+    from localtv.models import Video
+    if not isinstance(video, Video):
+        return u''
+    using = video._state.db
+    ct = ContentType.objects.db_manager(using).get_for_model(video)
+    tags = Tag.objects.using(using).filter(items__content_type__pk=ct.pk,
+                                           items__object_id=video.pk)
+    return u'\n'.join([unicode(t) for t in tags])
