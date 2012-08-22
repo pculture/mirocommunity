@@ -1,14 +1,17 @@
 $gutter-width: 40px !default
 $column-gutter-width: 0 !default
-$max-width-threshold: 960px !default
+
+$medium-viewport-max: 960px !default
+$small-viewport-max: 740px !default
+$tiny-viewport-max: 400px !default
 
 @import compass/css3/box-sizing
 @import compass/utilities/general/clearfix
 
-/* This grid structure is not going to work in IE7 and below.
+// This grid structure is not going to work in IE7 and below.
 
 .container
-	width: $max-width-threshold
+	width: $medium-viewport-max
 	margin: 0 auto
 
 .row
@@ -52,39 +55,39 @@ $max-width-threshold: 960px !default
 
 .col-one-half
 	@extend .col
-	width: $max-width-threshold / 2
+	width: $medium-viewport-max / 2
 
 .col-one-quarter
 	@extend .col
-	width: $max-width-threshold / 4
+	width: $medium-viewport-max / 4
 
 .col-three-quarters
 	@extend .col
-	width: $max-width-threshold * 3 / 4
+	width: $medium-viewport-max * 3 / 4
 
 .col-one-third
 	@extend .col
-	width: $max-width-threshold / 3
+	width: $medium-viewport-max / 3
 
 .col-two-thirds
 	@extend .col
-	width: $max-width-threshold * 2 / 3
+	width: $medium-viewport-max * 2 / 3
 
 .col-one-fifth
 	@extend .col
-	width: $max-width-threshold * 1 / 5
+	width: $medium-viewport-max * 1 / 5
 
 .col-two-fifths
 	@extend .col
-	width: $max-width-threshold * 2 / 5
+	width: $medium-viewport-max * 2 / 5
 
 .col-three-fifths
 	@extend .col
-	width: $max-width-threshold * 3 / 5
+	width: $medium-viewport-max * 3 / 5
 
 .col-four-fifths
 	@extend .col
-	width: $max-width-threshold * 4 / 5
+	width: $medium-viewport-max * 4 / 5
 
 // Nested column widths
 .row-nested
@@ -117,7 +120,7 @@ $max-width-threshold: 960px !default
 		float: none
 
 // Flexible column widths for when viewport is smaller than 960
-@media screen and (max-width: 960px)
+@media screen and (max-width: $medium-viewport-max)
 	.container
 		width: 100%
 		+box-sizing(border-box)
@@ -140,6 +143,6 @@ $max-width-threshold: 960px !default
 	.col-four-fifths
 		width: 80%
 
-@media screen and (max-width: 740px)
+@media screen and (max-width: $small-viewport-max)
 	.col
 		width: 100%

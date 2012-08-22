@@ -15,7 +15,6 @@ a img { border: none; }
 
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary { display: block; }
 
-/* This grid structure is not going to work in IE7 and below. */
 .container { width: 960px; margin: 0 auto; }
 
 .row, .row-nested, .dropdown-list { margin-left: 0; *zoom: 1; }

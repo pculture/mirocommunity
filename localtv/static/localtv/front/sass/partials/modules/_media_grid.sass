@@ -35,10 +35,10 @@
 		padding-left: $gutter-width
 		+box-sizing(border-box)
 		position: relative
-		@media screen and (max-width: 740px) and (min-width: 400px)
+		@media screen and (max-width: $small-viewport-max) and (min-width: $tiny-viewport-max)
 			width: 50%
 			float: left
-		@media screen and (max-width: 400px)
+		@media screen and (max-width: $tiny-viewport-max)
 			width: 100%
 			float: none
 		& > a
