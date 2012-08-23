@@ -113,7 +113,7 @@ def add_feed(request):
                 for key, value in defaults.items():
                     setattr(feed, key, value)
 
-            construct_instance(form, form.instance)
+            construct_instance(form, feed)
 
             thumbnail_url = scraped_feed.thumbnail_url
 
