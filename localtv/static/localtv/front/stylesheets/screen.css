@@ -399,7 +399,7 @@ ol > li { list-style-type: decimal; }
 .tabs > li > a { border: 1px solid; border-bottom: 0; -webkit-border-radius: 5px 5px 0 0; -moz-border-radius: 5px 5px 0 0; -ms-border-radius: 5px 5px 0 0; -o-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0; margin-left: 20px; text-align: center; display: block; }
 @media screen and (max-width: 740px) { .tabs > li > a { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; border: 1px solid; margin-left: 0; margin-bottom: 9px; } }
 
-.video-thumb-wrapper { display: block; border: 3px solid black; background: black; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
+.video-thumb-wrapper { display: block; border: 3px solid black; background: black; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; overflow: hidden; }
 .video-thumb-wrapper > img { width: 100%; display: block; }
 
 .tile-box { -webkit-border-radius: 5px; -moz-border-radius: 5px; -ms-border-radius: 5px; -o-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; -moz-box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; box-shadow: 0 0 0 1px white inset, 0 1px 6px 0 rgba(0, 0, 0, 0.25) inset; height: 108px; background: #eeeeee; overflow: hidden; border: 1px solid #cccccc; padding: 3px; }
