@@ -81,8 +81,8 @@ class EditVideoForm(forms.ModelForm):
                 del self.cleaned_data['thumbnail_url']
                 # since we're no longer using
                 # that URL for a thumbnail
-                self.instance.save_thumbnail_from_file(thumbnail)
-                self.instance.has_thumbnail = True
+                self.instance.save_thumbnail_from_file(thumbnail,
+                                                       update=False)
         if 'thumbnail_url' in self.cleaned_data:
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if (thumbnail_url and not
@@ -208,8 +208,8 @@ class SourceForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         if self.cleaned_data.get('thumbnail'):
             self.instance.save_thumbnail_from_file(
-                self.cleaned_data['thumbnail'])
-            self.instance.has_thumbnail = True
+                self.cleaned_data['thumbnail'],
+                update=False)
         if self.cleaned_data.get('delete_thumbnail'):
             self.instance.delete_thumbnail()
 
@@ -654,8 +654,6 @@ class EditSettingsForm(forms.ModelForm):
             sl.logo.open()
             cf = ContentFile(sl.logo.read())
             sl.save_thumbnail_from_file(cf)
-            sl.has_thumbnail = True
-            sl.save()
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteSettings.objects.clear_cache()
@@ -673,8 +671,6 @@ class WidgetSettingsForm(forms.ModelForm):
             ws.icon.open()
             cf = ContentFile(ws.icon.read())
             ws.save_thumbnail_from_file(cf)
-            ws.has_thumbnail = True
-            ws.save()
         return ws
 
 class VideoAsUrlWidget(forms.TextInput):
