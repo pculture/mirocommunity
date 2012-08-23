@@ -1,0 +1,149 @@
+body {/* default background colour, for all layout engines that don't implement gradients */
+        background: white;
+        color: black; /* text colour (black) */
+        font-family: Verdana, sans-serif;
+        
+   
+         
+    }
+ 
+p {     padding: 1px; /* distance from border edge to text */
+        font-size: 12px;
+        line-height: 10px;
+        line-height: 1em;
+}
+
+span#acceptance {font-weight: bold;
+            font-size: 12px;
+            }
+
+span.summary {
+           font-size: 12px;
+           line-height: .3em;
+           text-indent: 1.5em;
+           margin-top: 0 
+            }
+          
+  
+ 
+h2 {
+    clear: left;
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1.4em;
+    margin: 10px 30px 15px;
+}
+h3.summary {text-transform: uppercase;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 30px;
+    padding-bottom: 10px;
+}
+
+
+div.filter {
+    
+    margin: 30px;
+
+}
+
+table { border-collapse: separate;
+        border: 2px solid silver;
+        border-spacing: 0;
+        padding: 5px; /* distance from border edge to text */
+        font-family: Arial, serif;
+        margin: 30px;
+        width: 90%;
+        }
+
+div#table-bottom {
+        }
+div#table-bottom p {
+   padding-top: 800px;}
+
+th {text-transform: uppercase;}
+
+th {   
+        border-bottom: 2px solid silver;
+        background: silver;
+        }
+
+tr {    font-size: 13px;
+        height: 30px;
+        padding: 2px;
+        }
+            
+tr#pass {
+            background: #4AA02C ;
+         }
+tr#verify {
+            background: #3F91D1;
+         }         
+         
+
+tr#error {  background: #F88017;
+        }
+        
+
+tr#fail {  background: #F88017;
+        }
+                
+tr#skip {  background: #FBB117;
+        }
+        
+tr#none {display: none;}
+
+
+td {  
+        vertical-align: top;
+        padding: 10px;
+        border: 1px solid silver;
+        width: 15%
+        }
+
+tr#verify #screenshot a img#thumb
+    { 
+      width: 90px;
+      height: 120px;
+      border: 1px solid silver;      
+      }
+
+#screenshot a img#thumb-bg { 
+      width: 120px;
+      height: 90px;
+      border: 1px solid silver;      
+      }
+
+
+#screenshot a img#thumb { 
+       display: none;     
+      }
+
+#screenshot a img#hover-only { 
+      display: none;
+      }
+
+#screenshot a:hover img#hover-only {
+      display: block;
+      width: 640px;
+      height: 480px;
+      padding:1px;
+      border: 1px solid silver;
+      position: absolute; left: 200px;
+      z-index: 100;
+      }
+ 
+div#err_message a span {display: none;}
+
+div#err_message a:hover span {display: block;
+   width: 480px; 
+   height: 240px; 
+   padding:1px; 
+   border: 1px solid silver;
+   position: absolute; left: 35px; 
+   padding: 5px; margin: 10px; z-index: 100;
+   color: #AAA; background: black;
+   font: 12px Verdana, sans-serif; text-align: left;}
+   
+
+
