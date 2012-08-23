@@ -1,3 +1,8 @@
+Miro Community 1.8.5 Release Notes
+==================================
+
+* Corrected a bug in feed import thumbnail handling.
+
 Miro Community 1.8.4 Release Notes
 ==================================
 
