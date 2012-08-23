@@ -1,3 +1,7 @@
 *.pyc
 Miro_Community.egg-info/*
 docs/_build/*
+example_mc_project/Results/*.png
+example_mc_project/Results/nosetests*
+example_mc_project/Results/results.html
+
