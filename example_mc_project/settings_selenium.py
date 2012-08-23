@@ -11,8 +11,8 @@ xunitfile = '--xunit-file=%s' % os.path.join(RESULTS_DIR, "nosetests.xml")
 NOSE_ARGS = ['--with-xunit',
              #'--xunit-file=nosetests.xml',
              xunitfile,
-             #'--nocapture',
-             #'--nologcapture', 
-             #'--logging-filter=-pysolr, -base, remote_connection', 
+             '--nocapture',
+             '--nologcapture', 
+             '--logging-filter=-selenium.webdriver.remote.remote_connection', 
              '--verbosity=2'
             ]

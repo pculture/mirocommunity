@@ -48,7 +48,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         try:
             screenshot_name = "%s.png" % self.id()
             filename = os.path.join(getattr(settings, "RESULTS_DIR"), screenshot_name)
-            self.browser.get_screenshot_as_file(os.path.join(filename, screenshot_name))
+            self.browser.get_screenshot_as_file(filename))
             self.browser.quit()
         except:
             os.system('killall firefox')  #sometimes there a ff instance left running we don't want it there
