@@ -127,13 +127,12 @@ def add_feed(request):
                     pass
                 else:
                     try:
-                        feed.save_thumbnail_from_file(thumbnail_file)
+                        feed.save_thumbnail_from_file(thumbnail_file,
+                                                      update=False)
                     except CannotOpenImageUrl:
                         # couldn't parse the thumbnail. Not sure why this
                         # raises CannotOpenImageUrl, tbh.
                         pass
-                    else:
-                        feed.has_thumbnail = True
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],

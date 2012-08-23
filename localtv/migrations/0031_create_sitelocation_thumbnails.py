@@ -34,8 +34,6 @@ class Migration:
             sl.logo.open()
             cf = ContentFile(sl.logo.read())
             sl.save_thumbnail_from_file(cf)
-            sl.has_thumbnail = True
-            sl.save()
     
     def backwards(self, orm):
         "Write your backwards migration here"

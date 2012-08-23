@@ -132,7 +132,8 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb, resize=True):
+    def save_thumbnail_from_file(self, content_thumb, resize=True,
+                                 update=True):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
@@ -146,7 +147,16 @@ class Thumbnailable(models.Model):
         delete_if_exists(
             self.get_original_thumb_storage_path())
 
+        # Save the extension and the having of a thumbnail - then update
+        # the copy in the database separately to avoid race condition
+        # issues.
         self.thumbnail_extension = pil_image.format.lower()
+        self.has_thumbnail = True
+        if update and self.pk is not None:
+            Video.objects.using(self._state.db
+                        ).filter(pk=self.pk
+                        ).update(thumbnail_extension=self.thumbnail_extension,
+                                 has_thumbnail=True)
         default_storage.save(
             self.get_original_thumb_storage_path(),
             content_thumb)

@@ -23,7 +23,8 @@ import mock
 
 from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
-                           haystack_batch_update, video_from_vidscraper_video)
+                           haystack_batch_update, video_from_vidscraper_video,
+                           video_save_thumbnail)
 from localtv.tests.base import BaseTestCase
 
 
@@ -247,3 +248,26 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                           Video._meta.module_name),
                                     kwargs={'remove': expected})
         self.assertEqual(self.remove, expected)
+
+
+class VideoSaveThumbnailTestCase(BaseTestCase):
+    def test_data_saved(self):
+        """
+        The thumbnail data for a video should be saved once this task is
+        completed.
+
+        """
+        thumbnail_url = 'http://pculture.org/not'
+        video = self.create_video(update_index=False, has_thumbnail=True,
+                                  thumbnail_url=thumbnail_url)
+
+        class MockException(Exception):
+            pass
+
+        with mock.patch('localtv.tasks.urllib.urlopen',
+                        return_value=open(self._data_file('logo.png'), 'r')):
+            video_save_thumbnail.apply(args=(video.pk,))
+        new_video = Video.objects.get(pk=video.pk)
+        self.assertEqual(new_video.has_thumbnail, True)
+        self.assertEqual(new_video.thumbnail_url, thumbnail_url)
+        self.assertEqual(new_video.thumbnail_extension, 'png')
