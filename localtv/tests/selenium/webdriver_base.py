@@ -15,10 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import time, os
 from django.core import management
 from django.test import LiveServerTestCase
 from localtv.tests.base import BaseTestCase
 from localtv.tests.selenium import pcfwebqa
+from selenium import webdriver
+from django.conf import settings
 
 class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
     def setUp(self):
@@ -34,5 +37,20 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.normal_pass = pcfwebqa.normal_pass
         self.create_user(username=self.admin_user, password=self.admin_pass, is_superuser=True)
         self.create_user(username=self.normal_user, password=self.normal_pass)
+        self.browser = webdriver.Firefox() #BROWSER TO USE FOR TESTING
+        self.base_url = self.live_server_url+'/'
+        self.browser.get(self.base_url)
+
+
+
+    def tearDown(self):
+        time.sleep(1)
+        try:
+            screenshot_name = "%s.png" % self.id()
+            filename = os.path.join(getattr(settings, "RESULTS_DIR"), screenshot_name)
+            self.browser.get_screenshot_as_file(os.path.join(filename, screenshot_name))
+            self.browser.quit()
+        except:
+            os.system('killall firefox')  #sometimes there a ff instance left running we don't want it there
       
 
