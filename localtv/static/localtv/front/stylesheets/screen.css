@@ -213,15 +213,12 @@ ol > li { list-style-type: decimal; }
 .unstyled-list > li, .errorlist > li, .grid-list > li, .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li, .navigation-list > li, .dropdown-list > li, .browse-box-section > ul > li, .pagetabs > li, .pod-actions > li, .page-actions > li, .action-list > li, .pod-footer-actions > li, .footer-nav ul > li, .social-link-list > li, .tabs > li, .tile-box > li { list-style-type: none; }
 
 .media-grid-4 > li { width: 25%; }
-.media-grid-4 > li:nth-child(4n) { float: right; }
 .media-grid-4 > li:nth-child(4n+1) { clear: left; }
 
 .media-grid-3 > li { width: 33%; }
-.media-grid-3 > li:nth-child(3n) { float: right; }
 .media-grid-3 > li:nth-child(3n+1) { clear: left; }
 
 .media-grid-2 > li { width: 50%; }
-.media-grid-2 > li:nth-child(even) { float: right; }
 .media-grid-2 > li:nth-child(odd) { clear: left; }
 
 .media-grid-1 > li { width: 100%; float: none; }
@@ -230,7 +227,7 @@ ol > li { list-style-type: decimal; }
 .media-grid-1:after, .media-grid-2:after, .media-grid-3:after, .media-grid-4:after { content: ""; display: table; clear: both; }
 .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { float: left; padding-left: 40px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; position: relative; }
 @media screen and (max-width: 740px) and (min-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 50%; float: left; }
-  .media-grid-1 > li:nth-child(even), .media-grid-2 > li:nth-child(even), .media-grid-3 > li:nth-child(even), .media-grid-4 > li:nth-child(even) { float: right; }
+  .media-grid-1 > li:nth-child(even), .media-grid-2 > li:nth-child(even), .media-grid-3 > li:nth-child(even), .media-grid-4 > li:nth-child(even) { clear: none; }
   .media-grid-1 > li:nth-child(odd), .media-grid-2 > li:nth-child(odd), .media-grid-3 > li:nth-child(odd), .media-grid-4 > li:nth-child(odd) { clear: left; } }
 @media screen and (max-width: 400px) { .media-grid-1 > li, .media-grid-2 > li, .media-grid-3 > li, .media-grid-4 > li { width: 100%; float: none; } }
 .media-grid-1 > li > a, .media-grid-2 > li > a, .media-grid-3 > li > a, .media-grid-4 > li > a { display: block; }

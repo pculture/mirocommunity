@@ -3,22 +3,16 @@
 	
 .media-grid-4 > li
 	width: 25%
-	&:nth-child(4n)
-		float: right
 	&:nth-child(4n+1)
 		clear: left
 
 .media-grid-3 > li
 	width: 33%
-	&:nth-child(3n)
-		float: right
 	&:nth-child(3n+1)
 		clear: left
 
 .media-grid-2 > li
 	width: 50%
-	&:nth-child(even)
-		float: right
 	&:nth-child(odd)
 		clear: left
 
@@ -39,7 +33,7 @@
 			width: 50%
 			float: left
 			&:nth-child(even)
-				float: right
+				clear: none
 			&:nth-child(odd)
 				clear: left
 		@media screen and (max-width: $tiny-viewport-max)
