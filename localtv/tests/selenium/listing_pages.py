@@ -25,7 +25,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
         self.listing_pg.open_listing_page('new')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
         self.assertEqual(True, self.listing_pg.thumbnail_count(5))
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(144, 200))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
     
 
     def test_new_listing__pagination(self):
@@ -85,7 +85,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
 
         self.listing_pg.open_listing_page('popular')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(144, 200))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
         #POPULAR PAGE SHOULD BE LIMITED TO THE  15 MOST POPULAR VIDEOS
         self.assertEqual(True, self.listing_pg.thumbnail_count(15))
 
@@ -105,7 +105,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
                               update_index=True)
         self.listing_pg.open_listing_page('featured')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(144, 200))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
         #Only the 5 Featured Videos should be displayed on the Page 
         self.assertEqual(True, self.listing_pg.thumbnail_count(5))
 
@@ -124,7 +124,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
         self.listing_pg.open_listing_page('new')
         self.assertTrue(self.listing_pg.has_title(title))
         link = self.listing_pg.title_link(title)
-        self.assertTrue('webdriver-test-video' in link)
+        self.assertIn('webdriver-test-video', link)
 
     def test_listing__overlay(self):
         """Verify overlay appears on hover and has description text.
@@ -139,7 +139,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
 
         has_overlay, overlay_description = self.listing_pg.has_overlay(title)
         self.assertTrue(has_overlay)
-        self.assertTrue(description in overlay_description)
+        self.assertIn(description, overlay_description)
 
     def test_listing__author(self):
         title = 'webdriver test video'
@@ -151,9 +151,10 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
                          watches=1
                          )
         self.listing_pg.open_listing_page('popular')
-        overlay_byline, author_link = self.listing_pg.author_link(title, 'webby driver')
-        self.assertTrue('minutes ago by webby driver' in overlay_byline)
-        self.assertTrue('/author/3/' in author_link)
+        has_overlay, overlay_text = self.listing_pg.has_overlay(title)
+
+        self.assertIn('webby driver', overlay_text)
+        self.assertIn('/author/3/', overlay_text)
 
 
     def test_listing_new__page_name(self):
