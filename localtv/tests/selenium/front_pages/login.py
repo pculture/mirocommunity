@@ -75,8 +75,10 @@ class Login(Page):
     def login_error(self, error):
         
         if error == 'bad password':
-            assert self.is_element_present(self._LOGIN), \
-            'Login form not returned to view'
+            self.wait_for_element_present("div.message")
+            assert self.verify_text_present("div.message", \
+            "Please enter a correct username and password. Note that both fields are case-sensitive.", \
+            "Did not find the expected bad password message")
         elif error == 'blank value':
             self.wait_for_element_present(self._ERROR)
             assert self.verify_text_present(self._ERROR, "This field is required."), \

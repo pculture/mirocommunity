@@ -2,18 +2,19 @@
 import time
 from ..page import Page
 from user_nav import NavPage
+import time
 
 class SearchPage(NavPage):
     """Search Page - lists the results of a search.
 
     """
 
-    _SEARCH_RESULT_THUMB = 'ul.media-grid li.media-item figure.thumb a'
+    _SEARCH_RESULT_THUMB = '.video-thumb-wrapper img'
     _SEARCH_RESULT_TITLE = 'a.title-link'
     _SEARCH_RESULT_TIMESTAMP = 'a.timestamp-link'
     _SEARCH_HEADER = 'header.page-header h1'
     _RSS = 'a.rss'
-    _NO_RESULTS = 'h2'
+    _NO_RESULTS = 'div#main h2'
     _NO_RESULTS_TEXT = 'Sorry, we could not find any videos matching that query.'
 
     def on_searchable_page(self):
@@ -28,6 +29,7 @@ class SearchPage(NavPage):
 
     def has_results(self, expected=True):
         if expected == False:
+            time.sleep(5)
             if self.is_text_present(self._NO_RESULTS, self._NO_RESULTS_TEXT):
                 return False, 'I am not expecting results'
             else:

@@ -1,5 +1,5 @@
 from ..page import Page
-
+import time
 class MyOpenIDAuth(Page):
     _OPENID_PAGE = "html head base[href='https://www.myopenid.com/']"
     _CONTINUE = "button#continue-button"
@@ -8,6 +8,7 @@ class MyOpenIDAuth(Page):
 
     def myopenid_login(self, user, passw, **kwargs):
         if self.is_element_present(self._OPENID_PAGE):
+            time.sleep(3)
             if self.is_element_present(self._PASSWORD):
                 self.type_by_css(self._PASSWORD, passw)
                 self.click_by_css(self._SUBMIT)

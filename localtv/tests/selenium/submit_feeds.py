@@ -139,17 +139,17 @@ class SeleniumTestCaseSubmitVideoFeeds(WebdriverTestCase):
         kwargs = {'feed url': 'http://qa.pculture.org/feeds_test/feed9.rss',
                   'feed name': 'Feed update TEST',
                  }
-        self.manage_pg.open_page('http://qa.participatoryculture.org/feeds_test/feed-add-items.php?i=1')
+        self.manage_pg.open_page('http://qa.pculture.org/feeds_test/feed-add-items.php?i=1')
         self.manage_pg.open_manage_page()
-        self.assertTrue(self.manage_pg.submit_feed(**kwargs))
-        self._update_index()
+        self.manage_pg.submit_feed(**kwargs)
+        #self._update_index()
         search_pg = search_page.SearchPage(pcfwebqa)
         search_pg.search('Feed update TEST')
         has_results, result = search_pg.has_results()
         self.assertTrue(result['titles']==1, result) 
-        self.manage_pg.open_page('http://qa.participatoryculture.org/feeds_test/feed-add-items.php?i=2')
+        self.manage_pg.open_page('http://qa.pculture.org/feeds_test/feed-add-items.php?i=2')
         management.call_command('update_sources')
-        self._update_index()
+        #self._update_index()
         search_pg = search_page.SearchPage(pcfwebqa)
         search_pg.search('Feed update TEST')
         has_results, result = search_pg.has_results()

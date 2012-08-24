@@ -66,7 +66,7 @@ class SeleniumTestCaseUserAuth(WebdriverTestCase):
 
     def test_login__google(self):
         kwargs = {'user': 'pculture.qa@gmail.com',
-                  'passw': 'Univers@lSubtitles',
+                  'passw': 'Universal@Subtitles',
                   'kind': 'google'}
         self.assertTrue(self.nav_pg.login(**kwargs))
 

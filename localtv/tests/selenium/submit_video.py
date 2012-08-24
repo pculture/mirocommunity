@@ -99,13 +99,13 @@ class SubmitVideoSeleniumTestCase(WebdriverTestCase):
         pg = user_nav.NavPage(pcfwebqa)
         pg.login(self.admin_user, self.admin_pass)
         self.video_pg = video_page.VideoPage(pcfwebqa)
+        self.submit_pg = submit_page.SubmitPage(pcfwebqa)
         
         
 
     def verify_video_submit(self, testcase):
-        submit_pg = submit_page.SubmitPage(pcfwebqa)
         kwargs = self.test_videos[testcase]
-        video_page_url = submit_pg.submit_a_valid_video(**kwargs)
+        video_page_url = self.submit_pg.submit_a_valid_video(**kwargs)
         self.video_pg.open_page(video_page_url)
         video_metadata = self.video_pg.check_video_details(**kwargs)
         for results in video_metadata:
@@ -135,7 +135,8 @@ class SubmitVideoSeleniumTestCase(WebdriverTestCase):
 
 
     def test_submit__duplicate_youtube_video(self):
-        self.verify_video_submit('youtube')
+        kwargs = self.test_videos['youtube']
+        video_page_url = self.submit_pg.submit_a_valid_video(**kwargs)
         self.verify_video_submit('youtube duplicate')
               
 
