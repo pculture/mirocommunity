@@ -414,8 +414,9 @@ ol > li { list-style-type: decimal; }
 .fade { -webkit-transition: opacity 0.25s linear; -moz-transition: opacity 0.25s linear; -o-transition: opacity 0.25s linear; transition: opacity 0.25s linear; opacity: 0; }
 .fade.in { opacity: 1; }
 
-.video-player > .video-embedded-widget { width: 800px; }
-.video-player > p, .video-player > div, .video-player > span, .video-player > .video-embedded-widget { display: block; margin-left: auto; margin-right: auto; background: black; margin-top: 18px; margin-bottom: 18px; -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); }
+.video-player { text-align: center; }
+.video-player > .video-embedded-widget { text-align: left; display: inline-block; }
+.video-player > p, .video-player > div, .video-player > span, .video-player > .video-embedded-widget { text-align: left; display: inline-block; margin-left: auto; margin-right: auto; background: black; margin-top: 18px; margin-bottom: 18px; -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); -moz-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75); }
 @media screen and (max-width: 740px) { .video-player > p, .video-player > div, .video-player > span, .video-player > .video-embedded-widget { max-width: 100%; margin-top: 0px; margin-bottom: 0px; } }
 
 .video-player p { color: #eeeeee; }
