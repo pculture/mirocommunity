@@ -37,7 +37,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.normal_pass = pcfwebqa.normal_pass
         self.create_user(username=self.admin_user, password=self.admin_pass, is_superuser=True)
         self.create_user(username=self.normal_user, password=self.normal_pass)
-        self.browser = webdriver.Firefox() #BROWSER TO USE FOR TESTING
+        self.browser =  getattr(webdriver, getattr(settings, 'TEST_BROWSER'))()
         self.base_url = self.live_server_url+'/'
         self.browser.get(self.base_url)
 
