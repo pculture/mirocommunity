@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from admin_nav import AdminNav
-
+import time
 
 class ManagePage(AdminNav):
     """Describes elements and functions for the Manage Sources Admin page.
@@ -43,6 +43,10 @@ class ManagePage(AdminNav):
     _TEXT_FILTER = 'input[placeholder="Search Sources"]' 
     _SUBMIT_FILTER = 'form.search_sources button[type="submit"]'
     _FEED_TITLE = 'tr td:nth-child(2) span'
+    _VIEW_FEED_LINK = "div.actions a.view_icon"
+    _DELETE_FEED_LINK = "td span.overflow:contains('%s') + div.actions a.delete_icon"
+    _EDIT_FEED_LINK = "td span.overflow:contains('%s') + div.actions a"
+
 
     _VIDEO_SOURCE_FILTER = 'ul.only_show li a[href*="%s"]' #default '/admin/manage/', options user, search, feed
     _INVALID_FEED_TEXT = "* It does not appear that %s is an RSS/Atom feed URL."
@@ -66,9 +70,9 @@ class ManagePage(AdminNav):
         self.click_by_css(self._ADD_FEED)
         self._add_feed_form(feed_data['feed url'])
         if feed_data['feed source'] == 'invalid':
-            error_txt = self._INVALID_FEED_TEXT % feed_data['feed url']
-            print error_txt
-            if self.is_text_present('body', error_txt):
+            expected_error_txt = self._INVALID_FEED_TEXT % feed_data['feed url']
+            found_error_txt = self.get_text_by_css("body")
+            if found_error_txt in expected_error_txt:
                 return True
         else: 
             self._review_feed_form(feed_data['approve all'])
@@ -96,6 +100,7 @@ class ManagePage(AdminNav):
     def _add_feed_form(self, url):
         self.type_by_css(self._FEED_URL, url)
         self.click_by_css(self._SUBMIT_FEED)
+        time.sleep(2)
 
     def _review_feed_form(self, auto_approve):
         if not self._duplicate_feed():
@@ -130,4 +135,17 @@ class ManagePage(AdminNav):
  
     def _feed_in_table(self, feed_title):
         return self.is_text_present(self._FEED_TITLE, feed_title)
+
+    def feed_table_element(self, feedname):
+        feed_els = self.browser.find_elements_by_css_selector("td span.overflow")
+        for el in feed_els:
+            if el.text == feedname:
+                return el
+
+
+    def click_feed_action(self, feedname, action):
+        #Action must be one of display links for the feed: Edit, View, Delete
+        feed_el = self.feed_table_element(feedname)
+        parent_el = feed_el.parent 
+        parent_el.find_element_by_link_text(action).click()
          

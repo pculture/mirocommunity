@@ -6,11 +6,11 @@ class ListingPage(Page):
     _POPULAR_PAGE = 'listing/popular/'
     _FEATURED_PAGE = 'listing/featured/'
     _CATEGORY_PAGE = 'category/%s'
-    _THUMBNAIL = 'li.media-item figure.thumb'
-    _TITLE = 'h1.video-title a.title-link'
+    _THUMBNAIL = 'li.media-item .video-class-wrapper'
+    _TITLE = 'a.title-link'
     _FEED_PAGE = 'feeds/%s'
-    _HOVER = '.popover-normal-text'
-    _BYLINE = '.byline'
+    _HOVER = '.popover-trigger'
+    _BYLINE = '.byline a'
     _PAGE_NAME = 'header.page-header h1'
     _PAGE_RSS =  'header.page-header a.rss'
 
@@ -42,9 +42,22 @@ class ListingPage(Page):
 
 
     def has_thumbnails(self):
-        thumb_img = self._THUMBNAIL + " a"
+        thumb_img = self._THUMBNAIL + " img"
         if self.is_element_present(thumb_img):
             return True
+
+    def default_thumbnail_percent(self):
+        thumb_img_css = self._THUMBNAIL + " img"
+        default_img_count = 0
+        thmb_els = self.browser.find_elements_by_css_selector(thumb_img_css)
+        total_thumbnails = len(thmb_els)
+        for el in thmb_els:
+            png_file = self.get_element_attribute(el, src)
+            if "nounproject_2650_television_white.png" in png_file:
+                default_img_count += default_img_count
+        percent_default = (default_img_count / float(total_thumbnails)) * 100
+        return percent_default
+
 
 
     def thumbnail_count(self, expected):

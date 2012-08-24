@@ -12,6 +12,7 @@ class SubmitPage(Page):
     _SUBMIT = 'footer.form-actions > button'
     _MESSAGE = 'div.message'
     _DUP_MESSAGES = ['A video with that url has already been submitted. You can moderate it here.',
+                     'It appears that we already have a copy of that video here... sorry! You can submit another video if you like.',
                      'It appears that we already have a copy of that video here']
 
 

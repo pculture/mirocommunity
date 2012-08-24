@@ -19,9 +19,8 @@
 
 from localtv.tests.selenium.webdriver_base import WebdriverTestCase
 from localtv.tests.selenium import pcfwebqa
-from localtv.tests.selenium.front_pages import search_page
+from localtv.tests.selenium.front_pages import search_page, video_page, listing_page
 from localtv.tests.selenium.admin_pages import manage_page
-from localtv.tests.selenium.front_pages import video_page
 import time
 from django.core import management
 
@@ -31,6 +30,7 @@ class SeleniumTestCaseSubmitVideoFeeds(WebdriverTestCase):
     def setUp(self):
         WebdriverTestCase.setUp(self)
         self.manage_pg = manage_page.ManagePage(pcfwebqa)
+        self.listing_pg = listing_page.ListingPage(pcfwebqa)
         self.manage_pg.login(self.admin_user, self.admin_pass)
 
 
@@ -100,6 +100,23 @@ class SeleniumTestCaseSubmitVideoFeeds(WebdriverTestCase):
                                      }
         self.submit_feed(testcase)
         self.verify_video_page(testcase)
+
+
+    def test_feed_listing_thumbnails__vimeo(self):
+        testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
+                    'feed name': 'janet',
+                    'title': 'WADDICT - Kiteskate Edit',
+                    'search': 'Kiteskate',
+                    'description': 'In addition to WADDICT part I & II, we have done an edit dedicated to kiteskating.',
+                    'source': 'janet'
+                                     }
+        self.submit_feed(testcase)
+        self.manage_pg.click_feed_action(testcase['feed name'], "View")
+        if self.listing_pg.has_thumbnails():
+            self.assertLess(self.listing_pg.default_thumbnail_percent(), 30)
+        else:
+            self.assertFalse("The feed listing page has no thumbnails present")
+
 
     def test_submit_feed__dailymotion(self):
         testcase = {'feed url': 'http://www.dailymotion.com/rss/user/KEXP',
