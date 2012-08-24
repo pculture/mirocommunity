@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 from ..page import Page
+import time
 
 class ListingPage(Page):
     _NEW_PAGE = 'listing/new/' 
     _POPULAR_PAGE = 'listing/popular/'
     _FEATURED_PAGE = 'listing/featured/'
     _CATEGORY_PAGE = 'category/%s'
-    _THUMBNAIL = 'li.media-item .video-class-wrapper'
+    _THUMBNAIL = '.video-thumb-wrapper img'
     _TITLE = 'a.title-link'
     _FEED_PAGE = 'feeds/%s'
     _HOVER = '.popover-trigger'
@@ -42,14 +43,14 @@ class ListingPage(Page):
 
 
     def has_thumbnails(self):
-        thumb_img = self._THUMBNAIL + " img"
-        if self.is_element_present(thumb_img):
+        time.sleep(2)
+        if self.is_element_present(self._THUMBNAIL):
             return True
 
     def default_thumbnail_percent(self):
-        thumb_img_css = self._THUMBNAIL + " img"
+        thumb_img_css = self._THUMBNAIL
         default_img_count = 0
-        thmb_els = self.browser.find_elements_by_css_selector(thumb_img_css)
+        thmb_els = self.browser.find_elements_by_css_selector(self._THUMBNAIL)
         total_thumbnails = len(thmb_els)
         for el in thmb_els:
             png_file = self.get_element_attribute(el, src)
@@ -69,7 +70,7 @@ class ListingPage(Page):
 
 
     def valid_thumbnail_sizes(self, height, width):
-        thumb_img = self._THUMBNAIL + " a "
+        thumb_img = self._THUMBNAIL
         thumbs = self.browser.find_elements_by_css_selector(thumb_img)
         invalid_thumbs = []
         for elem in thumbs:

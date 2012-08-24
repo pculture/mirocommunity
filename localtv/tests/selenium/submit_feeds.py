@@ -112,10 +112,8 @@ class SeleniumTestCaseSubmitVideoFeeds(WebdriverTestCase):
                                      }
         self.submit_feed(testcase)
         self.manage_pg.click_feed_action(testcase['feed name'], "View")
-        if self.listing_pg.has_thumbnails():
-            self.assertLess(self.listing_pg.default_thumbnail_percent(), 30)
-        else:
-            self.assertFalse("The feed listing page has no thumbnails present")
+        self.assertTrue(self.listing_pg.has_thumbnails())
+        self.assertLess(self.listing_pg.default_thumbnail_percent(), 30)
 
 
     def test_submit_feed__dailymotion(self):
