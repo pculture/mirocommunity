@@ -278,6 +278,6 @@ class Page(object):
         print '-------------------'
 #        filename = file_name + '_' + str(time.time()).split('.')[0] + '.png'
 
-        print 'Screenshot of error in file ' + filename
-        self.browser.get_screenshot_as_file(filename)
+        #print 'Screenshot of error in file ' + filename
+        #self.browser.get_screenshot_as_file(filename)
         return self.browser.current_url

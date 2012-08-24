@@ -39,6 +39,7 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
         self.assertEqual(True, self.listing_pg.has_thumbnails())
         self.assertEqual(True, self.listing_pg.thumbnail_count(15))
 
+
     def test_featured_listing__pagination(self):
         #CREATE 60 FEATURED VIDEOS
         for x in range(60):
