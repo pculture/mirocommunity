@@ -90,7 +90,7 @@ class ListingPage(Page):
         elem = self.browser.find_element_by_link_text(title_text)
         self.hover_by_css(elem)
         if self.is_element_present(self._HOVER):
-            overlay_text = self.get_text_by_css(self._HOVER)
+            overlay_text = self.get_element_attribute(self._HOVER, 'data-content')
             return True, overlay_text
         
 

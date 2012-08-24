@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import time
 from ..page import Page
 class SubmitPage(Page):
     """
@@ -72,6 +73,7 @@ class SubmitPage(Page):
    
     def _is_the_correct_submit_form(self, form):
         try:
+            time.sleep(3) 
             assert form in self.current_url()
         except AssertionError, e:
             raise( AssertionError( "Expecting the {0} form, got {1}:{2}".format(form, self.current_url(), e ) ))
