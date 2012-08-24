@@ -53,7 +53,7 @@ class ListingPage(Page):
         thmb_els = self.browser.find_elements_by_css_selector(self._THUMBNAIL)
         total_thumbnails = len(thmb_els)
         for el in thmb_els:
-            png_file = self.get_element_attribute(el, src)
+            png_file = self.get_element_attribute(el, "src")
             if "nounproject_2650_television_white.png" in png_file:
                 default_img_count += default_img_count
         percent_default = (default_img_count / float(total_thumbnails)) * 100
