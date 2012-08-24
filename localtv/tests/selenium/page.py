@@ -14,7 +14,7 @@ class Page(object):
     def __init__(self, testsetup):
         self.browser = testsetup.browser #BROWSER TO USE FOR TESTING
         self.base_url = testsetup.base_url 
-#        self.browser.implicitly_wait(2) #seconds
+        self.browser.implicitly_wait(2) #seconds
 
     def quit(self):
         self.browser.quit()
@@ -181,7 +181,7 @@ class Page(object):
 
 
     def wait_for_element_present(self, element):
-        for i in range(60):
+        for i in range(20):
             try:
                 time.sleep(1)
                 if self.is_element_present(element): break
@@ -191,7 +191,7 @@ class Page(object):
 
   
     def wait_for_element_not_present(self, element):
-        for i in range(60):
+        for i in range(20):
             try:
                 time.sleep(1)
                 if self.is_element_present(element) == False: break
@@ -200,7 +200,7 @@ class Page(object):
             raise Exception("%s is still present" % element)
 
     def wait_for_text_not_present(self, text):
-        for i in range(60):
+        for i in range(20):
             try:
                 time.sleep(1)
                 if self.is_text_present(text) == False: break
@@ -209,7 +209,7 @@ class Page(object):
             raise Exception("%s is still present" % text)
 
     def wait_for_element_visible(self, element):
-        for i in range(60):
+        for i in range(20):
             time.sleep(0.5)
             if self.is_element_visible(element):
                 break
@@ -218,7 +218,7 @@ class Page(object):
             raise Exception(element + ' has not appeared')
 
     def wait_for_element_not_visible(self,element):
-        for i in range(30):
+        for i in range(20):
             try:
                 time.sleep(1)
                 self.browser.find_elements_by_css_selector(element).is_displayed()

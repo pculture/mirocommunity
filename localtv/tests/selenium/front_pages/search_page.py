@@ -43,6 +43,7 @@ class SearchPage(NavPage):
 
     
     def click_first_result(self):
+        self.wait_for_element_present(self._SEARCH_RESULT_THUMB)
         if not self.is_element_present(self._SEARCH_RESULT_THUMB):
             return False, 'There are no results on the page'
         vid_page = self.get_element_attribute(self._SEARCH_RESULT_THUMB, 'href')

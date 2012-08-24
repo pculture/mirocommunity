@@ -86,8 +86,6 @@ class SeleniumTestCaseListingPages(WebdriverTestCase):
         self.listing_pg.open_listing_page('popular')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
         self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
-        #POPULAR PAGE SHOULD BE LIMITED TO THE  15 MOST POPULAR VIDEOS
-        self.assertEqual(True, self.listing_pg.thumbnail_count(15))
 
     def test_featured_listing__thumbs(self):
         self.listing_pg = listing_page.ListingPage(pcfwebqa)
