@@ -5,7 +5,6 @@ git+git://github.com/pculture/mirocommunity.git@develop#egg=mirocommunity
 git+git://github.com/pculture/djvideo.git@master#egg=djvideo
 git+git://github.com/paulswartz/Django-Socialauth.git@master#egg=django-socialauth
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
-git+git://github.com/oberlin/django-daguerre.git@master#egg=daguerre
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@tip#egg=django-registration
 beautifulsoup4==4.0.4
@@ -35,3 +34,4 @@ django_compressor==1.1.2
 django-appconf==0.5
 django-mptt==0.5.2
 Markdown==2.1.1
+django-daguerre==0.1

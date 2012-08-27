@@ -22,9 +22,8 @@
 	// Hides the edges of the shadow off the side of the window.
 	+box-shadow(0 -2px 64px rgba(0, 0, 0, 0.5) inset)
 	+clearfix
-	@media screen and (max-width: 740px)
-		margin: 0
-		// That causes trouble in single column mode.
+	@media screen and (max-width: $medium-viewport-max)
+		margin: 0 // Prevent content from running off the edges in the smaller views
 
 .precontent-details
 	@extend .col-one-third

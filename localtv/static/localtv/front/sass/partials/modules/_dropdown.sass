@@ -25,14 +25,14 @@
 .dropdown-box
 	min-width: 300px
 	@extend .padded-half
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		min-width: auto
 
 .dropdown-list
 	@extend .unstyled-list
 	@extend .row-nested
 	min-width: 200px
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		min-width: auto
 
 .dropdown-list > li > a
@@ -81,7 +81,7 @@
 	& > .dropdown-list, & > .dropdown-box
 		display: block
 
-@media screen and (max-width: 740px)
+@media screen and (max-width: $small-viewport-max)
 	.dropdown-list, .dropdown-box
 		position: static
 		+border-radius(3px)

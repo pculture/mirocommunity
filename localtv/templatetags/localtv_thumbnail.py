@@ -28,7 +28,7 @@ register = template.Library()
 
 class ThumbnailNode(template.Node):
     """
-    Essentially an implementation of daguerre's ImageResizeNode with a
+    Essentially an implementation of daguerre's AdjustmentNode with a
     different interface, to maintain backwards compatibility with old
     localtv_thumbnail template tags.
     
@@ -60,6 +60,17 @@ class ThumbnailNode(template.Node):
             except Image.DoesNotExist:
                 image = None
 
+        if image is not None:
+            adjustment_class = get_adjustment_class('fill')
+            try:
+                adjustment = adjustment_class.from_image(image,
+                                                         width=self.width,
+                                                         height=self.height)
+            except IOError:
+                # IOError pops up if image.image doesn't reference
+                # a present file. In this case, fall back to default.
+                image = None
+
         if image is None:
             url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
             if self.asvar is not None:
@@ -70,9 +81,6 @@ class ThumbnailNode(template.Node):
                 })
                 return ''
             return url
-
-        adjustment_class = get_adjustment_class('fill')
-        adjustment = adjustment_class.from_image(image, width=self.width, height=self.height)
         
         if self.asvar is not None:
             context[self.asvar] = adjustment.info_dict()

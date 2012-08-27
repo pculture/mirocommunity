@@ -8,6 +8,11 @@ Miro Community 1.9 Release Notes
   backwards-compatible from the backend, the user experience and
   template contexts should be the same.
 
+Miro Community 1.8.5 Release Notes
+==================================
+
+* Corrected a bug in feed import thumbnail handling.
+
 Miro Community 1.8.4 Release Notes
 ==================================
 

@@ -339,7 +339,6 @@ def video_save_thumbnail(video_pk, using='default'):
         video_save_thumbnail.retry()
 
     video.save_thumbnail_from_file(content_thumb)
-    Video.objects.using(using).filter(pk=video_pk).update(has_thumbnail=True)
 
 
 def _haystack_database_retry(task, callback):

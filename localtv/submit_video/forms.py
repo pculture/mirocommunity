@@ -185,8 +185,8 @@ class ThumbnailSubmitVideoForm(SubmitVideoFormBase):
             if self.cleaned_data.get('thumbnail_file', None):
                 instance.thumbnail_url = ''
                 instance.save_thumbnail_from_file(
-                    self.cleaned_data['thumbnail_file'])
-                instance.has_thumbnail = True
+                    self.cleaned_data['thumbnail_file'],
+                    update=False)
                 instance.save()
             old_m2m()
         if commit:

@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load uploadtemplate_tags cache i18n %}
+{% load uploadtemplate_tags cache i18n daguerre %}
 {% load url from future %}
 
 {% block title %}{{ block.super }}{% if site_settings.tagline %} - {{ site_settings.tagline }}{% endif %}{% endblock %}
@@ -32,6 +32,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<div class="precontent-content">
 				<div class="container carousel-wrapper">
 					<div class="row carousel">
+						<div class="carousel-shim">
+							<img src="{% adjust featured_videos.0.thumbnail_path width=640 height=360 adjustment="crop" %}" />
+						</div>
 						{% with featured_videos|slice:"10" as video_list %}
 							{% for video in video_list %}
 								{% include "localtv/_video_large_preview.html" %}

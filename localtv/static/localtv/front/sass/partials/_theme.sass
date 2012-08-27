@@ -120,6 +120,8 @@ body
 	& > .activeSlide
 		border-color: #FFF
 		background-color: #FFF
+	@media screen and (max-width: $small-viewport-max)
+		background: rgba(0,0,0,.75)
 
 // media grid
 
@@ -297,7 +299,7 @@ input, textarea
 		color: darken($quiet-color, 40%)
 
 // sidebar
-@media screen and (min-width: 740px)
+@media screen and (min-width: $small-viewport-max)
 	.right-sidebar
 		background-color: $sidebar-background-color
 		+background(linear-gradient(left, darken($sidebar-background-color, 10%) 0, $sidebar-background-color 2%, $sidebar-background-color 100%))

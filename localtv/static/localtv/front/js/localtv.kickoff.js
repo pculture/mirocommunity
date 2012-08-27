@@ -14,7 +14,10 @@
 			pause: true, // pause on hover
 			timeout: 6000, // 6 seconds between slides
 			pager: pager,
-			pauseOnPagerHover: true
+			pauseOnPagerHover: true,
+			slideResize: false,
+			containerResize: false,
+			slideExpr: '.video-large'
 		});
 	});
 	

@@ -5,7 +5,7 @@
 	+pie-clearfix
 	margin-right: $gutter-width / 2
 	float: right
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		float: none
 		margin-right: 0
 
@@ -17,14 +17,14 @@
 	float: left
 	list-style-type: none
 	border-left: 1px solid
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		float: none
 		border: 1px solid
 		+padded(0.25)
 
 .nav-item:first-child
 	border-left: none
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		border: 1px solid
 
 .nav-item > a
