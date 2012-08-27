@@ -14,38 +14,46 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+"""Test the Ability to create users via the Admin UI.
 
+"""
 
 from django.conf import settings
-
 from localtv.tests.selenium.webdriver_base import WebdriverTestCase
-from localtv.tests.selenium import pcfwebqa
-from localtv.tests.selenium.front_pages import user_nav 
+from localtv.tests.selenium.front_pages import user_nav
 
-
-class SeleniumTestCaseCreateUser(WebdriverTestCase):
+class CreateUser(WebdriverTestCase):
     def setUp(self):
         WebdriverTestCase.setUp(self)
-        self._pg = user_nav.NavPage(pcfwebqa)
-
+        self._pg = user_nav.NavPage(self)
 
     def test_create_user__admin_ui():
-        assert False, 'This test needs to be created' 
+        """Create a user via the admin ui.
 
-
+        """
+        assert False, 'This test needs to be created'
 
     def test_create_user_mismatch_password(self):
-        assert False, 'This test needs to be created' 
+        """Enter mismatched passwords on user creation.
+
+        """
+        assert False, 'This test needs to be created'
 
     def test_create_user__invalid_email(self):
-        assert False, 'This test needs to be created' 
+        """Create a user with an invalid email.
 
+        """
+        assert False, 'This test needs to be created'
 
     def test_create__admin_user(self):
-        assert False, 'This test needs to be created'    
+        """Create a user with admin privilages.
 
-        def test_change_user_privilages(self):
-            assert False, 'This test needs to be created' 
-    
+        """
+        assert False, 'This test needs to be created'
 
-    
+    def test_change_user_privilages(self):
+        """Elevate a regular user to an Admin.
+
+        """
+        assert False, 'This test needs to be created'
+

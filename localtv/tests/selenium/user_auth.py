@@ -19,36 +19,46 @@ import time
 
 from django.conf import settings
 from django.core import mail
-from django.core import management
-
 from localtv.tests.selenium.webdriver_base import WebdriverTestCase
-from localtv.tests.selenium import pcfwebqa
-from localtv.tests.selenium.front_pages import user_nav 
-from localtv.tests.selenium.web.google import Google
+from localtv.tests.selenium.front_pages import user_nav
 
 
-class SeleniumTestCaseUserAuth(WebdriverTestCase):
-   
-   
+class UserAuth(WebdriverTestCase):
+    """Login tests for site, fb, twitter, google, open id...
+
+    """
+
     def setUp(self):
         WebdriverTestCase.setUp(self)
-        self.nav_pg = user_nav.NavPage(pcfwebqa)
+        self.nav_pg = user_nav.NavPage(self)
 
     def _auth_settings_not_configured(self, setting):
-        if getattr(settings, setting) == None:
+        """Verify secret keys are configured for fb and twitter auth.
+
+        """
+        if getattr(settings, setting) is None:
             return True
 
     def login_failed_at(self):
+        """Return url where login failed.
+
+        """
         msg = "Login failed at %s" % self.nav_pg.current_url()
         return msg
 
     def test_login__valid_site(self):
+        """Login with valid site creds.
+
+        """
         kwargs = {'user': 'seleniumTestUser',
-                  'passw': 'selenium',
+                  'passw': 'password',
                   'success': True}
         self.assertTrue(self.nav_pg.login(**kwargs))
 
     def test_login__facebook(self):
+        """Login with facebook creds.
+
+        """
         if self._auth_settings_not_configured('FACEBOOK_SECRET_KEY'):
             self.skipTest("Skipping, facebook auth not configured")
 
@@ -58,19 +68,27 @@ class SeleniumTestCaseUserAuth(WebdriverTestCase):
         self.assertTrue(self.nav_pg.login(**kwargs))
 
     def test_login__openid(self):
+        """Login with openid (myopenid.com) creds.
+
+        """
         kwargs = {'user': 'http://pcf-web-qa.myopenid.com/',
                   'passw': 'pcf.web.qa',
                   'kind': 'openid'}
         self.assertTrue(self.nav_pg.login(**kwargs), self.login_failed_at())
- 
 
     def test_login__google(self):
+        """Login with google creds.
+
+        """
         kwargs = {'user': 'pculture.qa@gmail.com',
-                  'passw': 'Universal@Subtitles',
+                  'passw': 'Amara@Subtitles',
                   'kind': 'google'}
         self.assertTrue(self.nav_pg.login(**kwargs))
 
-    def test_login__twitter(self) :
+    def test_login__twitter(self):
+        """Login with twitter creds.
+
+        """
         if self._auth_settings_not_configured('TWITTER_CONSUMER_SECRET'):
             self.skipTest("Skipping, twitter auth not configured")
 
@@ -80,45 +98,48 @@ class SeleniumTestCaseUserAuth(WebdriverTestCase):
         self.assertTrue(self.nav_pg.login(**kwargs), self.login_failed_at())
 
     def test_login__bad_password(self):
+        """Login with invalid password
+
+        """
         kwargs = {'user': 'seleniumTestUser',
                   'passw': 'junk',
                   'success': 'bad password'}
-        self.assertFalse(self.nav_pg.login(**kwargs))     
-
+        self.assertFalse(self.nav_pg.login(**kwargs))
 
     def test_login__signup_and_activate(self):
         """Sign up a new user, activate account and login.
 
         """
-               
-        kwargs = {'user': 'testuser'+str(time.time()),
-                      'passw': 'test.pass',
-                      'email': 'pculture.qa@gmail.com',
-                      'kind': 'signup',
-                      }
+
+        kwargs = {'user': 'testuser' + str(time.time()),
+                  'passw': 'test.pass',
+                  'email': 'pculture.qa@gmail.com',
+                  'kind': 'signup',
+                  }
         self.nav_pg.login(**kwargs)
-        #The second email sent has the activation link 
+        #The second email sent has the activation link
         msg = str(mail.outbox[1].message())
         lines = msg.split('\n')
         for line in lines:
             if "accounts/activate" in line:
-                activation_url = line.replace('http://example.com/', pcfwebqa.base_url)
+                activation_url = line.replace(
+                    'http://example.com/', self.base_url)
                 print activation_url
                 break
         else:
             self.fail("Did not locate the activation url in the email message")
 
         kwargs['kind'] = 'site'
-#        kwargs['success'] = 'account inactive'
-#        self.nav_pg.login(**kwargs)
         self.nav_pg.open_page(activation_url)
         kwargs['success'] = True
-        self.assertTrue(self.nav_pg.login(**kwargs), 'Login failed with new user account')
-
-
+        self.assertTrue(self.nav_pg.login(
+            **kwargs), 'Login failed with new user account')
 
     def test_login__blank_value(self):
+        """Login with  blank password.
+
+        """
         kwargs = {'user': 'seleniumTestUser',
                   'passw': '',
                   'success': 'blank value'}
-        self.assertFalse(self.nav_pg.login(**kwargs))     
+        self.assertFalse(self.nav_pg.login(**kwargs))
