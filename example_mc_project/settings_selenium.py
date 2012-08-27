@@ -6,7 +6,7 @@ RESULTS_DIR = os.path.join(os.path.dirname(os.getcwd()), 'localtv', 'tests', 'se
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-TEST_BROWSER = 'Chrome'
+TEST_BROWSER = 'Firefox'
 
 xunitfile = '--xunit-file=%s' % os.path.join(RESULTS_DIR, "nosetests.xml")
 NOSE_ARGS = ['--with-xunit',
