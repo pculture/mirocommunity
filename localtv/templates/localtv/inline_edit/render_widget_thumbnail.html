@@ -18,10 +18,10 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load localtv_thumbnail %}
+{% load daguerre %}
 {% block input_field %}
 <div class="thumbnail_changer">
-  <div href="{{ form.instance.get_absolute_url }}" class="thumbnail" style="background: url({% get_thumbnail_url form.instance 222 169 %}) 5px 5px no-repeat;"><span>Current Thumbnail</span>
+  <div href="{{ form.instance.get_absolute_url }}" class="thumbnail" style="background: url({% adjust form.instance.thumbnail_path width=222 height=169 %}) 5px 5px no-repeat;"><span>Current Thumbnail</span>
   </div>
   <div class="form">
     {{ form.as_p }}

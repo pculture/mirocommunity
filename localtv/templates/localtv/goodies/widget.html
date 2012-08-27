@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}widgetcreater{% endblock body_class %}
 
 
-{% load i18n localtv_thumbnail uploadtemplate_tags %}
+{% load i18n daguerre uploadtemplate_tags %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
@@ -59,11 +59,11 @@ function update_widget() {
     widget_text = $("input[name=text]").val()
     {% if site_settings.site.widgetsettings.has_thumbnail %}
     if (widget_size == 'small') {
-        widget_logo = '{% get_thumbnail_url site_settings.site.widgetsettings 88 68 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=88 height=68 %}';
     } else if (widget_size == 'medium') {
-        widget_logo = '{% get_thumbnail_url site_settings.site.widgetsettings 140 110 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=140 height=110 %}';
     } else {
-        widget_logo = '{% get_thumbnail_url site_settings.site.widgetsettings 222 169 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=222 height=169 %}';
     }
     widget_logo = full_url(widget_logo);
     {% else %}

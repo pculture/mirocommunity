@@ -17,11 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n localtv_thumbnail filters uploadtemplate_tags %}
+{% load i18n daguerre filters uploadtemplate_tags %}
 
 <div class="video">
 
-  <a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumbnail" style="background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;">
+  <a href="{{ video.get_absolute_url }}{{ video_url_extra }}" class="thumbnail" style="background: url({% adjust video.thumbnail_path width=140 height=110 %}) center no-repeat;">
   <img src="{% get_static_url 'localtv/images/vid_overlay.png' bundled %}" /></a>
 
   <div class="title_desc">

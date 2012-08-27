@@ -17,12 +17,12 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n filters localtv_thumbnail %}
+{% load i18n filters daguerre %}
 <table>
   <tr>
     <td width="230" valign="top">
       <a href="{{ obj.get_absolute_url }}">
-        <img src="{% get_thumbnail_url obj 222 169 %}">
+        <img src="{% adjust obj.thumbnail_path width=222 height=169 %}">
       </a>
     </td>
     <td width="300" valign="top">

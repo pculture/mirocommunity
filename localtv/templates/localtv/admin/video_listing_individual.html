@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n localtv_thumbnail filters %}
+{% load i18n daguerre filters %}
 
 <div {% ifequal video current_video %}
        class="video hoverable selected"
@@ -34,7 +34,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
        {% url localtv_admin_preview_video %}?video_id={{ video.id }}
      {% endif %}
   </span>
-  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% get_thumbnail_url video 140 110 %}) center no-repeat;" href="#">
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% adjust video height=140 width=110 %}) center no-repeat;" href="#">
     <span>
     </span>
   </a>

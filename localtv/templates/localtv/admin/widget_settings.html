@@ -22,7 +22,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-{% load i18n localtv_thumbnail %}
+{% load i18n daguerre %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Widget Settings" %}{% endblock %}
 {% block head %}
@@ -52,7 +52,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
           <td>{{ form.title_editable }}</td>
         </tr>
         <tr>
-          <td>{{ form.icon.label_tag }}{% if form.instance.has_thumbnail %}<img src="{% get_thumbnail_url form.instance 88 68 %}" />{% endif %}{{ form.icon.errors }}<td>
+          <td>{{ form.icon.label_tag }}{% if form.instance.has_thumbnail %}<img src="{% adjust form.instance.thumbnail_path width=88 height=68 %}" />{% endif %}{{ form.icon.errors }}<td>
           <td>
               {{ form.icon }}
               <input type="submit" name="delete_icon" value="delete"></td>
