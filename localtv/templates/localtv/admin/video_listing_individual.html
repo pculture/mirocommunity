@@ -34,7 +34,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
        {% url localtv_admin_preview_video %}?video_id={{ video.id }}
      {% endif %}
   </span>
-  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% adjust video height=140 width=110 %}) center no-repeat;" href="#">
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% adjust video.thumbnail_path height=140 width=110 %}) center no-repeat;" href="#">
     <span>
     </span>
   </a>
