@@ -26,6 +26,7 @@ import os
 import logging
 import sys
 import traceback
+import warnings
 
 try:
     from PIL import Image as PILImage
@@ -2024,6 +2025,8 @@ def update_stamp(name, override_date=None, delete_stamp=False):
         logging.error(e)
 
 if lsettings.ENABLE_CHANGE_STAMPS:
+    warnings.warn('LOCALTV_ENABLE_CHANGE_STAMPS is deprecated.',
+                  DeprecationWarning)
     models.signals.post_save.connect(video_published_stamp_signal_listener,
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,
