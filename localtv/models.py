@@ -1673,7 +1673,7 @@ class Video(Thumbnailable, VideoBase):
             l = Category._tree_manager._translate_lookups(**l)
             q_list.append(models.Q(**l))
         q = reduce(operator.or_, q_list)
-        return Category.objects.filter(q)
+        return Category.objects.using(self._state.db).filter(q)
 
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
