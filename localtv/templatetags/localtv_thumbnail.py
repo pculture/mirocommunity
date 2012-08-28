@@ -43,6 +43,17 @@ class ThumbnailNode(template.Node):
     def render(self, context):
         video = self.video.resolve(context)
 
+        # Backwards-compat: livesearch should just use the thumbnail_url.
+        if getattr(video, '_livesearch', False):
+            if self.asvar is not None:
+                context[self.asvar] = AdjustmentInfoDict({
+                    'width': self.width,
+                    'height': self.height,
+                    'url': video.thumbnail_url
+                })
+                return ''
+            return video.thumbnail_url
+
         storage_path = None
 
         if video.has_thumbnail:

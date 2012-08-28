@@ -28,13 +28,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   <span class="video_id">{{ video.id }}</span>
   <span class="video_preview">
     {# http://{{ site_settings.site.domain #}
-     {% if video.metasearch_vid %}
+     {% if is_livesearch %}
        {% url localtv_admin_search_video_display %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}
      {% else %}
        {% url localtv_admin_preview_video %}?video_id={{ video.id }}
      {% endif %}
   </span>
-  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% adjust video.thumbnail_path height=140 width=110 %}) center no-repeat;" href="#">
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% if is_livesearch %}{{ video.thumbnail_url }}{% else %}{% adjust video.thumbnail_path height=140 width=110 %}{% endif %}) center no-repeat;" href="#">
     <span>
     </span>
   </a>
@@ -68,19 +68,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   
   <div class="approve_reject">
       <a class="feature med_button"
-         {% if video.metasearch_vid %}
+         {% if is_livesearch %}
            href="{% url localtv_admin_search_video_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}&feature=true"
          {% else %}
            href="{% url localtv_admin_feature_video %}?video_id={{ video.id }}"
          {% endif %}><span>Feature</span></a>
     <a class="approve med_button"
-       {% if video.metasearch_vid %}
+       {% if is_livesearch %}
          href="{% url localtv_admin_search_video_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}"
        {% else %}
          href="{% url localtv_admin_approve_video %}?video_id={{ video.id }}"
        {% endif %}><span>Approve</span></a>
     <a class="reject med_button"
-       {% if video.metasearch_vid %}
+       {% if is_livesearch %}
          href="{% url localtv_admin_search_video_approve %}?query={{ query_string|urlencode }}&video_id={{ video.id }}&order_by={{ order_by|default:"relevant" }}&queue=true"><span>Add to Queue</span>
        {% else %}
          href="{% url localtv_admin_reject_video %}?video_id={{ video.id }}"><span>Reject</span>
