@@ -1,6 +1,6 @@
- {% extends "localtv/submit_video/base.html" %}
+{% extends "localtv/submit_video/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,36 +19,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load i18n uploadtemplate_tags filters %}
-{% block pre-table %}
-{{ form.url }}
-{% endblock %}
-{% block table %}
-  {% block form %}
-  {% endblock %}
-    <tr>
-      <td>
-      {{ form.tags.errors }}
-      <label for="id_tags">{{ form.tags.help_text|safe }}</label>
-      {{ form.tags }}
-      </td>
-    </tr>
-    {% if not request.user.is_authenticated %}
-    <tr>
-      <td>
-        {{ form.contact.errors }}
-        {{ form.contact.label_tag }}
-        {{ form.contact }}
-      </td>
-    </tr>
-    {% endif %}
-    {% if not user_is_admin %}
-    <tr>
-      <td>
-        {{ form.notes.errors }}
-        {{ form.notes.label_tag }}
-        {{ form.notes }}
-      </td>
-    </tr>
-    {% endif %}
-{{ form.construction_hint }}
+
+{% block inner_form %}
+	{% with field=form.url %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.tags %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% if not request.user.is_authenticated %}
+			{% with field=form.contact %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% endif %}
+	{% if not user_is_admin %}
+		{% with field=form.notes %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% endif %}
 {% endblock %}

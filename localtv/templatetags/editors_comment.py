@@ -1,6 +1,6 @@
-# Copyright 2010 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -38,12 +38,10 @@ class EditorsCommentNode(template.Node):
             content_type=content_type,
             object_pk=unicode(obj.pk),
             flags__flag='editors comment')
-        if comments.count() == 0:
-            context[self.as_varname] = None
-        else:
+        try:
             context[self.as_varname] = comments[0]
-            for extra in list(comments[1:]):
-                extra.delete()
+        except IndexError:
+            context[self.as_varname] = None
         return ''
 
 @register.tag('get_editors_comment')

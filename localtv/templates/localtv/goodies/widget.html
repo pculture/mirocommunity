@@ -23,12 +23,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}widgetcreater{% endblock body_class %}
 
 
-{% load i18n localtv_thumbnail uploadtemplate_tags %}
+{% load i18n daguerre uploadtemplate_tags %}
 
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
-{% if sitelocation.site.widgetsettings.css and not sitelocation.site.widgetsettings.css_editable %}
-<link rel="stylesheet" href="{{ sitelocation.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{% get_static_url 'localtv/css/widget.css' bundled %}">{% endif %}
+{% if site_settings.site.widgetsettings.css and not site_settings.site.widgetsettings.css_editable %}
+<link rel="stylesheet" href="{{ site_settings.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{% get_static_url 'localtv/css/widget.css' bundled %}">{% endif %}
 <script src="{% get_static_url 'localtv/js/widget.js' bundled %}"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
@@ -38,7 +38,7 @@ function full_url(path) {
     }
     if (!/https?:\/\//.exec(path)) {
         // not a full URL
-        return'http://{{ sitelocation.site.domain }}' + path;
+        return'http://{{ site_settings.site.domain }}' + path;
     }
     return path;
 }
@@ -57,26 +57,26 @@ function update_widget() {
     widget_bg = $("input[name=bg]").val();
     widget_border = $("input[name=border]").val();
     widget_text = $("input[name=text]").val()
-    {% if sitelocation.site.widgetsettings.has_thumbnail %}
+    {% if site_settings.site.widgetsettings.has_thumbnail %}
     if (widget_size == 'small') {
-        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 88 68 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=88 height=68 %}';
     } else if (widget_size == 'medium') {
-        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 140 110 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=140 height=110 %}';
     } else {
-        widget_logo = '{% get_thumbnail_url sitelocation.site.widgetsettings 222 169 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=222 height=169 %}';
     }
     widget_logo = full_url(widget_logo);
     {% else %}
     widget_logo = '';
     {% endif %}
-    {% if sitelocation.site.widgetsettings.icon_editable %}
+    {% if site_settings.site.widgetsettings.icon_editable %}
     if ($("input[name=icon]").val()) {
         widget_logo = $("input[name=icon]").val();
     }
     {% endif %}
     opts = {
         version: 2,
-        domain: '{{ sitelocation.site.domain }}',
+        domain: '{{ site_settings.site.domain }}',
         source: widget_source,
         size: widget_size,
         count: widget_count,
@@ -116,7 +116,7 @@ function update_widget() {
     $('#widget-example ul').empty();
     if (widget_logo) {
         a = $("<a/>");
-        a.attr('href', 'http://{{ sitelocation.site.domain }}/');
+        a.attr('href', 'http://{{ site_settings.site.domain }}/');
         img = $("<img/>");
         img.attr('src', widget_logo);
         a.append(img)
@@ -144,32 +144,32 @@ $(document).ready(function () {
   {% include "localtv/goodies/header.html" %}
   <h2>Goodies | Widget</h2>
   <div style="clear: both"><div/>
-  {% if not sitelocation.site.widgetsettings.title_editable %}
-  <input type="hidden" name="title" value="{{ sitelocation.site.widgetsettings.get_title_or_reasonable_default }}" />
+  {% if not site_settings.site.widgetsettings.title_editable %}
+  <input type="hidden" name="title" value="{{ site_settings.site.widgetsettings.get_title_or_reasonable_default }}" />
   {% endif %}
-  {% if not sitelocation.site.widgetsettings.css_editable and sitelocation.site.widgetsettings.css %}
-  <input type="hidden" name="css" value="{{ sitelocation.site.widgetsettings.css.url }}">
+  {% if not site_settings.site.widgetsettings.css_editable and site_settings.site.widgetsettings.css %}
+  <input type="hidden" name="css" value="{{ site_settings.site.widgetsettings.css.url }}">
   {% endif %}
-  {% if not sitelocation.site.widgetsettings.bg_color_editable %}
-  <input type="hidden" name="bg" value="{{ sitelocation.site.widgetsettings.bg_color }}" />
+  {% if not site_settings.site.widgetsettings.bg_color_editable %}
+  <input type="hidden" name="bg" value="{{ site_settings.site.widgetsettings.bg_color }}" />
   {% endif %}
-  {% if not sitelocation.site.widgetsettings.text_color_editable %}
-  <input type="hidden" name="text" value="{{ sitelocation.site.widgetsettings.text_color }}" />
+  {% if not site_settings.site.widgetsettings.text_color_editable %}
+  <input type="hidden" name="text" value="{{ site_settings.site.widgetsettings.text_color }}" />
   {% endif %}
-  {% if not sitelocation.site.widgetsettings.border_color_editable %}
-  <input type="hidden" name="border" value="{{ sitelocation.site.widgetsettings.border_color }}" />
+  {% if not site_settings.site.widgetsettings.border_color_editable %}
+  <input type="hidden" name="border" value="{{ site_settings.site.widgetsettings.border_color }}" />
   {% endif %}
   <div id="widget-base">
     <div>
       <div id="widget-settings">
         <table>
-          {% if sitelocation.site.widgetsettings.title_editable %}
+          {% if site_settings.site.widgetsettings.title_editable %}
           <tr>
             <td>
               <label for="count">Title</label>
             </td>
             <td>
-              <input name="title" value="{{ sitelocation.site.widgetsettings.get_title_or_reasonable_default }}" />
+              <input name="title" value="{{ site_settings.site.widgetsettings.get_title_or_reasonable_default }}" />
             </td>
           </tr>
           {% endif %}
@@ -208,11 +208,11 @@ $(document).ready(function () {
           </tr>
           <tr id="custom_source_input" style="display: none;">
             <td colspan="2">
-              <label for="custom_source">Source: http://{{ sitelocation.site.domain }}/feeds/</label><input name="custom_source">
+              <label for="custom_source">Source: http://{{ site_settings.site.domain }}/feeds/</label><input name="custom_source">
               </div>
             </td>
           </tr>
-          {% if sitelocation.site.widgetsettings.icon_editable %}
+          {% if site_settings.site.widgetsettings.icon_editable %}
           <tr>
             <td>
               <label for="icon">Icon URL (optional):</label>
@@ -222,7 +222,7 @@ $(document).ready(function () {
             </td>
           </tr>
           {% endif %}
-          {% if sitelocation.site.widgetsettings.css_editable %}
+          {% if site_settings.site.widgetsettings.css_editable %}
           <tr>
             <td>
               <label for="icon">CSS URL (optional):</label>
@@ -233,33 +233,33 @@ $(document).ready(function () {
             </td>
           </tr>
           {% endif %}
-          {% if sitelocation.site.widgetsettings.bg_color_editable %}
+          {% if site_settings.site.widgetsettings.bg_color_editable %}
           <tr>
             <td>
               <label for="bg">Background Color (optional):</label>
             </td>
             <td>
-              <input name="bg" type="text" value="{{ sitelocation.site.widgetsettings.bg_color }}"/>
+              <input name="bg" type="text" value="{{ site_settings.site.widgetsettings.bg_color }}"/>
             </td>
           </tr>
           {% endif %}
-          {% if sitelocation.site.widgetsettings.border_color_editable %}
+          {% if site_settings.site.widgetsettings.border_color_editable %}
           <tr>
             <td>
               <label for="border">Border Color (optional):</label>
             </td>
             <td>
-              <input name="border" type="text" value="{{ sitelocation.site.widgetsettings.border_color }}"/>
+              <input name="border" type="text" value="{{ site_settings.site.widgetsettings.border_color }}"/>
             </td>
           </tr>
           {% endif %}
-          {% if sitelocation.site.widgetsettings.text_color_editable %}
+          {% if site_settings.site.widgetsettings.text_color_editable %}
           <tr>
             <td>
               <label for="text">Text Color (optional):</label>
             </td>
             <td>
-              <input name="text" type="text" value="{{ sitelocation.site.widgetsettings.text_color }}"/>
+              <input name="text" type="text" value="{{ site_settings.site.widgetsettings.text_color }}"/>
             </td>
           </tr>
           {% endif %}
@@ -283,7 +283,7 @@ $(document).ready(function () {
           <ul></ul>
           <div class="mc-footer">
             <div>
-              <a href="http://{{ sitelocation.site.domain }}/">See More</a>
+              <a href="http://{{ site_settings.site.domain }}/">See More</a>
             </div>
           </div>
         </div>

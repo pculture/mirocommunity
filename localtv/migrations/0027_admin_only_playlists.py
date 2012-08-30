@@ -1,7 +1,8 @@
 # encoding: utf-8
 
-# This file is part of Miro Community.
-# Copyright (C) 2011 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -138,10 +139,10 @@ class Migration:
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'embed_code': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'feed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Feed']", 'null': 'True', 'blank': 'True'}),
-            'file_url': ('BitLyWrappingURLField', [], {'blank': 'True', 'verify_exists': 'False'}),
+            'file_url': ('django.db.models.fields.URLField', [], {'blank': 'True', 'verify_exists': 'False'}),
             'file_url_length': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'file_url_mimetype': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'flash_enclosure_url': ('BitLyWrappingURLField', [], {'blank': 'True', 'verify_exists': 'False'}),
+            'flash_enclosure_url': ('django.db.models.fields.URLField', [], {'blank': 'True', 'verify_exists': 'False'}),
             'guid': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -156,7 +157,7 @@ class Migration:
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'video_service_user': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '250', 'blank': 'True'}),
-            'website_url': ('BitLyWrappingURLField', [], {'blank': 'True', 'verify_exists': 'False'}),
+            'website_url': ('django.db.models.fields.URLField', [], {'blank': 'True', 'verify_exists': 'False'}),
             'when_approved': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'when_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'when_published': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

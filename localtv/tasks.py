@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -23,14 +24,15 @@ import urllib
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from haystack import connections
 from haystack.query import SearchQuerySet
 
-from localtv.exceptions import InvalidVideo
-
+from localtv.signals import pre_mark_as_active
 
 class DummyException(Exception):
     """
@@ -46,11 +48,8 @@ try:
 except ImportError:
     LockError = DummyException
 
-
-from localtv import utils
-from localtv.models import Video, Feed, SiteLocation, SavedSearch, Category
+from localtv.models import Video, Feed, SavedSearch, Category
 from localtv.settings import USE_HAYSTACK
-from localtv.tiers import Tier
 from localtv.utils import quote_unicode_url
 
 
@@ -72,7 +71,8 @@ def update_sources(using='default'):
 @task(ignore_result=True)
 def feed_update(feed_id, using='default', clear_rejected=False):
     try:
-        feed = Feed.objects.using(using).get(pk=feed_id)
+        feed = Feed.objects.using(using).filter(auto_update=True
+                                                ).get(pk=feed_id)
     except Feed.DoesNotExist:
         logging.warn('feed_update(%s, using=%r) could not find feed',
                      feed_id, using)
@@ -84,7 +84,8 @@ def feed_update(feed_id, using='default', clear_rejected=False):
 @task(ignore_result=True)
 def search_update(search_id, using='default'):
     try:
-        search = SavedSearch.objects.using(using).get(pk=search_id)
+        search = SavedSearch.objects.using(using).filter(auto_update=True
+                                                   ).get(pk=search_id)
     except SavedSearch.DoesNotExist:
         logging.warn('search_update(%s, using=%r) could not find search',
                      search_id, using)
@@ -131,29 +132,21 @@ def mark_import_pending(import_app_label, import_model, import_pk,
         # Retry raises an exception, ending task execution.
         mark_import_pending.retry()
 
-    # Otherwise the first stage is complete. Check whether they can take all the
-    # videos.
+    # Otherwise the first stage is complete. Check whether they can take all
+    # the videos.
     if source_import.auto_approve:
         active_set = source_import.get_videos(using).filter(
             status=Video.PENDING)
-        # Only limit activated videos if tiers are enforced.
-        if SiteLocation.enforce_tiers(using=using):
-            remaining_videos = (Tier.get(using=using).videos_limit()
-                                - Video.objects.using(using
-                                    ).filter(status=Video.ACTIVE
-                                    ).count())
-            if remaining_videos >= source_import.videos_imported:
-                # Don't limit activated videos - enough space.
-                pass
-            elif remaining_videos > 0:
-                # Only approve the earliest-"submitted" videos.
-                last_video = active_set.order_by('when_submitted')[
-                                                            remaining_videos]
-                active_set = active_set.filter(
-                                when_submitted__lt=last_video.when_submitted)
-            else:
-                # Don't bother trying to update.
-                active_set = active_set.none()
+
+        for receiver, response in pre_mark_as_active.send_robust(
+            sender=source_import,
+            active_set=active_set):
+            if response:
+                if isinstance(response, Q):
+                    active_set = active_set.filter(response)
+                elif isinstance(response, dict):
+                    active_set = active_set.filter(**response)
+
         active_set.update(status=Video.ACTIVE)
 
     source_import.get_videos(using).filter(status=Video.PENDING).update(
@@ -261,44 +254,6 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                 with_exception=True)
             return
 
-        if not vidscraper_video.title:
-            source_import.handle_error(
-                ('Skipped %r: Failed to scrape basic data.'
-                 % vidscraper_video.url),
-                is_skip=True, using=using)
-            return
-
-        if ((vidscraper_video.file_url_expires or
-             not vidscraper_video.file_url)
-            and not vidscraper_video.embed_code):
-            source_import.handle_error(('Skipping %r: no file or embed code.'
-                                        % vidscraper_video.url),
-                                       is_skip=True, using=using)
-            return
-
-        site_videos = Video.objects.using(using).filter(site=site_pk)
-
-        if vidscraper_video.guid:
-            guid_videos = site_videos.filter(guid=vidscraper_video.guid)
-            if clear_rejected:
-                guid_videos.filter(status=Video.REJECTED).delete()
-            if guid_videos.exists():
-                source_import.handle_error(('Skipping %r: duplicate guid.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
-        if vidscraper_video.link:
-            videos_with_link = site_videos.filter(
-                website_url=vidscraper_video.link)
-            if clear_rejected:
-                videos_with_link.filter(status=Video.REJECTED).delete()
-            if videos_with_link.exists():
-                source_import.handle_error(('Skipping %r: duplicate link.'
-                                            % vidscraper_video.url),
-                                           is_skip=True, using=using)
-                return
-
         if category_pks:
             categories = Category.objects.using(using).filter(pk__in=category_pks)
         else:
@@ -307,31 +262,8 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
         if author_pks:
             authors = User.objects.using(using).filter(pk__in=author_pks)
         else:
-            if vidscraper_video.user:
-                name = vidscraper_video.user
-                if ' ' in name:
-                    first, last = name.split(' ', 1)
-                else:
-                    first, last = name, ''
-                author, created = User.objects.db_manager(using).get_or_create(
-                    username=name[:30],
-                    defaults={'first_name': first[:30],
-                              'last_name': last[:30]})
-                if created:
-                    author.set_unusable_password()
-                    author.save()
-                    utils.get_profile_model().objects.db_manager(using).create(
-                       user=author,
-                       website=vidscraper_video.user_url or '')
-                authors = [author]
-            else:
-                authors = None
+            authors = None
 
-        # Since we check above whether the vidscraper_video is valid, we don't
-        # catch InvalidVideo here, since it would be unexpected. We don't
-        # update the index because this is expected to be run as part of the
-        # import process; the video will be indexed in bulk after the feed
-        # import is complete.
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
                                             using=using,
                                             source_import=source_import,
@@ -340,16 +272,23 @@ def video_from_vidscraper_video(vidscraper_video, site_pk,
                                             site_pk=site_pk,
                                             commit=False,
                                             update_index=False)
-        # This is replaced in 1.9 by better model validation.
-        if not (video.embed_code or video.file_url):
-            raise InvalidVideo
-        video.save(update_index=False)
         try:
-            video.save_m2m()
-        except Exception:
-            video.delete()
-            raise
+            video.full_clean()
+        except ValidationError, e:
+            source_import.handle_error(("Skipping %r: %r" % (
+                                        vidscraper_video.url, e.message_dict)),
+                                        is_skip=True, using=using)
+            return
         else:
+            video.save(update_index=False)
+            try:
+                video.save_m2m()
+            except Exception:
+                video.delete()
+                raise
+            if clear_rejected:
+                video.clear_rejected_duplicates()
+
             logging.debug('Made video %i: %r', video.pk, video.name)
             if video.thumbnail_url:
                 video_save_thumbnail.delay(video.pk, using=using)
@@ -376,7 +315,7 @@ def video_save_thumbnail(video_pk, using='default'):
     thumbnail_url = quote_unicode_url(video.thumbnail_url)
 
     try:
-        thumbnail = urllib.urlopen(thumbnail_url)
+        remote_file = urllib.urlopen(thumbnail_url)
     except httplib.InvalidURL:
         # This is always fast, so we don't need to worry as much about
         # race conditions. If the URL isn't valid, just erase it.
@@ -385,8 +324,13 @@ def video_save_thumbnail(video_pk, using='default'):
         video.save()
         return
 
+    if remote_file.getcode() != 200:
+        logging.info("Code %i when getting %r, retrying",
+                     remote_file.getcode(), video.thumbnail_url)
+        video_save_thumbnail.retry()
+
     try:
-        content_thumb = ContentFile(thumbnail.read())
+        content_thumb = ContentFile(remote_file.read())
     except IOError:
         # Could be a temporary disruption - try again later if this was
         # a task. Otherwise reraise.
@@ -488,3 +432,4 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
         end = min(start + batch_size, total)
         haystack_update.delay(app_label, model_name, pks[start:end],
                               remove=remove, using=using)
+

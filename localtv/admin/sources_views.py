@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -27,7 +27,7 @@ from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
+from localtv.models import SiteSettings, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
 from localtv.utils import SortHeaders, MockQueryset
 from localtv.admin import forms
 
@@ -60,12 +60,12 @@ def manage_sources(request):
             orm_sort = 'name__lower'
     else:
         orm_sort = sort
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     feeds = Feed.objects.filter(
-        site=sitelocation.site).extra(select={
+        site=site_settings.site).extra(select={
             'name__lower': 'LOWER(name)'}).order_by(orm_sort)
     searches = SavedSearch.objects.filter(
-        site=sitelocation.site).extra(select={
+        site=site_settings.site).extra(select={
             'name__lower': 'LOWER(query_string)'}).order_by(
             orm_sort)
 
@@ -159,9 +159,8 @@ def manage_sources(request):
             'headers': headers,
             'search_string': search_string,
             'source_filter': source_filter,
-            'categories': Category.objects.filter(
-                site=SiteLocation.objects.get_current().site),
-            'users': User.objects.order_by('username'),
+            'categories': formset._qs_cache['categories'],
+            'users': formset._qs_cache['authors'],
             'successful': 'successful' in request.GET,
             'formset': formset},
                               context_instance=RequestContext(request))

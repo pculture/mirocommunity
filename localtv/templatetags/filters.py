@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -17,13 +17,13 @@
 
 import datetime
 import re
-import lxml.html
 
-from BeautifulSoup import BeautifulSoup, Comment
+from bs4 import BeautifulSoup, Comment
 from django.contrib.contenttypes.models import ContentType
 from django.template import Library
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
+import lxml.html
 from tagging.models import Tag
 
 
@@ -93,19 +93,19 @@ def sanitize(value, extra_filters=None):
         allowed_attributes = set(allowed_attributes) - set(extra_attributes)
 
     soup = BeautifulSoup(value)
-    for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
+    for comment in soup.find_all(text=lambda text: isinstance(text, Comment)):
         # remove comments
         comment.extract()
 
-    for tag in soup.findAll(True):
+    for tag in soup.find_all(True):
         if tag.name not in allowed_tags:
             tag.hidden = True
         else:
-            tag.attrs = [(attr, js_regex.sub('', val))
-                         for attr, val in tag.attrs
-                         if attr in allowed_attributes]
+            tag.attrs = dict((key, js_regex.sub('', val))
+                             for key, val in tag.attrs.iteritems()
+                             if key in allowed_attributes)
 
-    return mark_safe(soup.renderContents().decode('utf8'))
+    return mark_safe(unicode(soup))
 
 
 @register.filter

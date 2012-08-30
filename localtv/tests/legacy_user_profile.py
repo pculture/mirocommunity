@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -121,7 +122,7 @@ class ProfileViewTestCase(BaseTestCase):
         c.login(username='user', password='password')
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.template[0].name,
+        self.assertEqual(response.templates[0].name,
                           'localtv/user_profile/edit.html')
         self.assertTrue('form' in response.context[0])
 
@@ -156,7 +157,7 @@ class ProfileViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 self.url))
 
         user = User.objects.get(pk=self.user.pk)
@@ -193,7 +194,7 @@ class ProfileViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
-                self.site_location.site.domain,
+                self.site_settings.site.domain,
                 self.url))
 
         user = User.objects.get(pk=self.user.pk)

@@ -1,0 +1,57 @@
+{% extends "localtv/__base.html" %}
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% load pagetabs localtv_thumbnail i18n %}
+
+{% block title %}{{ block.super }} - Contests{% endblock %}
+
+{% block content %}
+	<header class="page-header">
+	  <h1 class="page-title">{% trans "Contests" %}</h1>
+	</header>
+	<div class="padded page-content">
+		<div class="pagination upper">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+		<ul class="grid-list card-list">
+			{% for contest in contest_list %}
+				<li class="grid-item card">
+					<a href="{{ contest.get_absolute_url }}" class="card-link">
+						<header class="card-header">
+							<span class="card-title">{{ contest.name }}</span>
+							{% with contest.videos.count as count %}
+								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
+							{% endwith %}
+						</header>
+						<div class="card-figure">
+							<ul class="tile-box">
+								{% for video in contest.videos.all|slice:"0:8" %}
+									<li class="tile"><img src="{% get_thumbnail_url video 140 110 %}" /></li>
+								{% endfor %}
+							</ul>
+						</div>
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	</div>
+{% endblock %}

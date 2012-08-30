@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -19,10 +19,11 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 
-from localtv.listing.views import VideoSearchView, SiteListView, \
-                        CategoryVideoSearchView
+from localtv.api.v1 import api as api_v1
+from localtv.listing.views import CompatibleListingView, SiteListView
 from localtv.models import Category
-from localtv.views import IndexView
+from localtv.views import IndexView, VideoView
+
 
 # "Base" patterns
 urlpatterns = patterns(
@@ -30,25 +31,28 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
-    url(r'^video/(?P<video_id>[0-9]+)/(?P<slug>[\w-]*)/?$', 'view_video',
-                    name='localtv_view_video'),
-    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'))
+    url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
+        VideoView.as_view(),
+        name='localtv_view_video'),
+    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
+    url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
-category_videos = CategoryVideoSearchView.as_view(
+# This has to be importable for now because of a hack in the view_video view
+# which imports this view to check whether the referer was a category page.
+category_videos = CompatibleListingView.as_view(
     template_name='localtv/category.html',
-    url_filter='category',
-    url_filter_kwarg='slug',
-    default_sort='-date'
+    filter_name='category',
+    filter_kwarg='slug'
 )
 urlpatterns += patterns(
     'localtv.listing.views',
-    url(r'^search/$', VideoSearchView.as_view(
+    url(r'^search/$', CompatibleListingView.as_view(
                         template_name='localtv/video_listing_search.html',
                     ), name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
                         template_name='localtv/categories.html',
-                        queryset=Category.objects.filter(parent=None),
+                        queryset=Category.objects.filter(level=0),
                         paginate_by=15
                     ), name='localtv_category_index'),
     url(r'^category/(?P<slug>[-\w]+)/$', category_videos,
@@ -58,10 +62,9 @@ urlpatterns += patterns(
                         model=User,
                         context_object_name='authors'
                     ), name='localtv_author_index'),
-    url(r'^author/(?P<pk>\d+)/$', VideoSearchView.as_view(
+    url(r'^author/(?P<pk>\d+)/$', CompatibleListingView.as_view(
                         template_name='localtv/author.html',
-                        url_filter='author',
-                        default_sort='-date'
+                        filter_name='author'
                     ), name='localtv_author'))
 
 # Comments patterns
@@ -82,6 +85,7 @@ urlpatterns += patterns(
     url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('socialauth.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
@@ -90,17 +94,3 @@ urlpatterns += patterns(
     url(r'^goodies/', include('localtv.goodies.urls')),
     url(r'^share/', include('email_share.urls')),
     url(r'^playlists/', include('localtv.playlists.urls')))
-
-try:
-    import voting
-except ImportError:
-    pass # ignore voting
-else:
-    urlpatterns += patterns(
-        'localtv.views',
-        (r'^video/vote/(?P<object_id>\d+)/(?P<direction>up|clear)/?$',
-         'video_vote', dict(
-                template_object_name='video',
-                template_name='localtv/video_vote_confirm.html',
-                allow_xmlhttprequest=False),
-         'localtv_video_vote'))

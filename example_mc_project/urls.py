@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -24,6 +25,7 @@ urlpatterns = (
     static(settings.UPLOADTEMPLATE_MEDIA_URL,
            document_root=settings.UPLOADTEMPLATE_MEDIA_ROOT) +
     patterns('',
+        url(r'^', include('localtv.contrib.contests.urls')),
         url(r'^', include('localtv.urls')),
     )
 )

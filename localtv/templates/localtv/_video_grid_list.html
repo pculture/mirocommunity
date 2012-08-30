@@ -1,0 +1,27 @@
+{% load i18n pagetabs %}
+
+{% if page_obj.has_other_pages %}
+	<div class="pagination upper">
+			{% pagetabs page_obj %}
+	</div>
+{% endif %}
+
+<div class="video-list-wrapper">
+	{% if video_list %}
+		<ul class="media-grid-{{ columns }} video-grid">
+			{% for video in video_list %}
+				{% include "localtv/_video_grid_item.html" %}
+			{% endfor %}
+		</ul>
+	{% else %}
+		<div class="message warning">
+			<p>{% trans "No videos have been added yet." %}</p>
+		</div>
+	{% endif %}
+</div>
+
+{% if page_obj.has_other_pages %}
+	<div class="pagination lower">
+		{% pagetabs page_obj %}
+	</div>
+{% endif %}

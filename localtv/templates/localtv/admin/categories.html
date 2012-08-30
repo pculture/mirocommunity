@@ -113,14 +113,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     {% if field.help_text %}
     <span class="form_help">{{ field.help_text }}</span>
     {% endif %}
-    {% if field.name = 'contest_mode' %}
-    {% if form.instance.contest_mode %}
-    Contest started at {{ form.instance.contest_mode }}
-    {% endif %}
-    {% if form.instance.has_votes %}
-    <a href="{% url localtv_admin_category_votes form.instance.slug %}">View Votes</a>
-    {% endif %}
-    {% endif %}
   </li>
   {% endifnotequal %}
   {% endfor %}

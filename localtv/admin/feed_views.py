@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -23,6 +23,7 @@ import urllib2
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
+from django.forms.models import construct_instance
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render_to_response
@@ -34,7 +35,7 @@ import vidscraper
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv.exceptions import CannotOpenImageUrl
 from localtv import tasks, utils
-from localtv.models import Feed, SiteLocation
+from localtv.models import Feed, SiteSettings
 from localtv.admin import forms
 
 Profile = utils.get_profile_model()
@@ -105,15 +106,14 @@ def add_feed(request):
         if form.is_valid():
             feed, created = Feed.objects.get_or_create(
                 feed_url=defaults['feed_url'],
-                site=SiteLocation.objects.get_current().site,
+                site=SiteSettings.objects.get_current().site,
                 defaults=defaults)
 
             if not created:
                 for key, value in defaults.items():
                     setattr(feed, key, value)
 
-            for key, value in form.cleaned_data.items():
-                setattr(feed, key, value)
+            construct_instance(form, feed)
 
             thumbnail_url = scraped_feed.thumbnail_url
 
@@ -166,7 +166,7 @@ def feed_auto_approve(request, feed_id):
     feed = get_object_or_404(
         Feed,
         id=feed_id,
-        site=SiteLocation.objects.get_current().site)
+        site=SiteSettings.objects.get_current().site)
 
     feed.auto_approve = not request.GET.get('disable')
     feed.save()

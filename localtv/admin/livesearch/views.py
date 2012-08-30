@@ -1,19 +1,19 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-
 
 from datetime import datetime, timedelta
 
@@ -24,7 +24,7 @@ from django.views.generic import ListView, DetailView, View
 
 from localtv.admin.livesearch.forms import LiveSearchForm
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv.models import SavedSearch, SiteLocation, Video
+from localtv.models import SavedSearch, Video
 from localtv import utils
 
 class LiveSearchSessionMixin(object):
@@ -115,7 +115,7 @@ class LiveSearchView(LiveSearchSessionMixin, ListView):
         if self.form.is_valid():
             is_saved_search = SavedSearch.objects.filter(
                                   site=current_site,
-                                  query_string=self.form.cleaned_data['q']
+                                  query_string=self.form.cleaned_data['query']
                               ).exists()
 
         context.update({
@@ -128,7 +128,7 @@ class LiveSearchView(LiveSearchSessionMixin, ListView):
         cleaned_data = getattr(self.form, 'cleaned_data', self.form.initial)
         context.update({
             'order_by': cleaned_data.get('order_by', 'latest'),
-            'query_string': cleaned_data.get('q', '')
+            'query_string': cleaned_data.get('query', '')
         })
         return context
 
@@ -188,18 +188,10 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
         if video is None:
             return HttpResponseBadRequest("No video found for that video_id.")
 
-        if not request.GET.get('queue'):
-            sitelocation = SiteLocation.objects.get_current()
-            if not sitelocation.get_tier().can_add_more_videos():
-                return HttpResponse(
-                    content="You are over the video limit. You "
-                    "will need to upgrade to approve "
-                    "that video.", status=402)
-
         current_site = Site.objects.get_current()
         try:
             saved_search = SavedSearch.objects.get(site=current_site,
-                                    query_string=self.form.cleaned_data['q'])
+                                 query_string=self.form.cleaned_data['query'])
         except SavedSearch.DoesNotExist:
             video.user = request.user
         else:
@@ -257,7 +249,7 @@ search_auto_approve = referrer_redirect(require_site_admin(
 @referrer_redirect
 @require_site_admin
 def create_saved_search(request):
-    query_string = request.GET.get('q')
+    query_string = request.GET.get('query')
 
     if not query_string:
         return HttpResponseBadRequest('must provide a query_string')

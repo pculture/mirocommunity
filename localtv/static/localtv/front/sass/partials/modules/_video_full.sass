@@ -1,0 +1,30 @@
+@import compass/css3/box-shadow
+
+.video-player
+	text-align: center
+	& > .video-embedded-widget
+		text-align: left
+		display: inline-block
+	& > p, & > div, & > span, & > .video-embedded-widget
+		text-align: left
+		display: inline-block
+		margin-left: auto
+		margin-right: auto
+		background: #000
+		+margin-leader
+		+margin-trailer
+		+box-shadow(0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px 0 rgba(0, 0, 0, 0.75))
+		@media screen and (max-width: $small-viewport-max)
+			max-width: 100%
+			+margin-leader(0)
+			+margin-trailer(0)
+
+.video-player p
+	@extend .padded-half
+	color: #EEE
+
+.extra-details
+	+margin-leader
+	+small
+	h4
+		+small

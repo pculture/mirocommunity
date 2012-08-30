@@ -1,0 +1,43 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% comment %}
+Expects that popular videos are in the current context; renders a small
+module displaying them.
+{% endcomment %}
+
+{% load i18n %}
+{% load url from future %}
+
+<section class="pod video-suggested-videos">
+	<header class="pod-header">
+		<h1>{% trans "More Videos" %}</h1>
+	</header>
+	<div class="pod-content">
+		{# TODO: calculate a suggested videos list #}
+		{% with popular_videos|slice:"4" as video_list %}
+			{% include "localtv/_video_grid_list.html" with columns=1 %}
+		{% endwith %}
+	</div>
+	<div class="pod-footer">
+		<ul class="pod-footer-actions">
+			<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
+		</ul>
+	</div>
+</section>{# /.pod.video-suggested-videos #}

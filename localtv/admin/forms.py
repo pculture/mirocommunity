@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -20,9 +20,8 @@ import re
 import os.path
 import urlparse
 
-import django.template.defaultfilters
 from django import forms
-from django.forms.formsets import BaseFormSet
+from django.forms.formsets import BaseFormSet, DELETION_FIELD_NAME
 from django.forms.models import modelformset_factory, BaseModelFormSet, \
     construct_instance
 from django.contrib.auth.models import User
@@ -30,18 +29,17 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from haystack import connections
 
 from tagging.forms import TagField
 
-import localtv.settings
-import localtv.tiers
 from localtv import models, utils
+from localtv.settings import API_KEYS
 from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
@@ -75,7 +73,7 @@ class EditVideoForm(forms.ModelForm):
         model = models.Video
         fields = ('thumbnail', 'thumbnail_url', )
 
-    def save(self, *args, **kwargs):
+    def save(self, commit=True):
         if 'thumbnail' in self.cleaned_data:
             thumbnail = self.cleaned_data.pop('thumbnail')
             if thumbnail:
@@ -92,7 +90,7 @@ class EditVideoForm(forms.ModelForm):
                 self.instance.thumbnail_url = thumbnail_url
                 video_save_thumbnail.delay(self.instance.pk,
                                            using=CELERY_USING)
-        return forms.ModelForm.save(self, *args, **kwargs)
+        return forms.ModelForm.save(self, commit=commit)
 
 class BulkChecklistField(forms.ModelMultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
@@ -131,11 +129,11 @@ class SourceChoiceField(forms.TypedChoiceField):
     widget = SourceWidget
     name = 'id'
 
-    def __init__(self, **kwargs):
+    def __init__(self, feeds, searches, **kwargs):
         feed_choices = [('feed-%s' % feed.pk, feed) for feed in
-                         models.Feed.objects.all()]
+                         feeds]
         search_choices = [('savedsearch-%s' % search.pk, search) for search in
-                          models.SavedSearch.objects.all()]
+                          searches]
         choices = feed_choices + search_choices
         initial = kwargs.pop('initial', None)
         if initial:
@@ -166,13 +164,13 @@ class SourceChoiceField(forms.TypedChoiceField):
 
 class SourceForm(forms.ModelForm):
     auto_categories = BulkChecklistField(required=False,
-                                    queryset=models.Category.objects)
+                                    queryset=models.Category.objects.filter(
+                                                site=settings.SITE_ID))
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
     thumbnail = forms.ImageField(required=False)
     delete_thumbnail = forms.BooleanField(required=False)
-    avoid_frontpage = forms.BooleanField(required=False)
 
     class Meta:
         model = models.Source
@@ -183,12 +181,6 @@ class SourceForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if 'auto_approve' in self.initial:
             self.initial['auto_approve'] = bool(self.initial['auto_approve'])
-        site = Site.objects.get_current()
-        self.fields['auto_categories'].queryset = \
-            self.fields['auto_categories'].queryset.filter(
-            site=site)
-        self.fields['auto_authors'].queryset = \
-            self.fields['auto_authors'].queryset.order_by('username')
 
         if self.instance.pk is not None:
             if isinstance(self.instance, models.Feed):
@@ -219,7 +211,7 @@ class SourceForm(forms.ModelForm):
                 self.cleaned_data['thumbnail'],
                 update=False)
         if self.cleaned_data.get('delete_thumbnail'):
-            self.instance.delete_thumbnails()
+            self.instance.delete_thumbnail()
 
         # if the categories or authors changed, update unchanged videos to the
         # new values
@@ -252,13 +244,38 @@ class SourceForm(forms.ModelForm):
 
 
 class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
+    @property
+    def _qs_cache(self):
+        """
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
+                'categories': SourceForm.base_fields[
+                                  'auto_categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': SourceForm.base_fields[
+                                  'auto_authors'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'feeds': utils.SharedQuerySet(models.Feed),
+                'searches': utils.SharedQuerySet(models.SavedSearch),
+            }
+        return self._real_qs_cache
 
     def _construct_form(self, i, **kwargs):
         # Since we're doing something weird with the id field, we just use the
         # instance that's passed in when we create the formset
+        # TODO: Stop doing something weird.
         if i < self.initial_form_count() and not kwargs.get('instance'):
             kwargs['instance'] = self.get_queryset()[i]
-        return super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form = super(BaseModelFormSet, self)._construct_form(i, **kwargs)
+        form.fields['auto_categories'].queryset = self._qs_cache['categories']
+        form.fields['auto_authors'].queryset = self._qs_cache['authors']
+        return form
 
     def save_new_objects(self, commit=True):
         """
@@ -336,8 +353,11 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
             initial = self.queryset[index]
         else:
             initial = None
-        self._pk_field = form.fields['id'] = SourceChoiceField(required=False,
-                                              initial=initial)
+        self._pk_field = form.fields['id'] = SourceChoiceField(
+                                          required=False,
+                                          initial=initial,
+                                          feeds=self._qs_cache['feeds'],
+                                          searches=self._qs_cache['searches'])
         if initial:
             form.fields['BULK'] = forms.BooleanField(required=False)
         BaseFormSet.add_fields(self, form, index)
@@ -364,9 +384,10 @@ class BulkEditVideoForm(EditVideoForm):
                                     required=False)
     tags = TagField(required=False,
                     widget=forms.Textarea)
-    categories = BulkChecklistField(models.Category.objects,
+    categories = BulkChecklistField(models.Category.objects.filter(
+                                    site=settings.SITE_ID),
                                     required=False)
-    authors = BulkChecklistField(User.objects,
+    authors = BulkChecklistField(User.objects.order_by('username'),
                                  required=False)
     skip_authors = forms.BooleanField(required=False,
                                       initial=True,
@@ -382,23 +403,6 @@ class BulkEditVideoForm(EditVideoForm):
         fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
-
-    _categories_queryset = None
-    _authors_queryset = None
-
-    def fill_cache(self, cache_for_form_optimization):
-        if cache_for_form_optimization is None:
-            cache_for_form_optimization = {}
-
-        # Great. Fill the cache.
-        if 'categories_qs' not in cache:
-            cache_for_form_optimization['categories_qs'] = utils.MockQueryset(
-                models.Category.objects.filter(site=Site.objects.get_current()))
-        if 'authors_qs' not in cache_for_form_optimization:
-            cache_for_form_optimization['authors_qs'] = utils.MockQueryset(
-                User.objects.order_by('username'))
-
-        return cache_for_form_optimization
 
     def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
         # The cache_for_form_optimization is an object that is
@@ -420,13 +424,14 @@ class BulkEditVideoForm(EditVideoForm):
         # relations, and not descriptors like Video.tags
         self.initial['tags'] = utils.edit_string_for_tags(self.instance.tags)
 
-        # cache the querysets so that we don't hit the DB for each form
-        cache_for_form_optimization = self.fill_cache(cache_for_form_optimization)
-
-        self.fields['categories'].queryset = cache_for_form_optimization[
-            'categories_qs']
-        self.fields['authors'].queryset = cache_for_form_optimization[
-            'authors_qs']
+    def _post_clean(self):
+        if not self.instance.pk:
+            # don't run the instance validation checks on the extra form field.
+            # This also doesn't set the values on the instance, but since we
+            # get the values directly from `cleaned_data` in bulk_edit_views.py
+            # it doesn't matter.
+            return
+        return super(BulkEditVideoForm, self)._post_clean()
 
     def clean_name(self):
         if self.instance.pk and not self.cleaned_data.get('name'):
@@ -445,14 +450,116 @@ class BulkEditVideoForm(EditVideoForm):
     def _restore_authors(self):
         self.cleaned_data['authors'] = [unicode(x.id) for x in self.instance.authors.all()]
 
-    def save(self, *args, **kwargs):
+    def save(self, commit=True):
         # We need to update the Video.tags descriptor manually because
         # Django's model forms does not (django.forms.models.construct_instance)
         self.instance.tags = self.cleaned_data['tags']
-        return super(BulkEditVideoForm, self).save(*args, **kwargs)
+        instance = super(BulkEditVideoForm, self).save(commit=False)
+        if commit:
+            instance.save(update_index=False)
+            self.save_m2m()
+            instance._update_index = True
+            index = connections['default'].get_unified_index().get_index(
+                                                                 models.Video)
+            index._enqueue_update(instance)
+        return instance
+
+
+class BulkEditVideoFormSet(BaseModelFormSet):
+    def save_new_objects(self, commit):
+        return []
+
+    @property
+    def _qs_cache(self):
+        """
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
+                'categories': BulkEditVideoForm.base_fields[
+                                  'categories'].queryset._clone(
+                                      utils.SharedQuerySet),
+                'authors': BulkEditVideoForm.base_fields[
+                                  'authors'].queryset._clone(
+                                      utils.SharedQuerySet),
+            }
+        return self._real_qs_cache
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        form = super(BulkEditVideoFormSet, self)._construct_form(i, **kwargs)
+        form.fields['categories'].queryset = self._qs_cache['categories']
+        form.fields['authors'].queryset = self._qs_cache['authors']
+        return form
+
+    def clean(self):
+        BaseModelFormSet.clean(self)
+
+        if any(self.errors):
+            # don't bother doing anything if the form isn't valid
+            return
+
+        for form in list(self.deleted_forms):
+            form.cleaned_data[DELETION_FIELD_NAME] = False
+            form.instance.status = models.Video.REJECTED
+            form.instance.save()
+        bulk_edits = self.extra_forms[0].cleaned_data
+        for key in list(bulk_edits.keys()): # get the list because we'll be
+                                            # changing the dictionary
+            if not bulk_edits[key]:
+                del bulk_edits[key]
+        bulk_action = self.data.get('bulk_action', '')
+        if bulk_action:
+            bulk_edits['action'] = bulk_action
+        if bulk_edits:
+            for form in self.initial_forms:
+                if not form.cleaned_data['BULK']:
+                    continue
+                for key, value in bulk_edits.items():
+                    if key == 'action': # do something to the video
+                        method = getattr(self, 'action_%s' % value)
+                        method(form)
+                    elif key == 'tags':
+                        form.cleaned_data[key] = value
+                    elif key == 'categories':
+                        # categories append, not replace
+                        form.cleaned_data[key] = (
+                            list(form.cleaned_data[key]) +
+                            list(value))
+                    elif key == 'authors':
+                        form.cleaned_data[key] = value
+                    else:
+                        setattr(form.instance, key, value)
+
+        self.can_delete = False
+
+    def action_delete(self, form):
+        form.instance.status = models.Video.REJECTED
+
+    def action_approve(self, form):
+        form.instance.status = models.Video.ACTIVE
+
+    def action_unapprove(self, form):
+        form.instance.status = models.Video.UNAPPROVED
+
+    def action_feature(self, form):
+        form.instance.status = models.Video.ACTIVE
+        form.instance.last_featured = datetime.datetime.now()
+
+    def action_unfeature(self, form):
+        form.instance.last_featured = None
+
 
 VideoFormSet = modelformset_factory(models.Video,
                                     form=BulkEditVideoForm,
+                                    formset=BulkEditVideoFormSet,
                                     can_delete=True,
                                     extra=1)
 
@@ -505,49 +612,14 @@ class EditSettingsForm(forms.ModelForm):
             (2, 'Admins Only')))
 
     class Meta:
-        model = models.SiteLocation
-        exclude = ['site', 'status', 'admins', 'tier_name', 'hide_get_started']
+        model = models.SiteSettings
+        exclude = ['site', 'status', 'admins', 'hide_get_started']
 
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
             self.initial['title'] = self.instance.site.name
-        if (not models.SiteLocation.enforce_tiers()
-            or localtv.tiers.Tier.get().permit_custom_css()):
-            pass # Sweet, CSS is permitted.
-        else:
-            # Uh-oh: custom CSS is not permitted!
-            #
-            # To handle only letting certain paid users edit CSS,
-            # we do two things.
-            #
-            # 1. Cosmetically, we set the CSS editing box's CSS class
-            # to be 'hidden'. (We have some CSS that makes it not show
-            # up.)
-            css_field = self.fields['css']
-            css_field.label += ' (upgrade to enable this form field)'
-            css_field.widget.attrs['readonly'] = True
-            #
-            # 2. In validation, we make sure that changing the CSS is
-            # rejected as invalid if the site does not have permission
-            # to do that.
-
-    def clean_css(self):
-        css = self.cleaned_data.get('css')
-        # Does thes SiteLocation permit CSS modifications? If so,
-        # return the data the user inputted.
-        if (not models.SiteLocation.enforce_tiers() or
-            localtv.tiers.Tier.get().permit_custom_css()):
-            return css # no questions asked
-
-        # We permit the value if it's the same as self.instance has:
-        if self.instance.css == css:
-            return css
-
-        # Otherwise, reject the change.
-        self.data['css'] = self.instance.css
-        raise ValidationError("To edit CSS for your site, you have to upgrade.")
 
     def clean_logo(self):
         logo = self.cleaned_data.get('logo')
@@ -584,7 +656,7 @@ class EditSettingsForm(forms.ModelForm):
             sl.save_thumbnail_from_file(cf)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
-        models.SiteLocation.objects.clear_cache()
+        models.SiteSettings.objects.clear_cache()
         return sl
 
 class WidgetSettingsForm(forms.ModelForm):
@@ -720,7 +792,7 @@ class NewsletterSettingsForm(forms.ModelForm):
     
     class Meta:
         model = models.NewsletterSettings
-        exclude = ['sitelocation']
+        exclude = ['site_settings']
 
     def clean(self):
         if self.cleaned_data['repeat']:
@@ -759,29 +831,13 @@ class NewsletterSettingsForm(forms.ModelForm):
         return instance
 
 class CategoryForm(forms.ModelForm):
-    if localtv.settings.voting_enabled():
-        contest_mode = forms.BooleanField(label='Turn on Contest',
-                                          required=False)
+    parent = forms.models.ModelChoiceField(required=False,
+                                    queryset=models.Category.objects.filter(
+                                            site=settings.SITE_ID))
+
     class Meta:
         model = models.Category
-        if localtv.settings.voting_enabled():
-            exclude = ['site']
-        else:
-            exclude = ['site', 'contest_mode']
-
-    def __init__(self, *args, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
-
-        self.site = Site.objects.get_current()
-        self.fields['parent'].queryset = models.Category.objects.filter(
-            site=self.site)
-
-    def clean_contest_mode(self):
-        val = self.cleaned_data.get('contest_mode')
-        if val:
-            return datetime.datetime.now()
-        else:
-            return None
+        exclude = ['site']
 
     def _post_clean(self):
         forms.ModelForm._post_clean(self)
@@ -791,6 +847,30 @@ class CategoryForm(forms.ModelForm):
             self._update_errors(e.message_dict)
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
+    @property
+    def _qs_cache(self):
+        """
+        Returns a dictionary of related objects that can be shared for form
+        fields among the forms in the set.
+
+        """
+        # We use SharedQuerySet so that the form fields don't make fresh
+        # querysets when they generate their choices.
+        if not hasattr(self, '_real_qs_cache'):
+            self._real_qs_cache = {
+                'parent': CategoryForm.base_fields['parent'].queryset._clone(
+                                utils.SharedQuerySet),
+            }
+        return self._real_qs_cache
+
+    def _construct_form(self, i, **kwargs):
+        """
+        Use the same queryset for related objects on each form.
+
+        """
+        form = super(BaseCategoryFormSet, self)._construct_form(i, **kwargs)
+        form.fields['parent'].queryset = self._qs_cache['parent']
+        return form
 
     def clean(self):
         BaseModelFormSet.clean(self)
@@ -918,9 +998,9 @@ class AuthorForm(user_profile_forms.ProfileForm):
 
     def __init__(self, *args, **kwargs):
         user_profile_forms.ProfileForm.__init__(self, *args, **kwargs)
-        self.sitelocation = models.SiteLocation.objects.get_current()
+        self.site_settings = models.SiteSettings.objects.get_current()
         if self.instance.pk:
-            if self.sitelocation.user_is_admin(self.instance):
+            if self.site_settings.user_is_admin(self.instance):
                 self.fields['role'].initial = 'admin'
             else:
                 self.fields['role'].initial = 'user'
@@ -928,57 +1008,7 @@ class AuthorForm(user_profile_forms.ProfileForm):
             for field_name in ['name', 'logo', 'location',
                                'description', 'website']:
                 del self.fields[field_name]
-        ## Add a note to the 'role' help text indicating how many admins
-        ## are permitted with this kind of account.
-        tier = localtv.tiers.Tier.get()
-        if tier.admins_limit() is not None:
-            message = 'With a %s, you may have %d administrator%s.' % (
-                models.SiteLocation.objects.get_current().get_tier_name_display(),
-                tier.admins_limit(),
-                django.template.defaultfilters.pluralize(tier.admins_limit()))
-            self.fields['role'].help_text = message
 
-    def clean_role(self):
-        if models.SiteLocation.enforce_tiers():
-            future_role = self.cleaned_data['role']
-
-            looks_good = self._validate_role_with_tiers_enforcement(
-                future_role)
-            if not looks_good:
-                permitted_admins = localtv.tiers.Tier.get().admins_limit()
-                raise ValidationError("You already have %d admin%s in your site. Upgrade to have access to more." % (
-                    permitted_admins,
-                    django.template.defaultfilters.pluralize(permitted_admins)))
-
-        return self.cleaned_data['role']
-
-    def _validate_role_with_tiers_enforcement(self, future_role):
-        # If the user tried to create an admin, but the tier does not
-        # permit creating another admin, raise an error.
-        permitted_admins = localtv.tiers.Tier.get().admins_limit()
-
-        # Some tiers permit an unbounded number of admins. Then, anything goes.
-        if permitted_admins is None:
-            return True
-
-        # All non-admin values are permitted
-        if future_role !='admin':
-            return True
-
-        if self.instance and self.sitelocation.user_is_admin(
-            self.instance):
-            return True # all role values permitted if you're already an admin
-
-        # Okay, so now we know we are trying to make someone an admin in a
-        # tier where admins are limited.
-        #
-        # The question becomes: is there room for one more?
-        num_admins = localtv.tiers.number_of_admins_including_superuser()
-        if (num_admins + 1) <= permitted_admins:
-            return True
-
-        # Otherwise, gotta say no.
-        return False
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
@@ -1010,10 +1040,10 @@ class AuthorForm(user_profile_forms.ProfileForm):
         if self.cleaned_data.get('role'):
             if self.cleaned_data['role'] == 'admin':
                 if not author.is_superuser:
-                    self.sitelocation.admins.add(author)
+                    self.site_settings.admins.add(author)
             else:
-                self.sitelocation.admins.remove(author)
-            self.sitelocation.save()
+                self.site_settings.admins.remove(author)
+            self.site_settings.save()
         return author
 
 AuthorFormSet = modelformset_factory(User,
@@ -1065,7 +1095,7 @@ class AddFeedForm(forms.Form):
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
         try:
-            scraped_feed = auto_feed(url, api_keys=localtv.settings.API_KEYS)
+            scraped_feed = auto_feed(url, api_keys=API_KEYS)
             url = scraped_feed.url
         except CantIdentifyUrl:
             raise forms.ValidationError('It does not appear that %s is an '

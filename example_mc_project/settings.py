@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -16,8 +17,13 @@
 
 # Example settings for a Miro Community project
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
+USE_ES = bool(os.environ.get('MC_TEST_USE_ES', False))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -25,12 +31,25 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'example_mc_project.sl3',
-    }
-}
+import os
+if not os.environ.get('MC_TEST_MYSQL', False):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': 'example_mc_project.sl3',
+            'TEST_CHARSET': 'utf8'
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'miro_community_example',
+            'USER': 'root',
+            'HOST': '',
+            'TEST_CHARSET': 'utf8'
+            }
+        }
 
 # Comment these lines out to use a celery server.
 CELERY_ALWAYS_EAGER = True
@@ -41,6 +60,8 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # BROKER_USER = 'celery'
 # BROKER_PASSWORD = 'testing'
 # BROKER_VHOST = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -94,6 +115,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -128,7 +150,6 @@ UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
 UPLOADTEMPLATE_STATIC_ROOTS = [] # other directories which have static files
 UPLOADTEMPLATE_TEMPLATE_ROOTS = [] # other directories with templates
-UPLOADTEMPLATE_DISABLE_UPLOAD = lambda: not __import__('localtv.models').models.SiteLocation.objects.get_current().get_tier().enforce_permit_custom_template()
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -144,10 +165,10 @@ INSTALLED_APPS = (
     'django.contrib.comments',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
+    'django.contrib.markup',
     # Uncomment to use south migrations
     # 'south',
     'djpagetabs',
-    'djvideo',
     'localtv',
     'localtv.admin',
     'localtv.comments',
@@ -155,6 +176,8 @@ INSTALLED_APPS = (
     'localtv.inline_edit',
     'localtv.user_profile',
     'localtv.playlists',
+    'localtv.contrib.contests',
+    'djvideo',
     'registration',
     'tagging',
     'uploadtemplate',
@@ -164,9 +187,15 @@ INSTALLED_APPS = (
     'notification',
     'socialauth',
     'openid_consumer',
-    'paypal.standard.ipn',
-    'voting'
+    'daguerre',
+    'compressor',
+    'mptt',
 )
+
+if USE_SOUTH:
+    if 'south' not in INSTALLED_APPS:
+        INSTALLED_APPS = INSTALLED_APPS + ('south',)
+    SOUTH_TESTS_MIGRATE = True
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
@@ -177,6 +206,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     "localtv.context_processors.localtv",
+    "localtv.context_processors.browse_modules",
+    "localtv.contrib.contests.context_processors.contests",
 )
 
 # For debugging, don't redirect mistyped urls
@@ -219,8 +250,8 @@ AUTHENTICATION_BACKENDS = (
 AUTH_PROFILE_MODULE = 'user_profile.Profile'
 COMMENTS_APP = 'localtv.comments'
 
-FLOWPLAYER_SWF_URL = MEDIA_URL + 'swf/flowplayer-3.0.7.swf'
-FLOWPLAYER_JS_URL = MEDIA_URL + 'js/flowplayer-3.0.6.min.js'
+FLOWPLAYER_SWF_URL = STATIC_URL + 'localtv/swf/flowplayer-3.2.5.swf'
+FLOWPLAYER_JS_URL = STATIC_URL + 'localtv/js/extern/flowplayer-3.2.4.min.js'
 
 CACHE_BACKEND = 'locmem://'
 
@@ -230,10 +261,6 @@ VIMEO_API_SECRET = None
 
 # UStream key
 USTREAM_API_KEY = None
-
-# bit.ly keys
-BITLY_LOGIN = None
-BITLY_API_KEY = None
 
 # recaptcha keys
 RECAPTCHA_PUBLIC_KEY = None
@@ -245,14 +272,22 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
 
-import os
 # haystack search
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-    }
-}
+if USE_ES:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://localhost:9200/',
+            'INDEX_NAME': 'mirocommunity'
+            }
+        }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+            }
+        }
 
 # Facebook options
 FACEBOOK_APP_ID = None
@@ -264,9 +299,3 @@ FACEBOOK_CONNECT_DOMAIN = None
 # Twitter options
 TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
-
-# For debugging
-PAYPAL_TEST = bool(os.environ.get('MC_PAYPAL_REAL', False))
-LOCALTV_DISABLE_TIERS_ENFORCEMENT = True
-LOCALTV_SKIP_PAYPAL = True
-PAYPAL_RECEIVER_EMAIL = ''

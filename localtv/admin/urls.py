@@ -1,17 +1,17 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -88,8 +88,7 @@ urlpatterns += patterns(
     'localtv.admin.category_views',
     (r'^categories/$', 'categories',
      {}, 'localtv_admin_categories'),
-    (r'^categories/votes/([-\w]+)$', 'votes', {},
-     'localtv_admin_category_votes'))
+)
 
 urlpatterns += patterns(
     'localtv.admin.bulk_edit_views',
@@ -111,6 +110,8 @@ urlpatterns += patterns(
     (r'^themes/$', 'index', {}, 'uploadtemplate-index'),
     (r'^themes/delete/(\d+)$', 'delete', {}, 'uploadtemplate-delete'),
     (r'^themes/download/(\d+)$', 'download', {}, 'uploadtemplate-download'),
+    (r'^themes/unset_default$', 'unset_default', {},
+     'uploadtemplate-unset_default'),
     (r'^themes/set_default/(\d+)$', 'set_default', {},
      'uploadtemplate-set_default'))
 
@@ -125,11 +126,3 @@ urlpatterns += patterns(
     (r'^feeds/(\S+)/unapproved_user$', 'unapproved_user', {},
      'localtv_admin_feed_unapproved_user'))
 
-urlpatterns += patterns('localtv.admin.tiers',
-    (r'^upgrade/$',             'upgrade', {}, 'localtv_admin_tier'),
-    (r'^paypal_return/(?P<payment_secret>.+)/(?P<target_tier_name>[a-z_]+?)/$',             'paypal_return', {}, 'localtv_admin_paypal_return'),
-    (r'^begin_free_trial/(?P<payment_secret>.+?)/$',             'begin_free_trial', {}, 'localtv_admin_begin_free_trial'),
-    (r'^downgrade_confirm/$',             'downgrade_confirm', {}, 'localtv_admin_downgrade_confirm'),
-    (r'^confirmed_change_tier/$',             'confirmed_change_tier', {}, 'localtv_admin_confirmed_change_tier'),
-    (r'^ipn_endpoint/(?P<payment_secret>.+?)/$',             'ipn_endpoint', {}, 'localtv_admin_ipn_endpoint'),
-)

@@ -1,6 +1,7 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__layouts/100.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,7 +20,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 
-{% block title %}404 - Page not Found{% endblock %}
-{% block content %}
-  <h2 class="page_title">We're sorry, we couldn't find that page.</h2>
+{% block title %}{{ block.super }} - 404 - Page not Found{% endblock %}
+
+{% block main %}
+	<div class="page-content padded">
+		<div class="message error">We're sorry, we couldn't find that page.</div>
+	</div>
 {% endblock %}

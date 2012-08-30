@@ -1,17 +1,17 @@
-# Copyright 2011 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -25,10 +25,6 @@ ENABLE_ORIGINAL_VIDEO = not getattr(settings,
                                     'LOCALTV_DONT_LOG_REMOTE_VIDEO_HISTORY',
                                     None)
 ENABLE_CHANGE_STAMPS = getattr(settings, 'LOCALTV_ENABLE_CHANGE_STAMPS', False)
-VOTING_ENABLED = 'voting' in settings.INSTALLED_APPS
-USE_ZENDESK = getattr(settings, 'LOCALTV_USE_ZENDESK', False)
-DISABLE_TIERS_ENFORCEMENT = getattr(settings,
-                                    'LOCALTV_DISABLE_TIERS_ENFORCEMENT', False)
 SHOW_ADMIN_DASHBOARD = getattr(settings, 'LOCALTV_SHOW_ADMIN_DASHBOARD', True)
 SHOW_ADMIN_ACCOUNT_LEVEL = getattr(settings, 'LOCALTV_SHOW_ADMIN_ACCOUNT_LEVEL',
                                    True)
@@ -39,10 +35,3 @@ API_KEYS = {
     'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
     'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
 }
-
-
-def voting_enabled():
-    """
-    Returns a bool() indicating whether voting should be enabled on this site.
-    """
-    return VOTING_ENABLED

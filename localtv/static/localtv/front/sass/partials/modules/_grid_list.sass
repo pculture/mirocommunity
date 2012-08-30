@@ -1,0 +1,16 @@
+@import compass/utilities/general/clearfix
+@import compass/css3/box-sizing
+
+.grid-list
+	@extend .unstyled-list
+	+pie-clearfix
+
+.grid-item
+	width: 25%
+	float: left
+	@extend .padded
+	+box-sizing(border-box)
+
+@media screen and (max-width:$small-viewport-max)
+	.grid-item
+		width: 50%

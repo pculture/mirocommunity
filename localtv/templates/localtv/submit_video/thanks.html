@@ -1,6 +1,7 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__layouts/100.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,12 +19,14 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block title %}Thanks for submitting a video{% endblock %}
-{% block next_link %}{% endblock %}
-{% block content %}
-    {% if video %}
-    Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.
-    {% else %}
-    Thanks for submitting a video, our moderators will review it soon.
-    {% endif %}
+{% block title %}Thanks for submitting a video - {{ block.super }}{% endblock %}
+
+{% block main %}
+	<div class="padded">
+		{% if video %}
+			<div class="message success">Thanks for submitting a video.  You can see it <a id="next" href="{{ video.get_absolute_url }}">here</a>.</div>
+		{% else %}
+			<div class="message success">Thanks for submitting a video, our moderators will review it soon.</div>
+		{% endif %}
+	</div>
 {% endblock %}

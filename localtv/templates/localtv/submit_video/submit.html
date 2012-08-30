@@ -1,6 +1,7 @@
-{% extends "localtv/submit_video/base.html" %}
+{% extends "localtv/submit_video/__base.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,40 +19,41 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block form_action %}{% url localtv_submit_video %}{% endblock %}
-{% block pre-table %}
-  {% if was_duplicate %}
-    <h1>That video has already been submitted!</h1>
-    <div>
-      It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}.. sorry!
-      You can submit another video if you like.
-    </div>
-  {% endif %}
-{% endblock %}
-{% block table %}
-    {{ form.construction_hint}}
+{% load url from future %}
+{% load i18n %}
 
-  <tr>
-    <td>
-        {{ form.url.errors }}
-        <label for="id_url">Enter the URL of your video</label>
-        {{ form.url }}
-    </td>
-  </tr>
+{% block form_action %}{% url 'localtv_submit_video' %}{% endblock %}
+{% block form_method %}get{% endblock %}
+
+{% block inner_form %}
+	{% if was_duplicate %}
+		<div class="message error">
+			It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}... sorry! You can submit another video if you like.
+		</div>
+	{% endif %}
+
+	<div class="control-group{% if form.url.errors %} error{% endif %} x-large">
+		<label for="id_url">Enter the URL of your video</label>
+		<div class="controls">
+			{{ form.url }}
+			<div class="control-group-errors help-text">
+				{% if not was_duplicate %}{{ form.url.errors }}{% endif %}
+			</div>
+		</div>
+	</div>
 {% endblock %}
-{% block post-table %}
-  <div>
-    <h2>Helpful Hints for Submitting:</h2>
-    <ul>
-      <li>
-        The URL can be from YouTube, Vimeo, or blip.tv.
-        <span class="url">http://www.youtube.com/watch?v=wuGbLY-l930</span>
-      </li>
-      <li>If there is a video with &lt;embed&gt; code available, just enter the URL of the page containing the video and you will be prompted for &lt;embed&gt; code on the next screen.</li>
-      <li>
-        The URL can also be a video file itself.
-        <span class="url">http://www.ted.com/clips.mov</span>
-      </li>
-    </ul>
-  </div>
+
+{% block post_form %}
+	<h2>Helpful Hints for Submitting:</h2>
+	<ul>
+		<li>
+			The URL can be from YouTube, Vimeo, or blip.tv.
+			<span class="url">http://www.youtube.com/watch?v=wuGbLY-l930</span>
+		</li>
+		<li>If there is a video with &lt;embed&gt; code available, just enter the URL of the page containing the video and you will be prompted for &lt;embed&gt; code on the next screen.</li>
+		<li>
+			The URL can also be a video file itself.
+			<span class="url">http://www.ted.com/clips.mov</span>
+		</li>
+	</ul>
 {% endblock %}

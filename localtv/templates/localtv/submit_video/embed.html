@@ -1,6 +1,7 @@
 {% extends "localtv/submit_video/second.html" %}
+
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -19,41 +20,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% block form_action %}{% url localtv_submit_embedrequest_video %}{% endblock %}
-{% block form %}
-    <tr>
-      <td>
-        {{ form.name.errors }}
-        {{ form.name.label_tag }}
-        {{ form.name }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.embed.errors }}
-        {{ form.embed.label_tag }}
-        {{ form.embed }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {{ form.thumbnail_file.errors }}
-        {{ form.thumbnail_file.label_tag }}
-        {{ form.thumbnail_file }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <div>or</div>
-        {{ form.thumbnail.errors }}
-        {{ form.thumbnail.label_tag }}
-        {{ form.thumbnail }}
-      </td>
-      </tr>
-      <tr>
-        <td>
-        {{ form.description.errors }}
-        {{ form.description.label_tag }}
-        {{ form.description }}
-        </td>
-      </tr>
+
+{% block inner_form %}
+	{% with field=form.name %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.embed %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.thumbnail_file %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.thumbnail %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.description %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{{ block.super }}
 {% endblock %}

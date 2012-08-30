@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,7 @@ import datetime
 from django.core.management.base import NoArgsCommand
 from django.template import Context, loader
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv import utils
 
 class Command(NoArgsCommand):
@@ -36,25 +36,25 @@ class Command(NoArgsCommand):
                 'admin_queue_weekly')
 
     def send_email(self, delta, time_period, notice_type):
-        sitelocation = SiteLocation.objects.get_current()
+        site_settings = SiteSettings.objects.get_current()
 
         previous = datetime.datetime.now() - delta
 
         queue_videos = Video.objects.filter(
             status=Video.UNAPPROVED,
-            site=sitelocation.site,
+            site=site_settings.site,
         )
         new_videos = queue_videos.filter(when_submitted__gte=previous)
 
         if new_videos.count():
-            subject = 'Video Submissions for %s' % sitelocation.site.name
+            subject = 'Video Submissions for %s' % site_settings.site.name
             t = loader.get_template(
                 'localtv/submit_video/review_status_email.txt')
             c = Context({'new_videos': new_videos,
                          'queue_videos': queue_videos,
                          'time_period': time_period,
-                         'site': sitelocation.site})
+                         'site': site_settings.site})
             message = t.render(c)
             utils.send_notice(notice_type,
                              subject, message,
-                             sitelocation=sitelocation)
+                             site_settings=site_settings)

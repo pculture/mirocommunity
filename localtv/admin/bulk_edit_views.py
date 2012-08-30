@@ -1,64 +1,50 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-
-from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
-from django.forms.formsets import DELETION_FIELD_NAME
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
 from localtv.decorators import require_site_admin
-from localtv.models import Video, Category, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.admin import forms
 from localtv.utils import SortHeaders
 
-try:
-    from operator import methodcaller
-except ImportError:
-    def methodcaller(name):
-        def wrapper(obj):
-            return getattr(obj, name)()
-        return wrapper
-
 @require_site_admin
 @csrf_protect
-def bulk_edit(request):
+def bulk_edit(request, formset_class=forms.VideoFormSet):
     if ('just_the_author_field' in request.GET and 'video_id' in request.GET):
         # generate just the particular form that the user wants
         template_data = {}
         form_prefix = request.GET['just_the_author_field']
         video = get_object_or_404(Video, pk=int(request.GET['video_id']))
-        cache_for_form_optimization = {}
-        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix,
-                                       cache_for_form_optimization=cache_for_form_optimization)
+        form = forms.BulkEditVideoForm(instance=video, prefix=form_prefix)
         template_data['form'] = form
         template = 'localtv/admin/bulk_edit_author_widget.html'
         return render_to_response(template,
                                   template_data,
                                   context_instance=RequestContext(request))
 
-    sitelocation = SiteLocation.objects.get_current()
+    site_settings = SiteSettings.objects.get_current()
     videos = Video.objects.filter(status=Video.ACTIVE,
-                                  site=sitelocation.site)
+                                  site=site_settings.site)
 
     if 'filter' in request.GET:
         filter_type = request.GET['filter']
@@ -133,69 +119,10 @@ def bulk_edit(request):
         page = video_paginator.page(video_paginator.num_pages)
 
     if request.method == 'POST':
-        formset = forms.VideoFormSet(request.POST, request.FILES,
-                                     queryset=page.object_list)
+        formset = formset_class(request.POST, request.FILES,
+                                queryset=page.object_list)
         if formset.is_valid():
-            tier_prevented_some_action = False
-            tier = sitelocation.get_tier()
-            videos_approved_so_far = 0
-
-            for form in list(formset.deleted_forms):
-                form.cleaned_data[DELETION_FIELD_NAME] = False
-                form.instance.status = Video.REJECTED
-                form.instance.save()
-            bulk_edits = formset.extra_forms[0].cleaned_data
-            for key in list(bulk_edits.keys()): # get the list because we'll be
-                                                # changing the dictionary
-                if not bulk_edits[key]:
-                    del bulk_edits[key]
-            bulk_action = request.POST.get('bulk_action', '')
-            if bulk_action:
-                bulk_edits['action'] = bulk_action
-            if bulk_edits:
-                for form in formset.initial_forms:
-                    if not form.cleaned_data['BULK']:
-                        continue
-                    for key, value in bulk_edits.items():
-                        if key == 'action': # do something to the video
-                            if value == 'delete':
-                                form.instance.status = Video.REJECTED
-                            elif value == 'approve':
-                                if (sitelocation.enforce_tiers() and
-                                    tier.remaining_videos() <= videos_approved_so_far):
-                                    tier_prevented_some_action = True
-                                else:
-                                    form.instance.status = Video.ACTIVE
-                                    videos_approved_so_far += 1
-                            elif value == 'unapprove':
-                                form.instance.status = Video.UNAPPROVED
-                            elif value == 'feature':
-                                if not form.instance.status == Video.ACTIVE:
-                                    if (sitelocation.enforce_tiers() and
-                                        tier.remaining_videos() <= videos_approved_so_far):
-                                        tier_prevented_some_action = True
-                                    else:
-                                        form.instance.status = Video.ACTIVE
-                                if form.instance.status == Video.ACTIVE:
-                                    form.instance.last_featured = datetime.now()
-                            elif value == 'unfeature':
-                                form.instance.last_featured = None
-                        elif key == 'tags':
-                            form.cleaned_data[key] = value
-                        elif key == 'categories':
-                            # categories append, not replace
-                            form.cleaned_data[key] = (
-                                list(form.cleaned_data[key]) +
-                                list(value))
-                        elif key == 'authors':
-                            form.cleaned_data[key] = value
-                        else:
-                            setattr(form.instance, key, value)
-            formset.forms = formset.initial_forms # get rid of the extra bulk
-                                                  # edit form
-            formset.can_delete = False
             formset.save()
-            path_with_success = None
             if 'successful' in request.GET:
                 path_with_success = request.get_full_path()
             else:
@@ -205,21 +132,15 @@ def bulk_edit(request):
                 else:
                     path_with_success = path + '?successful'
 
-            if tier_prevented_some_action:
-                path = path_with_success + '&not_all_actions_done'
-            else:
-                path = path_with_success
-
-            return HttpResponseRedirect(path)
+            return HttpResponseRedirect(path_with_success)
     else:
-        formset = forms.VideoFormSet(queryset=page.object_list)
+        formset = formset_class(queryset=page.object_list)
 
     return render_to_response('localtv/admin/bulk_edit.html',
                               {'formset': formset,
                                'headers': headers,
                                'search_string': search_string,
                                'page': page,
-                               'categories': Category.objects.filter(
-                site=sitelocation.site),
-                               'users': User.objects.order_by('username')},
+                               'categories': formset._qs_cache['categories'],
+                               'users': formset._qs_cache['authors']},
                               context_instance=RequestContext(request))

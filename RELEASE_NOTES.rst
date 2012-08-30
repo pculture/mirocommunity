@@ -1,3 +1,25 @@
+Miro Community 1.9 Release Notes
+================================
+
+* Renamed :class:`~localtv.SiteLocation` to
+  :class:`~localtv.SiteSettings`.
+* Video submission extra_init hack removed and replaced with
+  class-based views. Though these are not strictly
+  backwards-compatible from the backend, the user experience and
+  template contexts should be the same.
+* New responsive front-end styles using sass/compass.
+* New documentation, esp. as regards contributing to miro community.
+* Switched to Django 1.4.
+* Switched from django-voting to built-in contrib voting functionality.
+* Purged all tiers-related code.
+* Switched to django-daguerre for thumbnail resizing.
+* Added read-only tastypie API for some aspects of Miro Community.
+* Improved/simplified search code.
+* Set up Category model to use django-mptt.
+* Stopped using bitly to store long file urls.
+* Moved :class:`Video` validation to the model class from the :func:`video_from_vidscraper_video` task.
+
+
 Miro Community 1.8.5 Release Notes
 ==================================
 
@@ -9,7 +31,6 @@ Miro Community 1.8.4 Release Notes
 * Corrected database referencing during source imports.
 * Eliminated a thumbnail vs. source import race condition which was
   re-marking videos as pending.
-
 
 Miro Community 1.8.3 Release Notes
 ==================================
@@ -54,21 +75,37 @@ Miro Community 1.8 Release Notes
 New Features
 ++++++++++++
 
-* :class:`Feed imports <localtv.FeedImport>` and :class:`Search imports <localtv.SearchImport>` are now tracked in the database.
-* Imports are handled asynchronously with :mod:`celery`, for a more responsive user experience.
-* :mod:`mirocommunity` now uses Django 1.3, including django.contrib.staticfiles. See the `Django 1.3 release notes`_ for more details.
+* :class:`Feed imports <localtv.FeedImport>` and :class:`Search
+  imports <localtv.SearchImport>` are now tracked in the database.
+* Imports are handled asynchronously with :mod:`celery`, for a more
+  responsive user experience.
+* :mod:`mirocommunity` now uses Django 1.3, including
+  ``django.contrib.staticfiles``. See the `Django 1.3 release notes`_
+  for more details.
 
 .. _Django 1.3 release notes: https://docs.djangoproject.com/en/dev/releases/1.3/
+
 
 Backwards-incompatible changes
 ++++++++++++++++++++++++++++++
 
-* ``localtv.context_processor`` is now located at ``localtv.context_processors.localtv`` and no longer adds ``request`` to the context. The request can be included in the context by adding ``django.core.context_processors.request`` to the ``TEMPLATE_CONTEXT_PROCESSORS`` setting.
-* :meth:`request.sitelocation` has been removed in favor of the more explicit :meth:`SiteLocation.objects.get_current`.
-* ``localtv.FixAJAXMiddleware`` was moved to ``localtv.middleware.FixAJAXMiddleware``.
-* ``localtv.SiteLocationMiddleware`` was moved to ``localtv.middleware.UserIsAdminMiddleware`` and no longer provides a shortcut method for fetching :class:`~localtv.SiteLocation`\ s on the request.
+* ``localtv.context_processor`` is now located at
+  ``localtv.context_processors.localtv`` and no longer adds
+  ``request`` to the context. The request can be included in the
+  context by adding ``django.core.context_processors.request`` to the
+  ``TEMPLATE_CONTEXT_PROCESSORS`` setting.
+* :meth:`request.sitelocation` has been removed in favor of the more
+  explicit :meth:`SiteLocation.objects.get_current`.
+* ``localtv.FixAJAXMiddleware`` was moved to
+  ``localtv.middleware.FixAJAXMiddleware``.
+* ``localtv.SiteLocationMiddleware`` was moved to
+  ``localtv.middleware.UserIsAdminMiddleware`` and no longer provides
+  a shortcut method for fetching :class:`~localtv.SiteLocation`\ s on
+  the request.
+
 
 Other changes
 +++++++++++++
 
-* Most code related to scraping videos was pushed back upstream to :mod:`vidscraper`.
+* Most code related to scraping videos was pushed back upstream to
+  :mod:`vidscraper`.

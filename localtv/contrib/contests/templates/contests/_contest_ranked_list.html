@@ -1,0 +1,48 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% comment %}
+This template assumes that {{ video_list }} is a list of videos in ranked
+order with the first video being #1.
+{% endcomment %}
+
+{% load i18n daguerre %}
+{% load url from future %}
+
+<ul class="media-grid-4 video-grid">
+	{% for video in video_list %}
+		<li class="media-item video-grid-item" data-content="
+			{% filter force_escape %}
+				{% if video.description %}
+					<div class="popover-normal-text">
+						{{ video.description|safe }}
+					</div>
+				{% endif %}
+				{% with video as instance %}
+					<p class="byline">{% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}</p>
+				{% endwith %}
+			{% endfilter %}
+		">
+			{% include "localtv/_video_grid_item_inner.html" %}
+			<div class="media-item-badge">
+				{{ forloop.counter }}
+			</div>
+		</li>
+	{% endfor %}
+</ul>

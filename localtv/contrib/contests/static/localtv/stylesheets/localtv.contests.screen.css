@@ -1,0 +1,14 @@
+/* Module Styles */
+.upvote, .downvote { height: auto; font-size: 20px; line-height: 24px; font-weight: bold; }
+.upvote > .vote-text, .downvote > .vote-text { display: inline-block; width: 24px; height: 24px; text-indent: -9999px; background-position: center center; background-repeat: no-repeat; }
+
+.upvote > .vote-text { background-image: url('../images/glyphicons_343_thumbs_up.png?1343954396'); }
+
+.downvote > .vote-text { background-image: url('../images/glyphicons_344_thumbs_down.png?1343954396'); }
+
+.upvote { width: 100%; }
+
+[data-downvotes="1"] { overflow: hidden; *zoom: 1; }
+[data-downvotes="1"] > .upvote, [data-downvotes="1"] > .downvote { width: 49%; }
+[data-downvotes="1"] > .upvote { float: left; }
+[data-downvotes="1"] > .downvote { float: right; }

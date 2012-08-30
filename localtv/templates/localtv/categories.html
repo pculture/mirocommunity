@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -18,28 +18,45 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs %}
-{% block content %}
-  <h2 class="page_title">Categories</h2>
-  <div class="pag">
-    {% if page_obj.has_other_pages %}
-    <b>Pages</b>
-    {% pagetabs page_obj %}
-    {% endif %}
-  </div>
-  <dl class="cat_list">
-    {% for category in category_list %}
-    <dt>
-      <a href="{{ category.get_absolute_url }}" class="med_button"><span>{{ category.name }}</span></a>
-      {% with category.approved_set.count as count %}
-      <span class="amount">({{ count }} Video{{count|pluralize }})</span>
-      {% endwith %}
-    </dt>
-    <dd>
-      {% for subcat in category.child_set.all|slice:":3" %}
-      <a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}
-      {% endfor %}
-    </dd>
-    {% endfor %}
-  </dl>
+{% load pagetabs daguerre i18n %}
+
+{% block title %}{{ block.super }} - Categories{% endblock %}
+
+{% block main %}
+	<header class="page-header">
+	  <h1 class="page-title">{% trans "Categories" %}</h1>
+	</header>
+	<div class="padded page-content">
+		<div class="pagination upper">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+		<ul class="grid-list card-list">
+			{% for category in category_list %}
+				<li class="grid-item card">
+					<a href="{{ category.get_absolute_url }}" class="card-link">
+						<header class="card-header">
+							<span class="card-title">{{ category.name }}</span>
+							{% with category.approved_set.count as count %}
+								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
+							{% endwith %}
+						</header>
+						<div class="card-figure">
+							<ul class="tile-box">
+								{% for video in category.approved_set|slice:"0:8" %}
+									<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
+								{% endfor %}
+							</ul>
+						</div>
+					</a>
+					<div class="card-details">
+						{% for subcat in category.child_set.all|slice:":3" %}
+							{% if forloop.first %}{% trans "Subcategories" %}: {% endif %}<a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}
+						{% endfor %}
+					</div>
+				</li>
+			{% endfor %}
+		</ul>
+	</div>
 {% endblock %}

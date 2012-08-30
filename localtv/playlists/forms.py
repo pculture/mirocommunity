@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -36,7 +37,7 @@ class PlaylistForm(forms.ModelForm):
             return value
         if models.Playlist.objects.filter(**{
                 field: value,
-                'user': self.instance.user}).count():
+                'user': self.instance.user}).exists():
             raise forms.ValidationError(
                 "A playlist with that %s already exists" % field)
         return value
@@ -54,7 +55,8 @@ class BasePlaylistFormSet(BulkFormSetMixin, BaseModelFormSet):
 PlaylistFormSet = modelformset_factory(models.Playlist,
                                        formset=BasePlaylistFormSet,
                                        exclude=['name', 'description', 'slug',
-                                                'user', 'items', 'status'],
+                                                'user', 'items', 'status',
+                                                'site'],
                                        extra=0,
                                        can_delete=True)
 # just used for the ordering

@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -26,6 +27,7 @@ class Playlist(models.Model):
     WAITING_FOR_MODERATION = 1
     PUBLIC = 2
     status = models.IntegerField(default=PRIVATE)
+    site = models.ForeignKey('sites.Site')
     name = models.CharField(
         max_length=80, verbose_name='Name')
     slug = models.SlugField(
@@ -133,18 +135,18 @@ class PlaylistItem(models.Model):
 
 def send_notification(sender, instance, raw, created, **kwargs):
     if instance.status == Playlist.WAITING_FOR_MODERATION:
-        from localtv.models import SiteLocation
+        from localtv.models import SiteSettings
         from localtv.utils import send_notice
 
-        sitelocation = SiteLocation.objects.get_current()
+        site_settings = SiteSettings.objects.get_current()
         t = loader.get_template('localtv/playlists/notification_email.txt')
         c = Context({ 'playlist': instance,
-                      'sitelocation': sitelocation})
+                      'site_settings': site_settings})
         subject = '[%s] %s asked for a playlist to be public: %s' % (
-            sitelocation.site.name, instance.user.username, instance.name)
+            site_settings.site.name, instance.user.username, instance.name)
         message = t.render(c)
 
         send_notice('admin_new_playlist', subject, message,
-                    sitelocation=SiteLocation.objects.get_current())
+                    site_settings=SiteSettings.objects.get_current())
 
 post_save.connect(send_notification, sender=Playlist)

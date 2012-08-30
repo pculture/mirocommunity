@@ -1,4 +1,22 @@
 # -*- coding: utf-8 -*-
+
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2011, 2012 Participatory Culture Foundation
+#
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
@@ -210,10 +228,10 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'embed_code': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'feed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Feed']", 'null': 'True', 'blank': 'True'}),
-            'file_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'file_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'file_url_length': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'file_url_mimetype': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'flash_enclosure_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'flash_enclosure_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'guid': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -228,7 +246,7 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'video_service_user': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '250', 'blank': 'True'}),
-            'website_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'website_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_approved': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'when_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'when_published': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

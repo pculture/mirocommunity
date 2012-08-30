@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -19,7 +20,6 @@ import hashlib
 import time
 
 from django import forms
-from django.conf import settings
 from django.core.cache import cache
 from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
@@ -37,7 +37,7 @@ class LiveSearchForm(forms.Form):
         (LATEST, _('Latest')),
         (RELEVANT, _('Relevant')),
     )
-    q = forms.CharField()
+    query = forms.CharField()
     order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST,
                                  required=False)
 
@@ -46,7 +46,7 @@ class LiveSearchForm(forms.Form):
 
     def _get_cache_key(self):
         return 'localtv-livesearch-%s' % (
-            hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
+            hashlib.md5('%(query)s-%(order_by)s' % self.cleaned_data
                         ).hexdigest())
 
     def get_results(self):
@@ -54,7 +54,7 @@ class LiveSearchForm(forms.Form):
         results = cache.get(cache_key)
         if results is None:
             finish_by = time.time() + 20
-            search_results = auto_search(self.cleaned_data['q'],
+            search_results = auto_search(self.cleaned_data['query'],
                                   order_by=self.cleaned_data['order_by'],
                                   api_keys=API_KEYS)
             results = []

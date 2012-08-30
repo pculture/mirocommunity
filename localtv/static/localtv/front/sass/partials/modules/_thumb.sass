@@ -1,0 +1,12 @@
+$thumb-border-radius: 3px !default
+$thumb-background-color: black !default
+
+.video-thumb-wrapper
+	display: block
+	border: 3px solid $thumb-background-color
+	background: $thumb-background-color
+	+border-radius($thumb-border-radius)
+	overflow: hidden
+	& > img
+		width: 100%
+		display: block

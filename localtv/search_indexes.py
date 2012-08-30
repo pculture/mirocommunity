@@ -1,16 +1,17 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,9 +35,11 @@ from localtv.tasks import haystack_update, haystack_remove
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 #: We use a placeholder value because support for filtering on null values is
-#: lacking. We use ``datetime.max`` rather than ``datetime.min`` because whoosh
-#: doesn't support datetime values before 1900.
-DATETIME_NULL_PLACEHOLDER = datetime.max
+#: lacking. We use January 1st, 1900 because Whoosh doesn't support datetime
+#: values earlier than that, but we want to keep the videos with no value
+#: sorted last. This should be fine since we're not dealing with youtube
+#: videos uploaded in 1899.
+DATETIME_NULL_PLACEHOLDER = datetime(1900, 1, 1)
 
 
 class QueuedSearchIndex(indexes.SearchIndex):

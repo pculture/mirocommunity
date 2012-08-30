@@ -32,7 +32,7 @@ h2 {
 font-size: 18px;
 }
 
-a { 
+a {
 text-decoration: none;
 text-shadow: #eee 1px 1px 0px ;
 outline: none;
@@ -2156,6 +2156,11 @@ padding: 20px;
 overflow: auto;
 }
 
+#author_comments {
+margin-top: 27px;
+padding: 20px;
+}
+
 #author_info h1, #category_info h1 {
     font-size: 200%;
 }
@@ -2390,6 +2395,11 @@ clear: both !important;
 margin-top: 30px;
 }
 
+ul#author-comments {
+clear: both !important;
+margin-top: 30px;
+}
+
 ul#comments li {
 display: block !important;
 clear: both !important;
@@ -2427,6 +2437,51 @@ ul#comments li .comment-body{
 float: left;
 padding: 25px 30px 0px 30px;
 width: 349px;
+border-left: 1px solid #f7f7f7;
+background: url(../images/comment-bg.png) right top no-repeat;
+}
+
+ul#comments li .comment-body-highlight {
+float: left;
+padding: 25px 30px 0px 30px;
+width: 349px;
+border-left: 1px solid #f7f7f7;
+background-color: #cce5ff;
+}
+
+ul#author-comments li {
+display: block !important;
+clear: both !important;
+width: 295px !important;
+margin-bottom: 15px;
+padding-bottom: 15px;
+float: left;
+border-top: 1px solid #eee;
+}
+
+ul#author-comments li .comment-poster{
+float: left;
+width: 80px;
+font-weight: bold;
+margin-right: 0px;
+padding: 25px 0 0px 0;
+line-height: 1.5em;
+padding-bottom: 10px;
+}
+
+ul#author-comments li .comment-poster span {
+display: block;
+font-weight: normal;
+font-style: italic;
+color: #999;
+font-size: 85%;
+padding-bottom: 10px;
+}
+
+ul#author-comments li .comment-body{
+float: left;
+padding: 25px 10px 0px 10px;
+width: 190px;
 border-left: 1px solid #f7f7f7;
 background: url(../images/comment-bg.png) right top no-repeat;
 }
@@ -3056,7 +3111,7 @@ width: 540px;
 
 #tags ul.meta_listing li.item{
 border-bottom: 1px solid #eee;
-padding: 10px 0 !important; 
+padding: 10px 0 !important;
 clear: both;
 float: left;
 width: 540px;
@@ -3095,7 +3150,7 @@ padding: 15px;
 min-height: 220px;
 }
 
-.comment-field label{ 
+.comment-field label{
 display: none;
 }
 
@@ -3155,7 +3210,7 @@ margin: 21px;
 }
 
 #seperate{
-    float: left;	
+    float: left;
     margin: 0px 0 0 0px;
 }
 

@@ -1,6 +1,6 @@
-{% extends "localtv/base.html" %}
+{% extends "localtv/__base.html" %}
 {% comment %}
-Copyright 2009 - Participatory Culture Foundation
+Copyright 2012 - Participatory Culture Foundation
 
 This file is part of Miro Community.
 
@@ -22,5 +22,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{{ block.super }} - {{ flatpage.title }}{% endblock %}
 
 {% block content %}
-{{ flatpage.content }}
+	<header class="page-header">
+		<h1 class="page-title">{{ flatpage.title }}</h1>
+	</header>
+	<div class="page-content padded">
+		{{ flatpage.content }}
+	</div>
 {% endblock %}

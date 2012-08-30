@@ -20,23 +20,15 @@
 {% block extrahead %}
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/dashboard.css" />
 <script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
-{% if not sitelocation.should_show_dashboard %}
+{% if not site_settings.should_show_dashboard %}
 <meta http-equiv="refresh" content="0; url={% url localtv_admin_approve_reject %}">
 {% endif %}
 {% endblock extrahead %}
-{% block body_class %}admin_dash {% if sitelocation.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
+{% block body_class %}admin_dash {% if site_settings.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
 {% block content %}
-{% if sitelocation.should_show_dashboard %}
+{% if site_settings.should_show_dashboard %}
 <div id="dashboard">
 <h1 id="hdr_activity">Activity</h1>
-<div id="video_limit">
-  <h2>You've used <strong>{{ total_count }}</strong> of your <strong>{{ sitelocation.get_tier.videos_limit }}</strong> video limit.</h2>
-  <div id="limit_bar">
-  <div id="limit_progress" style="width: {{ percent_videos_used }}%;">
-    <a href="{% url localtv_admin_tier %}"><em class="icon"></em>Upgrade</a>
-  </div><!-- // limit_progress -->
-  </div><!-- // limit_bar -->
-</div><!-- // video_limit -->
 
 <div class="clear"></div>
 <div id="account_stats">

@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2009, 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -36,15 +37,15 @@ class CommentForm(comment_forms.CommentForm):
                               max_length=comment_forms.COMMENT_MAX_LENGTH)
     email = forms.EmailField(label=_("Email address"),
                              required=False)
-    if ReCaptchaField and not settings.DEBUG and \
-            settings.RECAPTCHA_PRIVATE_KEY:
+    if (ReCaptchaField and not settings.DEBUG and
+        getattr(settings, 'RECAPTCHA_PRIVATE_KEY', '')):
         captcha = ReCaptchaField()
 
     def __init__(self, target_object, data=None, initial=None):
         comment_forms.CommentForm.__init__(self, target_object, data, initial)
         if 'captcha' in self.fields and data and 'user' in data:
-            from localtv.models import SiteLocation # avoid circular import
-            if SiteLocation.objects.get_current().user_is_admin(data['user']):
+            from localtv.models import SiteSettings # avoid circular import
+            if SiteSettings.objects.get_current().user_is_admin(data['user']):
                 del self.fields['captcha']
 
 class BulkModerateForm(forms.ModelForm):

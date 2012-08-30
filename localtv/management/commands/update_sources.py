@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -19,14 +20,10 @@ from localtv.management import site_too_old
 
 
 class Command(NoArgsCommand):
-
-    args = ''
-
     def handle_noargs(self, **options):
         if site_too_old():
             return
 
-        from localtv import tasks
+        from localtv.tasks import update_sources, CELERY_USING
         
-        tasks.update_sources.delay(
-            using=tasks.CELERY_USING)
+        update_sources.delay(using=CELERY_USING)

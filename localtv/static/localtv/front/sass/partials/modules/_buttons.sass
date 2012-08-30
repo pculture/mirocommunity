@@ -1,0 +1,25 @@
+@import compass/css3/images
+@import compass/css3/box-shadow
+@import compass/css3/box-sizing
+@import compass/css3/border-radius
+
+.button
+	border: 1px solid
+	text-align: center
+	+box-sizing(border-box)
+	line-height: $base-line-height
+	+border-radius(5px)
+	margin: 0
+	padding: $base-line-height * 0.25 $base-line-height * 0.5
+	height: $base-line-height + $base-line-height * 0.5 + 2px
+	display: inline-block
+	overflow: hidden
+
+.button-wide
+	@extend .button
+	display: block
+	line-height: 2 * $base-line-height
+	height: 2 * $base-line-height + $base-line-height * 0.5 + 2px
+
+.button-dark
+	@extend .button

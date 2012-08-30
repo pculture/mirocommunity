@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -18,14 +19,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
 from django.db.models import Count
-from django.http import (Http404, HttpResponseRedirect,
-                         HttpResponsePermanentRedirect)
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
-from django.views.generic.list_detail import object_list
+from django.views.generic import ListView
 
-from localtv.models import Video, SiteLocation
+from localtv.models import Video, SiteSettings
 from localtv.utils import SortHeaders
 
 from localtv.playlists import forms
@@ -33,10 +33,10 @@ from localtv.playlists.models import Playlist
 
 def playlist_enabled(func):
     def wrapper(request, *args, **kwargs):
-        sitelocation = SiteLocation.objects.get_current()
-        if not sitelocation.playlists_enabled:
+        site_settings = SiteSettings.objects.get_current()
+        if not site_settings.playlists_enabled:
             raise Http404
-        if sitelocation.playlists_enabled == 2 and \
+        if site_settings.playlists_enabled == 2 and \
                 not request.user_is_admin():
             raise Http404
         return func(request, *args, **kwargs)
@@ -131,6 +131,7 @@ def index(request):
                 request.POST = POST
             form = forms.PlaylistForm(request.POST,
                                       instance=Playlist(
+                    site=SiteSettings.objects.get_current().site,
                     user=request.user))
             if form.is_valid():
                 playlist = form.save()
@@ -147,27 +148,38 @@ def index(request):
                                'formset': formset},
                               context_instance=RequestContext(request))
 
-@playlist_enabled
-def view(request, pk, slug=None, count=15):
-    """
-    Displays the videos of a given playlist.
-    """
-    playlist = get_object_or_404(Playlist,
-                                 pk=pk)
-    if playlist.status != Playlist.PUBLIC:
-        if not request.user_is_admin() and \
-                request.user != playlist.user:
-            raise Http404
-    if request.path != playlist.get_absolute_url():
-        return HttpResponsePermanentRedirect(playlist.get_absolute_url())
-    return object_list(
-        request=request, queryset=playlist.video_set,
-        paginate_by=count,
-        template_name='localtv/playlists/view.html',
-        allow_empty=True,
-        template_object_name='video',
-        extra_context={'playlist': playlist,
-                       'video_url_extra': '?playlist=%i' % playlist.pk})
+
+class PlaylistView(ListView):
+    allow_empty = True
+    context_object_name = 'videos'
+
+    def get_paginate_by(self, queryset):
+        return 15 if 'count' not in self.kwargs else self.kwargs['count']
+
+    def get_queryset(self):
+        return self.playlist.video_set
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(PlaylistView, self).get_context_data(*args, **kwargs)
+        context.update({'playlist': self.playlist,
+                        'video_url_extra': '?playlist=%i' % self.playlist.pk})
+        return context
+
+    def get_template_names(self):
+        return ('localtv/playlists/view.html', 'localtv/video_listing_playlist.html')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.playlist = get_object_or_404(Playlist, pk=args[0])
+        if self.playlist.status != Playlist.PUBLIC:
+            if not request.user_is_admin() and \
+                    request.user != self.playlist.user:
+                raise Http404
+        if request.path != self.playlist.get_absolute_url():
+            return HttpResponseRedirect(self.playlist.get_absolute_url())
+        return super(PlaylistView, self).dispatch(request, *args, **kwargs)
+
+
+view = playlist_enabled(PlaylistView.as_view())
 
 
 @playlist_enabled

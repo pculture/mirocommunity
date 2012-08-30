@@ -1,7 +1,8 @@
 # encoding: utf-8
 
-# This file is part of Miro Community.
-# Copyright (C) 2011 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -16,7 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -24,7 +24,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     depends_on = (
-        ('localtv', '0008_add_profile'),
+        ('localtv', '0028_remove_email_settings'),
     )
 
     def forwards(self, orm):

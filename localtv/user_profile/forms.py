@@ -1,5 +1,6 @@
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -68,7 +69,7 @@ class ProfileForm(forms.ModelForm):
         username = self.cleaned_data['username']
         if username == force_unicode(self.instance.username): # no change
             return username
-        if User.objects.filter(username=username).count():
+        if User.objects.filter(username=username).exists():
             raise forms.ValidationError('That username is already taken.')
         return username
 
@@ -128,8 +129,8 @@ class NotificationsForm(forms.Form):
         forms.Form.__init__(self, *args, **kwargs)
         if self.instance:
             field = self.fields['notifications']
-            sitelocation = models.SiteLocation.objects.get_current()
-            if sitelocation.user_is_admin(self.instance):
+            site_settings = models.SiteSettings.objects.get_current()
+            if site_settings.user_is_admin(self.instance):
                 field.choices = self.CHOICES + self.ADMIN_CHOICES
 
             initial = []

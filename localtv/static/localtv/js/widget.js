@@ -1,17 +1,18 @@
 /*
-# This file is part of Miro Community.
-# Copyright (C) 2010 Participatory Culture Foundation
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -201,7 +202,7 @@ if (typeof MiroCommunity === 'undefined') {
                 var count = this.opts.count ? this.opts.count : 4;
                 var li = null;
                 var widget_size = this.opts.size;
-                flat_bg = MiroCommunity.createElement('img', {src: 'http://' + this.opts.domain + '/images/widget/flat_' + widget_size + '.png',
+                flat_bg = MiroCommunity.createElement('img', {src: 'http://' + this.opts.domain + '/static/localtv/images/widget/flat_' + widget_size + '.png',
                                                               className: 'mc-flat-bg'});
                 separator = MiroCommunity.createElement('div', {className: 'mc-separator'});
                 for (var i=0; i < json.items.length && i < count; i++) {

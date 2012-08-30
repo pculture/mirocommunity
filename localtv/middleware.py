@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,7 @@
 
 import urlparse
 
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 
 class FixAJAXMiddleware(object):
@@ -42,14 +42,14 @@ class FixAJAXMiddleware(object):
 class UserIsAdminMiddleware(object):
     """
     Adds a user_is_admin method to all processed requests. The results of the
-    call to SiteLocation.user_is_admin are cached on the request object to
+    call to SiteSettings.user_is_admin are cached on the request object to
     avoid unnecessary queries.
     
     """
     def process_request(self, request):
         def user_is_admin(request=request):
             if not hasattr(request, '_user_is_admin_cache'):
-                sl = SiteLocation.objects.get_current()
+                sl = SiteSettings.objects.get_current()
                 request._user_is_admin_cache = sl.user_is_admin(request.user)
             return request._user_is_admin_cache
         request.user_is_admin = user_is_admin

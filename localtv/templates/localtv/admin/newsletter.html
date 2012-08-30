@@ -1,9 +1,9 @@
-{% load localtv_thumbnail filters uploadtemplate_tags staticfiles %}
+{% load daguerre filters uploadtemplate_tags staticfiles %}
 <html lang="en">
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
     <title>
-      {{ site.name }} - {{ sitelocation.tagline }}
+      {{ site.name }} - {{ site_settings.tagline }}
     </title>
     <style type="text/css">
       body { font-family: Helvetica, Arial, sans-serif; font-size: 14px; }
@@ -19,14 +19,14 @@
       <div id="header" style="width: 729px; height: 138px; margin: 0 0 0 2px; border: 1px #bebebe solid; background-color: #FFF;">
         <table style="padding: 12px 0 0 20px;">
           <tr>
-            {% if newsletter.show_icon and sitelocation.logo %}
+            {% if newsletter.show_icon and site_settings.logo %}
             <td>
-              <img src="{% if sitelocation.logo %}{% get_thumbnail_url absolute sitelocation 130 110 %}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" alt="Logo for {{ site.name }}" />
+              <img src="{% if site_settings.logo %}http://{{ site.domain }}{% adjust site_settings.logo.name height=130 width=110 %}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" alt="Logo for {{ site.name }}" />
             </td>
             {% endif %}
             <td style="width: 450px; padding: 0 0 0 15px;">
               <h1 style="color: #444; font-size: 24px; margin: 0; padding: 0;"><a href="http://{{ site.domain }}/">{{ site.name }}</a></h1>
-              <h2 style="color: #555; font-size: 14px; margin: 0; padding: 0;">{{ sitelocation.tagline|truncatewords_html:"10" }}</h2>
+              <h2 style="color: #555; font-size: 14px; margin: 0; padding: 0;">{{ site_settings.tagline|truncatewords_html:"10" }}</h2>
             </td>
             <td style="padding: 5px 0 0 0; text-align: right;">
               {% if newsletter.twitter_url %}<a style="margin: 0 10px 0 0;" href="{{ newsletter.twitter_url }}"><img src="http://{{ site.domain }}{% static 'localtv/images/newsletter/icon_twitter.png' %}" alt="Twitter page for {{ site.domain }}"/></a>{% endif %}
@@ -42,7 +42,7 @@
         <table style="padding: 15px 0 0 0;">
           {% for video in newsletter.videos %}
           <tr>
-            <td style="vertical-align: top;{% if not forloop.first %} padding: 20px 0 20px 0;{% endif %}"><img src="{% get_thumbnail_url absolute video 222 169 %}" alt="Thumbnail for {{ video.name }}" /></td>
+            <td style="vertical-align: top;{% if not forloop.first %} padding: 20px 0 20px 0;{% endif %}"><img src="http://{{ site.domain }}{% adjust video.thumbnail_path width=222 height=169 %}" alt="Thumbnail for {{ video.name }}" /></td>
             <td>
               {% with authors=video.authors.all %}
               <h1 style="font-size: 16px; color: #333; margin: -5px 0 5px 10px; padding: 0; max-width: 400px; overflow: hidden; text-overflow: ellipsis;">{{ video.name }}</h1>

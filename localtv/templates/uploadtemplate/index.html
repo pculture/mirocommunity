@@ -29,8 +29,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
   {% include "localtv/admin/settings_header.html" %}
 
-  {% if not settings.UPLOADTEMPLATE_DISABLE_UPLOAD %}
-
   <div class="helpful">
     Miro Community themes are implemented with Django templates, which are <a href="https://docs.djangoproject.com/en/1.3/topics/templates/">documented here</a>.<br/>
     Find out how to edit a Miro Community theme on the <a href="https://develop.participatoryculture.org/trac/democracy/wiki/MiroCommunity/Theming">Miro Community wiki</a>.
@@ -46,7 +44,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
     </form>
   </div>
-  {% endif %}
 
   {% if default %}
   
@@ -60,22 +57,27 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
  
   <h3>{{ default.name }}</h3>
   <div class="description">{{ default.description }}</div>
-  <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
+    {% if default and theme != default %}
+      <a class="remove_theme" href="{% url uploadtemplate-unset_default %}">Deactivate (Return to Default Theme)</a>
+    {% endif %}
+    <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
   </div>
   {% endif %}
-  <h2>Settings | Additional Themes</h2>
-  <ul>
-    {% for theme in non_default_themes %}
-    <li class="theme">
-      {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
-      <h3>{{ theme.name }}</h3>
-      <div class="description">{{ theme.description }}</div>
-      {% if theme.may_set_as_default %}
-      <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
-      {% endif %}
-      <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
-      <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
-    </li>
-    {% endfor %}
-  </ul>
+  {% if themes|length > 1 or not default %}
+    <h2>Settings | Additional Themes</h2>
+    <ul>
+      {% for theme in themes %}
+        {% if theme != default %}
+          <li class="theme">
+            {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
+            <h3>{{ theme.name }}</h3>
+            <div class="description">{{ theme.description }}</div>
+            <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
+            <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
+            <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
 {% endblock content %}

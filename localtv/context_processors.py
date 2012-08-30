@@ -1,6 +1,6 @@
-# Copyright 2009 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
 # 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
@@ -19,17 +19,23 @@ import os
 
 from django.conf import settings
 
-from localtv.models import SiteLocation, Video, Category
+from localtv.models import SiteSettings, Video, Category
 from localtv.settings import ENABLE_CHANGE_STAMPS
 
 
-def localtv(request):
-    sitelocation = SiteLocation.objects.get_current()
+BROWSE_NAVIGATION_MODULES = [
+    'localtv/_modules/browse/videos.html',
+    'localtv/_modules/browse/categories.html',
+]
 
-    display_submit_button = sitelocation.display_submit_button
+
+def localtv(request):
+    site_settings = SiteSettings.objects.get_current()
+
+    display_submit_button = site_settings.display_submit_button
     if display_submit_button:
         if request.user.is_anonymous() and \
-                sitelocation.submission_requires_login:
+                site_settings.submission_requires_login:
             display_submit_button = False
     else:
         if request.user_is_admin():
@@ -52,10 +58,12 @@ def localtv(request):
 
     return  {
         'mc_version': '1.2',
-        'sitelocation': sitelocation,
+        'site_settings': site_settings,
+        # Backwards-compatible for custom themes.
+        'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
-        'categories':  Category.objects.filter(site=sitelocation.site,
-                                                      parent=None),
+        'categories':  Category.objects._mptt_filter(site=site_settings.site,
+                                                     parent__isnull=True),
         'cache_invalidator': cache_invalidator,
 
         'display_submit_button': display_submit_button,
@@ -65,3 +73,14 @@ def localtv(request):
         'VIDEO_STATUS_UNAPPROVED': Video.UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': Video.ACTIVE,
         'VIDEO_STATUS_REJECTED': Video.REJECTED}
+
+
+def browse_modules(request):
+    """
+    Returns a list of templates that will be used to build the "browse" menu
+    in the navigation.
+
+    """
+    return {
+        'browse_modules': BROWSE_NAVIGATION_MODULES
+    }

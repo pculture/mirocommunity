@@ -1,54 +1,38 @@
-# Copyright 2009 - Participatory Culture Foundation
+# Miro Community - Easiest way to make a video website
 #
-# This file is part of Miro Community.
-#
+# Copyright (C) 2009, 2010, 2011, 2012 Participatory Culture Foundation
+# 
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-#
+# 
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-#
+# 
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
 import string
 import urllib
+import urllib2
 import types
 import os
 import os.path
 import logging
-import urlparse
-
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
+from django.db.models.query import QuerySet
 from django.utils.encoding import force_unicode
 import tagging
 import vidscraper
 from notification import models as notification
-
-try:
-    from backends.s3 import S3Storage
-except (ImportError, AttributeError): # AttributeError if S3 isn't configured
-    try:
-        from storages.backends.s3 import S3Storage
-    except (ImportError, AttributeError):
-        S3Storage = None
 
 from localtv.settings import API_KEYS
 
@@ -129,7 +113,7 @@ def get_vidscraper_video(url):
         # try and scrape the url
         try:
             vidscraper_video = vidscraper.auto_scrape(url, api_keys=API_KEYS)
-        except vidscraper.errors.Error:
+        except (vidscraper.errors.Error, urllib2.URLError):
             vidscraper_video = None
 
         cache.add(cache_key, vidscraper_video)
@@ -144,13 +128,13 @@ def normalize_newlines(s):
 
 
 def send_notice(notice_label, subject, message, fail_silently=True,
-                sitelocation=None, content_subtype=None):
+                site_settings=None, content_subtype=None):
     notice_type = notification.NoticeType.objects.get(label=notice_label)
     recipient_list = notification.NoticeSetting.objects.filter(
         notice_type=notice_type,
         medium="1",
         send=True).exclude(user__email='').filter(
-        Q(user__in=sitelocation.admins.all()) |
+        Q(user__in=site_settings.admins.all()) |
         Q(user__is_superuser=True)).values_list('user__email', flat=True)
     message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                            bcc=recipient_list)
@@ -215,6 +199,9 @@ class SortHeaders:
     def __iter__(self):
         return iter(self.headers())
 
+    def __len__(self):
+        return len(self.header_defs)
+
     def _query_string(self, sort):
         """
         Creates a query string from the given dictionary of
@@ -241,6 +228,17 @@ class SortHeaders:
         return '%s%s' % (
             self.desc and '-' or '',
             self.ordering)
+
+
+class SharedQuerySet(QuerySet):
+    """
+    A QuerySet subclass which returns itself when cloned with :meth:`all`.
+    This is designed to be used to generate choices for forms in formsets to
+    spare queries, and is probably not suitable for more complex situations.
+
+    """
+    def all(self, *args, **kwargs):
+        return self
 
 
 class MockQueryset(object):
@@ -355,198 +353,6 @@ SAFE_URL_CHARACTERS = string.ascii_letters + string.punctuation
 
 def quote_unicode_url(url):
     return urllib.quote(url, safe=SAFE_URL_CHARACTERS)
-
-
-if S3Storage is not None:
-    class SimplerS3Storage(S3Storage):
-        EVEN = set(['0', '2', '4', '6', '8', 'a', 'c', 'e'])
-        ODD  = set(['1', '3', '5', '7', '8', 'b', 'd', 'f'])
-        '''This is just like the normal S3Storage backend, only
-        we override the get_available_name method so that we permit
-        ourselves to overwrite files. By default, the core of Django's
-        storage layer refuses to overwrite files.'''
-
-        def get_available_name(self, name):
-            """ Overwrite existing file with the same name. """
-            name = self._clean_name(name)
-            return name
-
-        def url(self, *args, **kwargs):
-            '''This is just like the S3Storage url() function, with
-            one big caveat: It swaps out the default Amazon domain name
-            with a nearly-randomly chosen selection of alternate domain names.
-
-            This is to let browsers download with greater parallelism.
-
-            This is kind of like making up a CallingFormat.RoundRobin class,
-            but more of a hack. Read this URL for more about CallingFormat:
-            https://bitbucket.org/david/django-storages/src/629607f8767f/storages/backends/s3.py'''
-            url = super(SimplerS3Storage, self).url(*args, **kwargs)
-            if getattr(settings, 'LOCALTV_S3_ROUND_ROBIN', False):
-                url = self._maybe_mangle_s3_url(url)
-            return url
-
-        def _maybe_mangle_s3_url(self, url):
-            '''Input: A URL on Amazon S3.
-
-            Output: One of 2 equivalent URLs to the same file. This function will
-            always return the same output for a given input.'''
-            hasher = hashlib.md5()
-            parsed = list(urlparse.urlparse(url))
-            path = parsed[2]
-            hasher.update(path)
-            digested = hasher.hexdigest()
-            if digested[-1] in self.EVEN:
-                return url
-            else:
-                return self._mangle_s3_url(parsed)
-
-
-        def _mangle_s3_url(self, parsed_url):
-            '''This converts the calling format between subdomain to bucket-name.'''
-            netloc = parsed_url[1]
-            path   = parsed_url[2]
-            bucket = settings.AWS_STORAGE_BUCKET_NAME
-            S3_DOMAIN = 's3.amazonaws.com'
-            if netloc == (bucket + '.' + S3_DOMAIN):
-                netloc = S3_DOMAIN
-                path = '/' + bucket + path
-            elif (path.startswith('/' + bucket + '/') and netloc == S3_DOMAIN):
-                netloc = bucket + '.' + S3_DOMAIN
-                path = path.replace('/' + bucket, '', 1)
-            else:
-                logging.warning("Got a weird URL in S3 mangling: " + parsed_url)
-
-            # Slide these values back into (a copy of) parsed_url
-            new_parsed_url = parsed_url[:]
-            new_parsed_url[1] = netloc
-            new_parsed_url[2] = path
-            return urlparse.urlunparse(new_parsed_url)
-
-
-DEFAULT_HTTPLIB_CACHE_PATH='/tmp/.cache-for-uid-%d' % os.getuid()
-DEFAULT_HTTPLIB_TIMEOUT=20
-# We save data inside the httplib cache, but in a hidden directory
-OUR_CACHE_DIR = os.path.join(DEFAULT_HTTPLIB_CACHE_PATH,
-                             '.cache_downloaded_file')
-
-
-def http_get(url, _httplib2=None, return_blank_on_failure=True):
-    if _httplib2:
-        httplib2 = _httplib2
-    else:
-        import httplib2
-
-    h = httplib2.Http(cache=DEFAULT_HTTPLIB_CACHE_PATH,
-                      timeout=DEFAULT_HTTPLIB_TIMEOUT)
-    try:
-        response, body = h.request(url)
-    except AttributeError: # this is the exception httplib2 gives
-                           # on socket timeout
-        if return_blank_on_failure:
-            logging.warn("This URL timed out: " + repr(url))
-            return ''
-        else:
-            raise
-    except httplib2.httplib.BadStatusLine, e:
-        if not e.args[0] and return_blank_on_failure:
-            logging.warn("This URL timed out: %r", url)
-            return ''
-        else:
-            raise
-
-    return body
-
-
-def cache_downloaded_file(url, http_getter):
-    if not os.path.exists(DEFAULT_HTTPLIB_CACHE_PATH):
-        os.mkdir(DEFAULT_HTTPLIB_CACHE_PATH, 0700)
-
-    if not os.path.exists(OUR_CACHE_DIR):
-        os.mkdir(OUR_CACHE_DIR, 0700)
-
-    response, content = http_getter.request(url, 'GET')
-    file_obj = file(os.path.join(OUR_CACHE_DIR,
-                                 hashlib.sha1(url).hexdigest()), 'w')
-    file_obj.write(content)
-    file_obj.close()
-
-
-def pull_downloaded_file_from_cache(url):
-    file_obj = file(os.path.join(OUR_CACHE_DIR,
-                                 hashlib.sha1(url).hexdigest()))
-    data = file_obj.read()
-    file_obj.close()
-    return data
-
-
-def resize_image_returning_list_of_strings(original_image,
-                                           THUMB_SIZES):
-    ret = []
-    # Hackishly copying this constant in for now.
-    FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
-
-    for size in THUMB_SIZES:
-        if len(size) == 2:
-            (width, height), force_height = size, FORCE_HEIGHT_CROP
-        else:
-            width, height, force_height = size
-        resized_image = original_image.copy()
-        if resized_image.size != (width, height):
-            width_scale = float(resized_image.size[0]) / width
-            if force_height:
-                height_scale = float(resized_image.size[1]) / height
-                if force_height == FORCE_HEIGHT_CROP:
-                    # make the resized_image have one side the same as the
-                    # thumbnail, and the other bigger so we can crop it
-                    if width_scale < height_scale:
-                        new_height = int(resized_image.size[1] /
-                                         width_scale)
-                        new_width = width
-                    else:
-                        new_width = int(resized_image.size[0] /
-                                        height_scale)
-                        new_height = height
-                else: # FORCE_HEIGHT_PADDING
-                    if width_scale < height_scale:
-                        new_width = int(resized_image.size[0] /
-                                        height_scale)
-                        new_height = height
-                    else:
-                        new_height = int(resized_image.size[1] /
-                                         width_scale)
-                        new_width = width
-                resized_image = resized_image.resize(
-                    (new_width, new_height),
-                    Image.ANTIALIAS)
-                if resized_image.size != (width, height):
-                    x = y = 0
-                    if force_height == FORCE_HEIGHT_CROP:
-                        if resized_image.size[1] > height:
-                            y = int((height - resized_image.size[1]) / 2)
-                        else:
-                            x = int((width - resized_image.size[0]) / 2)
-                    else: # FORCE_HEIGHT_PADDING:
-                        if resized_image.size[1] == height:
-                            x = int((width - resized_image.size[0]) / 2)
-                        else:
-                            y = int((height - resized_image.size[1]) / 2)
-                    new_image = Image.new('RGBA',
-                                          (width, height), (0, 0, 0, 0))
-                    new_image.paste(resized_image, (x, y))
-                    resized_image = new_image
-            elif width_scale > 1:
-                # resize the width, keep the height aspect ratio the same
-                new_height = int(resized_image.size[1] / width_scale)
-                resized_image = resized_image.resize((width, new_height),
-                                                     Image.ANTIALIAS)
-        sio_img = StringIO.StringIO()
-        resized_image.save(sio_img, 'png')
-        sio_img.seek(0)
-        ret.append(
-            ((width, height),
-             sio_img.read()))
-    return ret
 
 
 def touch(filename, override_date=None):

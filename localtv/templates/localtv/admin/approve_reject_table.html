@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block body_class %}incomingvids{% endblock body_class %}
 
 
-{% load pagetabs i18n %}
+{% load pagetabs i18n daguerre %}
 
 {% block head %}
   {% include "localtv/inline_edit/header.html" %}
@@ -45,8 +45,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
 {% if page_obj.paginator.count %}
-
- 
 
 	{% block helpful %}<div class="helpful rounded">
         Videos here require moderator approval before appearing on the site.
@@ -80,16 +78,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
             <div id="admin_leftpane">
                 <div id="admin_videolisting_row">
                     {% block videolisting_rows %}
-                        {% include "localtv/admin/video_listing.html" %}
+                      {% for video in video_list %}
+                        {% include "localtv/admin/video_listing_individual.html" %}
+                      {% endfor %}
                     {% endblock %}
                 </div>
             </div>
         {% endblock leftpane %}
         <div id="admin_rightpane">
           {% block rightpane %}
-            {% if current_video %}
-              {% include "localtv/admin/video_preview.html" %}
-            {% endif %}
           {% endblock rightpane %}
           <br class="clear" />
         </div>

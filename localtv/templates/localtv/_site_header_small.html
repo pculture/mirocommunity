@@ -1,0 +1,34 @@
+{% load url from future %}
+{% load i18n daguerre uploadtemplate_tags %}
+
+<div class="row">
+	<div class="col-two-fifths {% if site_settings.tagline %}with-tagline{% else %}no-tagline{% endif %}">
+		<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
+			{% if site_settings.logo %}
+				{% adjust site_settings.thumbnail_path adjustment="fit" height=28 as logo %}
+				<img alt="{{ site_settings.site.name }} Logo" src="{{ logo }}" width="{{ logo.width }}" height="{{ logo.height }}" class="logo-img" />
+			{% endif %}
+		</a>
+		{# Calculating the margins below is a little hacky... ideally this would happen in the CSS somehow #}
+		<h1 id="SiteTitle" class="site-title-small" style="margin-left: {{ logo.width }}px;">
+			<a href="{{ localtv_index }}" class="site-name">
+				{{ site_settings.site.name }}
+			</a>
+		</h1>
+	</div>
+	
+	<div class="col-two-fifths">
+		<nav id="navigation" role="navigation">
+			{% include "localtv/_site_navigation.html" %}
+		</nav>
+	</div>
+	
+	<div class="col-one-fifth">
+		<form id="search" action="{% url 'localtv_search' %}" method="get">
+			<div class="btn-right-controls">
+				<input name="q" type="text" id="search_field" value="{{ query }}"/>
+				<button class="btn-right"><span class="search-icon">{% trans 'Search' %}</span></button>
+			</div>
+		</form>
+	</div>
+</div>

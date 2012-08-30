@@ -1,0 +1,45 @@
+{% extends "localtv/admin/base.html" %}
+{% comment %}
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block title %}{{ block.super }} - Admin - Contest{% endblock %}
+{% block extrahead %}<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/admin/css/contest.css" />{% endblock %}
+
+{% block body_class %}admin contests{% endblock %}
+
+{% block content %}
+  <form action='{{ request.path }}' method='post'>{% csrf_token %}
+    <button type="submit" class="approve_button"><span>{% if contest.pk %}Save changes{% else %}Add contest{% endif %}</span></button>
+    <h2>Video contest</h2>
+    <div class="input_field">
+      <ul>
+        {% for field in form %}
+        <li>
+            {{ field.label_tag }}
+            {{ field.errors }}
+            {{ field }}
+            {% if field.help_text %}
+            <span class="form_help">{{ field.help_text }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </form>
+{% endblock %}

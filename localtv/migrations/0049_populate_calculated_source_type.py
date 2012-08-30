@@ -1,19 +1,73 @@
 # encoding: utf-8
+
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2011, 2012 Participatory Culture Foundation
+# 
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+# 
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
-import localtv.models
+
+
+VIDEO_SERVICE_REGEXES = (
+    ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
+    ('YouTube', r'http://(www\.)?youtube\.com/'),
+    ('blip.tv', r'http://(.+\.)?blip\.tv/'),
+    ('Vimeo', r'http://(www\.)?vimeo\.com/'),
+    ('Dailymotion', r'http://(www\.)?dailymotion\.com/rss'))
+
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
         for video in orm['localtv.Video'].objects.all():
-            if hasattr(localtv.models, 'pre_save_video_set_calculated_source_type'):
-                localtv.models.pre_save_video_set_calculated_source_type(instance=video)
-                video.save()
-                print ".",
+            source_type = u''
+            if video.id and video.search_id:
+                try:
+                    source_type = u'Search: %s' % video.search
+                except SavedSearch.DoesNotExist:
+                    pass
+            elif video.id and video.feed_id:
+                try:
+                    video_service = None
+                    for service, regexp in VIDEO_SERVICE_REGEXES:
+                        if re.search(regexp, video.feed.feed_url, re.I):
+                            video_service = service
+                            break
+                    if video_service is None:
+                        source_type = 'Feed: %s' % video.feed.name
+                    else:
+                        source_type = u'User: %s: %s' % (
+                            video_service,
+                            video.feed.name)
+                except Feed.DoesNotExist:
+                    pass
+            elif video.video_service_user:
+                video_service = None
+                if video.website_url:
+                    for service, regexp in VIDEO_SERVICE_REGEXES:
+                        if re.search(regexp, video.website_url, re.I):
+                            video_service = service
+                            break
+                source_type = u'User: %s: %s' % (video_service,
+                                                 video.video_service_user)
+            video.calculated_source_type = source_type
+            video.save()
 
 
     def backwards(self, orm):
@@ -147,10 +201,10 @@ class Migration(DataMigration):
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'embed_code': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'feed': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Feed']", 'null': 'True', 'blank': 'True'}),
-            'file_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'file_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'file_url_length': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'file_url_mimetype': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'flash_enclosure_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'flash_enclosure_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'guid': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -165,7 +219,7 @@ class Migration(DataMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'video_service_user': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '250', 'blank': 'True'}),
-            'website_url': ('localtv.models.BitLyWrappingURLField', [], {'max_length': '200', 'blank': 'True'}),
+            'website_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_approved': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'when_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'when_published': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

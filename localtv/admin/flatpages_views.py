@@ -1,17 +1,17 @@
-# Copyright 2010 - Participatory Culture Foundation
-# 
-# This file is part of Miro Community.
-# 
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
 # Miro Community is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or (at your
 # option) any later version.
-# 
+#
 # Miro Community is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from localtv.admin import forms
 from localtv.decorators import require_site_admin
-from localtv.models import SiteLocation
+from localtv.models import SiteSettings
 
 
 @require_site_admin
@@ -32,8 +32,8 @@ def index(request):
     headers = [
         {'label': 'Page Name'},
         {'label': 'URL'}]
-    sitelocation = SiteLocation.objects.get_current()
-    flatpages = FlatPage.objects.filter(sites=sitelocation.site)
+    site_settings = SiteSettings.objects.get_current()
+    flatpages = FlatPage.objects.filter(sites=site_settings.site)
     formset = forms.FlatPageFormSet(queryset=flatpages)
 
     form = forms.FlatPageForm()
@@ -49,7 +49,7 @@ def index(request):
 
             if form.is_valid():
                 flatpage = form.save()
-                flatpage.sites.add(sitelocation.site)
+                flatpage.sites.add(site_settings.site)
                 return HttpResponseRedirect(request.path + '?successful')
 
             return render_to_response('localtv/admin/flatpages.html',
