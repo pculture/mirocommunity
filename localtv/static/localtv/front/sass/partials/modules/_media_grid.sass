@@ -3,22 +3,16 @@
 	
 .media-grid-4 > li
 	width: 25%
-	&:nth-child(4n)
-		float: right
 	&:nth-child(4n+1)
 		clear: left
 
 .media-grid-3 > li
 	width: 33%
-	&:nth-child(3n)
-		float: right
 	&:nth-child(3n+1)
 		clear: left
 
 .media-grid-2 > li
 	width: 50%
-	&:nth-child(even)
-		float: right
 	&:nth-child(odd)
 		clear: left
 
@@ -35,10 +29,14 @@
 		padding-left: $gutter-width
 		+box-sizing(border-box)
 		position: relative
-		@media screen and (max-width: 740px) and (min-width: 400px)
+		@media screen and (max-width: $small-viewport-max) and (min-width: $tiny-viewport-max)
 			width: 50%
 			float: left
-		@media screen and (max-width: 400px)
+			&:nth-child(even)
+				clear: none
+			&:nth-child(odd)
+				clear: left
+		@media screen and (max-width: $tiny-viewport-max)
 			width: 100%
 			float: none
 		& > a

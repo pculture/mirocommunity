@@ -1335,13 +1335,13 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_query(self):
         """
-        A GET request to the livesearch view and GET['q'] argument should list
-        some videos that match the query.
+        A GET request to the livesearch view and GET['query'] argument should
+        list some videos that match the query.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
@@ -1355,18 +1355,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_query_pagination(self):
         """
-        A GET request to the livesearch view with GET['q'] and GET['page']
+        A GET request to the livesearch view with GET['query'] and GET['page']
         arguments should return another page of results.
         """
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].number, 1)
         self.assertEqual(len(response.context[2]['page_obj'].object_list), 10)
 
         response2 = c.get(self.url,
-                         {'q': 'search string',
+                         {'query': 'search string',
                           'page': '2'})
         page_obj = response2.context[2]['page_obj']
         self.assertEqual(page_obj.number, 2)
@@ -1390,12 +1390,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         self.assertTrue(c.login(username='admin', password='admin'))
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         fake_video = response.context[2]['page_obj'].object_list[0]
         fake_video2 = response.context[2]['page_obj'].object_list[1]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'q': 'search string',
+                         {'query': 'search string',
                           'video_id': fake_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
@@ -1416,7 +1416,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(list(v.authors.all()), [user])
 
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].object_list[0].id,
                           fake_video2.id)
 
@@ -1440,11 +1440,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'q': 'search string',
+                         {'query': 'search string',
                           'feature': 'yes',
                           'video_id': metasearch_video.id},
                          HTTP_REFERER="http://www.getmiro.com/")
@@ -1463,11 +1463,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
         response = c.get(reverse('localtv_admin_search_video_display'),
-                         {'q': 'search string',
+                         {'query': 'search string',
                           'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
@@ -1484,7 +1484,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         response = c.get(reverse('localtv_admin_search_add'),
-                         {'q': 'search string'},
+                         {'query': 'search string'},
                          HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://www.getmiro.com/')
@@ -1495,7 +1495,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(saved_search.user.username, 'admin')
 
         response = c.get(self.url,
-                         {'q': 'search string'})
+                         {'query': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
     def test_GET_create_saved_search_authentication(self):
@@ -2475,7 +2475,7 @@ class BulkEditAdministrationTestCase(AdministrationBaseTestCase):
 
     def test_GET_search(self):
         """
-        A GET request with a 'q' key in the GET request should search the
+        A GET request with a 'query' key in the GET request should search the
         videos for that string.
         """
         c = Client()

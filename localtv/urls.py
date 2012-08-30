@@ -22,7 +22,6 @@ from django.views.generic import ListView
 from localtv.api.v1 import api as api_v1
 from localtv.listing.views import CompatibleListingView, SiteListView
 from localtv.models import Category
-from localtv.search.views import SortFilterView
 from localtv.views import IndexView, VideoView
 
 
@@ -32,9 +31,6 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
-    url(r'^videos/$',
-         SortFilterView.as_view(template_name='localtv/videos.html'),
-         name='localtv_browse'),
     url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
         VideoView.as_view(),
         name='localtv_view_video'),

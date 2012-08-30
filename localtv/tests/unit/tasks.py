@@ -275,3 +275,23 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
         new_video = Video.objects.get(pk=video.pk)
         self.assertEqual(new_video.has_thumbnail, video.has_thumbnail)
         self.assertEqual(new_video.thumbnail_url, video.thumbnail_url)
+
+    def test_data_saved(self):
+        """
+        The thumbnail data for a video should be saved once this task is
+        completed.
+
+        """
+        thumbnail_url = 'http://pculture.org/not'
+        video = self.create_video(update_index=False, has_thumbnail=True,
+                                  thumbnail_url=thumbnail_url)
+        thumbnail_data = open(self._data_file('logo.png'), 'r').read()
+        remote_file = mock.Mock(read=lambda: thumbnail_data,
+                                getcode=lambda: 200)
+        with mock.patch('localtv.tasks.urllib.urlopen',
+                        return_value=remote_file):
+            video_save_thumbnail.apply(args=(video.pk,))
+        new_video = Video.objects.get(pk=video.pk)
+        self.assertEqual(new_video.has_thumbnail, True)
+        self.assertEqual(new_video.thumbnail_url, thumbnail_url)
+        self.assertEqual(new_video.thumbnail_extension, 'png')

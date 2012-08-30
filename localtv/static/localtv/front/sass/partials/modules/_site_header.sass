@@ -36,7 +36,7 @@
 		width: 80%
 	.btn-right
 		width: 20%
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		position: absolute
 		+padded(0.5)
 		top: 0
@@ -49,11 +49,11 @@
 .logo-link:hover
 	border: 0
 
-@media screen and (max-width: 960px)
+@media screen and (max-width: $medium-viewport-max)
 	#header > .container
 		padding: 0 $gutter-width / 4
 
-@media screen and (max-width: 740px)
+@media screen and (max-width: $small-viewport-max)
 	#header > .container
 		position: static
 		margin-top: $base-line-height * 2.5

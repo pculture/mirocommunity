@@ -23,7 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
       <li {% ifequal page.number selected_page.number %}
             class="selected"
           {% endifequal %}>
-        <a href="{% url localtv_admin_search %}?page={{ page.number }}&q={{ query_string }}&order_by={{ order_by}}">
+        <a href="{% url localtv_admin_search %}?page={{ page.number }}&query={{ query_string }}&order_by={{ order_by}}">
           <span>{{ page.number }}</span></a>
       </li>
     {% endfor %}

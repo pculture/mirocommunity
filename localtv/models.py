@@ -26,6 +26,7 @@ import os
 import logging
 import sys
 import traceback
+import warnings
 
 try:
     from PIL import Image as PILImage
@@ -94,7 +95,7 @@ class Thumbnailable(models.Model):
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb):
+    def save_thumbnail_from_file(self, content_thumb, update=True):
         """
         Takes an image file-like object and stores it as the thumbnail for this
         video item.
@@ -112,7 +113,16 @@ class Thumbnailable(models.Model):
         if self.has_thumbnail:
             self.delete_thumbnail()
 
+        # Save the extension and the having of a thumbnail - then update
+        # the copy in the database separately to avoid race condition
+        # issues.
         self.thumbnail_extension = pil_image.format.lower()
+        self.has_thumbnail = True
+        if update and self.pk is not None:
+            Video.objects.using(self._state.db
+                        ).filter(pk=self.pk
+                        ).update(thumbnail_extension=self.thumbnail_extension,
+                                 has_thumbnail=True)
         default_storage.save(self.thumbnail_path, content_thumb)
 
         if hasattr(content_thumb, 'temporary_file_path'):
@@ -1663,7 +1673,7 @@ class Video(Thumbnailable, VideoBase):
             l = Category._tree_manager._translate_lookups(**l)
             q_list.append(models.Q(**l))
         q = reduce(operator.or_, q_list)
-        return Category.objects.filter(q)
+        return Category.objects.using(self._state.db).filter(q)
 
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
@@ -2015,6 +2025,8 @@ def update_stamp(name, override_date=None, delete_stamp=False):
         logging.error(e)
 
 if lsettings.ENABLE_CHANGE_STAMPS:
+    warnings.warn('LOCALTV_ENABLE_CHANGE_STAMPS is deprecated.',
+                  DeprecationWarning)
     models.signals.post_save.connect(video_published_stamp_signal_listener,
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,

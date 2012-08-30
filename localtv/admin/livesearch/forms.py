@@ -20,7 +20,6 @@ import hashlib
 import time
 
 from django import forms
-from django.conf import settings
 from django.core.cache import cache
 from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
@@ -38,7 +37,7 @@ class LiveSearchForm(forms.Form):
         (LATEST, _('Latest')),
         (RELEVANT, _('Relevant')),
     )
-    q = forms.CharField()
+    query = forms.CharField()
     order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST,
                                  required=False)
 
@@ -47,7 +46,7 @@ class LiveSearchForm(forms.Form):
 
     def _get_cache_key(self):
         return 'localtv-livesearch-%s' % (
-            hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
+            hashlib.md5('%(query)s-%(order_by)s' % self.cleaned_data
                         ).hexdigest())
 
     def get_results(self):
@@ -55,7 +54,7 @@ class LiveSearchForm(forms.Form):
         results = cache.get(cache_key)
         if results is None:
             finish_by = time.time() + 20
-            search_results = auto_search(self.cleaned_data['q'],
+            search_results = auto_search(self.cleaned_data['query'],
                                   order_by=self.cleaned_data['order_by'],
                                   api_keys=API_KEYS)
             results = []

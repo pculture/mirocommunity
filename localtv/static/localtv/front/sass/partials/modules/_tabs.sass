@@ -9,18 +9,18 @@
 	+margin-leader
 	+pie-clearfix
 	border-bottom: 1px solid
-	@media screen and (max-width: 740px)
+	@media screen and (max-width: $small-viewport-max)
 		border-bottom: 0
 		+padded(0.5)
 	& > li
 		float: left
-		@media screen and (max-width: 740px)
+		@media screen and (max-width: $small-viewport-max)
 			float: none
 		&.active > a
 			position: relative
 			padding-bottom: $base-line-height / 2 + 1px
 			margin-bottom: -1px
-			@media screen and (max-width: 740px)
+			@media screen and (max-width: $small-viewport-max)
 				+margin-trailer(0.5)
 				padding-bottom: $base-line-height / 2
 		& > a
@@ -31,7 +31,7 @@
 			margin-left: $gutter-width / 2
 			text-align: center
 			display: block
-			@media screen and (max-width: 740px)
+			@media screen and (max-width: $small-viewport-max)
 				+border-radius(5px)
 				border: 1px solid
 				margin-left: 0
