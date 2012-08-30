@@ -7,6 +7,18 @@ Miro Community 1.9 Release Notes
   class-based views. Though these are not strictly
   backwards-compatible from the backend, the user experience and
   template contexts should be the same.
+* New responsive front-end styles using sass/compass.
+* New documentation, esp. as regards contributing to miro community.
+* Switched to Django 1.4.
+* Switched from django-voting to built-in contrib voting functionality.
+* Purged all tiers-related code.
+* Switched to django-daguerre for thumbnail resizing.
+* Added read-only tastypie API for some aspects of Miro Community.
+* Improved/simplified search code.
+* Set up Category model to use django-mptt.
+* Stopped using bitly to store long file urls.
+* Moved :class:`Video` validation to the model class from the :func:`video_from_vidscraper_video` task.
+
 
 Miro Community 1.8.5 Release Notes
 ==================================
