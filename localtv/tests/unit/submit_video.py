@@ -24,7 +24,7 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
 from django.test.utils import override_settings
-from vidscraper.suites.base import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video, SiteSettings
 from localtv.signals import submit_finished

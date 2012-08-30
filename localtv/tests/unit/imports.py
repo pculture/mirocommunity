@@ -19,7 +19,7 @@ import datetime
 
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
-from vidscraper.suites import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
                             FeedImportError)

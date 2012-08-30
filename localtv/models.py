@@ -485,7 +485,7 @@ class Source(Thumbnailable):
                clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
-        returns :class:`vidscraper.suites.base.Video` objects.  We use
+        returns :class:`vidscraper.videos.Video` objects.  We use
         :method:`.Video.from_vidscraper_video` to map the Vidscraper fields to
         Video attributes.
 
@@ -614,7 +614,7 @@ class Feed(Source):
 
         video_iter = vidscraper.auto_feed(
             self.feed_url,
-            crawl=(getattr(self, 'status', True) == 0),
+            max_results=None if self.status == self.INACTIVE else 100,
             api_keys=lsettings.API_KEYS,
         )
 
@@ -795,17 +795,17 @@ class SavedSearch(Source):
 
         searches = vidscraper.auto_search(
             self.query_string,
-            crawl=True,
+            max_results=100,
             api_keys=lsettings.API_KEYS,
         )
 
         video_iters = []
-        for video_iter in searches.values():
+        for video_iter in searches:
             try:
                 video_iter.load()
             except Exception:
                 search_import.handle_error(u'Skipping import of search results '
-                               u'from %s' % video_iter.suite.__class__.__name__,
+                               u'from %s' % video_iter.__class__.__name__,
                                with_exception=True, using=using)
                 continue
             video_iters.append(video_iter)
@@ -1048,7 +1048,7 @@ class OriginalVideo(VideoBase):
                                                 video.website_url,
                                                 fields=fields,
                                                 api_keys=lsettings.API_KEYS)
-            except vidscraper.errors.VideoDeleted:
+            except vidscraper.exceptions.VideoDeleted:
                 remote_video_was_deleted = True
             except urllib2.URLError:
                 # some kind of error Vidscraper couldn't handle; log it and
@@ -1448,13 +1448,14 @@ class Video(Thumbnailable, VideoBase):
                               authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
-        :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
+        :class:`vidscraper.videos.Video` instance. If `commit` is False,
         the :class:`Video` will not be saved, and the created instance will have
         a `save_m2m()` method that must be called after you call `save()`.
 
         """
-        if video.file_url_expires is None:
-            file_url = video.file_url
+        video_file = video.get_file()
+        if video_file and video_file.expires is None:
+            file_url = video_file.url
         else:
             file_url = None
 
@@ -1472,8 +1473,8 @@ class Video(Thumbnailable, VideoBase):
             website_url=video.link or '',
             when_published=video.publish_datetime,
             file_url=file_url or '',
-            file_url_mimetype=video.file_url_mimetype or '',
-            file_url_length=video.file_url_length,
+            file_url_mimetype=getattr(video_file, 'mime_type', '') or '',
+            file_url_length=getattr(video_file, 'length', None),
             when_submitted=now,
             when_approved=now if status == cls.ACTIVE else None,
             status=status,

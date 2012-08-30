@@ -29,7 +29,7 @@ from vidscraper.utils.search import intersperse_results
 from localtv.models import Video
 from localtv.settings import API_KEYS
 
-from vidscraper.errors import Error as VidscraperError
+from vidscraper.exceptions import VidscraperError
 
 class LiveSearchForm(forms.Form):
     LATEST = 'latest'

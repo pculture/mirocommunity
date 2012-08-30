@@ -43,7 +43,7 @@ from localtv.settings import API_KEYS
 from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
-from vidscraper.errors import CantIdentifyUrl
+from vidscraper.exceptions import UnhandledFeed
 from vidscraper import auto_feed
 
 Profile = utils.get_profile_model()
@@ -1097,7 +1097,7 @@ class AddFeedForm(forms.Form):
         try:
             scraped_feed = auto_feed(url, api_keys=API_KEYS)
             url = scraped_feed.url
-        except CantIdentifyUrl:
+        except UnhandledFeed:
             raise forms.ValidationError('It does not appear that %s is an '
                                         'RSS/Atom feed URL.' % url)
 

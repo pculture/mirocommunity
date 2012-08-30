@@ -1617,7 +1617,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL) # all fields None
+        # all fields None
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
@@ -1645,7 +1646,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         and reset the remote_video_was_deleted flag.
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
@@ -1681,7 +1682,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.video.save()
 
         # Now, do a refresh, simulating the remote response having \r\n line endings
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
         vidscraper_result.__dict__.update(
             {'description': self.original.description.replace('\n', '\r\n'),
              'thumbnail_url': self.BASE_DATA['thumbnail_url'],

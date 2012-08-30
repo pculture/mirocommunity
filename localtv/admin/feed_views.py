@@ -30,8 +30,6 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 
-import vidscraper
-
 from localtv.decorators import require_site_admin, referrer_redirect
 from localtv.exceptions import CannotOpenImageUrl
 from localtv import tasks, utils
@@ -61,13 +59,8 @@ def add_feed(request):
 
     feed_url = add_form.cleaned_data['feed_url']
     scraped_feed = add_form.cleaned_data['scraped_feed']
-
     try:
         scraped_feed.load()
-    except vidscraper.errors.CantIdentifyUrl:
-        return HttpResponseBadRequest(
-            '* It does not appear that %s is an RSS/Atom feed URL.' % (
-                scraped_feed.url,))
     except Exception:
         logging.error('unknown error loading scraped feed: %r',
                       feed_url,

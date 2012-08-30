@@ -89,8 +89,9 @@ class SubmitURLView(FormView):
         # This bit essentially just preserves the old behavior; really, the
         # views that are redirected to are all instances of SubmitVideoView.
 
+        video_file = None if video is None else video.get_file()
         if video is not None and (video.embed_code or
-                (video.file_url and not video.file_url_expires)):
+                (video_file and not video_file.expires)):
             success_url = self.scraped_url
         elif is_video_url(url):
             success_url = self.direct_url
