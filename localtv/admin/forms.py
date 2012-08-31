@@ -16,8 +16,9 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import re
+import logging
 import os.path
+from xml.sax import SAXParseException
 import urlparse
 
 from django import forms
@@ -43,8 +44,8 @@ from localtv.settings import API_KEYS
 from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
-from vidscraper.errors import CantIdentifyUrl
 from vidscraper import auto_feed
+from vidscraper.videos import FeedparserFeed
 
 Profile = utils.get_profile_model()
 
@@ -1053,37 +1054,6 @@ AuthorFormSet = modelformset_factory(User,
 
 
 class AddFeedForm(forms.Form):
-    SERVICE_PROFILES = (
-        (re.compile(
-                r'^(http://)?(www\.)?youtube\.com/profile(_videos)?'
-                r'\?(\w+=\w+&)*user=(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
-                    r'(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
-        (re.compile(
-                r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
-         'vimeo'),
-        (re.compile(
-                r'^(http://)?(www\.)?dailymotion\.com/(\w+/)*(?P<name>\w+)/1'),
-         'dailymotion'),
-        )
-
-    def _blip_add_rss_skin(url):
-        if '?' in url:
-            return url + '&skin=rss'
-        else:
-            return url + '?skin=rss'
-
-    SERVICE_FEEDS = {
-        'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
-                    'uploads?alt=rss&v=2&orderby=published'),
-        'blip': _blip_add_rss_skin,
-        'vimeo': 'http://www.vimeo.com/%s/videos/rss',
-        'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
-        }
-
     feed_url = forms.URLField(required=True,
                               widget=forms.TextInput(
             attrs={'class': 'livesearch_feed_url'}))
@@ -1094,19 +1064,35 @@ class AddFeedForm(forms.Form):
 
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
-        try:
-            scraped_feed = auto_feed(url, api_keys=API_KEYS)
-            url = scraped_feed.url
-        except CantIdentifyUrl:
-            raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.' % url)
+        scraped_feed = auto_feed(url, api_keys=API_KEYS)
 
         site = Site.objects.get_current()
-        if models.Feed.objects.filter(feed_url=url,
-                                      site=site):
+        if models.Feed.objects.filter(feed_url=scraped_feed.url,
+                                      site=site).exists():
+            raise forms.ValidationError(
+                'That feed already exists on this site.')
+
+        try:
+            scraped_feed.load()
+            # See bz19516 - this should be in vidscraper.
+            if (isinstance(scraped_feed, FeedparserFeed) and
+                scraped_feed._response.bozo):
+                raise scraped_feed._response.bozo_exception
+        except SAXParseException:
+            raise forms.ValidationError('It does not appear that %s is an '
+                                        'RSS/Atom feed URL.' % url)
+        except Exception:
+            logging.error('unknown error loading scraped feed: %r',
+                          scraped_feed.url,
+                          exc_info=True)
+            raise forms.ValidationError('There was an unknown error loading '
+                                        '{url}'.format(feed_url=scraped_feed.url))
+
+        if scraped_feed.webpage and models.Feed.objects.filter(
+                                                webpage=scraped_feed.webpage,
+                                                site=site):
             raise forms.ValidationError(
                 'That feed already exists on this site.')
 
         self.cleaned_data['scraped_feed'] = scraped_feed
-
         return url

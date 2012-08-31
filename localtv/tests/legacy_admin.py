@@ -133,7 +133,7 @@ class ApproveRejectAdministrationTestCase(AdministrationBaseTestCase):
                           list(unapproved_videos[:10]))
         page2_response = c.get(self.url,
                                {'page': '2'})
-        self.assertNotEquals(page1_response, page2_response)
+        self.assertNotEqual(page1_response, page2_response)
         self.assertEqual(list(page2_response.context['video_list']),
                           list(unapproved_videos[10:20]))
         page3_response = c.get(self.url,
@@ -1082,7 +1082,8 @@ class FeedAdministrationTestCase(BaseTestCase):
             site=self.site_settings.site,
             last_updated=datetime.datetime.now(),
             status=Feed.INACTIVE,
-            feed_url=urls[0])
+            feed_url=urls[0],
+            webpage='http://www.youtube.com/channel/UCEpmlnLYKfcy8I3S6HHiKGw/videos')
         c = Client()
         c.login(username='admin', password='admin')
         for url in urls:
@@ -1375,10 +1376,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         else:
             self.assertTrue(page_obj.object_list)
 
-        self.assertNotEquals([v.id for v in
-                              response.context[2]['page_obj'].object_list],
-                             [v.id for v in
-                              response2.context[2]['page_obj'].object_list])
+        self.assertNotEqual([v.id for v in
+                             response.context[2]['page_obj'].object_list],
+                            [v.id for v in
+                             response2.context[2]['page_obj'].object_list])
 
 
     def test_GET_approve(self):

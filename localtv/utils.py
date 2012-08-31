@@ -113,7 +113,7 @@ def get_vidscraper_video(url):
         # try and scrape the url
         try:
             vidscraper_video = vidscraper.auto_scrape(url, api_keys=API_KEYS)
-        except (vidscraper.errors.Error, urllib2.URLError):
+        except (vidscraper.exceptions.VidscraperError, urllib2.URLError):
             vidscraper_video = None
 
         cache.add(cache_key, vidscraper_video)

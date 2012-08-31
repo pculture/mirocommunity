@@ -3,7 +3,7 @@ from django.conf import settings
 
 from localtv.contrib.contests.tests.base import BaseTestCase
 
-from vidscraper.suites.base import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.submit_video.forms import SubmitVideoFormBase
 from localtv.models import Video

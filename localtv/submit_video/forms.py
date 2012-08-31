@@ -25,7 +25,7 @@ from django.conf import settings
 from django.db.models import Q
 from tagging.forms import TagField
 import vidscraper
-from vidscraper.errors import CantIdentifyUrl
+from vidscraper.exceptions import UnhandledVideo
 
 from localtv.models import Video
 from localtv.settings import API_KEYS
@@ -71,7 +71,7 @@ class SubmitURLForm(forms.Form):
         self.video_cache = None
         try:
             self.video_cache = vidscraper.auto_scrape(url, api_keys=API_KEYS)
-        except (CantIdentifyUrl, urllib2.URLError):
+        except (UnhandledVideo, urllib2.URLError):
             pass
         else:
             if self.video_cache.link is not None and url != self.video_cache.link:
