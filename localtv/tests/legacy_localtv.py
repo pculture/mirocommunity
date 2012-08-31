@@ -1338,19 +1338,20 @@ class SavedSearchImportTestCase(BaseTestCase):
         SavedSearch.update() should create new Video objects linked to
         the search.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         self.assertEqual(ss.video_set.count(), 0)
         ss.update()
-        self.assertNotEquals(ss.video_set.count(), 0)
+        self.assertNotEqual(ss.video_set.count(), 0)
 
     def test_update_ignore_duplicates(self):
         """
         A search that includes the same video should should not add the video a
         second time.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         ss.update()
         count = ss.video_set.count()
+        self.assertNotEqual(count, 0)
         ss.update()
         self.assertEqual(ss.video_set.count(), count)
 
@@ -1359,7 +1360,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         If a SavedSearch has authors set, imported videos should be given that
         authorship.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         ss.auto_authors = [User.objects.get(pk=1)]
         ss.update()
         video = ss.video_set.all()[0]
@@ -1371,7 +1372,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         If a SavedSearch has no author, imported videos should have a User
         based on the user on the original video service.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         self.assertFalse(ss.auto_authors.all().exists())
         ss.update()
         video = ss.video_set.all()[0]
@@ -1382,12 +1383,12 @@ class OriginalVideoModelTestCase(BaseTestCase):
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
         'name': u'Miro appreciates the support of our sponsors',
-        'description': u"""<p>Miro is a non-profit project working \
+        'description': u"""Miro is a non-profit project working \
 to build a better media future as television moves online. We provide our \
 software free to our users and other developers, despite the significant cost \
 of developing the software. This work is made possible in part by the support \
 of our sponsors. Please watch this video for a message from our sponsors. If \
-you wish to support Miro yourself, please donate $10 today.</p>""",
+you wish to support Miro yourself, please donate $10 today.""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
         # it seems like thumbnails are updated on the 8th of each month; this

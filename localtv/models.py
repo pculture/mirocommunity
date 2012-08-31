@@ -838,7 +838,7 @@ class FeedImportIndex(SourceImportIndex):
 class SearchImportIndex(SourceImportIndex):
     source_import = models.ForeignKey('SearchImport', related_name='indexes')
     #: This is just the name of the suite that was used to get this index.
-    suite = models.CharField(max_length=30)
+    suite = models.CharField(max_length=30, blank=True)
 
 
 class SourceImportError(models.Model):
@@ -990,12 +990,6 @@ class SearchImport(SourceImport):
     def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
                                         searchimportindex__source_import=self)
-
-    def get_index_creation_kwargs(self, video, vidscraper_video):
-        kwargs = super(SearchImport, self).get_index_creation_kwargs(video,
-                                                            vidscraper_video)
-        kwargs['suite'] = vidscraper_video.suite.__class__.__name__
-        return kwargs
 
 
 class VideoBase(models.Model):

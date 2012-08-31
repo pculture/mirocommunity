@@ -24,7 +24,8 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
 from django.test.utils import override_settings
-from vidscraper.videos import Video as VidscraperVideo
+from vidscraper.videos import (Video as VidscraperVideo,
+                               VideoFile as VidscraperVideoFile)
 
 from localtv.models import Video, SiteSettings
 from localtv.signals import submit_finished
@@ -104,11 +105,12 @@ class SubmitURLViewTestCase(BaseTestCase):
         form = view.get_form(view.get_form_class())
         self.assertEqual(form.data, view.request.GET)
 
-    def test_form_valid__scraped(self):
+    def test_form_valid__scraped__embed(self):
         """
-        Checks that, if the form represents a scraped video, the success_url is
-        the url of the scraped_video view, and that the session data contains
-        the scraped video as 'video' and the video's url as 'url'.
+        Checks that, if the form represents a scraped video with embed code,
+        the success_url is the url of the scraped_video view, and that the
+        session data contains the scraped video as 'video' and the video's
+        url as 'url'.
 
         """
         scraped_url = reverse('localtv_submit_scraped_video')
@@ -121,7 +123,6 @@ class SubmitURLViewTestCase(BaseTestCase):
                                           view.request.GET.urlencode())
         form = view.get_form(view.get_form_class())
 
-        # Option one: Video with embed code
         video = VidscraperVideo(video_url)
         video.embed_code = "blink"
         form.video_cache = video
@@ -132,9 +133,29 @@ class SubmitURLViewTestCase(BaseTestCase):
                          {'video': video, 'url': video_url})
         self.assertEqual(view.success_url, expected_success_url)
 
-        # Option two: Video with non-expiring file_url.
+    def test_form_valid__scraped__file_url(self):
+        """
+        Checks that, if the form represents a scraped video with a file_url,
+        the success_url is the url of the scraped_video view, and that the
+        session data contains the scraped video as 'video' and the video's
+        url as 'url'.
+
+        """
+        scraped_url = reverse('localtv_submit_scraped_video')
+        view = SubmitURLView(scraped_url=scraped_url)
+        video_url = "http://google.com"
+        url = "%s?url=%s" % (reverse('localtv_submit_video'),
+                             video_url)
+        view.request = self.factory.get(url)
+        expected_success_url = "%s?%s" % (scraped_url,
+                                          view.request.GET.urlencode())
+        form = view.get_form(view.get_form_class())
+
+        video = VidscraperVideo(video_url)
         video.embed_code = None
-        video.file_url = "blink"
+        video.files = [VidscraperVideoFile(url="blink")]
+        form.video_cache = video
+        form.cleaned_data = {'url': video_url}
 
         view.form_valid(form)
         self.assertEqual(view.request.session[view.get_session_key()],

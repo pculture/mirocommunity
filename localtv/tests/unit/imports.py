@@ -19,10 +19,10 @@ import datetime
 
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
-from vidscraper.videos import Video as VidscraperVideo
+from vidscraper.videos import (Video as VidscraperVideo,
+                               VideoFile as VidscraperVideoFile)
 
-from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
-                            FeedImportError)
+from localtv.models import Source, Feed, FeedImport, Video, FeedImportIndex
 from localtv.tasks import haystack_update, haystack_remove
 from localtv.tests.base import BaseTestCase
 
@@ -189,9 +189,9 @@ class FeedImportUnitTestCase(BaseTestCase):
                 title='title',
                 description='description',
                 link='http://example.com/link',
-                file_url='http://example.com/file_url',
-                file_url_length=1000,
-                file_url_mimetype='video/mimetype',
+                files=[VidscraperVideoFile('http://example.com/file_url',
+                                           length=1000,
+                                           mime_type='video/mimetype')],
                 # MySQL doesn't store the microseconds (and we don't much care
                 # about them), so don't bother inserting them.  This makes the
                 # assertion below about the published date equality True.
@@ -209,9 +209,9 @@ class FeedImportUnitTestCase(BaseTestCase):
         self.assertEqual(video.description, vv.description)
         self.assertEqual(video.website_url, vv.link)
         self.assertEqual(video.embed_code, vv.embed_code)
-        self.assertEqual(video.file_url, vv.file_url)
-        self.assertEqual(video.file_url_length, vv.file_url_length)
-        self.assertEqual(video.file_url_mimetype, vv.file_url_mimetype)
+        self.assertEqual(video.file_url, vv.files[0].url)
+        self.assertEqual(video.file_url_length, vv.files[0].length)
+        self.assertEqual(video.file_url_mimetype, vv.files[0].mime_type)
         self.assertEqual(video.when_published, vv.publish_datetime)
         self.assertEqual([tag.name for tag in video.tags.all()], vv.tags)
 
@@ -237,7 +237,7 @@ class FeedImportUnitTestCase(BaseTestCase):
         feed_import = FeedImport.objects.create(source=feed)
         video_iter = [
             self.create_vidscraper_video(
-                file_url='http://example.com/media.ogg')
+                files=[VidscraperVideoFile('http://example.com/media.ogg')])
             ]
         Source.update(feed, video_iter, feed_import, using='default')
         self.assertEqual(Video.objects.count(), 1)
@@ -303,12 +303,12 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
             self.create_vidscraper_video(
                 url='http://example.com/' + 'url' * 200,
                 link='http://example.com/' + 'link' * 200,
-                file_url='http://example.com/' + 'f.ogg' * 200)
+                files=[VidscraperVideoFile('http://example.com/' + 'f.ogg' * 200)])
             ]
         Source.update(feed, video_iter, feed_import, using='default')
         v = Video.objects.get()
         self.assertEqual(v.website_url, video_iter[0].link)
-        self.assertEqual(v.file_url, video_iter[0].file_url)
+        self.assertEqual(v.file_url, video_iter[0].files[0].url)
 
     def test_index_updates(self):
         """Test that index updates are only run at the end of an update."""
