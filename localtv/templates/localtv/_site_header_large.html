@@ -5,7 +5,7 @@
 	<div class="col-two-fifths {% if site_settings.tagline %}with-tagline{% else %}no-tagline{% endif %}">
 		<a href="{{ localtv_index }}" id="SiteLogo" class="logo-link">
 			{% if site_settings.logo %}
-				{% adjust site_settings.thumbnail_path adjustment="fit" height=54 as logo %}
+				{% adjust site_settings.logo.name adjustment="fit" height=54 as logo %}
 				<img alt="{{ site_settings.site.name }} Logo" src="{{ logo }}" width="{{ logo.width }}" height="{{ logo.height }}" class="logo-img" />
 			{% endif %}
 		</a>
