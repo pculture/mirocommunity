@@ -33,7 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<div class="pod-content">
 			{% if site_settings.logo %}
 				<figure class="figure-left">
-					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{% adjust site_settings.thumbnail_path width=480 height=160 adjustment="fit" %}{% else %}{% endif %}" />
+					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{% adjust site_settings.logo.name width=480 height=160 adjustment="fit" %}{% else %}{% endif %}" />
 				</figure>
 			{% endif %}
 			{% autoescape off %}
