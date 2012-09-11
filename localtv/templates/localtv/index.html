@@ -1,3 +1,4 @@
+{% extends "localtv/__layouts/75_25.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -16,5 +17,97 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
+{% load uploadtemplate_tags cache i18n daguerre static %}
+{% load url from future %}
 
-{% include "localtv/index_cyclops.html" %}
+{% block title %}{{ block.super }}{% if site_settings.tagline %} - {{ site_settings.tagline }}{% endif %}{% endblock %}
+
+{% block body_classes %}{{ block.super }} home-page{% endblock %}
+
+{% block header %}{% include "localtv/_site_header_large.html" %}{% endblock %}
+
+{% block precontent %}
+	{% if featured_videos %}
+		<div class="precontent">
+			<div class="precontent-content">
+				<div class="container carousel-wrapper">
+					<div class="row carousel">
+						<div class="carousel-shim">
+							<img src="{% static "localtv/front/images/shim_640_360.png" %}" />
+						</div>
+						{% with featured_videos|slice:"10" as video_list %}
+							{% for video in video_list %}
+								{% include "localtv/_video_large_preview.html" %}
+							{% endfor %}
+						{% endwith %}
+					</div>{# /.row #}
+				</div>{# /.container #}
+			</div>{# /.precontent-content #}
+		</div>{# /.precontent #}
+	{% endif %}
+	{% if site_settings.sidebar_html %}
+		<div class="container">
+			<div class="site-blurb">
+				{% autoescape off %}
+					{{ site_settings.sidebar_html }}
+				{% endautoescape %}
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block main %}
+	<div class="pod new">
+		{% url 'localtv_feeds_new' as new_rss%}
+		<header class="pod-header">
+			<h1><a href="{% url 'localtv_list_new' %}">{% trans "New" %}</a></h1>
+			<ul class="pod-actions">
+				<li><a href="{{ new_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
+				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
+			</ul>
+		</header>{# /.pod-header #}
+		<div class="pod-content">
+			{% if new_videos %}
+				{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"12" columns=3 %}
+			{% else %}
+				<div class="message warning">
+					<p>{% trans "No videos have been added yet." %}</p>
+				</div>
+			{% endif %}
+		</div>{# /.pod-content #}
+		<div class="pod-footer">
+			<ul class="pod-footer-actions">
+				<li><a class="button-wide continue" href="{% url 'localtv_list_new' %}">{% trans "All New Videos" %}</a></li>
+			</ul>
+		</div>
+	</div>{# /.pod #}
+{% endblock %}
+
+{% block side %}
+	<div class="right-sidebar">
+		<div class="pod popular">
+			{% url 'localtv_feeds_popular' as popular_rss %}
+			<header class="pod-header">
+				<h1><a href="{% url 'localtv_list_popular' %}">{% trans "Popular" %}</a></h1>
+				<ul class="pod-actions">
+					<li><a href="{{ popular_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
+					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ popular_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
+				</ul>
+			</header>{# /.pod-header #}
+			<div class="pod-content">
+				{% if popular_videos %}
+					{% include "localtv/_video_grid_list.html" with video_list=popular_videos|slice:"4" columns=1 %}
+				{% else %}
+					<div class="message warning">
+						<p>{% trans "No videos have been added yet." %}</p>
+					</div>
+				{% endif %}
+			</div>{# /.pod-content #}
+			<div class="pod-footer">
+				<ul class="pod-footer-actions">
+					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
+				</ul>
+			</div>
+		</div>{# /.pod #}
+	</div>
+{% endblock %}

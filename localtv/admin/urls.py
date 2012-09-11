@@ -88,8 +88,7 @@ urlpatterns += patterns(
     'localtv.admin.category_views',
     (r'^categories/$', 'categories',
      {}, 'localtv_admin_categories'),
-    (r'^categories/votes/([-\w]+)$', 'votes', {},
-     'localtv_admin_category_votes'))
+)
 
 urlpatterns += patterns(
     'localtv.admin.bulk_edit_views',

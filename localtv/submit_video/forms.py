@@ -25,10 +25,11 @@ from django.conf import settings
 from django.db.models import Q
 from tagging.forms import TagField
 import vidscraper
-from vidscraper.errors import CantIdentifyUrl
+from vidscraper.exceptions import UnhandledVideo
 
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.models import Video
+from localtv.settings import API_KEYS
+from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.templatetags.filters import sanitize
 
 
@@ -69,12 +70,8 @@ class SubmitURLForm(forms.Form):
         self._validate_unique(url=url)
         self.video_cache = None
         try:
-            self.video_cache = vidscraper.auto_scrape(url, api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            })
-        except (CantIdentifyUrl, urllib2.URLError):
+            self.video_cache = vidscraper.auto_scrape(url, api_keys=API_KEYS)
+        except (UnhandledVideo, urllib2.URLError):
             pass
         else:
             if self.video_cache.link is not None and url != self.video_cache.link:
@@ -87,8 +84,7 @@ class SubmitURLForm(forms.Form):
 
 class SubmitVideoFormBase(forms.ModelForm):
     tags = TagField(required=False, label="Tags (optional)",
-                    help_text=("You can also <span class='url'>optionally add "
-                               "tags</span> for the video (below)."))
+                    help_text=("You may optionally add tags for the video."))
 
     if getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', False):
         contact = Video._meta.get_field('contact').formfield(
@@ -171,12 +167,9 @@ class SubmitVideoFormBase(forms.ModelForm):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
 
-            # TODO: Should be delayed as a task
             if instance.thumbnail_url and not instance.thumbnail_file:
-                try:
-                    instance.save_thumbnail()
-                except CannotOpenImageUrl:
-                    pass # we'll get it later
+                video_save_thumbnail.delay(instance.pk, using=CELERY_USING)
+
             if self.cleaned_data.get('tags'):
                 instance.tags = self.cleaned_data['tags']
             old_m2m()

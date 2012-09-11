@@ -29,6 +29,7 @@ from django.utils.tzinfo import FixedOffset
 
 from localtv.feeds.feedgenerator import ThumbnailFeedGenerator, JSONGenerator
 from localtv.models import Video
+from localtv.search.forms import ModelFilterField
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterMixin
 from localtv.templatetags.filters import simpletimesince
@@ -101,13 +102,14 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
         if self.filter_name is not None:
             field = self.form_class.base_fields[self.filter_name]
-            model = field.queryset.model
-            try:
-                key = field.to_field_name or 'pk'
-                obj['obj'] = model.objects.get(**{
-                                            key: kwargs[self.filter_kwarg]})
-            except (ValueError, model.DoesNotExist):
-                raise Http404
+            if isinstance(field, ModelFilterField):
+                model = field.queryset.model
+                try:
+                    key = field.to_field_name or 'pk'
+                    obj['obj'] = model.objects.get(**{
+                                              key: kwargs[self.filter_kwarg]})
+                except (ValueError, model.DoesNotExist):
+                    raise Http404
 
         return obj
 
@@ -155,12 +157,13 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         More info at http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_1.1_parameters
 
         """
-        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
-        if form.is_valid():
-            qs = form.get_queryset()
-        else:
-            qs = form.invalid_query()
-        items = NormalizedVideoList(qs)
+        filter_value = obj.get('obj')
+        if self.filter_name is not None:
+            field = self.form_class.base_fields[self.filter_name]
+            if isinstance(field, ModelFilterField):
+                filter_value = [filter_value]
+        form = self.get_form(obj['request'].GET.dict(), filter_value)
+        items = NormalizedVideoList(form.search())
         return self._opensearch_items(items, obj)
 
     def _opensearch_items(self, items, obj):
@@ -430,17 +433,17 @@ class PlaylistVideosFeed(BaseVideosFeed):
         :meth:`items`.
 
         """
-        form = self.get_form(obj['request'].GET.dict(), obj.get('obj'))
+        form = self.get_form(obj['request'].GET.dict(), [obj.get('obj')])
         # We currently don't support searching combined with the 'order' sort.
         if 'playlist_order' in obj:
             # This is a HACK for backwards-compatibility.
             order_by = '{0}playlistitem___order'.format(
                                '-' if obj['playlist_order'][0] == '-' else '')
             queryset = obj['obj'].items.order_by(order_by)
+            queryset = form._filter(queryset)
         else:
-            queryset = form._search()
-            queryset = form._sort(queryset)
-        queryset = NormalizedVideoList(form._filter(queryset))
+            queryset = form.search()
+        queryset = NormalizedVideoList(queryset)
         return self._opensearch_items(queryset, obj)
 
     def title(self, obj):

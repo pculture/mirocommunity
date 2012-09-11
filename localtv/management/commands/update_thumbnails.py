@@ -23,6 +23,7 @@ from django.core.management.base import NoArgsCommand
 
 from localtv.management import site_too_old
 from localtv import models
+from localtv.tasks import video_save_thumbnail
 
 class Command(NoArgsCommand):
 
@@ -38,7 +39,7 @@ class Command(NoArgsCommand):
                     print >> sys.stderr, 'saving', repr(v), '(%i)' % v.pk
                 try:
                     # resave the thumbnail
-                    v.save_thumbnail()
+                    video_save_thumbnail.apply(args=(v.pk,))
                 except Exception:
                     traceback.print_exc()
 

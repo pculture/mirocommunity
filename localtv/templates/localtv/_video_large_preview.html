@@ -2,22 +2,27 @@
 
 <article class="video-large">
 	<div class="video-large-preview col-two-thirds">
-		{% with video.thumbnail_file as thumbnail %}
-			{% if thumbnail.width > 640 and thumbnail.height > 400 %}
-				{% adjust thumbnail width=640 height=400 adjustment="fill" as image %}
-				<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" /></a>
-			{% elif thumbnail %}
-				<a href="{{ video.get_absolute_url }}"><img src="{{ thumbnail.url }}" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}" /></a>
-			{% endif %}
-		{% endwith %}
+		{# We're gonna do some logic to get the right thumbnail size here. It's gonna be messy. #}
+		
+		{# Start by cropping the image. #}
+		{% adjust video.thumbnail_file.name width=640 height=360 adjustment="crop" as image %}
+		{# If the both dimensions are larger than the space, switch to fill. #}
+		{% if image.width == 640 and image.height == 360 %}
+			{% adjust video.thumbnail_file.name width=640 height=360 adjustment="fill" as image %}
+		{# If one dimension is larger than the space, switch to fit. #}
+		{% elif image.width == 640 or image.height == 360  %}
+			{% adjust video.thumbnail_file.name width=640 height=360 adjustment="fit" as image %}
+		{% endif %}
+		
+		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" /></a>
 	</div>
-	<div class="video-large-details content-box col-one-third">
+	<div class="video-large-details padded col-one-third">
 		<header>
 			<h1><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h1>
 		</header>
 		<div class="video-large-description">
 			{{ video.description|safe|truncatewords:40 }}
 		</div>
-		<p><a href="{{ video.get_absolute_url }}" class="watch-video-button">{% trans "Watch Video" %}</a></p>
+		<p><a href="{{ video.get_absolute_url }}" class="button-dark watch-video-button">{% trans "Watch Video" %}</a></p>
 	</div>
 </article>

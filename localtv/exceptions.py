@@ -23,7 +23,7 @@ class LocaltvException(Exception):
 class InvalidVideo(LocaltvException):
     """
     Raised if a :class:`.Video` instance can't be created from a
-    :class:`vidscraper.suites.base.Video` instance.
+    :class:`vidscraper.videos.Video` instance.
 
     """
     pass

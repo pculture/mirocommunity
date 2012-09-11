@@ -165,10 +165,10 @@ INSTALLED_APPS = (
     'django.contrib.comments',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
+    'django.contrib.markup',
     # Uncomment to use south migrations
     # 'south',
     'djpagetabs',
-    'djvideo',
     'localtv',
     'localtv.admin',
     'localtv.comments',
@@ -176,6 +176,8 @@ INSTALLED_APPS = (
     'localtv.inline_edit',
     'localtv.user_profile',
     'localtv.playlists',
+    'localtv.contrib.contests',
+    'djvideo',
     'registration',
     'tagging',
     'uploadtemplate',
@@ -185,7 +187,6 @@ INSTALLED_APPS = (
     'notification',
     'socialauth',
     'openid_consumer',
-    'voting',
     'daguerre',
     'compressor',
     'mptt',
@@ -205,6 +206,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     "localtv.context_processors.localtv",
+    "localtv.context_processors.browse_modules",
+    "localtv.contrib.contests.context_processors.contests",
 )
 
 # For debugging, don't redirect mistyped urls

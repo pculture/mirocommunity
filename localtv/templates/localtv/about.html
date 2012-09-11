@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/50_50.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -25,44 +25,43 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_id %}about_page{% endblock %}
 
-{% block content %}
-	<div class="row">
-		<div class="col-one-half">
-			<div class="pod">
-				<header class="pod-header">
-					<h1 class="pod-title">{% trans "About" %}</h1>
-				</header>
-				<div class="pod-content">
-					<figure class="figure-left">
-						<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{% adjust site_settings.logo width=440 height=70 adjustment="fit" %}{% else %}{% endif %}" />
-					</figure>
-					{% autoescape off %}
-						{{ site_settings.about_html }}
-					{% endautoescape %}
-				</div>
-			</div>{# /.pod #}
-		</div>{# /.col-one-half #}
-		<div class="col-one-half">
-			<div class="pod">
-				<header class="pod-header">
-					<h1 class="pod-title">{% trans "Powered by Miro Community" %}</h1>
-				</header>
-				<div class="pod-content">
-					<figure class="figure-left">
-						<img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>
-					</figure>
-					<p>
-						{% blocktrans %}
-							<a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet. <a href="http://mirocommunity.org/signup/">Get started now</a>&#8212;it&#8217;s free and takes less than a minute.
-						{% endblocktrans %}
-					</p>
-					<p>
-						{% blocktrans %}
-							Miro Community is developed by the <a href="http://pculture.org">Participatory Culture Foundation</a>.
-						{% endblocktrans %}
-					</p>
-				</div>
-			</div>{# /.pod #}
-		</div>{# /.col-one-half #}
-	</div>{# /.row #}
+{% block main %}
+	<div class="pod">
+		<header class="pod-header">
+			<h1 class="pod-title">{% trans "About" %}</h1>
+		</header>
+		<div class="pod-content">
+			{% if site_settings.logo %}
+				<figure class="figure-left">
+					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% adjust site_settings.logo.name width=480 height=160 adjustment="fit" %}" />
+				</figure>
+			{% endif %}
+			{% autoescape off %}
+				{{ site_settings.about_html }}
+			{% endautoescape %}
+		</div>
+	</div>{# /.pod #}
+{% endblock %}
+
+{% block side %}
+	<div class="pod">
+		<header class="pod-header">
+			<h1 class="pod-title">{% trans "Powered by Miro Community" %}</h1>
+		</header>
+		<div class="pod-content">
+			<figure class="figure-left">
+				<img class="logo" alt="Miro Community logo" src="http://www.mirocommunity.org/images/mc_logo.png" width="422" height="65"/>
+			</figure>
+			<p>
+				{% blocktrans %}
+					<a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet. <a href="http://mirocommunity.org/signup/">Get started now</a>&#8212;it&#8217;s free and takes less than a minute.
+				{% endblocktrans %}
+			</p>
+			<p>
+				{% blocktrans %}
+					Miro Community is developed by the <a href="http://pculture.org">Participatory Culture Foundation</a>.
+				{% endblocktrans %}
+			</p>
+		</div>
+	</div>{# /.pod #}
 {% endblock %}

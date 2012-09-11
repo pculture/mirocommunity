@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -21,11 +21,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load url from future %}
 {% load i18n %}
 
-{% block content %}
+{% block main %}
 	<header class="page-header">
 		<h1 class="page-title">{% trans "Browse teh localtvz" %}</h1>
 	</header>
-	<div class="page-content content-box">
+	<div class="page-content padded">
 		<ul>
 			<li>
 				<a href="{% url 'localtv_list_new' %}">
@@ -44,4 +44,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</li>
 		</ul>
 	</div>
-{% endblock content %}
+{% endblock %}

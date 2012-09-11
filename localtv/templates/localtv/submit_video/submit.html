@@ -27,18 +27,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block inner_form %}
 	{% if was_duplicate %}
-		{% if not request.user_is_admin %}
-			<div class="message error">
- 				It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}.. sorry! You can submit another video if you like.
-			</div>
-		{% else %}
-			<div class="message warning">
- 				A video with that url has already been submitted. You can moderate it <a href="{% url 'localtv_view_video' video_id=video_pk slug='' %}">here</a>.
-			</div>
-		{% endif %}
+		<div class="message error">
+			It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}... sorry! You can submit another video if you like.
+		</div>
 	{% endif %}
 
-	{{ form.construction_hint}}
 	<div class="control-group{% if form.url.errors %} error{% endif %} x-large">
 		<label for="id_url">Enter the URL of your video</label>
 		<div class="controls">

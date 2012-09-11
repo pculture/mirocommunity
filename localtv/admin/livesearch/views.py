@@ -115,7 +115,7 @@ class LiveSearchView(LiveSearchSessionMixin, ListView):
         if self.form.is_valid():
             is_saved_search = SavedSearch.objects.filter(
                                   site=current_site,
-                                  query_string=self.form.cleaned_data['q']
+                                  query_string=self.form.cleaned_data['query']
                               ).exists()
 
         context.update({
@@ -128,7 +128,7 @@ class LiveSearchView(LiveSearchSessionMixin, ListView):
         cleaned_data = getattr(self.form, 'cleaned_data', self.form.initial)
         context.update({
             'order_by': cleaned_data.get('order_by', 'latest'),
-            'query_string': cleaned_data.get('q', '')
+            'query_string': cleaned_data.get('query', '')
         })
         return context
 
@@ -191,7 +191,7 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
         current_site = Site.objects.get_current()
         try:
             saved_search = SavedSearch.objects.get(site=current_site,
-                                    query_string=self.form.cleaned_data['q'])
+                                 query_string=self.form.cleaned_data['query'])
         except SavedSearch.DoesNotExist:
             video.user = request.user
         else:
@@ -249,7 +249,7 @@ search_auto_approve = referrer_redirect(require_site_admin(
 @referrer_redirect
 @require_site_admin
 def create_saved_search(request):
-    query_string = request.GET.get('q')
+    query_string = request.GET.get('query')
 
     if not query_string:
         return HttpResponseBadRequest('must provide a query_string')

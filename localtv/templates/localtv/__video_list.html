@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
@@ -19,21 +19,24 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
+{% load i18n %}
+
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
-{% block content %}
+{% block main %}
+
 	<header class="page-header">
 		<h1>{% block page_title %}Video List{% endblock %}</h1>
 		<div class="page-actions">
 			<ul class="action-list">
-				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}">RSS</a>{% endblock %}</li>
+				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a>{% endblock %}</li>
 			</ul>
 		</div>
 	</header>
-	
+
 	<div class="page-content">
-		<div class="content-box">
-			{% include "localtv/_video_grid_list.html" %}
+		<div class="padded">
+			{% include "localtv/_video_grid_list.html" with columns=4 %}
 		</div>
 	</div>
 	

@@ -17,10 +17,8 @@
 
 import datetime
 import email.utils
-import httplib
 import itertools
 import re
-import urllib
 import urllib2
 import mimetypes
 import operator
@@ -28,6 +26,7 @@ import os
 import logging
 import sys
 import traceback
+import warnings
 
 try:
     from PIL import Image as PILImage
@@ -38,13 +37,11 @@ from bs4 import BeautifulSoup
 
 from daguerre.models import Image
 from django.db import models
-from django.db.models.sql.aggregates import Aggregate
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -70,13 +67,12 @@ from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
+from localtv.managers import SiteRelatedManager, VideoManager
 from localtv.signals import post_video_from_vidscraper, submit_finished
 
 def delete_if_exists(path):
     if default_storage.exists(path):
         default_storage.delete(path)
-
-EMPTY = object()
 
 FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
 FORCE_HEIGHT_PADDING = 2
@@ -137,48 +133,6 @@ class Thumbnailable(models.Model):
     def delete(self, *args, **kwargs):
         self.delete_thumbnail(save=False)
         super(Thumbnailable, self).delete(*args, **kwargs)
-
-
-SITE_LOCATION_CACHE = {}
-
-
-class SiteSettingsManager(models.Manager):
-    def get_current(self):
-        sid = settings.SITE_ID
-        db = self._db if self._db is not None else 'default'
-        try:
-            # Dig it out of the cache.
-            current_site_settings = SITE_LOCATION_CACHE[(db, sid)]
-        except KeyError:
-            # Not in the cache? Time to put it in the cache.
-            try:
-                # If it is in the DB, get it.
-                current_site_settings = self.select_related().get(site__pk=sid)
-            except SiteSettings.DoesNotExist:
-                # Otherwise, create it.
-                current_site_settings = self.create(
-                    site=Site.objects.db_manager(db).get_current())
-
-            SITE_LOCATION_CACHE[(db, sid)] = current_site_settings
-        return current_site_settings
-
-    def get(self, **kwargs):
-        if 'site' in kwargs:
-            site = kwargs['site']
-            if not isinstance(site, (int, long, basestring)):
-                site = site.id
-            site = int(site)
-            try:
-                return SITE_LOCATION_CACHE[(self._db, site)]
-            except KeyError:
-                pass
-        site_settings = models.Manager.get(self, **kwargs)
-        SITE_LOCATION_CACHE[(self._db, site_settings.site_id)] = site_settings
-        return site_settings
-
-    def clear_cache(self):
-        global SITE_LOCATION_CACHE
-        SITE_LOCATION_CACHE = {}
 
 
 class SingletonManager(models.Manager):
@@ -264,13 +218,10 @@ class SiteSettings(Thumbnailable):
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
 
-    objects = SiteSettingsManager()
-
-    class Meta:
-        db_table = 'localtv_sitelocation'
+    objects = SiteRelatedManager()
 
     def __unicode__(self):
-        return '%s (%s)' % (self.site.name, self.site.domain)
+        return u'%s (%s)' % (self.site.name, self.site.domain)
 
     def user_is_admin(self, user):
         """
@@ -283,10 +234,6 @@ class SiteSettings(Thumbnailable):
             return True
 
         return self.admins.filter(pk=user.pk).exists()
-
-    def save(self, *args, **kwargs):
-        SITE_LOCATION_CACHE[(self._state.db, self.site_id)] = self
-        return models.Model.save(self, *args, **kwargs)
 
     def should_show_dashboard(self):
         '''On /admin/, most sites will see a dashboard that gives them
@@ -316,7 +263,7 @@ class NewsletterSettings(models.Model):
         (LATEST, _("5 latest videos")),
         (CUSTOM, _("Custom selection")),
     )
-    site_settings = models.OneToOneField(SiteSettings, db_column='sitelocation_id')
+    site_settings = models.OneToOneField(SiteSettings)
     status = models.IntegerField(
         choices=STATUS_CHOICES, default=DISABLED,
         help_text='What videos should get sent out in the newsletter?')
@@ -408,6 +355,22 @@ class NewsletterSettings(models.Model):
                                 context)
 
 
+class WidgetSettingsManager(SiteRelatedManager):
+    def _new_entry(self, site, using):
+        ws = super(WidgetSettingsManager, self)._new_entry(site, using)
+        try:
+            site_settings = SiteSettings._default_manager.db_manager(
+                using).get(site=site)
+        except SiteSettings.DoesNotExist:
+            pass
+        else:
+            if site_settings.logo:
+                site_settings.logo.open()
+                ws.icon = site_settings.logo
+                ws.save()
+        return ws
+
+
 class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
@@ -433,6 +396,8 @@ class WidgetSettings(Thumbnailable):
 
     border_color = models.CharField(max_length=20, blank=True)
     border_color_editable = models.BooleanField(default=False)
+
+    objects = WidgetSettingsManager()
 
     def get_title_or_reasonable_default(self):
         # Is the title worth using? If so, use that.
@@ -512,7 +477,7 @@ class Source(Thumbnailable):
                clear_rejected=False):
         """
         Imports videos from a feed/search.  `videos` is an iterable which
-        returns :class:`vidscraper.suites.base.Video` objects.  We use
+        returns :class:`vidscraper.videos.Video` objects.  We use
         :method:`.Video.from_vidscraper_video` to map the Vidscraper fields to
         Video attributes.
 
@@ -529,27 +494,31 @@ class Source(Thumbnailable):
 
         total_videos = 0
 
-        for vidscraper_video in video_iter:
-            total_videos += 1
-            try:
-                video_from_vidscraper_video.delay(
-                    vidscraper_video,
-                    site_pk=self.site_id,
-                    import_app_label=import_opts.app_label,
-                    import_model=import_opts.module_name,
-                    import_pk=source_import.pk,
-                    status=Video.PENDING,
-                    author_pks=author_pks,
-                    category_pks=category_pks,
-                    clear_rejected=clear_rejected,
-                    using=using)
-            except:
-                source_import.handle_error(
-                    'Import task creation failed for %r' % (
-                        vidscraper_video.url,),
-                    is_skip=True,
-                    with_exception=True,
-                    using=using)
+        try:
+            for vidscraper_video in video_iter:
+                total_videos += 1
+                try:
+                    video_from_vidscraper_video.delay(
+                        vidscraper_video,
+                        site_pk=self.site_id,
+                        import_app_label=import_opts.app_label,
+                        import_model=import_opts.module_name,
+                        import_pk=source_import.pk,
+                        status=Video.PENDING,
+                        author_pks=author_pks,
+                        category_pks=category_pks,
+                        clear_rejected=clear_rejected,
+                        using=using)
+                except Exception:
+                    source_import.handle_error(
+                        'Import task creation failed for %r' % (
+                            vidscraper_video.url,),
+                        is_skip=True,
+                        with_exception=True,
+                        using=using)
+        except Exception:
+            source_import.fail(with_exception=True, using=using)
+            return
 
         source_import.__class__._default_manager.using(using).filter(
             pk=source_import.pk
@@ -637,23 +606,15 @@ class Feed(Source):
 
         video_iter = vidscraper.auto_feed(
             self.feed_url,
-            crawl=(getattr(self, 'status', True) == 0),
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            max_results=None if self.status == self.INACTIVE else 100,
+            api_keys=lsettings.API_KEYS,
         )
 
         try:
             video_iter.load()
         except Exception:
-            feed_import.last_activity = datetime.datetime.now()
-            feed_import.status = FeedImport.FAILED
-            feed_import.save()
-            feed_import.handle_error(u'Skipping import of %s: error loading the'
-                                     u' feed' % self,
-                                     with_exception=True, using=using)
+            feed_import.fail("Data loading failed for {source}",
+                             with_exception=True, using=using)
             return
 
         self.etag = getattr(video_iter, 'etag', None) or ''
@@ -740,11 +701,6 @@ class Category(MPTTModel):
         verbose_name='Category Parent',
         help_text=_("Categories, unlike tags, can have a hierarchy."))
 
-    # only relevant is voting is enabled for the site
-    contest_mode = models.DateTimeField('Turn on Contest',
-                                        null=True,
-                                        default=None)
-
     class MPTTMeta:
         order_insertion_by = ['name']
 
@@ -791,18 +747,6 @@ class Category(MPTTModel):
         return 'Category with this %s already exists.' % (
             unique_check[0],)
 
-    def has_votes(self):
-        """
-        Returns True if this category has videos with votes.
-        """
-        if not lsettings.voting_enabled():
-            return False
-        import voting
-        return voting.models.Vote.objects.filter(
-            content_type=ContentType.objects.get_for_model(Video),
-            object_id__in=self.approved_set.values_list('id',
-                                                        flat=True)).exists()
-
 
 class SavedSearch(Source):
     """
@@ -843,21 +787,17 @@ class SavedSearch(Source):
 
         searches = vidscraper.auto_search(
             self.query_string,
-            crawl=True,
-            api_keys={
-                'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-                'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-                'ustream_key': getattr(settings, 'USTREAM_API_KEY', None)
-            }
+            max_results=100,
+            api_keys=lsettings.API_KEYS,
         )
 
         video_iters = []
-        for video_iter in searches.values():
+        for video_iter in searches:
             try:
                 video_iter.load()
             except Exception:
                 search_import.handle_error(u'Skipping import of search results '
-                               u'from %s' % video_iter.suite.__class__.__name__,
+                               u'from %s' % video_iter.__class__.__name__,
                                with_exception=True, using=using)
                 continue
             video_iters.append(video_iter)
@@ -868,10 +808,8 @@ class SavedSearch(Source):
                                             using=using, **kwargs)
         else:
             # Mark the import as failed if none of the searches could load.
-            search_import.status = SearchImport.FAILED
-            search_import.last_activity = datetime.datetime.now()
-            search_import.save()
-            logging.debug('All searches failed for %s' % self)
+            search_import.fail("All searches failed for {source}",
+                               with_exception=False, using=using)
 
     def source_type(self):
         return u'Search'
@@ -892,7 +830,7 @@ class FeedImportIndex(SourceImportIndex):
 class SearchImportIndex(SourceImportIndex):
     source_import = models.ForeignKey('SearchImport', related_name='indexes')
     #: This is just the name of the suite that was used to get this index.
-    suite = models.CharField(max_length=30)
+    suite = models.CharField(max_length=30, blank=True)
 
 
 class SourceImportError(models.Model):
@@ -1010,6 +948,19 @@ class SourceImport(models.Model):
         self.__class__._default_manager.using(using).filter(pk=self.pk
                     ).update(videos_imported=models.F('videos_imported') + 1)
 
+    def fail(self, message="Import failed for {source}", with_exception=False,
+             using='default'):
+        """
+        Mark an import as failed, along with some post-fail cleanup.
+
+        """
+        self.status = self.FAILED
+        self.last_activity = datetime.datetime.now()
+        self.save()
+        self.handle_error(message.format(source=self.source),
+                          with_exception=with_exception, using=using)
+        self.get_videos(using).delete()
+
 
 class FeedImport(SourceImport):
     source = models.ForeignKey(Feed, related_name='imports')
@@ -1031,12 +982,6 @@ class SearchImport(SourceImport):
     def get_videos(self, using='default'):
         return Video.objects.using(using).filter(
                                         searchimportindex__source_import=self)
-
-    def get_index_creation_kwargs(self, video, vidscraper_video):
-        kwargs = super(SearchImport, self).get_index_creation_kwargs(video,
-                                                            vidscraper_video)
-        kwargs['suite'] = vidscraper_video.suite.__class__.__name__
-        return kwargs
 
 
 class VideoBase(models.Model):
@@ -1086,8 +1031,10 @@ class OriginalVideo(VideoBase):
         else:
             try:
                 vidscraper_video = vidscraper.auto_scrape(
-                    video.website_url, fields=fields)
-            except vidscraper.errors.VideoDeleted:
+                                                video.website_url,
+                                                fields=fields,
+                                                api_keys=lsettings.API_KEYS)
+            except vidscraper.exceptions.VideoDeleted:
                 remote_video_was_deleted = True
             except urllib2.URLError:
                 # some kind of error Vidscraper couldn't handle; log it and
@@ -1220,8 +1167,9 @@ class OriginalVideo(VideoBase):
                 self.video.site.name, self.video.name)
             message = t.render(c)
             send_notice('admin_video_updated', subject, message,
-                        site_settings=SiteSettings.objects.get(
-                    site=self.video.site))
+                        site_settings=SiteSettings.objects.get_cached(
+                                            site=self.video.site,
+                                            using=self._state.db))
             # Update the OriginalVideo to show that we sent this notification
             # out.
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETED
@@ -1259,7 +1207,10 @@ class OriginalVideo(VideoBase):
                     if field == 'thumbnail_url':
                         self.thumbnail_url = self.video.thumbnail_url = value
                     changed_model = True
-                    self.video.save_thumbnail()
+                    from localtv.tasks import (video_save_thumbnail,
+                                               CELERY_USING)
+                    video_save_thumbnail.delay(self.video.pk,
+                                               using=CELERY_USING)
             elif getattr(self, field) == getattr(self.video, field):
                 value = changed_fields.pop(field)
                 setattr(self, field, value)
@@ -1297,8 +1248,9 @@ class OriginalVideo(VideoBase):
             self.video.site.name, self.video.name)
         message = t.render(c)
         send_notice('admin_video_updated', subject, message,
-                    site_settings=SiteSettings.objects.get(
-                site=self.video.site))
+                    site_settings=SiteSettings.objects.get_cached(
+                                        site=self.video.site,
+                                        using=self._state.db))
 
         # And update the self instance to reflect the changes.
         for field in changed_fields:
@@ -1307,170 +1259,6 @@ class OriginalVideo(VideoBase):
             else:
                 setattr(self, field, changed_fields[field])
         self.save()
-
-
-class WatchCount(models.Aggregate):
-    def __init__(self, since):
-        models.Aggregate.__init__(self, "watch", since=since)
-
-    def add_to_query(self, query, alias, col, source, is_summary):
-        aggregate = WatchCountAggregateSQL(col, source=source,
-                                           is_summary=is_summary,
-                                           **self.extra)
-        query.aggregates[alias] = aggregate
-
-
-class WatchCountAggregateSQL(Aggregate):
-    is_ordinal = True
-    sql_template = ('(SELECT COUNT(*) FROM %s WHERE '
-                    '%s.%s = %s.%s AND %s.%s > "%s")')
-
-    def as_sql(self, qn, connection):
-        localtv_watch = qn("localtv_watch")
-        localtv_video = qn("localtv_video")
-        id_ = qn("id")
-        video_id = qn("video_id")
-        timestamp = qn("timestamp")
-        return self.sql_template % (
-            localtv_watch, localtv_watch, video_id, localtv_video, id_,
-            localtv_watch, timestamp,
-            connection.ops.value_to_db_datetime(self.extra['since']))
-
-
-class VideoQuerySet(models.query.QuerySet):
-
-    def with_best_date(self, use_original_date=True):
-        if use_original_date:
-            published = 'localtv_video.when_published,'
-        else:
-            published = ''
-        return self.extra(select={'best_date': """
-COALESCE(%slocaltv_video.when_approved,
-localtv_video.when_submitted)""" % published})
-
-    def with_watch_count(self, since=EMPTY):
-        """
-        Returns a QuerySet of videos annotated with a ``watch_count`` of all
-        watches since ``since`` (a datetime, which defaults to seven days ago).
-        """
-        if since is EMPTY:
-            since = datetime.datetime.now() - datetime.timedelta(days=7)
-
-        return self.annotate(watch_count=WatchCount(since))
-
-
-class VideoManager(models.Manager):
-
-    def get_query_set(self):
-        return VideoQuerySet(self.model, using=self._db)
-
-    def with_best_date(self, *args, **kwargs):
-        return self.get_query_set().with_best_date(*args, **kwargs)
-
-    def popular_since(self, *args, **kwargs):
-        return self.get_query_set().popular_since(*args, **kwargs)
-
-    def get_site_settings_videos(self, site_settings=None):
-        """
-        Returns a QuerySet of videos which are active and tied to the
-        site_settings. This QuerySet is cached on the request.
-        
-        """
-        if site_settings is None:
-            site_settings = SiteSettings.objects.get_current()
-        return self.filter(status=Video.ACTIVE, site=site_settings.site)
-
-    def get_featured_videos(self, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos which are considered "featured"
-        for the site_settings.
-
-        """
-        return self.get_site_settings_videos(site_settings).filter(
-            last_featured__isnull=False
-        ).order_by(
-            '-last_featured',
-            '-when_approved',
-            '-when_published',
-            '-when_submitted'
-        )
-
-    def get_latest_videos(self, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos for the site_settings, ordered by
-        decreasing ``best_date``.
-        
-        """
-        if site_settings is None:
-            site_settings = SiteSettings.objects.get_current()
-        return self.get_site_settings_videos(site_settings).with_best_date(
-            site_settings.use_original_date
-        ).order_by('-best_date')
-
-    def get_popular_videos(self, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos considered "popular" for the
-        current site_settings.
-
-        """
-        from localtv.search.utils import PopularSort
-        return PopularSort().sort(self.get_latest_videos(site_settings))
-
-    def get_category_videos(self, category, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos considered part of the selected
-        category or its descendants for the site_settings.
-
-        """
-        if site_settings is None:
-            site_settings = SiteSettings.objects.get_current()
-        # category.approved_set already checks active().
-        return category.approved_set.filter(
-            site=site_settings.site
-        ).with_best_date(
-            site_settings.use_original_date
-        ).order_by('-best_date')
-
-    def get_tag_videos(self, tag, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos with the given tag for the
-        site_settings.
-
-        """
-        if site_settings is None:
-            site_settings = SiteSettings.objects.get_current()
-        return Video.tagged.with_all(tag).filter(status=Video.ACTIVE,
-                                                 site=site_settings.site
-                                        ).order_by('-when_approved',
-                                                   '-when_published',
-                                                   '-when_submitted')
-
-    def get_author_videos(self, author, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos published or produced by
-        ``author`` related to the site_settings.
-
-        """
-        return self.get_latest_videos(site_settings).filter(
-            models.Q(authors=author) | models.Q(user=author)
-        ).distinct().order_by('-best_date')
-
-    def in_feed_order(self, feed=None, site_settings=None):
-        """
-        Returns a ``QuerySet`` of active videos ordered by the order they were
-        in when originally imported.
-        """
-        if site_settings is None and feed:
-            site_settings = SiteSettings.objects.get(site=feed.site)
-        if site_settings:
-            qs = self.get_latest_videos(site_settings)
-        else:
-            qs = self.all()
-        if feed:
-            qs = qs.filter(feed=feed)
-        return qs.order_by('-feedimportindex__source_import__start',
-                           'feedimportindex__index',
-                           '-id')
 
 
 class Video(Thumbnailable, VideoBase):
@@ -1644,13 +1432,14 @@ class Video(Thumbnailable, VideoBase):
                               authors=None, categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
-        :class:`vidscraper.suites.base.Video` instance. If `commit` is False,
+        :class:`vidscraper.videos.Video` instance. If `commit` is False,
         the :class:`Video` will not be saved, and the created instance will have
         a `save_m2m()` method that must be called after you call `save()`.
 
         """
-        if video.file_url_expires is None:
-            file_url = video.file_url
+        video_file = video.get_file()
+        if video_file and video_file.expires is None:
+            file_url = video_file.url
         else:
             file_url = None
 
@@ -1668,8 +1457,8 @@ class Video(Thumbnailable, VideoBase):
             website_url=video.link or '',
             when_published=video.publish_datetime,
             file_url=file_url or '',
-            file_url_mimetype=video.file_url_mimetype or '',
-            file_url_length=video.file_url_length,
+            file_url_mimetype=getattr(video_file, 'mime_type', '') or '',
+            file_url_length=getattr(video_file, 'length', None),
             when_submitted=now,
             when_approved=now if status == cls.ACTIVE else None,
             status=status,
@@ -1777,41 +1566,6 @@ class Video(Thumbnailable, VideoBase):
                 if guess[0] is not None:
                     self.file_url_mimetype = guess[0]
 
-    def save_thumbnail(self):
-        """
-        Automatically run the entire file saving process... provided we have a
-        thumbnail_url, that is.
-        """
-        if not self.thumbnail_url:
-            return
-
-        try:
-            remote_file = urllib.urlopen(utils.quote_unicode_url(
-                    self.thumbnail_url))
-        except httplib.InvalidURL:
-            # if the URL isn't valid, erase it and move on
-            self.thumbnail_url = ''
-            self.delete_thumbnail()
-            return
-
-        if remote_file.getcode() != 200:
-            logging.info('code %i when getting %r, ignoring',
-                         remote_file.getcode(), self.thumbnail_url)
-            self.delete_thumbnail()
-            return
-
-        try:
-            content_thumb = ContentFile(remote_file.read())
-        except IOError:
-            raise CannotOpenImageUrl('IOError loading %s' % self.thumbnail_url)
-        else:
-            try:
-                self.thumbnail_file = content_thumb
-            except Exception:
-                logging.exception("Error while getting " + repr(self.thumbnail_url))
-            else:
-                self.save()
-
     def submitter(self):
         """
         Return the user that submitted this video.  If necessary, use the
@@ -1876,9 +1630,9 @@ class Video(Thumbnailable, VideoBase):
         When videos are bulk imported (from a feed or a search), we list the
         date as "published", otherwise we show 'posted'.
         """
-
-        if self.when_published and \
-                SiteSettings.objects.get(site=self.site_id).use_original_date:
+        site_settings = SiteSettings.objects.get_cached(site=self.site_id,
+                                                        using=self._state.db)
+        if self.when_published and site_settings.use_original_date:
             return 'published'
         else:
             return 'posted'
@@ -1903,12 +1657,7 @@ class Video(Thumbnailable, VideoBase):
             l = Category._tree_manager._translate_lookups(**l)
             q_list.append(models.Q(**l))
         q = reduce(operator.or_, q_list)
-        return Category.objects.filter(q)
-
-    def voting_enabled(self):
-        if not lsettings.voting_enabled():
-            return False
-        return self.categories.filter(contest_mode__isnull=False).exists()
+        return Category.objects.using(self._state.db).filter(q)
 
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
@@ -1966,7 +1715,8 @@ class Watch(models.Model):
 class VideoModerator(CommentModerator):
 
     def allow(self, comment, video, request):
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         if site_settings.comments_required_login:
             return request.user and request.user.is_authenticated()
         else:
@@ -1977,7 +1727,8 @@ class VideoModerator(CommentModerator):
         # dependency
         from localtv.utils import send_notice
 
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         t = loader.get_template('comments/comment_notification_email.txt')
         c = Context({ 'comment': comment,
                       'content_object': video,
@@ -2029,7 +1780,8 @@ class VideoModerator(CommentModerator):
                              [previous_comment.user.email]).send(fail_silently=True)
 
     def moderate(self, comment, video, request):
-        site_settings = SiteSettings.objects.get(site=video.site)
+        site_settings = SiteSettings.objects.get_cached(site=video.site_id,
+                                                        using=video._state.db)
         if site_settings.screen_all_comments:
             if not getattr(request, 'user'):
                 return True
@@ -2057,7 +1809,8 @@ tagging.models.Tag.__unicode__ = tag_unicode
 
 
 def send_new_video_email(sender, **kwargs):
-    site_settings = SiteSettings.objects.get(site=sender.site)
+    site_settings = SiteSettings.objects.get_cached(site=sender.site_id,
+                                                   using=sender._state.db)
     if sender.status == Video.ACTIVE:
         # don't send the e-mail for videos that are already active
         return
@@ -2256,6 +2009,8 @@ def update_stamp(name, override_date=None, delete_stamp=False):
         logging.error(e)
 
 if lsettings.ENABLE_CHANGE_STAMPS:
+    warnings.warn('LOCALTV_ENABLE_CHANGE_STAMPS is deprecated.',
+                  DeprecationWarning)
     models.signals.post_save.connect(video_published_stamp_signal_listener,
                                      sender=Video)
     models.signals.post_delete.connect(video_published_stamp_signal_listener,

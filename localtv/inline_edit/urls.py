@@ -19,6 +19,7 @@ from django.conf.urls.defaults import patterns
 
 from localtv import models
 
+
 urlpatterns = patterns(
     'localtv.inline_edit',
     (r'^video/(?P<id>[0-9]+)/name/$', 'simple.edit_field',

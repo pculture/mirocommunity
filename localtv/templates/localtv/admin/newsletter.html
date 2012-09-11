@@ -1,4 +1,4 @@
-{% load localtv_thumbnail filters uploadtemplate_tags staticfiles %}
+{% load daguerre filters uploadtemplate_tags staticfiles %}
 <html lang="en">
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -21,7 +21,7 @@
           <tr>
             {% if newsletter.show_icon and site_settings.logo %}
             <td>
-              <img src="{% if site_settings.logo %}{% get_thumbnail_url absolute site_settings 130 110 %}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" alt="Logo for {{ site.name }}" />
+              <img src="{% if site_settings.logo %}http://{{ site.domain }}{% adjust site_settings.logo.name height=130 width=110 %}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" alt="Logo for {{ site.name }}" />
             </td>
             {% endif %}
             <td style="width: 450px; padding: 0 0 0 15px;">
@@ -42,7 +42,7 @@
         <table style="padding: 15px 0 0 0;">
           {% for video in newsletter.videos %}
           <tr>
-            <td style="vertical-align: top;{% if not forloop.first %} padding: 20px 0 20px 0;{% endif %}"><img src="{% get_thumbnail_url absolute video 222 169 %}" alt="Thumbnail for {{ video.name }}" /></td>
+            <td style="vertical-align: top;{% if not forloop.first %} padding: 20px 0 20px 0;{% endif %}"><img src="http://{{ site.domain }}{% adjust video.thumbnail_path width=222 height=169 %}" alt="Thumbnail for {{ video.name }}" /></td>
             <td>
               {% with authors=video.authors.all %}
               <h1 style="font-size: 16px; color: #333; margin: -5px 0 5px 10px; padding: 0; max-width: 400px; overflow: hidden; text-overflow: ellipsis;">{{ video.name }}</h1>

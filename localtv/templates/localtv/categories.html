@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -18,15 +18,15 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs localtv_thumbnail i18n %}
+{% load pagetabs daguerre i18n %}
 
 {% block title %}{{ block.super }} - Categories{% endblock %}
 
-{% block content %}
+{% block main %}
 	<header class="page-header">
 	  <h1 class="page-title">{% trans "Categories" %}</h1>
 	</header>
-	<div class="content-box page-content">
+	<div class="padded page-content">
 		<div class="pagination upper">
 			{% if page_obj.has_other_pages %}
 				{% pagetabs page_obj %}
@@ -45,7 +45,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						<div class="card-figure">
 							<ul class="tile-box">
 								{% for video in category.approved_set|slice:"0:8" %}
-									<li class="tile"><img src="{% get_thumbnail_url video 140 110 %}" /></li>
+									<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
 								{% endfor %}
 							</ul>
 						</div>

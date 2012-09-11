@@ -19,10 +19,13 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db.models import signals
+from django.template import loader
 from haystack import indexes
 from haystack.query import SearchQuerySet
+from tagging.models import Tag
 
 from localtv.models import Video, Feed, SavedSearch
 from localtv.playlists.models import PlaylistItem
@@ -32,9 +35,11 @@ from localtv.tasks import haystack_update, haystack_remove
 CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 #: We use a placeholder value because support for filtering on null values is
-#: lacking. We use ``datetime.max`` rather than ``datetime.min`` because whoosh
-#: doesn't support datetime values before 1900.
-DATETIME_NULL_PLACEHOLDER = datetime.max
+#: lacking. We use January 1st, 1900 because Whoosh doesn't support datetime
+#: values earlier than that, but we want to keep the videos with no value
+#: sorted last. This should be fine since we're not dealing with youtube
+#: videos uploaded in 1899.
+DATETIME_NULL_PLACEHOLDER = datetime(1900, 1, 1)
 
 
 class QueuedSearchIndex(indexes.SearchIndex):
@@ -162,6 +167,25 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
                       pks, haystack_remove,
                       using=instance._state.db)
 
+    def prepare(self, obj):
+        """
+        Disable uploadtemplate loader - it always uses the default database.
+        This is a trailing necessity of the CELERY_USING hack.
+
+        """
+        if 'uploadtemplate.loader.Loader' in settings.TEMPLATE_LOADERS:
+            old_template_loaders = settings.TEMPLATE_LOADERS
+            loader.template_source_loaders = None
+            settings.TEMPLATE_LOADERS = tuple(loader
+                                     for loader in settings.TEMPLATE_LOADERS
+                                     if loader != 'uploadtemplate.loader.Loader')
+            super(VideoIndex, self).prepare(obj)
+            loader.template_source_loaders = None
+            settings.TEMPLATE_LOADERS = old_template_loaders
+        else:
+            super(VideoIndex, self).prepare(obj)
+        return self.prepared_data
+
     def get_model(self):
         return Video
 
@@ -191,7 +215,13 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return [int(rel.pk) for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        return self._prepare_rel_field(video, 'tags')
+        # We manually run this process to be sure that the tags are fetched
+        # from the correct database (not just "default").
+        using = video._state.db
+        ct = ContentType.objects.db_manager(using).get_for_model(video)
+        tags = Tag.objects.using(using).filter(items__content_type__pk=ct.pk,
+                                               items__object_id=video.pk)
+        return [int(tag.pk) for tag in tags]
 
     def prepare_categories(self, video):
         return [int(rel.pk) for rel in video.all_categories]

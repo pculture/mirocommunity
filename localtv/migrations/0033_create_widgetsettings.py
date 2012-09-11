@@ -42,8 +42,6 @@ class Migration:
             sitelocation.logo.open()
             widgetsettings.logo = sitelocation.logo
             widgetsettings.logo.open()
-            cf = ContentFile(widgetsettings.logo.read())
-            widgetsettings.save_thumbnail_from_file(cf)
 
     def backwards(self, orm):
         "Write your backwards migration here"

@@ -1,4 +1,4 @@
-{% load daguerre i18n pagetabs %}
+{% load i18n pagetabs %}
 
 {% if page_obj.has_other_pages %}
 	<div class="pagination upper">
@@ -7,45 +7,17 @@
 {% endif %}
 
 <div class="video-list-wrapper">
-	{% for video in video_list %}
-		{% if forloop.first %}
-			<ul class="media-grid video-grid">
-		{% endif %}
-		<li class="media-item video-grid-item" data-content="
-			{% filter force_escape %}
-				{% if video.description %}
-					<div class="popover-normal-text">
-						{{ video.description|safe }}
-					</div>
-				{% endif %}
-				{% with video as instance %}
-					<p class="byline">by {% include "localtv/inline_edit/video_authors.html" %}</p>
-				{% endwith %}
-			{% endfilter %}
-		">
-			<figure class="thumb">
-				<a href="{{ video.get_absolute_url }}">
-					{% adjust video.thumbnail_file width=200 height=144 adjustment="fill" as image %}
-					<img src="{{ image }}" width="{{ image.width }}" height="{{ image.height }}" />
-				</a>
-			</figure>
-			<header class="video-header">
-				<h1 class="video-title"><a href="{{ video.get_absolute_url }}" class="title-link">{{ video.name }}</a></h1>
-			</headeR>
-			<div class="video-details">
-				{% with video as instance %}
-					<a  href="{{ video.get_absolute_url }}" class="timestamp-link">{% include "localtv/_when_published.html" %}</a>
-				{% endwith %}
-			</div>
-		</li>
-		{% if forloop.last %}
-			</ul>
-		{% endif %}
-	{% empty %}
+	{% if video_list %}
+		<ul class="media-grid-{{ columns }} video-grid">
+			{% for video in video_list %}
+				{% include "localtv/_video_grid_item.html" %}
+			{% endfor %}
+		</ul>
+	{% else %}
 		<div class="message warning">
 			<p>{% trans "No videos have been added yet." %}</p>
 		</div>
-	{% endfor %}
+	{% endif %}
 </div>
 
 {% if page_obj.has_other_pages %}

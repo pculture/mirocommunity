@@ -18,5 +18,5 @@ install:
 before_script:
   - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_bin;'
 script:
-  - django-admin.py test localtv --settings=example_mc_project.settings
-
+  - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
+  - django-admin.py test contests --settings=example_mc_project.settings --verbosity=2

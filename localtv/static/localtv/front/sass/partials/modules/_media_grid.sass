@@ -1,0 +1,72 @@
+@import compass/utilities/general/clearfix
+@import compass/css3/box-sizing
+	
+.media-grid-4 > li
+	width: 25%
+	&:nth-child(4n+1)
+		clear: left
+
+.media-grid-3 > li
+	width: 33%
+	&:nth-child(3n+1)
+		clear: left
+
+.media-grid-2 > li
+	width: 50%
+	&:nth-child(odd)
+		clear: left
+
+.media-grid-1 > li
+	width: 100%
+	float: none
+
+.media-grid-1, .media-grid-2, .media-grid-3, .media-grid-4
+	@extend .unstyled-list
+	+pie-clearfix
+	margin-left: -$gutter-width
+	& > li
+		float: left
+		padding-left: $gutter-width
+		+box-sizing(border-box)
+		position: relative
+		@media screen and (max-width: $small-viewport-max) and (min-width: $tiny-viewport-max)
+			width: 50%
+			float: left
+			&:nth-child(even)
+				clear: none
+			&:nth-child(odd)
+				clear: left
+		@media screen and (max-width: $tiny-viewport-max)
+			width: 100%
+			float: none
+		& > a
+			display: block
+			&:hover
+				border: 0
+
+.media-grid > #infscr-loading
+	float: none
+	clear: both
+	text-indent: -9999px
+	height: 66px
+	background: transparent image-url("ajax-loader.gif") center center no-repeat
+
+.media-grid > #infscr-done
+	float: none
+	clear: both
+	height: 66px
+	+xx-large
+	font-weight: bold
+	+margin-leader
+
+.media-item-badge
+	height: 20px
+	min-width: 20px
+	padding: 10px
+	text-align: center
+	line-height: 20px
+	font-size: 20px
+	position: absolute
+	top: -10px
+	left: 20px
+	+border-radius(43px)

@@ -1,0 +1,118 @@
+@import compass/css3/border-radius
+@import compass/utilities/general/clearfix
+
+.carousel-wrapper
+	position: relative
+
+.carousel-pager
+	position: absolute
+	bottom: 0
+	right: 0
+	+margin-trailer(0.5)
+	z-index: 1337
+	@extend .padded-half
+	+clearfix
+	+border-radius(5px)
+	& > a
+		height: 8px
+		width: 8px
+		float: left
+		margin-left: 5px
+		text-indent: -9999px
+		border: 1px solid
+		+border-radius(5px)
+	& > a:first-child
+		margin-left: 0
+	@media screen and (max-width: $medium-viewport-max)
+		right: $base-line-height/2
+	@media screen and (max-width: $small-viewport-max)
+		margin: 0
+		bottom: 0
+		left: 0
+		right: 0
+		text-align: center
+		+border-radius(0)
+		& > a
+			display: inline-block
+			float: none
+			+border-radius(10px)
+			height: 18px
+			width: 18px
+
+.video-large, .preview-large a
+	height: 360px
+
+.video-large-preview a
+	border: none
+	background: #000
+	display: block
+	line-height: 360px
+	text-align: center
+	position: relative
+	&:hover
+		&::after
+			$width: 40px
+			content: "▶"
+			color: #FFF
+			display: block
+			position: absolute
+			top: 50%
+			left: 50%
+			width: $width
+			height: $width
+			margin-top: -$width / 2 + 1px
+			margin-left: -$width / 2 + 2px
+			z-index: 1338
+			text-align: center
+			line-height: $width
+			font-size: $width + 10px
+			text-shadow: 0 -1px 0 black
+		&::before
+			$width: 80px
+			content: ""
+			display: block
+			position: absolute
+			top: 50%
+			left: 50%
+			width: $width
+			height: $width
+			border-radius: $width / 2
+			margin-top: -$width / 2
+			margin-left: -$width / 2
+			z-index: 1337
+			+box-shadow(0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.25) inset, 0 0 5px 0 rgba(0, 0, 0, 0.35))
+			+background(linear-gradient(top left, rgba(80, 80, 80, 0.75), rgba(0, 0, 0, 1)))
+
+.video-large-preview img
+	margin: 0 auto
+	vertical-align: middle
+	max-width: 100%
+
+.video-large-details
+	@extend .precontent-details
+
+.video-large-details > header > h1
+	max-height: $base-line-height * 6
+	overflow: hidden
+	@media screen and (max-width: $small-viewport-max)
+		position: absolute
+		top: 0
+		left: 0
+		right: 0
+		height: $base-line-height * 3
+		line-height: $base-line-height * 3
+		padding: 0 $gutter-width/2
+		background: rgba(0,0,0,.75)
+
+.video-large-description
+	+margin-trailer
+	max-height: $base-line-height * 5
+	overflow: hidden
+	
+.carousel-shim
+	visibility: hidden
+	& > img
+		display: block
+		max-width: 100%
+		@media screen and (max-width: $small-viewport-max)
+			height: 360px

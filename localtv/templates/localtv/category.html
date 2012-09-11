@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/75_25.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} category-detail-page{% endblock %}
 
-{% block content %}
+{% block top %}
 	<header class="page-header">
 		<h1 class="page-title">{{ category.name }}</h1>
 		<div class="page-actions">
@@ -34,44 +34,44 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			</ul>
 		</div>
 	</header>
-	<div class="row">
-		<div class="col-three-quarters">
-			<div class="content-box">
-				{% include "localtv/_video_grid_list.html" %}
-			</div>{# /.content-box #}
-		</div>{# /.col-two-thirds #}
-		<div class="col-one-quarter right">
-			<div class="content-box">
-				{% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
-				{{ category.description|safe }}
-			</div>{# /.content-box #}
-			{% with child_set=category.child_set.all %}
-				{% if child_set %}
-					<div class="pod">
-						<header class="pod-header">
-							<h1 class="pod-title">{% trans "Subcategories" %}</h1>
-						</header>
-						<div class="pod-content">
-							<ul class="category-list">
-								{% for subcat in child_set %}
-									<li>
-										<a title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
-										{% with subcat_child_set=subcat.child_set.all %}
-											{% if subcat_child_set %}
-												<ul>
-													{% for subsubcat in subcat_child_set %}
-														<li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
-													{% endfor %}
-												</ul>
-											{% endif %}
-										{% endwith %}
-									</li>
-								{% endfor %}
-							</ul>
-						</div>{# /.pod-content #}
-					</div>{# /.pod #}
-				{% endif %}
-			{% endwith %}
-		</div>{# /.col-one-third #}
-	</div>{# /.row #}
+{% endblock %}
+
+{% block main %}
+	<div class="padded">
+		{% include "localtv/_video_grid_list.html" with columns=3 %}
+	</div>{# /.padded #}
+{% endblock %}
+
+{% block side %}
+	<div class="padded">
+		{% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+		{{ category.description|safe }}
+	</div>{# /.padded #}
+	{% with child_set=category.child_set.all %}
+		{% if child_set %}
+			<div class="pod">
+				<header class="pod-header">
+					<h1 class="pod-title">{% trans "Subcategories" %}</h1>
+				</header>
+				<div class="pod-content">
+					<ul class="category-list">
+						{% for subcat in child_set %}
+							<li>
+								<a title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
+								{% with subcat_child_set=subcat.child_set.all %}
+									{% if subcat_child_set %}
+										<ul>
+											{% for subsubcat in subcat_child_set %}
+												<li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
+											{% endfor %}
+										</ul>
+									{% endif %}
+								{% endwith %}
+							</li>
+						{% endfor %}
+					</ul>
+				</div>{# /.pod-content #}
+			</div>{# /.pod #}
+		{% endif %}
+	{% endwith %}
 {% endblock %}

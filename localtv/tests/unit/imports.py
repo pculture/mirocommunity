@@ -19,15 +19,50 @@ import datetime
 
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
-from vidscraper.suites import Video as VidscraperVideo
+from vidscraper.videos import (Video as VidscraperVideo,
+                               VideoFile as VidscraperVideoFile)
 
-from localtv.models import Source, Feed, FeedImport, Video
+from localtv.models import Source, Feed, FeedImport, Video, FeedImportIndex
 from localtv.tasks import haystack_update, haystack_remove
 from localtv.tests.base import BaseTestCase
 
 
-class FeedImportUnitTestCase(BaseTestCase):
+class SourceImportUnitTestCase(BaseTestCase):
+    def test_iter_exception(self):
+        """
+        bz19448. If an exception is raised while iterating over vidscraper
+        results, the import should be marked as failed, and any videos already
+        associated with the import should be deleted.
 
+        """
+        def iterator():
+            raise KeyError
+            yield 1
+        video_iter = iterator()
+        with self.assertRaises(KeyError):
+            video_iter.next()
+        video_iter = iterator()
+        feed = self.create_feed('http://google.com/')
+        video = self.create_video(feed=feed, status=Video.PENDING,
+                                  update_index=False)
+        feed_import = FeedImport.objects.create(auto_approve=True,
+                                                source=feed)
+        FeedImportIndex.objects.create(source_import=feed_import,
+                                       video=video)
+        self.assertEqual(list(feed_import.get_videos()), [video])
+        self.assertEqual(list(feed.video_set.all()), [video])
+        self.assertEqual(feed_import.errors.count(), 0)
+        # If this is working correctly, this next line should not raise
+        # a KeyError.
+        Source.update(feed, video_iter, feed_import)
+        new_feed_import = FeedImport.objects.get(pk=feed_import.pk)
+        self.assertEqual(new_feed_import.status, FeedImport.FAILED)
+        with self.assertRaises(Video.DoesNotExist):
+            Video.objects.get(pk=video.pk)
+        self.assertEqual(feed_import.errors.count(), 1)
+
+
+class FeedImportUnitTestCase(BaseTestCase):
     def create_vidscraper_video(self, url='http://youtube.com/watch/?v=fake',
                                 loaded=True, embed_code='hi', title='Test',
                                 **field_data):
@@ -154,9 +189,9 @@ class FeedImportUnitTestCase(BaseTestCase):
                 title='title',
                 description='description',
                 link='http://example.com/link',
-                file_url='http://example.com/file_url',
-                file_url_length=1000,
-                file_url_mimetype='video/mimetype',
+                files=[VidscraperVideoFile('http://example.com/file_url',
+                                           length=1000,
+                                           mime_type='video/mimetype')],
                 # MySQL doesn't store the microseconds (and we don't much care
                 # about them), so don't bother inserting them.  This makes the
                 # assertion below about the published date equality True.
@@ -174,9 +209,9 @@ class FeedImportUnitTestCase(BaseTestCase):
         self.assertEqual(video.description, vv.description)
         self.assertEqual(video.website_url, vv.link)
         self.assertEqual(video.embed_code, vv.embed_code)
-        self.assertEqual(video.file_url, vv.file_url)
-        self.assertEqual(video.file_url_length, vv.file_url_length)
-        self.assertEqual(video.file_url_mimetype, vv.file_url_mimetype)
+        self.assertEqual(video.file_url, vv.files[0].url)
+        self.assertEqual(video.file_url_length, vv.files[0].length)
+        self.assertEqual(video.file_url_mimetype, vv.files[0].mime_type)
         self.assertEqual(video.when_published, vv.publish_datetime)
         self.assertEqual([tag.name for tag in video.tags.all()], vv.tags)
 
@@ -202,7 +237,7 @@ class FeedImportUnitTestCase(BaseTestCase):
         feed_import = FeedImport.objects.create(source=feed)
         video_iter = [
             self.create_vidscraper_video(
-                file_url='http://example.com/media.ogg')
+                files=[VidscraperVideoFile('http://example.com/media.ogg')])
             ]
         Source.update(feed, video_iter, feed_import, using='default')
         self.assertEqual(Video.objects.count(), 1)
@@ -268,12 +303,12 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
             self.create_vidscraper_video(
                 url='http://example.com/' + 'url' * 200,
                 link='http://example.com/' + 'link' * 200,
-                file_url='http://example.com/' + 'f.ogg' * 200)
+                files=[VidscraperVideoFile('http://example.com/' + 'f.ogg' * 200)])
             ]
         Source.update(feed, video_iter, feed_import, using='default')
         v = Video.objects.get()
         self.assertEqual(v.website_url, video_iter[0].link)
-        self.assertEqual(v.file_url, video_iter[0].file_url)
+        self.assertEqual(v.file_url, video_iter[0].files[0].url)
 
     def test_index_updates(self):
         """Test that index updates are only run at the end of an update."""

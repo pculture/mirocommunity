@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -24,11 +24,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} author-list-page{% endblock %}
 
-{% block content %}
+{% block main %}
 	<header class="page-header">
 		<h1 class="page-title">Authors</h1>
 	</header>
-	<div id="author_list" class="content-box page-content">
+	<div id="author_list" class="padded page-content">
 		<ul>
 			{% for author in authors %}
 				<li><a href="{% url 'localtv_author' author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>

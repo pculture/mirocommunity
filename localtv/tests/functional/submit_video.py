@@ -25,7 +25,7 @@ from django.core import mail
 from django.forms.fields import URLField
 from django.template import Context, loader
 from notification import models as notification
-from vidscraper.suites.base import Video as VidscraperVideo
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.submit_video import forms

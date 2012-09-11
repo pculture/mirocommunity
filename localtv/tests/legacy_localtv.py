@@ -45,7 +45,6 @@ from django.test.client import Client, RequestFactory
 from haystack import connections
 from haystack.query import SearchQuerySet
 
-import localtv.settings
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
@@ -53,6 +52,7 @@ from localtv.models import (Watch, Category, SiteSettings, Video,
                             Feed, OriginalVideo, SavedSearch)
 from localtv import utils
 import localtv.feeds.views
+from localtv.search.utils import NormalizedVideoList
 from localtv.tasks import haystack_batch_update
 
 from notification import models as notification
@@ -255,8 +255,13 @@ class ViewTestCase(BaseTestCase):
         featured = list(Video.objects.get_featured_videos(self.site_settings))
         self.assertEqual(list(response.context['featured_videos']),
                           featured)
-        self.assertEqual(list(response.context['popular_videos']),
-                          list(Video.objects.get_popular_videos(self.site_settings)))
+        popular = response.context['popular_videos']
+        self.assertIsInstance(popular, NormalizedVideoList)
+        self.assertEqual(len(popular),
+                         Video.objects.filter(status=Video.ACTIVE).count())
+        popular_list = list(popular.queryset)
+        self.assertEqual(popular_list, sorted(popular_list, reverse=True,
+                                         key=lambda v: v.watch_count))
         self.assertEqual(list(response.context['new_videos']),
                           list(Video.objects.get_latest_videos(self.site_settings)))
         self.assertEqual(list(response.context['comments']), [])
@@ -732,7 +737,7 @@ class ListingViewTestCase(BaseTestCase):
         """
         The popular_videos view should render the
         'localtv/video_listing_popular.html' template and include the
-        popular videos.
+        all the videos, sorted by popularity.
         """
         Watch.objects.update(timestamp=datetime.datetime.now())
         haystack_batch_update.apply(args=(Video._meta.app_label,
@@ -743,11 +748,13 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_popular.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        results = response.context['page_obj'].object_list
-        expected = Video.objects.get_popular_videos(self.site_settings)
+        self.assertEqual(response.context['paginator'].count, 23)
 
-        self.assertEqual(len(results), 2)
+        results = response.context['page_obj'].object_list
+        watch_qs = Watch.objects.filter(
+               timestamp__gte=datetime.datetime.now() - datetime.timedelta(7))
+        expected = sorted(results, reverse=True,
+                          key=lambda v: watch_qs.filter(video=v).count())
         self.assertEqual(list(results), list(expected))
 
     def test_featured_videos(self):
@@ -761,8 +768,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/video_listing_featured.html')
-        self.assertEqual(response.context['paginator'].num_pages, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 2)
+        self.assertEqual(response.context['paginator'].count, 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(Video.objects.filter(status=Video.ACTIVE,
                                last_featured__isnull=False)))
@@ -1201,16 +1207,6 @@ class VideoModelTestCase(BaseTestCase):
         for i in xrange(len(results) - 1):
             self.assertTrue(results[i].when() >= results[i+1].when())
 
-    def test_thumbnail_404(self):
-        """
-        If a Video has a thumbnail that returns a 404, no error should be
-        raised, and `thumbnail_file` should be False.
-        """
-        v = Video.objects.get(pk=11)
-        v.thumbnail_url = 'http://pculture.org/doesnotexist'
-        v.save_thumbnail()
-        self.assertFalse(v.thumbnail_file)
-
     def test_original_video_created(self):
         """
         When an Video object is a created, an OriginalVideo object should also
@@ -1342,19 +1338,20 @@ class SavedSearchImportTestCase(BaseTestCase):
         SavedSearch.update() should create new Video objects linked to
         the search.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         self.assertEqual(ss.video_set.count(), 0)
         ss.update()
-        self.assertNotEquals(ss.video_set.count(), 0)
+        self.assertNotEqual(ss.video_set.count(), 0)
 
     def test_update_ignore_duplicates(self):
         """
         A search that includes the same video should should not add the video a
         second time.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         ss.update()
         count = ss.video_set.count()
+        self.assertNotEqual(count, 0)
         ss.update()
         self.assertEqual(ss.video_set.count(), count)
 
@@ -1363,7 +1360,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         If a SavedSearch has authors set, imported videos should be given that
         authorship.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         ss.auto_authors = [User.objects.get(pk=1)]
         ss.update()
         video = ss.video_set.all()[0]
@@ -1375,7 +1372,7 @@ class SavedSearchImportTestCase(BaseTestCase):
         If a SavedSearch has no author, imported videos should have a User
         based on the user on the original video service.
         """
-        ss = SavedSearch.objects.get(pk=1)
+        ss = SavedSearch.objects.get(pk=2)
         self.assertFalse(ss.auto_authors.all().exists())
         ss.update()
         video = ss.video_set.all()[0]
@@ -1386,12 +1383,12 @@ class OriginalVideoModelTestCase(BaseTestCase):
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
     BASE_DATA = {
         'name': u'Miro appreciates the support of our sponsors',
-        'description': u"""<p>Miro is a non-profit project working \
+        'description': u"""Miro is a non-profit project working \
 to build a better media future as television moves online. We provide our \
 software free to our users and other developers, despite the significant cost \
 of developing the software. This work is made possible in part by the support \
 of our sponsors. Please watch this video for a message from our sponsors. If \
-you wish to support Miro yourself, please donate $10 today.</p>""",
+you wish to support Miro yourself, please donate $10 today.""",
         'thumbnail_url': ('http://a.images.blip.tv/Mirosponsorship-'
             'MiroAppreciatesTheSupportOfOurSponsors478.png'),
         # it seems like thumbnails are updated on the 8th of each month; this
@@ -1621,7 +1618,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL) # all fields None
+        # all fields None
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
@@ -1649,7 +1647,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         and reset the remote_video_was_deleted flag.
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
 
         self.original.update(override_vidscraper_result=vidscraper_result)
 
@@ -1685,7 +1683,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.video.save()
 
         # Now, do a refresh, simulating the remote response having \r\n line endings
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_result = vidscraper.videos.Video(self.BASE_URL)
         vidscraper_result.__dict__.update(
             {'description': self.original.description.replace('\n', '\r\n'),
              'thumbnail_url': self.BASE_DATA['thumbnail_url'],
@@ -1787,195 +1785,3 @@ class LegacyFeedViewTestCase(BaseTestCase):
         parsed = feedparser.parse(response.content)
         items_from_second_GET = parsed['items']
         self.assertEqual(1, len(items_from_second_GET))
-
-if localtv.settings.voting_enabled():
-    from voting.models import Vote
-
-    class VotingTestCase(BaseTestCase):
-
-        fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'categories']
-
-        def setUp(self):
-            BaseTestCase.setUp(self)
-            self.video = Video.objects.get(pk=20)
-            self.category = Category.objects.get(slug='miro')
-            self.category.contest_mode = datetime.datetime.now()
-            self.category.save()
-            self.video.categories.add(self.category)
-
-        def test_voting_view_add(self):
-            """
-            A POST request to the localtv_video_vote should add a vote for that
-            video ID.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            response = c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertStatusCodeEquals(response, 302)
-            self.assertEqual(response['Location'],
-                             'http://testserver%s' % (
-                    self.video.get_absolute_url()))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-            vote = Vote.objects.get()
-            self.assertEqual(vote.object, self.video)
-            self.assertEqual(vote.user.username, 'user')
-            self.assertEqual(vote.vote, 1)
-
-        def test_voting_view_add_twice(self):
-            """
-            Adding a vote multiple times doesn't create multiple votes.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-
-        def test_voting_view_clear(self):
-            """
-            Clearing a vote removes it from the database.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-            c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertEqual(
-                Vote.objects.count(),
-                1)
-            c.post(reverse('localtv_video_vote',
-                           args=(self.video.pk,
-                                 'clear')))
-            self.assertEqual(
-                Vote.objects.count(),
-                0)
-
-        def test_voting_view_too_many_votes(self):
-            """
-            You should only be able to vote for 3 videos in a category.
-            """
-            videos = []
-            for v in Video.objects.all()[:4]:
-                v.categories.add(self.category)
-                videos.append(v)
-
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in videos:
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            self.assertEqual(
-                Vote.objects.count(),
-                3)
-
-            self.assertEqual(
-                set(
-                    Vote.objects.values_list(
-                        'object_id', flat=True)),
-                set([v.pk for v in videos[:3]]))
-
-        def test_voting_view_clear_with_too_many(self):
-            """
-            Even if the user has voted the maximum number of times, a clear
-            should still succeed.
-            """
-            videos = []
-            for v in Video.objects.all()[:3]:
-                v.categories.add(self.category)
-                videos.append(v)
-
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in videos:
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            self.assertEqual(
-                Vote.objects.count(),
-                3)
-
-            c.post(reverse('localtv_video_vote',
-                           args=(video.pk,
-                                 'clear')))
-            self.assertEqual(
-                Vote.objects.count(),
-                2)
-
-        def test_voting_view_requires_authentication(self):
-            """
-            The user must be logged in in order to vote.
-            """
-            self.assertRequiresAuthentication(reverse('localtv_video_vote',
-                                                      args=(self.video.pk,
-                                                            'up')))
-
-        def test_voting_view_voting_disabled(self):
-            """
-            If voting is not enabled for a category on the video, voting should
-            have no effect.
-            """
-            self.video.categories.clear()
-            c = Client()
-            c.login(username='user', password='password')
-            response = c.post(reverse('localtv_video_vote',
-                                      args=(self.video.pk,
-                                            'up')))
-            self.assertStatusCodeEquals(response, 302)
-            self.assertEqual(response['Location'],
-                             'http://testserver%s' % (
-                    self.video.get_absolute_url()))
-            self.assertEqual(
-                Vote.objects.count(),
-                0)
-
-        def test_video_model_voting_enabled(self):
-            """
-            Video.voting_enabled() should be True if it has a voting-enabled
-            category, else False.
-            """
-            self.assertTrue(self.video.voting_enabled())
-            self.assertFalse(Video.objects.get(pk=1).voting_enabled())
-
-        def test_video_view_user_can_vote_True(self):
-            """
-            The view_video view should have a 'user_can_vote' variable which is
-            True if the user has not used all their votes.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-
-            response = c.get(self.video.get_absolute_url())
-            self.assertTrue(response.context['user_can_vote'])
-
-        def test_video_view_user_can_vote_False(self):
-            """
-            If the user has used all of their votes, 'user_can_vote' should be
-            False.
-            """
-            c = Client()
-            c.login(username='user', password='password')
-
-            for video in Video.objects.all()[:3]:
-                video.categories.add(self.category)
-                c.post(reverse('localtv_video_vote',
-                               args=(video.pk,
-                                     'up')))
-
-            response = c.get(self.video.get_absolute_url())
-            self.assertFalse(response.context['user_can_vote'])
-

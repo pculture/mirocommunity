@@ -20,15 +20,15 @@ import hashlib
 import time
 
 from django import forms
-from django.conf import settings
 from django.core.cache import cache
 from django.utils.translation import ugettext_lazy as _
 from vidscraper import auto_search
 from vidscraper.utils.search import intersperse_results
 
 from localtv.models import Video
+from localtv.settings import API_KEYS
 
-from vidscraper.errors import Error as VidscraperError
+from vidscraper.exceptions import VidscraperError
 
 class LiveSearchForm(forms.Form):
     LATEST = 'latest'
@@ -37,7 +37,7 @@ class LiveSearchForm(forms.Form):
         (LATEST, _('Latest')),
         (RELEVANT, _('Relevant')),
     )
-    q = forms.CharField()
+    query = forms.CharField()
     order_by = forms.ChoiceField(choices=ORDER_BY_CHOICES, initial=LATEST,
                                  required=False)
 
@@ -46,23 +46,17 @@ class LiveSearchForm(forms.Form):
 
     def _get_cache_key(self):
         return 'localtv-livesearch-%s' % (
-            hashlib.md5('%(q)s-%(order_by)s' % self.cleaned_data
+            hashlib.md5('%(query)s-%(order_by)s' % self.cleaned_data
                         ).hexdigest())
-
-    def get_search_api_keys(self):
-        return {
-            'vimeo_key': getattr(settings, 'VIMEO_API_KEY', None),
-            'vimeo_secret': getattr(settings, 'VIMEO_API_SECRET', None),
-        }
 
     def get_results(self):
         cache_key = self._get_cache_key()
         results = cache.get(cache_key)
         if results is None:
             finish_by = time.time() + 20
-            search_results = auto_search(self.cleaned_data['q'],
+            search_results = auto_search(self.cleaned_data['query'],
                                   order_by=self.cleaned_data['order_by'],
-                                  api_keys=self.get_search_api_keys())
+                                  api_keys=API_KEYS)
             results = []
             for vidscraper_video in intersperse_results(search_results, 40):
                 try:

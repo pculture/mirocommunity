@@ -27,16 +27,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 
 <head>
-	
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
 	{% block meta %}
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		{% if site_settings.logo %}<link rel="image_src" href="{{ settings.MEDIA_URL }}{{ site_settings.logo }}" />{% endif %}
 	{% endblock meta %}
-	
-	{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
-	
+
 	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
 	
 	{% block styles %}
@@ -69,17 +68,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<script src="{% get_static_url 'localtv/front/js/bootstrap.tooltip.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/bootstrap.popover.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.dropdown.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.imgload.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' bundled %}"></script>
 		{% endcompress %}
 	{% endblock %}
-	
-	{% block head %}
-		{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
-	{% endblock %}
-	
 </head>
 <body class="{% block body_classes %}miro_community{% endblock %}">
 	
@@ -96,12 +89,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		</header>
 		
 		<div id="main" role="main">
-			{% block pre_content %}
+			{% block content %}
 			{% endblock %}
-			<div class="container">
-				{% block content %}
-				{% endblock %}
-			</div>
 		</div>
 		
 		<footer id="footer">

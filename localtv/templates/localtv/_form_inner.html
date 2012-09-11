@@ -1,16 +1,20 @@
-{% for field in form.visible_fields %}
-	<div class="control-group control-group-{{ field.name }}{% if field.errors %} error{% endif %}">
-		<label for="id_url">{{ field.label }}</label>
-		<div class="controls">
-			{{ field }}
-			{% if field.help_text or field.errors %}
-				<div class="control-group-errors help-text">
-					{{ field.help_text }}
-					{{ field.errors }}
-				</div>
-			{% endif %}
-		</div>
+{% if form.non_field_errors %}
+	<div class="message error">
+		{% if form.non_field_errors|length == 1 %}
+			{{ form.non_field_errors.0 }}
+		{% else %}
+			The following errors occurred:
+			<ul>
+				{% for error in form.non_field_errors %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
 	</div>
+{% endif %}
+
+{% for field in form.visible_fields %}
+	{% include "localtv/_form_field.html" %}
 {% endfor %}
 
 {% for field in form.hidden_fields %}

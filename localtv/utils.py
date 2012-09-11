@@ -34,6 +34,9 @@ import tagging
 import vidscraper
 from notification import models as notification
 
+from localtv.settings import API_KEYS
+
+
 def get_tag(tag_text, using='default'):
     while True:
         try:
@@ -109,8 +112,8 @@ def get_vidscraper_video(url):
     if not vidscraper_video:
         # try and scrape the url
         try:
-            vidscraper_video = vidscraper.auto_scrape(url)
-        except (vidscraper.errors.Error, urllib2.URLError):
+            vidscraper_video = vidscraper.auto_scrape(url, api_keys=API_KEYS)
+        except (vidscraper.exceptions.VidscraperError, urllib2.URLError):
             vidscraper_video = None
 
         cache.add(cache_key, vidscraper_video)

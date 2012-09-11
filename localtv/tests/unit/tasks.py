@@ -17,13 +17,40 @@
 
 from datetime import datetime, timedelta
 
+from celery.exceptions import MaxRetriesExceededError
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
+import mock
 
 from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
-                           haystack_batch_update)
+                           haystack_batch_update, video_from_vidscraper_video,
+                           video_save_thumbnail)
 from localtv.tests.base import BaseTestCase
+
+
+class VideoFromVidscraperTestCase(BaseTestCase):
+    def test_m2m_errors(self):
+        """
+        If video.save_m2m raises an exception during import, the video should
+        be deleted and the error reraised.
+
+        """
+        class FakeException(Exception):
+            pass
+        video = mock.MagicMock(save_m2m=mock.MagicMock(
+                                                   side_effect=FakeException))
+        kwargs = {'from_vidscraper_video.return_value': video}
+        vidscraper_video = mock.MagicMock(link=None, guid=None, user=None)
+
+        with mock.patch('localtv.tasks.get_model'):
+            with mock.patch('localtv.tasks.Video', **kwargs):
+                with self.assertRaises(FakeException):
+                    video_from_vidscraper_video.apply(args=(vidscraper_video, 1))
+
+        video.save.assert_called_once_with(update_index=False)
+        video.save_m2m.assert_called_once_with()
+        video.delete.assert_called_once_with()
 
 
 class HaystackUpdateUnitTestCase(BaseTestCase):
@@ -222,3 +249,52 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                           Video._meta.module_name),
                                     kwargs={'remove': expected})
         self.assertEqual(self.remove, expected)
+
+
+class VideoSaveThumbnailTestCase(BaseTestCase):
+    def test_thumbnail_not_200(self):
+        """
+        If a video's thumbnail url returns a non-200 status code, the task
+        should be retried.
+
+        """
+        thumbnail_url = 'http://pculture.org/not'
+        video = self.create_video(update_index=False,
+                                  thumbnail_url=thumbnail_url)
+
+        class MockException(Exception):
+            pass
+
+        with mock.patch('localtv.tasks.urllib.urlopen') as urlopen:
+            with mock.patch.object(video_save_thumbnail, 'retry',
+                                   side_effect=MockException):
+                self.assertRaises(MockException,
+                                  video_save_thumbnail.apply,
+                                  args=(video.pk,))
+                urlopen.assert_called_once_with(thumbnail_url)
+        new_video = Video.objects.get(pk=video.pk)
+        self.assertEqual(new_video.thumbnail_url, video.thumbnail_url)
+
+    def test_data_saved(self):
+        """
+        The thumbnail data for a video should be saved once this task is
+        completed.
+
+        """
+        thumbnail_url = 'http://pculture.org/path/to/logo.png'
+        video = self.create_video(update_index=False,
+                                  thumbnail_url=thumbnail_url)
+        thumbnail_data = open(self._data_file('logo.png'), 'r').read()
+        remote_file = mock.Mock(read=lambda: thumbnail_data,
+                                getcode=lambda: 200)
+
+        self.assertTrue(video.thumbnail_file._file is None)
+        with mock.patch('localtv.tasks.urllib.urlopen',
+                        return_value=remote_file):
+            video_save_thumbnail.apply(args=(video.pk,))
+        self.assertFalse(video.thumbnail_file is None)
+        self.assertTrue(video.thumbnail_file._committed)
+        new_video = Video.objects.get(pk=video.pk)
+        self.assertTrue(new_video.thumbnail_file)
+        self.assertTrue(new_video.thumbnail_file._committed)
+        self.assertEqual(new_video.thumbnail_url, thumbnail_url)

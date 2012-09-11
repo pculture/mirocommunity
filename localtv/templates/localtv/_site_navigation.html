@@ -22,40 +22,25 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 
 <ul class="navigation-list">
-	<li class="nav-item nav-item-dropdown">
-		<a href="#">{% trans "Browse" %}</a>
-		<div class="dropdown-box browse-box">
-			<section class="browse-box-section">
-				<h1><a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a></h1>
-				<ul>
-					<li>
-						<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
-					</li>
-					<li>
-						<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
-					</li>
-					<li>
-						<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
-					</li>
-				</ul>
-			</section>
-			{% if categories %}
-			<section class="browse-box-section">
-				<h1><a href="{% url 'localtv_category_index' %}">{% trans 'Categories' %}</a></h1>
-				<ul>
-					{% for category in categories %}
-						<li>
-							<a href="{{ category.get_absolute_url }}">{{ category }}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			</section>
-			{% endif %}
-		</div>
-	</li>
-	<li class="nav-item nav-submit">
-		<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
-	</li>
+	{% if browse_modules %}
+		<li class="nav-item nav-item-dropdown">
+			<a href="#">{% trans "Browse" %}</a>
+			<div class="dropdown-box browse-box">
+				{% for module in browse_modules %}
+					{% include module %}
+				{% endfor %}
+			</div>
+		</li>
+	{% else %}
+		<li class="nav-item">
+			<a href="{% url 'localtv_list_new' %}">{% trans "All Videos" %}</a>
+		</li>
+	{% endif %}
+	{% if site_settings.display_submit_button %}
+		<li class="nav-item nav-submit">
+			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
+		</li>
+	{% endif %}
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
