@@ -30,6 +30,7 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.forms import ImageField
 from haystack import connections
 from haystack.query import SearchQuerySet
 
@@ -318,10 +319,9 @@ def video_save_thumbnail(video_pk, using='default'):
     try:
         remote_file = urllib.urlopen(thumbnail_url)
     except httplib.InvalidURL:
-        # This is always fast, so we don't need to worry as much about
-        # race conditions. If the URL isn't valid, just erase it.
-        video.thumbnail_url = ''
-        video.delete_thumbnail()
+        # If the URL isn't valid, erase it.
+        Video.objects.using(using).filter(pk=video.pk
+                    ).update(thumbnail_url='')
         return
 
     if remote_file.getcode() != 200:
@@ -329,8 +329,9 @@ def video_save_thumbnail(video_pk, using='default'):
                      remote_file.getcode(), video.thumbnail_url)
         video_save_thumbnail.retry()
 
+    thumb_name = urlparse.urlsplit(thumbnail_url).path.rsplit('/')[-1]
     try:
-        thumb_content = ContentFile(remote_file.read())
+        thumb_file = ContentFile(remote_file.read(), name=thumb_name)
     except IOError:
         # Could be a temporary disruption - try again later if this was
         # a task. Otherwise reraise.
@@ -338,13 +339,23 @@ def video_save_thumbnail(video_pk, using='default'):
             raise
         video_save_thumbnail.retry()
 
+    # We use Django's forms.ImageField to validate the downloaded file.
+    field = ImageField()
+    try:
+        thumb_file = field.to_python(thumb_file)
+    except ValidationError:
+        # If the file isn't valid, erase the url.
+        Video.objects.using(using).filter(pk=video.pk
+                    ).update(thumbnail_url='')
+        return
+
     # Save the thumbnail file without saving the video instance.
     # Avoids a race condition as much as possible.
-    thumb_name = urlparse.urlsplit(thumbnail_url).path.rsplit('/')[-1]
-    video.thumbnail_file.save(thumb_name, thumb_content, save=False)
+    video.thumbnail_file.save(thumb_file.name, thumb_file, save=False)
     Video.objects.using(using).filter(pk=video.pk
                 ).update(thumbnail_file=video.thumbnail_file.name)
     remote_file.close()
+    thumb_file.close()
 
 
 def _haystack_database_retry(task, callback):

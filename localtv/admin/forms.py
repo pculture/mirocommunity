@@ -201,7 +201,7 @@ class SourceForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         if self.cleaned_data.get('delete_thumbnail'):
-            self.instance.delete_thumbnail(save=False)
+            self.instance.thumbnail_file.delete()
 
         # if the categories or authors changed, update unchanged videos to the
         # new values

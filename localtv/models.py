@@ -108,31 +108,9 @@ class Thumbnailable(models.Model):
     def thumbnail_path(self):
         thumb_file = self._thumbnail_file
         if thumb_file:
-            return thumb_file
+            return thumb_file.name
         else:
-            # this looks weird, but it's what the old code would have returned;
-            # there's no extension because that would have been blank.
-            return "localtv/%s_thumbs/%d/orig." % (
-                self._meta.object_name.lower(),
-                self.id)
-
-    def delete_thumbnail(self, save=True):
-        thumb_file = getattr(self, self.thumbnail_attribute)
-        if thumb_file:
-            path = thumb_file.path
-            thumb_file.delete(save=save)
-            try:
-                image = Image.objects.for_storage_path(path)
-            except Image.DoesNotExist:
-                pass
-            else:
-                image.delete()
-        elif save:
-            self.save()
-
-    def delete(self, *args, **kwargs):
-        self.delete_thumbnail(save=False)
-        super(Thumbnailable, self).delete(*args, **kwargs)
+            return ''
 
 
 class SingletonManager(models.Manager):
