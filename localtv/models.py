@@ -51,6 +51,7 @@ from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
 from django.template.loader import render_to_string
+from django.utils.encoding import force_unicode
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -97,16 +98,12 @@ class Thumbnailable(models.Model):
         abstract = True
 
     @property
-    def _thumbnail_file(self):
-        return getattr(self, self.thumbnail_attribute)
-
-    @property
     def has_thumbnail(self):
-        return bool(self._thumbnail_file)
+        return bool(getattr(self, self.thumbnail_attribute))
 
     @property
     def thumbnail_path(self):
-        thumb_file = self._thumbnail_file
+        thumb_file = getattr(self, self.thumbnail_attribute)
         if thumb_file:
             return thumb_file.name
         else:
@@ -164,8 +161,8 @@ class SiteSettings(Thumbnailable):
     )
 
     site = models.ForeignKey(Site, unique=True)
-    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
-    background = models.ImageField(upload_to='localtv/site_backgrounds',
+    logo = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/logo/%Y/%m/%d/'), blank=True)
+    background = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/background/%Y/%m/%d/'),
                                    blank=True)
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
@@ -360,10 +357,10 @@ class WidgetSettings(Thumbnailable):
     title = models.CharField(max_length=250, blank=True)
     title_editable = models.BooleanField(default=True)
 
-    icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
+    icon = models.ImageField(upload_to=utils.UploadTo('localtv/widgetsettings/icon/%Y/%m/%d/'), blank=True)
     icon_editable = models.BooleanField(default=False)
 
-    css = models.FileField(upload_to='localtv/widget_css', blank=True)
+    css = models.FileField(upload_to=utils.UploadTo('localtv/widgetsettings/css/%Y/%m/%d/'), blank=True)
     css_editable = models.BooleanField(default=False)
 
     bg_color = models.CharField(max_length=20, blank=True)
@@ -417,17 +414,6 @@ class WidgetSettings(Thumbnailable):
         return prefix % suffix
 
 
-def source_upload_path(instance, name):
-    base_path = 'localtv/%s_thumbs' % instance._meta.object_name.lower()
-    path = '%s/%s' % (base_path, os.path.basename(name))
-    if len(path) < 100:
-        return path
-    else:
-        # path is too long, so just use a hash of the name
-        name, ext = os.path.splitext(name)
-        return '%s/%d%s' % (base_path, hash(name), ext)
-
-
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
@@ -435,7 +421,7 @@ class Source(Thumbnailable):
     """
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
-    thumbnail_file = models.ImageField(upload_to=source_upload_path,
+    thumbnail_file = models.ImageField(upload_to=utils.UploadTo('localtv/source/thumbnail/%Y/%m/%d/'),
                                        blank=True)
 
     auto_approve = models.BooleanField(default=False)
@@ -665,7 +651,8 @@ class Category(MPTTModel):
                     "is usually lower-case and contains only letters, numbers "
                     "and hyphens."))
     logo = models.ImageField(
-        upload_to="localtv/category_logos", blank=True,
+        upload_to=utils.UploadTo('localtv/category/logo/%Y/%m/%d/'),
+        blank=True,
         verbose_name='Thumbnail/Logo',
         help_text=_("Optional. For example: a leaf for 'environment' or the "
                     "logo of a university department."))
@@ -1291,7 +1278,7 @@ class Video(Thumbnailable, VideoBase):
     )
 
     site = models.ForeignKey(Site)
-    thumbnail_file = models.ImageField(upload_to='localtv/video_thumbs',
+    thumbnail_file = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
                                        blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
