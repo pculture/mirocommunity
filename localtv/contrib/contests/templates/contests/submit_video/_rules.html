@@ -1,0 +1,6 @@
+{% load markup %}
+
+{% if contest.rules %}
+    <h2>Rules</h2>
+    {{ contest.rules|markdown }}
+{% endif %}

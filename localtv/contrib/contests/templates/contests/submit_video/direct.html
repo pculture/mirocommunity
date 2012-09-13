@@ -1,3 +1,8 @@
 {% extends "localtv/submit_video/direct.html" %}
 
 {% block form_action %}{% url localtv_contests_submit_directlink_video pk=contest.pk slug=contest.slug %}{% endblock %}
+
+{% block inner_form %}
+{{ block.super }}
+{% include "contests/submit_video/_rules.html" %}
+{% endblock %}
